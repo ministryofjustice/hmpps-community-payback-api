@@ -1,11 +1,20 @@
 plugins {
   id("uk.gov.justice.hmpps.gradle-spring-boot") version "8.3.6"
   kotlin("plugin.spring") version "2.2.0"
+  id("io.gitlab.arturbosch.detekt") version "1.23.8"
   jacoco
 }
 
 configurations {
   testImplementation { exclude(group = "org.junit.vintage") }
+}
+
+configurations.matching { it.name == "detekt" }.all {
+  resolutionStrategy.eachDependency {
+    if (requested.group == "org.jetbrains.kotlin") {
+      useVersion(io.gitlab.arturbosch.detekt.getSupportedKotlinVersion())
+    }
+  }
 }
 
 dependencies {
@@ -22,6 +31,19 @@ dependencies {
 
 kotlin {
   jvmToolchain(21)
+}
+
+detekt {
+  buildUponDefaultConfig = true
+  allRules = false
+  ignoreFailures = false
+  config.setFrom(files("$rootDir/detekt.yml"))
+
+  reports {
+    html.required.set(true)
+    xml.required.set(true)
+    txt.required.set(false)
+  }
 }
 
 tasks {
@@ -75,5 +97,6 @@ tasks {
 
   named("check") {
     dependsOn(named("jacocoTestCoverageVerification"))
+    dependsOn(named("detekt"))
   }
 }

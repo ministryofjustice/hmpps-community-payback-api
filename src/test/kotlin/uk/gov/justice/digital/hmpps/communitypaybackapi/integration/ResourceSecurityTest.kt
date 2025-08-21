@@ -24,29 +24,36 @@ class ResourceSecurityTest : IntegrationTestBase() {
   @Test
   fun `Ensure all endpoints protected with PreAuthorize`() {
     // need to exclude any that are forbidden in helm configuration
-    val exclusions = File("helm_deploy").walk().filter { it.name.equals("values.yaml") }.flatMap { file ->
-      file.readLines().map { line ->
-        line.takeIf { it.contains("location") }?.substringAfter("location ")?.substringBefore(" {")
-      }
-    }.filterNotNull().flatMap { path -> listOf("GET", "POST", "PUT", "DELETE").map { "$it $path" } }
-      .toMutableSet().also {
-        it.addAll(unprotectedDefaultMethods)
-      }
-
-    val beans = context.getBeansOfType(RequestMappingHandlerMapping::class.java)
-    beans.forEach { (_, mapping) ->
-      mapping.handlerMethods.forEach { (mappingInfo, method) ->
-        val classAnnotation = method.beanType.getAnnotation(PreAuthorize::class.java)
-        val annotation = method.getMethodAnnotation(PreAuthorize::class.java)
-        if (classAnnotation == null && annotation == null) {
-          mappingInfo.getMappings().forEach {
-            assertThat(exclusions.contains(it)).withFailMessage {
-              "Found $mappingInfo of type $method with no PreAuthorize annotation"
-            }.isTrue()
-          }
+    val exclusions = File("helm_deploy").walk()
+      .filter { it.name.equals("values.yaml") }
+      .flatMap { file ->
+        file.readLines().map { line ->
+          line.takeIf { it.contains("location") }?.substringAfter("location ")?.substringBefore(" {")
         }
       }
-    }
+      .filterNotNull()
+      .flatMap { path -> listOf("GET", "POST", "PUT", "DELETE").map { method -> "$method $path" } }
+      .toMutableSet()
+      .also { it.addAll(unprotectedDefaultMethods) }
+
+    val beans = context.getBeansOfType(RequestMappingHandlerMapping::class.java)
+
+    val unprotected = beans.values.asSequence()
+      .flatMap { mapping -> mapping.handlerMethods.asSequence() }
+      .filter { (_, method) ->
+        method.beanType.getAnnotation(PreAuthorize::class.java) == null &&
+          method.getMethodAnnotation(PreAuthorize::class.java) == null
+      }
+      .flatMap { (mappingInfo, _) -> mappingInfo.getMappings().asSequence() }
+      .filter { mappingStr -> mappingStr !in exclusions }
+      .toList()
+
+    assertThat(unprotected).withFailMessage {
+      buildString {
+        append("Found unsecured endpoints (no PreAuthorize):\n")
+        unprotected.forEach { append(" - ").append(it).append('\n') }
+      }
+    }.isEmpty()
   }
 }
 

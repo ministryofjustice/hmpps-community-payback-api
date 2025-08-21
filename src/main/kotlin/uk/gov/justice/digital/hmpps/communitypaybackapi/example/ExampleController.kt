@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.parameters.RequestBody
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
+import org.slf4j.LoggerFactory
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -27,6 +28,7 @@ data class Example(
 @RequestMapping("/example")
 @PreAuthorize("hasRole('ROLE_PROBATION')")
 class ExampleController {
+  private val log = LoggerFactory.getLogger(this::class.java)
 
   @GetMapping(produces = ["application/json"])
   @Operation(
@@ -89,7 +91,10 @@ class ExampleController {
     ],
   )
   @ResponseBody
-  fun updateExample(@PathVariable id: String, @org.springframework.web.bind.annotation.RequestBody example: Example): Example = example.copy(apiName = "${example.apiName}-updated")
+  fun updateExample(@PathVariable id: String, @org.springframework.web.bind.annotation.RequestBody example: Example): Example {
+    log.info("Example $id updated.")
+    return example.copy(apiName = "${example.apiName}-updated")
+  }
 
   @DeleteMapping("/{id}")
   @Operation(
@@ -104,6 +109,6 @@ class ExampleController {
     ],
   )
   fun deleteExample(@PathVariable id: String) {
-    // no-op for demo, would normally delete id from DB
+    log.info("Example $id deleted.")
   }
 }

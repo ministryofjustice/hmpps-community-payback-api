@@ -1,0 +1,37 @@
+# Detekt configuration for hmpps-community-payback-api
+# Start lean: rely on Detekt's default rule set and override incrementally.
+# See: https://detekt.dev/docs/rules/overview
+
+# You can disable or configure rules here over time.
+# Example:
+# style:
+#   MagicNumber:
+#     ignoreNumbers: ["-1", "0", "1", "2"]
+
+# For initial adoption we keep it empty and build upon default config from build.gradle.kts
+config:
+  validation: true
+  warningsAsErrors: true
+
+performance:
+  CouldBeSequence:
+    active: true
+  UnnecessaryPartOfBinaryExpression:
+    active: true
+
+style:
+  MaxLineLength:
+    maxLineLength: 220
+  ReturnCount:
+    max: 4
+  WildcardImport:
+    excludeImports: [] # We remove the default exception of ['java.util.*'] inline with our existing style guide
+
+complexity:
+  LongMethod:
+    threshold: 200
+  LargeClass:
+    threshold: 1000
+  TooManyFunctions:
+    thresholdInInterfaces: 20
+    thresholdInClasses: 20
