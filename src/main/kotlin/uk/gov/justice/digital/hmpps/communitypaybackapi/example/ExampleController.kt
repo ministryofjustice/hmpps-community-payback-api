@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.example
 
+import com.fasterxml.jackson.annotation.JsonProperty
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
@@ -13,11 +14,13 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.bind.annotation.RestController
 
 data class Example(
   @param:Schema(description = "Name of the API", example = "hmpps-community-payback-api")
-  val apiName: String,
+  @get:JsonProperty("apiName", required = true)
+  val apiName: String? = null,
 )
 
 @RestController
@@ -64,7 +67,8 @@ class ExampleController {
       ApiResponse(responseCode = "403", description = "Forbidden"),
     ],
   )
-  fun createExample(@RequestBody example: Example): Example = example.copy()
+  @ResponseBody
+  fun createExample(@org.springframework.web.bind.annotation.RequestBody example: Example): Example = example.copy()
 
   @PutMapping("/{id}", consumes = ["application/json"], produces = ["application/json"])
   @Operation(
@@ -84,7 +88,8 @@ class ExampleController {
       ApiResponse(responseCode = "404", description = "Example not found"),
     ],
   )
-  fun updateExample(@PathVariable id: String, @RequestBody example: Example): Example = example.copy(apiName = "${example.apiName}-updated")
+  @ResponseBody
+  fun updateExample(@PathVariable id: String, @org.springframework.web.bind.annotation.RequestBody example: Example): Example = example.copy(apiName = "${example.apiName}-updated")
 
   @DeleteMapping("/{id}")
   @Operation(
