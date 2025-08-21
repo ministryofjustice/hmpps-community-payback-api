@@ -9,7 +9,7 @@ class ExampleTest : IntegrationTestBase() {
 
   @Nested
   @DisplayName("GET /example")
-  inner class TimeEndpoint {
+  inner class ExampleEndpoint {
 
     @Test
     fun `should return unauthorized if no token`() {
