@@ -75,3 +75,4 @@ sonar-project.properties
 #Everything else:
 .DS_Store
 /.env
+/src/main/resources/application-local.yml
