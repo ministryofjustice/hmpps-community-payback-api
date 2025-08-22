@@ -26,7 +26,7 @@ data class Example(
 
 @RestController
 @RequestMapping("/example")
-@PreAuthorize("hasRole('ROLE_PROBATION')")
+@PreAuthorize("hasRole('ROLE_COMMUNITY_PAYBACK__COMMUNITY_PAYBACK_UI')")
 class ExampleController {
   private val log = LoggerFactory.getLogger(this::class.java)
 
