@@ -46,7 +46,7 @@ class ExampleTest : IntegrationTestBase() {
     fun `should return OK`() {
       webTestClient.get()
         .uri("/example")
-        .headers(setAuthorisation(roles = listOf("ROLE_PROBATION")))
+        .headers(setAuthorisation(roles = listOf("ROLE_COMMUNITY_PAYBACK__COMMUNITY_PAYBACK_UI")))
         .exchange()
         .expectStatus()
         .isOk
@@ -98,7 +98,7 @@ class ExampleTest : IntegrationTestBase() {
     fun `should create and return example`() {
       webTestClient.post()
         .uri("/example")
-        .headers(setAuthorisation(roles = listOf("ROLE_PROBATION")))
+        .headers(setAuthorisation(roles = listOf("ROLE_COMMUNITY_PAYBACK__COMMUNITY_PAYBACK_UI")))
         .contentType(MediaType.APPLICATION_JSON)
         .bodyValue(Example("test-api"))
         .exchange()
@@ -152,7 +152,7 @@ class ExampleTest : IntegrationTestBase() {
     fun `should update and return example`() {
       webTestClient.put()
         .uri("/example/123")
-        .headers(setAuthorisation(roles = listOf("ROLE_PROBATION")))
+        .headers(setAuthorisation(roles = listOf("ROLE_COMMUNITY_PAYBACK__COMMUNITY_PAYBACK_UI")))
         .contentType(MediaType.APPLICATION_JSON)
         .bodyValue(Example("test-api"))
         .exchange()
@@ -200,7 +200,7 @@ class ExampleTest : IntegrationTestBase() {
     fun `should delete example`() {
       webTestClient.delete()
         .uri("/example/123")
-        .headers(setAuthorisation(roles = listOf("ROLE_PROBATION")))
+        .headers(setAuthorisation(roles = listOf("ROLE_COMMUNITY_PAYBACK__COMMUNITY_PAYBACK_UI")))
         .exchange()
         .expectStatus()
         .isOk
