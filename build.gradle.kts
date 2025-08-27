@@ -3,6 +3,7 @@ plugins {
   kotlin("plugin.spring") version "2.2.10"
   id("io.gitlab.arturbosch.detekt") version "1.23.8"
   jacoco
+  id("io.sentry.jvm.gradle") version "5.9.0"
 }
 
 configurations {
@@ -99,4 +100,9 @@ tasks {
     dependsOn(named("jacocoTestCoverageVerification"))
     dependsOn(named("detekt"))
   }
+}
+
+sentry {
+  includeSourceContext = false
+  projectName = rootProject.name
 }
