@@ -111,4 +111,17 @@ class ExampleController {
   fun deleteExample(@PathVariable id: String) {
     log.info("Example $id deleted.")
   }
+
+  @GetMapping("/error")
+  @Operation(
+    summary = "Raise an error",
+    description = "Throws an exception to allow us to test alerting",
+    security = [SecurityRequirement(name = "bearerAuth")],
+    responses = [
+      ApiResponse(responseCode = "500", description = "An error has been raised"),
+    ],
+  )
+  fun error() {
+    error("This is an example error to test alerting")
+  }
 }
