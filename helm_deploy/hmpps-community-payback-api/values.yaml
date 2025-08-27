@@ -18,6 +18,8 @@ generic-service:
   env:
     JAVA_OPTS: "-Xmx512m"
     SERVER_PORT: "8080"
+    SENTRY_SAMPLE-RATE: 1
+    SENTRY_TRACES-SAMPLE-RATE: 0.01
     APPLICATIONINSIGHTS_CONFIGURATION_FILE: applicationinsights.json
 
   # Pre-existing kubernetes secrets to load as environment variables in the deployment.
@@ -28,6 +30,8 @@ generic-service:
   namespace_secrets:
     hmpps-community-payback-api-application-insights:
       APPLICATIONINSIGHTS_CONNECTION_STRING: "APPLICATIONINSIGHTS_CONNECTION_STRING"
+    hmpps-community-payback-api-sentry:
+      SENTRY_DSN: "SENTRY_DSN"
 
   allowlist:
     groups:
