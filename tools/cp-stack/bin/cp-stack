@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+
+set -e
+
+pre_reqs() {
+  if ! [ "$(command -v tilt)" ];then
+      echo "Tilt could not be found. Install with ``install-dependencies.sh`` and try again"
+      exit
+  fi
+
+  "$(dirname "$0")/utils/launch-docker.sh"
+}
+
+command=$1 ; shift
+
+if [ "$command" = "start" ]; then
+  pre_reqs
+  "$(dirname "$0")/start-server" "$@"
+elif [ "$command" = "stop" ]; then
+  pre_reqs
+  "$(dirname "$0")/stop-server" "$@"
+else
+  echo "Usage: ap-tools <command>"
+  echo "Commands:"
+  echo "  server start [--local-ui] [--local-api]"
+  echo "  server stop"
+  exit 1
+fi

@@ -102,6 +102,30 @@ tasks {
   }
 }
 
+tasks.register("bootRunDebug") {
+  group = "application"
+  description = "Runs this project as a Spring Boot application with debug configuration"
+  doFirst {
+    tasks.bootRun.configure {
+      jvmArgs("-Xmx512m", "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=32323")
+    }
+  }
+  finalizedBy("bootRun")
+}
+
+tasks.bootRun {
+  System.getenv()["BOOT_RUN_ENV_FILE"]?.let { envFilePath ->
+    println("Reading env vars from file $envFilePath")
+    file(envFilePath).readLines().forEach {
+      if (it.isNotBlank() && !it.startsWith("#")) {
+        val (key, value) = it.split("=", limit = 2)
+        println("Setting env var $key")
+        environment(key, value)
+      }
+    }
+  }
+}
+
 sentry {
   includeSourceContext = false
   projectName = rootProject.name

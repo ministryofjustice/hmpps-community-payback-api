@@ -1,0 +1,43 @@
+services:
+
+  api:
+    image: ghcr.io/ministryofjustice/hmpps-community-payback-api:latest
+    container_name: cp-tools-api
+    pull_policy: always
+    depends_on:
+      - wiremock
+    # using raw format disables interpolation, which causes errors when values include '$'
+    # note that intellij doesn't think this is valid but is i
+    # https://youtrack.jetbrains.com/issue/IJPL-68738/Docker-Compose.-Editor.-Path-property-of-envfile-attribute-is-not-recognized
+    env_file:
+      - path: .env.api
+        format: raw
+    ports:
+      - "8080:8080"
+
+  ui:
+    image: ghcr.io/ministryofjustice/hmpps-community-payback-ui:latest
+    container_name: cp-tools-ui
+    pull_policy: always
+    env_file:
+      - path: .env.ui
+        format: raw
+    environment:
+      - COMMUNITY_PAYBACK_API_URL=http://host.docker.internal:8080
+    ports:
+      - "3000:3000"
+    entrypoint: "node dist/server.js | bunyan"
+
+  wiremock:
+    image: wiremock/wiremock
+    container_name: cp-stack-wiremock
+    ports:
+      - "9004:8080"
+    volumes:
+      - ./wiremock:/home/wiremock
+    command: "--global-response-templating --verbose"
+    healthcheck:
+      # we use a custom healthcheck because calling /health
+      # in wiremock outputs in verbose request/response logs, and
+      # we're not interested in seeing this request
+      test: bash -c "exec 6<> /dev/tcp/localhost/8080"

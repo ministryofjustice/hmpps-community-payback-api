@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+set -e
+# shellcheck disable=SC3040
+set -o pipefail
+
+cd "$(dirname "$0")"
+script_dir="$(pwd)"
+
+touch "$script_dir/../.env.api"
+touch "$script_dir/../.env.ui"
+
+echo "==> Stopping tilt..."
+
+tilt down -f "$script_dir/../tiltfile"
+
+# This must run cleanly (not forced) to kill any local resources
+# started by the original tilt command
+killall tilt || true
