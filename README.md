@@ -6,7 +6,7 @@
 
 HMPPS Community Payback API is a Kotlin/Spring Boot service that exposes APIs to support Community Payback use cases. It follows HMPPS platform conventions for security, observability, CI/CD, and deployment to the MoJ Cloud Platform via Helm.
 
-- Language/Runtime: Kotlin 2.2.10 (Java 21), Spring Boot
+- Language/Runtime: Kotlin 2 (Java 21), Spring Boot
 - Build: Gradle (Wrapper included)
 - Packaging: Docker
 - Docs: OpenAPI/Swagger UI
