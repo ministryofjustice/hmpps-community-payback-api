@@ -7,3 +7,10 @@ management.endpoint:
 
 hmpps-auth:
   url: "http://localhost:8090/auth"
+
+community-payback:
+  request-logging-enabled: true
+
+logging:
+  level:
+    org.springframework.web.filter.CommonsRequestLoggingFilter: DEBUG
