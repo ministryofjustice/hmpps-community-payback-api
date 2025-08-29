@@ -1,0 +1,7 @@
+# adds configuration we can't easily define via env vars in tools/cp-stack/.env.api.template
+
+# see https://stackoverflow.com/questions/34181094/set-logging-level-in-spring-boot-via-environment-variable
+# for why we can't (easily) configure this via env vars
+logging:
+  level:
+    org.springframework.web.filter.CommonsRequestLoggingFilter: DEBUG
