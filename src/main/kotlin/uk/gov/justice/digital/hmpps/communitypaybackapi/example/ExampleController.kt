@@ -8,7 +8,6 @@ import io.swagger.v3.oas.annotations.parameters.RequestBody
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import org.slf4j.LoggerFactory
-import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -16,7 +15,6 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.ResponseBody
-import org.springframework.web.bind.annotation.RestController
 
 data class Example(
   @param:Schema(description = "Name of the API", example = "hmpps-community-payback-api")
@@ -24,9 +22,8 @@ data class Example(
   val apiName: String? = null,
 )
 
-@RestController
+@CommunityPaybackController
 @RequestMapping("/example")
-@PreAuthorize("hasRole('ROLE_COMMUNITY_PAYBACK__COMMUNITY_PAYBACK_UI')")
 class ExampleController {
   private val log = LoggerFactory.getLogger(this::class.java)
 
