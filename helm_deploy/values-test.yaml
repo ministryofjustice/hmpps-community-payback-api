@@ -8,9 +8,11 @@ generic-service:
     host: community-payback-api-test.hmpps.service.justice.gov.uk
 
   env:
-    APPLICATIONINSIGHTS_CONFIGURATION_FILE: "applicationinsights.dev.json"
+    APPLICATIONINSIGHTS_CONFIGURATION_FILE: "applicationinsights.test.json"
+    APPLICATIONINSIGHTS_ROLE_NAME: community-payback-api-test
     HMPPS_AUTH_URL: "https://sign-in-dev.hmpps.service.justice.gov.uk/auth"
-    SENTRY_ENVIRONMENT: dev
+    SENTRY_ENVIRONMENT: test
+    SPRING_PROFILES_ACTIVE: test
 
 # CloudPlatform AlertManager receiver to route prometheus alerts to slack
 # See https://user-guide.cloud-platform.service.justice.gov.uk/documentation/monitoring-an-app/how-to-create-alarms.html#creating-your-own-custom-alerts
