@@ -56,6 +56,8 @@ if [ $local_ui -gt 0 ]; then
     exit 1
   fi
 
+  touch ${LOCAL_CP_UI_PATH}/.env
+
   tiltArgs="$tiltArgs --local-ui"
 fi
 
