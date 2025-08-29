@@ -1,0 +1,88 @@
+#!/usr/bin/env bash
+
+set -e
+# shellcheck disable=SC3040
+set -o pipefail
+
+cd "$(dirname "$0")"
+script_dir="$(pwd)"
+
+. "$script_dir"/utils/resolve_secrets.sh
+
+local_ui=0
+local_api=0
+
+while [ "$1" != "" ];
+do
+   case $1 in
+    --local-ui)
+      local_ui=1
+      ;;
+    --local-api)
+      local_api=1
+      ;;
+  esac
+  shift
+done
+
+echo "Starting the community payback stack. This might take a moment. Logs available at http://localhost:10350"
+
+api_secret_names=("hmpps-community-payback-api-client-creds")
+resolve_secrets "$script_dir/../.env.api.template" \
+                "$script_dir/../.env.api" \
+                "hmpps-community-payback-dev" \
+                "${api_secret_names[@]}"
+
+ui_secret_names=("hmpps-community-payback-ui" "hmpps-community-payback-ui-client-creds" "hmpps-community-payback-ui-session-secret")
+resolve_secrets "$script_dir/../.env.ui.template" \
+                "$script_dir/../.env.ui" \
+                "hmpps-community-payback-dev" \
+                "${ui_secret_names[@]}"
+
+tiltArgs=""
+
+if [ $local_api -gt 0 ]; then
+  if [ -z "${LOCAL_CP_API_PATH}" ]; then
+    echo "Path to local API not found, please ensure you have set the LOCAL_CP_API_PATH environment variable and try again"
+    exit 1
+  fi
+
+  tiltArgs="$tiltArgs --local-api"
+fi
+
+if [ $local_ui -gt 0 ]; then
+  if [ -z "${LOCAL_CP_UI_PATH}" ]; then
+    echo "Path to local UI not found, please ensure you have set the LOCAL_CP_UI_PATH environment variable and try again"
+    exit 1
+  fi
+
+  tiltArgs="$tiltArgs --local-ui"
+fi
+
+echo "==> Starting Tilt"
+tilt_cmd="tilt up -f $script_dir/../tiltfile"
+if [ ${#tiltArgs} -ge 0 ]; then
+  tilt_cmd="$tilt_cmd -- $tiltArgs"
+fi
+echo ""
+
+echo "Starting tilt with $tilt_cmd"
+
+$tilt_cmd 2>&1 >/dev/null &
+
+echo ""
+echo "Waiting for the community-payback-api to be healthy. Can check progress at http://localhost:10350"
+until curl http://localhost:8080/api/health > /dev/null 2>&1; do
+  printf '.'
+  sleep 1
+done
+
+echo ""
+echo ""
+echo "The Community Payback Stack is running!"
+echo ""
+echo "  UI Login - http://localhost:3000 (credentials are in the 1Password vault)"
+echo "  Logs - http://localhost:10350"
+echo ""
+
+exit 0

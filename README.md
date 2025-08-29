@@ -25,44 +25,18 @@ Important links:
 
 ## Getting started (local development)
 
-Prerequisites:
+[cp-stack](tools/cp-stack/README.md) is used to run the stack locally, either using the latest docker images or running spring boot directly via gradle
+
+If you want to run spring boot directly you will need:
+
 - JDK 21
-- Docker (for docker-compose)
 - curl (optional, for health checks)
-
-Clone the repo and set your environment variables. See `env.sample` for examples.
-
-### Run with Gradle (local JVM)
-
-- Start a local HMPPS Auth using docker-compose (optional but recommended to exercise secured endpoints):
-```bash
-docker compose up -d hmpps-auth
-```
-- Run the service with the local profile:
-```bash
-SPRING_PROFILES_ACTIVE=localdev ./gradlew bootRun
-```
-- The service will start on `http://localhost:8080`.
-
-### Run everything with Docker Compose
-
-- `docker compose up --build`
-- This will start:
-  - `hmpps-community-payback-api` on `http://localhost:8080`
-  - `hmpps-auth` on `http://localhost:8090/auth`
 
 ### Configuration
 
-Configuration is primarily via Spring properties and environment variables.
+Configuration is primarily via Spring properties which can be overwritten via environment variables in Helm or cp-stack
 
-Key properties (see `src/main/resources/application.yml` and `application-localdev.yml`):
-- `server.port` (default 8080)
-- `hmpps-auth.url` (e.g. `http://localhost:8090/auth` for local dev)
-
-Environment variables (examples in `env.sample`):
-- `SERVER_PORT` — override server port
-- `HMPPS_AUTH_URL` — base URL for HMPPS Auth (note: ensure it is a valid URL)
-- `SPRING_PROFILES_ACTIVE` — use `localdev` for local JVM run with Docker
+[cp-stack](tools/cp-stack/README.md) provides a working default configuration, see the [README](tools/cp-stack/README.md) for information on how this works
 
 ### API docs
 
@@ -83,14 +57,3 @@ Getting a token locally:
 - Static code analysis/lint (ktlint & Detekt): `./gradlew ktlintFormat && ./gradlew detekt`
 - Code coverage (JaCoCo): generated after tests (`build/reports/jacoco/test/html/index.html`)
   - Coverage gate: 80% lines (see `build.gradle.kts`)
-
-## Running in Docker
-
-Build image locally:
-- `docker build -t hmpps-community-payback-api:local .`
-
-Run container:
-- `docker run -p 8080:8080 -e HMPPS_AUTH_URL=http://host.docker.internal:8090/auth hmpps-community-payback-api:local`
-
-Or use docker-compose:
-- `docker compose up --build`

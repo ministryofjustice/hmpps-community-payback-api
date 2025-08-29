@@ -1,0 +1,7 @@
+/Brewfile.lock.json
+package-lock.json
+.idea
+.DS_STORE
+
+.env.api
+.env.ui
