@@ -1,9 +1,12 @@
+import io.gitlab.arturbosch.detekt.Detekt
+
 plugins {
   id("uk.gov.justice.hmpps.gradle-spring-boot") version "9.0.0"
   kotlin("plugin.spring") version "2.2.10"
   id("io.gitlab.arturbosch.detekt") version "1.23.8"
   jacoco
   id("io.sentry.jvm.gradle") version "5.9.0"
+  id("org.openapi.generator") version "7.8.0"
 }
 
 configurations {
@@ -22,6 +25,9 @@ dependencies {
   implementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter:1.5.0")
   implementation("org.springframework.boot:spring-boot-starter-webflux")
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.11")
+
+  compileOnly("jakarta.annotation:jakarta.annotation-api:2.1.1")
+  implementation("org.openapitools:jackson-databind-nullable:0.2.6")
 
   testImplementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter-test:1.5.0")
   testImplementation("org.wiremock:wiremock-standalone:3.13.1")
@@ -47,9 +53,21 @@ detekt {
   }
 }
 
+tasks.withType<io.gitlab.arturbosch.detekt.Detekt>().configureEach {
+  exclude("**/generated/**", "**/build/**")
+}
+
+tasks.withType<Detekt>().configureEach {
+  exclude("build/generated/openapi/src/main/java/**")
+}
+
 tasks {
   withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
     compilerOptions.jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21
+  }
+
+  named("runKtlintCheckOverMainSourceSet") {
+    dependsOn("openApiGenerate")
   }
 
   named<Test>("test") {
@@ -129,4 +147,33 @@ tasks.bootRun {
 sentry {
   includeSourceContext = false
   projectName = rootProject.name
+}
+
+openApiGenerate {
+
+  generatorName.set("spring")
+  inputSpec.set("$projectDir/src/main/resources/api/openapi.yaml")
+  outputDir.set(layout.buildDirectory.dir("generated/openapi").get().asFile.absolutePath)
+  apiPackage.set("uk.gov.justice.digital.hmpps.communitypaybackapi.delius.api")
+  modelPackage.set("uk.gov.justice.digital.hmpps.communitypaybackapi.delius.model")
+  invokerPackage.set("uk.gov.justice.digital.hmpps.communitypaybackapi.delius.client")
+  configOptions.set(
+    mapOf(
+      "useJakartaEe" to "true",
+    ),
+  )
+}
+
+// Ensure generated sources are compiled and visible in IDE
+// (java generator outputs to <outputDir>/src/main/java)
+sourceSets {
+  named("main") {
+    java.srcDir(layout.buildDirectory.dir("generated/openapi/src/main/java").get().asFile)
+  }
+}
+
+tasks {
+  // Make codegen run before compilation
+  named("compileJava") { dependsOn("openApiGenerate") }
+  named("compileKotlin") { dependsOn("openApiGenerate") }
 }
