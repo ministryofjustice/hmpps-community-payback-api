@@ -4,6 +4,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.ApplicationContext
+import org.springframework.core.annotation.AnnotationUtils
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping
@@ -41,8 +42,8 @@ class ResourceSecurityTest : IntegrationTestBase() {
     val unprotected = beans.values.asSequence()
       .flatMap { mapping -> mapping.handlerMethods.asSequence() }
       .filter { (_, method) ->
-        method.beanType.getAnnotation(PreAuthorize::class.java) == null &&
-          method.getMethodAnnotation(PreAuthorize::class.java) == null
+        AnnotationUtils.findAnnotation(method.beanType, PreAuthorize::class.java) == null &&
+          AnnotationUtils.findAnnotation(method.method, PreAuthorize::class.java) == null
       }
       .flatMap { (mappingInfo, _) -> mappingInfo.getMappings().asSequence() }
       .filter { mappingStr -> mappingStr !in exclusions }

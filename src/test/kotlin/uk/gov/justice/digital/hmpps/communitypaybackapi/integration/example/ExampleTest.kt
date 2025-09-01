@@ -47,7 +47,12 @@ class ExampleTest : IntegrationTestBase() {
     fun `should return OK`() {
       webTestClient.get()
         .uri("/example")
-        .headers(setAuthorisation(roles = listOf("ROLE_COMMUNITY_PAYBACK__COMMUNITY_PAYBACK_UI")))
+        .headers(
+          setAuthorisation(
+            username = "INTEGRATION_TEST",
+            roles = listOf("ROLE_COMMUNITY_PAYBACK__COMMUNITY_PAYBACK_UI"),
+          ),
+        )
         .exchange()
         .expectStatus()
         .isOk
