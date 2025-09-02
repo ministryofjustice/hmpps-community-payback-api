@@ -14,10 +14,16 @@ jobs:
       docker_multiplatform: false
       tag_latest: false
 
+  helm_lint:
+    name: helm lint
+    uses: ministryofjustice/hmpps-github-actions/.github/workflows/test_helm_lint.yml@v2 # WORKFLOW_VERSION
+    secrets: inherit
+    with:
+      environment: test
   deploy_test:
     name: Deploy to the test environment
     needs:
-      - docker_build
+      - helm_lint
     uses: ministryofjustice/hmpps-github-actions/.github/workflows/deploy_env.yml@v2
     secrets: inherit
     with:
