@@ -23,6 +23,7 @@ jobs:
   deploy_test:
     name: Deploy to the test environment
     needs:
+      - docker_build
       - helm_lint
     uses: ministryofjustice/hmpps-github-actions/.github/workflows/deploy_env.yml@v2
     secrets: inherit
