@@ -65,6 +65,12 @@ jobs:
     with:
       environment: 'dev'
       app_version: '${{ needs.build.outputs.app_version }}'
+  e2e_test:
+    name: "E2E Test"
+    needs:
+      - deploy_dev
+    uses: ./.github/workflows/e2e.yml
+    secrets: inherit
   # deploy_preprod:
   #   name: Deploy to pre-production environment
   #   needs:
