@@ -4,6 +4,7 @@ plugins {
   id("io.gitlab.arturbosch.detekt") version "1.23.8"
   jacoco
   id("io.sentry.jvm.gradle") version "5.9.0"
+  id("org.openapi.generator") version "7.6.0"
 }
 
 configurations {
@@ -22,6 +23,8 @@ dependencies {
   implementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter:1.5.0")
   implementation("org.springframework.boot:spring-boot-starter-webflux")
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.12")
+  compileOnly("jakarta.annotation:jakarta.annotation-api:2.1.1")
+  implementation("org.openapitools:jackson-databind-nullable:0.2.6")
 
   testImplementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter-test:1.5.0")
   testImplementation("org.wiremock:wiremock-standalone:3.13.1")
@@ -58,7 +61,9 @@ tasks {
 
   val excludedFromCodeCoverage = listOf(
     "**/uk/gov/justice/digital/hmpps/communitypaybackapi/CommunityPaybackApi*",
-    "**/uk/gov/justice/digital/hmpps/communitypaybackapi/config/*",
+    "**/uk/gov/justice/digital/hmpps/communitypaybackapi/config/**",
+    "**/uk/gov/justice/digital/hmpps/communitypaybackapi/client/**",
+    "**/org/openapitools/**",
   )
 
   named<JacocoReport>("jacocoTestReport") {
@@ -100,6 +105,52 @@ tasks {
     dependsOn(named("jacocoTestCoverageVerification"))
     dependsOn(named("detekt"))
   }
+}
+
+ktlint {
+  verbose.set(true)
+  filter {
+    exclude {
+      it.file.path.contains("generated")
+    }
+  }
+}
+
+// Ensure all ktlint tasks run after OpenAPI generation, since they scan generated sources
+tasks.matching { it.name.contains("ktlint", ignoreCase = true) }.configureEach {
+  dependsOn(tasks.named("openApiGenerate"))
+}
+
+// Configure OpenAPI code generation
+val openApiOutputDir = "$buildDir/generated/openapi"
+
+openApiGenerate {
+  generatorName.set("kotlin")
+  inputSpec.set("$projectDir/src/main/resources/api/openapi.yaml")
+  outputDir.set(openApiOutputDir)
+  apiPackage.set("uk.gov.justice.digital.hmpps.communitypaybackapi.client.api")
+  modelPackage.set("uk.gov.justice.digital.hmpps.communitypaybackapi.client.model")
+  invokerPackage.set("uk.gov.justice.digital.hmpps.communitypaybackapi.client.invoker")
+  library.set("jvm-spring-webclient")
+  configOptions.set(
+    mapOf(
+      "dateLibrary" to "java8",
+      "useJakartaEe" to "true",
+      "useSpringBoot3" to "true",
+      "serializationLibrary" to "jackson",
+      "hideGenerationTimestamp" to "true",
+    ),
+  )
+}
+
+sourceSets {
+  main {
+    java.srcDir("$openApiOutputDir/src/main/kotlin")
+  }
+}
+
+tasks.named("compileKotlin") {
+  dependsOn(tasks.named("openApiGenerate"))
 }
 
 tasks.register("bootRunDebug") {
