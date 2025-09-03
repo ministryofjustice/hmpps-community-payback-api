@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.ResponseBody
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.ContextService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.DomainEventPublisher
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.HmppsDomainEvent
 
 data class Example(
   @param:Schema(description = "Name of the API", example = "hmpps-community-payback-api")
@@ -27,6 +29,7 @@ data class Example(
 @RequestMapping("/example")
 class ExampleController(
   val contextService: ContextService,
+  val domainEventPublisher: DomainEventPublisher,
 ) {
   private val log = LoggerFactory.getLogger(this::class.java)
 
@@ -58,7 +61,7 @@ class ExampleController(
   @PostMapping(consumes = ["application/json"], produces = ["application/json"])
   @Operation(
     summary = "Create an Example",
-    description = "Creates a new Example resource",
+    description = "Creates a new Example resource and raise a test domain event",
     security = [SecurityRequirement(name = "bearerAuth")],
     requestBody = RequestBody(
       required = true,
@@ -73,7 +76,17 @@ class ExampleController(
     ],
   )
   @ResponseBody
-  fun createExample(@org.springframework.web.bind.annotation.RequestBody example: Example): Example = example.copy()
+  fun createExample(@org.springframework.web.bind.annotation.RequestBody example: Example): Example {
+    domainEventPublisher.publish(
+      HmppsDomainEvent(
+        eventType = "community-payback.test",
+        version = 1,
+        description = "A test domain event to prove integration",
+      ),
+    )
+
+    return example.copy()
+  }
 
   @PutMapping("/{id}", consumes = ["application/json"], produces = ["application/json"])
   @Operation(

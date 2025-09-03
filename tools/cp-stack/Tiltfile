@@ -1,6 +1,7 @@
 docker_compose("./compose.yml")
 
 resources = [
+    "localstack",
     "wiremock",
 ]
 
