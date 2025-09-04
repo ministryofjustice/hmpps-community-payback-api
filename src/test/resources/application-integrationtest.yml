@@ -5,11 +5,23 @@ management.endpoint:
   health.cache.time-to-live: 0
   info.cache.time-to-live: 0
 
+community-payback:
+  request-logging-enabled: true
+
 hmpps-auth:
   url: "http://localhost:8090/auth"
 
-community-payback:
-  request-logging-enabled: true
+hmpps.sqs:
+  provider: localstack
+  queues:
+    # this queue listens to the domain event topics so we can retrieve produced events
+    hmppsdomaineventsqueue:
+      queueName: ${random.uuid}
+      dlqName: ${random.uuid}
+      subscribeTopicId: hmppseventtopic
+  topics:
+    hmppseventtopic:
+      arn: arn:aws:sns:eu-west-2:000000000000:${random.uuid}
 
 logging:
   level:

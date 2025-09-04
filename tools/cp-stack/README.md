@@ -75,6 +75,25 @@ Then update compose.yml to refer to this image instead
 
 All requests to upstream services are proxied by wiremock. Mocks can be configured for specific requests. For more information see the [wiremock README](./wiremock/README.md)
 
+## Localstack
+
+We start localstack to provide us with an SNS topic to send domain events to
+
+We also configure an SQS queue that listens to the topic so we can debug messages being sent
+
+This can be monitored as follows:
+
+```bash
+brew install awscli-local
+AWS_DEFAULT_REGION=eu-west-2
+# list topics (if running integration tests there may be many)
+awslocal sns list-topics
+# list topic subscriber (if running integration tests there may be many)
+awslocal sqs list-queues 
+# show domain events sent to the cp-stack API instance
+awslocal sqs receive-message --max-number-of-messages 10 --visibility-timeout 0 --queue-url http://sqs.eu-west-2.localhost.localstack.cloud:4566/000000000000/cp_stack_domain_event_subscriber
+```
+
 ## Debugging the API
 
 Note : this only works when using the `--local-api` option
