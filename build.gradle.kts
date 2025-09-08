@@ -1,3 +1,6 @@
+import java.net.InetSocketAddress
+import java.net.Socket
+
 plugins {
   id("uk.gov.justice.hmpps.gradle-spring-boot") version "9.0.0"
   kotlin("plugin.spring") version "2.2.10"
@@ -117,7 +120,32 @@ tasks.register("bootRunDebug") {
   finalizedBy("bootRun")
 }
 
+fun isPortInUse(port: Int): Boolean = try {
+  Socket().use { socket ->
+    socket.connect(InetSocketAddress("localhost", port), 1000)
+    true
+  }
+} catch (e: Exception) {
+  false
+}
+
 tasks.bootRun {
+  val debugPort = 32323
+  val maxRetries = 10
+  val retryDelayMs = 1000L
+
+  // Check if debug port is in use and wait if necessary
+  var retries = 0
+  while (isPortInUse(debugPort) && retries < maxRetries) {
+    println("Debug port $debugPort is in use. Waiting for ${retryDelayMs}ms (attempt ${retries + 1}/$maxRetries)...")
+    Thread.sleep(retryDelayMs)
+    retries++
+  }
+
+  if (isPortInUse(debugPort)) {
+    throw IllegalStateException("Debug port $debugPort is still in use after $maxRetries attempts. Please make sure the previous application instance is stopped.")
+  }
+
   System.getenv()["BOOT_RUN_ENV_FILE"]?.let { envFilePath ->
     println("Reading env vars from file $envFilePath")
     file(envFilePath).readLines().forEach {
