@@ -12,6 +12,8 @@ services:
     env_file:
       - path: .env.api
         format: raw
+    environment:
+      - HMPPS_SQS_LOCALSTACKURL=http://localstack:4566
     ports:
       - "8080:8080"
 
