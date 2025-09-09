@@ -6,7 +6,6 @@ import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.parameters.RequestBody
 import io.swagger.v3.oas.annotations.responses.ApiResponse
-import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import org.slf4j.LoggerFactory
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -37,7 +36,6 @@ class ExampleController(
   @Operation(
     summary = "Get example API details",
     description = "Returns basic example for the Community Payback API",
-    security = [SecurityRequirement(name = "bearerAuth")],
     responses = [
       ApiResponse(
         responseCode = "200",
@@ -62,7 +60,6 @@ class ExampleController(
   @Operation(
     summary = "Create an Example",
     description = "Creates a new Example resource and raise a test domain event",
-    security = [SecurityRequirement(name = "bearerAuth")],
     requestBody = RequestBody(
       required = true,
       description = "Example object to create",
@@ -92,7 +89,6 @@ class ExampleController(
   @Operation(
     summary = "Update an Example",
     description = "Updates an existing Example resource",
-    security = [SecurityRequirement(name = "bearerAuth")],
     requestBody = RequestBody(
       required = true,
       description = "Updated Example object",
@@ -116,7 +112,6 @@ class ExampleController(
   @Operation(
     summary = "Delete an Example",
     description = "Deletes an Example resource by ID",
-    security = [SecurityRequirement(name = "bearerAuth")],
     responses = [
       ApiResponse(responseCode = "204", description = "Deleted successfully"),
       ApiResponse(responseCode = "401", description = "Unauthorized"),
@@ -132,7 +127,6 @@ class ExampleController(
   @Operation(
     summary = "Raise an error",
     description = "Throws an exception to allow us to test alerting",
-    security = [SecurityRequirement(name = "bearerAuth")],
     responses = [
       ApiResponse(responseCode = "500", description = "An error has been raised"),
     ],
