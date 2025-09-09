@@ -4,6 +4,9 @@ on:
   workflow_call:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   e2e_test:
     name: "E2E Test"
