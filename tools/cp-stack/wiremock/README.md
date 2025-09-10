@@ -4,8 +4,6 @@ All upstream requests (excluding auth) are proxied via wiremock.
 
 We can selectively mock a request by adding a mapping to the `mappings/overrides` folder with a priority < 100
 
-An example of this has been provided for hmpps-tier (which we don't currently use). This should be removed once an endpoint we do use is added
-
 ## Viewing Requests & Responses
 
 Wiremock provides an API to view requests:

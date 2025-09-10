@@ -21,6 +21,7 @@ class ResourceSecurityTest : IntegrationTestBase() {
     "GET /v3/api-docs/swagger-config",
     "GET /queue-admin/retry-all-dlqs",
     " /error",
+    "GET /mocks/community-payback-and-delius/providers",
   )
 
   @Test

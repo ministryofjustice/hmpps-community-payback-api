@@ -26,3 +26,7 @@ hmpps.sqs:
 logging:
   level:
     org.springframework.web.filter.CommonsRequestLoggingFilter: DEBUG
+
+client:
+  community-payback-and-delius:
+    url: http://localhost:${wiremock.server.port}/community-payback-and-delius
