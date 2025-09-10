@@ -3,6 +3,8 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.provider.service
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProviderSummaries
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProviderSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.provider.controller.ProviderSummaryDto
 
 class ProviderMappersTest {

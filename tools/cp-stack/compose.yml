@@ -1,7 +1,9 @@
 services:
 
   api:
+    # To build locally, comment out `image` and uncomment `build`
     image: ghcr.io/ministryofjustice/hmpps-community-payback-api:latest
+    #build: ../../
     container_name: cp-tools-api
     pull_policy: always
     depends_on:
@@ -14,6 +16,7 @@ services:
         format: raw
     environment:
       - HMPPS_SQS_LOCALSTACKURL=http://localstack:4566
+      - CLIENT_COMMUNITY_PAYBACK_AND_DELIUS_URL=http://wiremock:8080/community-payback-and-delius-proxy
     ports:
       - "8080:8080"
 

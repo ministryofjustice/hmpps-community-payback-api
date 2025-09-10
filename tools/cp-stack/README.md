@@ -67,6 +67,7 @@ To resolve a secret from k8s use the ${SECRET_KEY} notation. You may also need t
 ## Using a locally built docker image
 
 Build image locally:
+
 - `docker build -t hmpps-community-payback-api:local .`
 
 Then update compose.yml to refer to this image instead

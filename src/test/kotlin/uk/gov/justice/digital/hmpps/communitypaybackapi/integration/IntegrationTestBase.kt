@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.integration
 
-import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
@@ -9,15 +8,15 @@ import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
 import org.springframework.test.web.reactive.server.WebTestClient
+import org.wiremock.spring.EnableWireMock
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.container.LocalStackContainer
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.container.LocalStackContainer.setLocalStackProperties
-import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.HmppsAuthApiExtension
-import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.HmppsAuthApiExtension.Companion.hmppsAuth
+import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.HmppsAuthMockServer
 import uk.gov.justice.hmpps.test.kotlin.auth.JwtAuthorisationHelper
 
-@ExtendWith(HmppsAuthApiExtension::class)
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @ActiveProfiles("integrationtest")
+@EnableWireMock
 abstract class IntegrationTestBase {
 
   @Autowired
@@ -45,6 +44,6 @@ abstract class IntegrationTestBase {
   ): (HttpHeaders) -> Unit = jwtAuthHelper.setAuthorisationHeader(username = username, scope = scopes, roles = roles)
 
   protected fun stubPingWithResponse(status: Int) {
-    hmppsAuth.stubHealthPing(status)
+    HmppsAuthMockServer.stubHealthPing(status)
   }
 }
