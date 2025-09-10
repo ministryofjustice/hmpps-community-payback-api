@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.ResponseBody
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.CommunityPaybackController
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.ContextService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.DomainEventPublisher
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.HmppsDomainEvent

@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.communitypaybackapi.example
+package uk.gov.justice.digital.hmpps.communitypaybackapi.common
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import org.springframework.http.MediaType
