@@ -75,4 +75,56 @@ class ProvidersIntegrationTest : IntegrationTestBase() {
       assertThat(providers.providers[0].name).isEqualTo("Entry 1")
     }
   }
+
+  @Nested
+  inner class ProviderTeamsEndpoint {
+
+    @Test
+    fun `should return unauthorized if no token`() {
+      webTestClient.get()
+        .uri("/providers/123/teams")
+        .exchange()
+        .expectStatus()
+        .isUnauthorized
+    }
+
+    @Test
+    fun `should return forbidden if no role`() {
+      webTestClient.get()
+        .uri("/providers/123/teams")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .isForbidden
+    }
+
+    @Test
+    fun `should return forbidden if wrong role`() {
+      webTestClient.get()
+        .uri("/providers/123/teams")
+        .headers(setAuthorisation(roles = listOf("ROLE_WRONG")))
+        .exchange()
+        .expectStatus()
+        .isForbidden
+    }
+
+    @Test
+    fun `should return OK`() {
+      val providers = webTestClient.get()
+        .uri("/providers/123/teams")
+        .headers(
+          setAuthorisation(
+            roles = listOf("ROLE_COMMUNITY_PAYBACK__COMMUNITY_PAYBACK_UI"),
+          ),
+        )
+        .exchange()
+        .expectStatus()
+        .isOk
+        .bodyAsObject<ProviderSummariesDto>()
+
+      assertThat(providers.providers).hasSize(3)
+      assertThat(providers.providers[0].id).isEqualTo(1001L)
+      assertThat(providers.providers[0].name).isEqualTo("Team Lincoln")
+    }
+  }
 }
