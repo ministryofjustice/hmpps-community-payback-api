@@ -8,7 +8,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.IntegrationT
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.bodyAsObject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.provider.controller.ProviderSummariesDto
 
-class ProviderTest : IntegrationTestBase() {
+class ProvidersIntegrationTest : IntegrationTestBase() {
 
   @Nested
   @DisplayName("GET /providers")
