@@ -25,10 +25,9 @@ data class ProviderSummaryDto(
 @RequestMapping("/providers")
 class ProviderController(val providerService: ProviderService) {
 
-  @GetMapping(produces = ["application/json"])
+  @GetMapping
   @Operation(
-    summary = "Get list of provider summaries API",
-    description = "Get list of provider summaries API",
+    description = "Get list of provider summaries",
     responses = [
       ApiResponse(
         responseCode = "200",
@@ -36,7 +35,7 @@ class ProviderController(val providerService: ProviderService) {
         content = [
           Content(
             mediaType = "application/json",
-            schema = Schema(implementation = ProviderSummaryDto::class),
+            schema = Schema(implementation = ProviderSummariesDto::class),
           ),
         ],
       ),

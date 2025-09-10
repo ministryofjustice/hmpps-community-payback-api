@@ -49,7 +49,6 @@ class ProviderTest : IntegrationTestBase() {
         .uri("/providers")
         .headers(
           setAuthorisation(
-            username = "INTEGRATION_TEST",
             roles = listOf("ROLE_COMMUNITY_PAYBACK__COMMUNITY_PAYBACK_UI"),
           ),
         )
@@ -59,6 +58,8 @@ class ProviderTest : IntegrationTestBase() {
         .bodyAsObject<ProviderSummariesDto>()
 
       assertThat(providers.providers).hasSize(3)
+      assertThat(providers.providers[0].id).isEqualTo(1000L)
+      assertThat(providers.providers[0].name).isEqualTo("East of England")
     }
   }
 }
