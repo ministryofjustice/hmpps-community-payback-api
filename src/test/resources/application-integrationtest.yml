@@ -9,7 +9,7 @@ community-payback:
   request-logging-enabled: true
 
 hmpps-auth:
-  url: "http://localhost:8090/auth"
+  url: "http://localhost:${wiremock.server.port}/auth"
 
 hmpps.sqs:
   provider: localstack
