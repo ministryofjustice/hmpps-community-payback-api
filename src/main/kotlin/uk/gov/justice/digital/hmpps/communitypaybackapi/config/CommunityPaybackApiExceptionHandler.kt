@@ -12,6 +12,7 @@ import org.springframework.security.access.AccessDeniedException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.servlet.resource.NoResourceFoundException
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.controller.HmppsErrorResponseException
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 
 @RestControllerAdvice
@@ -61,6 +62,12 @@ class CommunityPaybackApiExceptionHandler {
     )
     .also { Sentry.captureException(e) }
     .also { log.error("Unexpected exception", e) }
+
+  @ExceptionHandler(HmppsErrorResponseException::class)
+  fun hmppsErrorResponseException(e: HmppsErrorResponseException): ResponseEntity<ErrorResponse> = ResponseEntity
+    .status(e.response.status)
+    .body(e.response)
+    .also { log.debug("Service call returned an Error Result", e) }
 
   private companion object {
     private val log = LoggerFactory.getLogger(this::class.java)

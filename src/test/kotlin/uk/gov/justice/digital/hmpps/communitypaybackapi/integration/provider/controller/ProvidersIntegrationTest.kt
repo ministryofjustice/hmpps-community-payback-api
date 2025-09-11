@@ -12,6 +12,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.IntegrationT
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.bodyAsObject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.CommunityPaybackAndDeliusMockServer
 import uk.gov.justice.digital.hmpps.communitypaybackapi.provider.controller.ProviderSummariesDto
+import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 
 class ProvidersIntegrationTest : IntegrationTestBase() {
 
@@ -112,7 +113,27 @@ class ProvidersIntegrationTest : IntegrationTestBase() {
     }
 
     @Test
-    fun `should return OK`() {
+    fun `provider not found returns 404`() {
+      CommunityPaybackAndDeliusMockServer.providerTeamsNotFound(123)
+
+      val response = webTestClient.get()
+        .uri("/providers/123/teams")
+        .headers(
+          setAuthorisation(
+            roles = listOf("ROLE_COMMUNITY_PAYBACK__COMMUNITY_PAYBACK_UI"),
+          ),
+        )
+        .exchange()
+        .expectStatus()
+        .isNotFound
+        .bodyAsObject<ErrorResponse>()
+
+      assertThat(response.status).isEqualTo(404)
+      assertThat(response.userMessage).isEqualTo("Could not find Provider for id '123'")
+    }
+
+    @Test
+    fun `if provider exists should return OK`() {
       CommunityPaybackAndDeliusMockServer.providerTeams(
         providerId = 123,
         ProviderTeamSummaries(

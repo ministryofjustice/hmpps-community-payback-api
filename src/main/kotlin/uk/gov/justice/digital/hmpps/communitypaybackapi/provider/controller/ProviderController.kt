@@ -7,7 +7,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
-import uk.gov.justice.digital.hmpps.communitypaybackapi.common.CommunityPaybackController
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.controller.CommunityPaybackController
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.controller.getOrThrow
 import uk.gov.justice.digital.hmpps.communitypaybackapi.provider.service.ProviderService
 
 data class ProviderSummariesDto(
@@ -55,7 +56,7 @@ class ProviderController(val providerService: ProviderService) {
       ApiResponse(responseCode = "403", description = "Forbidden"),
     ],
   )
-  fun getProviders(): ProviderSummariesDto = providerService.getProviders()
+  fun getProviders() = providerService.getProviders().getOrThrow()
 
   @GetMapping("/{providerId}/teams")
   @Operation(
@@ -76,5 +77,5 @@ class ProviderController(val providerService: ProviderService) {
       ApiResponse(responseCode = "404", description = "Provider not found"),
     ],
   )
-  fun getProviderTeam(@PathVariable providerId: Long): ProviderTeamSummariesDto = providerService.getProviderTeams(providerId)
+  fun getProviderTeam(@PathVariable providerId: Long): ProviderTeamSummariesDto = providerService.getProviderTeams(providerId).getOrThrow()
 }

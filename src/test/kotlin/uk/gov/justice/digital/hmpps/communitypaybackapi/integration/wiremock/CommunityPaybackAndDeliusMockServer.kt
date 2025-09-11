@@ -22,6 +22,7 @@ object CommunityPaybackAndDeliusMockServer {
       ),
     )
   }
+
   fun providerTeams(
     providerId: Long,
     providerTeams: ProviderTeamSummaries,
@@ -31,6 +32,15 @@ object CommunityPaybackAndDeliusMockServer {
         aResponse()
           .withHeader("Content-Type", "application/json")
           .withBody(objectMapper.writer().writeValueAsString(providerTeams)),
+      ),
+    )
+  }
+
+  fun providerTeamsNotFound(providerId: Long) {
+    WireMock.stubFor(
+      get("/community-payback-and-delius/provider-teams?providerId=$providerId").willReturn(
+        aResponse()
+          .withStatus(404),
       ),
     )
   }
