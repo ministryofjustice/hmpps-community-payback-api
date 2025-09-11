@@ -11,5 +11,5 @@ class ProviderService(
   fun getProviders() = communityPaybackAndDeliusClient.providers().toDto()
 
   @Suppress("UnusedParameter")
-  fun getProviderTeams(providerId: Long) = communityPaybackAndDeliusClient.providerTeams().toDto()
+  fun getProviderTeams(providerId: Long) = communityPaybackAndDeliusClient.providerTeams(providerId).toDto()
 }

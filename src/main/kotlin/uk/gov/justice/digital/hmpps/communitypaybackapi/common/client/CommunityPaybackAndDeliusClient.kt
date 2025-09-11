@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.common.client
 
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.service.annotation.GetExchange
 
 interface CommunityPaybackAndDeliusClient {
@@ -7,7 +8,7 @@ interface CommunityPaybackAndDeliusClient {
   fun providers(): ProviderSummaries
 
   @GetExchange("/provider-teams")
-  fun providerTeams(): ProviderTeamSummaries
+  fun providerTeams(@RequestParam providerId: Long): ProviderTeamSummaries
 }
 
 data class ProviderSummaries(
