@@ -22,6 +22,7 @@ class ResourceSecurityTest : IntegrationTestBase() {
     "GET /queue-admin/retry-all-dlqs",
     " /error",
     "GET /mocks/community-payback-and-delius/providers",
+    "GET /mocks/community-payback-and-delius/provider-teams",
   )
 
   @Test

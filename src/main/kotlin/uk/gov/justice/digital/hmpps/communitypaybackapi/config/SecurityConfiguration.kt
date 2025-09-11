@@ -16,6 +16,7 @@ class SecurityConfiguration {
   fun resourceServerCustomizer() = ResourceServerConfigurationCustomizer {
     unauthorizedRequestPaths {
       addPaths = setOf("/mocks/community-payback-and-delius/providers")
+      addPaths = setOf("/mocks/community-payback-and-delius/provider-teams")
     }
   }
 }

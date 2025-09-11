@@ -6,6 +6,8 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProviderSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProviderSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProviderTeamSummaries
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProviderTeamSummary
 
 /**
  * Temporary mock controller until we have the actual endpoint in test environments
@@ -25,6 +27,15 @@ class MockCommunityPaybackAndDeliusController {
       ProviderSummary(id = 1000, name = "East of England"),
       ProviderSummary(id = 2000, name = "North East Region"),
       ProviderSummary(id = 3000, name = "North West Region"),
+    ),
+  )
+
+  @GetMapping("/provider-teams")
+  fun getProviderTeams() = ProviderTeamSummaries(
+    listOf(
+      ProviderTeamSummary(id = 1001, "Team Lincoln"),
+      ProviderTeamSummary(id = 2001, "Team Grantham"),
+      ProviderTeamSummary(id = 3001, "Team Boston"),
     ),
   )
 }
