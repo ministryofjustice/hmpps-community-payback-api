@@ -5,6 +5,9 @@ import org.springframework.web.service.annotation.GetExchange
 interface CommunityPaybackAndDeliusClient {
   @GetExchange("/providers")
   fun providers(): ProviderSummaries
+
+  @GetExchange("/provider-teams")
+  fun providerTeams(): ProviderTeamSummaries
 }
 
 data class ProviderSummaries(
@@ -12,6 +15,15 @@ data class ProviderSummaries(
 )
 
 data class ProviderSummary(
+  val id: Long,
+  val name: String,
+)
+
+data class ProviderTeamSummaries(
+  val providers: List<ProviderTeamSummary>,
+)
+
+data class ProviderTeamSummary(
   val id: Long,
   val name: String,
 )
