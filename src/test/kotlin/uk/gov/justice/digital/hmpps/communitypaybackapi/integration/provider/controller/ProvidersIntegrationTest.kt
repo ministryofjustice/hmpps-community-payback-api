@@ -114,6 +114,7 @@ class ProvidersIntegrationTest : IntegrationTestBase() {
     @Test
     fun `should return OK`() {
       CommunityPaybackAndDeliusMockServer.providerTeams(
+        providerId = 123,
         ProviderTeamSummaries(
           listOf(
             ProviderTeamSummary(11, "Team 1"),

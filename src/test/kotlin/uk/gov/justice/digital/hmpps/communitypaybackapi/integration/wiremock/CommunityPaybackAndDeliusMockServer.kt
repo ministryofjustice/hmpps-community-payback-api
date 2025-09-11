@@ -29,10 +29,11 @@ object CommunityPaybackAndDeliusMockServer {
   }
 
   fun providerTeams(
+    providerId: Long,
     providerTeams: ProviderTeamSummaries,
   ) {
     WireMock.stubFor(
-      get("/community-payback-and-delius/provider-teams").willReturn(
+      get("/community-payback-and-delius/provider-teams?providerId=$providerId").willReturn(
         aResponse()
           .withHeader("Content-Type", "application/json")
           .withBody(objectMapper.writer().writeValueAsString(providerTeams)),

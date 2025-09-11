@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.mock
 import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProviderSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProviderSummary
@@ -30,8 +31,11 @@ class MockCommunityPaybackAndDeliusController {
     ),
   )
 
+  @SuppressWarnings("UnusedParameter")
   @GetMapping("/provider-teams")
-  fun getProviderTeams() = ProviderTeamSummaries(
+  fun getProviderTeams(
+    @RequestParam providerId: Long,
+  ) = ProviderTeamSummaries(
     listOf(
       ProviderTeamSummary(id = 1001, "Team Lincoln"),
       ProviderTeamSummary(id = 2001, "Team Grantham"),
