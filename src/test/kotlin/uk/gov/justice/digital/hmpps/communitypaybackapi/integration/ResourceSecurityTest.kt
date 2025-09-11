@@ -23,6 +23,7 @@ class ResourceSecurityTest : IntegrationTestBase() {
     " /error",
     "GET /mocks/community-payback-and-delius/providers",
     "GET /mocks/community-payback-and-delius/provider-teams",
+    "GET /mocks/community-payback-and-delius/project-allocations",
   )
 
   @Test

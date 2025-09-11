@@ -12,6 +12,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.IntegrationT
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.bodyAsObject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.CommunityPaybackAndDeliusMockServer
 import uk.gov.justice.digital.hmpps.communitypaybackapi.provider.controller.ProviderSummariesDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.provider.controller.ProviderTeamSummariesDto
 
 class ProvidersIntegrationTest : IntegrationTestBase() {
 
@@ -134,7 +135,7 @@ class ProvidersIntegrationTest : IntegrationTestBase() {
         .exchange()
         .expectStatus()
         .isOk
-        .bodyAsObject<ProviderSummariesDto>()
+        .bodyAsObject<ProviderTeamSummariesDto>()
 
       assertThat(providers.providers).hasSize(3)
       assertThat(providers.providers[0].id).isEqualTo(11L)

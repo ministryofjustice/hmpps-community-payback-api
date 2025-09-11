@@ -1,7 +1,9 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.common.client
 
+import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.service.annotation.GetExchange
+import java.time.LocalDate
 
 interface CommunityPaybackAndDeliusClient {
   @GetExchange("/providers")
@@ -9,6 +11,13 @@ interface CommunityPaybackAndDeliusClient {
 
   @GetExchange("/provider-teams")
   fun providerTeams(@RequestParam providerId: Long): ProviderTeamSummaries
+
+  @GetExchange("/project-allocations")
+  fun getProjectAllocations(
+    @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) startDate: LocalDate,
+    @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) endDate: LocalDate,
+    @RequestParam teamId: Long,
+  ): ProjectAllocations
 }
 
 data class ProviderSummaries(
@@ -21,10 +30,25 @@ data class ProviderSummary(
 )
 
 data class ProviderTeamSummaries(
-  val providers: List<ProviderTeamSummary>,
+  val teams: List<ProviderTeamSummary>,
 )
 
 data class ProviderTeamSummary(
   val id: Long,
   val name: String,
+)
+data class ProjectAllocations(
+  val allocations: List<ProjectAllocation>,
+)
+
+data class ProjectAllocation(
+  val id: Long,
+  val projectName: String,
+  val projectCode: String,
+  val teamId: Long,
+  val startDate: LocalDate,
+  val endDate: LocalDate,
+  val allocated: Int,
+  val outcomes: Int,
+  val enforcements: Int,
 )
