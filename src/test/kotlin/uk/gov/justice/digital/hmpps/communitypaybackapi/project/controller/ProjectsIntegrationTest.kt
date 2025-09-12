@@ -10,6 +10,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.IntegrationT
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.bodyAsObject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.CommunityPaybackAndDeliusMockServer
 import java.time.LocalDate
+import java.time.LocalTime
 
 class ProjectsIntegrationTest : IntegrationTestBase() {
 
@@ -64,24 +65,24 @@ class ProjectsIntegrationTest : IntegrationTestBase() {
             ProjectAllocation(
               id = 1L,
               projectName = "Community Garden Maintenance",
-              teamId = 1L,
-              startDate = LocalDate.of(2025, 9, 1),
-              endDate = LocalDate.of(2025, 9, 7),
+              date = LocalDate.of(2025, 9, 1),
+              startTime = LocalTime.of(9, 0),
+              endTime = LocalTime.of(17, 0),
               projectCode = "cgm",
-              allocated = 0,
-              outcomes = 1,
-              enforcements = 2,
+              numberOfOffendersAllocated = 0,
+              numberOfOffendersWithOutcomes = 1,
+              numberOfOffendersWithEA = 2,
             ),
             ProjectAllocation(
               id = 2L,
               projectName = "Park Cleanup",
-              teamId = 1L,
-              startDate = LocalDate.of(2025, 9, 8),
-              endDate = LocalDate.of(2025, 9, 14),
+              date = LocalDate.of(2025, 9, 8),
+              startTime = LocalTime.of(8, 0),
+              endTime = LocalTime.of(16, 0),
               projectCode = "pc",
-              allocated = 3,
-              outcomes = 4,
-              enforcements = 5,
+              numberOfOffendersAllocated = 3,
+              numberOfOffendersWithOutcomes = 4,
+              numberOfOffendersWithEA = 5,
             ),
           ),
         ),
@@ -102,9 +103,13 @@ class ProjectsIntegrationTest : IntegrationTestBase() {
       assertThat(allocations.allocations).hasSize(2)
       assertThat(allocations.allocations[0].id).isEqualTo(1L)
       assertThat(allocations.allocations[0].projectName).isEqualTo("Community Garden Maintenance")
-      assertThat(allocations.allocations[0].teamId).isEqualTo(1L)
-      assertThat(allocations.allocations[0].startDate).isEqualTo(LocalDate.of(2025, 9, 1))
-      assertThat(allocations.allocations[0].endDate).isEqualTo(LocalDate.of(2025, 9, 7))
+      assertThat(allocations.allocations[0].date).isEqualTo(LocalDate.of(2025, 9, 1))
+      assertThat(allocations.allocations[0].startTime).isEqualTo(LocalTime.of(9, 0))
+      assertThat(allocations.allocations[0].endTime).isEqualTo(LocalTime.of(17, 0))
+      assertThat(allocations.allocations[0].projectCode).isEqualTo("cgm")
+      assertThat(allocations.allocations[0].numberOfOffendersAllocated).isEqualTo(0)
+      assertThat(allocations.allocations[0].numberOfOffendersWithOutcomes).isEqualTo(1)
+      assertThat(allocations.allocations[0].numberOfOffendersWithEA).isEqualTo(2)
     }
 
     @Test

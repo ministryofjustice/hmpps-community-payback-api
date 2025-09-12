@@ -4,6 +4,7 @@ import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.service.annotation.GetExchange
 import java.time.LocalDate
+import java.time.LocalTime
 
 interface CommunityPaybackAndDeliusClient {
   @GetExchange("/providers")
@@ -43,12 +44,12 @@ data class ProjectAllocations(
 
 data class ProjectAllocation(
   val id: Long,
+  val date: LocalDate,
   val projectName: String,
   val projectCode: String,
-  val teamId: Long,
-  val startDate: LocalDate,
-  val endDate: LocalDate,
-  val allocated: Int,
-  val outcomes: Int,
-  val enforcements: Int,
+  val startTime: LocalTime,
+  val endTime: LocalTime,
+  val numberOfOffendersAllocated: Int,
+  val numberOfOffendersWithOutcomes: Int,
+  val numberOfOffendersWithEA: Int,
 )
