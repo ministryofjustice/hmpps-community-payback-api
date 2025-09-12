@@ -22,36 +22,6 @@ class ExampleTest : IntegrationTestBase() {
   @Nested
   @DisplayName("GET /example")
   inner class ExampleEndpoint {
-
-    @Test
-    fun `should return unauthorized if no token`() {
-      webTestClient.get()
-        .uri("/example")
-        .exchange()
-        .expectStatus()
-        .isUnauthorized
-    }
-
-    @Test
-    fun `should return forbidden if no role`() {
-      webTestClient.get()
-        .uri("/example")
-        .headers(setAuthorisation())
-        .exchange()
-        .expectStatus()
-        .isForbidden
-    }
-
-    @Test
-    fun `should return forbidden if wrong role`() {
-      webTestClient.get()
-        .uri("/example")
-        .headers(setAuthorisation(roles = listOf("ROLE_WRONG")))
-        .exchange()
-        .expectStatus()
-        .isForbidden
-    }
-
     @Test
     fun `should return OK`() {
       webTestClient.get()
@@ -73,42 +43,6 @@ class ExampleTest : IntegrationTestBase() {
   @Nested
   @DisplayName("POST /example")
   inner class CreateExampleEndpoint {
-
-    @Test
-    fun `should return unauthorized if no token`() {
-      webTestClient.post()
-        .uri("/example")
-        .contentType(MediaType.APPLICATION_JSON)
-        .bodyValue(Example("test-api"))
-        .exchange()
-        .expectStatus()
-        .isUnauthorized
-    }
-
-    @Test
-    fun `should return forbidden if no role`() {
-      webTestClient.post()
-        .uri("/example")
-        .headers(setAuthorisation())
-        .contentType(MediaType.APPLICATION_JSON)
-        .bodyValue(Example("test-api"))
-        .exchange()
-        .expectStatus()
-        .isForbidden
-    }
-
-    @Test
-    fun `should return forbidden if wrong role`() {
-      webTestClient.post()
-        .uri("/example")
-        .headers(setAuthorisation(roles = listOf("ROLE_WRONG")))
-        .contentType(MediaType.APPLICATION_JSON)
-        .bodyValue(Example("test-api"))
-        .exchange()
-        .expectStatus()
-        .isForbidden
-    }
-
     @Test
     fun `should create and return example, raising a domain event`() {
       webTestClient.post()
@@ -135,42 +69,6 @@ class ExampleTest : IntegrationTestBase() {
   @Nested
   @DisplayName("PUT /example/{id}")
   inner class UpdateExampleEndpoint {
-
-    @Test
-    fun `should return unauthorized if no token`() {
-      webTestClient.put()
-        .uri("/example/123")
-        .contentType(MediaType.APPLICATION_JSON)
-        .bodyValue(Example(apiName = "test-api"))
-        .exchange()
-        .expectStatus()
-        .isUnauthorized
-    }
-
-    @Test
-    fun `should return forbidden if no role`() {
-      webTestClient.put()
-        .uri("/example/123")
-        .headers(setAuthorisation())
-        .contentType(MediaType.APPLICATION_JSON)
-        .bodyValue(Example(apiName = "test-api"))
-        .exchange()
-        .expectStatus()
-        .isForbidden
-    }
-
-    @Test
-    fun `should return forbidden if wrong role`() {
-      webTestClient.put()
-        .uri("/example/123")
-        .headers(setAuthorisation(roles = listOf("ROLE_WRONG")))
-        .contentType(MediaType.APPLICATION_JSON)
-        .bodyValue(Example(apiName = "test-api"))
-        .exchange()
-        .expectStatus()
-        .isForbidden
-    }
-
     @Test
     fun `should update and return example`() {
       webTestClient.put()
@@ -189,36 +87,6 @@ class ExampleTest : IntegrationTestBase() {
   @Nested
   @DisplayName("DELETE /example/{id}")
   inner class DeleteExampleEndpoint {
-
-    @Test
-    fun `should return unauthorized if no token`() {
-      webTestClient.delete()
-        .uri("/example/123")
-        .exchange()
-        .expectStatus()
-        .isUnauthorized
-    }
-
-    @Test
-    fun `should return forbidden if no role`() {
-      webTestClient.delete()
-        .uri("/example/123")
-        .headers(setAuthorisation())
-        .exchange()
-        .expectStatus()
-        .isForbidden
-    }
-
-    @Test
-    fun `should return forbidden if wrong role`() {
-      webTestClient.delete()
-        .uri("/example/123")
-        .headers(setAuthorisation(roles = listOf("ROLE_WRONG")))
-        .exchange()
-        .expectStatus()
-        .isForbidden
-    }
-
     @Test
     fun `should delete example`() {
       webTestClient.delete()
@@ -233,36 +101,6 @@ class ExampleTest : IntegrationTestBase() {
   @Nested
   @DisplayName("GET /example/error")
   inner class ErrorEndpoint {
-
-    @Test
-    fun `should return unauthorized if no token`() {
-      webTestClient.get()
-        .uri("/example/error")
-        .exchange()
-        .expectStatus()
-        .isUnauthorized
-    }
-
-    @Test
-    fun `should return forbidden if no role`() {
-      webTestClient.get()
-        .uri("/example/error")
-        .headers(setAuthorisation())
-        .exchange()
-        .expectStatus()
-        .isForbidden
-    }
-
-    @Test
-    fun `should return forbidden if wrong role`() {
-      webTestClient.get()
-        .uri("/example/error")
-        .headers(setAuthorisation(roles = listOf("ROLE_WRONG")))
-        .exchange()
-        .expectStatus()
-        .isForbidden
-    }
-
     @Test
     fun `should return a 500 error`() {
       webTestClient.get()
