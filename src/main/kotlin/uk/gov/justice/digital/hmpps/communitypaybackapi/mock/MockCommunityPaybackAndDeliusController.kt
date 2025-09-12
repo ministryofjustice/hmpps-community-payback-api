@@ -6,10 +6,13 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAllocation
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAllocations
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProviderSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProviderSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProviderTeamSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProviderTeamSummary
+import java.time.LocalDate
 
 /**
  * Temporary mock controller until we have the actual endpoint in test environments
@@ -42,6 +45,35 @@ class MockCommunityPaybackAndDeliusController {
       ProviderTeamSummary(id = 1001, "Team Lincoln"),
       ProviderTeamSummary(id = 2001, "Team Grantham"),
       ProviderTeamSummary(id = 3001, "Team Boston"),
+    ),
+  )
+
+  @SuppressWarnings("MagicNumber")
+  @GetMapping("/project-allocations")
+  fun getProjectAllocations(@RequestParam teamId: Long) = ProjectAllocations(
+    listOf(
+      ProjectAllocation(
+        id = 1L,
+        projectName = "Community Garden",
+        teamId = teamId,
+        startDate = LocalDate.of(2025, 9, 1),
+        endDate = LocalDate.of(2025, 9, 7),
+        projectCode = "cg",
+        allocated = 40,
+        outcomes = 0,
+        enforcements = 0,
+      ),
+      ProjectAllocation(
+        id = 2L,
+        projectName = "Park Cleanup",
+        teamId = teamId,
+        startDate = LocalDate.of(2025, 9, 8),
+        endDate = LocalDate.of(2025, 9, 14),
+        projectCode = "pc",
+        allocated = 3,
+        outcomes = 4,
+        enforcements = 5,
+      ),
     ),
   )
 }
