@@ -10,6 +10,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.IntegrationT
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.bodyAsObject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.CommunityPaybackAndDeliusMockServer
 import java.time.LocalDate
+import java.time.LocalTime
 
 class ProjectsIntegrationTest : IntegrationTestBase() {
 
@@ -67,6 +68,8 @@ class ProjectsIntegrationTest : IntegrationTestBase() {
               teamId = 1L,
               startDate = LocalDate.of(2025, 9, 1),
               endDate = LocalDate.of(2025, 9, 7),
+              startTime = LocalTime.of(9, 0),
+              endTime = LocalTime.of(17, 0),
               projectCode = "cgm",
               allocated = 0,
               outcomes = 1,
@@ -78,6 +81,8 @@ class ProjectsIntegrationTest : IntegrationTestBase() {
               teamId = 1L,
               startDate = LocalDate.of(2025, 9, 8),
               endDate = LocalDate.of(2025, 9, 14),
+              startTime = LocalTime.of(8, 0),
+              endTime = LocalTime.of(16, 0),
               projectCode = "pc",
               allocated = 3,
               outcomes = 4,

@@ -13,6 +13,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProviderSu
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProviderTeamSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProviderTeamSummary
 import java.time.LocalDate
+import java.time.LocalTime
 
 /**
  * Temporary mock controller until we have the actual endpoint in test environments
@@ -58,6 +59,8 @@ class MockCommunityPaybackAndDeliusController {
         teamId = teamId,
         startDate = LocalDate.of(2025, 9, 1),
         endDate = LocalDate.of(2025, 9, 7),
+        startTime = LocalTime.of(9, 0),
+        endTime = LocalTime.of(17, 0),
         projectCode = "cg",
         allocated = 40,
         outcomes = 0,
@@ -69,6 +72,8 @@ class MockCommunityPaybackAndDeliusController {
         teamId = teamId,
         startDate = LocalDate.of(2025, 9, 8),
         endDate = LocalDate.of(2025, 9, 14),
+        startTime = LocalTime.of(8, 0),
+        endTime = LocalTime.of(16, 0),
         projectCode = "pc",
         allocated = 3,
         outcomes = 4,
