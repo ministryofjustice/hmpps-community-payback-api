@@ -7,6 +7,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAll
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAllocations
 import uk.gov.justice.digital.hmpps.communitypaybackapi.project.controller.ProjectAllocationDto
 import java.time.LocalDate
+import java.time.LocalTime
 
 class ProjectMappersTest {
 
@@ -23,6 +24,8 @@ class ProjectMappersTest {
             teamId = 1L,
             startDate = LocalDate.of(2025, 9, 1),
             endDate = LocalDate.of(2025, 9, 7),
+            startTime = LocalTime.of(9, 0),
+            endTime = LocalTime.of(17, 0),
             projectCode = "cg",
             allocated = 0,
             outcomes = 1,
@@ -34,6 +37,8 @@ class ProjectMappersTest {
             teamId = 1L,
             startDate = LocalDate.of(2025, 9, 8),
             endDate = LocalDate.of(2025, 9, 14),
+            startTime = LocalTime.of(8, 0),
+            endTime = LocalTime.of(16, 0),
             projectCode = "pc",
             allocated = 3,
             outcomes = 4,
@@ -78,6 +83,8 @@ class ProjectMappersTest {
         teamId = 1L,
         startDate = LocalDate.of(2025, 9, 1),
         endDate = LocalDate.of(2025, 9, 7),
+        startTime = LocalTime.of(9, 0),
+        endTime = LocalTime.of(17, 0),
         projectCode = "cg",
         allocated = 40,
         outcomes = 0,
