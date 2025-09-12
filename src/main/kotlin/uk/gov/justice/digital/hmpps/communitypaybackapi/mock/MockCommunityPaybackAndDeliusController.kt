@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.mock
 
+import io.swagger.v3.oas.annotations.Hidden
 import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
@@ -15,6 +16,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProviderTe
  *
  * When removing this also remove the related configuration in [uk.gov.justice.digital.hmpps.communitypaybackapi.config.SecurityConfiguration]
  */
+@Hidden
 @RestController
 @RequestMapping(
   value = ["/mocks/community-payback-and-delius"],
