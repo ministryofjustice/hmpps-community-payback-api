@@ -15,9 +15,9 @@ class SecurityConfiguration {
   @Bean
   fun resourceServerCustomizer() = ResourceServerConfigurationCustomizer {
     unauthorizedRequestPaths {
-      addPaths = setOf("/mocks/community-payback-and-delius/providers")
-      addPaths = setOf("/mocks/community-payback-and-delius/provider-teams")
-      addPaths = setOf("/mocks/community-payback-and-delius/project-allocations")
+      addPaths = setOf(
+        "/mocks/community-payback-and-delius/**",
+      )
     }
   }
 }
