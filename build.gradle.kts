@@ -6,7 +6,7 @@ plugins {
   kotlin("plugin.spring") version "2.2.20"
   id("io.gitlab.arturbosch.detekt") version "1.23.8"
   jacoco
-  id("io.sentry.jvm.gradle") version "5.10.0"
+  id("io.sentry.jvm.gradle") version "5.11.0"
 }
 
 configurations {
