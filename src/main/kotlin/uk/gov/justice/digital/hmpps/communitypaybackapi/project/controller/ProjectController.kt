@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.CommunityPaybackController
 import uk.gov.justice.digital.hmpps.communitypaybackapi.project.service.ProjectService
 import java.time.LocalDate
+import java.time.LocalTime
 
 data class ProjectAllocationsDto(
   @param:Schema(description = "List of project allocations")
@@ -23,20 +24,20 @@ data class ProjectAllocationDto(
   val id: Long,
   @param:Schema(description = "Project name", example = "Community Garden Maintenance")
   val projectName: String,
-  @param:Schema(description = "Team id", example = "1")
-  val teamId: Long,
-  @param:Schema(description = "Allocation start date", example = "2025-09-01")
-  val startDate: LocalDate,
-  @param:Schema(description = "Allocation end date", example = "2025-09-07")
-  val endDate: LocalDate,
   @param:Schema(description = "Project code", example = "123")
   val projectCode: String,
+  @param:Schema(description = "Allocation date", example = "2025-09-01")
+  val date: LocalDate,
+  @param:Schema(description = "Allocation start time", example = "09:00")
+  val startTime: LocalTime,
+  @param:Schema(description = "Allocation end time", example = "17:00")
+  val endTime: LocalTime,
   @param:Schema(description = "Number of offenders allocated", example = "12")
-  val allocated: Int,
+  val numberOfOffendersAllocated: Int,
   @param:Schema(description = "Number of offenders with outcomes", example = "2")
-  val outcomes: Int,
+  val numberOfOffendersWithOutcomes: Int,
   @param:Schema(description = "Number of offenders with enforcements", example = "3")
-  val enforcements: Int,
+  val numberOfOffendersWithEA: Int,
 )
 
 @CommunityPaybackController

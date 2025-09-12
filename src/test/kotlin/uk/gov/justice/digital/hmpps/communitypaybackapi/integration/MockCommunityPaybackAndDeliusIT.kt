@@ -8,6 +8,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAll
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProviderSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProviderTeamSummaries
 import java.time.LocalDate
+import java.time.LocalTime
 
 class MockCommunityPaybackAndDeliusIT : IntegrationTestBase() {
 
@@ -73,23 +74,23 @@ class MockCommunityPaybackAndDeliusIT : IntegrationTestBase() {
 
       assertThat(response.allocations[0].id).isEqualTo(1L)
       assertThat(response.allocations[0].projectName).isEqualTo("Community Garden")
-      assertThat(response.allocations[0].teamId).isEqualTo(52)
-      assertThat(response.allocations[0].startDate).isEqualTo(LocalDate.of(2025, 9, 1))
-      assertThat(response.allocations[0].endDate).isEqualTo(LocalDate.of(2025, 9, 7))
+      assertThat(response.allocations[0].date).isEqualTo(LocalDate.of(2025, 9, 1))
+      assertThat(response.allocations[0].startTime).isEqualTo(LocalTime.of(9, 0))
+      assertThat(response.allocations[0].endTime).isEqualTo(LocalTime.of(17, 0))
       assertThat(response.allocations[0].projectCode).isEqualTo("cg")
-      assertThat(response.allocations[0].allocated).isEqualTo(40)
-      assertThat(response.allocations[0].outcomes).isEqualTo(0)
-      assertThat(response.allocations[0].enforcements).isEqualTo(0)
+      assertThat(response.allocations[0].numberOfOffendersAllocated).isEqualTo(40)
+      assertThat(response.allocations[0].numberOfOffendersWithOutcomes).isEqualTo(0)
+      assertThat(response.allocations[0].numberOfOffendersWithEA).isEqualTo(0)
 
       assertThat(response.allocations[1].id).isEqualTo(2L)
       assertThat(response.allocations[1].projectName).isEqualTo("Park Cleanup")
-      assertThat(response.allocations[1].teamId).isEqualTo(52)
-      assertThat(response.allocations[1].startDate).isEqualTo(LocalDate.of(2025, 9, 8))
-      assertThat(response.allocations[1].endDate).isEqualTo(LocalDate.of(2025, 9, 14))
+      assertThat(response.allocations[1].date).isEqualTo(LocalDate.of(2025, 9, 8))
+      assertThat(response.allocations[1].startTime).isEqualTo(LocalTime.of(8, 0))
+      assertThat(response.allocations[1].endTime).isEqualTo(LocalTime.of(16, 0))
       assertThat(response.allocations[1].projectCode).isEqualTo("pc")
-      assertThat(response.allocations[1].allocated).isEqualTo(3)
-      assertThat(response.allocations[1].outcomes).isEqualTo(4)
-      assertThat(response.allocations[1].enforcements).isEqualTo(5)
+      assertThat(response.allocations[1].numberOfOffendersAllocated).isEqualTo(3)
+      assertThat(response.allocations[1].numberOfOffendersWithOutcomes).isEqualTo(4)
+      assertThat(response.allocations[1].numberOfOffendersWithEA).isEqualTo(5)
     }
   }
 }
