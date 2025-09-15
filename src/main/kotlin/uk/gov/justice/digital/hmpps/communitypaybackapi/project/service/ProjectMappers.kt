@@ -9,11 +9,11 @@ fun ProjectAllocations.toDto() = ProjectAllocationsDto(this.allocations.map { it
 fun ProjectAllocation.toDto() = ProjectAllocationDto(
   this.id,
   this.projectName,
-  this.teamId,
-  this.startDate,
-  this.endDate,
   this.projectCode,
-  this.allocated,
-  this.outcomes,
-  this.enforcements,
+  this.date,
+  this.startTime,
+  this.endTime,
+  this.numberOfOffendersAllocated,
+  this.numberOfOffendersWithOutcomes,
+  this.numberOfOffendersWithEA,
 )
