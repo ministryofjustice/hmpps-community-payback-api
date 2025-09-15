@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.communitypaybackapi.common
+package uk.gov.justice.digital.hmpps.communitypaybackapi.common.service
 
 import jakarta.annotation.PostConstruct
 import org.slf4j.LoggerFactory
