@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.communitypaybackapi.integration
+package uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util
 
 import org.springframework.test.web.reactive.server.WebTestClient
 

@@ -1,7 +1,6 @@
-package uk.gov.justice.digital.hmpps.communitypaybackapi.integration.example
+package uk.gov.justice.digital.hmpps.communitypaybackapi.integration
 
-import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.api.Assertions.within
+import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -9,12 +8,11 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.example.Example
-import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.DomainEventListener
 import java.time.OffsetDateTime
 import java.time.temporal.ChronoUnit
 
-class ExampleTest : IntegrationTestBase() {
+class ExampleIT : IntegrationTestBase() {
 
   @Autowired
   lateinit var domainEventListener: DomainEventListener
@@ -124,10 +122,10 @@ class ExampleTest : IntegrationTestBase() {
 
       val domainEvent = domainEventListener.blockForDomainEventOfType("community-payback.test")
 
-      assertThat(domainEvent.description).isEqualTo("A test domain event to prove integration")
-      assertThat(domainEvent.occurredAt).isCloseTo(
+      Assertions.assertThat(domainEvent.description).isEqualTo("A test domain event to prove integration")
+      Assertions.assertThat(domainEvent.occurredAt).isCloseTo(
         OffsetDateTime.now(),
-        within(1, ChronoUnit.SECONDS),
+        Assertions.within(1, ChronoUnit.SECONDS),
       )
     }
   }

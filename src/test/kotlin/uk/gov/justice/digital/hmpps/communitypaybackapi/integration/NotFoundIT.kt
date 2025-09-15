@@ -2,7 +2,7 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.integration
 
 import org.junit.jupiter.api.Test
 
-class NotFoundTest : IntegrationTestBase() {
+class NotFoundIT : IntegrationTestBase() {
 
   @Test
   fun `Resources that aren't found should return 404 - test of the exception handler`() {

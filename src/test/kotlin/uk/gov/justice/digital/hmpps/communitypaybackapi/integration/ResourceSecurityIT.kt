@@ -10,7 +10,7 @@ import org.springframework.web.servlet.mvc.method.RequestMappingInfo
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping
 import java.io.File
 
-class ResourceSecurityTest : IntegrationTestBase() {
+class ResourceSecurityIT : IntegrationTestBase() {
   @Autowired
   private lateinit var context: ApplicationContext
 
