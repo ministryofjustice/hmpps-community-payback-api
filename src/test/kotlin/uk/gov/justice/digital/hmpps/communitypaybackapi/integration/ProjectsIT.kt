@@ -1,18 +1,18 @@
-package uk.gov.justice.digital.hmpps.communitypaybackapi.project.controller
+package uk.gov.justice.digital.hmpps.communitypaybackapi.integration
 
-import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAllocation
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAllocations
-import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.IntegrationTestBase
-import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.bodyAsObject
+import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.bodyAsObject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.CommunityPaybackAndDeliusMockServer
+import uk.gov.justice.digital.hmpps.communitypaybackapi.project.controller.ProjectAllocationsDto
 import java.time.LocalDate
 import java.time.LocalTime
 
-class ProjectsIntegrationTest : IntegrationTestBase() {
+class ProjectsIT : IntegrationTestBase() {
 
   @Nested
   @DisplayName("GET /projects/allocations")
@@ -100,16 +100,16 @@ class ProjectsIntegrationTest : IntegrationTestBase() {
         .isOk
         .bodyAsObject<ProjectAllocationsDto>()
 
-      assertThat(allocations.allocations).hasSize(2)
-      assertThat(allocations.allocations[0].id).isEqualTo(1L)
-      assertThat(allocations.allocations[0].projectName).isEqualTo("Community Garden Maintenance")
-      assertThat(allocations.allocations[0].date).isEqualTo(LocalDate.of(2025, 9, 1))
-      assertThat(allocations.allocations[0].startTime).isEqualTo(LocalTime.of(9, 0))
-      assertThat(allocations.allocations[0].endTime).isEqualTo(LocalTime.of(17, 0))
-      assertThat(allocations.allocations[0].projectCode).isEqualTo("cgm")
-      assertThat(allocations.allocations[0].numberOfOffendersAllocated).isEqualTo(0)
-      assertThat(allocations.allocations[0].numberOfOffendersWithOutcomes).isEqualTo(1)
-      assertThat(allocations.allocations[0].numberOfOffendersWithEA).isEqualTo(2)
+      Assertions.assertThat(allocations.allocations).hasSize(2)
+      Assertions.assertThat(allocations.allocations[0].id).isEqualTo(1L)
+      Assertions.assertThat(allocations.allocations[0].projectName).isEqualTo("Community Garden Maintenance")
+      Assertions.assertThat(allocations.allocations[0].date).isEqualTo(LocalDate.of(2025, 9, 1))
+      Assertions.assertThat(allocations.allocations[0].startTime).isEqualTo(LocalTime.of(9, 0))
+      Assertions.assertThat(allocations.allocations[0].endTime).isEqualTo(LocalTime.of(17, 0))
+      Assertions.assertThat(allocations.allocations[0].projectCode).isEqualTo("cgm")
+      Assertions.assertThat(allocations.allocations[0].numberOfOffendersAllocated).isEqualTo(0)
+      Assertions.assertThat(allocations.allocations[0].numberOfOffendersWithOutcomes).isEqualTo(1)
+      Assertions.assertThat(allocations.allocations[0].numberOfOffendersWithEA).isEqualTo(2)
     }
 
     @Test
@@ -130,7 +130,7 @@ class ProjectsIntegrationTest : IntegrationTestBase() {
         .isOk
         .bodyAsObject<ProjectAllocationsDto>()
 
-      assertThat(allocations.allocations).isEmpty()
+      Assertions.assertThat(allocations.allocations).isEmpty()
     }
   }
 }

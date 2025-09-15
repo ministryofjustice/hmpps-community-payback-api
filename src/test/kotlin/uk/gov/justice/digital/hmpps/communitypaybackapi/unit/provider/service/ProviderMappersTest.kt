@@ -1,11 +1,12 @@
-package uk.gov.justice.digital.hmpps.communitypaybackapi.provider.service
+package uk.gov.justice.digital.hmpps.communitypaybackapi.unit.provider.service
 
-import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProviderSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProviderSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.provider.controller.ProviderSummaryDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.provider.service.toDto
 
 class ProviderMappersTest {
 
@@ -22,13 +23,13 @@ class ProviderMappersTest {
         ),
       )
       val providerSummariesDto = providersSummaries.toDto()
-      assertThat(providerSummariesDto.providers).hasSize(3)
-      assertThat(providerSummariesDto.providers[0].id).isEqualTo(1000L)
-      assertThat(providerSummariesDto.providers[0].name).isEqualTo("East of England")
-      assertThat(providerSummariesDto.providers[1].id).isEqualTo(2000L)
-      assertThat(providerSummariesDto.providers[1].name).isEqualTo("North East Region")
-      assertThat(providerSummariesDto.providers[2].id).isEqualTo(3000L)
-      assertThat(providerSummariesDto.providers[2].name).isEqualTo("North West Region")
+      Assertions.assertThat(providerSummariesDto.providers).hasSize(3)
+      Assertions.assertThat(providerSummariesDto.providers[0].id).isEqualTo(1000L)
+      Assertions.assertThat(providerSummariesDto.providers[0].name).isEqualTo("East of England")
+      Assertions.assertThat(providerSummariesDto.providers[1].id).isEqualTo(2000L)
+      Assertions.assertThat(providerSummariesDto.providers[1].name).isEqualTo("North East Region")
+      Assertions.assertThat(providerSummariesDto.providers[2].id).isEqualTo(3000L)
+      Assertions.assertThat(providerSummariesDto.providers[2].name).isEqualTo("North West Region")
     }
   }
 
@@ -37,7 +38,7 @@ class ProviderMappersTest {
     @Test
     fun `should map using toDto() correctly`() {
       val providerSummary = ProviderSummary(1000, "East of England")
-      assertThat(providerSummary.toDto()).isEqualTo(ProviderSummaryDto(1000, "East of England"))
+      Assertions.assertThat(providerSummary.toDto()).isEqualTo(ProviderSummaryDto(1000, "East of England"))
     }
   }
 }

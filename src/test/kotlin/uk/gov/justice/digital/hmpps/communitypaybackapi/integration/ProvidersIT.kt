@@ -1,6 +1,6 @@
-package uk.gov.justice.digital.hmpps.communitypaybackapi.integration.provider.controller
+package uk.gov.justice.digital.hmpps.communitypaybackapi.integration
 
-import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -8,13 +8,12 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProviderSu
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProviderSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProviderTeamSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProviderTeamSummary
-import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.IntegrationTestBase
-import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.bodyAsObject
+import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.bodyAsObject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.CommunityPaybackAndDeliusMockServer
 import uk.gov.justice.digital.hmpps.communitypaybackapi.provider.controller.ProviderSummariesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.provider.controller.ProviderTeamSummariesDto
 
-class ProvidersIntegrationTest : IntegrationTestBase() {
+class ProvidersIT : IntegrationTestBase() {
 
   @Nested
   @DisplayName("GET /providers")
@@ -73,9 +72,9 @@ class ProvidersIntegrationTest : IntegrationTestBase() {
         .isOk
         .bodyAsObject<ProviderSummariesDto>()
 
-      assertThat(providers.providers).hasSize(3)
-      assertThat(providers.providers[0].id).isEqualTo(1L)
-      assertThat(providers.providers[0].name).isEqualTo("Entry 1")
+      Assertions.assertThat(providers.providers).hasSize(3)
+      Assertions.assertThat(providers.providers[0].id).isEqualTo(1L)
+      Assertions.assertThat(providers.providers[0].name).isEqualTo("Entry 1")
     }
   }
 
@@ -137,9 +136,9 @@ class ProvidersIntegrationTest : IntegrationTestBase() {
         .isOk
         .bodyAsObject<ProviderTeamSummariesDto>()
 
-      assertThat(providers.providers).hasSize(3)
-      assertThat(providers.providers[0].id).isEqualTo(11L)
-      assertThat(providers.providers[0].name).isEqualTo("Team 1")
+      Assertions.assertThat(providers.providers).hasSize(3)
+      Assertions.assertThat(providers.providers[0].id).isEqualTo(11L)
+      Assertions.assertThat(providers.providers[0].name).isEqualTo("Team 1")
     }
   }
 }

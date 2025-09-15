@@ -12,7 +12,7 @@ import org.springframework.http.MediaType
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
-class OpenApiDocsTest : IntegrationTestBase() {
+class OpenApiDocsIT : IntegrationTestBase() {
   @LocalServerPort
   private val port: Int = 0
 

@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.communitypaybackapi.project.service
+package uk.gov.justice.digital.hmpps.communitypaybackapi.unit.project.service
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAllocation
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAllocations
 import uk.gov.justice.digital.hmpps.communitypaybackapi.project.controller.ProjectAllocationDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.project.service.toDto
 import java.time.LocalDate
 import java.time.LocalTime
 

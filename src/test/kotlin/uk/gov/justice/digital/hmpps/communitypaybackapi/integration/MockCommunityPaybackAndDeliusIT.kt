@@ -7,6 +7,7 @@ import org.springframework.http.MediaType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAllocations
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProviderSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProviderTeamSummaries
+import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.bodyAsObject
 import java.time.LocalDate
 import java.time.LocalTime
 
