@@ -48,8 +48,6 @@ class ExampleController(
           ),
         ],
       ),
-      ApiResponse(responseCode = "401", description = "Unauthorized"),
-      ApiResponse(responseCode = "403", description = "Forbidden"),
     ],
   )
   fun getExample(): Example {
@@ -69,8 +67,6 @@ class ExampleController(
     responses = [
       ApiResponse(responseCode = "201", description = "Created", content = [Content(mediaType = "application/json")]),
       ApiResponse(responseCode = "400", description = "Invalid request"),
-      ApiResponse(responseCode = "401", description = "Unauthorized"),
-      ApiResponse(responseCode = "403", description = "Forbidden"),
     ],
   )
   @ResponseBody
@@ -98,9 +94,6 @@ class ExampleController(
     responses = [
       ApiResponse(responseCode = "200", description = "Updated successfully", content = [Content(mediaType = "application/json")]),
       ApiResponse(responseCode = "400", description = "Invalid request"),
-      ApiResponse(responseCode = "401", description = "Unauthorized"),
-      ApiResponse(responseCode = "403", description = "Forbidden"),
-      ApiResponse(responseCode = "404", description = "Example not found"),
     ],
   )
   @ResponseBody
@@ -115,9 +108,6 @@ class ExampleController(
     description = "Deletes an Example resource by ID",
     responses = [
       ApiResponse(responseCode = "204", description = "Deleted successfully"),
-      ApiResponse(responseCode = "401", description = "Unauthorized"),
-      ApiResponse(responseCode = "403", description = "Forbidden"),
-      ApiResponse(responseCode = "404", description = "Example not found"),
     ],
   )
   fun deleteExample(@PathVariable id: String) {

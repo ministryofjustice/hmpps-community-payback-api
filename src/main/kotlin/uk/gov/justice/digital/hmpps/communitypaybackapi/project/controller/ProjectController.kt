@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.CommunityPaybackController
 import uk.gov.justice.digital.hmpps.communitypaybackapi.project.service.ProjectService
+import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -58,10 +59,26 @@ class ProjectController(val projectService: ProjectService) {
           ),
         ],
       ),
-      ApiResponse(responseCode = "400", description = "Bad request - invalid date format or parameters"),
-      ApiResponse(responseCode = "401", description = "Unauthorized"),
-      ApiResponse(responseCode = "403", description = "Forbidden"),
-      ApiResponse(responseCode = "404", description = "Team not found"),
+      ApiResponse(
+        responseCode = "400",
+        description = "Bad request - invalid date format or parameters",
+        content = [
+          Content(
+            mediaType = "application/json",
+            schema = Schema(implementation = ErrorResponse::class),
+          ),
+        ],
+      ),
+      ApiResponse(
+        responseCode = "404",
+        description = "Team not found",
+        content = [
+          Content(
+            mediaType = "application/json",
+            schema = Schema(implementation = ErrorResponse::class),
+          ),
+        ],
+      ),
     ],
   )
   fun getProjectAllocations(
