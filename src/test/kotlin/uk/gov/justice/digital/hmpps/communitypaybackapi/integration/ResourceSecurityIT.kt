@@ -24,6 +24,7 @@ class ResourceSecurityIT : IntegrationTestBase() {
     "GET /mocks/community-payback-and-delius/providers",
     "GET /mocks/community-payback-and-delius/provider-teams",
     "GET /mocks/community-payback-and-delius/project-allocations",
+    "GET /mocks/community-payback-and-delius/references/project-types",
   )
 
   @Test

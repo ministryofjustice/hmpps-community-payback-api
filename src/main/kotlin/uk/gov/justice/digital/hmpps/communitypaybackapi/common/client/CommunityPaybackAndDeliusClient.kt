@@ -19,6 +19,9 @@ interface CommunityPaybackAndDeliusClient {
     @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) endDate: LocalDate,
     @RequestParam teamId: Long,
   ): ProjectAllocations
+
+  @GetExchange("/references/project-types")
+  fun getProjectTypes(): ProjectTypes
 }
 
 data class ProviderSummaries(
@@ -52,4 +55,13 @@ data class ProjectAllocation(
   val numberOfOffendersAllocated: Int,
   val numberOfOffendersWithOutcomes: Int,
   val numberOfOffendersWithEA: Int,
+)
+
+data class ProjectTypes(
+  val projectTypes: List<ProjectType>,
+)
+
+data class ProjectType(
+  val id: Long,
+  val name: String,
 )
