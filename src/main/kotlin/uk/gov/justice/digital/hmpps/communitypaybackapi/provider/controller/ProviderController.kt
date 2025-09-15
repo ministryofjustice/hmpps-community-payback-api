@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.CommunityPaybackController
 import uk.gov.justice.digital.hmpps.communitypaybackapi.provider.service.ProviderService
+import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 
 data class ProviderSummariesDto(
   @param:Schema(description = "List of Community Payback (UPW) providers")
@@ -51,8 +52,6 @@ class ProviderController(val providerService: ProviderService) {
           ),
         ],
       ),
-      ApiResponse(responseCode = "401", description = "Unauthorized"),
-      ApiResponse(responseCode = "403", description = "Forbidden"),
     ],
   )
   fun getProviders(): ProviderSummariesDto = providerService.getProviders()
@@ -71,9 +70,16 @@ class ProviderController(val providerService: ProviderService) {
           ),
         ],
       ),
-      ApiResponse(responseCode = "401", description = "Unauthorized"),
-      ApiResponse(responseCode = "403", description = "Forbidden"),
-      ApiResponse(responseCode = "404", description = "Provider not found"),
+      ApiResponse(
+        responseCode = "404",
+        description = "Provider not found",
+        content = [
+          Content(
+            mediaType = "application/json",
+            schema = Schema(implementation = ErrorResponse::class),
+          ),
+        ],
+      ),
     ],
   )
   fun getProviderTeam(@PathVariable providerId: Long): ProviderTeamSummariesDto = providerService.getProviderTeams(providerId)
