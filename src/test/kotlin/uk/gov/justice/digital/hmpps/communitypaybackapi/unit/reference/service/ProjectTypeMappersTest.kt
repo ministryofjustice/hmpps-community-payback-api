@@ -3,8 +3,11 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.unit.reference.service
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ContactOutcome
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ContactOutcomes
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectTypes
+import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.controller.ContactOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.controller.ProjectTypeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.service.toDto
 
@@ -63,13 +66,76 @@ class ProjectTypeMappersTest {
         ),
       )
     }
+
+    @Test
+    fun `should map empty ProjectTypes list correctly`() {
+      val projectTypes = ProjectTypes(emptyList())
+      val projectTypesDto = projectTypes.toDto()
+
+      assertThat(projectTypesDto.projectTypes).isEmpty()
+    }
+  }
+
+  @Nested
+  inner class ContactOutcomesMapper {
+
+    @Test
+    fun `should map ContactOutcomes to DTO correctly`() {
+      val contactOutcomes = ContactOutcomes(
+        listOf(
+          ContactOutcome(
+            id = 1234,
+            name = "Successful Contact",
+          ),
+          ContactOutcome(
+            id = 5678,
+            name = "Failed Attendance",
+          ),
+          ContactOutcome(
+            id = 9012,
+            name = "Late Attendance",
+          ),
+        ),
+      )
+
+      val contactOutcomesDto = contactOutcomes.toDto()
+
+      assertThat(contactOutcomesDto.contactOutcomes).hasSize(3)
+
+      assertThat(contactOutcomesDto.contactOutcomes[0].id).isEqualTo(1234)
+      assertThat(contactOutcomesDto.contactOutcomes[0].name).isEqualTo("Successful Contact")
+
+      assertThat(contactOutcomesDto.contactOutcomes[1].id).isEqualTo(5678)
+      assertThat(contactOutcomesDto.contactOutcomes[1].name).isEqualTo("Failed Attendance")
+
+      assertThat(contactOutcomesDto.contactOutcomes[2].id).isEqualTo(9012)
+      assertThat(contactOutcomesDto.contactOutcomes[2].name).isEqualTo("Late Attendance")
+    }
+  }
+
+  @Nested
+  inner class ContactOutcomeMapper {
+    @Test
+    fun `should map ContactOutcome to DTO correctly`() {
+      val contactOutcome = ContactOutcome(
+        id = 1234,
+        name = "Successful Contact",
+      )
+
+      assertThat(contactOutcome.toDto()).isEqualTo(
+        ContactOutcomeDto(
+          id = 1234,
+          name = "Successful Contact",
+        ),
+      )
+    }
   }
 
   @Test
-  fun `should map empty ProjectTypes list correctly`() {
-    val projectTypes = ProjectTypes(emptyList())
-    val projectTypesDto = projectTypes.toDto()
+  fun `should map empty ContactOutcomes list correctly`() {
+    val contactOutcomes = ContactOutcomes(emptyList())
+    val contactOutcomesDto = contactOutcomes.toDto()
 
-    assertThat(projectTypesDto.projectTypes).isEmpty()
+    assertThat(contactOutcomesDto.contactOutcomes).isEmpty()
   }
 }

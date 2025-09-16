@@ -8,4 +8,5 @@ class ReferenceService(
   val communityPaybackAndDeliusClient: CommunityPaybackAndDeliusClient,
 ) {
   fun getProjectTypes() = communityPaybackAndDeliusClient.getProjectTypes().toDto()
+  fun getContactOutcomes() = communityPaybackAndDeliusClient.getContactOutcomes().toDto()
 }
