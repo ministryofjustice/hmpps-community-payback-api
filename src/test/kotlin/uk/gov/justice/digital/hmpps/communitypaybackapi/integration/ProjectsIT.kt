@@ -51,7 +51,7 @@ class ProjectsIT : IntegrationTestBase() {
     fun `should return bad request if missing parameters`() {
       webTestClient.get()
         .uri("/projects/allocations")
-        .headers(setAuthorisation(roles = listOf("ROLE_COMMUNITY_PAYBACK__COMMUNITY_PAYBACK_UI")))
+        .addUiAuthHeader()
         .exchange()
         .expectStatus()
         .is5xxServerError
@@ -90,11 +90,7 @@ class ProjectsIT : IntegrationTestBase() {
 
       val allocations = webTestClient.get()
         .uri("/projects/allocations?startDate=2025-01-09&endDate=2025-07-09&teamId=999")
-        .headers(
-          setAuthorisation(
-            roles = listOf("ROLE_COMMUNITY_PAYBACK__COMMUNITY_PAYBACK_UI"),
-          ),
-        )
+        .addUiAuthHeader()
         .exchange()
         .expectStatus()
         .isOk
@@ -120,11 +116,7 @@ class ProjectsIT : IntegrationTestBase() {
 
       val allocations = webTestClient.get()
         .uri("/projects/allocations?startDate=2025-01-09&endDate=2025-07-09&teamId=999")
-        .headers(
-          setAuthorisation(
-            roles = listOf("ROLE_COMMUNITY_PAYBACK__COMMUNITY_PAYBACK_UI"),
-          ),
-        )
+        .addUiAuthHeader()
         .exchange()
         .expectStatus()
         .isOk

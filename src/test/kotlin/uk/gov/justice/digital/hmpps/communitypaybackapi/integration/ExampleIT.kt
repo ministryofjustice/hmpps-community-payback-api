@@ -111,7 +111,7 @@ class ExampleIT : IntegrationTestBase() {
     fun `should create and return example, raising a domain event`() {
       webTestClient.post()
         .uri("/example")
-        .headers(setAuthorisation(roles = listOf("ROLE_COMMUNITY_PAYBACK__COMMUNITY_PAYBACK_UI")))
+        .addUiAuthHeader()
         .contentType(MediaType.APPLICATION_JSON)
         .bodyValue(Example("test-api"))
         .exchange()
