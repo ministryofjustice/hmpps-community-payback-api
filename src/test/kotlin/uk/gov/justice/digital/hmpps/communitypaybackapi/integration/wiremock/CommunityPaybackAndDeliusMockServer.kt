@@ -7,6 +7,7 @@ import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.get
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAllocations
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectTypes
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProviderSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProviderTeamSummaries
 
@@ -50,6 +51,19 @@ object CommunityPaybackAndDeliusMockServer {
           aResponse()
             .withHeader("Content-Type", "application/json")
             .withBody(objectMapper.writer().writeValueAsString(projectAllocations)),
+        ),
+    )
+  }
+
+  fun projectTypes(
+    projectTypes: ProjectTypes,
+  ) {
+    WireMock.stubFor(
+      get("/community-payback-and-delius/references/project-types")
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withBody(objectMapper.writer().writeValueAsString(projectTypes)),
         ),
     )
   }

@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAllocation
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAllocations
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectType
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectTypes
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProviderSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProviderSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProviderTeamSummaries
@@ -75,6 +77,15 @@ class MockCommunityPaybackAndDeliusController {
         numberOfOffendersWithOutcomes = 4,
         numberOfOffendersWithEA = 5,
       ),
+    ),
+  )
+
+  @GetMapping("/references/project-types")
+  fun getReferenceProjectTypes() = ProjectTypes(
+    listOf(
+      ProjectType(id = 1002, "Community Garden Maintenance"),
+      ProjectType(id = 2002, "Park Cleanup"),
+      ProjectType(id = 3002, "Library Assistance"),
     ),
   )
 }
