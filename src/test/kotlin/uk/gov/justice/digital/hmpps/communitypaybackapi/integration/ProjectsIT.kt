@@ -54,7 +54,7 @@ class ProjectsIT : IntegrationTestBase() {
         .addUiAuthHeader()
         .exchange()
         .expectStatus()
-        .is5xxServerError
+        .is4xxClientError
     }
 
     @Test
