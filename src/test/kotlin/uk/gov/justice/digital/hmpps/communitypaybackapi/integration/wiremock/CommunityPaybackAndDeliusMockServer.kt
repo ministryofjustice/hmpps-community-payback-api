@@ -6,6 +6,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.get
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ContactOutcomes
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAllocations
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectTypes
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProviderSummaries
@@ -64,6 +65,16 @@ object CommunityPaybackAndDeliusMockServer {
           aResponse()
             .withHeader("Content-Type", "application/json")
             .withBody(objectMapper.writer().writeValueAsString(projectTypes)),
+        ),
+    )
+  }
+  fun contactOutcomes(contactOutcomes: ContactOutcomes) {
+    WireMock.stubFor(
+      get("/community-payback-and-delius/references/contact-outcomes")
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withBody(objectMapper.writer().writeValueAsString(contactOutcomes)),
         ),
     )
   }

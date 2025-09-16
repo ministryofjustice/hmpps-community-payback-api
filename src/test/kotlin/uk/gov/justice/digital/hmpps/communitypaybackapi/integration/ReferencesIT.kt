@@ -1,14 +1,16 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.integration
 
-import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ContactOutcome
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ContactOutcomes
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectTypes
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.bodyAsObject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.CommunityPaybackAndDeliusMockServer
+import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.controller.ContactOutcomesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.controller.ProjectTypesDto
 
 class ReferencesIT : IntegrationTestBase() {
@@ -98,7 +100,96 @@ class ReferencesIT : IntegrationTestBase() {
         .isOk
         .bodyAsObject<ProjectTypesDto>()
 
-      Assertions.assertThat(projectTypes.projectTypes).isEmpty()
+      assertThat(projectTypes.projectTypes).isEmpty()
+    }
+  }
+
+  @Nested
+  @DisplayName("GET /references/contact-outcomes")
+  inner class ContactOutcomesEndpoint {
+
+    @Test
+    fun `should return unauthorized if no token`() {
+      webTestClient.get()
+        .uri("/references/contact-outcomes")
+        .exchange()
+        .expectStatus()
+        .isUnauthorized
+    }
+
+    @Test
+    fun `should return forbidden if no role`() {
+      webTestClient.get()
+        .uri("/references/contact-outcomes")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .isForbidden
+    }
+
+    @Test
+    fun `should return forbidden if wrong role`() {
+      webTestClient.get()
+        .uri("/references/contact-outcomes")
+        .headers(setAuthorisation(roles = listOf("ROLE_WRONG")))
+        .exchange()
+        .expectStatus()
+        .isForbidden
+    }
+
+    @Test
+    fun `should return OK with contact outcomes`() {
+      CommunityPaybackAndDeliusMockServer.contactOutcomes(
+        ContactOutcomes(
+          listOf(
+            ContactOutcome(
+              id = 1234,
+              name = "Attended - Complied",
+            ),
+            ContactOutcome(
+              id = 5678,
+              name = "Acceptable Absence - Court/Legal",
+            ),
+            ContactOutcome(
+              id = 9012,
+              name = "Attended - Failed to Comply",
+            ),
+          ),
+        ),
+      )
+
+      val contactOutcomes = webTestClient.get()
+        .uri("/references/contact-outcomes")
+        .addUiAuthHeader()
+        .exchange()
+        .expectStatus()
+        .isOk
+        .bodyAsObject<ContactOutcomesDto>()
+
+      assertThat(contactOutcomes.contactOutcomes).hasSize(3)
+      assertThat(contactOutcomes.contactOutcomes[0].id).isEqualTo(1234)
+      assertThat(contactOutcomes.contactOutcomes[0].name).isEqualTo("Attended - Complied")
+      assertThat(contactOutcomes.contactOutcomes[1].id).isEqualTo(5678)
+      assertThat(contactOutcomes.contactOutcomes[1].name).isEqualTo("Acceptable Absence - Court/Legal")
+      assertThat(contactOutcomes.contactOutcomes[2].id).isEqualTo(9012)
+      assertThat(contactOutcomes.contactOutcomes[2].name).isEqualTo("Attended - Failed to Comply")
+    }
+
+    @Test
+    fun `should return empty list when no contact outcomes found`() {
+      CommunityPaybackAndDeliusMockServer.contactOutcomes(
+        ContactOutcomes(emptyList()),
+      )
+
+      val contactOutcomes = webTestClient.get()
+        .uri("/references/contact-outcomes")
+        .addUiAuthHeader()
+        .exchange()
+        .expectStatus()
+        .isOk
+        .bodyAsObject<ContactOutcomesDto>()
+
+      assertThat(contactOutcomes.contactOutcomes).isEmpty()
     }
   }
 }

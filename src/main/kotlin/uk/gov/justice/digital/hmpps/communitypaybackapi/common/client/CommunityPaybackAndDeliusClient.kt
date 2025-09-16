@@ -35,6 +35,9 @@ interface CommunityPaybackAndDeliusClient {
     @RequestParam username: String,
     @RequestBody crns: Set<String>,
   ): UserAccess
+
+  @GetExchange("/references/contact-outcomes")
+  fun getContactOutcomes(): ContactOutcomes
 }
 
 data class ProviderSummaries(
@@ -103,3 +106,12 @@ data class CaseAccess(
 )
 
 data class UserAccess(val access: List<CaseAccess>)
+
+data class ContactOutcomes(
+  val contactOutcomes: List<ContactOutcome>,
+)
+
+data class ContactOutcome(
+  val id: Long,
+  val name: String,
+)

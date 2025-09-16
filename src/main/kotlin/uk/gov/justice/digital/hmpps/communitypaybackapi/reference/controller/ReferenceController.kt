@@ -22,6 +22,18 @@ data class ProjectTypeDto(
   val name: String,
 )
 
+data class ContactOutcomesDto(
+  @param:Schema(description = "List of contact outcomes")
+  val contactOutcomes: List<ContactOutcomeDto>,
+)
+
+data class ContactOutcomeDto(
+  @param:Schema(description = "Contact outcome identifier", example = "1234")
+  val id: Long,
+  @param:Schema(description = "Contact outcome name", example = "Successful Contact")
+  val name: String,
+)
+
 @CommunityPaybackController
 @RequestMapping("/references")
 class ReferenceController(val referenceService: ReferenceService) {
@@ -53,4 +65,22 @@ class ReferenceController(val referenceService: ReferenceService) {
     ],
   )
   fun getProjectTypes(): ProjectTypesDto = referenceService.getProjectTypes()
+
+  @GetMapping("/contact-outcomes")
+  @Operation(
+    description = "Get all contact outcomes",
+    responses = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Successful contact outcomes response",
+        content = [
+          Content(
+            mediaType = "application/json",
+            schema = Schema(implementation = ContactOutcomesDto::class),
+          ),
+        ],
+      ),
+    ],
+  )
+  fun getContactOutcomes(): ContactOutcomesDto = referenceService.getContactOutcomes()
 }
