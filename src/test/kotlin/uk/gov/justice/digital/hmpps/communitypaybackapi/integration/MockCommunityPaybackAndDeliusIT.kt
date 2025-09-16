@@ -1,12 +1,15 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.integration
 
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.http.MediaType
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CaseSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAllocations
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProviderSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProviderTeamSummaries
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.UserAccess
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.bodyAsObject
 import java.time.LocalDate
 import java.time.LocalTime
@@ -14,6 +17,7 @@ import java.time.LocalTime
 class MockCommunityPaybackAndDeliusIT : IntegrationTestBase() {
 
   @Nested
+  @DisplayName("GET /mocks/community-payback-and-delius/providers")
   inner class GetProviders {
     @Test
     fun `returns fixed list of providers`() {
@@ -37,6 +41,7 @@ class MockCommunityPaybackAndDeliusIT : IntegrationTestBase() {
   }
 
   @Nested
+  @DisplayName("GET /mocks/community-payback-and-delius/provider-teams")
   inner class GetProviderTeams {
     @Test
     fun `returns fixed list of teams`() {
@@ -60,6 +65,7 @@ class MockCommunityPaybackAndDeliusIT : IntegrationTestBase() {
   }
 
   @Nested
+  @DisplayName("GET /mocks/community-payback-and-delius/project-allocations")
   inner class GetProjectAllocations {
     @Test
     fun `returns fixed list of teams`() {
@@ -92,6 +98,87 @@ class MockCommunityPaybackAndDeliusIT : IntegrationTestBase() {
       assertThat(response.allocations[1].numberOfOffendersAllocated).isEqualTo(3)
       assertThat(response.allocations[1].numberOfOffendersWithOutcomes).isEqualTo(4)
       assertThat(response.allocations[1].numberOfOffendersWithEA).isEqualTo(5)
+    }
+  }
+
+  @Nested
+  @DisplayName("POST /mocks/community-payback-and-delius/probation-cases/summaries")
+  inner class ProbationCasesSummaries {
+
+    @Test
+    fun `returns information for matching CRNs`() {
+      val response = webTestClient.post()
+        .uri("/mocks/community-payback-and-delius/probation-cases/summaries")
+        .bodyValue(listOf("CRN0001", "CRN0003", "CRNWRONG"))
+        .accept(MediaType.APPLICATION_JSON)
+        .exchange()
+        .expectStatus()
+        .isOk
+        .bodyAsObject<CaseSummaries>()
+
+      assertThat(response.cases).hasSize(2)
+      assertThat(response.cases.map { it.crn }).containsExactlyInAnyOrder("CRN0001", "CRN0003")
+    }
+  }
+
+  @Nested
+  @DisplayName("POST /mocks/community-payback-and-delius/users/access")
+  inner class UsersAccess {
+
+    @Test
+    fun `return CRN0003 restricted if username ends 's'`() {
+      val response = webTestClient.post()
+        .uri("/mocks/community-payback-and-delius/users/access?username=abcdefs")
+        .bodyValue(listOf("CRN0003"))
+        .accept(MediaType.APPLICATION_JSON)
+        .exchange()
+        .expectStatus()
+        .isOk
+        .bodyAsObject<UserAccess>()
+
+      assertThat(response.access).hasSize(1)
+      assertThat(response.access[0].crn).isEqualTo("CRN0003")
+      assertThat(response.access[0].userRestricted).isEqualTo(true)
+      assertThat(response.access[0].userExcluded).isEqualTo(false)
+    }
+
+    @Test
+    fun `return CRN0003 as not restricted if username doesn't end 's'`() {
+      val response = webTestClient.post()
+        .uri("/mocks/community-payback-and-delius/users/access?username=abcdefg")
+        .bodyValue(listOf("CRN0003"))
+        .accept(MediaType.APPLICATION_JSON)
+        .exchange()
+        .expectStatus()
+        .isOk
+        .bodyAsObject<UserAccess>()
+
+      assertThat(response.access).hasSize(1)
+      assertThat(response.access[0].crn).isEqualTo("CRN0003")
+      assertThat(response.access[0].userRestricted).isEqualTo(false)
+      assertThat(response.access[0].userExcluded).isEqualTo(false)
+    }
+
+    @Test
+    fun `return result for all CRNs, even if they don't have access records`() {
+      val response = webTestClient.post()
+        .uri("/mocks/community-payback-and-delius/users/access?username=abcdefg")
+        .bodyValue(listOf("CRN0001", "CRNWRONG"))
+        .accept(MediaType.APPLICATION_JSON)
+        .exchange()
+        .expectStatus()
+        .isOk
+        .bodyAsObject<UserAccess>()
+
+      assertThat(response.access).hasSize(2)
+
+      assertThat(response.access[0].crn).isEqualTo("CRN0001")
+      assertThat(response.access[0].userRestricted).isEqualTo(false)
+      assertThat(response.access[0].userExcluded).isEqualTo(false)
+
+      assertThat(response.access[1].crn).isEqualTo("CRNWRONG")
+      assertThat(response.access[1].userRestricted).isEqualTo(false)
+      assertThat(response.access[1].userExcluded).isEqualTo(false)
     }
   }
 }

@@ -11,6 +11,7 @@ plugins {
 
 configurations {
   testImplementation { exclude(group = "org.junit.vintage") }
+  testImplementation { exclude(group = "org.mockito") }
 }
 
 configurations.matching { it.name == "detekt" }.all {
@@ -38,6 +39,7 @@ dependencies {
   testImplementation("org.testcontainers:localstack:1.21.3")
   testImplementation("org.awaitility:awaitility-kotlin:4.3.0")
   testImplementation("org.wiremock.integrations:wiremock-spring-boot:3.10.6")
+  testImplementation("io.mockk:mockk:1.14.5")
 }
 
 kotlin {

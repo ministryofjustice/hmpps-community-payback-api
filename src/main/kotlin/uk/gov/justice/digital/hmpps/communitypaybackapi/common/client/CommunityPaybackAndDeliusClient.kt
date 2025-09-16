@@ -1,8 +1,10 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.common.client
 
 import org.springframework.format.annotation.DateTimeFormat
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.service.annotation.GetExchange
+import org.springframework.web.service.annotation.PostExchange
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -22,6 +24,17 @@ interface CommunityPaybackAndDeliusClient {
 
   @GetExchange("/references/project-types")
   fun getProjectTypes(): ProjectTypes
+
+  @PostExchange("/probation-cases/summaries")
+  fun getCaseSummaries(
+    @RequestBody crns: Set<String>,
+  ): CaseSummaries
+
+  @PostExchange("/users/access")
+  fun getUsersAccess(
+    @RequestParam username: String,
+    @RequestBody crns: Set<String>,
+  ): UserAccess
 }
 
 data class ProviderSummaries(
@@ -65,3 +78,28 @@ data class ProjectType(
   val id: Long,
   val name: String,
 )
+
+data class CaseSummaries(
+  var cases: List<CaseSummary>,
+)
+
+data class CaseSummary(
+  val crn: String,
+  val name: CaseName,
+  val currentExclusion: Boolean = false,
+  val currentRestriction: Boolean = false,
+)
+
+data class CaseName(
+  val forename: String,
+  val surname: String,
+  val middleNames: List<String> = emptyList(),
+)
+
+data class CaseAccess(
+  val crn: String,
+  val userExcluded: Boolean,
+  val userRestricted: Boolean,
+)
+
+data class UserAccess(val access: List<CaseAccess>)

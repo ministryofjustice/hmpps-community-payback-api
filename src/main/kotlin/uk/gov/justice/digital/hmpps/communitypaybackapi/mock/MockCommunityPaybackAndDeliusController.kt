@@ -1,11 +1,18 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.mock
 
 import io.swagger.v3.oas.annotations.Hidden
+import jakarta.validation.constraints.Size
 import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CaseAccess
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CaseName
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CaseSummaries
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CaseSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAllocation
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAllocations
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectType
@@ -14,6 +21,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProviderSu
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProviderSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProviderTeamSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProviderTeamSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.UserAccess
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -29,6 +37,41 @@ import java.time.LocalTime
   produces = [MediaType.APPLICATION_JSON_VALUE],
 )
 class MockCommunityPaybackAndDeliusController {
+
+  companion object {
+    val cases = listOf(
+      CaseSummaryWithRestrictions(
+        caseSummary = CaseSummary(
+          crn = "CRN0001",
+          name = CaseName("Jack", "Sparrow", middleNames = emptyList()),
+          currentExclusion = false,
+          currentRestriction = false,
+        ),
+        isCrnRestricted = { false },
+        isCrnExcluded = { false },
+      ),
+      CaseSummaryWithRestrictions(
+        caseSummary = CaseSummary(
+          crn = "CRN0002",
+          name = CaseName("Norman", "Osbourn", middleNames = listOf("Green")),
+          currentExclusion = true,
+          currentRestriction = false,
+        ),
+        isCrnRestricted = { false },
+        isCrnExcluded = { false },
+      ),
+      CaseSummaryWithRestrictions(
+        caseSummary = CaseSummary(
+          crn = "CRN0003",
+          name = CaseName("Otto", "Octavius", middleNames = listOf("on")),
+          currentExclusion = true,
+          currentRestriction = false,
+        ),
+        isCrnRestricted = { it.endsWith("s") },
+        isCrnExcluded = { false },
+      ),
+    )
+  }
 
   @GetMapping("/providers")
   fun getProviders() = ProviderSummaries(
@@ -87,5 +130,37 @@ class MockCommunityPaybackAndDeliusController {
       ProjectType(id = 2002, "Park Cleanup"),
       ProjectType(id = 3002, "Library Assistance"),
     ),
+  )
+
+  @PostMapping("/probation-cases/summaries")
+  fun getCaseSummaries(
+    @Size(min = 1, max = 500, message = "Please provide between 1 and 500 CRNs or NOMIS ids")
+    @RequestBody crns: List<String>,
+  ): CaseSummaries = CaseSummaries(cases.map { it.caseSummary }.filter { crns.contains(it.crn) })
+
+  @PostMapping("/users/access")
+  fun userAccessCheck(
+    @RequestParam username: String,
+    @Size(min = 1, max = 500, message = "Please provide between 1 and 500 crns") @RequestBody crns: List<String>,
+  ) = UserAccess(
+    crns.map { crn ->
+      cases.firstOrNull { it.caseSummary.crn == crn }?.let {
+        CaseAccess(
+          crn = crn,
+          userRestricted = it.isCrnRestricted(username),
+          userExcluded = it.isCrnExcluded(username),
+        )
+      } ?: CaseAccess(
+        crn = crn,
+        userRestricted = false,
+        userExcluded = false,
+      )
+    },
+  )
+
+  data class CaseSummaryWithRestrictions(
+    val caseSummary: CaseSummary,
+    val isCrnRestricted: (String) -> Boolean,
+    val isCrnExcluded: (String) -> Boolean,
   )
 }
