@@ -62,11 +62,7 @@ class ProvidersIT : IntegrationTestBase() {
 
       val providers = webTestClient.get()
         .uri("/providers")
-        .headers(
-          setAuthorisation(
-            roles = listOf("ROLE_COMMUNITY_PAYBACK__COMMUNITY_PAYBACK_UI"),
-          ),
-        )
+        .addUiAuthHeader()
         .exchange()
         .expectStatus()
         .isOk
@@ -126,11 +122,7 @@ class ProvidersIT : IntegrationTestBase() {
 
       val providers = webTestClient.get()
         .uri("/providers/123/teams")
-        .headers(
-          setAuthorisation(
-            roles = listOf("ROLE_COMMUNITY_PAYBACK__COMMUNITY_PAYBACK_UI"),
-          ),
-        )
+        .addUiAuthHeader()
         .exchange()
         .expectStatus()
         .isOk

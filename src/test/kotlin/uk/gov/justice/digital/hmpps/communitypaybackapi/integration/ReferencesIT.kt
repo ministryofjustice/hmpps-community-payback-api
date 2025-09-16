@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.integration
 
 import org.assertj.core.api.Assertions
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -68,23 +69,19 @@ class ReferencesIT : IntegrationTestBase() {
 
       val projectTypes = webTestClient.get()
         .uri("/references/project-types")
-        .headers(
-          setAuthorisation(
-            roles = listOf("ROLE_COMMUNITY_PAYBACK__COMMUNITY_PAYBACK_UI"),
-          ),
-        )
+        .addUiAuthHeader()
         .exchange()
         .expectStatus()
         .isOk
         .bodyAsObject<ProjectTypesDto>()
 
-      Assertions.assertThat(projectTypes.projectTypes).hasSize(3)
-      Assertions.assertThat(projectTypes.projectTypes[0].id).isEqualTo(1234)
-      Assertions.assertThat(projectTypes.projectTypes[0].name).isEqualTo("Community Garden Maintenance")
-      Assertions.assertThat(projectTypes.projectTypes[1].id).isEqualTo(5678)
-      Assertions.assertThat(projectTypes.projectTypes[1].name).isEqualTo("Park Cleanup")
-      Assertions.assertThat(projectTypes.projectTypes[2].id).isEqualTo(9012)
-      Assertions.assertThat(projectTypes.projectTypes[2].name).isEqualTo("Library Assistance")
+      assertThat(projectTypes.projectTypes).hasSize(3)
+      assertThat(projectTypes.projectTypes[0].id).isEqualTo(1234)
+      assertThat(projectTypes.projectTypes[0].name).isEqualTo("Community Garden Maintenance")
+      assertThat(projectTypes.projectTypes[1].id).isEqualTo(5678)
+      assertThat(projectTypes.projectTypes[1].name).isEqualTo("Park Cleanup")
+      assertThat(projectTypes.projectTypes[2].id).isEqualTo(9012)
+      assertThat(projectTypes.projectTypes[2].name).isEqualTo("Library Assistance")
     }
 
     @Test
@@ -95,11 +92,7 @@ class ReferencesIT : IntegrationTestBase() {
 
       val projectTypes = webTestClient.get()
         .uri("/references/project-types")
-        .headers(
-          setAuthorisation(
-            roles = listOf("ROLE_COMMUNITY_PAYBACK__COMMUNITY_PAYBACK_UI"),
-          ),
-        )
+        .addUiAuthHeader()
         .exchange()
         .expectStatus()
         .isOk
