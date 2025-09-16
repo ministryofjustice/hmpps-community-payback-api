@@ -8,10 +8,13 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProviderSu
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProviderSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProviderTeamSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProviderTeamSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.SupervisorSummaries
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.SupervisorSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.bodyAsObject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.CommunityPaybackAndDeliusMockServer
 import uk.gov.justice.digital.hmpps.communitypaybackapi.provider.controller.ProviderSummariesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.provider.controller.ProviderTeamSummariesDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.provider.controller.SupervisorSummariesDto
 
 class ProvidersIT : IntegrationTestBase() {
 
@@ -131,6 +134,73 @@ class ProvidersIT : IntegrationTestBase() {
       Assertions.assertThat(providers.providers).hasSize(3)
       Assertions.assertThat(providers.providers[0].id).isEqualTo(11L)
       Assertions.assertThat(providers.providers[0].name).isEqualTo("Team 1")
+    }
+  }
+
+  @Nested
+  @DisplayName("GET /providers/{providerId}/teams/{teamId}/supervisors")
+  inner class TeamSupervisorsEndpoint {
+
+    @Test
+    fun `should return unauthorized if no token`() {
+      webTestClient.get()
+        .uri("/providers/123/teams/99/supervisors")
+        .exchange()
+        .expectStatus()
+        .isUnauthorized
+    }
+
+    @Test
+    fun `should return forbidden if no role`() {
+      webTestClient.get()
+        .uri("/providers/123/teams/99/supervisors")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .isForbidden
+    }
+
+    @Test
+    fun `should return OK with team supervisors`() {
+      CommunityPaybackAndDeliusMockServer.teamSupervisors(
+        SupervisorSummaries(
+          listOf(
+            SupervisorSummary(id = 4L, name = "Fred Flintstone"),
+            SupervisorSummary(id = 5L, name = "Barney Rubble"),
+          ),
+        ),
+      )
+
+      val supervisors = webTestClient.get()
+        .uri("/providers/123/teams/99/supervisors")
+        .addUiAuthHeader()
+        .exchange()
+        .expectStatus()
+        .isOk
+        .bodyAsObject<SupervisorSummariesDto>()
+
+      Assertions.assertThat(supervisors.supervisors).hasSize(2)
+      Assertions.assertThat(supervisors.supervisors[0].id).isEqualTo(4L)
+      Assertions.assertThat(supervisors.supervisors[0].name).isEqualTo("Fred Flintstone")
+      Assertions.assertThat(supervisors.supervisors[1].id).isEqualTo(5L)
+      Assertions.assertThat(supervisors.supervisors[1].name).isEqualTo("Barney Rubble")
+    }
+
+    @Test
+    fun `should return empty list when no supervisors found`() {
+      CommunityPaybackAndDeliusMockServer.teamSupervisors(
+        SupervisorSummaries(emptyList()),
+      )
+
+      val supervisors = webTestClient.get()
+        .uri("/providers/123/teams/99/supervisors")
+        .addUiAuthHeader()
+        .exchange()
+        .expectStatus()
+        .isOk
+        .bodyAsObject<SupervisorSummariesDto>()
+
+      Assertions.assertThat(supervisors.supervisors).isEmpty()
     }
   }
 }
