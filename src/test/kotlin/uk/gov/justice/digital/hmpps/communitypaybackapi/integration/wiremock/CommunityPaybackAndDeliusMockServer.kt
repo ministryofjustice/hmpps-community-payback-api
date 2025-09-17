@@ -5,12 +5,19 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
+import com.github.tomakehurst.wiremock.client.WireMock.equalToJson
 import com.github.tomakehurst.wiremock.client.WireMock.get
+import com.github.tomakehurst.wiremock.client.WireMock.post
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CaseSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ContactOutcomes
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAllocations
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAppointments
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectTypes
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProviderSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProviderTeamSummaries
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.UserAccess
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 object CommunityPaybackAndDeliusMockServer {
 
@@ -25,7 +32,7 @@ object CommunityPaybackAndDeliusMockServer {
       get("/community-payback-and-delius/providers").willReturn(
         aResponse()
           .withHeader("Content-Type", "application/json")
-          .withBody(objectMapper.writer().writeValueAsString(providers)),
+          .withBody(objectMapper.writeValueAsString(providers)),
       ),
     )
   }
@@ -38,7 +45,7 @@ object CommunityPaybackAndDeliusMockServer {
       get("/community-payback-and-delius/provider-teams?providerId=$providerId").willReturn(
         aResponse()
           .withHeader("Content-Type", "application/json")
-          .withBody(objectMapper.writer().writeValueAsString(providerTeams)),
+          .withBody(objectMapper.writeValueAsString(providerTeams)),
       ),
     )
   }
@@ -51,7 +58,22 @@ object CommunityPaybackAndDeliusMockServer {
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")
-            .withBody(objectMapper.writer().writeValueAsString(projectAllocations)),
+            .withBody(objectMapper.writeValueAsString(projectAllocations)),
+        ),
+    )
+  }
+
+  fun projectAppointments(
+    projectId: Long,
+    date: LocalDate,
+    projectAppointments: ProjectAppointments,
+  ) {
+    WireMock.stubFor(
+      get("/community-payback-and-delius/projects/$projectId/appointments?date=${date.toIsoDateString()}")
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withBody(objectMapper.writeValueAsString(projectAppointments)),
         ),
     )
   }
@@ -64,7 +86,38 @@ object CommunityPaybackAndDeliusMockServer {
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")
-            .withBody(objectMapper.writer().writeValueAsString(projectTypes)),
+            .withBody(objectMapper.writeValueAsString(projectTypes)),
+        ),
+    )
+  }
+
+  fun probationCasesSummaries(
+    crns: List<String>,
+    response: CaseSummaries,
+  ) {
+    WireMock.stubFor(
+      post("/community-payback-and-delius/probation-cases/summaries")
+        .withRequestBody(equalToJson(objectMapper.writeValueAsString(crns)))
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withBody(objectMapper.writeValueAsString(response)),
+        ),
+    )
+  }
+
+  fun usersAccess(
+    username: String,
+    crns: List<String>,
+    response: UserAccess,
+  ) {
+    WireMock.stubFor(
+      post("/community-payback-and-delius/users/access?username=$username")
+        .withRequestBody(equalToJson(objectMapper.writeValueAsString(crns)))
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withBody(objectMapper.writeValueAsString(response)),
         ),
     )
   }
@@ -78,4 +131,6 @@ object CommunityPaybackAndDeliusMockServer {
         ),
     )
   }
+
+  private fun LocalDate.toIsoDateString() = this.format(DateTimeFormatter.ISO_DATE)
 }

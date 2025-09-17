@@ -7,10 +7,12 @@ import org.junit.jupiter.api.Test
 import org.springframework.http.MediaType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CaseSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAllocations
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAppointments
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProviderSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProviderTeamSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.UserAccess
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.bodyAsObject
+import uk.gov.justice.digital.hmpps.communitypaybackapi.mock.MockCommunityPaybackAndDeliusController.MockCommunityPaybackAndDeliusRepository
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -85,7 +87,7 @@ class MockCommunityPaybackAndDeliusIT : IntegrationTestBase() {
       assertThat(response.allocations[0].startTime).isEqualTo(LocalTime.of(9, 0))
       assertThat(response.allocations[0].endTime).isEqualTo(LocalTime.of(17, 0))
       assertThat(response.allocations[0].projectCode).isEqualTo("cg")
-      assertThat(response.allocations[0].numberOfOffendersAllocated).isEqualTo(40)
+      assertThat(response.allocations[0].numberOfOffendersAllocated).isEqualTo(2)
       assertThat(response.allocations[0].numberOfOffendersWithOutcomes).isEqualTo(0)
       assertThat(response.allocations[0].numberOfOffendersWithEA).isEqualTo(0)
 
@@ -95,9 +97,52 @@ class MockCommunityPaybackAndDeliusIT : IntegrationTestBase() {
       assertThat(response.allocations[1].startTime).isEqualTo(LocalTime.of(8, 0))
       assertThat(response.allocations[1].endTime).isEqualTo(LocalTime.of(16, 0))
       assertThat(response.allocations[1].projectCode).isEqualTo("pc")
-      assertThat(response.allocations[1].numberOfOffendersAllocated).isEqualTo(3)
-      assertThat(response.allocations[1].numberOfOffendersWithOutcomes).isEqualTo(4)
-      assertThat(response.allocations[1].numberOfOffendersWithEA).isEqualTo(5)
+      assertThat(response.allocations[1].numberOfOffendersAllocated).isEqualTo(1)
+      assertThat(response.allocations[1].numberOfOffendersWithOutcomes).isEqualTo(0)
+      assertThat(response.allocations[1].numberOfOffendersWithEA).isEqualTo(0)
+    }
+  }
+
+  @Nested
+  @DisplayName("GET /projects/{projectId}/appointments")
+  inner class GetProjectAppointments {
+
+    @Test
+    fun `no corresponding allocation, return empty results`() {
+      val response = webTestClient.get()
+        .uri("/mocks/community-payback-and-delius/projects/${MockCommunityPaybackAndDeliusRepository.PROJECT1_ID}/appointments?date=2024-09-01")
+        .accept(MediaType.APPLICATION_JSON)
+        .exchange()
+        .expectStatus()
+        .isOk
+        .bodyAsObject<ProjectAppointments>()
+
+      assertThat(response.appointments).isEmpty()
+    }
+
+    @Test
+    fun `has corresponding allocation with appointments`() {
+      val response = webTestClient.get()
+        .uri("/mocks/community-payback-and-delius/projects/${MockCommunityPaybackAndDeliusRepository.PROJECT1_ID}/appointments?date=2025-09-01")
+        .accept(MediaType.APPLICATION_JSON)
+        .exchange()
+        .expectStatus()
+        .isOk
+        .bodyAsObject<ProjectAppointments>()
+
+      assertThat(response.appointments).hasSize(2)
+
+      assertThat(response.appointments[0].id).isEqualTo(1L)
+      assertThat(response.appointments[0].crn).isEqualTo(MockCommunityPaybackAndDeliusRepository.CRN1)
+      assertThat(response.appointments[0].projectName).isEqualTo("Community Garden")
+      assertThat(response.appointments[0].requirementMinutes).isEqualTo(600)
+      assertThat(response.appointments[0].completedMinutes).isEqualTo(60)
+
+      assertThat(response.appointments[1].id).isEqualTo(2L)
+      assertThat(response.appointments[1].crn).isEqualTo(MockCommunityPaybackAndDeliusRepository.CRN2)
+      assertThat(response.appointments[1].projectName).isEqualTo("Community Garden")
+      assertThat(response.appointments[1].requirementMinutes).isEqualTo(300)
+      assertThat(response.appointments[1].completedMinutes).isEqualTo(30)
     }
   }
 

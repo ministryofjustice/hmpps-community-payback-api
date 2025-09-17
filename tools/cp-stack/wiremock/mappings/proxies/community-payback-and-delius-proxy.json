@@ -1,7 +1,6 @@
 {
   "priority": 100,
   "request": {
-    "method": "GET",
     "urlPattern": "/community-payback-and-delius-proxy/.*"
   },
   "response": {
