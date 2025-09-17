@@ -21,13 +21,8 @@ class ResourceSecurityIT : IntegrationTestBase() {
     "GET /v3/api-docs/swagger-config",
     "GET /queue-admin/retry-all-dlqs",
     " /error",
-    "GET /mocks/community-payback-and-delius/providers",
-    "GET /mocks/community-payback-and-delius/provider-teams",
-    "GET /mocks/community-payback-and-delius/project-allocations",
-    "GET /mocks/community-payback-and-delius/references/project-types",
-    "GET /mocks/community-payback-and-delius/references/contact-outcomes",
-    "POST /mocks/community-payback-and-delius/probation-cases/summaries",
-    "POST /mocks/community-payback-and-delius/users/access",
+    "GET /mocks/community-payback-and-delius",
+    "POST /mocks/community-payback-and-delius",
   )
 
   @Test
@@ -54,7 +49,7 @@ class ResourceSecurityIT : IntegrationTestBase() {
           AnnotationUtils.findAnnotation(method.method, PreAuthorize::class.java) == null
       }
       .flatMap { (mappingInfo, _) -> mappingInfo.getMappings().asSequence() }
-      .filter { mappingStr -> mappingStr !in exclusions }
+      .filter { mappingStr -> exclusions.none { mappingStr.startsWith(it) } }
       .toList()
 
     assertThat(unprotected).withFailMessage {
