@@ -144,6 +144,6 @@ object CommunityPaybackAndDeliusMockServer {
         ),
     )
   }
-  
+
   private fun LocalDate.toIsoDateString() = this.format(DateTimeFormatter.ISO_DATE)
 }
