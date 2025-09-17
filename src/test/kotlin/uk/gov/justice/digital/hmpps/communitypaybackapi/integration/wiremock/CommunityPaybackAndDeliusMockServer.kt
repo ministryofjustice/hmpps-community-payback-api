@@ -15,6 +15,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectApp
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectTypes
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProviderSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProviderTeamSummaries
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.SupervisorSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.UserAccess
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -121,6 +122,7 @@ object CommunityPaybackAndDeliusMockServer {
         ),
     )
   }
+
   fun contactOutcomes(contactOutcomes: ContactOutcomes) {
     WireMock.stubFor(
       get("/community-payback-and-delius/references/contact-outcomes")
@@ -128,6 +130,17 @@ object CommunityPaybackAndDeliusMockServer {
           aResponse()
             .withHeader("Content-Type", "application/json")
             .withBody(objectMapper.writer().writeValueAsString(contactOutcomes)),
+        ),
+    )
+  }
+
+  fun teamSupervisors(supervisorSummaries: SupervisorSummaries) {
+    WireMock.stubFor(
+      get("/community-payback-and-delius/providers/123/teams/99/supervisors")
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withBody(objectMapper.writer().writeValueAsString(supervisorSummaries)),
         ),
     )
   }

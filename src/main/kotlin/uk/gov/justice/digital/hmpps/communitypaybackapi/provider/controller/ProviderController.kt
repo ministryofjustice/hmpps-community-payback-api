@@ -22,6 +22,7 @@ data class ProviderSummaryDto(
   @param:Schema(description = "Community Payback (UPW) provider name", example = "East of England")
   val name: String,
 )
+
 data class ProviderTeamSummariesDto(
   @param:Schema(description = "List of Community Payback (UPW) provider teams for a given region")
   val providers: List<ProviderTeamSummaryDto>,
@@ -31,6 +32,18 @@ data class ProviderTeamSummaryDto(
   @param:Schema(description = "Community Payback (UPW) provider team id", example = "1001")
   val id: Long,
   @param:Schema(description = "Community Payback (UPW) provider team name", example = "Team Lincoln")
+  val name: String,
+)
+
+data class SupervisorSummariesDto(
+  @param:Schema(description = "List of supervisors for a given team")
+  val supervisors: List<SupervisorSummaryDto>,
+)
+
+data class SupervisorSummaryDto(
+  @param:Schema(description = "Supervisor id", example = "4")
+  val id: Long,
+  @param:Schema(description = "Supervisor name", example = "John Smith")
   val name: String,
 )
 
@@ -83,4 +96,35 @@ class ProviderController(val providerService: ProviderService) {
     ],
   )
   fun getProviderTeam(@PathVariable providerId: Long): ProviderTeamSummariesDto = providerService.getProviderTeams(providerId)
+
+  @GetMapping("/{providerId}/teams/{teamId}/supervisors")
+  @Operation(
+    description = "Get supervisor information for a specific team",
+    responses = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Successful supervisors response",
+        content = [
+          Content(
+            mediaType = "application/json",
+            schema = Schema(implementation = SupervisorSummariesDto::class),
+          ),
+        ],
+      ),
+      ApiResponse(
+        responseCode = "404",
+        description = "Provider or team not found",
+        content = [
+          Content(
+            mediaType = "application/json",
+            schema = Schema(implementation = ErrorResponse::class),
+          ),
+        ],
+      ),
+    ],
+  )
+  fun getTeamSupervisors(
+    @PathVariable providerId: Long,
+    @PathVariable teamId: Long,
+  ): SupervisorSummariesDto = providerService.getTeamSupervisors(providerId, teamId)
 }

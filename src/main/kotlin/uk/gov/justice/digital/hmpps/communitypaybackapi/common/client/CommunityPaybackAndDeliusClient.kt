@@ -45,6 +45,12 @@ interface CommunityPaybackAndDeliusClient {
 
   @GetExchange("/references/contact-outcomes")
   fun getContactOutcomes(): ContactOutcomes
+
+  @GetExchange("/providers/{providerId}/teams/{teamId}/supervisors")
+  fun teamSupervisors(
+    @PathVariable providerId: Long,
+    @PathVariable teamId: Long,
+  ): SupervisorSummaries
 }
 
 data class ProviderSummaries(
@@ -132,6 +138,14 @@ data class ContactOutcomes(
 )
 
 data class ContactOutcome(
+  val id: Long,
+  val name: String,
+)
+data class SupervisorSummaries(
+  val supervisors: List<SupervisorSummary>,
+)
+
+data class SupervisorSummary(
   val id: Long,
   val name: String,
 )
