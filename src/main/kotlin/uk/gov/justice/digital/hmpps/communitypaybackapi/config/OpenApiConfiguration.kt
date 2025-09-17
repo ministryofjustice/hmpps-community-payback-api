@@ -1,19 +1,12 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.config
 
-import com.fasterxml.jackson.annotation.JsonSubTypes
-import com.fasterxml.jackson.databind.JavaType
-import com.fasterxml.jackson.databind.ObjectMapper
 import io.swagger.v3.core.converter.AnnotatedType
-import io.swagger.v3.core.converter.ModelConverterContext
 import io.swagger.v3.core.converter.ModelConverters
-import io.swagger.v3.core.jackson.ModelResolver
-import io.swagger.v3.core.util.RefUtils
 import io.swagger.v3.oas.models.Components
 import io.swagger.v3.oas.models.OpenAPI
 import io.swagger.v3.oas.models.info.Contact
 import io.swagger.v3.oas.models.info.Info
 import io.swagger.v3.oas.models.media.Content
-import io.swagger.v3.oas.models.media.Discriminator
 import io.swagger.v3.oas.models.media.MediaType
 import io.swagger.v3.oas.models.media.Schema
 import io.swagger.v3.oas.models.responses.ApiResponse
@@ -91,36 +84,6 @@ class OpenApiConfiguration(buildProperties: BuildProperties) {
         )
     }
   }
-
-  /**
-   * Taken from https://github.com/swagger-api/swagger-core/issues/3411
-   * Ensures discriminator mappings are provided in the open api spec.
-   * Used by [uk.gov.justice.digital.hmpps.communitypaybackapi.common.dto.OffenderDto]
-   */
-  @Bean
-  fun discriminatorMappingResolver(objectMapper: ObjectMapper?) = object : ModelResolver(objectMapper) {
-    override fun resolveDiscriminator(
-      type: JavaType?,
-      context: ModelConverterContext?,
-    ): Discriminator? {
-      val discriminator = super.resolveDiscriminator(type, context)
-      if (context != null &&
-        type != null &&
-        discriminator.hasPropertyButNoMapping()
-      ) {
-        val jsonSubTypes = type.rawClass.getDeclaredAnnotation(JsonSubTypes::class.java)
-        jsonSubTypes?.value?.forEach { subtype: JsonSubTypes.Type ->
-          discriminator.mapping(
-            subtype.name,
-            RefUtils.constructRef(context.resolve(AnnotatedType(subtype.value.java)).name),
-          )
-        }
-      }
-      return discriminator
-    }
-  }
-
-  private fun Discriminator?.hasPropertyButNoMapping() = this != null && propertyName != null && (mapping == null || mapping.isEmpty())
 
   private fun createProblemSchema(): Schema<*> = ModelConverters.getInstance()
     .resolveAsResolvedSchema(AnnotatedType(ErrorResponse::class.java))
