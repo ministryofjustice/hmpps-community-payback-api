@@ -47,7 +47,10 @@ abstract class IntegrationTestBase {
     HmppsAuthMockServer.stubHealthPing(status)
   }
 
-  fun <S : WebTestClient.RequestHeadersSpec<S>> S.addUiAuthHeader(): S = this.headers(
-    setAuthorisation(roles = listOf("ROLE_COMMUNITY_PAYBACK__COMMUNITY_PAYBACK_UI")),
+  fun <S : WebTestClient.RequestHeadersSpec<S>> S.addUiAuthHeader(username: String = "AUTH_ADM"): S = this.headers(
+    setAuthorisation(
+      username = username,
+      roles = listOf("ROLE_COMMUNITY_PAYBACK__COMMUNITY_PAYBACK_UI"),
+    ),
   ) as S
 }

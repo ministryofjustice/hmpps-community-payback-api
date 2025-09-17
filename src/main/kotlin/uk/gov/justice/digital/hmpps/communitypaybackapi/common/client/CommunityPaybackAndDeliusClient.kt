@@ -23,6 +23,12 @@ interface CommunityPaybackAndDeliusClient {
     @RequestParam teamId: Long,
   ): ProjectAllocations
 
+  @GetExchange("/projects/{projectId}/appointments")
+  fun getProjectAppointments(
+    @PathVariable projectId: Long,
+    @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate,
+  ): ProjectAppointments
+
   @GetExchange("/references/project-types")
   fun getProjectTypes(): ProjectTypes
 
@@ -70,6 +76,7 @@ data class ProjectAllocations(
 
 data class ProjectAllocation(
   val id: Long,
+  val projectId: Long,
   val date: LocalDate,
   val projectName: String,
   val projectCode: String,
@@ -78,6 +85,18 @@ data class ProjectAllocation(
   val numberOfOffendersAllocated: Int,
   val numberOfOffendersWithOutcomes: Int,
   val numberOfOffendersWithEA: Int,
+)
+
+data class ProjectAppointments(
+  val appointments: List<ProjectAppointment>,
+)
+
+data class ProjectAppointment(
+  val id: Long,
+  val projectName: String,
+  val crn: String,
+  val requirementMinutes: Int,
+  val completedMinutes: Int,
 )
 
 data class ProjectTypes(
