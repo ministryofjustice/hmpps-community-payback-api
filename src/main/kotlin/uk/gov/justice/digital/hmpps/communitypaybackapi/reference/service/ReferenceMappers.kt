@@ -4,10 +4,10 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ContactOut
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ContactOutcomes
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectTypes
-import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.controller.ContactOutcomeDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.controller.ContactOutcomesDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.controller.ProjectTypeDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.controller.ProjectTypesDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.dto.ContactOutcomeDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.dto.ContactOutcomesDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.dto.ProjectTypeDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.dto.ProjectTypesDto
 
 fun ProjectTypes.toDto() = ProjectTypesDto(this.projectTypes.map { it.toDto() })
 fun ProjectType.toDto() = ProjectTypeDto(this.id, this.name)

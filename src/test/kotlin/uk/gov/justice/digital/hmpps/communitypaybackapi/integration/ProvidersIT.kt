@@ -12,9 +12,9 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.Supervisor
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.SupervisorSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.bodyAsObject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.CommunityPaybackAndDeliusMockServer
-import uk.gov.justice.digital.hmpps.communitypaybackapi.provider.controller.ProviderSummariesDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.provider.controller.ProviderTeamSummariesDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.provider.controller.SupervisorSummariesDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.provider.dto.ProviderSummariesDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.provider.dto.ProviderTeamSummariesDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.provider.dto.SupervisorSummariesDto
 
 class ProvidersIT : IntegrationTestBase() {
 

@@ -6,12 +6,12 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProviderTe
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProviderTeamSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.SupervisorSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.SupervisorSummary
-import uk.gov.justice.digital.hmpps.communitypaybackapi.provider.controller.ProviderSummariesDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.provider.controller.ProviderSummaryDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.provider.controller.ProviderTeamSummariesDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.provider.controller.ProviderTeamSummaryDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.provider.controller.SupervisorSummariesDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.provider.controller.SupervisorSummaryDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.provider.dto.ProviderSummariesDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.provider.dto.ProviderSummaryDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.provider.dto.ProviderTeamSummariesDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.provider.dto.ProviderTeamSummaryDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.provider.dto.SupervisorSummariesDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.provider.dto.SupervisorSummaryDto
 
 fun ProviderSummaries.toDto() = ProviderSummariesDto(this.providers.map { it.toDto() })
 fun ProviderSummary.toDto() = ProviderSummaryDto(this.id, this.name)

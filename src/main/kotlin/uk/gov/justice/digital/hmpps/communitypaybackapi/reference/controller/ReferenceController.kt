@@ -7,32 +7,10 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.CommunityPaybackController
+import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.dto.ContactOutcomesDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.dto.ProjectTypesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.service.ReferenceService
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
-
-data class ProjectTypesDto(
-  @param:Schema(description = "List of project types")
-  val projectTypes: List<ProjectTypeDto>,
-)
-
-data class ProjectTypeDto(
-  @param:Schema(description = "Project type identifier", example = "1234")
-  val id: Long,
-  @param:Schema(description = "Project type name", example = "Community Garden Maintenance")
-  val name: String,
-)
-
-data class ContactOutcomesDto(
-  @param:Schema(description = "List of contact outcomes")
-  val contactOutcomes: List<ContactOutcomeDto>,
-)
-
-data class ContactOutcomeDto(
-  @param:Schema(description = "Contact outcome identifier", example = "1234")
-  val id: Long,
-  @param:Schema(description = "Contact outcome name", example = "Successful Contact")
-  val name: String,
-)
 
 @CommunityPaybackController
 @RequestMapping("/references")

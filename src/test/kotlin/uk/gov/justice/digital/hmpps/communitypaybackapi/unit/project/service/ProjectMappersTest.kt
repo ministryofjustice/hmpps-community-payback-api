@@ -8,7 +8,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAll
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAppointments
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.service.OffenderInfoResult
-import uk.gov.justice.digital.hmpps.communitypaybackapi.project.controller.ProjectAllocationDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.project.dto.ProjectAllocationDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.project.service.toDto
 import java.time.LocalDate
 import java.time.LocalTime

@@ -1,6 +1,6 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.common.service
 
-import uk.gov.justice.digital.hmpps.communitypaybackapi.common.controller.OffenderDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.dto.OffenderDto
 
 fun OffenderInfoResult.toDto() = when (this) {
   is OffenderInfoResult.Full -> toDto()
