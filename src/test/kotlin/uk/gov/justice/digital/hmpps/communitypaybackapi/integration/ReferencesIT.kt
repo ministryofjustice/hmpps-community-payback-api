@@ -10,8 +10,8 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectTyp
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectTypes
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.bodyAsObject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.CommunityPaybackAndDeliusMockServer
-import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.controller.ContactOutcomesDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.controller.ProjectTypesDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.dto.ContactOutcomesDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.dto.ProjectTypesDto
 
 class ReferencesIT : IntegrationTestBase() {
 

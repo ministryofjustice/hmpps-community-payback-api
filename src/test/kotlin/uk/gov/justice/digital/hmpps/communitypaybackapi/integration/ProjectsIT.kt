@@ -13,11 +13,11 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAll
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAppointments
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.UserAccess
-import uk.gov.justice.digital.hmpps.communitypaybackapi.common.controller.OffenderDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.dto.OffenderDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.bodyAsObject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.CommunityPaybackAndDeliusMockServer
-import uk.gov.justice.digital.hmpps.communitypaybackapi.project.controller.AppointmentsDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.project.controller.ProjectAllocationsDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.project.dto.AppointmentsDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.project.dto.ProjectAllocationsDto
 import java.time.LocalDate
 import java.time.LocalTime
 

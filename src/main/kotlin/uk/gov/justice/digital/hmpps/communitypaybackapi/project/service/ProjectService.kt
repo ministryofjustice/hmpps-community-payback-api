@@ -3,7 +3,7 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.project.service
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CommunityPaybackAndDeliusClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.service.OffenderService
-import uk.gov.justice.digital.hmpps.communitypaybackapi.project.controller.AppointmentsDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.project.dto.AppointmentsDto
 import java.time.LocalDate
 
 @Service

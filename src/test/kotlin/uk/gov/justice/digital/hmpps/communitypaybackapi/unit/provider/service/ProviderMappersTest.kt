@@ -7,8 +7,8 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProviderSu
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProviderSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.SupervisorSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.SupervisorSummary
-import uk.gov.justice.digital.hmpps.communitypaybackapi.provider.controller.ProviderSummaryDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.provider.controller.SupervisorSummaryDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.provider.dto.ProviderSummaryDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.provider.dto.SupervisorSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.provider.service.toDto
 
 class ProviderMappersTest {

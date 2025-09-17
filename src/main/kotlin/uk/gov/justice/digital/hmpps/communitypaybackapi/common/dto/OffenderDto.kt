@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.communitypaybackapi.common.controller
+package uk.gov.justice.digital.hmpps.communitypaybackapi.common.dto
 
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo

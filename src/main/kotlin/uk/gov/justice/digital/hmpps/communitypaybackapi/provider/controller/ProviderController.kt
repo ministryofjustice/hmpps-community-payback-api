@@ -8,44 +8,11 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.CommunityPaybackController
+import uk.gov.justice.digital.hmpps.communitypaybackapi.provider.dto.ProviderSummariesDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.provider.dto.ProviderTeamSummariesDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.provider.dto.SupervisorSummariesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.provider.service.ProviderService
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
-
-data class ProviderSummariesDto(
-  @param:Schema(description = "List of Community Payback (UPW) providers")
-  val providers: List<ProviderSummaryDto>,
-)
-
-data class ProviderSummaryDto(
-  @param:Schema(description = "Community Payback (UPW) provider id", example = "1000")
-  val id: Long,
-  @param:Schema(description = "Community Payback (UPW) provider name", example = "East of England")
-  val name: String,
-)
-
-data class ProviderTeamSummariesDto(
-  @param:Schema(description = "List of Community Payback (UPW) provider teams for a given region")
-  val providers: List<ProviderTeamSummaryDto>,
-)
-
-data class ProviderTeamSummaryDto(
-  @param:Schema(description = "Community Payback (UPW) provider team id", example = "1001")
-  val id: Long,
-  @param:Schema(description = "Community Payback (UPW) provider team name", example = "Team Lincoln")
-  val name: String,
-)
-
-data class SupervisorSummariesDto(
-  @param:Schema(description = "List of supervisors for a given team")
-  val supervisors: List<SupervisorSummaryDto>,
-)
-
-data class SupervisorSummaryDto(
-  @param:Schema(description = "Supervisor id", example = "4")
-  val id: Long,
-  @param:Schema(description = "Supervisor name", example = "John Smith")
-  val name: String,
-)
 
 @CommunityPaybackController
 @RequestMapping("/providers")

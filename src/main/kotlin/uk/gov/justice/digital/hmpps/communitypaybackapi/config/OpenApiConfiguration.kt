@@ -95,7 +95,7 @@ class OpenApiConfiguration(buildProperties: BuildProperties) {
   /**
    * Taken from https://github.com/swagger-api/swagger-core/issues/3411
    * Ensures discriminator mappings are provided in the open api spec.
-   * Used by [uk.gov.justice.digital.hmpps.communitypaybackapi.common.controller.OffenderDto]
+   * Used by [uk.gov.justice.digital.hmpps.communitypaybackapi.common.dto.OffenderDto]
    */
   @Bean
   fun discriminatorMappingResolver(objectMapper: ObjectMapper?) = object : ModelResolver(objectMapper) {
