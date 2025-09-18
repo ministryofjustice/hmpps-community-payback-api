@@ -51,7 +51,7 @@ if [ -z "$ENV" ] || { [ "$ENV" != "dev" ] && [ "$ENV" != "test" ] && [ "$ENV" !=
   echo "    remote_db_tunnel - creates a port forwarding tunnel to connect to remote database"
   echo ""
   echo "Synopsis:"
-  echo "    remote_db_tunnel [dev|test|preprod|prod] - create port forward pod with name env.PORT_FORWARD_CONTAINER_NAME ?: 'port-forward-pod'"
+  echo "    remote_db_tunnel [dev|test|preprod|prod] - create port forward pod with name env.CP_PORT_FORWARD_CONTAINER_NAME ?: 'port-forward-pod'"
   echo "    remote_db_tunnel -n port-forward-pod-da [dev|test|preprod|prod] - create port forward pod with name 'port-forward-pod-da'"
   echo "    remote_db_tunnel -d [dev|test|preprod|prod] - display credentials required to connect"
   echo ""
@@ -68,7 +68,7 @@ if [ -z "$ENV" ] || { [ "$ENV" != "dev" ] && [ "$ENV" != "test" ] && [ "$ENV" !=
   echo "    4) Optionally setup a CLI SQL Client (jaqy) automatically connecting to the POD"
   echo "    5) Destroy the port forwarding pod on completion"
   echo "    "
-  echo "    It's recommended that an environment variable named 'PORT_FORWARD_CONTAINER_NAME' is"
+  echo "    It's recommended that an environment variable named 'CP_PORT_FORWARD_CONTAINER_NAME' is"
   echo "    configured to provide the default port forward pod name. This should be unique for each user"
   echo "    (e.g. port-forward-pod-{initials}) because each pod can only be used for one port forward"
   echo "    session at a time"
@@ -79,7 +79,7 @@ if [ -z "$ENV" ] || { [ "$ENV" != "dev" ] && [ "$ENV" != "test" ] && [ "$ENV" !=
   echo ""
   echo "    -i    Image to use for the port forward container. Defaults to ministryofjustice/port-forward"
   echo ""
-  echo "    -n    Name to use for the port forward container. If not defined, will use the PORT_FORWARD_CONTAINER_NAME env var. This must be unique for each user (they cannot be shared)"
+  echo "    -n    Name to use for the port forward container."
   echo ""
   echo "    -p    Port used for local and remote forwarding. Defaults to 5432"
   echo ""
@@ -95,9 +95,12 @@ NAMESPACE="hmpps-community-payback-$ENV"
 
 if [ -z "${PORT_FORWARD_CONTAINER_NAME}" ]
 then
-  PORT_FORWARD_CONTAINER_NAME='port-forward-pod'
-else
-  PORT_FORWARD_CONTAINER_NAME=${PORT_FORWARD_CONTAINER_NAME}
+  if [ -z "${CP_PORT_FORWARD_CONTAINER_NAME}" ]
+  then
+    PORT_FORWARD_CONTAINER_NAME='port-forward-pod'
+  else
+    PORT_FORWARD_CONTAINER_NAME="${CP_PORT_FORWARD_CONTAINER_NAME}"
+  fi
 fi
 
 echo "---------------------------------------------------------------"
