@@ -13,6 +13,7 @@ import io.swagger.v3.oas.models.responses.ApiResponse
 import io.swagger.v3.oas.models.security.SecurityScheme
 import io.swagger.v3.oas.models.servers.Server
 import org.springdoc.core.customizers.OpenApiCustomizer
+import org.springdoc.core.models.GroupedOpenApi
 import org.springframework.boot.info.BuildProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -47,6 +48,21 @@ class OpenApiConfiguration(buildProperties: BuildProperties) {
         SecurityScheme().addBearerJwtRequirement("ROLE_COMMUNITY_PAYBACK__COMMUNITY_PAYBACK_UI"),
       ),
     )
+
+  @Bean
+  fun allEndpoints(): GroupedOpenApi = GroupedOpenApi.builder()
+    .group("All")
+    .displayName("All Endpoints")
+    .addOpenApiCustomizer(errorResponsesCustomizer())
+    .build()
+
+  @Bean
+  fun forCommunityPaybackUI(): GroupedOpenApi = GroupedOpenApi.builder()
+    .group("ForCommunityPaybackUI")
+    .displayName("For Community Payback UI")
+    .pathsToExclude("/queue-admin/**")
+    .addOpenApiCustomizer(errorResponsesCustomizer())
+    .build()
 
   private fun SecurityScheme.addBearerJwtRequirement(role: String): SecurityScheme = type(SecurityScheme.Type.HTTP)
     .scheme("bearer")
