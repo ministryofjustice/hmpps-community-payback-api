@@ -202,5 +202,17 @@ class ProvidersIT : IntegrationTestBase() {
 
       Assertions.assertThat(supervisors.supervisors).isEmpty()
     }
+
+    @Test
+    fun `should return 404 when no team found`() {
+      CommunityPaybackAndDeliusMockServer.teamSupervisorsNotFound()
+
+      webTestClient.get()
+        .uri("/providers/666/teams/66/supervisors")
+        .addUiAuthHeader()
+        .exchange()
+        .expectStatus()
+        .isNotFound
+    }
   }
 }

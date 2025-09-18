@@ -135,6 +135,18 @@ class ProjectsIT : IntegrationTestBase() {
 
       assertThat(allocations.allocations).isEmpty()
     }
+
+    @Test
+    fun `should return 404 when no team found`() {
+      CommunityPaybackAndDeliusMockServer.projectAllocationsNotFound()
+
+      webTestClient.get()
+        .uri("/projects/allocations?startDate=2025-01-09&endDate=2025-07-09&teamId=666")
+        .addUiAuthHeader()
+        .exchange()
+        .expectStatus()
+        .isNotFound
+    }
   }
 
   @Nested
@@ -291,6 +303,20 @@ class ProjectsIT : IntegrationTestBase() {
 
       assertThat(allocations.appointments[1].offender.crn).isEqualTo("CRN2")
       assertThat(allocations.appointments[1].offender).isInstanceOf(OffenderDto.OffenderLimitedDto::class.java)
+    }
+
+    @Test
+    fun `should return 404 id project is not found`() {
+      CommunityPaybackAndDeliusMockServer.projectAppointmentsNotFound(
+        projectId = 666L,
+      )
+
+      webTestClient.get()
+        .uri("/projects/666/appointments?date=2025-01-09")
+        .addUiAuthHeader()
+        .exchange()
+        .expectStatus()
+        .isNotFound
     }
   }
 }

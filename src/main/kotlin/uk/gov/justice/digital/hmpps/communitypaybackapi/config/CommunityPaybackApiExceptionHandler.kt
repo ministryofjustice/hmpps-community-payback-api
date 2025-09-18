@@ -12,6 +12,7 @@ import org.springframework.security.access.AccessDeniedException
 import org.springframework.web.bind.MissingServletRequestParameterException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
+import org.springframework.web.reactive.function.client.WebClientResponseException
 import org.springframework.web.servlet.resource.NoResourceFoundException
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 
@@ -54,6 +55,17 @@ class CommunityPaybackApiExceptionHandler {
         developerMessage = e.message,
       ),
     ).also { log.debug("Forbidden (403) returned: {}", e.message) }
+
+  @ExceptionHandler(WebClientResponseException.NotFound::class)
+  fun handleNotFound(e: WebClientResponseException.NotFound): ResponseEntity<ErrorResponse> = ResponseEntity
+    .status(NOT_FOUND)
+    .body(
+      ErrorResponse(
+        status = NOT_FOUND,
+        userMessage = "Not found: ${e.message}",
+        developerMessage = e.message,
+      ),
+    ).also { log.debug("Not Found (404) returned: {}", e.message) }
 
   @ExceptionHandler(Exception::class)
   fun handleException(e: Exception): ResponseEntity<ErrorResponse> = ResponseEntity

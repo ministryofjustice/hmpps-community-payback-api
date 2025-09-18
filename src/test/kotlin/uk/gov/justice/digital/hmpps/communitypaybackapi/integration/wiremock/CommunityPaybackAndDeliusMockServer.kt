@@ -79,6 +79,32 @@ object CommunityPaybackAndDeliusMockServer {
     )
   }
 
+  fun projectAppointmentsNotFound(
+    projectId: Long,
+  ) {
+    WireMock.stubFor(
+      get("/community-payback-and-delius/projects/$projectId/appointments?date=2025-01-09")
+        .willReturn(
+          aResponse()
+            .withStatus(404)
+            .withHeader("Content-Type", "application/json")
+            .withBody("""{"error": "Not found", "message": "Project not found"}"""),
+        ),
+    )
+  }
+
+  fun projectAllocationsNotFound() {
+    WireMock.stubFor(
+      get("/community-payback-and-delius/project-allocations?startDate=2025-01-09&endDate=2025-07-09&teamId=666")
+        .willReturn(
+          aResponse()
+            .withStatus(404)
+            .withHeader("Content-Type", "application/json")
+            .withBody("""{"error": "Not found", "message": "Team not found"}"""),
+        ),
+    )
+  }
+
   fun projectTypes(
     projectTypes: ProjectTypes,
   ) {
@@ -141,6 +167,18 @@ object CommunityPaybackAndDeliusMockServer {
           aResponse()
             .withHeader("Content-Type", "application/json")
             .withBody(objectMapper.writer().writeValueAsString(supervisorSummaries)),
+        ),
+    )
+  }
+
+  fun teamSupervisorsNotFound() {
+    WireMock.stubFor(
+      get("/community-payback-and-delius/providers/666/teams/66/supervisors")
+        .willReturn(
+          aResponse()
+            .withStatus(404)
+            .withHeader("Content-Type", "application/json")
+            .withBody("""{"error": "Not found", "message": "Project or team not found"}"""),
         ),
     )
   }
