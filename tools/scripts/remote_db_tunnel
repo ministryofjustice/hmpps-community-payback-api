@@ -133,7 +133,7 @@ then
         --port=$PORT \
         --env="REMOTE_HOST=$rds_instance_endpoint" \
         --env="LOCAL_PORT=$PORT" \
-        --env="REMOTE_PORT=$PORT"
+        --env="REMOTE_PORT=5432"
     kubectl wait --for=condition=ready pod/$PORT_FORWARD_CONTAINER_NAME -n "$NAMESPACE"
     echo "Port-forward pod $PORT_FORWARD_CONTAINER_NAME created!"
 else

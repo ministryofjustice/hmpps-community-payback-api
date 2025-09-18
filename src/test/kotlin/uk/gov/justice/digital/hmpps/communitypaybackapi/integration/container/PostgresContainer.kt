@@ -9,7 +9,7 @@ import java.net.ServerSocket
 object PostgresContainer {
   val instance: PostgreSQLContainer<Nothing>? by lazy { startPostgresqlContainer() }
   private fun startPostgresqlContainer(): PostgreSQLContainer<Nothing>? = if (checkPostgresRunning().not()) {
-    PostgreSQLContainer<Nothing>("postgres:17.6").apply {
+    PostgreSQLContainer<Nothing>("postgres:16.8").apply {
       withEnv("HOSTNAME_EXTERNAL", "localhost")
       withExposedPorts(5432)
       withDatabaseName("community_payback")
