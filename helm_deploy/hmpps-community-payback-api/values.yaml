@@ -33,6 +33,7 @@ generic-service:
     SENTRY_TRACES-SAMPLE-RATE: 0.01
     APPLICATIONINSIGHTS_CONFIGURATION_FILE: applicationinsights.json
     CLIENT_COMMUNITY_PAYBACK_AND_DELIUS_URL: "http://localhost:8080/mocks/community-payback-and-delius"
+    SPRING_DATASOURCE_URL: "jdbc:postgresql://${DB_HOST}/${DB_NAME}"
 
   # Pre-existing kubernetes secrets to load as environment variables in the deployment.
   # namespace_secrets:
@@ -46,6 +47,11 @@ generic-service:
       SENTRY_DSN: "SENTRY_DSN"
     hmpps-domain-events-topic:
       HMPPS_SQS_TOPICS_HMPPSEVENTTOPIC_ARN: "topic_arn"
+    rds-postgresql-instance-output:
+      SPRING_DATASOURCE_USERNAME: "database_username"
+      SPRING_DATASOURCE_PASSWORD: "database_password"
+      DB_HOST: "rds_instance_endpoint"
+      DB_NAME: "database_name"
 
   allowlist:
     groups:

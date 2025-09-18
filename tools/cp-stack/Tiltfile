@@ -3,6 +3,7 @@ docker_compose("./compose.yml")
 resources = [
     "localstack",
     "wiremock",
+    "postgres",
 ]
 
 config.define_bool("local-api")

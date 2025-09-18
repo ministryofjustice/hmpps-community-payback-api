@@ -8,6 +8,7 @@ services:
     pull_policy: always
     depends_on:
       - wiremock
+      - postgres
     # using raw format disables interpolation, which causes errors when values include '$'
     # note that intellij doesn't think this is valid but is i
     # https://youtrack.jetbrains.com/issue/IJPL-68738/Docker-Compose.-Editor.-Path-property-of-envfile-attribute-is-not-recognized
@@ -17,6 +18,11 @@ services:
     environment:
       - HMPPS_SQS_LOCALSTACKURL=http://localstack:4566
       - CLIENT_COMMUNITY_PAYBACK_AND_DELIUS_URL=http://wiremock:8080/community-payback-and-delius-proxy
+      # Override DB settings when running the API in a container to address service DNS
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/community_payback
+      - SPRING_DATASOURCE_USERNAME=community_payback
+      - SPRING_DATASOURCE_PASSWORD=community_payback
+      - SPRING_FLYWAY_ENABLED=true
     ports:
       - "8080:8080"
 
@@ -61,3 +67,20 @@ services:
       # in wiremock outputs in verbose request/response logs, and
       # we're not interested in seeing this request
       test: bash -c "exec 6<> /dev/tcp/localhost/8080"
+
+  postgres:
+    image: "postgres:latest"
+    container_name: cp-tools-postgres
+    environment:
+      - POSTGRES_USER=community_payback
+      - POSTGRES_PASSWORD=community_payback
+      - POSTGRES_DB=community_payback
+    volumes:
+      - cp-tool-postgres-data-api:/var/lib/postgresql/data/
+    ports:
+      - "5431:5432"
+    healthcheck:
+      test: pg_isready -U community_payback -d community_payback
+
+volumes:
+  cp-tool-postgres-data-api:
