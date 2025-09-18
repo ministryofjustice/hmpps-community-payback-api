@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS appointment_outcomes (
+CREATE TABLE appointment_outcomes (
     id UUID PRIMARY KEY,
     appointment_delius_id BIGINT NOT NULL,
     project_type_delius_id BIGINT NOT NULL,
@@ -11,8 +11,8 @@ CREATE TABLE IF NOT EXISTS appointment_outcomes (
     hi_vis_worn BOOLEAN,
     worked_intensively BOOLEAN,
     penalty_minutes BIGINT CHECK (penalty_minutes >= 0),
-    work_quality TEXT CHECK (work_quality IN ('Excellent', 'Good', 'Not Applicable', 'Poor', 'Satisfactory', 'Unsatisfactory')),
-    behaviour TEXT CHECK (behaviour IN ('Excellent', 'Good', 'Not Applicable', 'Poor', 'Satisfactory', 'Unsatisfactory')),
+    work_quality TEXT CHECK (work_quality IN ('EXCELLENT', 'GOOD', 'NOT_APPLICABLE', 'POOR', 'SATISFACTORY', 'UNSATISFACTORY')),
+    behaviour TEXT CHECK (behaviour IN ('EXCELLENT', 'GOOD', 'NOT_APPLICABLE', 'POOR', 'SATISFACTORY', 'UNSATISFACTORY')),
     enforcement_action_delius_id BIGINT,
     respond_by DATE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,

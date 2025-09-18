@@ -89,7 +89,7 @@ if [ -z "$ENV" ] || { [ "$ENV" != "dev" ] && [ "$ENV" != "test" ] && [ "$ENV" !=
 fi
 
 NAMESPACE="hmpps-community-payback-$ENV"
-[ -z "${PORT}" ] && PORT=5432
+[ -z "${PORT}" ] && PORT=5433
 [ -z "${RDS_SECRET_NAME}" ] && RDS_SECRET_NAME='rds-postgresql-instance-output' #most used name for the rds instance secret.
 [ -z "${IMAGE}" ] && IMAGE='ministryofjustice/port-forward'
 

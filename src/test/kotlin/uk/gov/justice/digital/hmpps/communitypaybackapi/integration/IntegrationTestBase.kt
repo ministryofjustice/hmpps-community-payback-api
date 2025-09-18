@@ -12,6 +12,7 @@ import org.wiremock.spring.EnableWireMock
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.container.LocalStackContainer
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.container.LocalStackContainer.setLocalStackProperties
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.container.PostgresContainer
+import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.container.PostgresContainer.setPostgresProperties
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.HmppsAuthMockServer
 import uk.gov.justice.hmpps.test.kotlin.auth.JwtAuthorisationHelper
 
@@ -39,12 +40,7 @@ abstract class IntegrationTestBase {
       localStackContainer?.also { setLocalStackProperties(it, registry) }
 
       // Set Postgres datasource properties
-      postgresContainer?.also { pg ->
-        registry.add("spring.datasource.url") { pg.jdbcUrl }
-        registry.add("spring.datasource.username") { pg.username }
-        registry.add("spring.datasource.password") { pg.password }
-        registry.add("spring.flyway.enabled") { true }
-      }
+      postgresContainer?.also { setPostgresProperties(it, registry) }
     }
   }
 

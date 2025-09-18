@@ -4,7 +4,7 @@ services:
     # To build locally, comment out `image` and uncomment `build`
     image: ghcr.io/ministryofjustice/hmpps-community-payback-api:latest
     #build: ../../
-    container_name: cp-tools-api
+    container_name: cp-stack-api
     pull_policy: always
     depends_on:
       - wiremock
@@ -20,15 +20,12 @@ services:
       - CLIENT_COMMUNITY_PAYBACK_AND_DELIUS_URL=http://wiremock:8080/community-payback-and-delius-proxy
       # Override DB settings when running the API in a container to address service DNS
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/community_payback
-      - SPRING_DATASOURCE_USERNAME=community_payback
-      - SPRING_DATASOURCE_PASSWORD=community_payback
-      - SPRING_FLYWAY_ENABLED=true
     ports:
       - "8080:8080"
 
   ui:
     image: ghcr.io/ministryofjustice/hmpps-community-payback-ui:latest
-    container_name: cp-tools-ui
+    container_name: cp-stack-ui
     pull_policy: always
     env_file:
       - path: .env.ui
@@ -41,7 +38,7 @@ services:
 
   localstack:
     image: localstack/localstack:latest
-    container_name: cp-tools-localstack
+    container_name: cp-stack-localstack
     ports:
       - "4566:4566"
       - "4571:4571"
@@ -69,18 +66,18 @@ services:
       test: bash -c "exec 6<> /dev/tcp/localhost/8080"
 
   postgres:
-    image: "postgres:17.6"
-    container_name: cp-tools-postgres
+    image: "postgres:16.8"
+    container_name: cp-stack-postgres
     environment:
       - POSTGRES_USER=community_payback
       - POSTGRES_PASSWORD=community_payback
       - POSTGRES_DB=community_payback
     volumes:
-      - cp-tool-postgres-data-api:/var/lib/postgresql/data/
+      - cp-stack-postgres-data-api:/var/lib/postgresql/data/
     ports:
       - "5431:5432"
     healthcheck:
       test: pg_isready -U community_payback -d community_payback
 
 volumes:
-  cp-tool-postgres-data-api:
+  cp-stack-postgres-data-api:

@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.integration.container
 
+import org.springframework.test.context.DynamicPropertyRegistry
 import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.containers.wait.strategy.Wait
 import java.io.IOException
@@ -27,5 +28,11 @@ object PostgresContainer {
     serverSocket.localPort == 0
   } catch (_: IOException) {
     true
+  }
+
+  fun setPostgresProperties(postgreSQLContainer: PostgreSQLContainer<Nothing>, registry: DynamicPropertyRegistry) {
+    registry.add("spring.datasource.url") { postgreSQLContainer.jdbcUrl }
+    registry.add("spring.datasource.username") { postgreSQLContainer.username }
+    registry.add("spring.datasource.password") { postgreSQLContainer.password }
   }
 }
