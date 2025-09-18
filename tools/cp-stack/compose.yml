@@ -69,7 +69,7 @@ services:
       test: bash -c "exec 6<> /dev/tcp/localhost/8080"
 
   postgres:
-    image: "postgres:latest"
+    image: "postgres:17.6"
     container_name: cp-tools-postgres
     environment:
       - POSTGRES_USER=community_payback

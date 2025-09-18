@@ -47,6 +47,7 @@ dependencies {
   testImplementation("org.wiremock.integrations:wiremock-spring-boot:3.10.6")
   testImplementation("io.mockk:mockk:1.14.5")
   testImplementation("com.lemonappdev:konsist:0.17.3")
+  testImplementation("org.testcontainers:postgresql:1.21.3")
 }
 
 kotlin {
