@@ -5,16 +5,27 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ContactOutcome
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ContactOutcomes
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.EnforcementAction
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.EnforcementActions
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectTypes
 import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.dto.ContactOutcomeDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.dto.EnforcementActionDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.dto.ProjectTypeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.service.toDto
 
-class ProjectTypeMappersTest {
+class ReferenceMappersTest {
 
   @Nested
   inner class ProjectTypesMapper {
+
+    @Test
+    fun `should map empty ProjectTypes list correctly`() {
+      val projectTypes = ProjectTypes(emptyList())
+      val projectTypesDto = projectTypes.toDto()
+
+      assertThat(projectTypesDto.projectTypes).isEmpty()
+    }
 
     @Test
     fun `should map ProjectTypes to DTO correctly`() {
@@ -66,18 +77,18 @@ class ProjectTypeMappersTest {
         ),
       )
     }
-
-    @Test
-    fun `should map empty ProjectTypes list correctly`() {
-      val projectTypes = ProjectTypes(emptyList())
-      val projectTypesDto = projectTypes.toDto()
-
-      assertThat(projectTypesDto.projectTypes).isEmpty()
-    }
   }
 
   @Nested
   inner class ContactOutcomesMapper {
+
+    @Test
+    fun `should map empty ContactOutcomes list correctly`() {
+      val contactOutcomes = ContactOutcomes(emptyList())
+      val contactOutcomesDto = contactOutcomes.toDto()
+
+      assertThat(contactOutcomesDto.contactOutcomes).isEmpty()
+    }
 
     @Test
     fun `should map ContactOutcomes to DTO correctly`() {
@@ -131,11 +142,58 @@ class ProjectTypeMappersTest {
     }
   }
 
-  @Test
-  fun `should map empty ContactOutcomes list correctly`() {
-    val contactOutcomes = ContactOutcomes(emptyList())
-    val contactOutcomesDto = contactOutcomes.toDto()
+  @Nested
+  inner class EnforcementActionsMapper {
+    @Test
+    fun `should map empty EnforcementActions list correctly`() {
+      val enforcementActions = EnforcementActions(emptyList())
+      val result = enforcementActions.toDto()
 
-    assertThat(contactOutcomesDto.contactOutcomes).isEmpty()
+      assertThat(result.enforcementActions).isEmpty()
+    }
+
+    @Test
+    fun `should map EnforcementActions to DTO correctly`() {
+      val enforcementActions = EnforcementActions(
+        listOf(
+          EnforcementAction(
+            id = 2,
+            name = "Breach / Recall Initiated",
+          ),
+          EnforcementAction(
+            id = 24,
+            name = "Breach Confirmation Sent",
+          ),
+        ),
+      )
+
+      val result = enforcementActions.toDto()
+
+      assertThat(result.enforcementActions).hasSize(2)
+
+      assertThat(result.enforcementActions[0].id).isEqualTo(2)
+      assertThat(result.enforcementActions[0].name).isEqualTo("Breach / Recall Initiated")
+
+      assertThat(result.enforcementActions[1].id).isEqualTo(24)
+      assertThat(result.enforcementActions[1].name).isEqualTo("Breach Confirmation Sent")
+    }
+  }
+
+  @Nested
+  inner class EnforcementActionMapper {
+    @Test
+    fun `should map EnforcementAction to DTO correctly`() {
+      val enforcementAction = EnforcementAction(
+        id = 2,
+        name = "Breach / Recall Initiated",
+      )
+
+      assertThat(enforcementAction.toDto()).isEqualTo(
+        EnforcementActionDto(
+          id = 2,
+          name = "Breach / Recall Initiated",
+        ),
+      )
+    }
   }
 }

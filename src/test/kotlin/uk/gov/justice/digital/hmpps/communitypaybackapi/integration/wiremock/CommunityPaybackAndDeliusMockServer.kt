@@ -10,6 +10,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.post
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CaseSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ContactOutcomes
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.EnforcementActions
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAllocations
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAppointments
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectTypes
@@ -25,6 +26,19 @@ object CommunityPaybackAndDeliusMockServer {
   val objectMapper = jacksonObjectMapper()
     .registerModule(JavaTimeModule())
     .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+
+  fun enforcementActions(
+    enforcementActions: EnforcementActions,
+  ) {
+    WireMock.stubFor(
+      get("/community-payback-and-delius/references/enforcement-actions")
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withBody(objectMapper.writeValueAsString(enforcementActions)),
+        ),
+    )
+  }
 
   fun providers(
     providers: ProviderSummaries,
