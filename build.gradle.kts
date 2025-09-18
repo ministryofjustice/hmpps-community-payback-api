@@ -2,7 +2,7 @@ import java.net.InetSocketAddress
 import java.net.Socket
 
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "9.0.1"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "9.0.2"
   kotlin("plugin.spring") version "2.2.20"
   id("io.gitlab.arturbosch.detekt") version "1.23.8"
   jacoco
@@ -32,10 +32,10 @@ dependencies {
 
   implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
 
-  implementation("org.flywaydb:flyway-core:11.12.0")
+  implementation("org.flywaydb:flyway-core:11.13.1")
   implementation("org.postgresql:postgresql:42.7.7")
 
-  runtimeOnly("org.flywaydb:flyway-database-postgresql:11.12.0")
+  runtimeOnly("org.flywaydb:flyway-database-postgresql:11.13.1")
 
   testImplementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter-test:1.6.0")
   testImplementation("org.wiremock:wiremock-standalone:3.13.1")
