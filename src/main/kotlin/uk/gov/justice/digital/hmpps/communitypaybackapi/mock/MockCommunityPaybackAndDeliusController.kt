@@ -17,6 +17,8 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CaseSummar
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CaseSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ContactOutcome
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ContactOutcomes
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.EnforcementAction
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.EnforcementActions
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAllocation
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAllocations
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAppointment
@@ -222,6 +224,31 @@ class MockCommunityPaybackAndDeliusController {
       ContactOutcome(id = 1002, "Attended - Complied"),
       ContactOutcome(id = 2002, "Acceptable Absence - Court/Legal"),
       ContactOutcome(id = 3002, "Attended - Failed to Comply"),
+    ),
+  )
+
+  @GetMapping("/references/enforcement-actions")
+  fun getEnforcementActions() = EnforcementActions(
+    listOf(
+      EnforcementAction(id = 1, "Breach / Recall Initiated"),
+      EnforcementAction(id = 2, "Breach Confirmation Sent"),
+      EnforcementAction(id = 3, "Breach Letter Sent"),
+      EnforcementAction(id = 4, "Breach Request Actioned"),
+      EnforcementAction(id = 5, "Breach Requested"),
+      EnforcementAction(id = 6, "Decision Pending Response from Person on Probation"),
+      EnforcementAction(id = 7, "Enforcement Letter Requested"),
+      EnforcementAction(id = 8, "First Warning Letter Sent"),
+      EnforcementAction(id = 9, "Immediate Breach or Recall"),
+      EnforcementAction(id = 10, "Licence Compliance Letter Sent"),
+      EnforcementAction(id = 11, "No Further Action"),
+      EnforcementAction(id = 12, "Other Enforcement Letter Sent"),
+      EnforcementAction(id = 13, "Recall Requested"),
+      EnforcementAction(id = 14, "Refer to Offender Manager"),
+      EnforcementAction(id = 15, "Second Warning Letter Sent"),
+      EnforcementAction(id = 16, "Send Confirmation of Breach"),
+      EnforcementAction(id = 17, "Withdraw Warning Letter"),
+      EnforcementAction(id = 18, "Withdrawal of Warning"),
+      EnforcementAction(id = 19, "YOT OM Notified"),
     ),
   )
 

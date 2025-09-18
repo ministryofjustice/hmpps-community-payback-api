@@ -8,9 +8,9 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.CommunityPaybackController
 import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.dto.ContactOutcomesDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.dto.EnforcementActionsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.dto.ProjectTypesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.service.ReferenceService
-import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 
 @CommunityPaybackController
 @RequestMapping("/references")
@@ -27,16 +27,6 @@ class ReferenceController(val referenceService: ReferenceService) {
           Content(
             mediaType = "application/json",
             schema = Schema(implementation = ProjectTypesDto::class),
-          ),
-        ],
-      ),
-      ApiResponse(
-        responseCode = "400",
-        description = "Bad request",
-        content = [
-          Content(
-            mediaType = "application/json",
-            schema = Schema(implementation = ErrorResponse::class),
           ),
         ],
       ),
@@ -61,4 +51,21 @@ class ReferenceController(val referenceService: ReferenceService) {
     ],
   )
   fun getContactOutcomes(): ContactOutcomesDto = referenceService.getContactOutcomes()
+
+  @GetMapping("/enforcement-actions")
+  @Operation(
+    description = "Get all enforcement actions",
+    responses = [
+      ApiResponse(
+        responseCode = "200",
+        content = [
+          Content(
+            mediaType = "application/json",
+            schema = Schema(implementation = ContactOutcomesDto::class),
+          ),
+        ],
+      ),
+    ],
+  )
+  fun getEnforcementActions(): EnforcementActionsDto = referenceService.getEnforcementActions()
 }

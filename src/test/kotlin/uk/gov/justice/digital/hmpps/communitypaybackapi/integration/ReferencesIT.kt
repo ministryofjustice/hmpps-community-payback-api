@@ -6,11 +6,14 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ContactOutcome
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ContactOutcomes
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.EnforcementAction
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.EnforcementActions
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectTypes
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.bodyAsObject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.CommunityPaybackAndDeliusMockServer
 import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.dto.ContactOutcomesDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.dto.EnforcementActionsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.dto.ProjectTypesDto
 
 class ReferencesIT : IntegrationTestBase() {
@@ -190,6 +193,87 @@ class ReferencesIT : IntegrationTestBase() {
         .bodyAsObject<ContactOutcomesDto>()
 
       assertThat(contactOutcomes.contactOutcomes).isEmpty()
+    }
+  }
+
+  @Nested
+  @DisplayName("GET /references/enforcement-actions")
+  inner class EnforcementActionsEndpoint {
+
+    @Test
+    fun `should return unauthorized if no token`() {
+      webTestClient.get()
+        .uri("/references/enforcement-actions")
+        .exchange()
+        .expectStatus()
+        .isUnauthorized
+    }
+
+    @Test
+    fun `should return forbidden if no role`() {
+      webTestClient.get()
+        .uri("/references/enforcement-actions")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .isForbidden
+    }
+
+    @Test
+    fun `should return forbidden if wrong role`() {
+      webTestClient.get()
+        .uri("/references/enforcement-actions")
+        .headers(setAuthorisation(roles = listOf("ROLE_WRONG")))
+        .exchange()
+        .expectStatus()
+        .isForbidden
+    }
+
+    @Test
+    fun `should return OK with enforcement actions`() {
+      CommunityPaybackAndDeliusMockServer.enforcementActions(
+        EnforcementActions(
+          listOf(
+            EnforcementAction(
+              id = 2,
+              name = "Breach / Recall Initiated",
+            ),
+            EnforcementAction(
+              id = 24,
+              name = "Breach Confirmation Sent",
+            ),
+          ),
+        ),
+      )
+
+      val result = webTestClient.get()
+        .uri("/references/enforcement-actions")
+        .addUiAuthHeader()
+        .exchange()
+        .expectStatus()
+        .isOk
+        .bodyAsObject<EnforcementActionsDto>()
+
+      assertThat(result.enforcementActions).hasSize(2)
+      assertThat(result.enforcementActions[0].id).isEqualTo(2)
+      assertThat(result.enforcementActions[0].name).isEqualTo("Breach / Recall Initiated")
+    }
+
+    @Test
+    fun `should return empty list when no enforcement actions found`() {
+      CommunityPaybackAndDeliusMockServer.enforcementActions(
+        EnforcementActions(emptyList()),
+      )
+
+      val result = webTestClient.get()
+        .uri("/references/enforcement-actions")
+        .addUiAuthHeader()
+        .exchange()
+        .expectStatus()
+        .isOk
+        .bodyAsObject<EnforcementActionsDto>()
+
+      assertThat(result.enforcementActions).isEmpty()
     }
   }
 }
