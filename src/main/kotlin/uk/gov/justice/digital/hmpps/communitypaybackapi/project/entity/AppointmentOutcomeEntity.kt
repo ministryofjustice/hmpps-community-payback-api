@@ -1,15 +1,18 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.project.entity
 
-import jakarta.persistence.*
+import jakarta.persistence.Entity
+import jakarta.persistence.EnumType
+import jakarta.persistence.Enumerated
+import jakarta.persistence.Id
+import jakarta.persistence.Table
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.OffsetDateTime
-import java.util.*
-
+import java.util.UUID
 
 @Entity
 @Table(name = "appointment_outcomes")
-data class AppointmentOutcomeEntity (
+data class AppointmentOutcomeEntity(
 
   @Id
   val id: UUID,
@@ -51,7 +54,7 @@ enum class WorkQuality {
   NOT_APPLICABLE,
   POOR,
   SATISFACTORY,
-  UNSATISFACTORY
+  UNSATISFACTORY,
 }
 
 enum class Behaviour {
@@ -60,5 +63,5 @@ enum class Behaviour {
   NOT_APPLICABLE,
   POOR,
   SATISFACTORY,
-  UNSATISFACTORY
+  UNSATISFACTORY,
 }
