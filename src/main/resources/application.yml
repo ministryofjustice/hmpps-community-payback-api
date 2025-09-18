@@ -3,6 +3,10 @@ info.app:
   version: 1.0
 
 spring:
+  jpa:
+    open-in-view: true
+  flyway:
+    enabled: true
   application:
     name: hmpps-community-payback-api
   codec:

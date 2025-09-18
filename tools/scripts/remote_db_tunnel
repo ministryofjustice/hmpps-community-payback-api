@@ -89,7 +89,7 @@ if [ -z "$ENV" ] || { [ "$ENV" != "dev" ] && [ "$ENV" != "test" ] && [ "$ENV" !=
 fi
 
 NAMESPACE="hmpps-community-payback-$ENV"
-[ -z "${PORT}" ] && PORT=5432
+[ -z "${PORT}" ] && PORT=5433
 [ -z "${RDS_SECRET_NAME}" ] && RDS_SECRET_NAME='rds-postgresql-instance-output' #most used name for the rds instance secret.
 [ -z "${IMAGE}" ] && IMAGE='ministryofjustice/port-forward'
 
@@ -133,7 +133,7 @@ then
         --port=$PORT \
         --env="REMOTE_HOST=$rds_instance_endpoint" \
         --env="LOCAL_PORT=$PORT" \
-        --env="REMOTE_PORT=$PORT"
+        --env="REMOTE_PORT=5432"
     kubectl wait --for=condition=ready pod/$PORT_FORWARD_CONTAINER_NAME -n "$NAMESPACE"
     echo "Port-forward pod $PORT_FORWARD_CONTAINER_NAME created!"
 else

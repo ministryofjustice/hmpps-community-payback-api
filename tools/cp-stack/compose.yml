@@ -4,10 +4,11 @@ services:
     # To build locally, comment out `image` and uncomment `build`
     image: ghcr.io/ministryofjustice/hmpps-community-payback-api:latest
     #build: ../../
-    container_name: cp-tools-api
+    container_name: cp-stack-api
     pull_policy: always
     depends_on:
       - wiremock
+      - postgres
     # using raw format disables interpolation, which causes errors when values include '$'
     # note that intellij doesn't think this is valid but is i
     # https://youtrack.jetbrains.com/issue/IJPL-68738/Docker-Compose.-Editor.-Path-property-of-envfile-attribute-is-not-recognized
@@ -17,12 +18,14 @@ services:
     environment:
       - HMPPS_SQS_LOCALSTACKURL=http://localstack:4566
       - CLIENT_COMMUNITY_PAYBACK_AND_DELIUS_URL=http://wiremock:8080/community-payback-and-delius-proxy
+      # Override DB settings when running the API in a container to address service DNS
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/community_payback
     ports:
       - "8080:8080"
 
   ui:
     image: ghcr.io/ministryofjustice/hmpps-community-payback-ui:latest
-    container_name: cp-tools-ui
+    container_name: cp-stack-ui
     pull_policy: always
     env_file:
       - path: .env.ui
@@ -35,7 +38,7 @@ services:
 
   localstack:
     image: localstack/localstack:latest
-    container_name: cp-tools-localstack
+    container_name: cp-stack-localstack
     ports:
       - "4566:4566"
       - "4571:4571"
@@ -61,3 +64,20 @@ services:
       # in wiremock outputs in verbose request/response logs, and
       # we're not interested in seeing this request
       test: bash -c "exec 6<> /dev/tcp/localhost/8080"
+
+  postgres:
+    image: "postgres:16.8"
+    container_name: cp-stack-postgres
+    environment:
+      - POSTGRES_USER=community_payback
+      - POSTGRES_PASSWORD=community_payback
+      - POSTGRES_DB=community_payback
+    volumes:
+      - cp-stack-postgres-data-api:/var/lib/postgresql/data/
+    ports:
+      - "5431:5432"
+    healthcheck:
+      test: pg_isready -U community_payback -d community_payback
+
+volumes:
+  cp-stack-postgres-data-api:

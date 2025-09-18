@@ -28,8 +28,14 @@ dependencies {
 
   implementation("org.springframework.boot:spring-boot-starter-webflux")
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.13")
+  implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 
   implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
+
+  implementation("org.flywaydb:flyway-core:11.12.0")
+  implementation("org.postgresql:postgresql:42.7.7")
+
+  runtimeOnly("org.flywaydb:flyway-database-postgresql:11.12.0")
 
   testImplementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter-test:1.6.0")
   testImplementation("org.wiremock:wiremock-standalone:3.13.1")
@@ -41,6 +47,7 @@ dependencies {
   testImplementation("org.wiremock.integrations:wiremock-spring-boot:3.10.6")
   testImplementation("io.mockk:mockk:1.14.5")
   testImplementation("com.lemonappdev:konsist:0.17.3")
+  testImplementation("org.testcontainers:postgresql:1.21.3")
 }
 
 kotlin {
