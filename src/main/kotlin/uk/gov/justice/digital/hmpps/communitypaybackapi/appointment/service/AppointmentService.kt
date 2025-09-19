@@ -10,11 +10,14 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.entity.Appoi
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.entity.AppointmentOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.entity.Behaviour
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.entity.WorkQuality
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.service.DomainEventService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.service.DomainEventType
 import java.util.UUID
 
 @Service
 class AppointmentService(
   val appointmentOutcomeEntityRepository: AppointmentOutcomeEntityRepository,
+  val domainEventService: DomainEventService,
 ) {
   private companion object {
     private val log = LoggerFactory.getLogger(this::class.java)
@@ -41,7 +44,15 @@ class AppointmentService(
       return
     }
 
-    appointmentOutcomeEntityRepository.save(proposedEntity)
+    val persistedEntity = appointmentOutcomeEntityRepository.save(proposedEntity)
+
+    // DA: I think we need to populate
+    // additionalInformation - add appointment id
+    // personReference - offender CRN. would need a new endpoint to get this, unless UI provided it
+    domainEventService.publish(
+      id = persistedEntity.id,
+      type = DomainEventType.APPOINTMENT_OUTCOME,
+    )
   }
 
   fun toEntity(deliusId: Long, outcome: UpdateAppointmentOutcomeDto) = AppointmentOutcomeEntity(

@@ -1,9 +1,11 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.unit.appointment.service
 
+import io.mockk.Runs
 import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
+import io.mockk.just
 import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
@@ -20,6 +22,8 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.entity.Appoi
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.entity.Behaviour
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.entity.WorkQuality
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.service.AppointmentService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.service.DomainEventService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.service.DomainEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import java.time.LocalDate
 import java.time.LocalTime
@@ -31,6 +35,9 @@ class AppointmentServiceTest {
   @MockK
   lateinit var appointmentOutcomeEntityRepository: AppointmentOutcomeEntityRepository
 
+  @MockK
+  lateinit var domainEventService: DomainEventService
+
   @InjectMockKs
   private lateinit var service: AppointmentService
 
@@ -38,12 +45,14 @@ class AppointmentServiceTest {
   inner class UpdateAppointmentsOutcome {
 
     @Test
-    fun `if there's no existing entries for the delius appointment ids, persist new entries`() {
+    fun `if there's no existing entries for the delius appointment ids, persist new entries and raise domain events`() {
       every { appointmentOutcomeEntityRepository.findTopByAppointmentDeliusIdOrderByUpdatedAtDesc(1L) } returns null
       every { appointmentOutcomeEntityRepository.findTopByAppointmentDeliusIdOrderByUpdatedAtDesc(2L) } returns null
 
       val entityCaptor = mutableListOf<AppointmentOutcomeEntity>()
       every { appointmentOutcomeEntityRepository.save(capture(entityCaptor)) } returnsArgument 0
+
+      every { domainEventService.publish(any(), any()) } just Runs
 
       service.updateAppointmentsOutcome(
         UpdateAppointmentOutcomesDto(
@@ -91,10 +100,13 @@ class AppointmentServiceTest {
       assertThat(firstEntity.behaviour).isEqualTo(Behaviour.UNSATISFACTORY)
       assertThat(firstEntity.enforcementActionDeliusId).isEqualTo(12L)
       assertThat(firstEntity.respondBy).isEqualTo(LocalDate.of(2026, 8, 10))
+
+      verify { domainEventService.publish(entityCaptor[0].id, DomainEventType.APPOINTMENT_OUTCOME) }
+      verify { domainEventService.publish(entityCaptor[1].id, DomainEventType.APPOINTMENT_OUTCOME) }
     }
 
     @Test
-    fun `if there's an existing entry for the delius appointment id but it's not logically identical, persist new entry`() {
+    fun `if there's an existing entry for the delius appointment id and it's logically identical, do not persist a new entry`() {
       val updateAppointmentDto = UpdateAppointmentOutcomesDto.valid(1L)
 
       val existingIdenticalEntity = service.toEntity(1L, updateAppointmentDto.outcomeData)
@@ -108,7 +120,7 @@ class AppointmentServiceTest {
     }
 
     @Test
-    fun `if there's an existing entry for the delius appointment id and it's logically identical, do not persist a new entry`() {
+    fun `if there's an existing entry for the delius appointment id but it's not logically identical, persist new entry and raise domain event`() {
       val updateAppointmentDto = UpdateAppointmentOutcomesDto.valid(1L)
 
       val existingAlmostIdenticalEntity = service.toEntity(1L, updateAppointmentDto.outcomeData)
@@ -121,9 +133,12 @@ class AppointmentServiceTest {
         appointmentOutcomeEntityRepository.save(any())
       } returnsArgument 0
 
+      every { domainEventService.publish(any(), any()) } just Runs
+
       service.updateAppointmentsOutcome(updateAppointmentDto)
 
       verify { appointmentOutcomeEntityRepository.save(any()) }
+      verify { domainEventService.publish(any(), DomainEventType.APPOINTMENT_OUTCOME) }
     }
   }
 }
