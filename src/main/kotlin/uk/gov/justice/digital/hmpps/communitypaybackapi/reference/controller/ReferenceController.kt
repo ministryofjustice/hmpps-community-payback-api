@@ -61,7 +61,7 @@ class ReferenceController(val referenceService: ReferenceService) {
         content = [
           Content(
             mediaType = "application/json",
-            schema = Schema(implementation = ContactOutcomesDto::class),
+            schema = Schema(implementation = EnforcementActionsDto::class),
           ),
         ],
       ),
