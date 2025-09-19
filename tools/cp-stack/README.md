@@ -48,7 +48,9 @@ If using the 'local' options, the UI and/or API will be run directly from your c
 
 To stop the stack, use
 
-``cp-stack stop``
+``cp-stack stop [--clear-databases]``
+
+The API database will be retained over stop/starts of the stack, unless `--clear-databases` is specified when stopping the stack
 
 ## Service Ports
 

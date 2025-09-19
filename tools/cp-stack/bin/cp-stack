@@ -11,18 +11,20 @@ pre_reqs() {
   "$(dirname "$0")/utils/launch-docker.sh"
 }
 
-command=$1 ; shift
+command=$1
 
 if [ "$command" = "start" ]; then
   pre_reqs
+  shift
   "$(dirname "$0")/start-server" "$@"
 elif [ "$command" = "stop" ]; then
   pre_reqs
+  shift
   "$(dirname "$0")/stop-server" "$@"
 else
-  echo "Usage: ap-tools <command>"
+  echo "Usage: cp-stack <command>"
   echo "Commands:"
-  echo "  server start [--local-ui] [--local-api]"
-  echo "  server stop"
+  echo "  start [--local-ui] [--local-api]"
+  echo "  stop [--clear-databases]"
   exit 1
 fi
