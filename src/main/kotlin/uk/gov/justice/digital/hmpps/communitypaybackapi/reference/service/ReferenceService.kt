@@ -11,7 +11,7 @@ class ReferenceService(
 ) {
   fun getProjectTypes() = communityPaybackAndDeliusClient.getProjectTypes().toDto()
 
-  fun getContactOutcomes() = contactOutcomeEntityRepository.findAll().toDto()
+  fun getContactOutcomes() = contactOutcomeEntityRepository.findAll().sortedBy { it.name }.toDto()
 
   fun getEnforcementActions() = communityPaybackAndDeliusClient.getEnforcementActions().toDto()
 }
