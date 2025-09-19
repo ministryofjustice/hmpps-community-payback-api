@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.integration
 
-import org.junit.jupiter.api.AfterEach
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
@@ -10,7 +9,6 @@ import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.wiremock.spring.EnableWireMock
-import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.entity.AppointmentOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.container.LocalStackContainer
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.container.LocalStackContainer.setLocalStackProperties
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.container.PostgresContainer
@@ -29,9 +27,6 @@ abstract class IntegrationTestBase {
   @Autowired
   protected lateinit var jwtAuthHelper: JwtAuthorisationHelper
 
-  @Autowired(required = false)
-  private lateinit var appointmentOutcomeEntityRepository: AppointmentOutcomeEntityRepository
-
   companion object {
     private val localStackContainer = LocalStackContainer.instance
     private val postgresContainer = PostgresContainer.instance
@@ -46,14 +41,6 @@ abstract class IntegrationTestBase {
 
       // Set Postgres datasource properties
       postgresContainer?.also { setPostgresProperties(it, registry) }
-    }
-  }
-
-  @AfterEach
-  fun cleanDatabase() {
-    // Clear mutable data created during tests. Keep reference data (contact_outcomes) intact.
-    if (this::appointmentOutcomeEntityRepository.isInitialized) {
-      appointmentOutcomeEntityRepository.deleteAll()
     }
   }
 
