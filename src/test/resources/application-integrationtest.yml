@@ -5,6 +5,10 @@ management.endpoint:
   health.cache.time-to-live: 0
   info.cache.time-to-live: 0
 
+spring:
+  jpa:
+    show-sql: true
+
 community-payback:
   request-logging-enabled: true
 
