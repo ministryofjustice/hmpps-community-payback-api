@@ -4,14 +4,18 @@ import java.net.Socket
 plugins {
   id("uk.gov.justice.hmpps.gradle-spring-boot") version "9.0.2"
   kotlin("plugin.spring") version "2.2.20"
+  kotlin("plugin.jpa") version "2.2.20"
   id("io.gitlab.arturbosch.detekt") version "1.23.8"
   jacoco
   id("io.sentry.jvm.gradle") version "5.11.0"
 }
 
 configurations {
-  testImplementation { exclude(group = "org.junit.vintage") }
-  testImplementation { exclude(group = "org.mockito") }
+  testImplementation {
+    exclude(group = "org.junit.vintage")
+    exclude(group = "org.mockito")
+    exclude(group = "org.mockito.kotlin")
+  }
 }
 
 configurations.matching { it.name == "detekt" }.all {
