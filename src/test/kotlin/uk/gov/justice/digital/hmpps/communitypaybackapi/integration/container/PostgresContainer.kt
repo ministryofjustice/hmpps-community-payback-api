@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.integration.container
 
+import org.slf4j.LoggerFactory
 import org.springframework.test.context.DynamicPropertyRegistry
 import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.containers.wait.strategy.Wait
@@ -7,9 +8,12 @@ import java.io.IOException
 import java.net.ServerSocket
 
 object PostgresContainer {
+  private val log = LoggerFactory.getLogger(this::class.java)
+
   val instance: PostgreSQLContainer<Nothing>? by lazy { startPostgresqlContainer() }
   private fun startPostgresqlContainer(): PostgreSQLContainer<Nothing>? = if (checkPostgresRunning().not()) {
     PostgreSQLContainer<Nothing>("postgres:16.8").apply {
+      log.info("Starting postgres via test containers")
       withEnv("HOSTNAME_EXTERNAL", "localhost")
       withExposedPorts(5432)
       withDatabaseName("community_payback")
@@ -20,6 +24,7 @@ object PostgresContainer {
       start()
     }
   } else {
+    log.info("Postgres already available, won't start via test containers")
     null
   }
 
