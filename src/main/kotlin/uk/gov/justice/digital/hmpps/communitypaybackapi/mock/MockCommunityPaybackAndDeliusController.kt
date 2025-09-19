@@ -15,8 +15,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CaseAccess
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CaseName
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CaseSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CaseSummary
-import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ContactOutcome
-import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ContactOutcomes
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.EnforcementAction
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.EnforcementActions
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAllocation
@@ -215,15 +213,6 @@ class MockCommunityPaybackAndDeliusController {
       ProjectType(id = 1002, "Community Garden Maintenance"),
       ProjectType(id = 2002, "Park Cleanup"),
       ProjectType(id = 3002, "Library Assistance"),
-    ),
-  )
-
-  @GetMapping("/references/contact-outcomes")
-  fun getReferenceContactOutcomes() = ContactOutcomes(
-    listOf(
-      ContactOutcome(id = 1002, "Attended - Complied"),
-      ContactOutcome(id = 2002, "Acceptable Absence - Court/Legal"),
-      ContactOutcome(id = 3002, "Attended - Failed to Comply"),
     ),
   )
 

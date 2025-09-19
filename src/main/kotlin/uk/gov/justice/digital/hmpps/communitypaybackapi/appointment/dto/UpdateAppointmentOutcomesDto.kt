@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.dto
 import jakarta.validation.constraints.Size
 import java.time.LocalDate
 import java.time.LocalTime
+import java.util.UUID
 
 data class UpdateAppointmentOutcomesDto(
   @param:Size(min = 1)
@@ -17,7 +18,7 @@ data class UpdateAppointmentOutcomeDto(
   val projectTypeId: Long,
   val startTime: LocalTime,
   val endTime: LocalTime,
-  val contactOutcomeId: Long,
+  val contactOutcomeId: UUID,
   // DA: is this redundant?
   val supervisorTeamId: Long,
   val supervisorOfficerId: Long,
