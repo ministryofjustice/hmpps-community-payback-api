@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.communitypaybackapi.common
+package uk.gov.justice.digital.hmpps.communitypaybackapi.common.service.internal
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.stereotype.Service
