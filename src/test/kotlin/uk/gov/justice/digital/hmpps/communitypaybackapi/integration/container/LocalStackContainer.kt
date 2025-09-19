@@ -29,7 +29,11 @@ object LocalStackContainer {
   }
 
   private fun startLocalStackIfNotRunning(): LocalStackContainer? {
-    if (localstackIsRunning()) return null
+    if (localstackIsRunning()) {
+      log.info("Localstack already available, won't start via test containers")
+      return null
+    }
+    log.info("Starting localstack via test containers")
     val logConsumer = Slf4jLogConsumer(log).withPrefix("localstack")
     return LocalStackContainer(
       DockerImageName.parse("localstack/localstack"),
