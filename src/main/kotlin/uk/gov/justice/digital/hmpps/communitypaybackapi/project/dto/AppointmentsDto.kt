@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.project.dto
 import io.swagger.v3.oas.annotations.media.Schema
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.dto.OffenderDto
 
+// DA: move into appointment package structure?
 data class AppointmentDto(
   val id: Long,
   @param:Schema(description = "Project name", example = "Community Garden Maintenance")

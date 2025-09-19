@@ -1,10 +1,12 @@
-package uk.gov.justice.digital.hmpps.communitypaybackapi.project.entity
+package uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.entity
 
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
 import jakarta.persistence.Id
 import jakarta.persistence.Table
+import org.hibernate.annotations.CreationTimestamp
+import org.hibernate.annotations.UpdateTimestamp
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.OffsetDateTime
@@ -13,7 +15,6 @@ import java.util.UUID
 @Entity
 @Table(name = "appointment_outcomes")
 data class AppointmentOutcomeEntity(
-
   @Id
   val id: UUID,
   val appointmentDeliusId: Long,
@@ -36,7 +37,9 @@ data class AppointmentOutcomeEntity(
 
   val enforcementActionDeliusId: Long? = null,
   val respondBy: LocalDate? = null,
+  @CreationTimestamp
   val createdAt: OffsetDateTime = OffsetDateTime.now(),
+  @UpdateTimestamp
   val updatedAt: OffsetDateTime = OffsetDateTime.now(),
 ) {
   override fun equals(other: Any?): Boolean {
@@ -55,6 +58,9 @@ enum class WorkQuality {
   POOR,
   SATISFACTORY,
   UNSATISFACTORY,
+  ;
+
+  companion object
 }
 
 enum class Behaviour {
@@ -64,4 +70,7 @@ enum class Behaviour {
   POOR,
   SATISFACTORY,
   UNSATISFACTORY,
+  ;
+
+  companion object
 }
