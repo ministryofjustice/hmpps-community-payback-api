@@ -7,6 +7,18 @@ set -o pipefail
 cd "$(dirname "$0")"
 script_dir="$(pwd)"
 
+do_clear_databases=0
+
+while [ "$1" != "" ];
+do
+   case $1 in
+    --clear-databases)
+      do_clear_databases=1
+      ;;
+  esac
+  shift
+done
+
 touch "$script_dir/../.env.api"
 touch "$script_dir/../.env.ui"
 
@@ -17,3 +29,12 @@ tilt down -f "$script_dir/../tiltfile"
 # This must run cleanly (not forced) to kill any local resources
 # started by the original tilt command
 killall tilt || true
+
+if [ $do_clear_databases -gt 0 ]; then
+  sleep 3
+
+  echo "Removing API database volume"
+  rootpath="$script_dir/../"
+  # detach volumes, including the composed managed API database volume
+  docker compose -f "$rootpath/compose.yml" down -v
+fi
