@@ -150,14 +150,14 @@ class ReferencesIT : IntegrationTestBase() {
 
       assertThat(contactOutcomes.contactOutcomes).hasSize(21)
       assertThat(contactOutcomes.contactOutcomes[0].id).isNotNull
-      assertThat(contactOutcomes.contactOutcomes[0].name).isEqualTo("Attended - FTC Deemed Acceptable")
-      assertThat(contactOutcomes.contactOutcomes[0].code).isEqualTo("AFDA")
+      assertThat(contactOutcomes.contactOutcomes[0].name).isEqualTo("Acceptable Absence - Court/Legal")
+      assertThat(contactOutcomes.contactOutcomes[0].code).isEqualTo("AACL")
       assertThat(contactOutcomes.contactOutcomes[1].id).isNotNull
-      assertThat(contactOutcomes.contactOutcomes[1].name).isEqualTo("Attended - Complied")
-      assertThat(contactOutcomes.contactOutcomes[1].code).isEqualTo("ATTC")
+      assertThat(contactOutcomes.contactOutcomes[1].name).isEqualTo("Acceptable Absence - Employment")
+      assertThat(contactOutcomes.contactOutcomes[1].code).isEqualTo("AAEM")
       assertThat(contactOutcomes.contactOutcomes[2].id).isNotNull
-      assertThat(contactOutcomes.contactOutcomes[2].name).isEqualTo("Attended - Failed to Comply")
-      assertThat(contactOutcomes.contactOutcomes[2].code).isEqualTo("AFTC")
+      assertThat(contactOutcomes.contactOutcomes[2].name).isEqualTo("Acceptable Absence - Family/ Childcare")
+      assertThat(contactOutcomes.contactOutcomes[2].code).isEqualTo("AAFC")
     }
   }
 
