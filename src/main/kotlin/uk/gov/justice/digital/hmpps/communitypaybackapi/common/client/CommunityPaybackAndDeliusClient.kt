@@ -43,9 +43,6 @@ interface CommunityPaybackAndDeliusClient {
     @RequestBody crns: Set<String>,
   ): UserAccess
 
-  @GetExchange("/references/contact-outcomes")
-  fun getContactOutcomes(): ContactOutcomes
-
   @GetExchange("/providers/{providerId}/teams/{teamId}/supervisors")
   fun teamSupervisors(
     @PathVariable providerId: Long,
@@ -135,15 +132,6 @@ data class CaseAccess(
 )
 
 data class UserAccess(val access: List<CaseAccess>)
-
-data class ContactOutcomes(
-  val contactOutcomes: List<ContactOutcome>,
-)
-
-data class ContactOutcome(
-  val id: Long,
-  val name: String,
-)
 
 data class SupervisorSummaries(
   val supervisors: List<SupervisorSummary>,

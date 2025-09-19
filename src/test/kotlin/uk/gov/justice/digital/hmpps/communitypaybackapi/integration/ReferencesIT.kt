@@ -4,8 +4,6 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ContactOutcome
-import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ContactOutcomes
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.EnforcementAction
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.EnforcementActions
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectType
@@ -142,25 +140,6 @@ class ReferencesIT : IntegrationTestBase() {
 
     @Test
     fun `should return OK with contact outcomes`() {
-      CommunityPaybackAndDeliusMockServer.contactOutcomes(
-        ContactOutcomes(
-          listOf(
-            ContactOutcome(
-              id = 1234,
-              name = "Attended - Complied",
-            ),
-            ContactOutcome(
-              id = 5678,
-              name = "Acceptable Absence - Court/Legal",
-            ),
-            ContactOutcome(
-              id = 9012,
-              name = "Attended - Failed to Comply",
-            ),
-          ),
-        ),
-      )
-
       val contactOutcomes = webTestClient.get()
         .uri("/references/contact-outcomes")
         .addUiAuthHeader()
@@ -169,30 +148,16 @@ class ReferencesIT : IntegrationTestBase() {
         .isOk
         .bodyAsObject<ContactOutcomesDto>()
 
-      assertThat(contactOutcomes.contactOutcomes).hasSize(3)
-      assertThat(contactOutcomes.contactOutcomes[0].id).isEqualTo(1234)
-      assertThat(contactOutcomes.contactOutcomes[0].name).isEqualTo("Attended - Complied")
-      assertThat(contactOutcomes.contactOutcomes[1].id).isEqualTo(5678)
-      assertThat(contactOutcomes.contactOutcomes[1].name).isEqualTo("Acceptable Absence - Court/Legal")
-      assertThat(contactOutcomes.contactOutcomes[2].id).isEqualTo(9012)
-      assertThat(contactOutcomes.contactOutcomes[2].name).isEqualTo("Attended - Failed to Comply")
-    }
-
-    @Test
-    fun `should return empty list when no contact outcomes found`() {
-      CommunityPaybackAndDeliusMockServer.contactOutcomes(
-        ContactOutcomes(emptyList()),
-      )
-
-      val contactOutcomes = webTestClient.get()
-        .uri("/references/contact-outcomes")
-        .addUiAuthHeader()
-        .exchange()
-        .expectStatus()
-        .isOk
-        .bodyAsObject<ContactOutcomesDto>()
-
-      assertThat(contactOutcomes.contactOutcomes).isEmpty()
+      assertThat(contactOutcomes.contactOutcomes).hasSize(21)
+      assertThat(contactOutcomes.contactOutcomes[0].id).isNotNull
+      assertThat(contactOutcomes.contactOutcomes[0].name).isEqualTo("Acceptable Absence - Court/Legal")
+      assertThat(contactOutcomes.contactOutcomes[0].code).isEqualTo("AACL")
+      assertThat(contactOutcomes.contactOutcomes[1].id).isNotNull
+      assertThat(contactOutcomes.contactOutcomes[1].name).isEqualTo("Acceptable Absence - Employment")
+      assertThat(contactOutcomes.contactOutcomes[1].code).isEqualTo("AAEM")
+      assertThat(contactOutcomes.contactOutcomes[2].id).isNotNull
+      assertThat(contactOutcomes.contactOutcomes[2].name).isEqualTo("Acceptable Absence - Family/ Childcare")
+      assertThat(contactOutcomes.contactOutcomes[2].code).isEqualTo("AAFC")
     }
   }
 
