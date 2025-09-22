@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.communitypaybackapi.common
+package uk.gov.justice.digital.hmpps.communitypaybackapi.common.service.internal
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.stereotype.Service
@@ -34,7 +34,7 @@ data class HmppsDomainEvent(
   val personReference: HmmpsEventPersonReferences? = null,
 )
 
-data class HmppsAdditionalInformation(val map: MutableMap<String, Any?> = mutableMapOf())
+data class HmppsAdditionalInformation(val map: Map<String, Any?> = mapOf())
 
 data class HmmpsEventPersonReferences(
   val identifiers: List<HmmpsEventPersonReference>,

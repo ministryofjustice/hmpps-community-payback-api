@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.dto.UpdateAppointmentOutcomesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.entity.AppointmentOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
+import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.DomainEventListener
 import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.entity.ContactOutcomeEntityRepository
 
 class AppointmentIT : IntegrationTestBase() {
@@ -18,6 +19,9 @@ class AppointmentIT : IntegrationTestBase() {
 
   @Autowired
   lateinit var contactOutcomeEntityRepository: ContactOutcomeEntityRepository
+
+  @Autowired
+  lateinit var domainEventListener: DomainEventListener
 
   @Nested
   @DisplayName("PUT /appointments")
@@ -61,8 +65,27 @@ class AppointmentIT : IntegrationTestBase() {
     }
 
     @Test
-    fun `should persist updates`() {
+    fun `Should persist single update, raising domain events`() {
       val contactOutcomeEntity = contactOutcomeEntityRepository.findAll().first()
+
+      webTestClient.put()
+        .uri("/appointments")
+        .addUiAuthHeader()
+        .bodyValue(UpdateAppointmentOutcomesDto.valid(ids = longArrayOf(1L), contactOutcomeId = contactOutcomeEntity.id))
+        .exchange()
+        .expectStatus()
+        .isOk()
+
+      val persistedId = appointmentOutcomeEntityRepository.findAll()[0].id
+
+      val domainEvent = domainEventListener.blockForDomainEventOfType("community-payback.appointment.outcome")
+      assertThat(domainEvent.detailUrl).isEqualTo("http://localhost:8080/events/community-payback-appointment-outcome/$persistedId")
+    }
+
+    @Test
+    fun `should persist multiple updates, raising domain events`() {
+      val contactOutcomeEntity = contactOutcomeEntityRepository.findAll().first()
+
       webTestClient.put()
         .uri("/appointments")
         .addUiAuthHeader()
@@ -75,6 +98,8 @@ class AppointmentIT : IntegrationTestBase() {
         appointmentOutcomeEntityRepository.findAll()
           .map { it.appointmentDeliusId },
       ).containsExactlyInAnyOrder(1L, 2L, 3L)
+
+      domainEventListener.assertEventCount("community-payback.appointment.outcome", 3)
     }
   }
 }
