@@ -3,8 +3,6 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.unit.reference.service
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ContactOutcome
-import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ContactOutcomes
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.EnforcementAction
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.EnforcementActions
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectType
@@ -12,7 +10,9 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectTyp
 import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.dto.ContactOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.dto.EnforcementActionDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.dto.ProjectTypeDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.entity.ContactOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.service.toDto
+import java.util.UUID
 
 class ReferenceMappersTest {
 
@@ -83,29 +83,30 @@ class ReferenceMappersTest {
   inner class ContactOutcomesMapper {
 
     @Test
-    fun `should map empty ContactOutcomes list correctly`() {
-      val contactOutcomes = ContactOutcomes(emptyList())
+    fun `should map empty ContactOutcomeEntity list correctly`() {
+      val contactOutcomes = listOf<ContactOutcomeEntity>()
       val contactOutcomesDto = contactOutcomes.toDto()
 
       assertThat(contactOutcomesDto.contactOutcomes).isEmpty()
     }
 
     @Test
-    fun `should map ContactOutcomes to DTO correctly`() {
-      val contactOutcomes = ContactOutcomes(
-        listOf(
-          ContactOutcome(
-            id = 1234,
-            name = "Successful Contact",
-          ),
-          ContactOutcome(
-            id = 5678,
-            name = "Failed Attendance",
-          ),
-          ContactOutcome(
-            id = 9012,
-            name = "Late Attendance",
-          ),
+    fun `should map ContactOutcomeEntity list to DTO correctly`() {
+      val contactOutcomes = listOf(
+        ContactOutcomeEntity(
+          id = UUID.fromString("b9391e9a-515a-4139-a956-20e0f0a129b9"),
+          name = "Attended - Complied",
+          code = "ATTC",
+        ),
+        ContactOutcomeEntity(
+          id = UUID.fromString("f352472b-a277-4976-b8b4-224898d4a9b8"),
+          name = "Attended - Failed to Comply",
+          code = "AFTC",
+        ),
+        ContactOutcomeEntity(
+          id = UUID.fromString("5e8f3124-d794-43b1-b844-df0bb95814dc"),
+          name = "Attended - Sent Home (behaviour)",
+          code = "ATSH",
         ),
       )
 
@@ -113,14 +114,17 @@ class ReferenceMappersTest {
 
       assertThat(contactOutcomesDto.contactOutcomes).hasSize(3)
 
-      assertThat(contactOutcomesDto.contactOutcomes[0].id).isEqualTo(1234)
-      assertThat(contactOutcomesDto.contactOutcomes[0].name).isEqualTo("Successful Contact")
+      assertThat(contactOutcomesDto.contactOutcomes[0].id).isEqualTo(UUID.fromString("b9391e9a-515a-4139-a956-20e0f0a129b9"))
+      assertThat(contactOutcomesDto.contactOutcomes[0].name).isEqualTo("Attended - Complied")
+      assertThat(contactOutcomesDto.contactOutcomes[0].code).isEqualTo("ATTC")
 
-      assertThat(contactOutcomesDto.contactOutcomes[1].id).isEqualTo(5678)
-      assertThat(contactOutcomesDto.contactOutcomes[1].name).isEqualTo("Failed Attendance")
+      assertThat(contactOutcomesDto.contactOutcomes[1].id).isEqualTo(UUID.fromString("f352472b-a277-4976-b8b4-224898d4a9b8"))
+      assertThat(contactOutcomesDto.contactOutcomes[1].name).isEqualTo("Attended - Failed to Comply")
+      assertThat(contactOutcomesDto.contactOutcomes[1].code).isEqualTo("AFTC")
 
-      assertThat(contactOutcomesDto.contactOutcomes[2].id).isEqualTo(9012)
-      assertThat(contactOutcomesDto.contactOutcomes[2].name).isEqualTo("Late Attendance")
+      assertThat(contactOutcomesDto.contactOutcomes[2].id).isEqualTo(UUID.fromString("5e8f3124-d794-43b1-b844-df0bb95814dc"))
+      assertThat(contactOutcomesDto.contactOutcomes[2].name).isEqualTo("Attended - Sent Home (behaviour)")
+      assertThat(contactOutcomesDto.contactOutcomes[2].code).isEqualTo("ATSH")
     }
   }
 
@@ -128,15 +132,17 @@ class ReferenceMappersTest {
   inner class ContactOutcomeMapper {
     @Test
     fun `should map ContactOutcome to DTO correctly`() {
-      val contactOutcome = ContactOutcome(
-        id = 1234,
-        name = "Successful Contact",
+      val contactOutcome = ContactOutcomeEntity(
+        id = UUID.fromString("b9391e9a-515a-4139-a956-20e0f0a129b9"),
+        name = "Attended - Complied",
+        code = "ATTC",
       )
 
       assertThat(contactOutcome.toDto()).isEqualTo(
         ContactOutcomeDto(
-          id = 1234,
-          name = "Successful Contact",
+          id = UUID.fromString("b9391e9a-515a-4139-a956-20e0f0a129b9"),
+          name = "Attended - Complied",
+          code = "ATTC",
         ),
       )
     }

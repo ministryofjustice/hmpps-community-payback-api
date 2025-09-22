@@ -9,7 +9,6 @@ import com.github.tomakehurst.wiremock.client.WireMock.equalToJson
 import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.post
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CaseSummaries
-import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ContactOutcomes
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.EnforcementActions
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAllocations
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAppointments
@@ -133,17 +132,6 @@ object CommunityPaybackAndDeliusMockServer {
           aResponse()
             .withHeader("Content-Type", "application/json")
             .withBody(objectMapper.writeValueAsString(response)),
-        ),
-    )
-  }
-
-  fun contactOutcomes(contactOutcomes: ContactOutcomes) {
-    WireMock.stubFor(
-      get("/community-payback-and-delius/references/contact-outcomes")
-        .willReturn(
-          aResponse()
-            .withHeader("Content-Type", "application/json")
-            .withBody(objectMapper.writer().writeValueAsString(contactOutcomes)),
         ),
     )
   }

@@ -1,0 +1,31 @@
+package uk.gov.justice.digital.hmpps.communitypaybackapi.reference.entity
+
+import jakarta.persistence.Entity
+import jakarta.persistence.Id
+import jakarta.persistence.Table
+import org.hibernate.annotations.CreationTimestamp
+import org.hibernate.annotations.UpdateTimestamp
+import java.time.OffsetDateTime
+import java.util.UUID
+
+@Entity
+@Table(name = "contact_outcomes")
+data class ContactOutcomeEntity(
+
+  @Id
+  val id: UUID,
+  val code: String,
+  val name: String,
+  @CreationTimestamp
+  val createdAt: OffsetDateTime = OffsetDateTime.now(),
+  @UpdateTimestamp
+  val updatedAt: OffsetDateTime = OffsetDateTime.now(),
+) {
+  override fun equals(other: Any?): Boolean {
+    if (this === other) return true
+    if (other !is ContactOutcomeEntity) return false
+    return id == other.id
+  }
+
+  override fun hashCode(): Int = id.hashCode()
+}

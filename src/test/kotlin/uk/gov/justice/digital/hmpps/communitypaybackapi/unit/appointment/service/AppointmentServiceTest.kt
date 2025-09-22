@@ -23,6 +23,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.service.Appo
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import java.time.LocalDate
 import java.time.LocalTime
+import java.util.UUID
 
 @ExtendWith(MockKExtension::class)
 class AppointmentServiceTest {
@@ -51,7 +52,7 @@ class AppointmentServiceTest {
             projectTypeId = 3L,
             startTime = LocalTime.of(10, 1, 2),
             endTime = LocalTime.of(16, 3, 4),
-            contactOutcomeId = 4L,
+            contactOutcomeId = UUID.fromString("4306c7ca-b717-4995-9eea-91e41d95d44a"),
             supervisorTeamId = 5L,
             supervisorOfficerId = 6L,
             notes = "some notes",
@@ -79,7 +80,7 @@ class AppointmentServiceTest {
       assertThat(firstEntity.projectTypeDeliusId).isEqualTo(3L)
       assertThat(firstEntity.startTime).isEqualTo(LocalTime.of(10, 1, 2))
       assertThat(firstEntity.endTime).isEqualTo(LocalTime.of(16, 3, 4))
-      assertThat(firstEntity.contactOutcomeDeliusId).isEqualTo(4L)
+      assertThat(firstEntity.contactOutcomeId).isEqualTo(UUID.fromString("4306c7ca-b717-4995-9eea-91e41d95d44a"))
       assertThat(firstEntity.supervisorTeamDeliusId).isEqualTo(5L)
       assertThat(firstEntity.supervisorOfficerDeliusId).isEqualTo(6L)
       assertThat(firstEntity.notes).isEqualTo("some notes")

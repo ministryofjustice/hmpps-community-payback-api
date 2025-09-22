@@ -50,7 +50,7 @@ class AppointmentService(
     projectTypeDeliusId = outcome.projectTypeId,
     startTime = outcome.startTime,
     endTime = outcome.endTime,
-    contactOutcomeDeliusId = outcome.contactOutcomeId,
+    contactOutcomeId = outcome.contactOutcomeId,
     // DA: team is redundant?
     supervisorTeamDeliusId = outcome.supervisorTeamId,
     supervisorOfficerDeliusId = outcome.supervisorOfficerId,

@@ -1,12 +1,16 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.entity
 
+import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
 import jakarta.persistence.Id
+import jakarta.persistence.JoinColumn
+import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.UpdateTimestamp
+import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.entity.ContactOutcomeEntity
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.OffsetDateTime
@@ -21,7 +25,13 @@ data class AppointmentOutcomeEntity(
   val projectTypeDeliusId: Long,
   val startTime: LocalTime,
   val endTime: LocalTime,
-  val contactOutcomeDeliusId: Long,
+  @Column(name = "contact_outcome_id")
+  val contactOutcomeId: UUID,
+
+  @ManyToOne(fetch = jakarta.persistence.FetchType.LAZY)
+  @JoinColumn(name = "contact_outcome_id", referencedColumnName = "id", nullable = false, insertable = false, updatable = false)
+  val contactOutcomeEntity: ContactOutcomeEntity? = null,
+
   val supervisorTeamDeliusId: Long,
   val supervisorOfficerDeliusId: Long,
   val notes: String? = null,
