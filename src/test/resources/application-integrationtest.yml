@@ -22,7 +22,7 @@ community-payback:
   request-logging-enabled: true
   url-templates:
     domain-event-detail:
-      appointment_outcome: http://localhost:8080/events/community-payback-appointment-outcome/#id
+      appointment_outcome: http://localhost:8080/domain-event-details/appointment-outcome/#id
 
 hmpps-auth:
   url: "http://localhost:${wiremock.server.port}/auth"

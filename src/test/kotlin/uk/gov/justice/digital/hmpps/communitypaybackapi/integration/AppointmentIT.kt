@@ -90,7 +90,7 @@ class AppointmentIT : IntegrationTestBase() {
       val persistedId = appointmentOutcomeEntityRepository.findAll()[0].id
 
       val domainEvent = domainEventListener.blockForDomainEventOfType("community-payback.appointment.outcome")
-      assertThat(domainEvent.detailUrl).isEqualTo("http://localhost:8080/events/community-payback-appointment-outcome/$persistedId")
+      assertThat(domainEvent.detailUrl).isEqualTo("http://localhost:8080/domain-event-details/appointment-outcome/$persistedId")
     }
 
     @Test

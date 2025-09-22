@@ -5,6 +5,8 @@ import org.springframework.http.MediaType
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
+import uk.gov.justice.digital.hmpps.communitypaybackapi.config.OpenApiConfiguration
+import uk.gov.justice.digital.hmpps.communitypaybackapi.config.SecurityConfiguration
 
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.RUNTIME)
@@ -12,6 +14,6 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping(
   produces = [MediaType.APPLICATION_JSON_VALUE],
 )
-@PreAuthorize("hasRole('ROLE_COMMUNITY_PAYBACK__COMMUNITY_PAYBACK_UI')")
-@SecurityRequirement(name = "community-payback-ui")
+@PreAuthorize("hasRole('" + SecurityConfiguration.ROLE_UI + "')")
+@SecurityRequirement(name = OpenApiConfiguration.SECURITY_SCHEME_UI)
 internal annotation class CommunityPaybackController
