@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.http.MediaType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CaseSummaries
-import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.EnforcementActions
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAllocations
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAppointments
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProviderSummaries
@@ -144,27 +143,6 @@ class MockCommunityPaybackAndDeliusIT : IntegrationTestBase() {
       assertThat(response.appointments[1].projectName).isEqualTo("Community Garden")
       assertThat(response.appointments[1].requirementMinutes).isEqualTo(300)
       assertThat(response.appointments[1].completedMinutes).isEqualTo(30)
-    }
-  }
-
-  @Nested
-  @DisplayName("POST /mocks/community-payback-and-delius/references/enforcement-actions")
-  inner class GetEnforcementActions {
-
-    @Test
-    fun `returns fixed list of enforcement actions`() {
-      val response = webTestClient.get()
-        .uri("/mocks/community-payback-and-delius/references/enforcement-actions")
-        .accept(MediaType.APPLICATION_JSON)
-        .exchange()
-        .expectStatus()
-        .isOk
-        .bodyAsObject<EnforcementActions>()
-
-      assertThat(response.enforcementActions).hasSize(19)
-
-      assertThat(response.enforcementActions[0].id).isEqualTo(1L)
-      assertThat(response.enforcementActions[0].name).isEqualTo("Breach / Recall Initiated")
     }
   }
 

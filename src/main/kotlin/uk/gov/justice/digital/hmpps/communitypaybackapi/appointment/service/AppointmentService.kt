@@ -61,6 +61,7 @@ class AppointmentService(
     startTime = outcome.startTime,
     endTime = outcome.endTime,
     contactOutcomeId = outcome.contactOutcomeId,
+    enforcementActionId = outcome.enforcementActionId,
     // DA: team is redundant?
     supervisorTeamDeliusId = outcome.supervisorTeamId,
     supervisorOfficerDeliusId = outcome.supervisorOfficerId,
@@ -70,7 +71,6 @@ class AppointmentService(
     penaltyMinutes = outcome.attendanceData?.penaltyMinutes,
     workQuality = outcome.attendanceData?.workQuality?.let { WorkQuality.fromDto(it) },
     behaviour = outcome.attendanceData?.behaviour?.let { Behaviour.fromDto(it) },
-    enforcementActionDeliusId = outcome.enforcementData?.enforcementActionId,
     respondBy = outcome.enforcementData?.respondBy,
   )
 

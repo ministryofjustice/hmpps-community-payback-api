@@ -63,6 +63,7 @@ class AppointmentServiceTest {
             startTime = LocalTime.of(10, 1, 2),
             endTime = LocalTime.of(16, 3, 4),
             contactOutcomeId = UUID.fromString("4306c7ca-b717-4995-9eea-91e41d95d44a"),
+            enforcementActionId = UUID.fromString("d230b91b-57a5-4d01-8b1b-538cad8a03ec"),
             supervisorTeamId = 5L,
             supervisorOfficerId = 6L,
             notes = "some notes",
@@ -91,6 +92,7 @@ class AppointmentServiceTest {
       assertThat(firstEntity.startTime).isEqualTo(LocalTime.of(10, 1, 2))
       assertThat(firstEntity.endTime).isEqualTo(LocalTime.of(16, 3, 4))
       assertThat(firstEntity.contactOutcomeId).isEqualTo(UUID.fromString("4306c7ca-b717-4995-9eea-91e41d95d44a"))
+      assertThat(firstEntity.enforcementActionId).isEqualTo(UUID.fromString("d230b91b-57a5-4d01-8b1b-538cad8a03ec"))
       assertThat(firstEntity.supervisorTeamDeliusId).isEqualTo(5L)
       assertThat(firstEntity.supervisorOfficerDeliusId).isEqualTo(6L)
       assertThat(firstEntity.notes).isEqualTo("some notes")
@@ -99,7 +101,6 @@ class AppointmentServiceTest {
       assertThat(firstEntity.penaltyMinutes).isEqualTo(60)
       assertThat(firstEntity.workQuality).isEqualTo(WorkQuality.SATISFACTORY)
       assertThat(firstEntity.behaviour).isEqualTo(Behaviour.UNSATISFACTORY)
-      assertThat(firstEntity.enforcementActionDeliusId).isEqualTo(12L)
       assertThat(firstEntity.respondBy).isEqualTo(LocalDate.of(2026, 8, 10))
 
       verify {

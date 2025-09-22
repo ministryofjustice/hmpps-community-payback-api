@@ -11,6 +11,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.entity.Appoi
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.DomainEventListener
 import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.entity.ContactOutcomeEntityRepository
+import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.entity.EnforcementActionEntityRepository
 
 class AppointmentIT : IntegrationTestBase() {
 
@@ -19,6 +20,9 @@ class AppointmentIT : IntegrationTestBase() {
 
   @Autowired
   lateinit var contactOutcomeEntityRepository: ContactOutcomeEntityRepository
+
+  @Autowired
+  lateinit var enforcementActionEntityRepository: EnforcementActionEntityRepository
 
   @Autowired
   lateinit var domainEventListener: DomainEventListener
@@ -67,11 +71,18 @@ class AppointmentIT : IntegrationTestBase() {
     @Test
     fun `Should persist single update, raising domain events`() {
       val contactOutcomeEntity = contactOutcomeEntityRepository.findAll().first()
+      val enforcementOutcomeEntity = enforcementActionEntityRepository.findAll().first()
 
       webTestClient.put()
         .uri("/appointments")
         .addUiAuthHeader()
-        .bodyValue(UpdateAppointmentOutcomesDto.valid(ids = longArrayOf(1L), contactOutcomeId = contactOutcomeEntity.id))
+        .bodyValue(
+          UpdateAppointmentOutcomesDto.valid(
+            ids = longArrayOf(1L),
+            contactOutcomeId = contactOutcomeEntity.id,
+            enforcementActionId = enforcementOutcomeEntity.id,
+          ),
+        )
         .exchange()
         .expectStatus()
         .isOk()
@@ -85,11 +96,18 @@ class AppointmentIT : IntegrationTestBase() {
     @Test
     fun `should persist multiple updates, raising domain events`() {
       val contactOutcomeEntity = contactOutcomeEntityRepository.findAll().first()
+      val enforcementOutcomeEntity = enforcementActionEntityRepository.findAll().first()
 
       webTestClient.put()
         .uri("/appointments")
         .addUiAuthHeader()
-        .bodyValue(UpdateAppointmentOutcomesDto.valid(ids = longArrayOf(1L, 2L, 3L), contactOutcomeId = contactOutcomeEntity.id))
+        .bodyValue(
+          UpdateAppointmentOutcomesDto.valid(
+            ids = longArrayOf(1L, 2L, 3L),
+            contactOutcomeId = contactOutcomeEntity.id,
+            enforcementActionId = enforcementOutcomeEntity.id,
+          ),
+        )
         .exchange()
         .expectStatus()
         .isOk()
