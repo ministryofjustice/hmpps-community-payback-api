@@ -19,7 +19,9 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.common.service.DomainEve
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.service.DomainEventService.PublishDomainEventCommand
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.service.DomainEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.service.DomainEventUrlConfig
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.service.PersonReferenceType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.service.internal.DomainEventPublisher
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.service.internal.HmmpsEventPersonReference
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.service.internal.HmppsDomainEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.service.internal.UrlTemplate
 import java.time.OffsetDateTime
@@ -62,6 +64,7 @@ class DomainEventServiceTest {
         id = id,
         type = DomainEventType.APPOINTMENT_OUTCOME,
         additionalInformation = mapOf(AdditionalInformationType.APPOINTMENT_ID to "the appointment id"),
+        personReferences = mapOf(PersonReferenceType.CRN to "CRN1"),
       )
 
       val publishDomainEventCommand = commandEventCaptor.captured
@@ -71,7 +74,9 @@ class DomainEventServiceTest {
       assertThat(publishDomainEventCommand.domainEvent.version).isEqualTo(1)
       assertThat(publishDomainEventCommand.domainEvent.occurredAt).isCloseTo(OffsetDateTime.now(), within(1, ChronoUnit.MINUTES))
       assertThat(publishDomainEventCommand.domainEvent.additionalInformation!!.map).containsExactly(entry("APPOINTMENT_ID", "the appointment id"))
-      assertThat(publishDomainEventCommand.domainEvent.personReference).isNull()
+      assertThat(publishDomainEventCommand.domainEvent.personReference!!.identifiers).containsExactly(
+        HmmpsEventPersonReference("CRN", "CRN1"),
+      )
     }
 
     @Test
@@ -91,6 +96,25 @@ class DomainEventServiceTest {
 
       val publishDomainEventCommand = commandEventCaptor.captured
       assertThat(publishDomainEventCommand.domainEvent.additionalInformation).isNull()
+    }
+
+    @Test
+    fun `dont populate person reference if no values`() {
+      val commandEventCaptor = slot<PublishDomainEventCommand>()
+      every { applicationEventPublisher.publishEvent(capture(commandEventCaptor)) } just Runs
+
+      every { domainEventUrlConfig.domainEventDetail } returns mapOf(
+        "appointment_outcome" to UrlTemplate("http://somepath/#id"),
+      )
+
+      service.publish(
+        id = id,
+        type = DomainEventType.APPOINTMENT_OUTCOME,
+        personReferences = emptyMap(),
+      )
+
+      val publishDomainEventCommand = commandEventCaptor.captured
+      assertThat(publishDomainEventCommand.domainEvent.personReference).isNull()
     }
   }
 

@@ -10,6 +10,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.post
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CaseSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAllocations
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAppointments
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProviderSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProviderTeamSummaries
@@ -58,6 +59,29 @@ object CommunityPaybackAndDeliusMockServer {
           aResponse()
             .withHeader("Content-Type", "application/json")
             .withBody(objectMapper.writeValueAsString(projectAllocations)),
+        ),
+    )
+  }
+
+  fun projectAppointmentNotFound(appointmentId: Long) {
+    WireMock.stubFor(
+      get("/community-payback-and-delius/appointments/$appointmentId")
+        .willReturn(
+          aResponse().withStatus(404),
+        ),
+    )
+  }
+
+  fun projectAppointment(
+    appointmentId: Long,
+    projectAppointment: ProjectAppointment,
+  ) {
+    WireMock.stubFor(
+      get("/community-payback-and-delius/appointments/$appointmentId")
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withBody(objectMapper.writeValueAsString(projectAppointment)),
         ),
     )
   }

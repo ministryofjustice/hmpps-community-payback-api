@@ -13,17 +13,18 @@ import org.springframework.web.bind.MissingServletRequestParameterException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.servlet.resource.NoResourceFoundException
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.dto.BadRequestException
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 
 @RestControllerAdvice
 class CommunityPaybackApiExceptionHandler {
-  @ExceptionHandler(ValidationException::class)
-  fun handleValidationException(e: ValidationException) = validationError(e)
 
-  @ExceptionHandler(MissingServletRequestParameterException::class)
-  fun handleMissingServletRequestParameterException(e: MissingServletRequestParameterException) = validationError(e)
-
-  private fun validationError(e: Exception) = ResponseEntity
+  @ExceptionHandler(
+    ValidationException::class,
+    MissingServletRequestParameterException::class,
+    BadRequestException::class,
+  )
+  fun validationError(e: Exception): ResponseEntity<ErrorResponse> = ResponseEntity
     .status(BAD_REQUEST)
     .body(
       ErrorResponse(

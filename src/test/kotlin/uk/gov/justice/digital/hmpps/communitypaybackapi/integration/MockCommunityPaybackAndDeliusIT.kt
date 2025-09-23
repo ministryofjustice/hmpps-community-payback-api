@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.http.MediaType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CaseSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAllocations
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAppointments
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProviderSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProviderTeamSummaries
@@ -104,6 +105,38 @@ class MockCommunityPaybackAndDeliusIT : IntegrationTestBase() {
   }
 
   @Nested
+  @DisplayName("GET /mocks/community-payback-and-delius/appointments/{appointmentId}")
+  inner class GetProjectAppointment {
+
+    @Test
+    fun `no corresponding appointment, return 404`() {
+      webTestClient.get()
+        .uri("/mocks/community-payback-and-delius/appointments/123456789")
+        .accept(MediaType.APPLICATION_JSON)
+        .exchange()
+        .expectStatus()
+        .isNotFound
+    }
+
+    @Test
+    fun `return existing appointment`() {
+      val response = webTestClient.get()
+        .uri("/mocks/community-payback-and-delius/appointments/${MockCommunityPaybackAndDeliusRepository.APPOINTMENT2_ID}")
+        .accept(MediaType.APPLICATION_JSON)
+        .exchange()
+        .expectStatus()
+        .isOk
+        .bodyAsObject<ProjectAppointment>()
+
+      assertThat(response.id).isEqualTo(MockCommunityPaybackAndDeliusRepository.APPOINTMENT2_ID)
+      assertThat(response.crn).isEqualTo(MockCommunityPaybackAndDeliusRepository.CRN2)
+      assertThat(response.projectName).isEqualTo("Community Garden")
+      assertThat(response.requirementMinutes).isEqualTo(300)
+      assertThat(response.completedMinutes).isEqualTo(30)
+    }
+  }
+
+  @Nested
   @DisplayName("GET /mocks/community-payback-and-delius/projects/{projectId}/appointments")
   inner class GetProjectAppointments {
 
@@ -132,13 +165,13 @@ class MockCommunityPaybackAndDeliusIT : IntegrationTestBase() {
 
       assertThat(response.appointments).hasSize(2)
 
-      assertThat(response.appointments[0].id).isEqualTo(1L)
+      assertThat(response.appointments[0].id).isEqualTo(MockCommunityPaybackAndDeliusRepository.APPOINTMENT1_ID)
       assertThat(response.appointments[0].crn).isEqualTo(MockCommunityPaybackAndDeliusRepository.CRN1)
       assertThat(response.appointments[0].projectName).isEqualTo("Community Garden")
       assertThat(response.appointments[0].requirementMinutes).isEqualTo(600)
       assertThat(response.appointments[0].completedMinutes).isEqualTo(60)
 
-      assertThat(response.appointments[1].id).isEqualTo(2L)
+      assertThat(response.appointments[1].id).isEqualTo(MockCommunityPaybackAndDeliusRepository.APPOINTMENT2_ID)
       assertThat(response.appointments[1].crn).isEqualTo(MockCommunityPaybackAndDeliusRepository.CRN2)
       assertThat(response.appointments[1].projectName).isEqualTo("Community Garden")
       assertThat(response.appointments[1].requirementMinutes).isEqualTo(300)
