@@ -57,11 +57,11 @@ class AppointmentService(
   fun toEntity(deliusId: Long, outcome: UpdateAppointmentOutcomeDto) = AppointmentOutcomeEntity(
     id = UUID.randomUUID(),
     appointmentDeliusId = deliusId,
-    projectTypeDeliusId = outcome.projectTypeId,
     startTime = outcome.startTime,
     endTime = outcome.endTime,
     contactOutcomeId = outcome.contactOutcomeId,
     enforcementActionId = outcome.enforcementData?.enforcementActionId,
+    projectTypeId = outcome.projectTypeId,
     // DA: team is redundant?
     supervisorTeamDeliusId = outcome.supervisorTeamId,
     supervisorOfficerDeliusId = outcome.supervisorOfficerId,

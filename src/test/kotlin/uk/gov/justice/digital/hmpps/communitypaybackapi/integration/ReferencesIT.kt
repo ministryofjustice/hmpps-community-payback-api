@@ -4,15 +4,17 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectType
-import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectTypes
+import org.springframework.beans.factory.annotation.Autowired
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.bodyAsObject
-import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.CommunityPaybackAndDeliusMockServer
 import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.dto.ContactOutcomesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.dto.EnforcementActionsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.dto.ProjectTypesDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.entity.ProjectTypeEntityRepository
 
 class ReferencesIT : IntegrationTestBase() {
+
+  @Autowired
+  lateinit var projectTypeEntityRepository: ProjectTypeEntityRepository
 
   @Nested
   @DisplayName("GET /references/project-types")
@@ -49,24 +51,7 @@ class ReferencesIT : IntegrationTestBase() {
 
     @Test
     fun `should return OK with project types`() {
-      CommunityPaybackAndDeliusMockServer.projectTypes(
-        ProjectTypes(
-          listOf(
-            ProjectType(
-              id = 1234,
-              name = "Community Garden Maintenance",
-            ),
-            ProjectType(
-              id = 5678,
-              name = "Park Cleanup",
-            ),
-            ProjectType(
-              id = 9012,
-              name = "Library Assistance",
-            ),
-          ),
-        ),
-      )
+      val seededProjectTypes = projectTypeEntityRepository.findAll()
 
       val projectTypes = webTestClient.get()
         .uri("/references/project-types")
@@ -76,30 +61,13 @@ class ReferencesIT : IntegrationTestBase() {
         .isOk
         .bodyAsObject<ProjectTypesDto>()
 
-      assertThat(projectTypes.projectTypes).hasSize(3)
-      assertThat(projectTypes.projectTypes[0].id).isEqualTo(1234)
-      assertThat(projectTypes.projectTypes[0].name).isEqualTo("Community Garden Maintenance")
-      assertThat(projectTypes.projectTypes[1].id).isEqualTo(5678)
-      assertThat(projectTypes.projectTypes[1].name).isEqualTo("Park Cleanup")
-      assertThat(projectTypes.projectTypes[2].id).isEqualTo(9012)
-      assertThat(projectTypes.projectTypes[2].name).isEqualTo("Library Assistance")
-    }
+      assertThat(projectTypes.projectTypes).hasSize(seededProjectTypes.size)
 
-    @Test
-    fun `should return empty list when no project types found`() {
-      CommunityPaybackAndDeliusMockServer.projectTypes(
-        ProjectTypes(emptyList()),
-      )
-
-      val projectTypes = webTestClient.get()
-        .uri("/references/project-types")
-        .addUiAuthHeader()
-        .exchange()
-        .expectStatus()
-        .isOk
-        .bodyAsObject<ProjectTypesDto>()
-
-      assertThat(projectTypes.projectTypes).isEmpty()
+      projectTypes.projectTypes.forEach {
+        assertThat(seededProjectTypes).anyMatch { seeded -> seeded.code == it.code }
+        assertThat(seededProjectTypes).anyMatch { seeded -> seeded.name == it.name }
+        assertThat(seededProjectTypes).anyMatch { seeded -> seeded.id == it.id }
+      }
     }
   }
 

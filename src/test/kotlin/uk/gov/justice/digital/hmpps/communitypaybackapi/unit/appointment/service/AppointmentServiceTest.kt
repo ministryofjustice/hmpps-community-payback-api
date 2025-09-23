@@ -55,11 +55,13 @@ class AppointmentServiceTest {
 
       every { domainEventService.publish(any(), any(), any()) } just Runs
 
+      val projectTypeId = UUID.randomUUID()
+
       service.updateAppointmentsOutcome(
         UpdateAppointmentOutcomesDto(
           ids = listOf(1L, 2L),
           outcomeData = UpdateAppointmentOutcomeDto(
-            projectTypeId = 3L,
+            projectTypeId = projectTypeId,
             startTime = LocalTime.of(10, 1, 2),
             endTime = LocalTime.of(16, 3, 4),
             contactOutcomeId = UUID.fromString("4306c7ca-b717-4995-9eea-91e41d95d44a"),
@@ -87,7 +89,7 @@ class AppointmentServiceTest {
 
       assertThat(firstEntity.id).isNotNull
       assertThat(firstEntity.appointmentDeliusId).isEqualTo(1L)
-      assertThat(firstEntity.projectTypeDeliusId).isEqualTo(3L)
+      assertThat(firstEntity.projectTypeId).isEqualTo(projectTypeId)
       assertThat(firstEntity.startTime).isEqualTo(LocalTime.of(10, 1, 2))
       assertThat(firstEntity.endTime).isEqualTo(LocalTime.of(16, 3, 4))
       assertThat(firstEntity.contactOutcomeId).isEqualTo(UUID.fromString("4306c7ca-b717-4995-9eea-91e41d95d44a"))

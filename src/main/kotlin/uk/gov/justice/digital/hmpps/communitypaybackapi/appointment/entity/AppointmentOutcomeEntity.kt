@@ -12,6 +12,7 @@ import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.UpdateTimestamp
 import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.entity.ContactOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.entity.EnforcementActionEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.entity.ProjectTypeEntity
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.OffsetDateTime
@@ -23,7 +24,6 @@ data class AppointmentOutcomeEntity(
   @Id
   val id: UUID,
   val appointmentDeliusId: Long,
-  val projectTypeDeliusId: Long,
   val startTime: LocalTime,
   val endTime: LocalTime,
 
@@ -40,6 +40,13 @@ data class AppointmentOutcomeEntity(
   @ManyToOne(fetch = jakarta.persistence.FetchType.LAZY)
   @JoinColumn(name = "enforcement_action_id", referencedColumnName = "id", nullable = true, insertable = false, updatable = false)
   val enforcementActionEntity: EnforcementActionEntity? = null,
+
+  @Column(name = "project_type_id")
+  val projectTypeId: UUID? = null,
+
+  @ManyToOne(fetch = jakarta.persistence.FetchType.LAZY)
+  @JoinColumn(name = "project_type_id", referencedColumnName = "id", nullable = false, insertable = false, updatable = false)
+  val projectTypeEntity: ProjectTypeEntity? = null,
 
   val supervisorTeamDeliusId: Long,
   val supervisorOfficerDeliusId: Long,

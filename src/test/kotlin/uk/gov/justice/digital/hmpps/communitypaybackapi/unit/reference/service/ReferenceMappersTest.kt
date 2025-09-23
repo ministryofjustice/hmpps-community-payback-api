@@ -3,13 +3,12 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.unit.reference.service
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectType
-import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectTypes
 import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.dto.ContactOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.dto.EnforcementActionDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.dto.ProjectTypeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.entity.ContactOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.entity.EnforcementActionEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.entity.ProjectTypeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.service.toDto
 import java.util.UUID
 
@@ -20,7 +19,7 @@ class ReferenceMappersTest {
 
     @Test
     fun `should map empty ProjectTypes list correctly`() {
-      val projectTypes = ProjectTypes(emptyList())
+      val projectTypes = listOf<ProjectTypeEntity>()
       val projectTypesDto = projectTypes.toDto()
 
       assertThat(projectTypesDto.projectTypes).isEmpty()
@@ -28,20 +27,21 @@ class ReferenceMappersTest {
 
     @Test
     fun `should map ProjectTypes to DTO correctly`() {
-      val projectTypes = ProjectTypes(
-        listOf(
-          ProjectType(
-            id = 1234,
-            name = "Community Garden Maintenance",
-          ),
-          ProjectType(
-            id = 5678,
-            name = "Park Cleanup",
-          ),
-          ProjectType(
-            id = 9012,
-            name = "Library Assistance",
-          ),
+      val projectTypes = listOf(
+        ProjectTypeEntity(
+          id = UUID.fromString("e68f2cd5-c6f2-4ed8-af66-cd9a46d5fe77"),
+          name = "ETE - CFO",
+          code = "ET3",
+        ),
+        ProjectTypeEntity(
+          id = UUID.fromString("ea55e70e-c1ca-45b9-9001-18af7a907b25"),
+          name = "Externally Supervised Placement",
+          code = "ES",
+        ),
+        ProjectTypeEntity(
+          id = UUID.fromString("b9391e9a-515a-4139-a956-20e0f0a129b9"),
+          name = "Independent Working",
+          code = "WH1",
         ),
       )
 
@@ -49,14 +49,17 @@ class ReferenceMappersTest {
 
       assertThat(projectTypesDto.projectTypes).hasSize(3)
 
-      assertThat(projectTypesDto.projectTypes[0].id).isEqualTo(1234)
-      assertThat(projectTypesDto.projectTypes[0].name).isEqualTo("Community Garden Maintenance")
+      assertThat(projectTypesDto.projectTypes[0].id.toString()).isEqualTo("e68f2cd5-c6f2-4ed8-af66-cd9a46d5fe77")
+      assertThat(projectTypesDto.projectTypes[0].name).isEqualTo("ETE - CFO")
+      assertThat(projectTypesDto.projectTypes[0].code).isEqualTo("ET3")
 
-      assertThat(projectTypesDto.projectTypes[1].id).isEqualTo(5678)
-      assertThat(projectTypesDto.projectTypes[1].name).isEqualTo("Park Cleanup")
+      assertThat(projectTypesDto.projectTypes[1].id.toString()).isEqualTo("ea55e70e-c1ca-45b9-9001-18af7a907b25")
+      assertThat(projectTypesDto.projectTypes[1].name).isEqualTo("Externally Supervised Placement")
+      assertThat(projectTypesDto.projectTypes[1].code).isEqualTo("ES")
 
-      assertThat(projectTypesDto.projectTypes[2].id).isEqualTo(9012)
-      assertThat(projectTypesDto.projectTypes[2].name).isEqualTo("Library Assistance")
+      assertThat(projectTypesDto.projectTypes[2].id.toString()).isEqualTo("b9391e9a-515a-4139-a956-20e0f0a129b9")
+      assertThat(projectTypesDto.projectTypes[2].name).isEqualTo("Independent Working")
+      assertThat(projectTypesDto.projectTypes[2].code).isEqualTo("WH1")
     }
   }
 
@@ -64,15 +67,17 @@ class ReferenceMappersTest {
   inner class ProjectTypeMapper {
     @Test
     fun `should map ProjectType to DTO correctly`() {
-      val projectType = ProjectType(
-        id = 1234,
-        name = "Community Garden Maintenance",
+      val projectType = ProjectTypeEntity(
+        id = UUID.fromString("ea55e70e-c1ca-45b9-9001-18af7a907b25"),
+        name = "Externally Supervised Placement",
+        code = "ES",
       )
 
       assertThat(projectType.toDto()).isEqualTo(
         ProjectTypeDto(
-          id = 1234,
-          name = "Community Garden Maintenance",
+          id = UUID.fromString("ea55e70e-c1ca-45b9-9001-18af7a907b25"),
+          name = "Externally Supervised Placement",
+          code = "ES",
         ),
       )
     }
