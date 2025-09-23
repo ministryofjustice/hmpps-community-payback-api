@@ -36,7 +36,7 @@ class DomainEventListener(private val objectMapper: ObjectMapper) {
   fun blockForDomainEventOfType(eventType: String): HmppsDomainEvent {
     await()
       .atMost(1, TimeUnit.SECONDS)
-      .until { containsCount(eventType, 1) }
+      .until { haveReceived(eventType) }
 
     synchronized(messages) {
       return messages.first { it.eventType == eventType }
@@ -46,10 +46,16 @@ class DomainEventListener(private val objectMapper: ObjectMapper) {
   fun assertEventCount(eventType: String, count: Int) {
     await()
       .atMost(1, TimeUnit.SECONDS)
-      .until { containsCount(eventType, count) }
+      .until { haveReceivedExactCount(eventType, count) }
   }
 
-  private fun containsCount(eventType: String, count: Int): Boolean {
+  private fun haveReceived(eventType: String): Boolean {
+    synchronized(messages) {
+      return messages.any { it.eventType == eventType }
+    }
+  }
+
+  private fun haveReceivedExactCount(eventType: String, count: Int): Boolean {
     synchronized(messages) {
       return messages.filter { it.eventType == eventType }.size == count
     }
