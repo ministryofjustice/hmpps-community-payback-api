@@ -59,6 +59,8 @@ data class AppointmentOutcomeEntity(
   }
 
   override fun hashCode(): Int = id.hashCode()
+
+  override fun toString(): String = "AppointmentOutcomeEntity(id=$id, appointmentDeliusId='$appointmentDeliusId')"
 }
 
 enum class WorkQuality {

@@ -28,4 +28,6 @@ data class ContactOutcomeEntity(
   }
 
   override fun hashCode(): Int = id.hashCode()
+
+  override fun toString(): String = "ContactOutcomeEntity(id=$id, code='$code', name='$name')"
 }
