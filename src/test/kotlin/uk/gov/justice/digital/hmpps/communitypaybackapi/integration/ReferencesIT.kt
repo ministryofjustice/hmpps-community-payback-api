@@ -9,6 +9,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectTyp
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.bodyAsObject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.CommunityPaybackAndDeliusMockServer
 import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.dto.ContactOutcomesDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.dto.EnforcementActionsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.dto.ProjectTypesDto
 
 class ReferencesIT : IntegrationTestBase() {
@@ -193,24 +194,24 @@ class ReferencesIT : IntegrationTestBase() {
 
     @Test
     fun `should return OK with enforcement actions`() {
-      val contactOutcomes = webTestClient.get()
-        .uri("/references/contact-outcomes")
+      val enforementActions = webTestClient.get()
+        .uri("/references/enforcement-actions")
         .addUiAuthHeader()
         .exchange()
         .expectStatus()
         .isOk
-        .bodyAsObject<ContactOutcomesDto>()
+        .bodyAsObject<EnforcementActionsDto>()
 
-      assertThat(contactOutcomes.contactOutcomes).hasSize(21)
-      assertThat(contactOutcomes.contactOutcomes[0].id).isNotNull
-      assertThat(contactOutcomes.contactOutcomes[0].name).isEqualTo("Acceptable Absence - Court/Legal")
-      assertThat(contactOutcomes.contactOutcomes[0].code).isEqualTo("AACL")
-      assertThat(contactOutcomes.contactOutcomes[1].id).isNotNull
-      assertThat(contactOutcomes.contactOutcomes[1].name).isEqualTo("Acceptable Absence - Employment")
-      assertThat(contactOutcomes.contactOutcomes[1].code).isEqualTo("AAEM")
-      assertThat(contactOutcomes.contactOutcomes[2].id).isNotNull
-      assertThat(contactOutcomes.contactOutcomes[2].name).isEqualTo("Acceptable Absence - Family/ Childcare")
-      assertThat(contactOutcomes.contactOutcomes[2].code).isEqualTo("AAFC")
+      assertThat(enforementActions.enforcementActions).hasSize(19)
+      assertThat(enforementActions.enforcementActions[0].id).isNotNull
+      assertThat(enforementActions.enforcementActions[0].name).isEqualTo("Breach / Recall Initiated")
+      assertThat(enforementActions.enforcementActions[0].code).isEqualTo("IBR")
+      assertThat(enforementActions.enforcementActions[1].id).isNotNull
+      assertThat(enforementActions.enforcementActions[1].name).isEqualTo("Breach Confirmation Sent")
+      assertThat(enforementActions.enforcementActions[1].code).isEqualTo("EA10")
+      assertThat(enforementActions.enforcementActions[2].id).isNotNull
+      assertThat(enforementActions.enforcementActions[2].name).isEqualTo("Breach Letter Sent")
+      assertThat(enforementActions.enforcementActions[2].code).isEqualTo("EA08")
     }
   }
 }

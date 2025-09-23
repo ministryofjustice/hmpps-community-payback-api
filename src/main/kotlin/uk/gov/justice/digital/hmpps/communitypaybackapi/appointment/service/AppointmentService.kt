@@ -61,7 +61,7 @@ class AppointmentService(
     startTime = outcome.startTime,
     endTime = outcome.endTime,
     contactOutcomeId = outcome.contactOutcomeId,
-    enforcementActionId = outcome.enforcementActionId,
+    enforcementActionId = outcome.enforcementData?.enforcementActionId,
     // DA: team is redundant?
     supervisorTeamDeliusId = outcome.supervisorTeamId,
     supervisorOfficerDeliusId = outcome.supervisorOfficerId,

@@ -22,7 +22,6 @@ fun UpdateAppointmentOutcomeDto.Companion.valid(contactOutcomeId: UUID, enforcem
   startTime = randomLocalTime(),
   endTime = randomLocalTime(),
   contactOutcomeId = contactOutcomeId,
-  enforcementActionId = enforcementActionId,
   supervisorTeamId = Long.random(),
   supervisorOfficerId = Long.random(),
   notes = String.random(400),
@@ -34,7 +33,7 @@ fun UpdateAppointmentOutcomeDto.Companion.valid(contactOutcomeId: UUID, enforcem
     behaviour = AppointmentBehaviourDto.entries.toTypedArray().random(),
   ),
   enforcementData = UpdateAppointmentEnforcementDto(
-    enforcementActionId = Long.random(),
+    enforcementActionId = enforcementActionId,
     respondBy = randomLocalDate(),
   ),
 )

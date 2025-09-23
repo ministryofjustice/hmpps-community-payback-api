@@ -30,9 +30,16 @@ VALUES (gen_random_uuid(), 'BRE02', 'Breach Request Actioned'),
 
 
 
+-- Drop old column if it exists
 ALTER TABLE appointment_outcomes
-    DROP COLUMN IF EXISTS enforcement_action_delius_id,
-    ADD COLUMN enforcement_action_id UUID,
+    DROP COLUMN IF EXISTS enforcement_action_delius_id;
+
+-- Add new nullable column
+ALTER TABLE appointment_outcomes
+    ADD COLUMN enforcement_action_id UUID NULL;
+
+-- Add foreign key constraint (nullable FK is allowed)
+ALTER TABLE appointment_outcomes
     ADD CONSTRAINT fk_appointments_outcome_enforcement_action
         FOREIGN KEY (enforcement_action_id)
             REFERENCES enforcement_actions (id);

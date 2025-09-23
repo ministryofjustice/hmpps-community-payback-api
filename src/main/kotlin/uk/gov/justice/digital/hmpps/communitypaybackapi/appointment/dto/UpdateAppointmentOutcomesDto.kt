@@ -19,7 +19,6 @@ data class UpdateAppointmentOutcomeDto(
   val startTime: LocalTime,
   val endTime: LocalTime,
   val contactOutcomeId: UUID,
-  val enforcementActionId: UUID,
   // DA: is this redundant?
   val supervisorTeamId: Long,
   val supervisorOfficerId: Long,
@@ -39,7 +38,7 @@ data class UpdateAppointmentAttendanceDataDto(
 )
 
 data class UpdateAppointmentEnforcementDto(
-  val enforcementActionId: Long,
+  val enforcementActionId: UUID,
   val respondBy: LocalDate,
 )
 
