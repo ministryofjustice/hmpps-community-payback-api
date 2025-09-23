@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Hidden
 import jakarta.validation.constraints.Size
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.MediaType
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -49,6 +50,10 @@ class MockCommunityPaybackAndDeliusController {
     const val CRN1 = "CRN0001"
     const val CRN2 = "CRN0002"
     const val CRN3 = "CRN0003"
+
+    const val APPOINTMENT1_ID = 1L
+    const val APPOINTMENT2_ID = 2L
+    const val APPOINTMENT3_ID = 3L
 
     val cases = listOf(
       CaseSummaryWithRestrictions(
@@ -104,14 +109,14 @@ class MockCommunityPaybackAndDeliusController {
         endTime = LocalTime.of(17, 0),
         appointments = listOf(
           MockProjectAppointment(
-            id = 1L,
+            id = APPOINTMENT1_ID,
             project = mockProject1,
             crn = CRN1,
             requirementMinutes = 600,
             completedMinutes = 60,
           ),
           MockProjectAppointment(
-            id = 2L,
+            id = APPOINTMENT2_ID,
             project = mockProject1,
             crn = CRN2,
             requirementMinutes = 300,
@@ -127,7 +132,7 @@ class MockCommunityPaybackAndDeliusController {
         endTime = LocalTime.of(16, 0),
         appointments = listOf(
           MockProjectAppointment(
-            id = 1L,
+            id = APPOINTMENT3_ID,
             project = mockProject1,
             crn = CRN1,
             requirementMinutes = 1200,
@@ -178,6 +183,13 @@ class MockCommunityPaybackAndDeliusController {
     },
   )
 
+  @GetMapping("/appointments/{appointmentId}")
+  fun getProjectAppointment(@PathVariable appointmentId: Long): ResponseEntity<ProjectAppointment> = mockProjectAllocations
+    .flatMap { it.appointments }
+    .firstOrNull { it.id == appointmentId }
+    ?.let { ResponseEntity.ok(it.toProjectAppointment()) }
+    ?: ResponseEntity.notFound().build()
+
   @GetMapping("/projects/{projectId}/appointments")
   fun getProjectAppointments(
     @PathVariable projectId: Long,
@@ -190,17 +202,7 @@ class MockCommunityPaybackAndDeliusController {
       return ProjectAppointments(emptyList())
     }
 
-    return ProjectAppointments(
-      matchingAllocation.appointments.map {
-        ProjectAppointment(
-          id = it.id,
-          projectName = it.project.name,
-          crn = it.crn,
-          requirementMinutes = it.requirementMinutes,
-          completedMinutes = it.completedMinutes,
-        )
-      },
-    )
+    return ProjectAppointments(matchingAllocation.appointments.map { it.toProjectAppointment() })
   }
 
   @PostMapping("/probation-cases/summaries")
@@ -256,5 +258,13 @@ class MockCommunityPaybackAndDeliusController {
     val crn: String,
     val requirementMinutes: Int,
     val completedMinutes: Int,
-  )
+  ) {
+    fun toProjectAppointment() = ProjectAppointment(
+      id = this.id,
+      projectName = this.project.name,
+      crn = this.crn,
+      requirementMinutes = this.requirementMinutes,
+      completedMinutes = this.completedMinutes,
+    )
+  }
 }

@@ -23,6 +23,11 @@ interface CommunityPaybackAndDeliusClient {
     @RequestParam teamId: Long,
   ): ProjectAllocations
 
+  @GetExchange("/appointments/{appointmentId}")
+  fun getProjectAppointment(
+    @PathVariable appointmentId: Long,
+  ): ProjectAppointment
+
   @GetExchange("/projects/{projectId}/appointments")
   fun getProjectAppointments(
     @PathVariable projectId: Long,
@@ -94,7 +99,9 @@ data class ProjectAppointment(
   val crn: String,
   val requirementMinutes: Int,
   val completedMinutes: Int,
-)
+) {
+  companion object
+}
 
 data class ProjectTypes(
   val projectTypes: List<ProjectType>,

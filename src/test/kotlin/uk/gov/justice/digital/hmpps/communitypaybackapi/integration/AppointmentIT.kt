@@ -8,11 +8,15 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.dto.UpdateAppointmentOutcomesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.entity.AppointmentOutcomeEntityRepository
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.DomainEventListener
+import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.bodyAsObject
+import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.CommunityPaybackAndDeliusMockServer
 import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.entity.ContactOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.entity.EnforcementActionEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.entity.ProjectTypeEntityRepository
+import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 
 class AppointmentIT : IntegrationTestBase() {
 
@@ -73,7 +77,29 @@ class AppointmentIT : IntegrationTestBase() {
     }
 
     @Test
+    fun `Should return 400 if an appointment can't be found`() {
+      CommunityPaybackAndDeliusMockServer.projectAppointmentNotFound(1234L)
+
+      val response = webTestClient.put()
+        .uri("/appointments")
+        .addUiAuthHeader()
+        .bodyValue(
+          UpdateAppointmentOutcomesDto.valid(
+            ids = longArrayOf(1234L),
+          ),
+        )
+        .exchange()
+        .expectStatus()
+        .isBadRequest()
+        .bodyAsObject<ErrorResponse>()
+
+      assertThat(response.userMessage).isEqualTo("Validation failure: Could not find an appointment with ID '1234'")
+    }
+
+    @Test
     fun `Should persist single update, raising domain events`() {
+      CommunityPaybackAndDeliusMockServer.projectAppointment(1L, ProjectAppointment.valid())
+
       val contactOutcomeEntity = contactOutcomeEntityRepository.findAll().first()
       val enforcementOutcomeEntity = enforcementActionEntityRepository.findAll().first()
       val projectTypeId = projectEntityRepository.findAll().first().id
@@ -101,6 +127,10 @@ class AppointmentIT : IntegrationTestBase() {
 
     @Test
     fun `should persist multiple updates, raising domain events`() {
+      CommunityPaybackAndDeliusMockServer.projectAppointment(1L, ProjectAppointment.valid())
+      CommunityPaybackAndDeliusMockServer.projectAppointment(2L, ProjectAppointment.valid())
+      CommunityPaybackAndDeliusMockServer.projectAppointment(3L, ProjectAppointment.valid())
+
       val contactOutcomeEntity = contactOutcomeEntityRepository.findAll().first()
       val enforcementOutcomeEntity = enforcementActionEntityRepository.findAll().first()
       val projectTypeId = projectEntityRepository.findAll().first().id

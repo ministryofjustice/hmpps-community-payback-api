@@ -8,6 +8,7 @@ import io.mockk.junit5.MockKExtension
 import io.mockk.just
 import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -22,10 +23,14 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.entity.Appoi
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.entity.Behaviour
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.entity.WorkQuality
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.service.AppointmentService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CommunityPaybackAndDeliusClient
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.service.AdditionalInformationType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.service.DomainEventService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.service.DomainEventType
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.service.PersonReferenceType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
+import uk.gov.justice.digital.hmpps.communitypaybackapi.unit.util.WebClientResponseExceptionFactory
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
@@ -33,11 +38,14 @@ import java.util.UUID
 @ExtendWith(MockKExtension::class)
 class AppointmentServiceTest {
 
-  @MockK
+  @MockK(relaxed = true)
   lateinit var appointmentOutcomeEntityRepository: AppointmentOutcomeEntityRepository
 
-  @MockK
+  @MockK(relaxed = true)
   lateinit var domainEventService: DomainEventService
+
+  @MockK(relaxed = true)
+  lateinit var communityPaybackAndDeliusClient: CommunityPaybackAndDeliusClient
 
   @InjectMockKs
   private lateinit var service: AppointmentService
@@ -46,14 +54,24 @@ class AppointmentServiceTest {
   inner class UpdateAppointmentsOutcome {
 
     @Test
+    fun `if appointment not found, rethrow not found exception`() {
+      every { communityPaybackAndDeliusClient.getProjectAppointment(101L) } throws WebClientResponseExceptionFactory.notFound()
+
+      assertThatThrownBy {
+        service.updateAppointmentsOutcome(UpdateAppointmentOutcomesDto.valid(101L))
+      }.hasMessage("Could not find an appointment with ID '101'")
+    }
+
+    @Test
     fun `if there's no existing entries for the delius appointment ids, persist new entries and raise domain events`() {
+      every { communityPaybackAndDeliusClient.getProjectAppointment(1L) } returns ProjectAppointment.valid().copy(crn = "CRN1")
+      every { communityPaybackAndDeliusClient.getProjectAppointment(2L) } returns ProjectAppointment.valid().copy(crn = "CRN2")
+
       every { appointmentOutcomeEntityRepository.findTopByAppointmentDeliusIdOrderByUpdatedAtDesc(1L) } returns null
       every { appointmentOutcomeEntityRepository.findTopByAppointmentDeliusIdOrderByUpdatedAtDesc(2L) } returns null
 
       val entityCaptor = mutableListOf<AppointmentOutcomeEntity>()
       every { appointmentOutcomeEntityRepository.save(capture(entityCaptor)) } returnsArgument 0
-
-      every { domainEventService.publish(any(), any(), any()) } just Runs
 
       val projectTypeId = UUID.randomUUID()
 
@@ -109,6 +127,7 @@ class AppointmentServiceTest {
           id = entityCaptor[0].id,
           type = DomainEventType.APPOINTMENT_OUTCOME,
           additionalInformation = mapOf(AdditionalInformationType.APPOINTMENT_ID to 1L),
+          personReferences = mapOf(PersonReferenceType.CRN to "CRN1"),
         )
       }
 
@@ -117,6 +136,7 @@ class AppointmentServiceTest {
           id = entityCaptor[1].id,
           type = DomainEventType.APPOINTMENT_OUTCOME,
           additionalInformation = mapOf(AdditionalInformationType.APPOINTMENT_ID to 2L),
+          personReferences = mapOf(PersonReferenceType.CRN to "CRN2"),
         )
       }
     }
@@ -154,7 +174,7 @@ class AppointmentServiceTest {
       service.updateAppointmentsOutcome(updateAppointmentDto)
 
       verify { appointmentOutcomeEntityRepository.save(any()) }
-      verify { domainEventService.publish(any(), DomainEventType.APPOINTMENT_OUTCOME, any()) }
+      verify { domainEventService.publish(any(), DomainEventType.APPOINTMENT_OUTCOME, any(), any()) }
     }
   }
 }

@@ -7,6 +7,8 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.stereotype.Service
 import org.springframework.transaction.event.TransactionalEventListener
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.service.internal.DomainEventPublisher
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.service.internal.HmmpsEventPersonReference
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.service.internal.HmmpsEventPersonReferences
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.service.internal.HmppsAdditionalInformation
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.service.internal.HmppsDomainEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.service.internal.UrlTemplate
@@ -24,6 +26,7 @@ open class DomainEventService(
     id: UUID,
     type: DomainEventType,
     additionalInformation: Map<AdditionalInformationType, Any> = emptyMap(),
+    personReferences: Map<PersonReferenceType, String> = emptyMap(),
   ) {
     applicationEventPublisher.publishEvent(
       PublishDomainEventCommand(
@@ -34,6 +37,7 @@ open class DomainEventService(
           detailUrl = resolveUrl(id, type),
           occurredAt = OffsetDateTime.now(),
           additionalInformation = additionalInformation.toHmppsAdditionalInformation(),
+          personReference = personReferences.toHmppsPersonReference(),
         ),
       ),
     )
@@ -56,6 +60,12 @@ open class DomainEventService(
     HmppsAdditionalInformation(mapKeys { it.key.name })
   }
 
+  private fun Map<PersonReferenceType, String>.toHmppsPersonReference() = if (this.isEmpty()) {
+    null
+  } else {
+    HmmpsEventPersonReferences(map { HmmpsEventPersonReference(it.key.name, it.value) })
+  }
+
   data class PublishDomainEventCommand(val domainEvent: HmppsDomainEvent) : ApplicationEvent(domainEvent)
 }
 
@@ -71,6 +81,10 @@ enum class DomainEventType(
 
 enum class AdditionalInformationType {
   APPOINTMENT_ID,
+}
+
+enum class PersonReferenceType {
+  CRN,
 }
 
 @Configuration

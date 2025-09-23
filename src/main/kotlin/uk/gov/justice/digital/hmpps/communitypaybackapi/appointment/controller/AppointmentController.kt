@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.dto.UpdateAppointmentOutcomesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.service.AppointmentService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.CommunityPaybackController
+import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 
 @CommunityPaybackController
 class AppointmentController(
@@ -29,6 +30,16 @@ class AppointmentController(
       ApiResponse(
         responseCode = "200",
         description = "Appointment update is (or has already) been recorded",
+      ),
+      ApiResponse(
+        responseCode = "400",
+        description = "Invalid appointment ID(s) provided",
+        content = [
+          Content(
+            mediaType = "application/json",
+            schema = Schema(implementation = ErrorResponse::class),
+          ),
+        ],
       ),
     ],
   )
