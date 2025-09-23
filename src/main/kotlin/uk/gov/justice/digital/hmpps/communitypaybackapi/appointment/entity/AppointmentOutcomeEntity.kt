@@ -11,6 +11,7 @@ import jakarta.persistence.Table
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.UpdateTimestamp
 import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.entity.ContactOutcomeEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.entity.EnforcementActionEntity
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.OffsetDateTime
@@ -25,12 +26,20 @@ data class AppointmentOutcomeEntity(
   val projectTypeDeliusId: Long,
   val startTime: LocalTime,
   val endTime: LocalTime,
+
   @Column(name = "contact_outcome_id")
   val contactOutcomeId: UUID,
 
   @ManyToOne(fetch = jakarta.persistence.FetchType.LAZY)
   @JoinColumn(name = "contact_outcome_id", referencedColumnName = "id", nullable = false, insertable = false, updatable = false)
   val contactOutcomeEntity: ContactOutcomeEntity? = null,
+
+  @Column(name = "enforcement_action_id")
+  val enforcementActionId: UUID? = null,
+
+  @ManyToOne(fetch = jakarta.persistence.FetchType.LAZY)
+  @JoinColumn(name = "enforcement_action_id", referencedColumnName = "id", nullable = true, insertable = false, updatable = false)
+  val enforcementActionEntity: EnforcementActionEntity? = null,
 
   val supervisorTeamDeliusId: Long,
   val supervisorOfficerDeliusId: Long,
@@ -45,7 +54,6 @@ data class AppointmentOutcomeEntity(
   @Enumerated(EnumType.STRING)
   val behaviour: Behaviour? = null,
 
-  val enforcementActionDeliusId: Long? = null,
   val respondBy: LocalDate? = null,
   @CreationTimestamp
   val createdAt: OffsetDateTime = OffsetDateTime.now(),

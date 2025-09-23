@@ -4,8 +4,6 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.EnforcementAction
-import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.EnforcementActions
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectTypes
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.bodyAsObject
@@ -196,22 +194,7 @@ class ReferencesIT : IntegrationTestBase() {
 
     @Test
     fun `should return OK with enforcement actions`() {
-      CommunityPaybackAndDeliusMockServer.enforcementActions(
-        EnforcementActions(
-          listOf(
-            EnforcementAction(
-              id = 2,
-              name = "Breach / Recall Initiated",
-            ),
-            EnforcementAction(
-              id = 24,
-              name = "Breach Confirmation Sent",
-            ),
-          ),
-        ),
-      )
-
-      val result = webTestClient.get()
+      val enforementActions = webTestClient.get()
         .uri("/references/enforcement-actions")
         .addUiAuthHeader()
         .exchange()
@@ -219,26 +202,16 @@ class ReferencesIT : IntegrationTestBase() {
         .isOk
         .bodyAsObject<EnforcementActionsDto>()
 
-      assertThat(result.enforcementActions).hasSize(2)
-      assertThat(result.enforcementActions[0].id).isEqualTo(2)
-      assertThat(result.enforcementActions[0].name).isEqualTo("Breach / Recall Initiated")
-    }
-
-    @Test
-    fun `should return empty list when no enforcement actions found`() {
-      CommunityPaybackAndDeliusMockServer.enforcementActions(
-        EnforcementActions(emptyList()),
-      )
-
-      val result = webTestClient.get()
-        .uri("/references/enforcement-actions")
-        .addUiAuthHeader()
-        .exchange()
-        .expectStatus()
-        .isOk
-        .bodyAsObject<EnforcementActionsDto>()
-
-      assertThat(result.enforcementActions).isEmpty()
+      assertThat(enforementActions.enforcementActions).hasSize(19)
+      assertThat(enforementActions.enforcementActions[0].id).isNotNull
+      assertThat(enforementActions.enforcementActions[0].name).isEqualTo("Breach / Recall Initiated")
+      assertThat(enforementActions.enforcementActions[0].code).isEqualTo("IBR")
+      assertThat(enforementActions.enforcementActions[1].id).isNotNull
+      assertThat(enforementActions.enforcementActions[1].name).isEqualTo("Breach Confirmation Sent")
+      assertThat(enforementActions.enforcementActions[1].code).isEqualTo("EA10")
+      assertThat(enforementActions.enforcementActions[2].id).isNotNull
+      assertThat(enforementActions.enforcementActions[2].name).isEqualTo("Breach Letter Sent")
+      assertThat(enforementActions.enforcementActions[2].code).isEqualTo("EA08")
     }
   }
 }

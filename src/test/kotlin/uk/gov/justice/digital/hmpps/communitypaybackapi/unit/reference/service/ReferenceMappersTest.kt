@@ -3,14 +3,13 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.unit.reference.service
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.EnforcementAction
-import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.EnforcementActions
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectTypes
 import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.dto.ContactOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.dto.EnforcementActionDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.dto.ProjectTypeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.entity.ContactOutcomeEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.entity.EnforcementActionEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.service.toDto
 import java.util.UUID
 
@@ -151,25 +150,25 @@ class ReferenceMappersTest {
   @Nested
   inner class EnforcementActionsMapper {
     @Test
-    fun `should map empty EnforcementActions list correctly`() {
-      val enforcementActions = EnforcementActions(emptyList())
+    fun `should map empty EnforcementActionsEntity list correctly`() {
+      val enforcementActions = listOf<EnforcementActionEntity>()
       val result = enforcementActions.toDto()
 
       assertThat(result.enforcementActions).isEmpty()
     }
 
     @Test
-    fun `should map EnforcementActions to DTO correctly`() {
-      val enforcementActions = EnforcementActions(
-        listOf(
-          EnforcementAction(
-            id = 2,
-            name = "Breach / Recall Initiated",
-          ),
-          EnforcementAction(
-            id = 24,
-            name = "Breach Confirmation Sent",
-          ),
+    fun `should map EnforcementActionEntity to DTO correctly`() {
+      val enforcementActions = listOf(
+        EnforcementActionEntity(
+          id = UUID.fromString("070cfb0a-6fc2-44cb-994f-25ec4839ef60"),
+          name = "Refer to Offender Manager",
+          code = "ROM",
+        ),
+        EnforcementActionEntity(
+          id = UUID.fromString("068dbac5-fe96-4d84-b621-84f3af83ac28"),
+          name = "Breach / Recall Initiated",
+          code = "IBR",
         ),
       )
 
@@ -177,11 +176,13 @@ class ReferenceMappersTest {
 
       assertThat(result.enforcementActions).hasSize(2)
 
-      assertThat(result.enforcementActions[0].id).isEqualTo(2)
-      assertThat(result.enforcementActions[0].name).isEqualTo("Breach / Recall Initiated")
+      assertThat(result.enforcementActions[0].id).isEqualTo(UUID.fromString("070cfb0a-6fc2-44cb-994f-25ec4839ef60"))
+      assertThat(result.enforcementActions[0].name).isEqualTo("Refer to Offender Manager")
+      assertThat(result.enforcementActions[0].code).isEqualTo("ROM")
 
-      assertThat(result.enforcementActions[1].id).isEqualTo(24)
-      assertThat(result.enforcementActions[1].name).isEqualTo("Breach Confirmation Sent")
+      assertThat(result.enforcementActions[1].id).isEqualTo(UUID.fromString("068dbac5-fe96-4d84-b621-84f3af83ac28"))
+      assertThat(result.enforcementActions[1].name).isEqualTo("Breach / Recall Initiated")
+      assertThat(result.enforcementActions[1].code).isEqualTo("IBR")
     }
   }
 
@@ -189,15 +190,17 @@ class ReferenceMappersTest {
   inner class EnforcementActionMapper {
     @Test
     fun `should map EnforcementAction to DTO correctly`() {
-      val enforcementAction = EnforcementAction(
-        id = 2,
-        name = "Breach / Recall Initiated",
+      val enforcementAction = EnforcementActionEntity(
+        id = UUID.fromString("070cfb0a-6fc2-44cb-994f-25ec4839ef60"),
+        name = "Refer to Offender Manager",
+        code = "ROM",
       )
 
       assertThat(enforcementAction.toDto()).isEqualTo(
         EnforcementActionDto(
-          id = 2,
-          name = "Breach / Recall Initiated",
+          id = UUID.fromString("070cfb0a-6fc2-44cb-994f-25ec4839ef60"),
+          name = "Refer to Offender Manager",
+          code = "ROM",
         ),
       )
     }

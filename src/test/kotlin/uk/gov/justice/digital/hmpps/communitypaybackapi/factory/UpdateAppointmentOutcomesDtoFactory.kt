@@ -11,12 +11,13 @@ import java.util.UUID
 fun UpdateAppointmentOutcomesDto.Companion.valid(
   vararg ids: Long = longArrayOf(Long.random()),
   contactOutcomeId: UUID = UUID.randomUUID(),
+  enforcementActionId: UUID = UUID.randomUUID(),
 ) = UpdateAppointmentOutcomesDto(
   ids = ids.toList(),
-  outcomeData = UpdateAppointmentOutcomeDto.valid(contactOutcomeId = contactOutcomeId),
+  outcomeData = UpdateAppointmentOutcomeDto.valid(contactOutcomeId = contactOutcomeId, enforcementActionId = enforcementActionId),
 )
 
-fun UpdateAppointmentOutcomeDto.Companion.valid(contactOutcomeId: UUID) = UpdateAppointmentOutcomeDto(
+fun UpdateAppointmentOutcomeDto.Companion.valid(contactOutcomeId: UUID, enforcementActionId: UUID) = UpdateAppointmentOutcomeDto(
   projectTypeId = Long.random(),
   startTime = randomLocalTime(),
   endTime = randomLocalTime(),
@@ -32,7 +33,7 @@ fun UpdateAppointmentOutcomeDto.Companion.valid(contactOutcomeId: UUID) = Update
     behaviour = AppointmentBehaviourDto.entries.toTypedArray().random(),
   ),
   enforcementData = UpdateAppointmentEnforcementDto(
-    enforcementActionId = Long.random(),
+    enforcementActionId = enforcementActionId,
     respondBy = randomLocalDate(),
   ),
 )

@@ -38,7 +38,7 @@ data class UpdateAppointmentAttendanceDataDto(
 )
 
 data class UpdateAppointmentEnforcementDto(
-  val enforcementActionId: Long,
+  val enforcementActionId: UUID,
   val respondBy: LocalDate,
 )
 
