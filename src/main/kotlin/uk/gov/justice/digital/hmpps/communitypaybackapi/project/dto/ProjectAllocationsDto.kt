@@ -19,9 +19,9 @@ data class ProjectAllocationDto(
   val projectCode: String,
   @param:Schema(description = "Allocation date", example = "2025-09-01")
   val date: LocalDate,
-  @param:Schema(description = "Allocation start time", example = "09:00")
+  @param:Schema(description = "Allocation start local time", example = "09:00", pattern = "^([0-1][0-9]|2[0-3]):[0-5][0-9]$")
   val startTime: LocalTime,
-  @param:Schema(description = "Allocation end time", example = "17:00")
+  @param:Schema(description = "Allocation end local time", example = "17:00", pattern = "^([0-1][0-9]|2[0-3]):[0-5][0-9]$")
   val endTime: LocalTime,
   @param:Schema(description = "Number of offenders allocated", example = "12")
   val numberOfOffendersAllocated: Int,
