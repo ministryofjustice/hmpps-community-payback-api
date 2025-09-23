@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.dto
 
+import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.Size
 import java.time.LocalDate
 import java.time.LocalTime
@@ -13,13 +14,13 @@ data class UpdateAppointmentOutcomesDto(
   companion object
 }
 
-// DA: I think alot of these IDs should maybe be codes?
 data class UpdateAppointmentOutcomeDto(
   val projectTypeId: Long,
+  @param:Schema(example = "09:00", description = "The start local time of the appointment", pattern = "^([0-1][0-9]|2[0-3]):[0-5][0-9]$")
   val startTime: LocalTime,
+  @param:Schema(example = "14:00", description = "The end local time of the appointment", pattern = "^([0-1][0-9]|2[0-3]):[0-5][0-9]$")
   val endTime: LocalTime,
   val contactOutcomeId: UUID,
-  // DA: is this redundant?
   val supervisorTeamId: Long,
   val supervisorOfficerId: Long,
   val notes: String,
