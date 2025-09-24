@@ -33,4 +33,6 @@ data class EnforcementActionEntity(
   override fun hashCode(): Int = id.hashCode()
 
   override fun toString(): String = "EnforcementAction(id=$id, code='$code', name='$name')"
+
+  companion object
 }

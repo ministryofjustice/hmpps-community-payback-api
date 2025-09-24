@@ -39,7 +39,7 @@ open class DomainEventService(
     )
   }
 
-  @TransactionalEventListener
+  @TransactionalEventListener(fallbackExecution = true)
   fun publishDomainEventCommandListener(command: PublishDomainEventCommand) {
     domainEventPublisher.publish(command.domainEvent)
   }

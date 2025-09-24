@@ -32,6 +32,8 @@ class AppointmentService(
     updateAppointments.ids.forEach { updateAppointmentsOutcome(it, updateAppointments.outcomeData) }
   }
 
+  fun getOutcomeDomainEventDetails(id: UUID) = appointmentOutcomeEntityRepository.findByIdOrNullForDomainEventDetails(id)?.toDomainEventDetail()
+
   private fun updateAppointmentsOutcome(
     deliusId: Long,
     outcome: UpdateAppointmentOutcomeDto,

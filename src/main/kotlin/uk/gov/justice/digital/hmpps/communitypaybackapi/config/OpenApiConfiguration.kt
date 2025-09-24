@@ -23,6 +23,11 @@ import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 class OpenApiConfiguration(buildProperties: BuildProperties) {
   private val version: String = buildProperties.version
 
+  companion object {
+    const val SECURITY_SCHEME_UI = "community-payback-ui"
+    const val SECURITY_SCHEME_DOMAIN_EVENT_DETAILS = "domain-event-details"
+  }
+
   @Bean
   fun customOpenAPI() = OpenAPI()
     .servers(
@@ -43,10 +48,15 @@ class OpenApiConfiguration(buildProperties: BuildProperties) {
         .contact(Contact().name("HMPPS Digital Studio").email("feedback@digital.justice.gov.uk")),
     )
     .components(
-      Components().addSecuritySchemes(
-        "community-payback-ui",
-        SecurityScheme().addBearerJwtRequirement("ROLE_COMMUNITY_PAYBACK__COMMUNITY_PAYBACK_UI"),
-      ),
+      Components()
+        .addSecuritySchemes(
+          SECURITY_SCHEME_UI,
+          SecurityScheme().addBearerJwtRequirement(SecurityConfiguration.ROLE_UI),
+        )
+        .addSecuritySchemes(
+          "domain-event-details",
+          SecurityScheme().addBearerJwtRequirement(SecurityConfiguration.ROLE_DOMAIN_EVENT_DETAILS),
+        ),
     )
 
   @Bean
@@ -61,6 +71,14 @@ class OpenApiConfiguration(buildProperties: BuildProperties) {
     .group("ForCommunityPaybackUI")
     .displayName("For Community Payback UI")
     .pathsToExclude("/queue-admin/**")
+    .addOpenApiCustomizer(errorResponsesCustomizer())
+    .build()
+
+  @Bean
+  fun forDomainEvents(): GroupedOpenApi = GroupedOpenApi.builder()
+    .group("DomainEventDetails")
+    .displayName("Domain Event Details")
+    .pathsToMatch("/domain-event-details/**")
     .addOpenApiCustomizer(errorResponsesCustomizer())
     .build()
 

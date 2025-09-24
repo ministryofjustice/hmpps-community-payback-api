@@ -12,6 +12,11 @@ import uk.gov.justice.hmpps.kotlin.auth.dsl.ResourceServerConfigurationCustomize
 @Configuration
 class SecurityConfiguration {
 
+  companion object {
+    const val ROLE_UI = "ROLE_COMMUNITY_PAYBACK__COMMUNITY_PAYBACK_UI"
+    const val ROLE_DOMAIN_EVENT_DETAILS = "ROLE_COMMUNITY_PAYBACK__DOMAIN_EVENT_DETAILS__ALL__RO"
+  }
+
   @Bean
   fun resourceServerCustomizer() = ResourceServerConfigurationCustomizer {
     unauthorizedRequestPaths {
