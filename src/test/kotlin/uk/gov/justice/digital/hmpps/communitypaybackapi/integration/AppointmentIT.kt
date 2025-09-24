@@ -12,6 +12,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.DomainEventListener
 import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.entity.ContactOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.entity.EnforcementActionEntityRepository
+import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.entity.ProjectTypeEntityRepository
 
 class AppointmentIT : IntegrationTestBase() {
 
@@ -23,6 +24,9 @@ class AppointmentIT : IntegrationTestBase() {
 
   @Autowired
   lateinit var enforcementActionEntityRepository: EnforcementActionEntityRepository
+
+  @Autowired
+  lateinit var projectEntityRepository: ProjectTypeEntityRepository
 
   @Autowired
   lateinit var domainEventListener: DomainEventListener
@@ -72,6 +76,7 @@ class AppointmentIT : IntegrationTestBase() {
     fun `Should persist single update, raising domain events`() {
       val contactOutcomeEntity = contactOutcomeEntityRepository.findAll().first()
       val enforcementOutcomeEntity = enforcementActionEntityRepository.findAll().first()
+      val projectTypeId = projectEntityRepository.findAll().first().id
 
       webTestClient.put()
         .uri("/appointments")
@@ -81,6 +86,7 @@ class AppointmentIT : IntegrationTestBase() {
             ids = longArrayOf(1L),
             contactOutcomeId = contactOutcomeEntity.id,
             enforcementActionId = enforcementOutcomeEntity.id,
+            projectTypeId = projectTypeId,
           ),
         )
         .exchange()
@@ -97,6 +103,7 @@ class AppointmentIT : IntegrationTestBase() {
     fun `should persist multiple updates, raising domain events`() {
       val contactOutcomeEntity = contactOutcomeEntityRepository.findAll().first()
       val enforcementOutcomeEntity = enforcementActionEntityRepository.findAll().first()
+      val projectTypeId = projectEntityRepository.findAll().first().id
 
       webTestClient.put()
         .uri("/appointments")
@@ -106,6 +113,7 @@ class AppointmentIT : IntegrationTestBase() {
             ids = longArrayOf(1L, 2L, 3L),
             contactOutcomeId = contactOutcomeEntity.id,
             enforcementActionId = enforcementOutcomeEntity.id,
+            projectTypeId = projectTypeId,
           ),
         )
         .exchange()

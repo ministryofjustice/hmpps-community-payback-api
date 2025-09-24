@@ -19,8 +19,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAll
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAllocations
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAppointments
-import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectType
-import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectTypes
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProviderSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProviderSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProviderTeamSummaries
@@ -204,15 +202,6 @@ class MockCommunityPaybackAndDeliusController {
       },
     )
   }
-
-  @GetMapping("/references/project-types")
-  fun getReferenceProjectTypes() = ProjectTypes(
-    listOf(
-      ProjectType(id = 1002, "Community Garden Maintenance"),
-      ProjectType(id = 2002, "Park Cleanup"),
-      ProjectType(id = 3002, "Library Assistance"),
-    ),
-  )
 
   @PostMapping("/probation-cases/summaries")
   fun getCaseSummaries(

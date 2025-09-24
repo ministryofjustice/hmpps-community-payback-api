@@ -12,13 +12,18 @@ fun UpdateAppointmentOutcomesDto.Companion.valid(
   vararg ids: Long = longArrayOf(Long.random()),
   contactOutcomeId: UUID = UUID.randomUUID(),
   enforcementActionId: UUID = UUID.randomUUID(),
+  projectTypeId: UUID = UUID.randomUUID(),
 ) = UpdateAppointmentOutcomesDto(
   ids = ids.toList(),
-  outcomeData = UpdateAppointmentOutcomeDto.valid(contactOutcomeId = contactOutcomeId, enforcementActionId = enforcementActionId),
+  outcomeData = UpdateAppointmentOutcomeDto.valid(
+    contactOutcomeId = contactOutcomeId,
+    enforcementActionId = enforcementActionId,
+    projectTypeId = projectTypeId,
+  ),
 )
 
-fun UpdateAppointmentOutcomeDto.Companion.valid(contactOutcomeId: UUID, enforcementActionId: UUID) = UpdateAppointmentOutcomeDto(
-  projectTypeId = Long.random(),
+fun UpdateAppointmentOutcomeDto.Companion.valid(contactOutcomeId: UUID, enforcementActionId: UUID, projectTypeId: UUID) = UpdateAppointmentOutcomeDto(
+  projectTypeId = projectTypeId,
   startTime = randomLocalTime(),
   endTime = randomLocalTime(),
   contactOutcomeId = contactOutcomeId,
