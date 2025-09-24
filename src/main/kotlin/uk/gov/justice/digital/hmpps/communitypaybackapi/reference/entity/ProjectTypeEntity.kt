@@ -29,4 +29,6 @@ data class ProjectTypeEntity(
   override fun hashCode(): Int = id.hashCode()
 
   override fun toString(): String = "ProjectType(id=$id, code='$code', name='$name')"
+
+  companion object
 }
