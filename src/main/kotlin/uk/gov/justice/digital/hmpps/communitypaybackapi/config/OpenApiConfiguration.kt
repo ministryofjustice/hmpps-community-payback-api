@@ -1,7 +1,5 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.config
 
-import io.swagger.v3.core.converter.AnnotatedType
-import io.swagger.v3.core.converter.ModelConverters
 import io.swagger.v3.oas.models.Components
 import io.swagger.v3.oas.models.OpenAPI
 import io.swagger.v3.oas.models.info.Contact
@@ -17,7 +15,6 @@ import org.springdoc.core.models.GroupedOpenApi
 import org.springframework.boot.info.BuildProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 
 @Configuration
 class OpenApiConfiguration(buildProperties: BuildProperties) {
@@ -63,7 +60,7 @@ class OpenApiConfiguration(buildProperties: BuildProperties) {
   fun allEndpoints(): GroupedOpenApi = GroupedOpenApi.builder()
     .group("All")
     .displayName("All Endpoints")
-    .addOpenApiCustomizer(errorResponsesCustomizer())
+    .addOpenApiCustomizer(defaultErrorResponseCustomizer())
     .build()
 
   @Bean
@@ -71,7 +68,7 @@ class OpenApiConfiguration(buildProperties: BuildProperties) {
     .group("ForCommunityPaybackUI")
     .displayName("For Community Payback UI")
     .pathsToExclude("/queue-admin/**")
-    .addOpenApiCustomizer(errorResponsesCustomizer())
+    .addOpenApiCustomizer(defaultErrorResponseCustomizer())
     .build()
 
   @Bean
@@ -79,7 +76,7 @@ class OpenApiConfiguration(buildProperties: BuildProperties) {
     .group("DomainEventDetails")
     .displayName("Domain Event Details")
     .pathsToMatch("/domain-event-details/**")
-    .addOpenApiCustomizer(errorResponsesCustomizer())
+    .addOpenApiCustomizer(defaultErrorResponseCustomizer())
     .build()
 
   private fun SecurityScheme.addBearerJwtRequirement(role: String): SecurityScheme = type(SecurityScheme.Type.HTTP)
@@ -89,8 +86,19 @@ class OpenApiConfiguration(buildProperties: BuildProperties) {
     .name("Authorization")
     .description("A HMPPS Auth access token with the `$role` role.")
 
+  /**
+   * Adds 401, 403 and 500 error response structures to all endpoints, aligned
+   * with the responses returned by [CommunityPaybackApiExceptionHandler]
+   */
   @Bean
-  fun errorResponsesCustomizer(): OpenApiCustomizer = OpenApiCustomizer { openApi: OpenAPI ->
+  fun defaultErrorResponseCustomizer(): OpenApiCustomizer = OpenApiCustomizer { openApi: OpenAPI ->
+    checkNotNull(openApi.components.schemas.keys.firstOrNull { it == "ErrorResponse" }) {
+      """/components/schemas/ErrorResponse must exist so it can be referred to for
+        for default error responses. Ensure at least one API is defined in code that
+         explicitly references the `ErrorResponse` type
+      """.trimMargin()
+    }
+
     openApi.paths.values.forEach { pathItem ->
       pathItem.readOperations().forEach { operation ->
         val responses = operation.responses
@@ -113,13 +121,15 @@ class OpenApiConfiguration(buildProperties: BuildProperties) {
         .content(
           Content().addMediaType(
             "application/json",
-            MediaType().schema(createProblemSchema()),
+            MediaType().schema(createErrorSchemaRef()),
           ),
         )
     }
   }
 
-  private fun createProblemSchema(): Schema<*> = ModelConverters.getInstance()
-    .resolveAsResolvedSchema(AnnotatedType(ErrorResponse::class.java))
-    .schema
+  private fun createErrorSchemaRef(): Schema<*> {
+    val schema = Schema<Any>()
+    schema.`$ref` = "ErrorResponse"
+    return schema
+  }
 }
