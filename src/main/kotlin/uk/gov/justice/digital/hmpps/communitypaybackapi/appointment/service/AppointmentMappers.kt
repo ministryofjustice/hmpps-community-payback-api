@@ -10,7 +10,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.entity.WorkQ
 fun AppointmentOutcomeEntity.toDomainEventDetail() = AppointmentOutcomeDomainEventDetailDto(
   id = this.id,
   appointmentDeliusId = this.appointmentDeliusId,
-  projectTypeDeliusId = this.projectTypeDeliusId,
+  projectTypeDeliusCode = this.projectTypeEntity!!.code,
   startTime = this.startTime,
   endTime = this.endTime,
   contactOutcomeDeliusCode = this.contactOutcomeEntity!!.code,

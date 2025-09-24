@@ -15,6 +15,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.service.toDo
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.entity.ContactOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.entity.EnforcementActionEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.entity.ProjectTypeEntity
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
@@ -29,7 +30,7 @@ class AppointmentMappersTest {
       val appointmentOutcomeEntity = AppointmentOutcomeEntity.valid().copy(
         id = UUID.randomUUID(),
         appointmentDeliusId = 101L,
-        projectTypeDeliusId = 102L,
+        projectTypeEntity = ProjectTypeEntity.valid().copy(code = "PT01"),
         startTime = LocalTime.of(3, 2, 1),
         endTime = LocalTime.of(12, 11, 10),
         contactOutcomeEntity = ContactOutcomeEntity.valid().copy(code = "COE1"),
@@ -49,7 +50,7 @@ class AppointmentMappersTest {
 
       assertThat(result.id).isEqualTo(appointmentOutcomeEntity.id)
       assertThat(result.appointmentDeliusId).isEqualTo(101L)
-      assertThat(result.projectTypeDeliusId).isEqualTo(102L)
+      assertThat(result.projectTypeDeliusCode).isEqualTo("PT01")
       assertThat(result.startTime).isEqualTo(LocalTime.of(3, 2, 1))
       assertThat(result.endTime).isEqualTo(LocalTime.of(12, 11, 10))
       assertThat(result.contactOutcomeDeliusCode).isEqualTo("COE1")
