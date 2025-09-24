@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
+import org.springframework.http.MediaType.APPLICATION_JSON_VALUE
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
@@ -15,7 +16,10 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.provider.service.Provide
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 
 @CommunityPaybackController
-@RequestMapping("/providers")
+@RequestMapping(
+  path = [ "/providers" ],
+  produces = [ APPLICATION_JSON_VALUE ],
+)
 class ProviderController(val providerService: ProviderService) {
 
   @GetMapping
@@ -25,12 +29,6 @@ class ProviderController(val providerService: ProviderService) {
       ApiResponse(
         responseCode = "200",
         description = "Successful providers summaries response",
-        content = [
-          Content(
-            mediaType = "application/json",
-            schema = Schema(implementation = ProviderSummariesDto::class),
-          ),
-        ],
       ),
     ],
   )
@@ -43,19 +41,12 @@ class ProviderController(val providerService: ProviderService) {
       ApiResponse(
         responseCode = "200",
         description = "Successful team response",
-        content = [
-          Content(
-            mediaType = "application/json",
-            schema = Schema(implementation = ProviderTeamSummariesDto::class),
-          ),
-        ],
       ),
       ApiResponse(
         responseCode = "404",
         description = "Provider not found",
         content = [
           Content(
-            mediaType = "application/json",
             schema = Schema(implementation = ErrorResponse::class),
           ),
         ],
@@ -71,19 +62,12 @@ class ProviderController(val providerService: ProviderService) {
       ApiResponse(
         responseCode = "200",
         description = "Successful supervisors response",
-        content = [
-          Content(
-            mediaType = "application/json",
-            schema = Schema(implementation = SupervisorSummariesDto::class),
-          ),
-        ],
       ),
       ApiResponse(
         responseCode = "404",
         description = "Provider or team not found",
         content = [
           Content(
-            mediaType = "application/json",
             schema = Schema(implementation = ErrorResponse::class),
           ),
         ],

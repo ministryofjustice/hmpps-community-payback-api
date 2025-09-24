@@ -6,12 +6,12 @@ import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import org.springframework.format.annotation.DateTimeFormat
+import org.springframework.http.MediaType.APPLICATION_JSON_VALUE
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.CommunityPaybackController
-import uk.gov.justice.digital.hmpps.communitypaybackapi.project.dto.AppointmentsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.project.dto.ProjectAllocationsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.project.service.ProjectService
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
@@ -21,26 +21,22 @@ import java.time.LocalDate
 @RequestMapping("/projects")
 class ProjectController(val projectService: ProjectService) {
 
-  @GetMapping("/allocations")
+  @GetMapping(
+    path = [ "/allocations"],
+    produces = [ APPLICATION_JSON_VALUE ],
+  )
   @Operation(
     description = "Get project allocations within date range for a specific team",
     responses = [
       ApiResponse(
         responseCode = "200",
         description = "Successful project allocations response",
-        content = [
-          Content(
-            mediaType = "application/json",
-            schema = Schema(implementation = ProjectAllocationsDto::class),
-          ),
-        ],
       ),
       ApiResponse(
         responseCode = "400",
         description = "Bad request - invalid date format or parameters",
         content = [
           Content(
-            mediaType = "application/json",
             schema = Schema(implementation = ErrorResponse::class),
           ),
         ],
@@ -50,7 +46,6 @@ class ProjectController(val projectService: ProjectService) {
         description = "Team not found",
         content = [
           Content(
-            mediaType = "application/json",
             schema = Schema(implementation = ErrorResponse::class),
           ),
         ],
@@ -67,26 +62,22 @@ class ProjectController(val projectService: ProjectService) {
     @RequestParam teamId: Long,
   ): ProjectAllocationsDto = projectService.getProjectAllocations(startDate, endDate, teamId)
 
-  @GetMapping("/{projectId}/appointments")
+  @GetMapping(
+    path = [ "/{projectId}/appointments"],
+    produces = [ APPLICATION_JSON_VALUE ],
+  )
   @Operation(
     description = "Get project allocations within date range for a specific team",
     responses = [
       ApiResponse(
         responseCode = "200",
         description = "Successful project allocations response",
-        content = [
-          Content(
-            mediaType = "application/json",
-            schema = Schema(implementation = AppointmentsDto::class),
-          ),
-        ],
       ),
       ApiResponse(
         responseCode = "400",
         description = "Bad request - invalid date format or parameters",
         content = [
           Content(
-            mediaType = "application/json",
             schema = Schema(implementation = ErrorResponse::class),
           ),
         ],
