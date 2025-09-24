@@ -1,9 +1,8 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.reference.controller
 
 import io.swagger.v3.oas.annotations.Operation
-import io.swagger.v3.oas.annotations.media.Content
-import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
+import org.springframework.http.MediaType.APPLICATION_JSON_VALUE
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.CommunityPaybackController
@@ -13,7 +12,10 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.dto.ProjectTyp
 import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.service.ReferenceService
 
 @CommunityPaybackController
-@RequestMapping("/references")
+@RequestMapping(
+  path = [ "/references" ],
+  produces = [ APPLICATION_JSON_VALUE ],
+)
 class ReferenceController(val referenceService: ReferenceService) {
 
   @GetMapping("/project-types")
@@ -23,12 +25,6 @@ class ReferenceController(val referenceService: ReferenceService) {
       ApiResponse(
         responseCode = "200",
         description = "Successful project types response",
-        content = [
-          Content(
-            mediaType = "application/json",
-            schema = Schema(implementation = ProjectTypesDto::class),
-          ),
-        ],
       ),
     ],
   )
@@ -41,31 +37,12 @@ class ReferenceController(val referenceService: ReferenceService) {
       ApiResponse(
         responseCode = "200",
         description = "Successful contact outcomes response",
-        content = [
-          Content(
-            mediaType = "application/json",
-            schema = Schema(implementation = ContactOutcomesDto::class),
-          ),
-        ],
       ),
     ],
   )
   fun getContactOutcomes(): ContactOutcomesDto = referenceService.getContactOutcomes()
 
   @GetMapping("/enforcement-actions")
-  @Operation(
-    description = "Get all enforcement actions",
-    responses = [
-      ApiResponse(
-        responseCode = "200",
-        content = [
-          Content(
-            mediaType = "application/json",
-            schema = Schema(implementation = EnforcementActionsDto::class),
-          ),
-        ],
-      ),
-    ],
-  )
+  @Operation(description = "Get all enforcement actions")
   fun getEnforcementActions(): EnforcementActionsDto = referenceService.getEnforcementActions()
 }

@@ -45,15 +45,16 @@ class AppointmentController(
     @PathVariable appointmentId: Long,
   ) = appointmentService.getAppointment(appointmentId)
 
-  @PutMapping("/appointments")
+  @PutMapping(
+    path = ["/appointments"],
+    consumes = [MediaType.APPLICATION_JSON_VALUE],
+  )
   @Operation(
     description = """Record one or more appointment outcomes. This endpoint is idempotent. 
       If the most recent recorded outcome for a given delius appointment ID matches the values in the request, 
       nothing will be done for that delius appointment ID""",
     requestBody = io.swagger.v3.oas.annotations.parameters.RequestBody(
-      required = true,
       description = "Provides IDs of delius appointments to update, and the values to use for the update",
-      content = [Content(mediaType = "application/json", schema = Schema(implementation = UpdateAppointmentOutcomesDto::class))],
     ),
     responses = [
       ApiResponse(
