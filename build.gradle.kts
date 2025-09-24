@@ -2,7 +2,7 @@ import java.net.InetSocketAddress
 import java.net.Socket
 
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "9.1.0"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "9.1.1"
   kotlin("plugin.spring") version "2.2.20"
   kotlin("plugin.jpa") version "2.2.20"
   id("io.gitlab.arturbosch.detekt") version "1.23.8"
