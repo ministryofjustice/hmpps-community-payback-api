@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.servlet.resource.NoResourceFoundException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.dto.BadRequestException
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.dto.NotFoundException
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 
 @RestControllerAdvice
@@ -34,8 +35,11 @@ class CommunityPaybackApiExceptionHandler {
       ),
     ).also { log.info("Validation exception: {}", e.message) }
 
-  @ExceptionHandler(NoResourceFoundException::class)
-  fun handleNoResourceFoundException(e: NoResourceFoundException): ResponseEntity<ErrorResponse> = ResponseEntity
+  @ExceptionHandler(
+    NoResourceFoundException::class,
+    NotFoundException::class,
+  )
+  fun handleNoResourceFoundException(e: Exception): ResponseEntity<ErrorResponse> = ResponseEntity
     .status(NOT_FOUND)
     .body(
       ErrorResponse(

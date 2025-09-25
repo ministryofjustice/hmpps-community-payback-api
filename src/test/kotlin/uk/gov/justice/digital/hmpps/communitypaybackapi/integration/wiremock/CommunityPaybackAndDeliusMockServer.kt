@@ -73,11 +73,10 @@ object CommunityPaybackAndDeliusMockServer {
   }
 
   fun projectAppointment(
-    appointmentId: Long,
     projectAppointment: ProjectAppointment,
   ) {
     WireMock.stubFor(
-      get("/community-payback-and-delius/appointments/$appointmentId")
+      get("/community-payback-and-delius/appointments/${projectAppointment.id}")
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")

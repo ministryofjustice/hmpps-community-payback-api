@@ -4,6 +4,9 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
+import org.springframework.http.MediaType
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.dto.UpdateAppointmentOutcomesDto
@@ -15,6 +18,32 @@ import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 class AppointmentController(
   private val appointmentService: AppointmentService,
 ) {
+
+  @GetMapping(
+    path = ["/appointments/{appointmentId}"],
+    produces = [MediaType.APPLICATION_JSON_VALUE],
+  )
+  @Operation(
+    description = "Get appointment given its ID",
+    responses = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Successful appointment response",
+      ),
+      ApiResponse(
+        responseCode = "404",
+        description = "Invalid appointment ID",
+        content = [
+          Content(
+            schema = Schema(implementation = ErrorResponse::class),
+          ),
+        ],
+      ),
+    ],
+  )
+  fun getAppointment(
+    @PathVariable appointmentId: Long,
+  ) = appointmentService.getAppointment(appointmentId)
 
   @PutMapping("/appointments")
   @Operation(

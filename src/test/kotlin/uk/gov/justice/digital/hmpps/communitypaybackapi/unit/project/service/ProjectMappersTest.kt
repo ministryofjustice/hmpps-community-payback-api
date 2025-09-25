@@ -169,11 +169,7 @@ class ProjectMappersTest {
         crn = "CRN1",
       )
 
-      val result = projectAppointment.toDto(
-        offenderInfoResults = listOf(
-          OffenderInfoResult.Limited("CRN1"),
-        ),
-      )
+      val result = projectAppointment.toDto(OffenderInfoResult.Limited("CRN1"))
 
       assertThat(result.id).isEqualTo(1L)
       assertThat(result.projectName).isEqualTo("Community Garden")

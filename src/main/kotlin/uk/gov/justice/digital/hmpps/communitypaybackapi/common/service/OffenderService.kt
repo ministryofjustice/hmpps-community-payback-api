@@ -15,6 +15,8 @@ class OffenderService(
     const val MAX_OFFENDER_REQUEST_COUNT = 500
   }
 
+  fun getOffenderInfo(crn: String) = getOffenderInfo(setOf(crn))[0]
+
   fun getOffenderInfo(
     crns: Set<String>,
   ): List<OffenderInfoResult> {
@@ -56,7 +58,9 @@ private fun CaseAccess.isLimited() = this.userExcluded || this.userRestricted
 sealed interface OffenderInfoResult {
   val crn: String
 
-  data class Full(override val crn: String, val summary: CaseSummary) : OffenderInfoResult
+  data class Full(override val crn: String, val summary: CaseSummary) : OffenderInfoResult {
+    companion object
+  }
   data class Limited(override val crn: String) : OffenderInfoResult
   data class NotFound(override val crn: String) : OffenderInfoResult
 }
