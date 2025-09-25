@@ -4,10 +4,12 @@ import jakarta.persistence.Entity
 import jakarta.persistence.Id
 import jakarta.persistence.Table
 import org.hibernate.annotations.CreationTimestamp
+import org.hibernate.annotations.Immutable
 import org.hibernate.annotations.UpdateTimestamp
 import java.time.OffsetDateTime
 import java.util.UUID
 
+@Immutable
 @Entity
 @Table(name = "project_types")
 data class ProjectTypeEntity(

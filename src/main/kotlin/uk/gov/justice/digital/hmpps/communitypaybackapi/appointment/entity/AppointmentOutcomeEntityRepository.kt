@@ -8,7 +8,14 @@ import java.util.UUID
 @Repository
 interface AppointmentOutcomeEntityRepository : JpaRepository<AppointmentOutcomeEntity, UUID> {
 
-  @Query("select ao from AppointmentOutcomeEntity ao join fetch ao.contactOutcomeEntity where ao.id = :id")
+  @Query(
+    """
+    select ao from AppointmentOutcomeEntity ao
+    join fetch ao.contactOutcomeEntity 
+    join fetch ao.enforcementActionEntity
+    join fetch ao.projectTypeEntity
+    where ao.id = :id""",
+  )
   fun findByIdOrNullForDomainEventDetails(id: UUID): AppointmentOutcomeEntity?
 
   fun findTopByAppointmentDeliusIdOrderByUpdatedAtDesc(appointmentDeliusId: Long): AppointmentOutcomeEntity?
