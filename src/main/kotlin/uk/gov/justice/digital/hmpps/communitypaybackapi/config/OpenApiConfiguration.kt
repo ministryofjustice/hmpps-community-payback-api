@@ -67,7 +67,7 @@ class OpenApiConfiguration(buildProperties: BuildProperties) {
   fun forCommunityPaybackUI(): GroupedOpenApi = GroupedOpenApi.builder()
     .group("ForCommunityPaybackUI")
     .displayName("For Community Payback UI")
-    .pathsToExclude("/queue-admin/**")
+    .pathsToExclude("/queue-admin/**", "/domain-event-details/**")
     .addOpenApiCustomizer(defaultErrorResponseCustomizer())
     .build()
 
