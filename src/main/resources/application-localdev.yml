@@ -5,3 +5,5 @@
 logging:
   level:
     org.springframework.web.filter.CommonsRequestLoggingFilter: DEBUG
+  request:
+    include-headers: true

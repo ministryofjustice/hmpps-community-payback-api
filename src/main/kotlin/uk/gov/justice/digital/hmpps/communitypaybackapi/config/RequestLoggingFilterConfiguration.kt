@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.config
 
 import jakarta.servlet.http.HttpServletRequest
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -11,6 +12,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.common.service.Environme
 @ConditionalOnProperty(name = ["community-payback.request-logging-enabled"], havingValue = "true")
 class RequestLoggingFilterConfiguration(
   val environmentService: EnvironmentService,
+  @Value("\${logging.request.include-headers:true}") private val includeHeaders: Boolean,
 ) {
   @Bean
   @SuppressWarnings("MagicNumber")
@@ -18,12 +20,14 @@ class RequestLoggingFilterConfiguration(
     if (environmentService.isNotATestEnvironment()) {
       error("request logging should not be enabled outside of test environments")
     }
+    System.out.println("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
+    System.out.println("Enabling request logging " + includeHeaders)
 
     val filter = CommunityPaybackRequestLoggingFilter()
     filter.setIncludeQueryString(true)
     filter.setIncludePayload(true)
     filter.setMaxPayloadLength(10000)
-    filter.setIncludeHeaders(false)
+    filter.setIncludeHeaders(includeHeaders)
     filter.setAfterMessagePrefix("Request data: ")
     return filter
   }
