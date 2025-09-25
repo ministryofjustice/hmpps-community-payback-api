@@ -25,9 +25,14 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.entity.WorkQ
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.service.AppointmentService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CommunityPaybackAndDeliusClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAppointment
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.dto.BadRequestException
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.dto.NotFoundException
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.dto.OffenderDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.service.AdditionalInformationType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.service.DomainEventService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.service.DomainEventType
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.service.OffenderInfoResult
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.service.OffenderService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.service.PersonReferenceType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.unit.util.WebClientResponseExceptionFactory
@@ -47,19 +52,50 @@ class AppointmentServiceTest {
   @MockK(relaxed = true)
   lateinit var communityPaybackAndDeliusClient: CommunityPaybackAndDeliusClient
 
+  @MockK(relaxed = true)
+  lateinit var offenderService: OffenderService
+
   @InjectMockKs
   private lateinit var service: AppointmentService
+
+  @Nested
+  inner class GetAppointment {
+
+    @Test
+    fun `if appointment not found, throw not found exception`() {
+      every { communityPaybackAndDeliusClient.getProjectAppointment(101L) } throws WebClientResponseExceptionFactory.notFound()
+
+      assertThatThrownBy {
+        service.getAppointment(101L)
+      }.isInstanceOf(NotFoundException::class.java).hasMessage("Appointment not found for ID '101'")
+    }
+
+    @Test
+    fun `appointment found`() {
+      every {
+        communityPaybackAndDeliusClient.getProjectAppointment(101L)
+      } returns ProjectAppointment.valid().copy(id = 101L, crn = "CRN123")
+
+      every { offenderService.getOffenderInfo("CRN123") } returns OffenderInfoResult.Full.valid(crn = "CRN123")
+
+      val result = service.getAppointment(101L)
+
+      assertThat(result.id).isEqualTo(101L)
+      assertThat(result.offender.crn).isEqualTo("CRN123")
+      assertThat(result.offender).isInstanceOf(OffenderDto.OffenderFullDto::class.java)
+    }
+  }
 
   @Nested
   inner class UpdateAppointmentsOutcome {
 
     @Test
-    fun `if appointment not found, rethrow not found exception`() {
+    fun `if appointment not found, throw bad request exception`() {
       every { communityPaybackAndDeliusClient.getProjectAppointment(101L) } throws WebClientResponseExceptionFactory.notFound()
 
       assertThatThrownBy {
         service.updateAppointmentsOutcome(UpdateAppointmentOutcomesDto.valid(101L))
-      }.hasMessage("Could not find an appointment with ID '101'")
+      }.isInstanceOf(BadRequestException::class.java).hasMessage("Appointment not found for ID '101'")
     }
 
     @Test

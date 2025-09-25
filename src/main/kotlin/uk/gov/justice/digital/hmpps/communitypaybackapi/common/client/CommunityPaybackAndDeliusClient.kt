@@ -121,7 +121,9 @@ data class CaseSummary(
   val name: CaseName,
   val currentExclusion: Boolean = false,
   val currentRestriction: Boolean = false,
-)
+) {
+  companion object
+}
 
 data class CaseName(
   val forename: String,

@@ -27,14 +27,18 @@ fun ProjectAllocation.toDto() = ProjectAllocationDto(
 
 fun ProjectAppointments.toDto(
   offenderInfoResults: List<OffenderInfoResult>,
-) = AppointmentsDto(this.appointments.map { it.toDto(offenderInfoResults) })
+) = AppointmentsDto(
+  this.appointments.map { appointment ->
+    appointment.toDto(offenderInfoResults.first { offender -> appointment.crn == offender.crn })
+  },
+)
 
 fun ProjectAppointment.toDto(
-  offenderInfoResults: List<OffenderInfoResult>,
+  offenderInfoResult: OffenderInfoResult,
 ) = AppointmentDto(
   id = this.id,
   projectName = this.projectName,
   requirementMinutes = this.requirementMinutes,
   completedMinutes = this.completedMinutes,
-  offender = offenderInfoResults.first { it.crn == this.crn }.toDto(),
+  offender = offenderInfoResult.toDto(),
 )

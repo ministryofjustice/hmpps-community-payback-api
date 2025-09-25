@@ -13,20 +13,37 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.entity.Behav
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.entity.WorkQuality
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CommunityPaybackAndDeliusClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.dto.BadRequestException
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.dto.NotFoundException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.service.AdditionalInformationType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.service.DomainEventService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.service.DomainEventType
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.service.OffenderService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.service.PersonReferenceType
+import uk.gov.justice.digital.hmpps.communitypaybackapi.project.dto.AppointmentDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.project.service.toDto
 import java.util.UUID
 
 @Service
 class AppointmentService(
-  val appointmentOutcomeEntityRepository: AppointmentOutcomeEntityRepository,
-  val domainEventService: DomainEventService,
-  val communityPaybackAndDeliusClient: CommunityPaybackAndDeliusClient,
+  private val appointmentOutcomeEntityRepository: AppointmentOutcomeEntityRepository,
+  private val domainEventService: DomainEventService,
+  private val communityPaybackAndDeliusClient: CommunityPaybackAndDeliusClient,
+  private val offenderService: OffenderService,
 ) {
   private companion object {
     private val log = LoggerFactory.getLogger(this::class.java)
+  }
+
+  fun getAppointment(id: Long): AppointmentDto {
+    val appointment = try {
+      communityPaybackAndDeliusClient.getProjectAppointment(id)
+    } catch (_: WebClientResponseException.NotFound) {
+      throw NotFoundException("Appointment", id.toString())
+    }
+
+    return appointment.toDto(
+      offenderInfoResult = offenderService.getOffenderInfo(appointment.crn),
+    )
   }
 
   // DA: we should validate presence of attendanceData and enforcementData against contact outcome
@@ -44,7 +61,7 @@ class AppointmentService(
     val crn = try {
       communityPaybackAndDeliusClient.getProjectAppointment(deliusId).crn
     } catch (_: WebClientResponseException.NotFound) {
-      throw BadRequestException("Could not find an appointment with ID '$deliusId'")
+      throw BadRequestException("Appointment not found for ID '$deliusId'")
     }
 
     val proposedEntity = toEntity(deliusId, outcome)
