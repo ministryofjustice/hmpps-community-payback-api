@@ -1,6 +1,6 @@
 package uk.gov.justice.digital.hmpps.communitypayback.config
 
-data class HttpRequestConfig(
+data class HttpApiRequestConfig(
     val protocol: String = System.getProperty("protocol", "http"),
     val domain: String = System.getProperty("domain", "localhost"),
     val port: Int = System.getProperty("port", "8080").toInt(),
