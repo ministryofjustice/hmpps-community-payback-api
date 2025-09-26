@@ -10,13 +10,33 @@ import io.gatling.javaapi.http.HttpDsl.http
 import io.gatling.javaapi.http.HttpDsl.status
 import uk.gov.justice.digital.hmpps.communitypayback.BaseSimulationBackEndApi
 
-class HealthSimulation(
+class ReferenceSimulation(
 ) : BaseSimulationBackEndApi() {
   // Scenario definition
-  private val scn = scenario("Health Endpoints")
+  private val scn = scenario("Project Types Endpoints")
     .exec(
-      http("Health Endpoint")
-        .get("/health")
+      http("Project Types Endpoint")
+        .get("/references/project-types")
+        .check(
+          status().`is`(200),
+          bodyString().saveAs("responseBody")
+        )
+        .header("Content-Type", "application/json")
+    )
+
+    .exec(
+      http("Contact outcomes Endpoint")
+        .get("/references/contact-outcomes")
+        .check(
+          status().`is`(200),
+          bodyString().saveAs("responseBody")
+        )
+        .header("Content-Type", "application/json")
+    )
+
+    .exec(
+      http("Enforcement Actions Endpoint")
+        .get("/references/enforcement-actions")
         .check(
           status().`is`(200),
           bodyString().saveAs("responseBody")

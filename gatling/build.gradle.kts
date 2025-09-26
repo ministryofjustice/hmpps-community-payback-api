@@ -26,4 +26,5 @@ dependencies {
     gatling("org.http4k:http4k-core")
     gatling("org.http4k:http4k-server-undertow")
     gatling("org.http4k:http4k-client-apache")
+    gatling("io.github.cdimascio:dotenv-java:3.0.0")
 }

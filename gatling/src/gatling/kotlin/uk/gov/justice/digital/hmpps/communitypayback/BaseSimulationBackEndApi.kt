@@ -9,6 +9,6 @@ open class BaseSimulationBackEndApi(httpRequestConfig: HttpApiRequestConfig = Ht
         http.baseUrl("${httpRequestConfig.protocol}://${httpRequestConfig.domain}:${httpRequestConfig.port}")
             .acceptHeader("*/*")
             .contentTypeHeader("application/json")
-//            .authorizationHeader("Bearer #{accessToken}")
+            .authorizationHeader("Bearer ${httpRequestConfig.jwt}")
 
 }
