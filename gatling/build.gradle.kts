@@ -22,10 +22,6 @@ repositories {
 }
 
 dependencies {
-    gatling(platform("org.http4k:http4k-bom:5.12.0.0"))
-    gatling("org.http4k:http4k-core")
-    gatling("org.http4k:http4k-server-undertow")
-    gatling("org.http4k:http4k-client-apache")
     gatling("io.github.cdimascio:dotenv-java:3.0.0")
 }
 
