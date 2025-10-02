@@ -67,7 +67,7 @@ class ProjectController(val projectService: ProjectService) {
     @RequestParam teamId: Long,
   ): ProjectAllocationsDto = projectService.getProjectAllocations(startDate, endDate, teamId)
 
-  @GetMapping("/{projectId}/sessions")
+  @GetMapping("/{projectId}/appointments")
   @Operation(
     description = "Get project session within date range for a specific team",
     responses = [
