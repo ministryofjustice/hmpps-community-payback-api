@@ -16,6 +16,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.project.dto.ProjectAlloc
 import uk.gov.justice.digital.hmpps.communitypaybackapi.project.service.ProjectService
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 import java.time.LocalDate
+import java.time.LocalTime
 
 @CommunityPaybackController
 @RequestMapping("/projects")
@@ -63,7 +64,7 @@ class ProjectController(val projectService: ProjectService) {
   ): ProjectAllocationsDto = projectService.getProjectAllocations(startDate, endDate, teamId)
 
   @GetMapping(
-    path = [ "/{projectId}/appointments"],
+    path = [ "/{projectCode}/sessions/{date}/appointments"],
     produces = [ APPLICATION_JSON_VALUE ],
   )
   @Operation(
@@ -84,10 +85,16 @@ class ProjectController(val projectService: ProjectService) {
       ),
     ],
   )
-  fun getAppointments(
-    @PathVariable projectId: Long,
+  fun getSessions(
+    @PathVariable projectCode: String,
     @Parameter(description = "Appointment date", example = "2025-01-01")
-    @RequestParam
+    @PathVariable
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate,
-  ) = projectService.getAppointments(projectId, date)
+    @Parameter(description = "Appointment start time", example = "09:00")
+    @RequestParam
+    @DateTimeFormat(pattern = "HH:mm") start: LocalTime,
+    @Parameter(description = "Appointment end time", example = "17:00")
+    @RequestParam
+    @DateTimeFormat(pattern = "HH:mm") end: LocalTime,
+  ) = projectService.getSessions(projectCode, date, start, end)
 }

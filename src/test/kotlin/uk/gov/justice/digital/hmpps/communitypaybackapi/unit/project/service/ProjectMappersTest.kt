@@ -120,6 +120,7 @@ class ProjectMappersTest {
           ProjectAppointment(
             id = 1L,
             projectName = "Community Garden",
+            projectCode = "N987654321",
             requirementMinutes = 520,
             completedMinutes = 30,
             crn = "CRN1",
@@ -127,6 +128,7 @@ class ProjectMappersTest {
           ProjectAppointment(
             id = 2L,
             projectName = "Park Cleanup",
+            projectCode = "N987654321",
             requirementMinutes = 20,
             completedMinutes = 10,
             crn = "CRN2",
@@ -164,6 +166,7 @@ class ProjectMappersTest {
       val projectAppointment = ProjectAppointment(
         id = 1L,
         projectName = "Community Garden",
+        projectCode = "N987654321",
         requirementMinutes = 520,
         completedMinutes = 30,
         crn = "CRN1",

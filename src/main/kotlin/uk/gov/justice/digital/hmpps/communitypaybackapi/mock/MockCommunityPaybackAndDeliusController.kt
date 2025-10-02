@@ -262,6 +262,7 @@ class MockCommunityPaybackAndDeliusController {
     fun toProjectAppointment() = ProjectAppointment(
       id = this.id,
       projectName = this.project.name,
+      projectCode = this.project.code,
       crn = this.crn,
       requirementMinutes = this.requirementMinutes,
       completedMinutes = this.completedMinutes,

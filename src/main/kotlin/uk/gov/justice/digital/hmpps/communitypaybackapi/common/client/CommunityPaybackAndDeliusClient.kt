@@ -28,10 +28,12 @@ interface CommunityPaybackAndDeliusClient {
     @PathVariable appointmentId: Long,
   ): ProjectAppointment
 
-  @GetExchange("/projects/{projectId}/appointments")
-  fun getProjectAppointments(
-    @PathVariable projectId: Long,
-    @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate,
+  @GetExchange("/projects/{projectCode}/sessions/{date}/appointments")
+  fun getProjectSessions(
+    @PathVariable projectCode: String,
+    @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate,
+    @RequestParam @DateTimeFormat(pattern = "HH:mm") start: LocalTime,
+    @RequestParam @DateTimeFormat(pattern = "HH:mm") end: LocalTime,
   ): ProjectAppointments
 
   @GetExchange("/references/project-types")
@@ -96,6 +98,7 @@ data class ProjectAppointments(
 data class ProjectAppointment(
   val id: Long,
   val projectName: String,
+  val projectCode: String,
   val crn: String,
   val requirementMinutes: Int,
   val completedMinutes: Int,

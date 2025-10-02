@@ -94,6 +94,7 @@ class AppointmentIT : IntegrationTestBase() {
         ProjectAppointment(
           id = 101L,
           projectName = "Community Garden Maintenance",
+          projectCode = "N12345678",
           crn = "CRN1",
           requirementMinutes = 520,
           completedMinutes = 30,

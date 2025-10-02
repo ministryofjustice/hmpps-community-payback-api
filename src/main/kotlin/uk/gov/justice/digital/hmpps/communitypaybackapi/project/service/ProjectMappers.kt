@@ -7,9 +7,9 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectApp
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.service.OffenderInfoResult
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.service.toDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.project.dto.AppointmentDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.project.dto.AppointmentsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.project.dto.ProjectAllocationDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.project.dto.ProjectAllocationsDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.project.dto.SessionDto
 
 fun ProjectAllocations.toDto() = ProjectAllocationsDto(this.allocations.map { it.toDto() })
 fun ProjectAllocation.toDto() = ProjectAllocationDto(
@@ -27,7 +27,7 @@ fun ProjectAllocation.toDto() = ProjectAllocationDto(
 
 fun ProjectAppointments.toDto(
   offenderInfoResults: List<OffenderInfoResult>,
-) = AppointmentsDto(
+) = SessionDto(
   this.appointments.map { appointment ->
     appointment.toDto(offenderInfoResults.first { offender -> appointment.crn == offender.crn })
   },
@@ -38,6 +38,7 @@ fun ProjectAppointment.toDto(
 ) = AppointmentDto(
   id = this.id,
   projectName = this.projectName,
+  projectCode = this.projectCode,
   requirementMinutes = this.requirementMinutes,
   completedMinutes = this.completedMinutes,
   offender = offenderInfoResult.toDto(),

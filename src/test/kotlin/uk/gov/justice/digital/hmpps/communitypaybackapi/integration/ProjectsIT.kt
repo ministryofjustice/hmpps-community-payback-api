@@ -16,8 +16,8 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.UserAccess
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.dto.OffenderDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.bodyAsObject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.CommunityPaybackAndDeliusMockServer
-import uk.gov.justice.digital.hmpps.communitypaybackapi.project.dto.AppointmentsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.project.dto.ProjectAllocationsDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.project.dto.SessionDto
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -138,13 +138,13 @@ class ProjectsIT : IntegrationTestBase() {
   }
 
   @Nested
-  @DisplayName("GET /projects/{projectId}/appointments")
+  @DisplayName("GET /projects/123/sessions/2025-01-09/appointments")
   inner class ProjectAppointmentsEndpoint {
 
     @Test
     fun `should return unauthorized if no token`() {
       webTestClient.get()
-        .uri("/projects/123/appointments?date=2025-03-11")
+        .uri("/projects/123/sessions/2025-01-09/appointments?start=09:00&end=17:00")
         .exchange()
         .expectStatus()
         .isUnauthorized
@@ -153,7 +153,7 @@ class ProjectsIT : IntegrationTestBase() {
     @Test
     fun `should return forbidden if no role`() {
       webTestClient.get()
-        .uri("/projects/123/appointments?date=2025-03-11")
+        .uri("/projects/123/sessions/2025-01-09/appointments?start=09:00&end=17:00")
         .headers(setAuthorisation())
         .exchange()
         .expectStatus()
@@ -163,7 +163,7 @@ class ProjectsIT : IntegrationTestBase() {
     @Test
     fun `should return forbidden if wrong role`() {
       webTestClient.get()
-        .uri("/projects/123/appointments?date=2025-03-11")
+        .uri("/projects/123/sessions/2025-01-09/appointments?start=09:00&end=17:00")
         .headers(setAuthorisation(roles = listOf("ROLE_WRONG")))
         .exchange()
         .expectStatus()
@@ -173,7 +173,7 @@ class ProjectsIT : IntegrationTestBase() {
     @Test
     fun `should return bad request if missing parameters`() {
       webTestClient.get()
-        .uri("/projects/123/appointments")
+        .uri("/projects/123/sessions/2025-01-09/appointments")
         .addUiAuthHeader()
         .exchange()
         .expectStatus()
@@ -185,11 +185,14 @@ class ProjectsIT : IntegrationTestBase() {
       CommunityPaybackAndDeliusMockServer.projectAppointments(
         projectId = 123L,
         date = LocalDate.of(2025, 1, 9),
+        start = LocalTime.of(9, 0),
+        end = LocalTime.of(17, 0),
         ProjectAppointments(
           listOf(
             ProjectAppointment(
               id = 1L,
               projectName = "Community Garden Maintenance",
+              projectCode = "N123456789",
               crn = "CRN1",
               requirementMinutes = 520,
               completedMinutes = 30,
@@ -197,6 +200,7 @@ class ProjectsIT : IntegrationTestBase() {
             ProjectAppointment(
               id = 2L,
               projectName = "Park Cleanup",
+              projectCode = "N987654321",
               crn = "CRN2",
               requirementMinutes = 600,
               completedMinutes = 60,
@@ -216,12 +220,12 @@ class ProjectsIT : IntegrationTestBase() {
       )
 
       val allocations = webTestClient.get()
-        .uri("/projects/123/appointments?date=2025-01-09")
+        .uri("/projects/123/sessions/2025-01-09/appointments?start=09:00&end=17:00")
         .addUiAuthHeader()
         .exchange()
         .expectStatus()
         .isOk
-        .bodyAsObject<AppointmentsDto>()
+        .bodyAsObject<SessionDto>()
 
       assertThat(allocations.appointments).hasSize(2)
       assertThat(allocations.appointments[0].id).isEqualTo(1L)
@@ -237,11 +241,14 @@ class ProjectsIT : IntegrationTestBase() {
       CommunityPaybackAndDeliusMockServer.projectAppointments(
         projectId = 123L,
         date = LocalDate.of(2025, 1, 9),
+        start = LocalTime.of(9, 0),
+        end = LocalTime.of(17, 0),
         ProjectAppointments(
           listOf(
             ProjectAppointment(
               id = 1L,
               projectName = "Community Garden Maintenance",
+              projectCode = "N123456789",
               crn = "CRN1",
               requirementMinutes = 520,
               completedMinutes = 30,
@@ -249,6 +256,7 @@ class ProjectsIT : IntegrationTestBase() {
             ProjectAppointment(
               id = 2L,
               projectName = "Park Cleanup",
+              projectCode = "N987654321",
               crn = "CRN2",
               requirementMinutes = 600,
               completedMinutes = 60,
@@ -277,12 +285,12 @@ class ProjectsIT : IntegrationTestBase() {
       )
 
       val allocations = webTestClient.get()
-        .uri("/projects/123/appointments?date=2025-01-09")
+        .uri("/projects/123/sessions/2025-01-09/appointments?start=09:00&end=17:00")
         .addUiAuthHeader(username = "USER1")
         .exchange()
         .expectStatus()
         .isOk
-        .bodyAsObject<AppointmentsDto>()
+        .bodyAsObject<SessionDto>()
 
       assertThat(allocations.appointments).hasSize(2)
 
