@@ -69,7 +69,7 @@ class ProjectController(val projectService: ProjectService) {
 
   @GetMapping("/{projectId}/appointments")
   @Operation(
-    description = "Get project session within date range for a specific team",
+    description = "Get project allocations within date range for a specific team",
     responses = [
       ApiResponse(
         responseCode = "200",
