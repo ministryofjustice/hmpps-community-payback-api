@@ -16,5 +16,6 @@ data class AppointmentDto(
 )
 
 data class AppointmentsDto(
+
   val appointments: List<AppointmentDto>,
 )
