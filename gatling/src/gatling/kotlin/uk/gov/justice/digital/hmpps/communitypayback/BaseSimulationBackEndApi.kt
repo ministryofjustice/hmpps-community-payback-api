@@ -11,8 +11,8 @@ open class BaseSimulationBackEndApi(httpRequestConfig: HttpApiRequestConfig = Ht
             .acceptHeader("*/*")
             .contentTypeHeader("application/json")
             .let { builder ->
-                val token = httpRequestConfig.jwt ?: OAuthTokenProvider.fetchAccessTokenOrNull()
-                if (token.isNullOrBlank()) builder else builder.authorizationHeader("Bearer $token")
+              val token =
+                OAuthTokenProvider.fetchAccessToken() ?: throw IllegalStateException("No access token available")
+              builder.authorizationHeader("Bearer $token")
             }
-
 }

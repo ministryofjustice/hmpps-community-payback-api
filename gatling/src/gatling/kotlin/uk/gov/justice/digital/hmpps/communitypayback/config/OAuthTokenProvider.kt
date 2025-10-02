@@ -1,51 +1,27 @@
 package uk.gov.justice.digital.hmpps.communitypayback.config
 
 import java.net.URI
+import java.net.URLEncoder
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 import java.nio.charset.StandardCharsets
 import java.util.Base64
 
-/**
- * Attempts to automatically obtain an OAuth2 access token using the Client Credentials grant.
- *
- * Configuration (system properties take precedence over env vars):
- * - authBaseUrl / AUTH_BASE_URL (e.g. https://sign-in-dev.hmpps.service.justice.gov.uk/auth)
- * - authTokenPath / AUTH_TOKEN_PATH (default: /oauth/token)
- * - clientId / CLIENT_ID
- * - clientSecret / CLIENT_SECRET
- * - grantType / GRANT_TYPE (default: client_credentials)
- * - scope / SCOPE (optional)
- */
 object OAuthTokenProvider {
   private val httpClient: HttpClient = HttpClient.newHttpClient()
 
-  fun fetchAccessTokenOrNull(): String? {
-    val clientId = sysOrEnv("clientId", "CLIENT_ID")
-    val clientSecret = sysOrEnv("clientSecret", "CLIENT_SECRET")
-    val authBaseUrl = sysOrEnv("authBaseUrl", "AUTH_BASE_URL")
-      ?: // sensible default for dev
-      "https://sign-in-dev.hmpps.service.justice.gov.uk/auth"
-    val tokenPath = sysOrEnv("authTokenPath", "AUTH_TOKEN_PATH") ?: "/oauth/token"
-    val grantType = sysOrEnv("grantType", "GRANT_TYPE") ?: "client_credentials"
-    val scope = sysOrEnv("scope", "SCOPE")
+  fun fetchAccessToken(): String? {
+    val clientId = System.getenv("CLIENT_ID")
+    val clientSecret = System.getenv("CLIENT_SECRET")
+    val authBaseUrl = System.getenv("AUTH_BASE_URL") ?: "https://sign-in-dev.hmpps.service.justice.gov.uk/auth"
+    val encodedGrantType = URLEncoder.encode("client_credentials", StandardCharsets.UTF_8)
 
     if (clientId.isNullOrBlank() || clientSecret.isNullOrBlank()) {
-      // Not configured, bail out quietly
-      return null
+      throw IllegalStateException("Client credentials not configured - clientId and clientSecret must be provided")
     }
 
-    val url = buildString {
-      append(authBaseUrl.trimEnd('/'))
-      append(tokenPath)
-      append("?grant_type=")
-      append(encode(grantType))
-      if (!scope.isNullOrBlank()) {
-        append("&scope=")
-        append(encode(scope))
-      }
-    }
+    val url = "$authBaseUrl/oauth/token?grant_type=$encodedGrantType"
 
     val basic = Base64.getEncoder().encodeToString("$clientId:$clientSecret".toByteArray(StandardCharsets.UTF_8))
 
@@ -61,25 +37,16 @@ object OAuthTokenProvider {
       if (response.statusCode() in 200..299) {
         parseAccessToken(response.body())
       } else {
-        System.err.println("[GATLING][Auth] Failed to obtain token: HTTP ${response.statusCode()} - ${response.body()}")
-        null
+        throw IllegalStateException("[GATLING][Auth] Failed to obtain token: HTTP ${response.statusCode()} - ${response.body()}")
       }
     } catch (ex: Exception) {
-      System.err.println("[GATLING][Auth] Exception obtaining token: ${ex.message}")
-      null
+      throw IllegalStateException("[GATLING][Auth] Exception obtaining token: ${ex.message}")
     }
   }
 
   private fun parseAccessToken(json: String): String? {
-    // Minimal parsing to avoid adding dependencies
-    // Looks for: "access_token":"..."
     val regex = Regex("\\\"access_token\\\"\\s*:\\s*\\\"([^\\\"]+)\\\"")
     val match = regex.find(json)
     return match?.groups?.get(1)?.value
   }
-
-  private fun encode(value: String): String = java.net.URLEncoder.encode(value, StandardCharsets.UTF_8)
-
-  private fun sysOrEnv(sysKey: String, envKey: String): String? =
-    System.getProperty(sysKey) ?: System.getenv(envKey)
 }

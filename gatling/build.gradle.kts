@@ -29,7 +29,6 @@ dependencies {
     gatling("io.github.cdimascio:dotenv-java:3.0.0")
 }
 
-// Convenience: fetch client credentials from Kubernetes and wire them into Gatling
 val fetchK8sClientCreds = tasks.register("fetchK8sClientCreds") {
     group = "gatling"
     description = "Fetches CLIENT_CREDS_CLIENT_ID and CLIENT_CREDS_CLIENT_SECRET from K8s secret hmpps-community-payback-ui-client-creds in hmpps-community-payback-<.env> namespace"
@@ -101,8 +100,6 @@ val fetchK8sClientCreds = tasks.register("fetchK8sClientCreds") {
     }
 }
 
-// Convenience aggregate task to fetch creds then call the Gatling gradle task in a nested build
-// Supports passing the simulation FQN via -PsimulationFqn=uk.gov.justice... (forwarded to --simulation)
 tasks.register<Exec>("gatlingRunWithK8sCreds") {
     group = "gatling"
     description = "Fetch creds from K8s and run gatlingRun (pass -Penv=dev and optionally -PsimulationFqn=<FQN>)"
