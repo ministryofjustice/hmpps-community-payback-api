@@ -20,9 +20,6 @@ class RequestLoggingFilterConfiguration(
     if (environmentService.isNotATestEnvironment()) {
       error("request logging should not be enabled outside of test environments")
     }
-    System.out.println("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
-    System.out.println("Enabling request logging " + includeHeaders)
-
     val filter = CommunityPaybackRequestLoggingFilter()
     filter.setIncludeQueryString(true)
     filter.setIncludePayload(true)
