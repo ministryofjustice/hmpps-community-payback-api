@@ -15,7 +15,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.service.toDo
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.entity.ContactOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.entity.EnforcementActionEntity
-import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.entity.ProjectTypeEntity
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
@@ -30,12 +29,10 @@ class AppointmentMappersTest {
       val appointmentOutcomeEntity = AppointmentOutcomeEntity.valid().copy(
         id = UUID.randomUUID(),
         appointmentDeliusId = 101L,
-        projectTypeEntity = ProjectTypeEntity.valid().copy(code = "PT01"),
         startTime = LocalTime.of(3, 2, 1),
         endTime = LocalTime.of(12, 11, 10),
         contactOutcomeEntity = ContactOutcomeEntity.valid().copy(code = "COE1"),
-        supervisorTeamDeliusId = 103L,
-        supervisorOfficerDeliusId = 104L,
+        supervisorOfficerCode = "WO3736",
         notes = "The notes",
         hiVisWorn = true,
         workedIntensively = false,
@@ -50,19 +47,17 @@ class AppointmentMappersTest {
 
       assertThat(result.id).isEqualTo(appointmentOutcomeEntity.id)
       assertThat(result.appointmentDeliusId).isEqualTo(101L)
-      assertThat(result.projectTypeDeliusCode).isEqualTo("PT01")
       assertThat(result.startTime).isEqualTo(LocalTime.of(3, 2, 1))
       assertThat(result.endTime).isEqualTo(LocalTime.of(12, 11, 10))
-      assertThat(result.contactOutcomeDeliusCode).isEqualTo("COE1")
-      assertThat(result.supervisorTeamDeliusId).isEqualTo(103L)
-      assertThat(result.supervisorOfficerDeliusId).isEqualTo(104L)
+      assertThat(result.contactOutcomeCode).isEqualTo("COE1")
+      assertThat(result.supervisorOfficerCode).isEqualTo("WO3736")
       assertThat(result.notes).isEqualTo("The notes")
       assertThat(result.hiVisWorn).isTrue
       assertThat(result.workedIntensively).isFalse
       assertThat(result.penaltyMinutes).isEqualTo(105)
       assertThat(result.workQuality).isEqualTo(AppointmentWorkQualityDto.NOT_APPLICABLE)
       assertThat(result.behaviour).isEqualTo(AppointmentBehaviourDto.UNSATISFACTORY)
-      assertThat(result.enforcementActionDeliusCode).isEqualTo("EA01")
+      assertThat(result.enforcementActionCode).isEqualTo("EA01")
       assertThat(result.respondBy).isEqualTo(LocalDate.of(2025, 1, 2))
     }
   }

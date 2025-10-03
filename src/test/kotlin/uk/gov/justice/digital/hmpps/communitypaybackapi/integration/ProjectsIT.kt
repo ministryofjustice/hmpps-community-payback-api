@@ -10,14 +10,14 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CaseSummar
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CaseSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAllocation
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAllocations
-import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAppointment
-import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAppointments
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAppointmentSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectSession
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.UserAccess
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.dto.OffenderDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.bodyAsObject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.CommunityPaybackAndDeliusMockServer
-import uk.gov.justice.digital.hmpps.communitypaybackapi.project.dto.AppointmentsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.project.dto.ProjectAllocationsDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.project.dto.SessionDto
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -138,13 +138,13 @@ class ProjectsIT : IntegrationTestBase() {
   }
 
   @Nested
-  @DisplayName("GET /projects/{projectId}/appointments")
-  inner class ProjectAppointmentsEndpoint {
+  @DisplayName("GET /projects/123/sessions/2025-01-09")
+  inner class ProjectSessionsEndpoint {
 
     @Test
     fun `should return unauthorized if no token`() {
       webTestClient.get()
-        .uri("/projects/123/appointments?date=2025-03-11")
+        .uri("/projects/123/sessions/2025-01-09?start=09:00&end=17:00")
         .exchange()
         .expectStatus()
         .isUnauthorized
@@ -153,7 +153,7 @@ class ProjectsIT : IntegrationTestBase() {
     @Test
     fun `should return forbidden if no role`() {
       webTestClient.get()
-        .uri("/projects/123/appointments?date=2025-03-11")
+        .uri("/projects/123/sessions/2025-01-09?startTime=09:00&endTime=17:00")
         .headers(setAuthorisation())
         .exchange()
         .expectStatus()
@@ -163,7 +163,7 @@ class ProjectsIT : IntegrationTestBase() {
     @Test
     fun `should return forbidden if wrong role`() {
       webTestClient.get()
-        .uri("/projects/123/appointments?date=2025-03-11")
+        .uri("/projects/123/sessions/2025-01-09?startTime=09:00&endTime=17:00")
         .headers(setAuthorisation(roles = listOf("ROLE_WRONG")))
         .exchange()
         .expectStatus()
@@ -173,7 +173,7 @@ class ProjectsIT : IntegrationTestBase() {
     @Test
     fun `should return bad request if missing parameters`() {
       webTestClient.get()
-        .uri("/projects/123/appointments")
+        .uri("/projects/123/sessions/2025-01-09")
         .addUiAuthHeader()
         .exchange()
         .expectStatus()
@@ -181,22 +181,24 @@ class ProjectsIT : IntegrationTestBase() {
     }
 
     @Test
-    fun `should return OK with project appointments`() {
-      CommunityPaybackAndDeliusMockServer.projectAppointments(
-        projectId = 123L,
-        date = LocalDate.of(2025, 1, 9),
-        ProjectAppointments(
-          listOf(
-            ProjectAppointment(
+    fun `should return OK with project session`() {
+      CommunityPaybackAndDeliusMockServer.projectSessions(
+        ProjectSession(
+          projectName = "Community Garden Maintenance",
+          projectCode = "N123456789",
+          projectLocation = "Somwhere Lane, Surrey",
+          startTime = LocalTime.of(9, 0),
+          endTime = LocalTime.of(17, 0),
+          date = LocalDate.of(2025, 1, 9),
+          appointmentSummaries = listOf(
+            ProjectAppointmentSummary(
               id = 1L,
-              projectName = "Community Garden Maintenance",
               crn = "CRN1",
               requirementMinutes = 520,
               completedMinutes = 30,
             ),
-            ProjectAppointment(
+            ProjectAppointmentSummary(
               id = 2L,
-              projectName = "Park Cleanup",
               crn = "CRN2",
               requirementMinutes = 600,
               completedMinutes = 60,
@@ -215,40 +217,46 @@ class ProjectsIT : IntegrationTestBase() {
         ),
       )
 
-      val allocations = webTestClient.get()
-        .uri("/projects/123/appointments?date=2025-01-09")
+      val session = webTestClient.get()
+        .uri("/projects/N123456789/sessions/2025-01-09?startTime=09:00&endTime=17:00")
         .addUiAuthHeader()
         .exchange()
         .expectStatus()
         .isOk
-        .bodyAsObject<AppointmentsDto>()
+        .bodyAsObject<SessionDto>()
 
-      assertThat(allocations.appointments).hasSize(2)
-      assertThat(allocations.appointments[0].id).isEqualTo(1L)
-      assertThat(allocations.appointments[0].projectName).isEqualTo("Community Garden Maintenance")
-      assertThat(allocations.appointments[0].requirementMinutes).isEqualTo(520)
-      assertThat(allocations.appointments[0].completedMinutes).isEqualTo(30)
-      assertThat(allocations.appointments[0].offender.crn).isEqualTo("CRN1")
-      assertThat(allocations.appointments[0].offender).isInstanceOf(OffenderDto.OffenderFullDto::class.java)
+      assertThat(session.projectName).isEqualTo("Community Garden Maintenance")
+      assertThat(session.projectCode).isEqualTo("N123456789")
+      assertThat(session.endTime).isEqualTo(LocalTime.of(17, 0))
+      assertThat(session.startTime).isEqualTo(LocalTime.of(9, 0))
+      assertThat(session.date).isEqualTo(LocalDate.of(2025, 1, 9))
+      assertThat(session.appointmentSummaries).hasSize(2)
+      assertThat(session.appointmentSummaries[0].id).isEqualTo(1L)
+      assertThat(session.appointmentSummaries[0].requirementMinutes).isEqualTo(520)
+      assertThat(session.appointmentSummaries[0].completedMinutes).isEqualTo(30)
+      assertThat(session.appointmentSummaries[0].offender.crn).isEqualTo("CRN1")
+      assertThat(session.appointmentSummaries[0].offender).isInstanceOf(OffenderDto.OffenderFullDto::class.java)
     }
 
     @Test
     fun `Correctly handles limited and not found offenders`() {
-      CommunityPaybackAndDeliusMockServer.projectAppointments(
-        projectId = 123L,
-        date = LocalDate.of(2025, 1, 9),
-        ProjectAppointments(
-          listOf(
-            ProjectAppointment(
+      CommunityPaybackAndDeliusMockServer.projectSessions(
+        ProjectSession(
+          projectName = "Community Garden Maintenance",
+          projectCode = "N123456789",
+          projectLocation = "Somwhere Lane, Surrey",
+          startTime = LocalTime.of(9, 0),
+          endTime = LocalTime.of(17, 0),
+          date = LocalDate.of(2025, 1, 9),
+          appointmentSummaries = listOf(
+            ProjectAppointmentSummary(
               id = 1L,
-              projectName = "Community Garden Maintenance",
               crn = "CRN1",
               requirementMinutes = 520,
               completedMinutes = 30,
             ),
-            ProjectAppointment(
+            ProjectAppointmentSummary(
               id = 2L,
-              projectName = "Park Cleanup",
               crn = "CRN2",
               requirementMinutes = 600,
               completedMinutes = 60,
@@ -276,21 +284,21 @@ class ProjectsIT : IntegrationTestBase() {
         ),
       )
 
-      val allocations = webTestClient.get()
-        .uri("/projects/123/appointments?date=2025-01-09")
+      val session = webTestClient.get()
+        .uri("/projects/N123456789/sessions/2025-01-09?startTime=09:00&endTime=17:00")
         .addUiAuthHeader(username = "USER1")
         .exchange()
         .expectStatus()
         .isOk
-        .bodyAsObject<AppointmentsDto>()
+        .bodyAsObject<SessionDto>()
 
-      assertThat(allocations.appointments).hasSize(2)
+      assertThat(session.appointmentSummaries).hasSize(2)
 
-      assertThat(allocations.appointments[0].offender.crn).isEqualTo("CRN1")
-      assertThat(allocations.appointments[0].offender).isInstanceOf(OffenderDto.OffenderNotFoundDto::class.java)
+      assertThat(session.appointmentSummaries[0].offender.crn).isEqualTo("CRN1")
+      assertThat(session.appointmentSummaries[0].offender).isInstanceOf(OffenderDto.OffenderNotFoundDto::class.java)
 
-      assertThat(allocations.appointments[1].offender.crn).isEqualTo("CRN2")
-      assertThat(allocations.appointments[1].offender).isInstanceOf(OffenderDto.OffenderLimitedDto::class.java)
+      assertThat(session.appointmentSummaries[1].offender.crn).isEqualTo("CRN2")
+      assertThat(session.appointmentSummaries[1].offender).isInstanceOf(OffenderDto.OffenderLimitedDto::class.java)
     }
   }
 }

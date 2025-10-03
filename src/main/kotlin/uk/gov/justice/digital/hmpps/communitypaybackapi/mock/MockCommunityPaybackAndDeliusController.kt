@@ -13,20 +13,24 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CaseAccess
-import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CaseName
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CaseSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CaseSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAllocation
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAllocations
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAppointment
-import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAppointments
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAppointmentSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectSession
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProviderSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProviderSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProviderTeamSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProviderTeamSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.UserAccess
+import uk.gov.justice.digital.hmpps.communitypaybackapi.mock.MockCommunityPaybackAndDeliusRepository.cases
+import uk.gov.justice.digital.hmpps.communitypaybackapi.mock.MockCommunityPaybackAndDeliusRepository.mockProjectAppointments
+import uk.gov.justice.digital.hmpps.communitypaybackapi.mock.MockCommunityPaybackAndDeliusRepository.mockProjectSessions
 import java.time.LocalDate
 import java.time.LocalTime
+import kotlin.random.Random
 
 /**
  * Temporary mock controller until we have the actual endpoint in test environments
@@ -41,107 +45,6 @@ import java.time.LocalTime
   produces = [MediaType.APPLICATION_JSON_VALUE],
 )
 class MockCommunityPaybackAndDeliusController {
-
-  companion object MockCommunityPaybackAndDeliusRepository {
-
-    const val PROJECT1_ID = 101L
-    const val PROJECT2_ID = 202L
-
-    const val CRN1 = "CRN0001"
-    const val CRN2 = "CRN0002"
-    const val CRN3 = "CRN0003"
-
-    const val APPOINTMENT1_ID = 1L
-    const val APPOINTMENT2_ID = 2L
-    const val APPOINTMENT3_ID = 3L
-
-    val cases = listOf(
-      CaseSummaryWithRestrictions(
-        caseSummary = CaseSummary(
-          crn = CRN1,
-          name = CaseName("Jack", "Sparrow", middleNames = emptyList()),
-          currentExclusion = false,
-          currentRestriction = false,
-        ),
-        isCrnRestricted = { false },
-        isCrnExcluded = { false },
-      ),
-      CaseSummaryWithRestrictions(
-        caseSummary = CaseSummary(
-          crn = CRN2,
-          name = CaseName("Norman", "Osbourn", middleNames = listOf("Green")),
-          currentExclusion = true,
-          currentRestriction = false,
-        ),
-        isCrnRestricted = { false },
-        isCrnExcluded = { false },
-      ),
-      CaseSummaryWithRestrictions(
-        caseSummary = CaseSummary(
-          crn = CRN3,
-          name = CaseName("Otto", "Octavius", middleNames = listOf("on")),
-          currentExclusion = true,
-          currentRestriction = false,
-        ),
-        isCrnRestricted = { it.endsWith("s") },
-        isCrnExcluded = { false },
-      ),
-    )
-
-    val mockProject1 = MockProject(
-      id = PROJECT1_ID,
-      name = "Community Garden",
-      code = "cg",
-    )
-
-    val mockProject2 = MockProject(
-      id = PROJECT2_ID,
-      name = "Park Cleanup",
-      code = "pc",
-    )
-
-    val mockProjectAllocations = listOf(
-      MockProjectAllocation(
-        id = 1L,
-        project = mockProject1,
-        date = LocalDate.of(2025, 9, 1),
-        startTime = LocalTime.of(9, 0),
-        endTime = LocalTime.of(17, 0),
-        appointments = listOf(
-          MockProjectAppointment(
-            id = APPOINTMENT1_ID,
-            project = mockProject1,
-            crn = CRN1,
-            requirementMinutes = 600,
-            completedMinutes = 60,
-          ),
-          MockProjectAppointment(
-            id = APPOINTMENT2_ID,
-            project = mockProject1,
-            crn = CRN2,
-            requirementMinutes = 300,
-            completedMinutes = 30,
-          ),
-        ),
-      ),
-      MockProjectAllocation(
-        id = 2L,
-        project = mockProject2,
-        date = LocalDate.of(2025, 9, 8),
-        startTime = LocalTime.of(8, 0),
-        endTime = LocalTime.of(16, 0),
-        appointments = listOf(
-          MockProjectAppointment(
-            id = APPOINTMENT3_ID,
-            project = mockProject1,
-            crn = CRN1,
-            requirementMinutes = 1200,
-            completedMinutes = 0,
-          ),
-        ),
-      ),
-    )
-  }
 
   @GetMapping("/providers")
   fun getProviders() = ProviderSummaries(
@@ -167,16 +70,16 @@ class MockCommunityPaybackAndDeliusController {
   @SuppressWarnings("MagicNumber", "UnusedParameter")
   @GetMapping("/project-allocations")
   fun getProjectAllocations(@RequestParam teamId: Long) = ProjectAllocations(
-    mockProjectAllocations.map {
+    mockProjectSessions.map {
       ProjectAllocation(
-        id = it.id,
+        id = Random.nextLong(),
         projectId = it.project.id,
         projectName = it.project.name,
         date = it.date,
         startTime = it.startTime,
         endTime = it.endTime,
         projectCode = it.project.code,
-        numberOfOffendersAllocated = it.appointments.size,
+        numberOfOffendersAllocated = it.appointmentSummaries.size,
         numberOfOffendersWithOutcomes = 0,
         numberOfOffendersWithEA = 0,
       )
@@ -184,26 +87,17 @@ class MockCommunityPaybackAndDeliusController {
   )
 
   @GetMapping("/appointments/{appointmentId}")
-  fun getProjectAppointment(@PathVariable appointmentId: Long): ResponseEntity<ProjectAppointment> = mockProjectAllocations
-    .flatMap { it.appointments }
-    .firstOrNull { it.id == appointmentId }
-    ?.let { ResponseEntity.ok(it.toProjectAppointment()) }
+  fun getProjectAppointment(@PathVariable appointmentId: Long): ResponseEntity<ProjectAppointment> = mockProjectAppointments
+    .find { it.id == appointmentId }
+    ?.let { ResponseEntity.ok(it) }
     ?: ResponseEntity.notFound().build()
 
-  @GetMapping("/projects/{projectId}/appointments")
-  fun getProjectAppointments(
-    @PathVariable projectId: Long,
+  @GetMapping("/{projectCode}/sessions/{date}")
+  fun getSession(
+    @PathVariable projectCode: String,
     @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate,
-  ): ProjectAppointments {
-    val matchingAllocation = mockProjectAllocations
-      .firstOrNull { it.project.id == projectId && it.date == date }
-
-    if (matchingAllocation == null) {
-      return ProjectAppointments(emptyList())
-    }
-
-    return ProjectAppointments(matchingAllocation.appointments.map { it.toProjectAppointment() })
-  }
+  ): ProjectSession = mockProjectSessions.find { it.project.code == projectCode && it.date == date }?.toProjectSession()
+    ?: throw IllegalArgumentException("Session not found")
 
   @PostMapping("/probation-cases/summaries")
   fun getCaseSummaries(
@@ -241,27 +135,35 @@ class MockCommunityPaybackAndDeliusController {
     val id: Long,
     val name: String,
     val code: String,
+    val location: String,
   )
 
-  data class MockProjectAllocation(
-    val id: Long,
+  data class MockProjectSession(
     val project: MockProject,
     val date: LocalDate,
     val startTime: LocalTime,
     val endTime: LocalTime,
-    val appointments: List<MockProjectAppointment>,
-  )
+    val appointmentSummaries: List<MockProjectAppointmentSummary>,
+  ) {
+    fun toProjectSession() = ProjectSession(
+      projectName = project.name,
+      projectCode = project.code,
+      projectLocation = project.location,
+      endTime = endTime,
+      startTime = startTime,
+      date = date,
+      appointmentSummaries = appointmentSummaries.map { it.toProjectAppointment() },
+    )
+  }
 
-  data class MockProjectAppointment(
+  data class MockProjectAppointmentSummary(
     val id: Long,
-    val project: MockProject,
     val crn: String,
     val requirementMinutes: Int,
     val completedMinutes: Int,
   ) {
-    fun toProjectAppointment() = ProjectAppointment(
+    fun toProjectAppointment() = ProjectAppointmentSummary(
       id = this.id,
-      projectName = this.project.name,
       crn = this.crn,
       requirementMinutes = this.requirementMinutes,
       completedMinutes = this.completedMinutes,
