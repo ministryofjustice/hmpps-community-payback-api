@@ -14,7 +14,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.dto.Appointm
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.dto.AppointmentWorkQualityDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.entity.ContactOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.entity.EnforcementActionEntity
-import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.entity.ProjectTypeEntity
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.OffsetDateTime
@@ -43,15 +42,7 @@ data class AppointmentOutcomeEntity(
   @JoinColumn(name = "enforcement_action_id", referencedColumnName = "id", nullable = true, insertable = false, updatable = false)
   val enforcementActionEntity: EnforcementActionEntity? = null,
 
-  @Column(name = "project_type_id")
-  val projectTypeId: UUID? = null,
-
-  @ManyToOne(fetch = jakarta.persistence.FetchType.LAZY)
-  @JoinColumn(name = "project_type_id", referencedColumnName = "id", nullable = false, insertable = false, updatable = false)
-  val projectTypeEntity: ProjectTypeEntity? = null,
-
-  val supervisorTeamDeliusId: Long,
-  val supervisorOfficerDeliusId: Long,
+  val supervisorOfficerCode: String,
   val notes: String? = null,
   val hiVisWorn: Boolean? = null,
   val workedIntensively: Boolean? = null,

@@ -18,17 +18,14 @@ class ProjectService(
     teamId: Long, // TODO - should this be switched to code rather than delius id
   ) = communityPaybackAndDeliusClient.getProjectAllocations(startDate, endDate, teamId).toDto()
 
-  fun getSessions(
+  fun getSession(
     projectCode: String,
     date: LocalDate,
     start: LocalTime,
     end: LocalTime,
   ): SessionDto {
-    // TODO - LOGIC HERE TO SEARCH DELIUS BY CODE
-    val appointments = communityPaybackAndDeliusClient.getProjectSessions(projectCode, date, start, end)
-
-    return appointments.toDto(
-      offenderService.getOffenderInfo(appointments.appointments.map { it.crn }.toSet()),
-    )
+    val projectSession = communityPaybackAndDeliusClient.getProjectSessions(projectCode, date, start, end)
+    val crns = projectSession.appointmentSummaries.map { it.crn }.toSet()
+    return projectSession.toDto(offenderService.getOffenderInfo(crns))
   }
 }

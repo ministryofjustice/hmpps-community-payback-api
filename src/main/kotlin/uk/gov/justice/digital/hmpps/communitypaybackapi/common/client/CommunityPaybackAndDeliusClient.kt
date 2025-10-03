@@ -8,6 +8,7 @@ import org.springframework.web.service.annotation.GetExchange
 import org.springframework.web.service.annotation.PostExchange
 import java.time.LocalDate
 import java.time.LocalTime
+import java.util.UUID
 
 interface CommunityPaybackAndDeliusClient {
   @GetExchange("/providers")
@@ -28,13 +29,13 @@ interface CommunityPaybackAndDeliusClient {
     @PathVariable appointmentId: Long,
   ): ProjectAppointment
 
-  @GetExchange("/projects/{projectCode}/sessions/{date}/appointments")
+  @GetExchange("/projects/{projectCode}/sessions/{date}")
   fun getProjectSessions(
     @PathVariable projectCode: String,
     @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate,
     @RequestParam @DateTimeFormat(pattern = "HH:mm") start: LocalTime,
     @RequestParam @DateTimeFormat(pattern = "HH:mm") end: LocalTime,
-  ): ProjectAppointments
+  ): ProjectSession
 
   @GetExchange("/references/project-types")
   fun getProjectTypes(): ProjectTypes
@@ -91,19 +92,66 @@ data class ProjectAllocation(
   val numberOfOffendersWithEA: Int,
 )
 
-data class ProjectAppointments(
-  val appointments: List<ProjectAppointment>,
-)
+data class ProjectSession(
+  val projectName: String,
+  val projectCode: String,
+  val projectLocation: String,
+  val startTime: LocalTime,
+  val endTime: LocalTime,
+  val date: LocalDate,
+  val appointmentSummaries: List<ProjectAppointmentSummary>,
+) {
+  companion object
+}
+
+data class ProjectAppointmentSummary(
+  val id: Long,
+  val crn: String,
+  val requirementMinutes: Int,
+  val completedMinutes: Int,
+) {
+  companion object
+}
 
 data class ProjectAppointment(
   val id: Long,
   val projectName: String,
   val projectCode: String,
   val crn: String,
-  val requirementMinutes: Int,
-  val completedMinutes: Int,
+  val supervisingTeam: String,
+  val date: LocalDate,
+  val startTime: LocalTime,
+  val endTime: LocalTime,
+  val penaltyTime: LocalTime?,
+  val supervisorCode: String?,
+  val contactOutcomeId: UUID?,
+  val enforcementActionId: UUID?,
+  val respondBy: LocalDate?,
+  val hiVisWorn: Boolean?,
+  val workedIntensively: Boolean?,
+  val workQuality: ProjectAppointmentWorkQuality?,
+  val behaviour: ProjectAppointmentBehaviour?,
+  val notes: String?,
 ) {
   companion object
+}
+
+enum class ProjectAppointmentWorkQuality {
+  EXCELLENT,
+  GOOD,
+  NOT_APPLICABLE,
+  POOR,
+  SATISFACTORY,
+  UNSATISFACTORY,
+}
+
+enum class ProjectAppointmentBehaviour {
+  EXCELLENT,
+  GOOD,
+  NOT_APPLICABLE,
+  POOR,
+  SATISFACTORY,
+  UNSATISFACTORY,
 }
 
 data class ProjectTypes(

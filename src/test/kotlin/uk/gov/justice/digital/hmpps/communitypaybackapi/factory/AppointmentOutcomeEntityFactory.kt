@@ -5,26 +5,19 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.entity.Behav
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.entity.WorkQuality
 import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.entity.ContactOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.entity.EnforcementActionEntity
-import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.entity.ProjectTypeEntity
 import java.util.UUID
-import kotlin.collections.random
-import kotlin.collections.toTypedArray
 
 fun AppointmentOutcomeEntity.Companion.valid(
   contactOutcomeEntity: ContactOutcomeEntity = ContactOutcomeEntity.valid(),
   enforcementActionEntity: EnforcementActionEntity = EnforcementActionEntity.valid(),
-  projectTypeEntity: ProjectTypeEntity = ProjectTypeEntity.valid(),
 ) = AppointmentOutcomeEntity(
   id = UUID.randomUUID(),
   appointmentDeliusId = Long.random(),
-  projectTypeId = projectTypeEntity.id,
-  projectTypeEntity = projectTypeEntity,
   startTime = randomLocalTime(),
   endTime = randomLocalTime(),
   contactOutcomeId = contactOutcomeEntity.id,
   contactOutcomeEntity = contactOutcomeEntity,
-  supervisorTeamDeliusId = Long.random(),
-  supervisorOfficerDeliusId = Long.random(),
+  supervisorOfficerCode = String.random(length = 3),
   notes = String.random(),
   hiVisWorn = Boolean.random(),
   workedIntensively = Boolean.random(),

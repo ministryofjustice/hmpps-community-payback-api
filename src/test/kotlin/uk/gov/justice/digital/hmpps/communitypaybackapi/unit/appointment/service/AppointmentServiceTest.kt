@@ -14,8 +14,8 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.dto.AppointmentBehaviourDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.dto.AppointmentWorkQualityDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.dto.UpdateAppointmentAttendanceDataDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.dto.UpdateAppointmentEnforcementDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.dto.AttendanceDataDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.dto.EnforcementDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.dto.UpdateAppointmentOutcomesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.entity.AppointmentOutcomeEntity
@@ -109,27 +109,23 @@ class AppointmentServiceTest {
       val entityCaptor = mutableListOf<AppointmentOutcomeEntity>()
       every { appointmentOutcomeEntityRepository.save(capture(entityCaptor)) } returnsArgument 0
 
-      val projectTypeId = UUID.randomUUID()
-
       service.updateAppointmentsOutcome(
         UpdateAppointmentOutcomesDto(
           ids = listOf(1L, 2L),
           outcomeData = UpdateAppointmentOutcomeDto(
-            projectTypeId = projectTypeId,
             startTime = LocalTime.of(10, 1, 2),
             endTime = LocalTime.of(16, 3, 4),
             contactOutcomeId = UUID.fromString("4306c7ca-b717-4995-9eea-91e41d95d44a"),
-            supervisorTeamId = 5L,
-            supervisorOfficerId = 6L,
+            supervisorOfficerCode = "N45",
             notes = "some notes",
-            attendanceData = UpdateAppointmentAttendanceDataDto(
-              hiVisWarn = false,
+            attendanceData = AttendanceDataDto(
+              hiVisWorn = false,
               workedIntensively = true,
-              penaltyMinutes = 60,
+              penaltyTime = LocalTime.of(5, 0),
               workQuality = AppointmentWorkQualityDto.SATISFACTORY,
               behaviour = AppointmentBehaviourDto.UNSATISFACTORY,
             ),
-            enforcementData = UpdateAppointmentEnforcementDto(
+            enforcementData = EnforcementDto(
               enforcementActionId = UUID.fromString("52bffba3-2366-4941-aff5-9418b4fbca7e"),
               respondBy = LocalDate.of(2026, 8, 10),
             ),
@@ -143,17 +139,15 @@ class AppointmentServiceTest {
 
       assertThat(firstEntity.id).isNotNull
       assertThat(firstEntity.appointmentDeliusId).isEqualTo(1L)
-      assertThat(firstEntity.projectTypeId).isEqualTo(projectTypeId)
       assertThat(firstEntity.startTime).isEqualTo(LocalTime.of(10, 1, 2))
       assertThat(firstEntity.endTime).isEqualTo(LocalTime.of(16, 3, 4))
       assertThat(firstEntity.contactOutcomeId).isEqualTo(UUID.fromString("4306c7ca-b717-4995-9eea-91e41d95d44a"))
       assertThat(firstEntity.enforcementActionId).isEqualTo(UUID.fromString("52bffba3-2366-4941-aff5-9418b4fbca7e"))
-      assertThat(firstEntity.supervisorTeamDeliusId).isEqualTo(5L)
-      assertThat(firstEntity.supervisorOfficerDeliusId).isEqualTo(6L)
+      assertThat(firstEntity.supervisorOfficerCode).isEqualTo("N45")
       assertThat(firstEntity.notes).isEqualTo("some notes")
       assertThat(firstEntity.hiVisWorn).isEqualTo(false)
       assertThat(firstEntity.workedIntensively).isEqualTo(true)
-      assertThat(firstEntity.penaltyMinutes).isEqualTo(60)
+      assertThat(firstEntity.penaltyMinutes).isEqualTo(300L)
       assertThat(firstEntity.workQuality).isEqualTo(WorkQuality.SATISFACTORY)
       assertThat(firstEntity.behaviour).isEqualTo(Behaviour.UNSATISFACTORY)
       assertThat(firstEntity.respondBy).isEqualTo(LocalDate.of(2026, 8, 10))

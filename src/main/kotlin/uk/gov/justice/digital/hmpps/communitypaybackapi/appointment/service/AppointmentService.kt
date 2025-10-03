@@ -5,6 +5,7 @@ import org.apache.commons.lang3.builder.CompareToBuilder
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClientResponseException
+import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.dto.UpdateAppointmentOutcomesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.entity.AppointmentOutcomeEntity
@@ -19,8 +20,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.common.service.DomainEve
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.service.DomainEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.service.OffenderService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.service.PersonReferenceType
-import uk.gov.justice.digital.hmpps.communitypaybackapi.project.dto.AppointmentDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.project.service.toDto
 import java.util.UUID
 
 @Service
@@ -32,18 +31,17 @@ class AppointmentService(
 ) {
   private companion object {
     private val log = LoggerFactory.getLogger(this::class.java)
+    const val SECONDS_PER_MINUTE = 60L
   }
 
-  fun getAppointment(id: Long): AppointmentDto {
-    val appointment = try {
-      communityPaybackAndDeliusClient.getProjectAppointment(id)
-    } catch (_: WebClientResponseException.NotFound) {
-      throw NotFoundException("Appointment", id.toString())
-    }
-
-    return appointment.toDto(
-      offenderInfoResult = offenderService.getOffenderInfo(appointment.crn),
-    )
+  fun getAppointment(id: Long): AppointmentDto = try {
+    communityPaybackAndDeliusClient.getProjectAppointment(id)
+      .let { projectAppointment ->
+        val offenderInfoResult = offenderService.getOffenderInfo(projectAppointment.crn)
+        projectAppointment.toDto(offenderInfoResult)
+      }
+  } catch (_: WebClientResponseException.NotFound) {
+    throw NotFoundException("Appointment", id.toString())
   }
 
   // DA: we should validate presence of attendanceData and enforcementData against contact outcome
@@ -90,14 +88,11 @@ class AppointmentService(
     endTime = outcome.endTime,
     contactOutcomeId = outcome.contactOutcomeId,
     enforcementActionId = outcome.enforcementData?.enforcementActionId,
-    projectTypeId = outcome.projectTypeId,
-    // DA: team is redundant?
-    supervisorTeamDeliusId = outcome.supervisorTeamId,
-    supervisorOfficerDeliusId = outcome.supervisorOfficerId,
+    supervisorOfficerCode = outcome.supervisorOfficerCode,
     notes = outcome.notes,
-    hiVisWorn = outcome.attendanceData?.hiVisWarn,
+    hiVisWorn = outcome.attendanceData?.hiVisWorn,
     workedIntensively = outcome.attendanceData?.workedIntensively,
-    penaltyMinutes = outcome.attendanceData?.penaltyMinutes,
+    penaltyMinutes = outcome.attendanceData?.penaltyTime?.toSecondOfDay()?.div(SECONDS_PER_MINUTE),
     workQuality = outcome.attendanceData?.workQuality?.let { WorkQuality.fromDto(it) },
     behaviour = outcome.attendanceData?.behaviour?.let { Behaviour.fromDto(it) },
     respondBy = outcome.enforcementData?.respondBy,

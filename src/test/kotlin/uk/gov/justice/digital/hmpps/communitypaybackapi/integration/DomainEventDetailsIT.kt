@@ -15,7 +15,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.bodyAsObject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.entity.ContactOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.entity.EnforcementActionEntityRepository
-import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.entity.ProjectTypeEntityRepository
 import java.util.UUID
 
 class DomainEventDetailsIT : IntegrationTestBase() {
@@ -28,9 +27,6 @@ class DomainEventDetailsIT : IntegrationTestBase() {
 
   @Autowired
   lateinit var enforcementActionEntityRepository: EnforcementActionEntityRepository
-
-  @Autowired
-  lateinit var projectTypeEntityRepository: ProjectTypeEntityRepository
 
   @Nested
   @DisplayName("GET /domain-event-details/appointment-outcome/{eventId}")
@@ -88,7 +84,6 @@ class DomainEventDetailsIT : IntegrationTestBase() {
         AppointmentOutcomeEntity.valid(
           contactOutcomeEntity = contactOutcomeEntityRepository.findAll().first(),
           enforcementActionEntity = enforcementActionEntityRepository.findAll().first(),
-          projectTypeEntity = projectTypeEntityRepository.findAll().first(),
         ),
       )
 

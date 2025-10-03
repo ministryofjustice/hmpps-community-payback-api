@@ -11,7 +11,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.post
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CaseSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAllocations
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAppointment
-import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAppointments
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectSession
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProviderSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProviderTeamSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.SupervisorSummaries
@@ -89,19 +89,19 @@ object CommunityPaybackAndDeliusMockServer {
 
   fun LocalTime.toHourMinuteString(): String = URLEncoder.encode(this.format(DateTimeFormatter.ofPattern("HH:mm")), "UTF-8")
 
-  fun projectAppointments(
-    projectId: Long,
-    date: LocalDate,
-    start: LocalTime,
-    end: LocalTime,
-    projectAppointments: ProjectAppointments,
+  fun projectSessions(
+    projectSession: ProjectSession,
   ) {
     WireMock.stubFor(
-      get("/community-payback-and-delius/projects/$projectId/sessions/${date.toIsoDateString()}/appointments?start=${start.toHourMinuteString()}&end=${end.toHourMinuteString()}")
+      get(
+        "/community-payback-and-delius/projects/${projectSession.projectCode}/sessions/${projectSession.date.toIsoDateString()}" +
+          "?start=${projectSession.startTime.toHourMinuteString()}" +
+          "&end=${projectSession.endTime.toHourMinuteString()}",
+      )
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")
-            .withBody(objectMapper.writeValueAsString(projectAppointments)),
+            .withBody(objectMapper.writeValueAsString(projectSession)),
         ),
     )
   }

@@ -87,6 +87,7 @@ tasks {
   val excludedFromCodeCoverage = listOf(
     "**/uk/gov/justice/digital/hmpps/communitypaybackapi/CommunityPaybackApi*",
     "**/uk/gov/justice/digital/hmpps/communitypaybackapi/config/*",
+    "**/uk/gov/justice/digital/hmpps/communitypaybackapi/mock/*",
   )
 
   named<JacocoReport>("jacocoTestReport") {

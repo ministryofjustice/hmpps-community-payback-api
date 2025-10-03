@@ -2,21 +2,27 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.project.dto
 
 import io.swagger.v3.oas.annotations.media.Schema
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.dto.OffenderDto
+import java.time.LocalDate
+import java.time.LocalTime
 
-// DA: move into appointment package structure?
-data class AppointmentDto(
-  val id: Long,
-  @param:Schema(description = "Project name", example = "Community Garden Maintenance")
+data class SessionDto(
   val projectName: String,
-  @param:Schema(description = "Project code", example = "N12345678")
   val projectCode: String,
-  @param:Schema(description = "How many community payback minutes the offender is required to complete", example = "2400")
+  val projectLocation: String,
+  val date: LocalDate,
+  val startTime: LocalTime,
+  val endTime: LocalTime,
+  val appointmentSummaries: List<AppointmentSummaryDto>,
+)
+
+data class AppointmentSummaryDto(
+  val id: Long,
+  @param:Schema(
+    description = "How many community payback minutes the offender is required to complete",
+    example = "2400",
+  )
   val requirementMinutes: Int,
   @param:Schema(description = "How many community payback minutes the offender has completed to date", example = "480")
   val completedMinutes: Int,
   val offender: OffenderDto,
-)
-
-data class SessionDto(
-  val appointments: List<AppointmentDto>,
 )

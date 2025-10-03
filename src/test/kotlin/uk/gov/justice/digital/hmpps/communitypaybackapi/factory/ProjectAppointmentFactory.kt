@@ -1,12 +1,27 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.factory
 
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAppointment
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAppointmentBehaviour
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAppointmentWorkQuality
+import java.util.UUID
 
 fun ProjectAppointment.Companion.valid() = ProjectAppointment(
   id = Long.random(),
   projectName = String.random(),
   projectCode = String.random(),
   crn = String.random(),
-  requirementMinutes = Int.random(0, 100),
-  completedMinutes = Int.random(0, 100),
+  supervisingTeam = String.random(),
+  date = randomLocalDate(),
+  startTime = randomLocalTime(),
+  endTime = randomLocalTime(),
+  penaltyTime = randomLocalTime(),
+  supervisorCode = String.random(),
+  contactOutcomeId = UUID.randomUUID(),
+  enforcementActionId = UUID.randomUUID(),
+  respondBy = randomLocalDate(),
+  hiVisWorn = Boolean.random(),
+  workedIntensively = Boolean.random(),
+  workQuality = ProjectAppointmentWorkQuality.entries.toTypedArray().random(),
+  behaviour = ProjectAppointmentBehaviour.entries.toTypedArray().random(),
+  notes = String.random(),
 )

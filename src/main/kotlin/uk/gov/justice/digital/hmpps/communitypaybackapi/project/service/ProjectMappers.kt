@@ -2,11 +2,11 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.project.service
 
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAllocation
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAllocations
-import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAppointment
-import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAppointments
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAppointmentSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectSession
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.service.OffenderInfoResult
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.service.toDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.project.dto.AppointmentDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.project.dto.AppointmentSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.project.dto.ProjectAllocationDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.project.dto.ProjectAllocationsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.project.dto.SessionDto
@@ -25,21 +25,23 @@ fun ProjectAllocation.toDto() = ProjectAllocationDto(
   this.numberOfOffendersWithEA,
 )
 
-fun ProjectAppointments.toDto(
-  offenderInfoResults: List<OffenderInfoResult>,
-) = SessionDto(
-  this.appointments.map { appointment ->
-    appointment.toDto(offenderInfoResults.first { offender -> appointment.crn == offender.crn })
-  },
+fun ProjectSession.toDto(offenderInfoResults: List<OffenderInfoResult>) = SessionDto(
+  projectCode = this.projectCode,
+  projectName = this.projectName,
+  projectLocation = this.projectLocation,
+  startTime = this.startTime,
+  endTime = this.endTime,
+  date = this.date,
+  appointmentSummaries = this.appointmentSummaries.toDtos(offenderInfoResults),
 )
 
-fun ProjectAppointment.toDto(
-  offenderInfoResult: OffenderInfoResult,
-) = AppointmentDto(
+fun List<ProjectAppointmentSummary>.toDtos(offenderInfoResults: List<OffenderInfoResult>) = this.map { it.toDto(offenderInfoResults) }
+
+fun ProjectAppointmentSummary.toDto(
+  offenderInfoResults: List<OffenderInfoResult>,
+) = AppointmentSummaryDto(
   id = this.id,
-  projectName = this.projectName,
-  projectCode = this.projectCode,
   requirementMinutes = this.requirementMinutes,
   completedMinutes = this.completedMinutes,
-  offender = offenderInfoResult.toDto(),
+  offender = offenderInfoResults.first { it.crn == this.crn }.toDto(),
 )

@@ -64,7 +64,7 @@ class ProjectController(val projectService: ProjectService) {
   ): ProjectAllocationsDto = projectService.getProjectAllocations(startDate, endDate, teamId)
 
   @GetMapping(
-    path = [ "/{projectCode}/sessions/{date}/appointments"],
+    path = [ "/{projectCode}/sessions/{date}"], //
     produces = [ APPLICATION_JSON_VALUE ],
   )
   @Operation(
@@ -85,16 +85,16 @@ class ProjectController(val projectService: ProjectService) {
       ),
     ],
   )
-  fun getSessions(
+  fun getSession(
     @PathVariable projectCode: String,
-    @Parameter(description = "Appointment date", example = "2025-01-01")
+    @Parameter(description = "Date", example = "2025-01-01")
     @PathVariable
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate,
-    @Parameter(description = "Appointment start time", example = "09:00")
+    @Parameter(description = "Start time", example = "09:00")
     @RequestParam
-    @DateTimeFormat(pattern = "HH:mm") start: LocalTime,
-    @Parameter(description = "Appointment end time", example = "17:00")
+    @DateTimeFormat(pattern = "HH:mm") startTime: LocalTime,
+    @Parameter(description = "End time", example = "17:00")
     @RequestParam
-    @DateTimeFormat(pattern = "HH:mm") end: LocalTime,
-  ) = projectService.getSessions(projectCode, date, start, end)
+    @DateTimeFormat(pattern = "HH:mm") endTime: LocalTime,
+  ) = projectService.getSession(projectCode, date, startTime, endTime)
 }
