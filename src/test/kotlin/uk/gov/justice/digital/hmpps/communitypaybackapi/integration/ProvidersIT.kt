@@ -56,9 +56,9 @@ class ProvidersIT : IntegrationTestBase() {
       CommunityPaybackAndDeliusMockServer.providers(
         ProviderSummaries(
           listOf(
-            ProviderSummary(1, "Entry 1"),
-            ProviderSummary(2, "Entry 2"),
-            ProviderSummary(3, "Entry 3"),
+            ProviderSummary(1, code = "ABC123", "Entry 1"),
+            ProviderSummary(2, code = "DEF123", "Entry 2"),
+            ProviderSummary(3, code = "GHI123", "Entry 3"),
           ),
         ),
       )
@@ -113,18 +113,18 @@ class ProvidersIT : IntegrationTestBase() {
     @Test
     fun `should return OK`() {
       CommunityPaybackAndDeliusMockServer.providerTeams(
-        providerId = 123,
+        providerCode = "N123456789",
         ProviderTeamSummaries(
           listOf(
-            ProviderTeamSummary(11, "Team 1"),
-            ProviderTeamSummary(12, "Team 2"),
-            ProviderTeamSummary(13, "Team 3"),
+            ProviderTeamSummary(11, code = "ABC123", "Team 1"),
+            ProviderTeamSummary(12, code = "DEF123", "Team 2"),
+            ProviderTeamSummary(13, code = "GHI123", "Team 3"),
           ),
         ),
       )
 
       val providers = webTestClient.get()
-        .uri("/providers/123/teams")
+        .uri("/providers/N123456789/teams")
         .addUiAuthHeader()
         .exchange()
         .expectStatus()
@@ -138,7 +138,7 @@ class ProvidersIT : IntegrationTestBase() {
   }
 
   @Nested
-  @DisplayName("GET /providers/{providerId}/teams/{teamId}/supervisors")
+  @DisplayName("GET /providers/{providerCode}/teams/{teamCode}/supervisors")
   inner class TeamSupervisorsEndpoint {
 
     @Test

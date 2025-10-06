@@ -60,11 +60,11 @@ class ProjectController(val projectService: ProjectService) {
     @Parameter(description = "End date", example = "2025-09-01")
     @RequestParam
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) endDate: LocalDate,
-    @RequestParam teamId: Long,
-  ): ProjectAllocationsDto = projectService.getProjectAllocations(startDate, endDate, teamId)
+    @RequestParam teamCode: String,
+  ): ProjectAllocationsDto = projectService.getProjectAllocations(startDate, endDate, teamCode)
 
   @GetMapping(
-    path = [ "/{projectCode}/sessions/{date}"], //
+    path = [ "/{projectCode}/sessions/{date}"],
     produces = [ APPLICATION_JSON_VALUE ],
   )
   @Operation(

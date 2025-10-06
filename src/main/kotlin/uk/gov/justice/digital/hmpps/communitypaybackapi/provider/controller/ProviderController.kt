@@ -34,7 +34,7 @@ class ProviderController(val providerService: ProviderService) {
   )
   fun getProviders(): ProviderSummariesDto = providerService.getProviders()
 
-  @GetMapping("/{providerId}/teams")
+  @GetMapping("/{providerCode}/teams")
   @Operation(
     description = "Get team information for a specific provider",
     responses = [
@@ -53,9 +53,9 @@ class ProviderController(val providerService: ProviderService) {
       ),
     ],
   )
-  fun getProviderTeam(@PathVariable providerId: Long): ProviderTeamSummariesDto = providerService.getProviderTeams(providerId)
+  fun getProviderTeam(@PathVariable providerCode: String): ProviderTeamSummariesDto = providerService.getProviderTeams(providerCode)
 
-  @GetMapping("/{providerId}/teams/{teamId}/supervisors")
+  @GetMapping("/{providerCode}/teams/{teamCode}/supervisors")
   @Operation(
     description = "Get supervisor information for a specific team",
     responses = [
@@ -75,7 +75,7 @@ class ProviderController(val providerService: ProviderService) {
     ],
   )
   fun getTeamSupervisors(
-    @PathVariable providerId: Long,
-    @PathVariable teamId: Long,
-  ): SupervisorSummariesDto = providerService.getTeamSupervisors(providerId, teamId)
+    @PathVariable providerCode: String,
+    @PathVariable teamCode: String,
+  ): SupervisorSummariesDto = providerService.getTeamSupervisors(providerCode, teamCode)
 }

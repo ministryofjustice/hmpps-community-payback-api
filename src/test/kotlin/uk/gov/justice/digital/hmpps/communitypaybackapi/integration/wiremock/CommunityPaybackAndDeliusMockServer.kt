@@ -40,11 +40,11 @@ object CommunityPaybackAndDeliusMockServer {
   }
 
   fun providerTeams(
-    providerId: Long,
+    providerCode: String,
     providerTeams: ProviderTeamSummaries,
   ) {
     WireMock.stubFor(
-      get("/community-payback-and-delius/provider-teams?providerId=$providerId").willReturn(
+      get("/community-payback-and-delius/provider-teams?providerCode=$providerCode").willReturn(
         aResponse()
           .withHeader("Content-Type", "application/json")
           .withBody(objectMapper.writeValueAsString(providerTeams)),
@@ -56,7 +56,7 @@ object CommunityPaybackAndDeliusMockServer {
     projectAllocations: ProjectAllocations,
   ) {
     WireMock.stubFor(
-      get("/community-payback-and-delius/project-allocations?startDate=2025-01-09&endDate=2025-07-09&teamId=999")
+      get("/community-payback-and-delius/project-allocations?startDate=2025-01-09&endDate=2025-07-09&teamCode=999")
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")

@@ -49,27 +49,27 @@ class MockCommunityPaybackAndDeliusController {
   @GetMapping("/providers")
   fun getProviders() = ProviderSummaries(
     listOf(
-      ProviderSummary(id = 1000, name = "East of England"),
-      ProviderSummary(id = 2000, name = "North East Region"),
-      ProviderSummary(id = 3000, name = "North West Region"),
+      ProviderSummary(id = 1000, code = "ABC123", name = "East of England"),
+      ProviderSummary(id = 2000, code = "DEF123", name = "North East Region"),
+      ProviderSummary(id = 3000, code = "GHI123", name = "North West Region"),
     ),
   )
 
   @SuppressWarnings("UnusedParameter")
   @GetMapping("/provider-teams")
   fun getProviderTeams(
-    @RequestParam providerId: Long,
+    @RequestParam providerCode: String,
   ) = ProviderTeamSummaries(
     listOf(
-      ProviderTeamSummary(id = 1001, "Team Lincoln"),
-      ProviderTeamSummary(id = 2001, "Team Grantham"),
-      ProviderTeamSummary(id = 3001, "Team Boston"),
+      ProviderTeamSummary(id = 1001, code = "ABC123", "Team Lincoln"),
+      ProviderTeamSummary(id = 2001, code = "DEF123", "Team Grantham"),
+      ProviderTeamSummary(id = 3001, code = "GHI123", "Team Boston"),
     ),
   )
 
   @SuppressWarnings("MagicNumber", "UnusedParameter")
   @GetMapping("/project-allocations")
-  fun getProjectAllocations(@RequestParam teamId: Long) = ProjectAllocations(
+  fun getProjectAllocations(@RequestParam teamCode: String) = ProjectAllocations(
     mockProjectSessions.map {
       ProjectAllocation(
         id = Random.nextLong(),

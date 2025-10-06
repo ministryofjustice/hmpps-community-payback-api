@@ -15,13 +15,13 @@ interface CommunityPaybackAndDeliusClient {
   fun providers(): ProviderSummaries
 
   @GetExchange("/provider-teams")
-  fun providerTeams(@RequestParam providerId: Long): ProviderTeamSummaries
+  fun providerTeams(@RequestParam providerCode: String): ProviderTeamSummaries
 
   @GetExchange("/project-allocations")
   fun getProjectAllocations(
     @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) startDate: LocalDate,
     @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) endDate: LocalDate,
-    @RequestParam teamId: Long,
+    @RequestParam teamCode: String,
   ): ProjectAllocations
 
   @GetExchange("/appointments/{appointmentId}")
@@ -51,10 +51,10 @@ interface CommunityPaybackAndDeliusClient {
     @RequestBody crns: Set<String>,
   ): UserAccess
 
-  @GetExchange("/providers/{providerId}/teams/{teamId}/supervisors")
+  @GetExchange("/providers/{providerCode}/teams/{teamCode}/supervisors")
   fun teamSupervisors(
-    @PathVariable providerId: Long,
-    @PathVariable teamId: Long,
+    @PathVariable providerCode: String,
+    @PathVariable teamCode: String,
   ): SupervisorSummaries
 }
 
@@ -64,6 +64,7 @@ data class ProviderSummaries(
 
 data class ProviderSummary(
   val id: Long,
+  val code: String,
   val name: String,
 )
 
@@ -73,6 +74,7 @@ data class ProviderTeamSummaries(
 
 data class ProviderTeamSummary(
   val id: Long,
+  val code: String,
   val name: String,
 )
 data class ProjectAllocations(

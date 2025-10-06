@@ -15,8 +15,8 @@ class ProjectService(
   fun getProjectAllocations(
     startDate: LocalDate,
     endDate: LocalDate,
-    teamId: Long, // TODO - should this be switched to code rather than delius id
-  ) = communityPaybackAndDeliusClient.getProjectAllocations(startDate, endDate, teamId).toDto()
+    teamCode: String,
+  ) = communityPaybackAndDeliusClient.getProjectAllocations(startDate, endDate, teamCode).toDto()
 
   fun getSession(
     projectCode: String,
