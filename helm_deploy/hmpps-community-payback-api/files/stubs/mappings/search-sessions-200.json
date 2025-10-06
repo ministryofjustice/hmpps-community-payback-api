@@ -1,0 +1,24 @@
+{
+  "request": {
+    "method": "GET",
+    "queryParameters": {
+      "startDate": {
+        "matches": ".*"
+      },
+      "endDate": {
+        "matches": ".*"
+      },
+      "teamCode": {
+        "matches": ".*"
+      }
+    },
+    "urlPath": "/search-sessions"
+  },
+  "response": {
+    "status": 200,
+    "bodyFileName": "search-sessions-200-response.json",
+    "headers": {
+      "Content-Type": "application/json;charset=UTF-8"
+    }
+  }
+}
