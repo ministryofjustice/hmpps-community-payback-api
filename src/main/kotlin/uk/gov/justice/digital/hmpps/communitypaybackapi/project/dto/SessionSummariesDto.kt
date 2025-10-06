@@ -4,12 +4,12 @@ import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate
 import java.time.LocalTime
 
-data class ProjectAllocationsDto(
+data class SessionSummariesDto(
   @param:Schema(description = "List of project allocations")
-  val allocations: List<ProjectAllocationDto>,
+  val allocations: List<SessionSummaryDto>,
 )
 
-data class ProjectAllocationDto(
+data class SessionSummaryDto(
   @param:Schema(description = "Project allocation id", example = "1")
   val id: Long,
   val projectId: Long,

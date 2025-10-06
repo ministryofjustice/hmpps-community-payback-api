@@ -1,18 +1,18 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.project.service
 
-import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAllocation
-import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAllocations
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAppointmentSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectSession
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectSessionSummaries
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.service.OffenderInfoResult
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.service.toDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.project.dto.AppointmentSummaryDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.project.dto.ProjectAllocationDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.project.dto.ProjectAllocationsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.project.dto.SessionDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.project.dto.SessionSummariesDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.project.dto.SessionSummaryDto
 
-fun ProjectAllocations.toDto() = ProjectAllocationsDto(this.allocations.map { it.toDto() })
-fun ProjectAllocation.toDto() = ProjectAllocationDto(
+fun ProjectSessionSummaries.toDto() = SessionSummariesDto(this.allocations.map { it.toDto() })
+fun ProjectSummary.toDto() = SessionSummaryDto(
   this.id,
   this.projectId,
   this.projectName,

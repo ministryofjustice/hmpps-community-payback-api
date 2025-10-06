@@ -12,11 +12,11 @@ class ProjectService(
   val communityPaybackAndDeliusClient: CommunityPaybackAndDeliusClient,
   val offenderService: OffenderService,
 ) {
-  fun getProjectAllocations(
+  fun getProjectSessions(
     startDate: LocalDate,
     endDate: LocalDate,
     teamCode: String,
-  ) = communityPaybackAndDeliusClient.getProjectAllocations(startDate, endDate, teamCode).toDto()
+  ) = communityPaybackAndDeliusClient.getProjectSessions(startDate, endDate, teamCode).toDto()
 
   fun getSession(
     projectCode: String,

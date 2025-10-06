@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.CommunityPaybackController
-import uk.gov.justice.digital.hmpps.communitypaybackapi.project.dto.ProjectAllocationsDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.project.dto.SessionSummariesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.project.service.ProjectService
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 import java.time.LocalDate
@@ -23,11 +23,11 @@ import java.time.LocalTime
 class ProjectController(val projectService: ProjectService) {
 
   @GetMapping(
-    path = [ "/allocations"],
+    path = [ "/session-search"],
     produces = [ APPLICATION_JSON_VALUE ],
   )
   @Operation(
-    description = "Get project allocations within date range for a specific team",
+    description = "Get project sessions within date range for a specific team",
     responses = [
       ApiResponse(
         responseCode = "200",
@@ -53,15 +53,16 @@ class ProjectController(val projectService: ProjectService) {
       ),
     ],
   )
-  fun getProjectAllocations(
+  fun getProjectSessions(
     @Parameter(description = "Start date", example = "2025-09-01")
     @RequestParam
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) startDate: LocalDate,
     @Parameter(description = "End date", example = "2025-09-01")
     @RequestParam
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) endDate: LocalDate,
+    @Parameter(description = "Team Code", example = "ABC123")
     @RequestParam teamCode: String,
-  ): ProjectAllocationsDto = projectService.getProjectAllocations(startDate, endDate, teamCode)
+  ): SessionSummariesDto = projectService.getProjectSessions(startDate, endDate, teamCode)
 
   @GetMapping(
     path = [ "/{projectCode}/sessions/{date}"],

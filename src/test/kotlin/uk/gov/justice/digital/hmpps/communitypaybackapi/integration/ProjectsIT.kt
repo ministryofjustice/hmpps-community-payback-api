@@ -8,29 +8,29 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CaseAccess
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CaseName
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CaseSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CaseSummary
-import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAllocation
-import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAllocations
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAppointmentSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectSession
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectSessionSummaries
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.UserAccess
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.dto.OffenderDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.bodyAsObject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.CommunityPaybackAndDeliusMockServer
-import uk.gov.justice.digital.hmpps.communitypaybackapi.project.dto.ProjectAllocationsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.project.dto.SessionDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.project.dto.SessionSummariesDto
 import java.time.LocalDate
 import java.time.LocalTime
 
 class ProjectsIT : IntegrationTestBase() {
 
   @Nested
-  @DisplayName("GET /projects/allocations")
+  @DisplayName("GET /projects/session-search")
   inner class ProjectAllocationsEndpoint {
 
     @Test
     fun `should return unauthorized if no token`() {
       webTestClient.get()
-        .uri("/projects/allocations?startDate=2025-09-01&endDate=2025-09-07&teamCode=1")
+        .uri("/projects/session-search?startDate=2025-09-01&endDate=2025-09-07&teamCode=1")
         .exchange()
         .expectStatus()
         .isUnauthorized
@@ -39,7 +39,7 @@ class ProjectsIT : IntegrationTestBase() {
     @Test
     fun `should return forbidden if no role`() {
       webTestClient.get()
-        .uri("/projects/allocations?startDate=2025-09-01&endDate=2025-09-07&teamCode=1")
+        .uri("/projects/session-search?startDate=2025-09-01&endDate=2025-09-07&teamCode=1")
         .headers(setAuthorisation())
         .exchange()
         .expectStatus()
@@ -49,7 +49,7 @@ class ProjectsIT : IntegrationTestBase() {
     @Test
     fun `should return forbidden if wrong role`() {
       webTestClient.get()
-        .uri("/projects/allocations?startDate=2025-09-01&endDate=2025-09-07&teamCode=1")
+        .uri("/projects/session-search?startDate=2025-09-01&endDate=2025-09-07&teamCode=1")
         .headers(setAuthorisation(roles = listOf("ROLE_WRONG")))
         .exchange()
         .expectStatus()
@@ -59,7 +59,7 @@ class ProjectsIT : IntegrationTestBase() {
     @Test
     fun `should return bad request if missing parameters`() {
       webTestClient.get()
-        .uri("/projects/allocations")
+        .uri("/projects/session-search")
         .addUiAuthHeader()
         .exchange()
         .expectStatus()
@@ -68,10 +68,10 @@ class ProjectsIT : IntegrationTestBase() {
 
     @Test
     fun `should return OK with project allocations`() {
-      CommunityPaybackAndDeliusMockServer.projectAllocations(
-        ProjectAllocations(
+      CommunityPaybackAndDeliusMockServer.projectSessionSummaries(
+        ProjectSessionSummaries(
           listOf(
-            ProjectAllocation(
+            ProjectSummary(
               id = 1L,
               projectId = 101L,
               projectName = "Community Garden Maintenance",
@@ -83,7 +83,7 @@ class ProjectsIT : IntegrationTestBase() {
               numberOfOffendersWithOutcomes = 1,
               numberOfOffendersWithEA = 2,
             ),
-            ProjectAllocation(
+            ProjectSummary(
               id = 2L,
               projectId = 201L,
               projectName = "Park Cleanup",
@@ -100,12 +100,12 @@ class ProjectsIT : IntegrationTestBase() {
       )
 
       val allocations = webTestClient.get()
-        .uri("/projects/allocations?startDate=2025-01-09&endDate=2025-07-09&teamCode=999")
+        .uri("/projects/session-search?startDate=2025-01-09&endDate=2025-07-09&teamCode=999")
         .addUiAuthHeader()
         .exchange()
         .expectStatus()
         .isOk
-        .bodyAsObject<ProjectAllocationsDto>()
+        .bodyAsObject<SessionSummariesDto>()
 
       assertThat(allocations.allocations).hasSize(2)
       assertThat(allocations.allocations[0].id).isEqualTo(1L)
@@ -121,17 +121,17 @@ class ProjectsIT : IntegrationTestBase() {
 
     @Test
     fun `should return empty list when no allocations found`() {
-      CommunityPaybackAndDeliusMockServer.projectAllocations(
-        ProjectAllocations(emptyList()),
+      CommunityPaybackAndDeliusMockServer.projectSessionSummaries(
+        ProjectSessionSummaries(emptyList()),
       )
 
       val allocations = webTestClient.get()
-        .uri("/projects/allocations?startDate=2025-01-09&endDate=2025-07-09&teamCode=999")
+        .uri("/projects/session-search?startDate=2025-01-09&endDate=2025-07-09&teamCode=999")
         .addUiAuthHeader()
         .exchange()
         .expectStatus()
         .isOk
-        .bodyAsObject<ProjectAllocationsDto>()
+        .bodyAsObject<SessionSummariesDto>()
 
       assertThat(allocations.allocations).isEmpty()
     }

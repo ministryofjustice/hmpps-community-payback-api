@@ -15,11 +15,11 @@ import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CaseAccess
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CaseSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CaseSummary
-import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAllocation
-import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAllocations
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAppointmentSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectSession
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectSessionSummaries
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProviderSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProviderSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProviderTeamSummaries
@@ -68,10 +68,10 @@ class MockCommunityPaybackAndDeliusController {
   )
 
   @SuppressWarnings("MagicNumber", "UnusedParameter")
-  @GetMapping("/project-allocations")
-  fun getProjectAllocations(@RequestParam teamCode: String) = ProjectAllocations(
+  @GetMapping("/project/session-summaries")
+  fun getProjectSessionSummaries(@RequestParam teamCode: String) = ProjectSessionSummaries(
     mockProjectSessions.map {
-      ProjectAllocation(
+      ProjectSummary(
         id = Random.nextLong(),
         projectId = it.project.id,
         projectName = it.project.name,
