@@ -20,9 +20,9 @@ class ProviderMappersTest {
     fun `should map using toDto() correctly`() {
       val providersSummaries = ProviderSummaries(
         listOf(
-          ProviderSummary(1000, "East of England"),
-          ProviderSummary(2000, "North East Region"),
-          ProviderSummary(3000, "North West Region"),
+          ProviderSummary(1000, code = "ABC123", "East of England"),
+          ProviderSummary(2000, code = "DEF123", "North East Region"),
+          ProviderSummary(3000, code = "GHI123", "North West Region"),
         ),
       )
       val providerSummariesDto = providersSummaries.toDto()
@@ -40,8 +40,8 @@ class ProviderMappersTest {
   inner class ProviderSummariesMapper {
     @Test
     fun `should map using toDto() correctly`() {
-      val providerSummary = ProviderSummary(1000, "East of England")
-      assertThat(providerSummary.toDto()).isEqualTo(ProviderSummaryDto(1000, "East of England"))
+      val providerSummary = ProviderSummary(1000, code = "GHI123", "East of England")
+      assertThat(providerSummary.toDto()).isEqualTo(ProviderSummaryDto(1000, code = "GHI123", "East of England"))
     }
   }
 

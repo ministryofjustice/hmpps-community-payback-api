@@ -30,7 +30,7 @@ class ProjectsIT : IntegrationTestBase() {
     @Test
     fun `should return unauthorized if no token`() {
       webTestClient.get()
-        .uri("/projects/allocations?startDate=2025-09-01&endDate=2025-09-07&teamId=1")
+        .uri("/projects/allocations?startDate=2025-09-01&endDate=2025-09-07&teamCode=1")
         .exchange()
         .expectStatus()
         .isUnauthorized
@@ -39,7 +39,7 @@ class ProjectsIT : IntegrationTestBase() {
     @Test
     fun `should return forbidden if no role`() {
       webTestClient.get()
-        .uri("/projects/allocations?startDate=2025-09-01&endDate=2025-09-07&teamId=1")
+        .uri("/projects/allocations?startDate=2025-09-01&endDate=2025-09-07&teamCode=1")
         .headers(setAuthorisation())
         .exchange()
         .expectStatus()
@@ -49,7 +49,7 @@ class ProjectsIT : IntegrationTestBase() {
     @Test
     fun `should return forbidden if wrong role`() {
       webTestClient.get()
-        .uri("/projects/allocations?startDate=2025-09-01&endDate=2025-09-07&teamId=1")
+        .uri("/projects/allocations?startDate=2025-09-01&endDate=2025-09-07&teamCode=1")
         .headers(setAuthorisation(roles = listOf("ROLE_WRONG")))
         .exchange()
         .expectStatus()
@@ -100,7 +100,7 @@ class ProjectsIT : IntegrationTestBase() {
       )
 
       val allocations = webTestClient.get()
-        .uri("/projects/allocations?startDate=2025-01-09&endDate=2025-07-09&teamId=999")
+        .uri("/projects/allocations?startDate=2025-01-09&endDate=2025-07-09&teamCode=999")
         .addUiAuthHeader()
         .exchange()
         .expectStatus()
@@ -126,7 +126,7 @@ class ProjectsIT : IntegrationTestBase() {
       )
 
       val allocations = webTestClient.get()
-        .uri("/projects/allocations?startDate=2025-01-09&endDate=2025-07-09&teamId=999")
+        .uri("/projects/allocations?startDate=2025-01-09&endDate=2025-07-09&teamCode=999")
         .addUiAuthHeader()
         .exchange()
         .expectStatus()
