@@ -17,12 +17,12 @@ interface CommunityPaybackAndDeliusClient {
   @GetExchange("/provider-teams")
   fun providerTeams(@RequestParam providerCode: String): ProviderTeamSummaries
 
-  @GetExchange("/project-allocations")
-  fun getProjectAllocations(
+  @GetExchange("/projects/session-search")
+  fun getProjectSessions(
     @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) startDate: LocalDate,
     @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) endDate: LocalDate,
     @RequestParam teamCode: String,
-  ): ProjectAllocations
+  ): ProjectSessionSummaries
 
   @GetExchange("/appointments/{appointmentId}")
   fun getProjectAppointment(
@@ -77,11 +77,11 @@ data class ProviderTeamSummary(
   val code: String,
   val name: String,
 )
-data class ProjectAllocations(
-  val allocations: List<ProjectAllocation>,
+data class ProjectSessionSummaries(
+  val allocations: List<ProjectSummary>,
 )
 
-data class ProjectAllocation(
+data class ProjectSummary(
   val id: Long,
   val projectId: Long,
   val date: LocalDate,

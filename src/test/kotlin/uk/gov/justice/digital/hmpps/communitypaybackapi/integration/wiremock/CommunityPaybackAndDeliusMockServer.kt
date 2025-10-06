@@ -9,9 +9,9 @@ import com.github.tomakehurst.wiremock.client.WireMock.equalToJson
 import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.post
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CaseSummaries
-import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAllocations
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectSession
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectSessionSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProviderSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProviderTeamSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.SupervisorSummaries
@@ -52,15 +52,15 @@ object CommunityPaybackAndDeliusMockServer {
     )
   }
 
-  fun projectAllocations(
-    projectAllocations: ProjectAllocations,
+  fun projectSessionSummaries(
+    projectSessions: ProjectSessionSummaries,
   ) {
     WireMock.stubFor(
-      get("/community-payback-and-delius/project-allocations?startDate=2025-01-09&endDate=2025-07-09&teamCode=999")
+      get("/community-payback-and-delius/projects/session-search?startDate=2025-01-09&endDate=2025-07-09&teamCode=999")
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")
-            .withBody(objectMapper.writeValueAsString(projectAllocations)),
+            .withBody(objectMapper.writeValueAsString(projectSessions)),
         ),
     )
   }

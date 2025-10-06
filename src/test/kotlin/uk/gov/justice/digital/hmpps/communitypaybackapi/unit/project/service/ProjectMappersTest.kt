@@ -6,16 +6,16 @@ import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.dto.AppointmentBehaviourDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.dto.AppointmentWorkQualityDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.service.toDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAllocation
-import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAllocations
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAppointmentBehaviour
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAppointmentSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAppointmentWorkQuality
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectSession
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectSessionSummaries
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.dto.OffenderDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.service.OffenderInfoResult
-import uk.gov.justice.digital.hmpps.communitypaybackapi.project.dto.ProjectAllocationDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.project.dto.SessionSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.project.service.toDto
 import java.time.LocalDate
 import java.time.LocalTime
@@ -28,9 +28,9 @@ class ProjectMappersTest {
 
     @Test
     fun `should map ProjectAllocations to DTO correctly`() {
-      val projectAllocations = ProjectAllocations(
+      val projectSessions = ProjectSessionSummaries(
         listOf(
-          ProjectAllocation(
+          ProjectSummary(
             id = 1L,
             projectId = 101L,
             projectName = "Community Garden",
@@ -42,7 +42,7 @@ class ProjectMappersTest {
             numberOfOffendersWithOutcomes = 1,
             numberOfOffendersWithEA = 2,
           ),
-          ProjectAllocation(
+          ProjectSummary(
             id = 2L,
             projectId = 102L,
             projectName = "Park Cleanup",
@@ -57,7 +57,7 @@ class ProjectMappersTest {
         ),
       )
 
-      val projectAllocationsDto = projectAllocations.toDto()
+      val projectAllocationsDto = projectSessions.toDto()
 
       assertThat(projectAllocationsDto.allocations).hasSize(2)
 
@@ -89,7 +89,7 @@ class ProjectMappersTest {
   inner class ProjectAllocationMapper {
     @Test
     fun `should map ProjectAllocation to DTO correctly`() {
-      val projectAllocation = ProjectAllocation(
+      val projectAllocation = ProjectSummary(
         id = 1L,
         projectId = 2L,
         projectName = "Community Garden",
@@ -103,7 +103,7 @@ class ProjectMappersTest {
       )
 
       assertThat(projectAllocation.toDto()).isEqualTo(
-        ProjectAllocationDto(
+        SessionSummaryDto(
           id = 1L,
           projectId = 2L,
           projectName = "Community Garden",
