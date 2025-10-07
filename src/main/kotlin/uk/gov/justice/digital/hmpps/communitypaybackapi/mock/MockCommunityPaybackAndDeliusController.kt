@@ -68,7 +68,7 @@ class MockCommunityPaybackAndDeliusController {
   )
 
   @SuppressWarnings("MagicNumber", "UnusedParameter")
-  @GetMapping("/project/session-search")
+  @GetMapping("/projects/session-search")
   fun getProjectSessionSummaries(@RequestParam teamCode: String) = ProjectSessionSummaries(
     mockProjectSessions.map {
       ProjectSummary(
