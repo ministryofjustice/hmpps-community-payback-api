@@ -27,6 +27,8 @@ object MockCommunityPaybackAndDeliusRepository {
     id = PROJECT1_ID,
     name = "Community Garden",
     code = "cg",
+    typeName = "Environmental Improvement",
+    typeCode = "ENV",
     location = "Garden Road, Sheffield",
   )
 
@@ -34,6 +36,8 @@ object MockCommunityPaybackAndDeliusRepository {
     id = PROJECT2_ID,
     name = "Park Cleanup",
     code = "pc",
+    typeName = "Environmental Improvement",
+    typeCode = "ENV",
     location = "Park Road, Birmingham",
   )
 
@@ -79,6 +83,8 @@ object MockCommunityPaybackAndDeliusRepository {
       id = APPOINTMENT1_ID,
       projectName = mockProject1.name,
       projectCode = mockProject1.code,
+      projectTypeName = mockProject1.typeName,
+      projectTypeCode = mockProject1.typeCode,
       crn = CRN1,
       supervisingTeam = "Team Lincoln",
       date = LocalDate.of(2025, 9, 1),
@@ -99,6 +105,8 @@ object MockCommunityPaybackAndDeliusRepository {
       id = APPOINTMENT2_ID,
       projectName = mockProject1.name,
       projectCode = mockProject1.code,
+      projectTypeName = mockProject1.typeName,
+      projectTypeCode = mockProject1.typeCode,
       crn = CRN2,
       supervisingTeam = "Team Lincoln",
       date = LocalDate.of(2025, 9, 1),
@@ -119,6 +127,8 @@ object MockCommunityPaybackAndDeliusRepository {
       id = APPOINTMENT3_ID,
       projectName = mockProject2.name,
       projectCode = mockProject2.code,
+      projectTypeName = mockProject2.typeName,
+      projectTypeCode = mockProject2.typeCode,
       crn = CRN1,
       supervisingTeam = "Team Lincoln",
       date = LocalDate.of(2025, 9, 1),

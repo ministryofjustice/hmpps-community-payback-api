@@ -135,6 +135,8 @@ class MockCommunityPaybackAndDeliusController {
     val id: Long,
     val name: String,
     val code: String,
+    val typeName: String,
+    val typeCode: String,
     val location: String,
   )
 
