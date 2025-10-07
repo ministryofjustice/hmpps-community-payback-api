@@ -1,0 +1,34 @@
+{
+  "cases": [
+    {
+      "crn": "X949551",
+      "name": {
+        "forename": "Agatha",
+        "surname": "Trunchbull",
+        "middleNames": []
+      },
+      "currentExclusion": false,
+      "currentRestriction": false
+    },
+    {
+      "crn": "X948762",
+      "name": {
+        "forename": "Harry",
+        "surname": "Wormwood",
+        "middleNames": []
+      },
+      "currentExclusion": false,
+      "currentRestriction": false
+    },
+    {
+      "crn": "X949351",
+      "name": {
+        "forename": "Zinnia",
+        "surname": "Wormwood",
+        "middleNames": []
+      },
+      "currentExclusion": false,
+      "currentRestriction": false
+    }
+  ]
+}

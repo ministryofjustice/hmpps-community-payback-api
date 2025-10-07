@@ -1,0 +1,29 @@
+{
+  "teams": [
+    {
+      "id": 1000,
+      "code": "N56UAT",
+      "description": "Unallocated Team(N56)"
+    },
+    {
+      "id": 2000,
+      "code": "N56DTX",
+      "description": "Default Designated Transfer Team"
+    },
+    {
+      "id": 1001,
+      "code": "ABC123",
+      "name": "Team Lincoln"
+    },
+    {
+      "id": 2001,
+      "code": "DEF123",
+      "name": "Team Grantham"
+    },
+    {
+      "id": 3001,
+      "code": "GHI123",
+      "name": "Team Boston"
+    }
+  ]
+}

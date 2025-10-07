@@ -1,0 +1,16 @@
+{
+  "projectName" : "Tree Planting UK",
+  "projectCode" : "N56456456",
+  "projectLocation": "Tree Planting Site, UK",
+  "date" : "2025-09-22",
+  "sessionStartTime" : "09:00",
+  "sessionEndTime" : "17:00",
+  "appointmentSummaries": [
+    {
+      "appointmentId": "2500630002",
+      "crn": "X223344",
+      "requirementMinutes": "1200000",
+      "completedMinutes": "0"
+    }
+  ]
+}

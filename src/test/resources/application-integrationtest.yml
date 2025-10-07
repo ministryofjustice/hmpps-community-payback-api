@@ -46,3 +46,8 @@ logging:
 client:
   community-payback-and-delius:
     url: http://localhost:${wiremock.server.port}/community-payback-and-delius
+
+wiremock:
+  server:
+    mappings-path: helm_deploy/hmpps-community-payback-api/files/stubs/mappings
+    files-path: helm_deploy/hmpps-community-payback-api/files/stubs/__files

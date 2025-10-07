@@ -17,7 +17,10 @@ fun ProviderSummaries.toDto() = ProviderSummariesDto(this.providers.map { it.toD
 fun ProviderSummary.toDto() = ProviderSummaryDto(this.id, this.code, this.name)
 
 fun ProviderTeamSummaries.toDto() = ProviderTeamSummariesDto(this.teams.map { it.toDto() })
-fun ProviderTeamSummary.toDto() = ProviderTeamSummaryDto(this.id, this.code, this.name)
+fun ProviderTeamSummary.toDto() = ProviderTeamSummaryDto(this.id, this.code, this.description)
 
 fun SupervisorSummaries.toDto() = SupervisorSummariesDto(this.supervisors.map { it.toDto() })
-fun SupervisorSummary.toDto() = SupervisorSummaryDto(this.id, this.name)
+fun SupervisorSummary.toDto() = SupervisorSummaryDto(
+  this.id,
+  "${this.forename}${this.forename2?.let { " $it " } ?: " "}${this.surname} [${this.staffGrade}]",
+)

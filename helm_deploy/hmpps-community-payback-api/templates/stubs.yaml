@@ -1,20 +1,22 @@
 {{- if .Values.deploy_stubs }}
-{{- $filesGlob := "files/stubs/__files/*" }}
-{{- $mappingsGlob := "files/stubs/mappings/*" }}
+  {{- $filesGlob := "files/stubs/__files/**" }}
+  {{- $mappingsGlob := "files/stubs/mappings/**" }}
+  {{- $filesHash := (.Files.Glob $filesGlob).AsConfig | sha256sum }}
+  {{- $mappingsHash := (.Files.Glob $mappingsGlob).AsConfig | sha256sum }}
 ---
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: hmpps-community-payback-api-stub-data-files
 data:
-{{ ($.Files.Glob $filesGlob).AsConfig | indent 2 }}
+  {{ ($.Files.Glob $filesGlob).AsConfig | indent 2 }}
 ---
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: hmpps-community-payback-api-stub-data-mappings
 data:
-{{ ($.Files.Glob $mappingsGlob).AsConfig | indent 2 }}
+  {{ ($.Files.Glob $mappingsGlob).AsConfig | indent 2 }}
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -31,13 +33,24 @@ spec:
     metadata:
       labels:
         app.kubernetes.io/name: hmpps-community-payback-api-stubs
+      annotations:
+        checksum/files: {{ $filesHash }}
+        checksum/mappings: {{ $mappingsHash }}
     spec:
       securityContext:
         runAsUser: 1000
       containers:
         - name: hmpps-community-payback-api-stubs
           image: wiremock/wiremock
+          imagePullPolicy: Always   # only if you use mutable tags
           command: ["/docker-entrypoint.sh", "--no-request-journal", "--global-response-templating"]
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            capabilities:
+              drop: ["ALL"]
+            seccompProfile:
+              type: RuntimeDefault
           ports:
             - containerPort: 8080
           volumeMounts:
@@ -70,4 +83,4 @@ spec:
     - protocol: TCP
       port: 80
       targetPort: 8080
-{{- end }}
+  {{- end }}

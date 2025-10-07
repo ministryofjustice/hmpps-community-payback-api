@@ -1,0 +1,24 @@
+{
+  "request": {
+    "method": "GET",
+    "queryParameters": {
+      "startDate": {
+        "matches": "^(19|20)\\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$"
+      },
+      "endDate": {
+        "matches": "^(19|20)\\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$"
+      },
+      "teamCode": {
+        "matches": "N56DTX"
+      }
+    },
+    "urlPath": "/projects/session-search"
+  },
+  "response": {
+    "status": 200,
+    "bodyFileName": "session-search/N56DTX-session-search-200-response.json",
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}

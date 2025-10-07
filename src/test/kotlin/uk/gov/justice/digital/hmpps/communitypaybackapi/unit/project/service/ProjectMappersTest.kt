@@ -38,9 +38,9 @@ class ProjectMappersTest {
             startTime = LocalTime.of(9, 0),
             endTime = LocalTime.of(17, 0),
             projectCode = "cg",
-            numberOfOffendersAllocated = 0,
-            numberOfOffendersWithOutcomes = 1,
-            numberOfOffendersWithEA = 2,
+            allocatedCount = 0,
+            compliedOutcomeCount = 1,
+            enforcementActionNeededCount = 2,
           ),
           ProjectSummary(
             id = 2L,
@@ -50,9 +50,9 @@ class ProjectMappersTest {
             startTime = LocalTime.of(8, 0),
             endTime = LocalTime.of(16, 0),
             projectCode = "pc",
-            numberOfOffendersAllocated = 3,
-            numberOfOffendersWithOutcomes = 4,
-            numberOfOffendersWithEA = 5,
+            allocatedCount = 3,
+            compliedOutcomeCount = 4,
+            enforcementActionNeededCount = 5,
           ),
         ),
       )
@@ -97,9 +97,9 @@ class ProjectMappersTest {
         startTime = LocalTime.of(9, 0),
         endTime = LocalTime.of(17, 0),
         projectCode = "cg",
-        numberOfOffendersAllocated = 40,
-        numberOfOffendersWithOutcomes = 0,
-        numberOfOffendersWithEA = 0,
+        allocatedCount = 40,
+        compliedOutcomeCount = 0,
+        enforcementActionNeededCount = 0,
       )
 
       assertThat(projectAllocation.toDto()).isEqualTo(
@@ -128,17 +128,17 @@ class ProjectMappersTest {
         projectCode = "N987654321",
         projectLocation = "Somwhere Lane, Surrey",
         date = LocalDate.of(2025, 9, 8),
-        startTime = LocalTime.of(8, 0),
-        endTime = LocalTime.of(16, 0),
+        sessionStartTime = LocalTime.of(8, 0),
+        sessionEndTime = LocalTime.of(16, 0),
         appointmentSummaries = listOf(
           ProjectAppointmentSummary(
-            id = 1L,
+            appointmentId = 1L,
             requirementMinutes = 520,
             completedMinutes = 30,
             crn = "CRN1",
           ),
           ProjectAppointmentSummary(
-            id = 2L,
+            appointmentId = 2L,
             requirementMinutes = 20,
             completedMinutes = 10,
             crn = "CRN2",
