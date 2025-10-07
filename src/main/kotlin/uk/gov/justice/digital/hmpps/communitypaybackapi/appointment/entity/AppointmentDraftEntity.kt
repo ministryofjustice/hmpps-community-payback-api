@@ -9,7 +9,7 @@ import java.util.UUID
 
 @Entity
 @Table
-  (name = "appointment_drafts")
+(name = "appointment_drafts")
 data class AppointmentDraftEntity(
   @Id
   val id: UUID,
