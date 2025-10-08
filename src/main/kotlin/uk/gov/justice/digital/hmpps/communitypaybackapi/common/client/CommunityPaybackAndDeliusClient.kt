@@ -119,6 +119,8 @@ data class ProjectAppointment(
   val id: Long,
   val projectName: String,
   val projectCode: String,
+  val projectTypeName: String,
+  val projectTypeCode: String,
   val crn: String,
   val supervisingTeam: String,
   val date: LocalDate,

@@ -179,6 +179,8 @@ class ProjectMappersTest {
       val id = 101L
       val projectName = "Community Garden Maintenance"
       val projectCode = "CGM101"
+      val projectTypeName = "MAINTENANCE"
+      val projectTypeCode = "MAINT"
       val crn = "CRN1"
       val contactOutcomeId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000")
       val enforcementActionId = UUID.fromString("123e4567-e89b-12d3-a456-426614174001")
@@ -198,6 +200,8 @@ class ProjectMappersTest {
         id = id,
         projectName = projectName,
         projectCode = projectCode,
+        projectTypeName = projectTypeName,
+        projectTypeCode = projectTypeCode,
         crn = crn,
         supervisingTeam = supervisingTeam,
         date = date,
