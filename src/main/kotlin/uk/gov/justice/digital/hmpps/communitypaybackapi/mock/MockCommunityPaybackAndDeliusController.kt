@@ -92,7 +92,8 @@ class MockCommunityPaybackAndDeliusController {
     ?.let { ResponseEntity.ok(it) }
     ?: ResponseEntity.notFound().build()
 
-  @GetMapping("/{projectCode}/sessions/{date}")
+  @SuppressWarnings("UnusedParameter")
+  @GetMapping("/projects/{projectCode}/sessions/{date}")
   fun getSession(
     @PathVariable projectCode: String,
     @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate,

@@ -30,7 +30,7 @@ interface CommunityPaybackAndDeliusClient {
   ): ProjectAppointment
 
   @GetExchange("/projects/{projectCode}/sessions/{date}")
-  fun getProjectSessions(
+  fun getProjectSession(
     @PathVariable projectCode: String,
     @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate,
     @RequestParam @DateTimeFormat(pattern = "HH:mm") start: LocalTime,
