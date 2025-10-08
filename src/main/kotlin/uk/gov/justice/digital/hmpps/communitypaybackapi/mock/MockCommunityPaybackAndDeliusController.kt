@@ -96,7 +96,7 @@ class MockCommunityPaybackAndDeliusController {
   @GetMapping("/projects/{projectCode}/sessions/{date}")
   fun getSession(
     @PathVariable projectCode: String,
-    @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate,
+    @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate,
   ): ProjectSession = mockProjectSessions.find { it.project.code == projectCode && it.date == date }?.toProjectSession()
     ?: throw IllegalArgumentException("Session not found")
 
