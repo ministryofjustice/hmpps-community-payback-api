@@ -5,4 +5,4 @@ import org.springframework.stereotype.Repository
 import java.util.UUID
 
 @Repository
-interface AppointmentDraftEntityRepository : JpaRepository<AppointmentOutcomeEntity, UUID>
+interface AppointmentDraftEntityRepository : JpaRepository<AppointmentDraftEntity, UUID>
