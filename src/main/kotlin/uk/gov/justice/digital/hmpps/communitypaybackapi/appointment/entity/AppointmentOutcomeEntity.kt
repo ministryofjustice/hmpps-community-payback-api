@@ -10,8 +10,6 @@ import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.UpdateTimestamp
-import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.dto.AppointmentBehaviourDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.dto.AppointmentWorkQualityDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.entity.ContactOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.entity.EnforcementActionEntity
 import java.time.LocalDate
@@ -69,30 +67,6 @@ data class AppointmentOutcomeEntity(
   override fun hashCode(): Int = id.hashCode()
 
   override fun toString(): String = "AppointmentOutcomeEntity(id=$id, appointmentDeliusId='$appointmentDeliusId')"
-
-  companion object
-}
-
-enum class WorkQuality(val dtoType: AppointmentWorkQualityDto) {
-  EXCELLENT(AppointmentWorkQualityDto.EXCELLENT),
-  GOOD(AppointmentWorkQualityDto.GOOD),
-  NOT_APPLICABLE(AppointmentWorkQualityDto.NOT_APPLICABLE),
-  POOR(AppointmentWorkQualityDto.POOR),
-  SATISFACTORY(AppointmentWorkQualityDto.SATISFACTORY),
-  UNSATISFACTORY(AppointmentWorkQualityDto.UNSATISFACTORY),
-  ;
-
-  companion object
-}
-
-enum class Behaviour(val dtoType: AppointmentBehaviourDto) {
-  EXCELLENT(AppointmentBehaviourDto.EXCELLENT),
-  GOOD(AppointmentBehaviourDto.GOOD),
-  NOT_APPLICABLE(AppointmentBehaviourDto.NOT_APPLICABLE),
-  POOR(AppointmentBehaviourDto.POOR),
-  SATISFACTORY(AppointmentBehaviourDto.SATISFACTORY),
-  UNSATISFACTORY(AppointmentBehaviourDto.UNSATISFACTORY),
-  ;
 
   companion object
 }

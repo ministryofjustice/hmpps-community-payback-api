@@ -109,3 +109,34 @@ CREATE TABLE appointment_outcomes
     created_at              TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at              TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE appointment_drafts
+(
+    id                      UUID PRIMARY KEY,
+    appointment_delius_id   BIGINT UNIQUE NOT NULL,
+    crn                     TEXT NOT NULL,
+    project_name            TEXT NOT NULL,
+    project_code            TEXT NOT NULL,
+    project_type_id         UUID REFERENCES project_types (id) NOT NULL,
+    supervising_team_code   TEXT,
+    appointment_date        DATE NOT NULL,
+    start_time              TIME NOT NULL,
+    end_time                TIME NOT NULL,
+    hi_vis_worn             BOOLEAN,
+    worked_intensively      BOOLEAN,
+    penalty_time            TIME,
+    work_quality            TEXT CHECK (work_quality IN
+                                        ('EXCELLENT', 'GOOD', 'NOT_APPLICABLE', 'POOR', 'SATISFACTORY',
+                                         'UNSATISFACTORY')),
+    behaviour               TEXT CHECK (behaviour IN
+                                        ('EXCELLENT', 'GOOD', 'NOT_APPLICABLE', 'POOR', 'SATISFACTORY',
+                                         'UNSATISFACTORY')),
+    supervisor_officer_code TEXT,
+    contact_outcome_id      UUID REFERENCES contact_outcomes (id),
+    enforcement_action_id   UUID REFERENCES enforcement_actions (id),
+    respond_by              DATE,
+    notes                   TEXT,
+    delius_last_updated_at  TIMESTAMP WITH TIME ZONE NOT NULL,
+    created_at              TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at              TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
