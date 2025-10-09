@@ -5,7 +5,7 @@
   "projectTypeName": "CPxASB Rapid Deployment - Project Clean Streets",
   "projectTypeCode": "PL",
   "crn": "X948762",
-  "supervisingTeamName": "Default Designated Transfer Team",
+  "supervisingTeam": "Default Designated Transfer Team",
   "supervisingTeamCode": "N56DTX",
   "providerName": "East of England",
   "providerCode": "N56",
@@ -19,8 +19,8 @@
   "respondBy": null,
   "hiVisWorn": true,
   "workedIntensively": false,
-  "workQuality": "Good",
-  "behaviour": "Good",
+  "workQuality": "GOOD",
+  "behaviour": "GOOD",
   "notes": "Comment added by D Patel on 08/09/2025 at 10:17\n[System scheduled appointment]",
   "updatedAt": "2025-09-22T17:29:01"
 }

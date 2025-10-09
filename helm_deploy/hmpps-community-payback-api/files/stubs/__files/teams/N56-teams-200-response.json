@@ -13,17 +13,17 @@
     {
       "id": 1001,
       "code": "ABC123",
-      "name": "Team Lincoln"
+      "description": "Team Lincoln"
     },
     {
       "id": 2001,
       "code": "DEF123",
-      "name": "Team Grantham"
+      "description": "Team Grantham"
     },
     {
       "id": 3001,
       "code": "GHI123",
-      "name": "Team Boston"
+      "description": "Team Boston"
     }
   ]
 }

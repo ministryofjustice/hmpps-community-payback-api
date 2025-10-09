@@ -5,7 +5,7 @@
   "projectTypeName": "Regional Test Project Type",
   "projectTypeCode": "TP",
   "crn": "X123456",
-  "supervisingTeamName": "Default Designated Transfer Team",
+  "supervisingTeam": "Default Designated Transfer Team",
   "supervisingTeamCode": "N56DTX",
   "providerName": "East of England",
   "providerCode": "N56",
@@ -19,8 +19,8 @@
   "respondBy": null,
   "hiVisWorn": true,
   "workedIntensively": false,
-  "workQuality": "Good",
-  "behaviour": "Good",
+  "workQuality": "GOOD",
+  "behaviour": "GOOD",
   "notes": "[System scheduled appointment]",
   "updatedAt": "2025-09-22T17:00:00"
 }
