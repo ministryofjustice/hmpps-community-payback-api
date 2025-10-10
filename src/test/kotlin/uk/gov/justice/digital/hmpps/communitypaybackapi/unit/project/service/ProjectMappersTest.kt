@@ -15,6 +15,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectSes
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.dto.OffenderDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.service.OffenderInfoResult
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.random
 import uk.gov.justice.digital.hmpps.communitypaybackapi.project.dto.SessionSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.project.service.toDto
 import java.time.LocalDate
@@ -188,7 +189,7 @@ class ProjectMappersTest {
       val date = LocalDate.of(2025, 9, 1)
       val startTime = LocalTime.of(9, 0)
       val endTime = LocalTime.of(17, 0)
-      val penaltyTime = LocalTime.of(0, 0)
+      val penaltyMinutes = Long.random(1, 100)
       val supervisorCode = "CRN1"
       val respondBy = LocalDate.of(2025, 10, 1)
       val hiVisWorn = true
@@ -207,7 +208,7 @@ class ProjectMappersTest {
         date = date,
         startTime = startTime,
         endTime = endTime,
-        penaltyTime = penaltyTime,
+        penaltyMinutes = penaltyMinutes,
         supervisorCode = supervisorCode,
         contactOutcomeId = contactOutcomeId,
         enforcementActionId = enforcementActionId,
@@ -227,7 +228,7 @@ class ProjectMappersTest {
       assertThat(result.date).isEqualTo(date)
       assertThat(result.supervisingTeam).isEqualTo(supervisingTeam)
       assertThat(result.attendanceData?.supervisorOfficerCode).isEqualTo(supervisorCode)
-      assertThat(result.attendanceData?.penaltyTime).isEqualTo(penaltyTime)
+      assertThat(result.attendanceData?.penaltyMinutes).isEqualTo(penaltyMinutes)
       assertThat(result.attendanceData?.behaviour).isEqualTo(AppointmentBehaviourDto.SATISFACTORY)
       assertThat(result.attendanceData?.workQuality).isEqualTo(AppointmentWorkQualityDto.SATISFACTORY)
       assertThat(result.attendanceData?.hiVisWorn).isEqualTo(hiVisWorn)

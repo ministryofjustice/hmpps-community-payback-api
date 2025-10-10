@@ -6,6 +6,7 @@ import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.just
+import io.mockk.slot
 import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
@@ -18,6 +19,9 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.dto.Attendan
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.dto.EnforcementDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.dto.UpdateAppointmentOutcomesDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.dto.UpsertAppointmentDraftDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.entity.AppointmentDraftEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.entity.AppointmentDraftEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.entity.AppointmentOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.entity.AppointmentOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.entity.Behaviour
@@ -35,9 +39,11 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.common.service.OffenderI
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.service.OffenderService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.service.PersonReferenceType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
+import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.entity.ProjectTypeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.unit.util.WebClientResponseExceptionFactory
 import java.time.LocalDate
 import java.time.LocalTime
+import java.time.OffsetDateTime
 import java.util.UUID
 
 @ExtendWith(MockKExtension::class)
@@ -57,6 +63,9 @@ class AppointmentServiceTest {
 
   @InjectMockKs
   private lateinit var service: AppointmentService
+
+  @MockK(relaxed = true)
+  lateinit var appointmentDraftEntityRepository: AppointmentDraftEntityRepository
 
   @Nested
   inner class GetAppointment {
@@ -121,7 +130,7 @@ class AppointmentServiceTest {
             attendanceData = AttendanceDataDto(
               hiVisWorn = false,
               workedIntensively = true,
-              penaltyTime = LocalTime.of(5, 0),
+              penaltyMinutes = 300L,
               workQuality = AppointmentWorkQualityDto.SATISFACTORY,
               behaviour = AppointmentBehaviourDto.UNSATISFACTORY,
             ),
@@ -205,6 +214,158 @@ class AppointmentServiceTest {
 
       verify { appointmentOutcomeEntityRepository.save(any()) }
       verify { domainEventService.publish(any(), DomainEventType.APPOINTMENT_OUTCOME, any(), any()) }
+    }
+  }
+
+  @Nested
+  inner class UpsertAppointmentDraft {
+
+    private fun makeValidRequest(projectTypeId: UUID) = UpsertAppointmentDraftDto(
+      crn = "X12345",
+      projectName = "Some Project",
+      projectCode = "SP01",
+      projectTypeId = projectTypeId,
+      supervisingTeamCode = "TEAM1",
+      appointmentDate = LocalDate.of(2025, 10, 10),
+      startTime = LocalTime.of(9, 0),
+      endTime = LocalTime.of(14, 0),
+      attendanceData = AttendanceDataDto(
+        hiVisWorn = true,
+        workedIntensively = false,
+        penaltyMinutes = 90,
+        workQuality = AppointmentWorkQualityDto.GOOD,
+        behaviour = AppointmentBehaviourDto.POOR,
+        supervisorOfficerCode = "SUP01",
+        contactOutcomeId = UUID.fromString("4306c7ca-b717-4995-9eea-91e41d95d44a"),
+      ),
+      enforcementData = EnforcementDto(
+        enforcementActionId = UUID.fromString("52bffba3-2366-4941-aff5-9418b4fbca7e"),
+        respondBy = LocalDate.of(2025, 10, 20),
+      ),
+      notes = "some notes",
+      deliusLastUpdatedAt = OffsetDateTime.parse("2025-10-10T10:10:10Z"),
+    )
+
+    @Nested
+    inner class CreateNewDraft {
+
+      @Test
+      fun `when no existing draft for delius id then create new`() {
+        val deliusId = 999L
+        val projectType = ProjectTypeEntity.valid()
+
+        every { appointmentDraftEntityRepository.findByAppointmentDeliusId(deliusId) } returns null
+
+        val savedSlot = slot<AppointmentDraftEntity>()
+        every { appointmentDraftEntityRepository.save(capture(savedSlot)) } answers { savedSlot.captured }
+
+        val result = service.upsertAppointmentDraft(deliusId, makeValidRequest(projectType.id))
+
+        val saved = savedSlot.captured
+        assertThat(saved.id).isNotNull
+        assertThat(saved.appointmentDeliusId).isEqualTo(deliusId)
+        assertThat(saved.crn).isEqualTo("X12345")
+        assertThat(saved.projectName).isEqualTo("Some Project")
+        assertThat(saved.projectCode).isEqualTo("SP01")
+        assertThat(saved.projectTypeId).isEqualTo(projectType.id)
+        assertThat(saved.supervisingTeamCode).isEqualTo("TEAM1")
+        assertThat(saved.appointmentDate).isEqualTo(LocalDate.of(2025, 10, 10))
+        assertThat(saved.startTime).isEqualTo(LocalTime.of(9, 0))
+        assertThat(saved.endTime).isEqualTo(LocalTime.of(14, 0))
+        assertThat(saved.hiVisWorn).isTrue
+        assertThat(saved.workedIntensively).isFalse
+        assertThat(saved.penaltyTimeMinutes).isEqualTo(90)
+        assertThat(saved.workQuality).isEqualTo(WorkQuality.GOOD)
+        assertThat(saved.behaviour).isEqualTo(Behaviour.POOR)
+        assertThat(saved.supervisorOfficerCode).isEqualTo("SUP01")
+        assertThat(saved.contactOutcomeId).isEqualTo(UUID.fromString("4306c7ca-b717-4995-9eea-91e41d95d44a"))
+        assertThat(saved.enforcementActionId).isEqualTo(UUID.fromString("52bffba3-2366-4941-aff5-9418b4fbca7e"))
+        assertThat(saved.respondBy).isEqualTo(LocalDate.of(2025, 10, 20))
+        assertThat(saved.notes).isEqualTo("some notes")
+        assertThat(saved.deliusLastUpdatedAt).isEqualTo(OffsetDateTime.parse("2025-10-10T10:10:10Z"))
+
+        assertThat(result.appointmentDeliusId).isEqualTo(deliusId)
+        assertThat(result.crn).isEqualTo("X12345")
+        assertThat(result.attendanceData!!.penaltyMinutes).isEqualTo(90)
+        assertThat(result.enforcementData!!.respondBy).isEqualTo(LocalDate.of(2025, 10, 20))
+
+        verify { appointmentDraftEntityRepository.save(any()) }
+      }
+    }
+
+    @Nested
+    inner class UpdateExistingDraft {
+
+      @Test
+      fun `when existing draft for delius id then update it`() {
+        val deliusId = 1000L
+        val projectType = ProjectTypeEntity.valid()
+
+        val existing = AppointmentDraftEntity(
+          id = UUID.randomUUID(),
+          appointmentDeliusId = deliusId,
+          crn = "X54321",
+          projectName = "Another Project",
+          projectCode = "ANP",
+          projectTypeId = projectType.id,
+          projectTypeEntity = null,
+          supervisingTeamCode = "SP99",
+          appointmentDate = LocalDate.of(2025, 1, 1),
+          startTime = LocalTime.of(8, 0),
+          endTime = LocalTime.of(9, 0),
+          hiVisWorn = null,
+          workedIntensively = null,
+          penaltyTimeMinutes = null,
+          workQuality = null,
+          behaviour = null,
+          supervisorOfficerCode = null,
+          contactOutcomeId = null,
+          contactOutcomeEntity = null,
+          enforcementActionId = null,
+          enforcementActionEntity = null,
+          respondBy = null,
+          notes = null,
+          deliusLastUpdatedAt = OffsetDateTime.parse("2025-01-01T00:00:00Z"),
+          createdAt = OffsetDateTime.parse("2025-01-01T00:00:01Z"),
+          updatedAt = OffsetDateTime.parse("2025-01-01T00:00:02Z"),
+        )
+
+        every { appointmentDraftEntityRepository.findByAppointmentDeliusId(deliusId) } returns existing
+
+        val savedSlot = slot<AppointmentDraftEntity>()
+        every { appointmentDraftEntityRepository.save(capture(savedSlot)) } answers { savedSlot.captured }
+
+        val req = makeValidRequest(projectType.id)
+        val result = service.upsertAppointmentDraft(deliusId, req)
+
+        val saved = savedSlot.captured
+        assertThat(saved.id).isEqualTo(existing.id)
+        assertThat(saved.appointmentDeliusId).isEqualTo(deliusId)
+        assertThat(saved.crn).isEqualTo("X12345")
+        assertThat(saved.projectName).isEqualTo("Some Project")
+        assertThat(saved.projectCode).isEqualTo("SP01")
+        assertThat(saved.projectTypeId).isEqualTo(projectType.id)
+        assertThat(saved.supervisingTeamCode).isEqualTo("TEAM1")
+        assertThat(saved.appointmentDate).isEqualTo(LocalDate.of(2025, 10, 10))
+        assertThat(saved.startTime).isEqualTo(LocalTime.of(9, 0))
+        assertThat(saved.endTime).isEqualTo(LocalTime.of(14, 0))
+        assertThat(saved.hiVisWorn).isTrue
+        assertThat(saved.workedIntensively).isFalse
+        assertThat(saved.penaltyTimeMinutes).isEqualTo(90)
+        assertThat(saved.workQuality).isEqualTo(WorkQuality.GOOD)
+        assertThat(saved.behaviour).isEqualTo(Behaviour.POOR)
+        assertThat(saved.supervisorOfficerCode).isEqualTo("SUP01")
+        assertThat(saved.contactOutcomeId).isEqualTo(UUID.fromString("4306c7ca-b717-4995-9eea-91e41d95d44a"))
+        assertThat(saved.enforcementActionId).isEqualTo(UUID.fromString("52bffba3-2366-4941-aff5-9418b4fbca7e"))
+        assertThat(saved.respondBy).isEqualTo(LocalDate.of(2025, 10, 20))
+        assertThat(saved.notes).isEqualTo("some notes")
+        assertThat(saved.deliusLastUpdatedAt).isEqualTo(OffsetDateTime.parse("2025-10-10T10:10:10Z"))
+
+        assertThat(result.attendanceData!!.penaltyMinutes).isEqualTo(90)
+        assertThat(result.enforcementData!!.enforcementActionId).isEqualTo(UUID.fromString("52bffba3-2366-4941-aff5-9418b4fbca7e"))
+
+        verify { appointmentDraftEntityRepository.save(any()) }
+      }
     }
   }
 }

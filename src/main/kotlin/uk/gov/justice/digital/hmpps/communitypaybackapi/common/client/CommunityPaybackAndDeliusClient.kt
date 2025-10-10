@@ -123,7 +123,7 @@ data class ProjectAppointment(
   val date: LocalDate,
   val startTime: LocalTime,
   val endTime: LocalTime,
-  val penaltyTime: LocalTime?,
+  val penaltyMinutes: Long?,
   val supervisorCode: String?,
   val contactOutcomeId: UUID?,
   val enforcementActionId: UUID?,

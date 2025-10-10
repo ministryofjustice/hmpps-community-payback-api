@@ -5,4 +5,6 @@ import org.springframework.stereotype.Repository
 import java.util.UUID
 
 @Repository
-interface AppointmentDraftEntityRepository : JpaRepository<AppointmentDraftEntity, UUID>
+interface AppointmentDraftEntityRepository : JpaRepository<AppointmentDraftEntity, UUID> {
+  fun findByAppointmentDeliusId(appointmentDeliusId: Long): AppointmentDraftEntity?
+}
