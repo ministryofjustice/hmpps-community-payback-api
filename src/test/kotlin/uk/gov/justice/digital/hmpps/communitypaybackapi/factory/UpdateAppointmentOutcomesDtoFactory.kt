@@ -29,7 +29,7 @@ fun UpdateAppointmentOutcomeDto.Companion.valid(contactOutcomeId: UUID, enforcem
   attendanceData = AttendanceDataDto(
     hiVisWorn = Boolean.random(),
     workedIntensively = Boolean.random(),
-    penaltyTime = randomLocalTime(),
+    penaltyMinutes = Long.random(1, 100),
     workQuality = AppointmentWorkQualityDto.entries.toTypedArray().random(),
     behaviour = AppointmentBehaviourDto.entries.toTypedArray().random(),
   ),

@@ -7,9 +7,14 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.dto.AppointmentBehaviourDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.dto.AppointmentDraftDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.dto.AppointmentWorkQualityDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.dto.AttendanceDataDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.dto.EnforcementDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.dto.UpdateAppointmentOutcomesDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.dto.UpsertAppointmentDraftDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.entity.AppointmentDraftEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.entity.AppointmentOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CaseName
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CaseSummaries
@@ -18,6 +23,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectApp
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAppointmentBehaviour
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAppointmentWorkQuality
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.dto.OffenderDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.random
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.DomainEventListener
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.bodyAsObject
@@ -28,6 +34,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.entity.Project
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 import java.time.LocalDate
 import java.time.LocalTime
+import java.time.OffsetDateTime
 import java.util.UUID
 
 class AppointmentIT : IntegrationTestBase() {
@@ -46,6 +53,9 @@ class AppointmentIT : IntegrationTestBase() {
 
   @Autowired
   lateinit var domainEventListener: DomainEventListener
+
+  @Autowired
+  lateinit var appointmentDraftEntityRepository: AppointmentDraftEntityRepository
 
   @Nested
   @DisplayName("GET /appointment/{appointmentId}")
@@ -109,7 +119,7 @@ class AppointmentIT : IntegrationTestBase() {
       val date = LocalDate.of(2025, 9, 1)
       val startTime = LocalTime.of(9, 0)
       val endTime = LocalTime.of(17, 0)
-      val penaltyTime = LocalTime.of(0, 0)
+      val penaltyMinutes = Long.random(1, 100)
       val supervisorCode = "CRN1"
       val respondBy = LocalDate.of(2025, 10, 1)
       val hiVisWorn = true
@@ -130,7 +140,7 @@ class AppointmentIT : IntegrationTestBase() {
           date = date,
           startTime = startTime,
           endTime = endTime,
-          penaltyTime = penaltyTime,
+          penaltyMinutes = penaltyMinutes,
           supervisorCode = supervisorCode,
           contactOutcomeId = contactOutcomeId,
           enforcementActionId = enforcementActionId,
@@ -166,7 +176,7 @@ class AppointmentIT : IntegrationTestBase() {
       assertThat(response.date).isEqualTo(date)
       assertThat(response.supervisingTeam).isEqualTo(supervisingTeam)
       assertThat(response.attendanceData?.supervisorOfficerCode).isEqualTo(supervisorCode)
-      assertThat(response.attendanceData?.penaltyTime).isEqualTo(penaltyTime)
+      assertThat(response.attendanceData?.penaltyMinutes).isEqualTo(penaltyMinutes)
       assertThat(response.attendanceData?.behaviour).isEqualTo(AppointmentBehaviourDto.SATISFACTORY)
       assertThat(response.attendanceData?.workQuality).isEqualTo(AppointmentWorkQualityDto.SATISFACTORY)
       assertThat(response.attendanceData?.hiVisWorn).isEqualTo(hiVisWorn)
@@ -296,6 +306,149 @@ class AppointmentIT : IntegrationTestBase() {
       ).containsExactlyInAnyOrder(1L, 2L, 3L)
 
       domainEventListener.assertEventCount("community-payback.appointment.outcome", 3)
+    }
+  }
+
+  @Nested
+  @DisplayName("PATCH /appointments/{id}/drafts")
+  inner class PatchAppointmentDraftsEndpoint {
+
+    @BeforeEach
+    fun setUp() {
+      appointmentDraftEntityRepository.deleteAll()
+    }
+
+    @Suppress("LongParameterList", "UnusedParameter")
+    private fun validDraftRequest(
+      deliusAppointmentId: Long = 999L,
+      crn: String = "X123456",
+      projectName: String = "Community Garden",
+      projectCode: String = "CG-001",
+      supervisingTeamCode: String? = "TEAM1",
+      notes: String? = "Initial draft",
+    ): UpsertAppointmentDraftDto {
+      val projectTypeId = projectEntityRepository.findAll().first().id
+      return UpsertAppointmentDraftDto(
+        crn = crn,
+        projectName = projectName,
+        projectCode = projectCode,
+        projectTypeId = projectTypeId,
+        supervisingTeamCode = supervisingTeamCode,
+        appointmentDate = LocalDate.of(2025, 1, 20),
+        startTime = LocalTime.of(9, 0),
+        endTime = LocalTime.of(13, 0),
+        attendanceData = AttendanceDataDto(
+          hiVisWorn = true,
+          workedIntensively = false,
+          penaltyMinutes = 30,
+          workQuality = AppointmentWorkQualityDto.GOOD,
+          behaviour = AppointmentBehaviourDto.SATISFACTORY,
+          supervisorOfficerCode = "SUP1",
+          contactOutcomeId = contactOutcomeEntityRepository.findAll().first().id,
+        ),
+        enforcementData = EnforcementDto(
+          enforcementActionId = enforcementActionEntityRepository.findAll().first().id,
+          respondBy = LocalDate.of(2025, 2, 1),
+        ),
+        notes = notes,
+        deliusLastUpdatedAt = OffsetDateTime.now(),
+      )
+    }
+
+    @Test
+    fun `should return unauthorized if no token`() {
+      webTestClient.patch()
+        .uri("/appointments/999/drafts")
+        .bodyValue(validDraftRequest())
+        .exchange()
+        .expectStatus()
+        .isUnauthorized
+    }
+
+    @Test
+    fun `should return forbidden if no role`() {
+      webTestClient.patch()
+        .uri("/appointments/999/drafts")
+        .headers(setAuthorisation())
+        .bodyValue(validDraftRequest())
+        .exchange()
+        .expectStatus()
+        .isForbidden
+    }
+
+    @Test
+    fun `should return forbidden if wrong role`() {
+      webTestClient.patch()
+        .uri("/appointments/999/drafts")
+        .headers(setAuthorisation(roles = listOf("ROLE_WRONG")))
+        .bodyValue(validDraftRequest())
+        .exchange()
+        .expectStatus()
+        .isForbidden
+    }
+
+    @Test
+    fun `should create a new draft and return it`() {
+      val deliusId = 5001L
+
+      val response = webTestClient.patch()
+        .uri("/appointments/$deliusId/drafts")
+        .addUiAuthHeader()
+        .bodyValue(validDraftRequest(deliusAppointmentId = deliusId))
+        .exchange()
+        .expectStatus()
+        .isOk()
+        .bodyAsObject<AppointmentDraftDto>()
+
+      assertThat(response.appointmentDeliusId).isEqualTo(deliusId)
+      assertThat(response.projectName).isEqualTo("Community Garden")
+      assertThat(response.attendanceData?.hiVisWorn).isTrue()
+      assertThat(response.enforcementData?.respondBy).isEqualTo(LocalDate.of(2025, 2, 1))
+
+      val persisted = appointmentDraftEntityRepository.findByAppointmentDeliusId(deliusId)
+      assertThat(persisted).isNotNull
+      assertThat(persisted!!.projectName).isEqualTo("Community Garden")
+      assertThat(persisted.supervisorOfficerCode).isEqualTo("SUP1")
+    }
+
+    @Test
+    fun `should update an existing draft and not create a duplicate`() {
+      val deliusId = 5002L
+
+      // Create initial draft
+      webTestClient.patch()
+        .uri("/appointments/$deliusId/drafts")
+        .addUiAuthHeader()
+        .bodyValue(validDraftRequest(deliusAppointmentId = deliusId, projectName = "Initial Project", notes = "first"))
+        .exchange()
+        .expectStatus()
+        .isOk()
+
+      val existing = appointmentDraftEntityRepository.findByAppointmentDeliusId(deliusId)
+      assertThat(existing).isNotNull
+
+      // Update with new values
+      val updatedProjectName = "Updated Project"
+      val updatedNotes = "updated"
+      val updateRequest = validDraftRequest(deliusAppointmentId = deliusId, projectName = updatedProjectName, notes = updatedNotes)
+
+      val response = webTestClient.patch()
+        .uri("/appointments/$deliusId/drafts")
+        .addUiAuthHeader()
+        .bodyValue(updateRequest)
+        .exchange()
+        .expectStatus()
+        .isOk()
+        .bodyAsObject<AppointmentDraftDto>()
+
+      assertThat(response.projectName).isEqualTo(updatedProjectName)
+      assertThat(response.notes).isEqualTo(updatedNotes)
+
+      val afterUpdate = appointmentDraftEntityRepository.findByAppointmentDeliusId(deliusId)
+      assertThat(afterUpdate).isNotNull
+      assertThat(afterUpdate!!.id).isEqualTo(existing!!.id) // same entity updated
+      assertThat(afterUpdate.projectName).isEqualTo(updatedProjectName)
+      assertThat(appointmentDraftEntityRepository.findAll().size).isEqualTo(1)
     }
   }
 }

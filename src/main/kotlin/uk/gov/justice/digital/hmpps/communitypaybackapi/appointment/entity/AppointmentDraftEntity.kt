@@ -63,7 +63,7 @@ data class AppointmentDraftEntity(
   val workedIntensively: Boolean? = null,
 
   @Column(name = "penalty_time")
-  val penaltyTime: LocalTime? = null,
+  val penaltyTimeMinutes: Long? = null,
 
   @Enumerated(EnumType.STRING)
   @Column(name = "work_quality")

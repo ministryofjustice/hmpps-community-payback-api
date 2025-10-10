@@ -6,10 +6,12 @@ import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PatchMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.dto.UpdateAppointmentOutcomesDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.dto.UpsertAppointmentDraftDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.service.AppointmentService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.CommunityPaybackController
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
@@ -76,4 +78,23 @@ class AppointmentController(
   fun updateAppointments(@RequestBody updateAppointments: UpdateAppointmentOutcomesDto) {
     appointmentService.updateAppointmentsOutcome(updateAppointments)
   }
+
+  @PatchMapping(
+    path = ["/appointments/{deliusAppointmentId}/drafts"],
+    consumes = [MediaType.APPLICATION_JSON_VALUE],
+    produces = [MediaType.APPLICATION_JSON_VALUE],
+  )
+  @Operation(
+    description = "Create or update an appointment draft for the given Delius appointment ID",
+    responses = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Draft created or updated",
+      ),
+    ],
+  )
+  fun upsertAppointmentDraft(
+    @PathVariable deliusAppointmentId: Long,
+    @RequestBody request: UpsertAppointmentDraftDto,
+  ) = appointmentService.upsertAppointmentDraft(deliusAppointmentId, request)
 }
