@@ -1,0 +1,16 @@
+{
+  "projectName" : "Test regional project",
+  "projectCode" : "N56777777",
+  "projectLocation": "Test Regional Location, UK",
+  "date" : "2025-09-22",
+  "sessionStartTime" : "09:00",
+  "sessionEndTime" : "17:00",
+  "appointmentSummaries": [
+    {
+      "appointmentId": "2500630001",
+      "crn": "X123456",
+      "requirementMinutes": "1200000",
+      "completedMinutes": "0"
+    }
+  ]
+}

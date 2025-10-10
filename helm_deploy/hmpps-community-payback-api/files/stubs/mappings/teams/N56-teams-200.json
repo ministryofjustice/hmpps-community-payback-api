@@ -1,0 +1,18 @@
+{
+  "request": {
+    "method": "GET",
+    "queryParameters": {
+      "providerCode": {
+        "matches": "N56"
+      }
+    },
+    "urlPath": "/teams"
+  },
+  "response": {
+    "status": 200,
+    "bodyFileName": "teams/N56-teams-200-response.json",
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}

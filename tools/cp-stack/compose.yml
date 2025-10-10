@@ -57,7 +57,7 @@ services:
     ports:
       - "9004:8080"
     volumes:
-      - ./wiremock:/home/wiremock
+      - "../../helm_deploy/hmpps-community-payback-api/files/stubs:/home/wiremock"
     command: "--global-response-templating --verbose"
     healthcheck:
       # we use a custom healthcheck because calling /health

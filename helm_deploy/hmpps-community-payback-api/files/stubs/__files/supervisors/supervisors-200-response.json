@@ -1,0 +1,51 @@
+{
+  "supervisors": [
+    {
+      "id": 1000,
+      "surname": "Xavier",
+      "forename": "Charles",
+      "forename2": null,
+      "officerCode": "N56A108",
+      "staffGrade": "PS - Other"
+    },
+    {
+      "id": 1001,
+      "surname": "Summers",
+      "forename": "Scott",
+      "forename2": null,
+      "officerCode": "N56A096",
+      "staffGrade": "PS - Other"
+    },
+    {
+      "id": 1002,
+      "surname": "Grey",
+      "forename": "Jean",
+      "forename2": null,
+      "officerCode": "N56A074",
+      "staffGrade": "PS - Other"
+    },
+    {
+      "surname": "Munroe",
+      "forename": "Ororo",
+      "forename2": null,
+      "officerCode": "N56A089",
+      "staffGrade": "PS - Other"
+    },
+    {
+      "id": 1003,
+      "surname": "Howlett",
+      "forename": "Logan",
+      "forename2": null,
+      "officerCode": "N56A094",
+      "staffGrade": "PS - Other"
+    },
+    {
+      "id": 1004,
+      "surname": "Hank",
+      "forename": "McCoy",
+      "forename2": null,
+      "officerCode": "N56A075",
+      "staffGrade": "PS - Other"
+    }
+  ]
+}

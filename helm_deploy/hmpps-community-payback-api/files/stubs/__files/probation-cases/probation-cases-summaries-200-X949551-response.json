@@ -1,0 +1,14 @@
+{
+  "cases": [
+    {
+      "crn": "X949551",
+      "name": {
+        "forename": "Agatha",
+        "surname": "Trunchbull",
+        "middleNames": []
+      },
+      "currentExclusion": false,
+      "currentRestriction": false
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "projectName" : "Cleaning Streets",
+  "projectCode" : "N56123456",
+  "projectLocation": "15 Market Square, Peterborough, Cambridgeshire, PE1 1UD",
+  "date": "2025-09-15",
+  "sessionStartTime" : "09:00",
+  "sessionEndTime" : "17:00",
+  "appointmentSummaries": [
+    {
+      "appointmentId": "2500629219",
+      "crn": "X948762",
+      "requirementMinutes": "1200000",
+      "completedMinutes": "3000"
+    },
+    {
+      "appointmentId": "2500629735",
+      "crn": "X949551",
+      "requirementMinutes": "1200000",
+      "completedMinutes": "0"
+    },
+    {
+      "appointmentId": "2500628309",
+      "crn": "X949351",
+      "requirementMinutes": "1200000",
+      "completedMinutes": "1000"
+    }
+  ]
+}

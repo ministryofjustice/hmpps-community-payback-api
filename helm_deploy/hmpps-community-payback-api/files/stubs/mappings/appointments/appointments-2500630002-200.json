@@ -1,0 +1,13 @@
+{
+  "request": {
+    "method": "GET",
+    "urlPath": "/appointments/2500630002"
+  },
+  "response": {
+    "status": 200,
+    "bodyFileName": "appointments/appointment-2500630002-200-response.json",
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}

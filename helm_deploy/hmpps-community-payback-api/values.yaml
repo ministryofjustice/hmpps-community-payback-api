@@ -59,3 +59,8 @@ generic-service:
 
 generic-prometheus-alerts:
   targetApplication: hmpps-community-payback-api
+
+# Whether to deploy the stubs
+# Override in values-dev.yaml
+# Also update the environment variables to point the application to the mocked services (on port 80)
+deploy_stubs: false

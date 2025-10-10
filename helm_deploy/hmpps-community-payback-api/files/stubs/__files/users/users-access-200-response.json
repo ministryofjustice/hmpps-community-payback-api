@@ -1,0 +1,19 @@
+{
+  "access": [
+    {
+      "crn": "X949551",
+      "userExcluded": false,
+      "userRestricted": false
+    },
+    {
+      "crn": "X948762",
+      "userExcluded": false,
+      "userRestricted": false
+    },
+    {
+      "crn": "X949351",
+      "userExcluded": false,
+      "userRestricted": false
+    }
+  ]
+}

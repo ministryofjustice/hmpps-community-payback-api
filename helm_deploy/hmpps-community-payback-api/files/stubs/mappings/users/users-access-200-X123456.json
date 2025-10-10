@@ -1,0 +1,25 @@
+{
+  "request": {
+    "method": "POST",
+    "urlPath": "/users/access",
+    "queryParameters": {
+      "username": {
+        "matches": ".+"
+      }
+    },
+    "bodyPatterns": [
+      {
+        "equalToJson": "[\"X123456\"]",
+        "ignoreArrayOrder": true,
+        "ignoreExtraElements": false
+      }
+    ]
+  },
+  "response": {
+    "status": 200,
+    "bodyFileName": "users/users-access-200-X123456-response.json",
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}

@@ -1,0 +1,110 @@
+{{- if .Values.deploy_stubs }}
+{{- $filesRoot := "files/stubs/__files/" -}}
+{{- $mapsRoot  := "files/stubs/mappings/" -}}
+
+
+{{- $filesHash := (( $.Files.Glob (printf "%s**" $filesRoot) ).AsConfig | sha256sum) -}}
+{{- $mapsHash  := (( $.Files.Glob (printf "%s**" $mapsRoot)  ).AsConfig | sha256sum) -}}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: hmpps-community-payback-api-stub-data-files
+data:
+{{- range $path, $_ := $.Files.Glob (printf "%s**" $filesRoot) }}
+{{- $rel := trimPrefix $filesRoot $path -}}
+{{- $key := include "keyForPath" $rel -}}
+{{ printf "%q: |" $key | nindent 2 }}
+{{ $.Files.Get $path | indent 4 }}
+{{- end }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: hmpps-community-payback-api-stub-data-mappings
+data:
+{{- range $path, $_ := $.Files.Glob (printf "%s**" $mapsRoot) }}
+{{- $rel := trimPrefix $mapsRoot $path -}}
+{{- $key := include "keyForPath" $rel -}}
+{{ printf "%q: |" $key | nindent 2 }}
+{{ $.Files.Get $path | indent 4 }}
+{{- end }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hmpps-community-payback-api-stubs
+  labels:
+    app.kubernetes.io/name: hmpps-community-payback-api-stubs
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: hmpps-community-payback-api-stubs
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: hmpps-community-payback-api-stubs
+      annotations:
+        checksum/files: "{{ $filesHash }}"
+        checksum/mappings: "{{ $mapsHash }}"
+    spec:
+      securityContext:
+        runAsUser: 1000
+      containers:
+        - name: hmpps-community-payback-api-stubs
+          image: wiremock/wiremock
+          imagePullPolicy: Always
+          args: ["--no-request-journal", "--global-response-templating"]
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            capabilities:
+              drop: ["ALL"]
+            seccompProfile:
+              type: RuntimeDefault
+          ports:
+            - containerPort: 8080
+          volumeMounts:
+            - name: files-volume
+              mountPath: /home/wiremock/__files
+            - name: mappings-volume
+              mountPath: /home/wiremock/mappings
+          livenessProbe:
+            httpGet:
+              path: /__admin/mappings
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 30
+      volumes:
+        - name: files-volume
+          configMap:
+            name: hmpps-community-payback-api-stub-data-files
+            items:
+{{- range $path, $_ := $.Files.Glob (printf "%s**" $filesRoot) }}
+{{- $rel := trimPrefix $filesRoot $path -}}
+{{- $key := include "keyForPath" $rel -}}
+{{ printf "- key: %q\n  path: %q" $key $rel | nindent 14 }}
+{{- end }}
+        - name: mappings-volume
+          configMap:
+            name: hmpps-community-payback-api-stub-data-mappings
+            items:
+{{- range $path, $_ := $.Files.Glob (printf "%s**" $mapsRoot) }}
+{{- $rel := trimPrefix $mapsRoot $path -}}
+{{- $key := include "keyForPath" $rel -}}
+{{ printf "- key: %q\n  path: %q" $key $rel | nindent 14 }}
+{{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hmpps-community-payback-api-stubs
+spec:
+  selector:
+    app.kubernetes.io/name: hmpps-community-payback-api-stubs
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+{{- end }}

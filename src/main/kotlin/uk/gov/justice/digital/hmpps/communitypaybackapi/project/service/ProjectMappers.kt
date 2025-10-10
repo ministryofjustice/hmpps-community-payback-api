@@ -11,26 +11,26 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.project.dto.SessionDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.project.dto.SessionSummariesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.project.dto.SessionSummaryDto
 
-fun ProjectSessionSummaries.toDto() = SessionSummariesDto(this.allocations.map { it.toDto() })
+fun ProjectSessionSummaries.toDto() = SessionSummariesDto(this.sessions.map { it.toDto() })
 fun ProjectSummary.toDto() = SessionSummaryDto(
-  this.id,
-  this.projectId,
-  this.projectName,
-  this.projectCode,
-  this.date,
-  this.startTime,
-  this.endTime,
-  this.numberOfOffendersAllocated,
-  this.numberOfOffendersWithOutcomes,
-  this.numberOfOffendersWithEA,
+  id = this.id,
+  projectId = this.projectId,
+  projectName = this.projectName,
+  projectCode = this.projectCode,
+  date = this.date,
+  startTime = this.startTime,
+  endTime = this.endTime,
+  numberOfOffendersAllocated = this.allocatedCount,
+  numberOfOffendersWithOutcomes = this.compliedOutcomeCount,
+  numberOfOffendersWithEA = this.enforcementActionNeededCount,
 )
 
 fun ProjectSession.toDto(offenderInfoResults: List<OffenderInfoResult>) = SessionDto(
   projectCode = this.projectCode,
   projectName = this.projectName,
   projectLocation = this.projectLocation,
-  startTime = this.startTime,
-  endTime = this.endTime,
+  startTime = this.sessionStartTime,
+  endTime = this.sessionEndTime,
   date = this.date,
   appointmentSummaries = this.appointmentSummaries.toDtos(offenderInfoResults),
 )
@@ -40,7 +40,7 @@ fun List<ProjectAppointmentSummary>.toDtos(offenderInfoResults: List<OffenderInf
 fun ProjectAppointmentSummary.toDto(
   offenderInfoResults: List<OffenderInfoResult>,
 ) = AppointmentSummaryDto(
-  id = this.id,
+  id = this.appointmentId,
   requirementMinutes = this.requirementMinutes,
   completedMinutes = this.completedMinutes,
   offender = offenderInfoResults.first { it.crn == this.crn }.toDto(),

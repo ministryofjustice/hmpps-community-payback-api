@@ -14,7 +14,7 @@ interface CommunityPaybackAndDeliusClient {
   @GetExchange("/providers")
   fun providers(): ProviderSummaries
 
-  @GetExchange("/provider-teams")
+  @GetExchange("/teams")
   fun providerTeams(@RequestParam providerCode: String): ProviderTeamSummaries
 
   @GetExchange("/projects/session-search")
@@ -33,12 +33,9 @@ interface CommunityPaybackAndDeliusClient {
   fun getProjectSession(
     @PathVariable projectCode: String,
     @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate,
-    @RequestParam @DateTimeFormat(pattern = "HH:mm") start: LocalTime,
-    @RequestParam @DateTimeFormat(pattern = "HH:mm") end: LocalTime,
+    @RequestParam("startTime") @DateTimeFormat(pattern = "HH:mm") start: LocalTime,
+    @RequestParam("endTime") @DateTimeFormat(pattern = "HH:mm") end: LocalTime,
   ): ProjectSession
-
-  @GetExchange("/references/project-types")
-  fun getProjectTypes(): ProjectTypes
 
   @PostExchange("/probation-cases/summaries")
   fun getCaseSummaries(
@@ -51,10 +48,10 @@ interface CommunityPaybackAndDeliusClient {
     @RequestBody crns: Set<String>,
   ): UserAccess
 
-  @GetExchange("/providers/{providerCode}/teams/{teamCode}/supervisors")
+  @GetExchange("/supervisors")
   fun teamSupervisors(
-    @PathVariable providerCode: String,
-    @PathVariable teamCode: String,
+    @RequestParam providerCode: String,
+    @RequestParam teamCode: String,
   ): SupervisorSummaries
 }
 
@@ -75,10 +72,10 @@ data class ProviderTeamSummaries(
 data class ProviderTeamSummary(
   val id: Long,
   val code: String,
-  val name: String,
+  val description: String,
 )
 data class ProjectSessionSummaries(
-  val allocations: List<ProjectSummary>,
+  val sessions: List<ProjectSummary>,
 )
 
 data class ProjectSummary(
@@ -89,17 +86,17 @@ data class ProjectSummary(
   val projectCode: String,
   val startTime: LocalTime,
   val endTime: LocalTime,
-  val numberOfOffendersAllocated: Int,
-  val numberOfOffendersWithOutcomes: Int,
-  val numberOfOffendersWithEA: Int,
+  val allocatedCount: Int,
+  val compliedOutcomeCount: Int,
+  val enforcementActionNeededCount: Int,
 )
 
 data class ProjectSession(
   val projectName: String,
   val projectCode: String,
   val projectLocation: String,
-  val startTime: LocalTime,
-  val endTime: LocalTime,
+  val sessionStartTime: LocalTime,
+  val sessionEndTime: LocalTime,
   val date: LocalDate,
   val appointmentSummaries: List<ProjectAppointmentSummary>,
 ) {
@@ -107,7 +104,7 @@ data class ProjectSession(
 }
 
 data class ProjectAppointmentSummary(
-  val id: Long,
+  val appointmentId: Long,
   val crn: String,
   val requirementMinutes: Int,
   val completedMinutes: Int,
@@ -158,15 +155,6 @@ enum class ProjectAppointmentBehaviour {
   UNSATISFACTORY,
 }
 
-data class ProjectTypes(
-  val projectTypes: List<ProjectType>,
-)
-
-data class ProjectType(
-  val id: Long,
-  val name: String,
-)
-
 data class CaseSummaries(
   var cases: List<CaseSummary>,
 )
@@ -200,5 +188,9 @@ data class SupervisorSummaries(
 
 data class SupervisorSummary(
   val id: Long,
-  val name: String,
+  val surname: String,
+  val forename: String,
+  val forename2: String?,
+  val officerCode: String,
+  val staffGrade: String,
 )

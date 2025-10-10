@@ -67,7 +67,7 @@ class ProjectsIT : IntegrationTestBase() {
     }
 
     @Test
-    fun `should return OK with project allocations`() {
+    fun `should return OK with project session summaries`() {
       CommunityPaybackAndDeliusMockServer.projectSessionSummaries(
         ProjectSessionSummaries(
           listOf(
@@ -79,9 +79,9 @@ class ProjectsIT : IntegrationTestBase() {
               startTime = LocalTime.of(9, 0),
               endTime = LocalTime.of(17, 0),
               projectCode = "cgm",
-              numberOfOffendersAllocated = 0,
-              numberOfOffendersWithOutcomes = 1,
-              numberOfOffendersWithEA = 2,
+              allocatedCount = 0,
+              compliedOutcomeCount = 1,
+              enforcementActionNeededCount = 2,
             ),
             ProjectSummary(
               id = 2L,
@@ -91,15 +91,15 @@ class ProjectsIT : IntegrationTestBase() {
               startTime = LocalTime.of(8, 0),
               endTime = LocalTime.of(16, 0),
               projectCode = "pc",
-              numberOfOffendersAllocated = 3,
-              numberOfOffendersWithOutcomes = 4,
-              numberOfOffendersWithEA = 5,
+              allocatedCount = 3,
+              compliedOutcomeCount = 4,
+              enforcementActionNeededCount = 5,
             ),
           ),
         ),
       )
 
-      val allocations = webTestClient.get()
+      val sessionSearchResults = webTestClient.get()
         .uri("/projects/session-search?startDate=2025-01-09&endDate=2025-07-09&teamCode=999")
         .addUiAuthHeader()
         .exchange()
@@ -107,25 +107,25 @@ class ProjectsIT : IntegrationTestBase() {
         .isOk
         .bodyAsObject<SessionSummariesDto>()
 
-      assertThat(allocations.allocations).hasSize(2)
-      assertThat(allocations.allocations[0].id).isEqualTo(1L)
-      assertThat(allocations.allocations[0].projectName).isEqualTo("Community Garden Maintenance")
-      assertThat(allocations.allocations[0].date).isEqualTo(LocalDate.of(2025, 9, 1))
-      assertThat(allocations.allocations[0].startTime).isEqualTo(LocalTime.of(9, 0))
-      assertThat(allocations.allocations[0].endTime).isEqualTo(LocalTime.of(17, 0))
-      assertThat(allocations.allocations[0].projectCode).isEqualTo("cgm")
-      assertThat(allocations.allocations[0].numberOfOffendersAllocated).isEqualTo(0)
-      assertThat(allocations.allocations[0].numberOfOffendersWithOutcomes).isEqualTo(1)
-      assertThat(allocations.allocations[0].numberOfOffendersWithEA).isEqualTo(2)
+      assertThat(sessionSearchResults.allocations).hasSize(2)
+      assertThat(sessionSearchResults.allocations[0].id).isEqualTo(1L)
+      assertThat(sessionSearchResults.allocations[0].projectName).isEqualTo("Community Garden Maintenance")
+      assertThat(sessionSearchResults.allocations[0].date).isEqualTo(LocalDate.of(2025, 9, 1))
+      assertThat(sessionSearchResults.allocations[0].startTime).isEqualTo(LocalTime.of(9, 0))
+      assertThat(sessionSearchResults.allocations[0].endTime).isEqualTo(LocalTime.of(17, 0))
+      assertThat(sessionSearchResults.allocations[0].projectCode).isEqualTo("cgm")
+      assertThat(sessionSearchResults.allocations[0].numberOfOffendersAllocated).isEqualTo(0)
+      assertThat(sessionSearchResults.allocations[0].numberOfOffendersWithOutcomes).isEqualTo(1)
+      assertThat(sessionSearchResults.allocations[0].numberOfOffendersWithEA).isEqualTo(2)
     }
 
     @Test
-    fun `should return empty list when no allocations found`() {
+    fun `should return empty list when no session summaries found`() {
       CommunityPaybackAndDeliusMockServer.projectSessionSummaries(
         ProjectSessionSummaries(emptyList()),
       )
 
-      val allocations = webTestClient.get()
+      val sessionSummaries = webTestClient.get()
         .uri("/projects/session-search?startDate=2025-01-09&endDate=2025-07-09&teamCode=999")
         .addUiAuthHeader()
         .exchange()
@@ -133,7 +133,7 @@ class ProjectsIT : IntegrationTestBase() {
         .isOk
         .bodyAsObject<SessionSummariesDto>()
 
-      assertThat(allocations.allocations).isEmpty()
+      assertThat(sessionSummaries.allocations).isEmpty()
     }
   }
 
@@ -187,18 +187,18 @@ class ProjectsIT : IntegrationTestBase() {
           projectName = "Community Garden Maintenance",
           projectCode = "N123456789",
           projectLocation = "Somwhere Lane, Surrey",
-          startTime = LocalTime.of(9, 0),
-          endTime = LocalTime.of(17, 0),
+          sessionStartTime = LocalTime.of(9, 0),
+          sessionEndTime = LocalTime.of(17, 0),
           date = LocalDate.of(2025, 1, 9),
           appointmentSummaries = listOf(
             ProjectAppointmentSummary(
-              id = 1L,
+              appointmentId = 1L,
               crn = "CRN1",
               requirementMinutes = 520,
               completedMinutes = 30,
             ),
             ProjectAppointmentSummary(
-              id = 2L,
+              appointmentId = 2L,
               crn = "CRN2",
               requirementMinutes = 600,
               completedMinutes = 60,
@@ -217,7 +217,7 @@ class ProjectsIT : IntegrationTestBase() {
         ),
       )
 
-      val session = webTestClient.get()
+      val sessionSearchResults = webTestClient.get()
         .uri("/projects/N123456789/sessions/2025-01-09?startTime=09:00&endTime=17:00")
         .addUiAuthHeader()
         .exchange()
@@ -225,17 +225,17 @@ class ProjectsIT : IntegrationTestBase() {
         .isOk
         .bodyAsObject<SessionDto>()
 
-      assertThat(session.projectName).isEqualTo("Community Garden Maintenance")
-      assertThat(session.projectCode).isEqualTo("N123456789")
-      assertThat(session.endTime).isEqualTo(LocalTime.of(17, 0))
-      assertThat(session.startTime).isEqualTo(LocalTime.of(9, 0))
-      assertThat(session.date).isEqualTo(LocalDate.of(2025, 1, 9))
-      assertThat(session.appointmentSummaries).hasSize(2)
-      assertThat(session.appointmentSummaries[0].id).isEqualTo(1L)
-      assertThat(session.appointmentSummaries[0].requirementMinutes).isEqualTo(520)
-      assertThat(session.appointmentSummaries[0].completedMinutes).isEqualTo(30)
-      assertThat(session.appointmentSummaries[0].offender.crn).isEqualTo("CRN1")
-      assertThat(session.appointmentSummaries[0].offender).isInstanceOf(OffenderDto.OffenderFullDto::class.java)
+      assertThat(sessionSearchResults.projectName).isEqualTo("Community Garden Maintenance")
+      assertThat(sessionSearchResults.projectCode).isEqualTo("N123456789")
+      assertThat(sessionSearchResults.endTime).isEqualTo(LocalTime.of(17, 0))
+      assertThat(sessionSearchResults.startTime).isEqualTo(LocalTime.of(9, 0))
+      assertThat(sessionSearchResults.date).isEqualTo(LocalDate.of(2025, 1, 9))
+      assertThat(sessionSearchResults.appointmentSummaries).hasSize(2)
+      assertThat(sessionSearchResults.appointmentSummaries[0].id).isEqualTo(1L)
+      assertThat(sessionSearchResults.appointmentSummaries[0].requirementMinutes).isEqualTo(520)
+      assertThat(sessionSearchResults.appointmentSummaries[0].completedMinutes).isEqualTo(30)
+      assertThat(sessionSearchResults.appointmentSummaries[0].offender.crn).isEqualTo("CRN1")
+      assertThat(sessionSearchResults.appointmentSummaries[0].offender).isInstanceOf(OffenderDto.OffenderFullDto::class.java)
     }
 
     @Test
@@ -245,18 +245,18 @@ class ProjectsIT : IntegrationTestBase() {
           projectName = "Community Garden Maintenance",
           projectCode = "N123456789",
           projectLocation = "Somwhere Lane, Surrey",
-          startTime = LocalTime.of(9, 0),
-          endTime = LocalTime.of(17, 0),
+          sessionStartTime = LocalTime.of(9, 0),
+          sessionEndTime = LocalTime.of(17, 0),
           date = LocalDate.of(2025, 1, 9),
           appointmentSummaries = listOf(
             ProjectAppointmentSummary(
-              id = 1L,
+              appointmentId = 1L,
               crn = "CRN1",
               requirementMinutes = 520,
               completedMinutes = 30,
             ),
             ProjectAppointmentSummary(
-              id = 2L,
+              appointmentId = 2L,
               crn = "CRN2",
               requirementMinutes = 600,
               completedMinutes = 60,

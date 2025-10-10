@@ -44,7 +44,7 @@ object CommunityPaybackAndDeliusMockServer {
     providerTeams: ProviderTeamSummaries,
   ) {
     WireMock.stubFor(
-      get("/community-payback-and-delius/provider-teams?providerCode=$providerCode").willReturn(
+      get("/community-payback-and-delius/teams?providerCode=$providerCode").willReturn(
         aResponse()
           .withHeader("Content-Type", "application/json")
           .withBody(objectMapper.writeValueAsString(providerTeams)),
@@ -95,8 +95,8 @@ object CommunityPaybackAndDeliusMockServer {
     WireMock.stubFor(
       get(
         "/community-payback-and-delius/projects/${projectSession.projectCode}/sessions/${projectSession.date.toIsoDateString()}" +
-          "?start=${projectSession.startTime.toHourMinuteString()}" +
-          "&end=${projectSession.endTime.toHourMinuteString()}",
+          "?startTime=${projectSession.sessionStartTime.toHourMinuteString()}" +
+          "&endTime=${projectSession.sessionEndTime.toHourMinuteString()}",
       )
         .willReturn(
           aResponse()
@@ -139,7 +139,7 @@ object CommunityPaybackAndDeliusMockServer {
 
   fun teamSupervisors(supervisorSummaries: SupervisorSummaries) {
     WireMock.stubFor(
-      get("/community-payback-and-delius/providers/123/teams/99/supervisors")
+      get("/community-payback-and-delius/supervisors?providerCode=123&teamCode=99")
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")

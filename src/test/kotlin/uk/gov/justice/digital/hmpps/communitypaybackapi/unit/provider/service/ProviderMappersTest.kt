@@ -52,9 +52,31 @@ class ProviderMappersTest {
     fun `should map SupervisorSummaries to DTO correctly`() {
       val supervisorSummaries = SupervisorSummaries(
         listOf(
-          SupervisorSummary(id = 4L, name = "Fred Flintstone"),
-          SupervisorSummary(id = 5L, name = "Wilma Flintstone"),
-          SupervisorSummary(id = 6L, name = "Barney Rubble"),
+          SupervisorSummary(
+            id = 4L,
+            forename = "Fred",
+            forename2 = null,
+            surname = "Flintstone",
+            officerCode = "FF01",
+            staffGrade = "PO",
+          ),
+          SupervisorSummary(
+            id = 5L,
+            forename = "Wilma",
+            forename2 = null,
+            surname = "Flintstone",
+            officerCode = "WF01",
+            staffGrade = "PO",
+          ),
+          SupervisorSummary(
+            id = 6L,
+            forename = "Barney",
+            forename2 = null,
+            surname = "Rubble",
+            officerCode = "BR01",
+            staffGrade = "PO",
+          ),
+
         ),
       )
 
@@ -62,19 +84,26 @@ class ProviderMappersTest {
 
       assertThat(supervisorSummariesDto.supervisors).hasSize(3)
       assertThat(supervisorSummariesDto.supervisors[0].id).isEqualTo(4L)
-      assertThat(supervisorSummariesDto.supervisors[0].name).isEqualTo("Fred Flintstone")
+      assertThat(supervisorSummariesDto.supervisors[0].name).isEqualTo("Fred Flintstone [PO]")
       assertThat(supervisorSummariesDto.supervisors[1].id).isEqualTo(5L)
-      assertThat(supervisorSummariesDto.supervisors[1].name).isEqualTo("Wilma Flintstone")
+      assertThat(supervisorSummariesDto.supervisors[1].name).isEqualTo("Wilma Flintstone [PO]")
       assertThat(supervisorSummariesDto.supervisors[2].id).isEqualTo(6L)
-      assertThat(supervisorSummariesDto.supervisors[2].name).isEqualTo("Barney Rubble")
+      assertThat(supervisorSummariesDto.supervisors[2].name).isEqualTo("Barney Rubble [PO]")
     }
 
     @Test
     fun `should map SupervisorSummary to DTO correctly`() {
-      val supervisorSummary = SupervisorSummary(id = 4L, name = "Fred Flintstone")
+      val supervisorSummary = SupervisorSummary(
+        id = 4L,
+        forename = "Fred",
+        forename2 = null,
+        surname = "Flintstone",
+        officerCode = "FF01",
+        staffGrade = "PO",
+      )
 
       assertThat(supervisorSummary.toDto()).isEqualTo(
-        SupervisorSummaryDto(id = 4L, name = "Fred Flintstone"),
+        SupervisorSummaryDto(id = 4L, name = "Fred Flintstone [PO]"),
       )
     }
 

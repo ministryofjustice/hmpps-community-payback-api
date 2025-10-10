@@ -1,0 +1,21 @@
+{
+  "request": {
+    "method": "GET",
+    "queryParameters": {
+      "startTime": {
+        "matches": "09:00"
+      },
+      "endTime": {
+        "matches": "17:00"
+      }
+    },
+    "urlPathPattern": "/projects/N56456456/sessions/[0-9]{4}-[0-9]{1,2}-[0-9]{1,2}"
+  },
+  "response": {
+    "status": 200,
+    "bodyFileName": "sessions/N56456456-20250922-0900-1700-session-200-response.json",
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}
