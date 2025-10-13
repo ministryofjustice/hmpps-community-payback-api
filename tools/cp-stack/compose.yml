@@ -17,7 +17,7 @@ services:
         format: raw
     environment:
       - HMPPS_SQS_LOCALSTACKURL=http://localstack:4566
-      - CLIENT_COMMUNITY_PAYBACK_AND_DELIUS_URL=http://wiremock:8080/community-payback-and-delius-proxy
+      - CLIENT_COMMUNITY_PAYBACK_AND_DELIUS_URL=http://wiremock:8080
       # Override DB settings when running the API in a container to address service DNS
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/community_payback
     ports:
