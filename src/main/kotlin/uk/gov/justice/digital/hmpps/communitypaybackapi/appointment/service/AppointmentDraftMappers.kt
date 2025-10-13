@@ -19,26 +19,42 @@ fun AppointmentDraftEntity.toDto() = AppointmentDraftDto(
   appointmentDate = this.appointmentDate,
   startTime = this.startTime,
   endTime = this.endTime,
-  attendanceData = AttendanceDataDto(
-    hiVisWorn = this.hiVisWorn,
-    workedIntensively = this.workedIntensively,
-    penaltyMinutes = this.penaltyTimeMinutes,
-    workQuality = this.workQuality?.dtoType,
-    behaviour = this.behaviour?.dtoType,
-    supervisorOfficerCode = this.supervisorOfficerCode,
-    contactOutcomeId = this.contactOutcomeId,
-  ),
+  attendanceData = this.toAttendanceDataDto(),
   contactOutcome = this.contactOutcomeEntity?.let { ContactOutcomeDto(it.id, it.name, it.code) },
-  enforcementData = if (this.enforcementActionId != null || this.respondBy != null) {
-    EnforcementDto(
-      enforcementActionId = this.enforcementActionId,
-      respondBy = this.respondBy,
-    )
-  } else {
-    null
-  },
+  enforcementData = this.toEnforcementDto(),
   notes = this.notes,
   deliusLastUpdatedAt = this.deliusLastUpdatedAt,
   createdAt = this.createdAt,
   updatedAt = this.updatedAt,
 )
+
+private fun AppointmentDraftEntity.toAttendanceDataDto(): AttendanceDataDto? = takeIf {
+  listOf(
+    hiVisWorn,
+    workedIntensively,
+    penaltyTimeMinutes,
+    workQuality,
+    behaviour,
+    supervisorOfficerCode,
+    contactOutcomeId,
+  ).any { it != null }
+}?.let {
+  AttendanceDataDto(
+    hiVisWorn = hiVisWorn,
+    workedIntensively = workedIntensively,
+    penaltyMinutes = penaltyTimeMinutes,
+    workQuality = workQuality?.dtoType,
+    behaviour = behaviour?.dtoType,
+    supervisorOfficerCode = supervisorOfficerCode,
+    contactOutcomeId = contactOutcomeId,
+  )
+}
+
+private fun AppointmentDraftEntity.toEnforcementDto(): EnforcementDto? = if (this.enforcementActionId != null || this.respondBy != null) {
+  EnforcementDto(
+    enforcementActionId = this.enforcementActionId,
+    respondBy = this.respondBy,
+  )
+} else {
+  null
+}
