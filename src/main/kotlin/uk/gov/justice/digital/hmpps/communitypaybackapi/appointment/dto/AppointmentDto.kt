@@ -12,6 +12,8 @@ data class AppointmentDto(
   val projectTypeCode: String,
   val offender: OffenderDto,
   val supervisingTeam: String,
+  val supervisingTeamCode: String,
+  val providerCode: String,
   val date: LocalDate,
   val startTime: LocalTime,
   val endTime: LocalTime,

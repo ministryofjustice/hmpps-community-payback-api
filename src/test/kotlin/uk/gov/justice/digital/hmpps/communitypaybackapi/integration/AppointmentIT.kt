@@ -6,18 +6,13 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.dto.AppointmentBehaviourDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.dto.AppointmentDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.dto.AppointmentWorkQualityDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.dto.UpdateAppointmentOutcomesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.entity.AppointmentOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CaseName
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CaseSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CaseSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAppointment
-import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAppointmentBehaviour
-import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAppointmentWorkQuality
-import uk.gov.justice.digital.hmpps.communitypaybackapi.common.dto.OffenderDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.DomainEventListener
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.bodyAsObject
@@ -26,9 +21,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.entity.Contact
 import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.entity.EnforcementActionEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.entity.ProjectTypeEntityRepository
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
-import java.time.LocalDate
-import java.time.LocalTime
-import java.util.UUID
 
 class AppointmentIT : IntegrationTestBase() {
 
@@ -99,47 +91,13 @@ class AppointmentIT : IntegrationTestBase() {
     fun `Should return existing appointment with offender info`() {
       val id = 101L
       val projectName = "Community Garden Maintenance"
-      val projectCode = "CGM101"
-      val projectTypeName = "MAINTENANCE"
-      val projectTypeCode = "MAINT"
       val crn = "X434334"
-      val contactOutcomeId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000")
-      val enforcementActionId = UUID.fromString("123e4567-e89b-12d3-a456-426614174001")
-      val supervisingTeam = "Team Lincoln"
-      val date = LocalDate.of(2025, 9, 1)
-      val startTime = LocalTime.of(9, 0)
-      val endTime = LocalTime.of(17, 0)
-      val penaltyTime = LocalTime.of(0, 0)
-      val supervisorCode = "CRN1"
-      val respondBy = LocalDate.of(2025, 10, 1)
-      val hiVisWorn = true
-      val workedIntensively = false
-      val workQuality = ProjectAppointmentWorkQuality.SATISFACTORY
-      val behaviour = ProjectAppointmentBehaviour.SATISFACTORY
-      val notes = "This is a test note"
 
       CommunityPaybackAndDeliusMockServer.projectAppointment(
-        ProjectAppointment(
+        ProjectAppointment.valid().copy(
           id = id,
           projectName = projectName,
-          projectCode = projectCode,
-          projectTypeName = projectTypeName,
-          projectTypeCode = projectTypeCode,
           crn = crn,
-          supervisingTeam = supervisingTeam,
-          date = date,
-          startTime = startTime,
-          endTime = endTime,
-          penaltyTime = penaltyTime,
-          supervisorCode = supervisorCode,
-          contactOutcomeId = contactOutcomeId,
-          enforcementActionId = enforcementActionId,
-          respondBy = respondBy,
-          hiVisWorn = hiVisWorn,
-          workedIntensively = workedIntensively,
-          workQuality = workQuality,
-          behaviour = behaviour,
-          notes = notes,
         ),
       )
 
@@ -162,20 +120,6 @@ class AppointmentIT : IntegrationTestBase() {
 
       assertThat(response.id).isEqualTo(id)
       assertThat(response.projectName).isEqualTo(projectName)
-      assertThat(response.projectCode).isEqualTo(projectCode)
-      assertThat(response.date).isEqualTo(date)
-      assertThat(response.supervisingTeam).isEqualTo(supervisingTeam)
-      assertThat(response.attendanceData?.supervisorOfficerCode).isEqualTo(supervisorCode)
-      assertThat(response.attendanceData?.penaltyTime).isEqualTo(penaltyTime)
-      assertThat(response.attendanceData?.behaviour).isEqualTo(AppointmentBehaviourDto.SATISFACTORY)
-      assertThat(response.attendanceData?.workQuality).isEqualTo(AppointmentWorkQualityDto.SATISFACTORY)
-      assertThat(response.attendanceData?.hiVisWorn).isEqualTo(hiVisWorn)
-      assertThat(response.attendanceData?.contactOutcomeId).isEqualTo(contactOutcomeId)
-      assertThat(response.enforcementData?.enforcementActionId).isEqualTo(enforcementActionId)
-      assertThat(response.enforcementData?.respondBy).isEqualTo(respondBy)
-      assertThat(response.notes).isEqualTo(notes)
-      assertThat(response.offender.crn).isEqualTo(crn)
-      assertThat(response.offender).isInstanceOf(OffenderDto.OffenderFullDto::class.java)
     }
   }
 

@@ -185,6 +185,8 @@ class ProjectMappersTest {
       val contactOutcomeId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000")
       val enforcementActionId = UUID.fromString("123e4567-e89b-12d3-a456-426614174001")
       val supervisingTeam = "Team Lincoln"
+      val supervisingTeamCode = "TL01"
+      val providerCode = "PC01"
       val date = LocalDate.of(2025, 9, 1)
       val startTime = LocalTime.of(9, 0)
       val endTime = LocalTime.of(17, 0)
@@ -204,6 +206,8 @@ class ProjectMappersTest {
         projectTypeCode = projectTypeCode,
         crn = crn,
         supervisingTeam = supervisingTeam,
+        supervisingTeamCode = supervisingTeamCode,
+        providerCode = providerCode,
         date = date,
         startTime = startTime,
         endTime = endTime,
@@ -226,6 +230,8 @@ class ProjectMappersTest {
       assertThat(result.projectCode).isEqualTo(projectCode)
       assertThat(result.date).isEqualTo(date)
       assertThat(result.supervisingTeam).isEqualTo(supervisingTeam)
+      assertThat(result.supervisingTeamCode).isEqualTo(supervisingTeamCode)
+      assertThat(result.providerCode).isEqualTo(providerCode)
       assertThat(result.attendanceData?.supervisorOfficerCode).isEqualTo(supervisorCode)
       assertThat(result.attendanceData?.penaltyTime).isEqualTo(penaltyTime)
       assertThat(result.attendanceData?.behaviour).isEqualTo(AppointmentBehaviourDto.SATISFACTORY)

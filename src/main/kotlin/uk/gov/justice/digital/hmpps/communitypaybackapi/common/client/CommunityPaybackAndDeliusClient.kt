@@ -120,6 +120,8 @@ data class ProjectAppointment(
   val projectTypeCode: String,
   val crn: String,
   val supervisingTeam: String,
+  val supervisingTeamCode: String,
+  val providerCode: String,
   val date: LocalDate,
   val startTime: LocalTime,
   val endTime: LocalTime,
