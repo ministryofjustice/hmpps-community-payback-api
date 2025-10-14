@@ -5,22 +5,12 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.dto.Appointm
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.dto.AttendanceDataDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.dto.EnforcementDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.dto.UpdateAppointmentOutcomeDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.dto.UpdateAppointmentOutcomesDto
 import java.util.UUID
 
-fun UpdateAppointmentOutcomesDto.Companion.valid(
-  vararg ids: Long = longArrayOf(Long.random()),
+fun UpdateAppointmentOutcomeDto.Companion.valid(
   contactOutcomeId: UUID = UUID.randomUUID(),
   enforcementActionId: UUID = UUID.randomUUID(),
-) = UpdateAppointmentOutcomesDto(
-  ids = ids.toList(),
-  outcomeData = UpdateAppointmentOutcomeDto.valid(
-    contactOutcomeId = contactOutcomeId,
-    enforcementActionId = enforcementActionId,
-  ),
-)
-
-fun UpdateAppointmentOutcomeDto.Companion.valid(contactOutcomeId: UUID, enforcementActionId: UUID) = UpdateAppointmentOutcomeDto(
+) = UpdateAppointmentOutcomeDto(
   startTime = randomLocalTime(),
   endTime = randomLocalTime(),
   contactOutcomeId = contactOutcomeId,
