@@ -17,7 +17,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.dto.Appointm
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.dto.AttendanceDataDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.dto.EnforcementDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.dto.UpdateAppointmentOutcomeDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.dto.UpdateAppointmentOutcomesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.entity.AppointmentOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.entity.AppointmentOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.entity.Behaviour
@@ -25,7 +24,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.entity.WorkQ
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.service.AppointmentService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CommunityPaybackAndDeliusClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAppointment
-import uk.gov.justice.digital.hmpps.communitypaybackapi.common.dto.BadRequestException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.dto.NotFoundException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.dto.OffenderDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.service.AdditionalInformationType
@@ -87,58 +85,57 @@ class AppointmentServiceTest {
   }
 
   @Nested
-  inner class UpdateAppointmentsOutcome {
+  inner class UpdateAppointmentOutcome {
 
     @Test
-    fun `if appointment not found, throw bad request exception`() {
+    fun `if appointment not found, throw not found exception`() {
       every { communityPaybackAndDeliusClient.getProjectAppointment(101L) } throws WebClientResponseExceptionFactory.notFound()
 
       assertThatThrownBy {
-        service.updateAppointmentsOutcome(UpdateAppointmentOutcomesDto.valid(101L))
-      }.isInstanceOf(BadRequestException::class.java).hasMessage("Appointment not found for ID '101'")
+        service.updateAppointmentOutcome(
+          deliusId = 101L,
+          outcome = UpdateAppointmentOutcomeDto.valid(),
+        )
+      }.isInstanceOf(NotFoundException::class.java).hasMessage("Appointment not found for ID '101'")
     }
 
     @Test
-    fun `if there's no existing entries for the delius appointment ids, persist new entries and raise domain events`() {
-      every { communityPaybackAndDeliusClient.getProjectAppointment(1L) } returns ProjectAppointment.valid().copy(crn = "CRN1")
-      every { communityPaybackAndDeliusClient.getProjectAppointment(2L) } returns ProjectAppointment.valid().copy(crn = "CRN2")
+    fun `if there's no existing entries for the delius appointment ids, persist new entry and raise domain events`() {
+      every { communityPaybackAndDeliusClient.getProjectAppointment(101L) } returns ProjectAppointment.valid().copy(crn = "CRN1")
 
       every { appointmentOutcomeEntityRepository.findTopByAppointmentDeliusIdOrderByUpdatedAtDesc(1L) } returns null
-      every { appointmentOutcomeEntityRepository.findTopByAppointmentDeliusIdOrderByUpdatedAtDesc(2L) } returns null
 
       val entityCaptor = mutableListOf<AppointmentOutcomeEntity>()
       every { appointmentOutcomeEntityRepository.save(capture(entityCaptor)) } returnsArgument 0
 
-      service.updateAppointmentsOutcome(
-        UpdateAppointmentOutcomesDto(
-          ids = listOf(1L, 2L),
-          outcomeData = UpdateAppointmentOutcomeDto(
-            startTime = LocalTime.of(10, 1, 2),
-            endTime = LocalTime.of(16, 3, 4),
-            contactOutcomeId = UUID.fromString("4306c7ca-b717-4995-9eea-91e41d95d44a"),
-            supervisorOfficerCode = "N45",
-            notes = "some notes",
-            attendanceData = AttendanceDataDto(
-              hiVisWorn = false,
-              workedIntensively = true,
-              penaltyTime = LocalTime.of(5, 0),
-              workQuality = AppointmentWorkQualityDto.SATISFACTORY,
-              behaviour = AppointmentBehaviourDto.UNSATISFACTORY,
-            ),
-            enforcementData = EnforcementDto(
-              enforcementActionId = UUID.fromString("52bffba3-2366-4941-aff5-9418b4fbca7e"),
-              respondBy = LocalDate.of(2026, 8, 10),
-            ),
+      service.updateAppointmentOutcome(
+        deliusId = 101L,
+        outcome = UpdateAppointmentOutcomeDto(
+          startTime = LocalTime.of(10, 1, 2),
+          endTime = LocalTime.of(16, 3, 4),
+          contactOutcomeId = UUID.fromString("4306c7ca-b717-4995-9eea-91e41d95d44a"),
+          supervisorOfficerCode = "N45",
+          notes = "some notes",
+          attendanceData = AttendanceDataDto(
+            hiVisWorn = false,
+            workedIntensively = true,
+            penaltyTime = LocalTime.of(5, 0),
+            workQuality = AppointmentWorkQualityDto.SATISFACTORY,
+            behaviour = AppointmentBehaviourDto.UNSATISFACTORY,
+          ),
+          enforcementData = EnforcementDto(
+            enforcementActionId = UUID.fromString("52bffba3-2366-4941-aff5-9418b4fbca7e"),
+            respondBy = LocalDate.of(2026, 8, 10),
           ),
         ),
       )
 
-      assertThat(entityCaptor).hasSize(2)
+      assertThat(entityCaptor).hasSize(1)
 
       val firstEntity = entityCaptor[0]
 
       assertThat(firstEntity.id).isNotNull
-      assertThat(firstEntity.appointmentDeliusId).isEqualTo(1L)
+      assertThat(firstEntity.appointmentDeliusId).isEqualTo(101L)
       assertThat(firstEntity.startTime).isEqualTo(LocalTime.of(10, 1, 2))
       assertThat(firstEntity.endTime).isEqualTo(LocalTime.of(16, 3, 4))
       assertThat(firstEntity.contactOutcomeId).isEqualTo(UUID.fromString("4306c7ca-b717-4995-9eea-91e41d95d44a"))
@@ -156,40 +153,34 @@ class AppointmentServiceTest {
         domainEventService.publish(
           id = entityCaptor[0].id,
           type = DomainEventType.APPOINTMENT_OUTCOME,
-          additionalInformation = mapOf(AdditionalInformationType.APPOINTMENT_ID to 1L),
+          additionalInformation = mapOf(AdditionalInformationType.APPOINTMENT_ID to 101L),
           personReferences = mapOf(PersonReferenceType.CRN to "CRN1"),
-        )
-      }
-
-      verify {
-        domainEventService.publish(
-          id = entityCaptor[1].id,
-          type = DomainEventType.APPOINTMENT_OUTCOME,
-          additionalInformation = mapOf(AdditionalInformationType.APPOINTMENT_ID to 2L),
-          personReferences = mapOf(PersonReferenceType.CRN to "CRN2"),
         )
       }
     }
 
     @Test
     fun `if there's an existing entry for the delius appointment id and it's logically identical, do not persist a new entry`() {
-      val updateAppointmentDto = UpdateAppointmentOutcomesDto.valid(1L)
+      val updateAppointmentDto = UpdateAppointmentOutcomeDto.valid()
 
-      val existingIdenticalEntity = service.toEntity(1L, updateAppointmentDto.outcomeData)
+      val existingIdenticalEntity = service.toEntity(1L, updateAppointmentDto)
       every {
         appointmentOutcomeEntityRepository.findTopByAppointmentDeliusIdOrderByUpdatedAtDesc(1L)
       } returns existingIdenticalEntity
 
-      service.updateAppointmentsOutcome(updateAppointmentDto)
+      service.updateAppointmentOutcome(
+        deliusId = 1L,
+        outcome = updateAppointmentDto,
+      )
 
       verify(exactly = 0) { appointmentOutcomeEntityRepository.save(any()) }
     }
 
     @Test
     fun `if there's an existing entry for the delius appointment id but it's not logically identical, persist new entry and raise domain event`() {
-      val updateAppointmentDto = UpdateAppointmentOutcomesDto.valid(1L)
+      val updateAppointmentDto = UpdateAppointmentOutcomeDto.valid()
 
-      val existingAlmostIdenticalEntity = service.toEntity(1L, updateAppointmentDto.outcomeData)
+      val existingAlmostIdenticalEntity = service.toEntity(1L, updateAppointmentDto)
         .copy(notes = "some different notes")
       every {
         appointmentOutcomeEntityRepository.findTopByAppointmentDeliusIdOrderByUpdatedAtDesc(1L)
@@ -201,7 +192,10 @@ class AppointmentServiceTest {
 
       every { domainEventService.publish(any(), any(), any()) } just Runs
 
-      service.updateAppointmentsOutcome(updateAppointmentDto)
+      service.updateAppointmentOutcome(
+        deliusId = 1L,
+        outcome = updateAppointmentDto,
+      )
 
       verify { appointmentOutcomeEntityRepository.save(any()) }
       verify { domainEventService.publish(any(), DomainEventType.APPOINTMENT_OUTCOME, any(), any()) }

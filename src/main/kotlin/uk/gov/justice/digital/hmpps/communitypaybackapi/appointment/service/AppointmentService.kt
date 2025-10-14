@@ -7,13 +7,11 @@ import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.dto.UpdateAppointmentOutcomeDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.dto.UpdateAppointmentOutcomesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.entity.AppointmentOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.entity.AppointmentOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.entity.Behaviour
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.entity.WorkQuality
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CommunityPaybackAndDeliusClient
-import uk.gov.justice.digital.hmpps.communitypaybackapi.common.dto.BadRequestException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.dto.NotFoundException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.service.AdditionalInformationType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.service.DomainEventService
@@ -44,22 +42,18 @@ class AppointmentService(
     throw NotFoundException("Appointment", id.toString())
   }
 
-  // DA: we should validate presence of attendanceData and enforcementData against contact outcome
-  @Transactional
-  fun updateAppointmentsOutcome(updateAppointments: UpdateAppointmentOutcomesDto) {
-    updateAppointments.ids.forEach { updateAppointmentsOutcome(it, updateAppointments.outcomeData) }
-  }
-
   fun getOutcomeDomainEventDetails(id: UUID) = appointmentOutcomeEntityRepository.findByIdOrNullForDomainEventDetails(id)?.toDomainEventDetail()
 
-  private fun updateAppointmentsOutcome(
+  // DA: we should validate presence of attendanceData and enforcementData against contact outcome, once we have the reference data to do this
+  @Transactional
+  fun updateAppointmentOutcome(
     deliusId: Long,
     outcome: UpdateAppointmentOutcomeDto,
   ) {
     val crn = try {
       communityPaybackAndDeliusClient.getProjectAppointment(deliusId).crn
     } catch (_: WebClientResponseException.NotFound) {
-      throw BadRequestException("Appointment not found for ID '$deliusId'")
+      throw NotFoundException("Appointment", deliusId.toString())
     }
 
     val proposedEntity = toEntity(deliusId, outcome)

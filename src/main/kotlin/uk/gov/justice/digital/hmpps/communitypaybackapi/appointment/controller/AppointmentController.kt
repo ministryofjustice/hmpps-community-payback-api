@@ -7,9 +7,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.PutMapping
+import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
-import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.dto.UpdateAppointmentOutcomesDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.service.AppointmentService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.CommunityPaybackController
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
@@ -45,25 +45,21 @@ class AppointmentController(
     @PathVariable appointmentId: Long,
   ) = appointmentService.getAppointment(appointmentId)
 
-  @PutMapping(
-    path = ["/appointments"],
+  @PostMapping(
+    path = ["/appointments/{deliusAppointmentId}/outcome"],
     consumes = [MediaType.APPLICATION_JSON_VALUE],
   )
   @Operation(
-    description = """Record one or more appointment outcomes. This endpoint is idempotent. 
-      If the most recent recorded outcome for a given delius appointment ID matches the values in the request, 
-      nothing will be done for that delius appointment ID""",
-    requestBody = io.swagger.v3.oas.annotations.parameters.RequestBody(
-      description = "Provides IDs of delius appointments to update, and the values to use for the update",
-    ),
+    description = """Record an appointment's outcome. This endpoint is idempotent -  
+      If the most recent recorded outcome matches the values in the request nothing will be done and a 200 will be returned""",
     responses = [
       ApiResponse(
         responseCode = "200",
         description = "Appointment update is (or has already) been recorded",
       ),
       ApiResponse(
-        responseCode = "400",
-        description = "Invalid appointment ID(s) provided",
+        responseCode = "404",
+        description = "Invalid appointment ID provided",
         content = [
           Content(
             mediaType = "application/json",
@@ -73,7 +69,13 @@ class AppointmentController(
       ),
     ],
   )
-  fun updateAppointments(@RequestBody updateAppointments: UpdateAppointmentOutcomesDto) {
-    appointmentService.updateAppointmentsOutcome(updateAppointments)
+  fun updateAppointmentOutcome(
+    @PathVariable deliusAppointmentId: Long,
+    @RequestBody outcome: UpdateAppointmentOutcomeDto,
+  ) {
+    appointmentService.updateAppointmentOutcome(
+      deliusId = deliusAppointmentId,
+      outcome = outcome,
+    )
   }
 }

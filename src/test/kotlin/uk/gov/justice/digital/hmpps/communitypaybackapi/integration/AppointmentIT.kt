@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.dto.AppointmentDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.dto.UpdateAppointmentOutcomesDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.entity.AppointmentOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CaseName
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CaseSummaries
@@ -124,8 +124,8 @@ class AppointmentIT : IntegrationTestBase() {
   }
 
   @Nested
-  @DisplayName("PUT /appointments")
-  inner class PutAppointmentsEndpoint {
+  @DisplayName("PUT /appointments/{deliusAppointmentId}/outcome")
+  inner class PutAppointmentOutcomeEndpoint {
 
     @BeforeEach
     fun setUp() {
@@ -134,9 +134,9 @@ class AppointmentIT : IntegrationTestBase() {
 
     @Test
     fun `should return unauthorized if no token`() {
-      webTestClient.put()
-        .uri("/appointments")
-        .bodyValue(UpdateAppointmentOutcomesDto.valid())
+      webTestClient.post()
+        .uri("/appointments/1234/outcome")
+        .bodyValue(UpdateAppointmentOutcomeDto.valid())
         .exchange()
         .expectStatus()
         .isUnauthorized
@@ -144,9 +144,9 @@ class AppointmentIT : IntegrationTestBase() {
 
     @Test
     fun `should return forbidden if no role`() {
-      webTestClient.put()
-        .uri("/appointments")
-        .bodyValue(UpdateAppointmentOutcomesDto.valid())
+      webTestClient.post()
+        .uri("/appointments/1234/outcome")
+        .bodyValue(UpdateAppointmentOutcomeDto.valid())
         .headers(setAuthorisation())
         .exchange()
         .expectStatus()
@@ -155,9 +155,9 @@ class AppointmentIT : IntegrationTestBase() {
 
     @Test
     fun `should return forbidden if wrong role`() {
-      webTestClient.put()
-        .uri("/appointments")
-        .bodyValue(UpdateAppointmentOutcomesDto.valid())
+      webTestClient.post()
+        .uri("/appointments/1234/outcome")
+        .bodyValue(UpdateAppointmentOutcomeDto.valid())
         .headers(setAuthorisation(roles = listOf("ROLE_WRONG")))
         .exchange()
         .expectStatus()
@@ -165,38 +165,33 @@ class AppointmentIT : IntegrationTestBase() {
     }
 
     @Test
-    fun `Should return 400 if an appointment can't be found`() {
+    fun `Should return 404 if an appointment can't be found`() {
       CommunityPaybackAndDeliusMockServer.projectAppointmentNotFound(1234L)
 
-      val response = webTestClient.put()
-        .uri("/appointments")
+      val response = webTestClient.post()
+        .uri("/appointments/1234/outcome")
         .addUiAuthHeader()
-        .bodyValue(
-          UpdateAppointmentOutcomesDto.valid(
-            ids = longArrayOf(1234L),
-          ),
-        )
+        .bodyValue(UpdateAppointmentOutcomeDto.valid())
         .exchange()
         .expectStatus()
-        .isBadRequest()
+        .isNotFound()
         .bodyAsObject<ErrorResponse>()
 
-      assertThat(response.userMessage).isEqualTo("Validation failure: Appointment not found for ID '1234'")
+      assertThat(response.userMessage).isEqualTo("No resource found failure: Appointment not found for ID '1234'")
     }
 
     @Test
-    fun `Should persist single update, raising domain events`() {
-      CommunityPaybackAndDeliusMockServer.projectAppointment(ProjectAppointment.valid().copy(id = 1L))
+    fun `Should persist update, raising domain event`() {
+      CommunityPaybackAndDeliusMockServer.projectAppointment(ProjectAppointment.valid().copy(id = 1234L))
 
       val contactOutcomeEntity = contactOutcomeEntityRepository.findAll().first()
       val enforcementOutcomeEntity = enforcementActionEntityRepository.findAll().first()
 
-      webTestClient.put()
-        .uri("/appointments")
+      webTestClient.post()
+        .uri("/appointments/1234/outcome")
         .addUiAuthHeader()
         .bodyValue(
-          UpdateAppointmentOutcomesDto.valid(
-            ids = longArrayOf(1L),
+          UpdateAppointmentOutcomeDto.valid(
             contactOutcomeId = contactOutcomeEntity.id,
             enforcementActionId = enforcementOutcomeEntity.id,
           ),
@@ -209,37 +204,6 @@ class AppointmentIT : IntegrationTestBase() {
 
       val domainEvent = domainEventListener.blockForDomainEventOfType("community-payback.appointment.outcome")
       assertThat(domainEvent.detailUrl).isEqualTo("http://localhost:8080/domain-event-details/appointment-outcome/$persistedId")
-    }
-
-    @Test
-    fun `should persist multiple updates, raising domain events`() {
-      CommunityPaybackAndDeliusMockServer.projectAppointment(ProjectAppointment.valid().copy(id = 1L))
-      CommunityPaybackAndDeliusMockServer.projectAppointment(ProjectAppointment.valid().copy(id = 2L))
-      CommunityPaybackAndDeliusMockServer.projectAppointment(ProjectAppointment.valid().copy(id = 3L))
-
-      val contactOutcomeEntity = contactOutcomeEntityRepository.findAll().first()
-      val enforcementOutcomeEntity = enforcementActionEntityRepository.findAll().first()
-
-      webTestClient.put()
-        .uri("/appointments")
-        .addUiAuthHeader()
-        .bodyValue(
-          UpdateAppointmentOutcomesDto.valid(
-            ids = longArrayOf(1L, 2L, 3L),
-            contactOutcomeId = contactOutcomeEntity.id,
-            enforcementActionId = enforcementOutcomeEntity.id,
-          ),
-        )
-        .exchange()
-        .expectStatus()
-        .isOk()
-
-      assertThat(
-        appointmentOutcomeEntityRepository.findAll()
-          .map { it.appointmentDeliusId },
-      ).containsExactlyInAnyOrder(1L, 2L, 3L)
-
-      domainEventListener.assertEventCount("community-payback.appointment.outcome", 3)
     }
   }
 }
