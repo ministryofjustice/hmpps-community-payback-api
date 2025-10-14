@@ -4,7 +4,7 @@ plugins {
     kotlin("jvm")
     kotlin("plugin.allopen")
 
-    id("io.gatling.gradle") version "3.14.5"
+    id("io.gatling.gradle") version "3.14.6"
 }
 
 gatling {
@@ -22,7 +22,7 @@ repositories {
 }
 
 dependencies {
-    gatling("io.github.cdimascio:dotenv-java:3.0.0")
+    gatling("io.github.cdimascio:dotenv-java:3.2.0")
 }
 
 val fetchK8sClientCreds = tasks.register("fetchK8sClientCreds") {
