@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.integration
 
+import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
@@ -27,6 +28,12 @@ abstract class IntegrationTestBase {
 
   @Autowired
   protected lateinit var jwtAuthHelper: JwtAuthorisationHelper
+
+  @BeforeEach
+  fun before() {
+    // this provides an oauth token for any calls to upstream APIs
+    HmppsAuthMockServer.stubGrantToken()
+  }
 
   companion object {
     private val localStackContainer = LocalStackContainer.instance

@@ -1,13 +1,17 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.common.service
 
 import org.springframework.stereotype.Service
+import org.springframework.web.reactive.function.client.WebClientResponseException
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ArnsClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CaseAccess
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CaseSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CommunityPaybackAndDeliusClient
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.dto.NotFoundException
 
 @Service
 class OffenderService(
   val communityPaybackAndDeliusClient: CommunityPaybackAndDeliusClient,
+  val arnsClient: ArnsClient,
   val contextService: ContextService,
 ) {
 
@@ -49,6 +53,12 @@ class OffenderService(
         else -> OffenderInfoResult.Full(crn, caseSummary)
       }
     }
+  }
+
+  fun getRiskSummary(crn: String) = try {
+    arnsClient.rosh(crn).summary.overallRiskLevel.toString()
+  } catch (_: WebClientResponseException.NotFound) {
+    throw NotFoundException("CRN", crn)
   }
 }
 

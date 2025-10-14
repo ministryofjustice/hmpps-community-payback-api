@@ -24,6 +24,13 @@ spring:
           jwk-set-uri: ${hmpps-auth.url}/.well-known/jwks.json
 
       client:
+        registration:
+          arns:
+            provider: hmpps-auth
+            client-id: override-me
+            client-secret: override-me
+            authorization-grant-type: client_credentials
+            scope: read
         provider:
           hmpps-auth:
             token-uri: ${hmpps-auth.url}/oauth/token
@@ -59,3 +66,9 @@ management:
     info:
       cache:
         time-to-live: 2000ms
+
+clients:
+  arns:
+    url: override-me
+  community-payback-and-delius:
+    url: override-me

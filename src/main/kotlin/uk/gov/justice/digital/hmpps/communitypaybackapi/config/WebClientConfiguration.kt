@@ -5,12 +5,15 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.DependsOn
 import org.springframework.http.client.reactive.ReactorClientHttpConnector
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager
 import org.springframework.web.context.annotation.RequestScope
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.support.WebClientAdapter
 import org.springframework.web.service.invoker.HttpServiceProxyFactory
 import reactor.netty.http.client.HttpClient
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ArnsClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CommunityPaybackAndDeliusClient
+import uk.gov.justice.hmpps.kotlin.auth.authorisedWebClient
 import uk.gov.justice.hmpps.kotlin.auth.healthWebClient
 import java.time.Duration
 
@@ -21,6 +24,9 @@ class WebClientConfiguration(
 
   @param:Value("\${client.community-payback-and-delius.url}") val communityPaybackAndDeliusUrl: String,
   @param:Value("\${client.community-payback-and-delius.timeout:5s}") val communityPaybackAndDeliusTimeout: Duration,
+
+  @param:Value("\${client.arns.url}") val arnsUrl: String,
+  @param:Value("\${client.arns.timeout:5s}") val arnsTimeout: Duration,
 ) {
   // HMPPS Auth health ping is required if your service calls HMPPS Auth to get a token to call other services
   @Bean
@@ -40,4 +46,24 @@ class WebClientConfiguration(
     .builderFor(WebClientAdapter.create(communityPaybackAndDeliusWebClient))
     .build()
     .createClient(CommunityPaybackAndDeliusClient::class.java)
+
+  @Bean
+  @RequestScope
+  fun arnsWebClient(
+    authorizedClientManager: OAuth2AuthorizedClientManager,
+    builder: WebClient.Builder,
+  ): WebClient = builder
+    .authorisedWebClient(
+      authorizedClientManager = authorizedClientManager,
+      registrationId = "arns",
+      url = arnsUrl,
+      timeout = arnsTimeout,
+    )
+
+  @Bean
+  @DependsOn("arnsWebClient")
+  fun arnsClient(arnsWebClient: WebClient): ArnsClient = HttpServiceProxyFactory
+    .builderFor(WebClientAdapter.create(arnsWebClient))
+    .build()
+    .createClient(ArnsClient::class.java)
 }
