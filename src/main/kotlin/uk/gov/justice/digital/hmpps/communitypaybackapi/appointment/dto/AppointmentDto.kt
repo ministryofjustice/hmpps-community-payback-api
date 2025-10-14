@@ -5,7 +5,13 @@ import java.time.LocalDate
 import java.time.LocalTime
 
 data class AppointmentDto(
-  val id: Long,
+  // If we are going to use this DTO for draft updates then we are missing some fields.
+  // crn comes from offender dto
+  // supervising team vs supervising team code
+  // date = appointment date
+  // contact outcome
+  // delius last updated date
+  val id: Long, // = delius app id
   val projectName: String,
   val projectCode: String,
   val projectTypeName: String,
