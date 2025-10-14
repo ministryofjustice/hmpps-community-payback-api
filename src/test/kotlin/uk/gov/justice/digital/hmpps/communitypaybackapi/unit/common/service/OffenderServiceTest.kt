@@ -13,15 +13,21 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.AllRoshRisk
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ArnsClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CaseAccess
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CaseName
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CaseSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CaseSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CommunityPaybackAndDeliusClient
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.OverallRiskLevel
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.RiskRoshSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.UserAccess
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.dto.NotFoundException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.service.ContextService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.service.OffenderInfoResult
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.service.OffenderService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.unit.util.WebClientResponseExceptionFactory
 
 @ExtendWith(MockKExtension::class)
 class OffenderServiceTest {
@@ -36,6 +42,9 @@ class OffenderServiceTest {
 
   @MockK
   lateinit var communityPaybackAndDeliusClient: CommunityPaybackAndDeliusClient
+
+  @MockK
+  lateinit var arnsClient: ArnsClient
 
   @MockK
   lateinit var contextService: ContextService
@@ -225,6 +234,28 @@ class OffenderServiceTest {
 
       assertThat(result[3].crn).isEqualTo(CRN4)
       assertThat(result[3]).isInstanceOf(OffenderInfoResult.Limited::class.java)
+    }
+  }
+
+  @Nested
+  inner class GetRiskSummary {
+
+    @Test
+    fun `Entry exists, return value`() {
+      every { arnsClient.rosh("CRN123") } returns AllRoshRisk(RiskRoshSummary(OverallRiskLevel.HIGH))
+
+      val result = service.getRiskSummary("CRN123")
+
+      assertThat(result).isEqualTo("HIGH")
+    }
+
+    @Test
+    fun `Entry doesnt exist, return 404`() {
+      every { arnsClient.rosh("CRN123") } throws WebClientResponseExceptionFactory.notFound()
+
+      assertThatThrownBy {
+        service.getRiskSummary("CRN123")
+      }.isInstanceOf(NotFoundException::class.java).hasMessage("CRN not found for ID 'CRN123'")
     }
   }
 }

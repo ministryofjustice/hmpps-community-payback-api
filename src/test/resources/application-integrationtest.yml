@@ -44,5 +44,7 @@ logging:
     org.springframework.web.filter.CommonsRequestLoggingFilter: DEBUG
 
 client:
+  arns:
+    url: http://localhost:${wiremock.server.port}/arns
   community-payback-and-delius:
     url: http://localhost:${wiremock.server.port}/community-payback-and-delius
