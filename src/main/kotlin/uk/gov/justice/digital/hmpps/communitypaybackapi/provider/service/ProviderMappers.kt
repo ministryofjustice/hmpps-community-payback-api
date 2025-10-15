@@ -21,6 +21,6 @@ fun ProviderTeamSummary.toDto() = ProviderTeamSummaryDto(this.id, this.code, thi
 
 fun SupervisorSummaries.toDto() = SupervisorSummariesDto(this.supervisors.map { it.toDto() })
 fun SupervisorSummary.toDto() = SupervisorSummaryDto(
-  this.id,
+  this.officerCode,
   "${this.forename}${this.forename2?.let { " $it " } ?: " "}${this.surname} [${this.staffGrade}]",
 )
