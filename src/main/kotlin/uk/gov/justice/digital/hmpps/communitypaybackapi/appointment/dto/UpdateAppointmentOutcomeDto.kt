@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.dto
 
 import io.swagger.v3.oas.annotations.media.Schema
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.dto.FormKeyDto
 import java.time.LocalTime
 import java.util.UUID
 
@@ -14,6 +15,8 @@ data class UpdateAppointmentOutcomeDto(
   val notes: String? = null,
   val attendanceData: AttendanceDataDto?,
   val enforcementData: EnforcementDto?,
+  @param:Schema(description = "If provided, the corresponding form data will be deleted")
+  val formKeyToDelete: FormKeyDto?,
 ) {
   companion object
 }

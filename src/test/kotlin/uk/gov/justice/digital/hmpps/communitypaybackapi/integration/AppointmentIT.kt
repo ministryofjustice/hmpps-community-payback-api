@@ -13,13 +13,15 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CaseName
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CaseSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CaseSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAppointment
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.dto.FormKeyDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.entity.FormCacheEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.entity.FormCacheEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.DomainEventListener
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.bodyAsObject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.CommunityPaybackAndDeliusMockServer
 import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.entity.ContactOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.entity.EnforcementActionEntityRepository
-import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.entity.ProjectTypeEntityRepository
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 
 class AppointmentIT : IntegrationTestBase() {
@@ -34,7 +36,7 @@ class AppointmentIT : IntegrationTestBase() {
   lateinit var enforcementActionEntityRepository: EnforcementActionEntityRepository
 
   @Autowired
-  lateinit var projectEntityRepository: ProjectTypeEntityRepository
+  lateinit var formCacheEntityRepository: FormCacheEntityRepository
 
   @Autowired
   lateinit var domainEventListener: DomainEventListener
@@ -181,11 +183,19 @@ class AppointmentIT : IntegrationTestBase() {
     }
 
     @Test
-    fun `Should persist update, raising domain event`() {
+    fun `Should persist update, raising domain event and deleting form data`() {
       CommunityPaybackAndDeliusMockServer.projectAppointment(ProjectAppointment.valid().copy(id = 1234L))
 
       val contactOutcomeEntity = contactOutcomeEntityRepository.findAll().first()
       val enforcementOutcomeEntity = enforcementActionEntityRepository.findAll().first()
+
+      formCacheEntityRepository.save(
+        FormCacheEntity(
+          formId = "id1",
+          formType = "formtype",
+          formData = "data",
+        ),
+      )
 
       webTestClient.post()
         .uri("/appointments/1234/outcome")
@@ -194,6 +204,11 @@ class AppointmentIT : IntegrationTestBase() {
           UpdateAppointmentOutcomeDto.valid(
             contactOutcomeId = contactOutcomeEntity.id,
             enforcementActionId = enforcementOutcomeEntity.id,
+          ).copy(
+            formKeyToDelete = FormKeyDto(
+              id = "id1",
+              type = "formtype",
+            ),
           ),
         )
         .exchange()
@@ -204,6 +219,8 @@ class AppointmentIT : IntegrationTestBase() {
 
       val domainEvent = domainEventListener.blockForDomainEventOfType("community-payback.appointment.outcome")
       assertThat(domainEvent.detailUrl).isEqualTo("http://localhost:8080/domain-event-details/appointment-outcome/$persistedId")
+
+      assertThat(formCacheEntityRepository.count()).isEqualTo(0)
     }
   }
 }

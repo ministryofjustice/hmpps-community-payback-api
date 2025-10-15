@@ -2,9 +2,11 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.common.service
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.dto.FormKeyDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.dto.NotFoundException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.entity.FormCacheEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.entity.FormCacheEntityRepository
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.entity.FormCacheId
 
 @Service
 class FormService(
@@ -29,5 +31,14 @@ class FormService(
     )
 
     repository.save(entity)
+  }
+
+  fun deleteIfExists(key: FormKeyDto) {
+    repository.deleteById(
+      FormCacheId(
+        formId = key.id,
+        formType = key.type,
+      ),
+    )
   }
 }

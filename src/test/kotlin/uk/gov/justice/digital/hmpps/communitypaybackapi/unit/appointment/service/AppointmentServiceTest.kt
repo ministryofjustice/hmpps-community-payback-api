@@ -24,11 +24,13 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.entity.WorkQ
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.service.AppointmentService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CommunityPaybackAndDeliusClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAppointment
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.dto.FormKeyDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.dto.NotFoundException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.dto.OffenderDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.service.AdditionalInformationType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.service.DomainEventService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.service.DomainEventType
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.service.FormService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.service.OffenderInfoResult
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.service.OffenderService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.service.PersonReferenceType
@@ -52,6 +54,9 @@ class AppointmentServiceTest {
 
   @MockK(relaxed = true)
   lateinit var offenderService: OffenderService
+
+  @MockK(relaxed = true)
+  lateinit var formService: FormService
 
   @InjectMockKs
   private lateinit var service: AppointmentService
@@ -127,6 +132,7 @@ class AppointmentServiceTest {
             enforcementActionId = UUID.fromString("52bffba3-2366-4941-aff5-9418b4fbca7e"),
             respondBy = LocalDate.of(2026, 8, 10),
           ),
+          formKeyToDelete = null,
         ),
       )
 
@@ -157,6 +163,22 @@ class AppointmentServiceTest {
           personReferences = mapOf(PersonReferenceType.CRN to "CRN1"),
         )
       }
+    }
+
+    @Test
+    fun `if there's an existing entry and form data key is specified, remove the form data`() {
+      every { communityPaybackAndDeliusClient.getProjectAppointment(101L) } returns ProjectAppointment.valid().copy(crn = "CRN1")
+      every { appointmentOutcomeEntityRepository.save(any()) } returnsArgument 0
+
+      service.updateAppointmentOutcome(
+        deliusId = 101L,
+        outcome = UpdateAppointmentOutcomeDto.valid().copy(
+          formKeyToDelete = FormKeyDto(
+            id = "formKeyId",
+            type = "formKeyType",
+          ),
+        ),
+      )
     }
 
     @Test
