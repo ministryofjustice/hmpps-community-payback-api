@@ -10,6 +10,8 @@ data class ContactOutcomeDto(
   val name: String,
   @param:Schema(description = "Contact outcome code", example = "ATTC")
   val code: String,
+  @param:Schema(description = "Whether this outcome requires an enforcement action to take place", example = "false")
+  val enforceable: Boolean,
 )
 
 data class ContactOutcomesDto(

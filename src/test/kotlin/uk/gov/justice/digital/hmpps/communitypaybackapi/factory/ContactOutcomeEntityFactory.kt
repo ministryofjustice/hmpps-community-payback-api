@@ -7,4 +7,5 @@ fun ContactOutcomeEntity.Companion.valid() = ContactOutcomeEntity(
   id = UUID.randomUUID(),
   code = String.random(length = 3),
   name = String.random(length = 20),
+  enforceable = Boolean.random(),
 )

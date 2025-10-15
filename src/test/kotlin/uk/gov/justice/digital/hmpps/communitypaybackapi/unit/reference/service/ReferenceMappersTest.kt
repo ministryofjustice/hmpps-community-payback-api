@@ -101,16 +101,19 @@ class ReferenceMappersTest {
           id = UUID.fromString("b9391e9a-515a-4139-a956-20e0f0a129b9"),
           name = "Attended - Complied",
           code = "ATTC",
+          enforceable = false,
         ),
         ContactOutcomeEntity(
           id = UUID.fromString("f352472b-a277-4976-b8b4-224898d4a9b8"),
           name = "Attended - Failed to Comply",
           code = "AFTC",
+          enforceable = true,
         ),
         ContactOutcomeEntity(
           id = UUID.fromString("5e8f3124-d794-43b1-b844-df0bb95814dc"),
           name = "Attended - Sent Home (behaviour)",
           code = "ATSH",
+          enforceable = true,
         ),
       )
 
@@ -140,6 +143,7 @@ class ReferenceMappersTest {
         id = UUID.fromString("b9391e9a-515a-4139-a956-20e0f0a129b9"),
         name = "Attended - Complied",
         code = "ATTC",
+        enforceable = false,
       )
 
       assertThat(contactOutcome.toDto()).isEqualTo(
@@ -147,6 +151,7 @@ class ReferenceMappersTest {
           id = UUID.fromString("b9391e9a-515a-4139-a956-20e0f0a129b9"),
           name = "Attended - Complied",
           code = "ATTC",
+          enforceable = false,
         ),
       )
     }
