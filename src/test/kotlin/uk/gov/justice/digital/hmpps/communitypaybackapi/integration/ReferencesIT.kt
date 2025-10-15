@@ -114,7 +114,7 @@ class ReferencesIT : IntegrationTestBase() {
         .isOk
         .bodyAsObject<ContactOutcomesDto>()
 
-      assertThat(contactOutcomes.contactOutcomes).hasSize(21)
+      assertThat(contactOutcomes.contactOutcomes).hasSize(22)
       assertThat(contactOutcomes.contactOutcomes[0].id).isNotNull
       assertThat(contactOutcomes.contactOutcomes[0].name).isEqualTo("Acceptable Absence - Court/Legal")
       assertThat(contactOutcomes.contactOutcomes[0].code).isEqualTo("AACL")

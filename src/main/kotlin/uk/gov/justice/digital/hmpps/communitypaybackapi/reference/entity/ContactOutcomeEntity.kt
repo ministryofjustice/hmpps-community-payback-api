@@ -18,6 +18,7 @@ data class ContactOutcomeEntity(
   val id: UUID,
   val code: String,
   val name: String,
+  val enforceable: Boolean,
   @CreationTimestamp
   val createdAt: OffsetDateTime = OffsetDateTime.now(),
   @UpdateTimestamp
@@ -31,7 +32,7 @@ data class ContactOutcomeEntity(
 
   override fun hashCode(): Int = id.hashCode()
 
-  override fun toString(): String = "ContactOutcomeEntity(id=$id, code='$code', name='$name')"
+  override fun toString(): String = "ContactOutcomeEntity(id=$id, code='$code', name='$name', enforceable=$enforceable)"
 
   companion object
 }
