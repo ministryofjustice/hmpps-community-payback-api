@@ -16,6 +16,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.common.dto.NotFoundExcep
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.service.AdditionalInformationType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.service.DomainEventService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.service.DomainEventType
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.service.FormService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.service.OffenderService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.service.PersonReferenceType
 import java.util.UUID
@@ -26,6 +27,7 @@ class AppointmentService(
   private val domainEventService: DomainEventService,
   private val communityPaybackAndDeliusClient: CommunityPaybackAndDeliusClient,
   private val offenderService: OffenderService,
+  private val formService: FormService,
 ) {
   private companion object {
     private val log = LoggerFactory.getLogger(this::class.java)
@@ -73,6 +75,10 @@ class AppointmentService(
       additionalInformation = mapOf(AdditionalInformationType.APPOINTMENT_ID to deliusId),
       personReferences = mapOf(PersonReferenceType.CRN to crn),
     )
+
+    outcome.formKeyToDelete?.let {
+      formService.deleteIfExists(it)
+    }
   }
 
   fun toEntity(deliusId: Long, outcome: UpdateAppointmentOutcomeDto) = AppointmentOutcomeEntity(

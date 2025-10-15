@@ -27,4 +27,5 @@ fun UpdateAppointmentOutcomeDto.Companion.valid(
     enforcementActionId = enforcementActionId,
     respondBy = randomLocalDate(),
   ),
+  formKeyToDelete = null,
 )
