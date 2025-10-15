@@ -165,8 +165,8 @@ class ProvidersIT : IntegrationTestBase() {
       CommunityPaybackAndDeliusMockServer.teamSupervisors(
         SupervisorSummaries(
           listOf(
-            SupervisorSummary(id = 4L, forename = "Fred", forename2 = null, surname = "Flintstone", officerCode = "FF01", staffGrade = "PO"),
-            SupervisorSummary(id = 5L, forename = "Barney", forename2 = null, surname = "Rubble", officerCode = "BR01", staffGrade = "PO"),
+            SupervisorSummary(forename = "Fred", forename2 = null, surname = "Flintstone", officerCode = "FF01", staffGrade = "PO"),
+            SupervisorSummary(forename = "Barney", forename2 = null, surname = "Rubble", officerCode = "BR01", staffGrade = "PO"),
           ),
         ),
       )
@@ -180,9 +180,9 @@ class ProvidersIT : IntegrationTestBase() {
         .bodyAsObject<SupervisorSummariesDto>()
 
       Assertions.assertThat(supervisors.supervisors).hasSize(2)
-      Assertions.assertThat(supervisors.supervisors[0].id).isEqualTo(4L)
+      Assertions.assertThat(supervisors.supervisors[0].code).isEqualTo("FF01")
       Assertions.assertThat(supervisors.supervisors[0].name).isEqualTo("Fred Flintstone [PO]")
-      Assertions.assertThat(supervisors.supervisors[1].id).isEqualTo(5L)
+      Assertions.assertThat(supervisors.supervisors[1].code).isEqualTo("BR01")
       Assertions.assertThat(supervisors.supervisors[1].name).isEqualTo("Barney Rubble [PO]")
     }
 

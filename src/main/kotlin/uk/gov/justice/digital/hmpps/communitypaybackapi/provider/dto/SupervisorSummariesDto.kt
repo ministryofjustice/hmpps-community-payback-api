@@ -3,8 +3,8 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.provider.dto
 import io.swagger.v3.oas.annotations.media.Schema
 
 data class SupervisorSummaryDto(
-  @param:Schema(description = "Supervisor id", example = "4")
-  val id: Long,
+  @param:Schema(description = "Supervisor code", example = "P0123")
+  val code: String,
   @param:Schema(description = "Supervisor name", example = "John Smith")
   val name: String,
 )

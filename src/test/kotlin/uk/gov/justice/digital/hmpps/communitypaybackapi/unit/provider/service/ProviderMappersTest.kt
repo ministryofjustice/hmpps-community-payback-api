@@ -53,7 +53,6 @@ class ProviderMappersTest {
       val supervisorSummaries = SupervisorSummaries(
         listOf(
           SupervisorSummary(
-            id = 4L,
             forename = "Fred",
             forename2 = null,
             surname = "Flintstone",
@@ -61,7 +60,6 @@ class ProviderMappersTest {
             staffGrade = "PO",
           ),
           SupervisorSummary(
-            id = 5L,
             forename = "Wilma",
             forename2 = null,
             surname = "Flintstone",
@@ -69,7 +67,6 @@ class ProviderMappersTest {
             staffGrade = "PO",
           ),
           SupervisorSummary(
-            id = 6L,
             forename = "Barney",
             forename2 = null,
             surname = "Rubble",
@@ -83,18 +80,17 @@ class ProviderMappersTest {
       val supervisorSummariesDto = supervisorSummaries.toDto()
 
       assertThat(supervisorSummariesDto.supervisors).hasSize(3)
-      assertThat(supervisorSummariesDto.supervisors[0].id).isEqualTo(4L)
+      assertThat(supervisorSummariesDto.supervisors[0].code).isEqualTo("FF01")
       assertThat(supervisorSummariesDto.supervisors[0].name).isEqualTo("Fred Flintstone [PO]")
-      assertThat(supervisorSummariesDto.supervisors[1].id).isEqualTo(5L)
+      assertThat(supervisorSummariesDto.supervisors[1].code).isEqualTo("WF01")
       assertThat(supervisorSummariesDto.supervisors[1].name).isEqualTo("Wilma Flintstone [PO]")
-      assertThat(supervisorSummariesDto.supervisors[2].id).isEqualTo(6L)
+      assertThat(supervisorSummariesDto.supervisors[2].code).isEqualTo("BR01")
       assertThat(supervisorSummariesDto.supervisors[2].name).isEqualTo("Barney Rubble [PO]")
     }
 
     @Test
     fun `should map SupervisorSummary to DTO correctly`() {
       val supervisorSummary = SupervisorSummary(
-        id = 4L,
         forename = "Fred",
         forename2 = null,
         surname = "Flintstone",
@@ -103,7 +99,7 @@ class ProviderMappersTest {
       )
 
       assertThat(supervisorSummary.toDto()).isEqualTo(
-        SupervisorSummaryDto(id = 4L, name = "Fred Flintstone [PO]"),
+        SupervisorSummaryDto(code = "FF01", name = "Fred Flintstone [PO]"),
       )
     }
 

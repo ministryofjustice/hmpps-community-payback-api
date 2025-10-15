@@ -189,7 +189,6 @@ data class SupervisorSummaries(
 )
 
 data class SupervisorSummary(
-  val id: Long,
   val surname: String,
   val forename: String,
   val forename2: String?,

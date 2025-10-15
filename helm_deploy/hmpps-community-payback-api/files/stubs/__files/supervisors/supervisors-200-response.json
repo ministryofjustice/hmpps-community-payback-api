@@ -1,7 +1,6 @@
 {
   "supervisors": [
     {
-      "id": 1000,
       "surname": "Xavier",
       "forename": "Charles",
       "forename2": null,
@@ -9,7 +8,6 @@
       "staffGrade": "PS - Other"
     },
     {
-      "id": 1001,
       "surname": "Summers",
       "forename": "Scott",
       "forename2": null,
@@ -17,7 +15,6 @@
       "staffGrade": "PS - Other"
     },
     {
-      "id": 1002,
       "surname": "Grey",
       "forename": "Jean",
       "forename2": null,
@@ -32,7 +29,6 @@
       "staffGrade": "PS - Other"
     },
     {
-      "id": 1003,
       "surname": "Howlett",
       "forename": "Logan",
       "forename2": null,
@@ -40,7 +36,6 @@
       "staffGrade": "PS - Other"
     },
     {
-      "id": 1004,
       "surname": "Hank",
       "forename": "McCoy",
       "forename2": null,
