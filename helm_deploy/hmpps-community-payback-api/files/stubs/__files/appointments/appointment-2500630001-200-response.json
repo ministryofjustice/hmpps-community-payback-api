@@ -1,19 +1,47 @@
 {
   "id": 2500630001,
-  "projectName": "Test regional project",
-  "projectCode": "N56777777",
-  "projectTypeName": "Regional Test Project Type",
-  "projectTypeCode": "TP",
-  "crn": "X123456",
-  "supervisingTeam": "Default Designated Transfer Team",
-  "supervisingTeamCode": "N56DTX",
-  "providerName": "East of England",
-  "providerCode": "N56",
+  "project": {
+    "name": "Test regional project",
+    "code": "N56777777"
+  },
+  "projectType" : {
+    "name": "Regional Test Project Type",
+    "code": "TP"
+  },
+  "case": {
+    "crn": "X123456",
+    "name": {
+      "forename": "John",
+      "surname": "Example",
+      "middleNames": []
+    },
+    "currentExclusion": false,
+    "currentRestriction": false
+  },
+  "team": {
+    "name": "Default Designated Transfer Team",
+    "code": "N56DTX"
+  },
+  "provider": {
+    "name": "East of England",
+    "code": "N56"
+  },
+  "pickUpData": {
+    "location": {
+      "buildingName": null,
+      "buildingNumber": "1",
+      "streetName": "Made Up Street",
+      "townCity": "Kettering",
+      "county": "Northants",
+      "postCode": "NN15 XYZ"
+    },
+    "time": "06:00"
+  },
   "date": "2025-09-22",
   "startTime": "09:00",
   "endTime": "17:00",
   "penaltyHours": null,
-  "supervisorCode": "N56A108",
+  "supervisorOfficerCode": "N56A108",
   "contactOutcomeCode": "ATTC",
   "enforcementActionCode": null,
   "respondBy": null,

@@ -22,6 +22,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.entity.Appoi
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.entity.Behaviour
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.entity.WorkQuality
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.service.AppointmentService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CaseSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CommunityPaybackAndDeliusClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.dto.FormKeyDto
@@ -77,7 +78,7 @@ class AppointmentServiceTest {
     fun `appointment found`() {
       every {
         communityPaybackAndDeliusClient.getProjectAppointment(101L)
-      } returns ProjectAppointment.valid().copy(id = 101L, crn = "CRN123")
+      } returns ProjectAppointment.valid().copy(id = 101L, case = CaseSummary.valid().copy(crn = "CRN123"))
 
       every { offenderService.getOffenderInfo("CRN123") } returns OffenderInfoResult.Full.valid(crn = "CRN123")
 
@@ -106,7 +107,9 @@ class AppointmentServiceTest {
 
     @Test
     fun `if there's no existing entries for the delius appointment ids, persist new entry and raise domain events`() {
-      every { communityPaybackAndDeliusClient.getProjectAppointment(101L) } returns ProjectAppointment.valid().copy(crn = "CRN1")
+      every {
+        communityPaybackAndDeliusClient.getProjectAppointment(101L)
+      } returns ProjectAppointment.valid().copy(case = CaseSummary.valid().copy(crn = "CRN1"))
 
       every { appointmentOutcomeEntityRepository.findTopByAppointmentDeliusIdOrderByUpdatedAtDesc(1L) } returns null
 
@@ -167,7 +170,10 @@ class AppointmentServiceTest {
 
     @Test
     fun `if there's an existing entry and form data key is specified, remove the form data`() {
-      every { communityPaybackAndDeliusClient.getProjectAppointment(101L) } returns ProjectAppointment.valid().copy(crn = "CRN1")
+      every {
+        communityPaybackAndDeliusClient.getProjectAppointment(101L)
+      } returns ProjectAppointment.valid().copy(case = CaseSummary.valid().copy(crn = "CRN1"))
+
       every { appointmentOutcomeEntityRepository.save(any()) } returnsArgument 0
 
       service.updateAppointmentOutcome(

@@ -14,6 +14,7 @@ data class AppointmentDto(
   val supervisingTeam: String,
   val supervisingTeamCode: String,
   val providerCode: String,
+  val pickUpData: PickUpDataDto?,
   val date: LocalDate,
   val startTime: LocalTime,
   val endTime: LocalTime,

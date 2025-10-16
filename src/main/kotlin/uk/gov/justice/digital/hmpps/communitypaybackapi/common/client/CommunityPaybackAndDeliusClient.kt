@@ -112,19 +112,17 @@ data class ProjectAppointmentSummary(
 
 data class ProjectAppointment(
   val id: Long,
-  val projectName: String,
-  val projectCode: String,
-  val projectTypeName: String,
-  val projectTypeCode: String,
-  val crn: String,
-  val supervisingTeam: String,
-  val supervisingTeamCode: String,
-  val providerCode: String,
+  val project: Project,
+  val projectType: ProjectType,
+  val case: CaseSummary,
+  val team: Team,
+  val provider: Provider,
+  val pickUpData: PickUpData?,
   val date: LocalDate,
   val startTime: LocalTime,
   val endTime: LocalTime,
   val penaltyTime: LocalTime?,
-  val supervisorCode: String?,
+  val supervisorOfficerCode: String?,
   val contactOutcomeId: UUID?,
   val enforcementActionId: UUID?,
   val respondBy: LocalDate?,
@@ -133,6 +131,37 @@ data class ProjectAppointment(
   val workQuality: ProjectAppointmentWorkQuality?,
   val behaviour: ProjectAppointmentBehaviour?,
   val notes: String?,
+) {
+  companion object
+}
+
+data class Project(val name: String, val code: String) {
+  companion object
+}
+data class ProjectType(val name: String, val code: String) {
+  companion object
+}
+data class Team(val name: String, val code: String) {
+  companion object
+}
+data class Provider(val name: String, val code: String) {
+  companion object
+}
+
+data class PickUpData(
+  val location: Location?,
+  val time: LocalTime?,
+) {
+  companion object
+}
+
+data class Location(
+  val buildingName: String?,
+  val buildingNumber: String?,
+  val streetName: String?,
+  val townCity: String?,
+  val county: String?,
+  val postCode: String?,
 ) {
   companion object
 }

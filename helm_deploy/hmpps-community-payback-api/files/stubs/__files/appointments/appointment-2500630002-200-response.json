@@ -1,19 +1,47 @@
 {
   "id": 2500630002,
-  "projectName": "Tree Planting UK",
-  "projectCode": "N56456456",
-  "projectTypeName": "Tree Planting",
-  "projectTypeCode": "TP",
-  "crn": "X223344",
-  "supervisingTeam": "Default Designated Transfer Team",
-  "supervisingTeamCode": "N56DTX",
-  "providerName": "East of England",
-  "providerCode": "N56",
+  "project" : {
+    "name": "Tree Planting UK",
+    "code": "N56456456"
+  },
+  "projectType":  {
+    "name": "Tree Planting",
+    "code": "TP"
+  },
+  "case" : {
+    "crn": "X223344",
+    "name": {
+      "forename": "Jane",
+      "surname": "Sample",
+      "middleNames": []
+    },
+    "currentExclusion": false,
+    "currentRestriction": false
+  },
+  "team": {
+    "name": "Default Designated Transfer Team",
+    "code": "N56DTX"
+  },
+  "provider" : {
+    "name": "East of England",
+    "code": "N56"
+  },
+  "pickUpData": {
+    "location": {
+      "buildingName": null,
+      "buildingNumber": "25",
+      "streetName": "Test Street",
+      "townCity": "Chelmsford",
+      "county": "Essex",
+      "postCode": "CM1 1UH"
+    },
+    "time": "08:30"
+  },
   "date": "2025-09-22",
   "startTime": "09:00",
   "endTime": "17:00",
   "penaltyHours": null,
-  "supervisorCode": "N56A108",
+  "supervisorOfficerCode": "N56A108",
   "contactOutcomeCode": "ATTC",
   "enforcementActionCode": null,
   "respondBy": null,
