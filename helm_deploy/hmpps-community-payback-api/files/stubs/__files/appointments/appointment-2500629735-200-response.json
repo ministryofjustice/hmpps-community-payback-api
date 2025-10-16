@@ -2,7 +2,15 @@
   "id": 2500629735,
   "project": {
     "name": "Cleaning Streets",
-    "code": "N56123456"
+    "code": "N56123456",
+    "location": {
+      "streetName": "Peter Street",
+      "buildingName": null,
+      "addressNumber": "90",
+      "townCity": "Salford",
+      "county": null,
+      "postCode": "M5 560"
+    }
   },
   "projectType": {
     "name": "CPxASB Rapid Deployment - Project Clean Streets",

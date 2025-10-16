@@ -2,7 +2,15 @@
   "id": 2500630001,
   "project": {
     "name": "Test regional project",
-    "code": "N56777777"
+    "code": "N56777777",
+    "location": {
+      "streetName": "Some Street",
+      "buildingName": null,
+      "addressNumber": "25",
+      "townCity": "Corby",
+      "county": null,
+      "postCode": "NN15 5AA"
+    }
   },
   "projectType" : {
     "name": "Regional Test Project Type",

@@ -135,7 +135,7 @@ data class ProjectAppointment(
   companion object
 }
 
-data class Project(val name: String, val code: String) {
+data class Project(val name: String, val code: String, val location: ProjectLocation) {
   companion object
 }
 data class ProjectType(val name: String, val code: String) {
@@ -149,15 +149,26 @@ data class Provider(val name: String, val code: String) {
 }
 
 data class PickUpData(
-  val location: Location?,
+  val pickUpLocation: PickUpLocation?,
   val time: LocalTime?,
 ) {
   companion object
 }
 
-data class Location(
+data class PickUpLocation(
   val buildingName: String?,
   val buildingNumber: String?,
+  val streetName: String?,
+  val townCity: String?,
+  val county: String?,
+  val postCode: String?,
+) {
+  companion object
+}
+
+data class ProjectLocation(
+  val buildingName: String?,
+  val addressNumber: String?,
   val streetName: String?,
   val townCity: String?,
   val county: String?,

@@ -14,12 +14,13 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.service.from
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.service.toDomainEventDetail
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.service.toDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CaseSummary
-import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.Location
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.PickUpData
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.PickUpLocation
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.Project
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAppointmentBehaviour
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAppointmentWorkQuality
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectLocation
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.Provider
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.Team
@@ -113,6 +114,7 @@ class AppointmentMappersTest {
         project = Project(
           name = projectName,
           code = projectCode,
+          location = ProjectLocation.valid(),
         ),
         projectType = ProjectType(
           name = projectTypeName,
@@ -128,7 +130,7 @@ class AppointmentMappersTest {
           code = providerCode,
         ),
         pickUpData = PickUpData(
-          location = Location(
+          pickUpLocation = PickUpLocation(
             buildingName = pickUpBuildingName,
             buildingNumber = pickUpBuildingNumber,
             streetName = pickUpStreetName,
