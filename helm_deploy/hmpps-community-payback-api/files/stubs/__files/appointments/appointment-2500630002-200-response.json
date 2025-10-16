@@ -2,7 +2,15 @@
   "id": 2500630002,
   "project" : {
     "name": "Tree Planting UK",
-    "code": "N56456456"
+    "code": "N56456456",
+    "location": {
+      "streetName": "Other Street",
+      "buildingName": null,
+      "addressNumber": "1",
+      "townCity": "Chelmsford",
+      "county": "Essex",
+      "postCode": "CM1 1OH"
+    }
   },
   "projectType":  {
     "name": "Tree Planting",

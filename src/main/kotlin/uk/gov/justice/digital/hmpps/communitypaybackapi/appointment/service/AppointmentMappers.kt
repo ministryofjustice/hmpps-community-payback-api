@@ -11,8 +11,8 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.dto.PickUpDa
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.entity.AppointmentOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.entity.Behaviour
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.entity.WorkQuality
-import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.Location
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.PickUpData
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.PickUpLocation
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAppointmentBehaviour
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAppointmentWorkQuality
@@ -70,11 +70,11 @@ fun ProjectAppointment.toDto(offenderInfoResult: OffenderInfoResult) = Appointme
 )
 
 fun PickUpData.toDto() = PickUpDataDto(
-  location = location?.toDto(),
+  location = pickUpLocation?.toDto(),
   time = time,
 )
 
-fun Location.toDto() = LocationDto(
+fun PickUpLocation.toDto() = LocationDto(
   buildingName = this.buildingName,
   buildingNumber = this.buildingNumber,
   streetName = this.streetName,
