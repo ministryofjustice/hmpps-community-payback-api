@@ -72,8 +72,6 @@ class ProjectsIT : IntegrationTestBase() {
         ProjectSessionSummaries(
           listOf(
             ProjectSummary(
-              id = 1L,
-              projectId = 101L,
               projectName = "Community Garden Maintenance",
               date = LocalDate.of(2025, 9, 1),
               startTime = LocalTime.of(9, 0),
@@ -84,8 +82,6 @@ class ProjectsIT : IntegrationTestBase() {
               enforcementActionNeededCount = 2,
             ),
             ProjectSummary(
-              id = 2L,
-              projectId = 201L,
               projectName = "Park Cleanup",
               date = LocalDate.of(2025, 9, 8),
               startTime = LocalTime.of(8, 0),
@@ -108,7 +104,6 @@ class ProjectsIT : IntegrationTestBase() {
         .bodyAsObject<SessionSummariesDto>()
 
       assertThat(sessionSearchResults.allocations).hasSize(2)
-      assertThat(sessionSearchResults.allocations[0].id).isEqualTo(1L)
       assertThat(sessionSearchResults.allocations[0].projectName).isEqualTo("Community Garden Maintenance")
       assertThat(sessionSearchResults.allocations[0].date).isEqualTo(LocalDate.of(2025, 9, 1))
       assertThat(sessionSearchResults.allocations[0].startTime).isEqualTo(LocalTime.of(9, 0))

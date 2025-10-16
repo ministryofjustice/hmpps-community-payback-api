@@ -13,8 +13,8 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.project.dto.SessionSumma
 
 fun ProjectSessionSummaries.toDto() = SessionSummariesDto(this.sessions.map { it.toDto() })
 fun ProjectSummary.toDto() = SessionSummaryDto(
-  id = this.id,
-  projectId = this.projectId,
+  id = 0,
+  projectId = 0,
   projectName = this.projectName,
   projectCode = this.projectCode,
   date = this.date,

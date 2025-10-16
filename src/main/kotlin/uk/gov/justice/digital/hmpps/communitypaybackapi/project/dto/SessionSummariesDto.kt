@@ -10,9 +10,12 @@ data class SessionSummariesDto(
 )
 
 data class SessionSummaryDto(
-  @param:Schema(description = "Project allocation id", example = "1")
-  val id: Long,
-  val projectId: Long,
+  @Deprecated("Id will be removed")
+  @param:Schema(description = "Project allocation id", example = "1", deprecated = true)
+  val id: Long? = null,
+  @Deprecated("Project id will be removed")
+  @param:Schema(deprecated = true)
+  val projectId: Long? = null,
   @param:Schema(description = "Project name", example = "Community Garden Maintenance")
   val projectName: String,
   @param:Schema(description = "Project code", example = "123")
