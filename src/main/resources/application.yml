@@ -7,6 +7,9 @@ spring:
     open-in-view: true
   flyway:
     enabled: true
+    out-of-order: true
+    repeatable-sql-migration-prefix: "R"
+    sql-migration-prefix: ""
   application:
     name: hmpps-community-payback-api
   codec:
