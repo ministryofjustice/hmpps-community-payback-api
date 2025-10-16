@@ -1,19 +1,47 @@
 {
   "id": 2500629735,
-  "projectName": "Cleaning Streets",
-  "projectCode": "N56123456",
-  "projectTypeName": "CPxASB Rapid Deployment - Project Clean Streets",
-  "projectTypeCode": "PL",
-  "crn": "X949551",
-  "supervisingTeam": "Default Designated Transfer Team",
-  "supervisingTeamCode": "N56DTX",
-  "providerName": "East of England",
-  "providerCode": "N56",
+  "project": {
+    "name": "Cleaning Streets",
+    "code": "N56123456"
+  },
+  "projectType": {
+    "name": "CPxASB Rapid Deployment - Project Clean Streets",
+    "code": "PL"
+  },
+  "case": {
+    "crn": "X949551",
+    "name": {
+      "forename": "Agatha",
+      "surname": "Trunchbull",
+      "middleNames": []
+    },
+    "currentExclusion": false,
+    "currentRestriction": false
+  },
+  "team": {
+    "name": "Default Designated Transfer Team",
+    "code": "N56DTX"
+  },
+  "provider": {
+    "name": "East of England",
+    "code": "N56"
+  },
+  "pickUpData": {
+    "location": {
+      "buildingName": "4th Floor Ashby House",
+      "buildingNumber": null,
+      "streetName": "Brook Street",
+      "townCity": "Chelmsford",
+      "county": "Essex",
+      "postCode": "CM1 1UH"
+    },
+    "time": "08:00"
+  },
   "date": "2025-09-22",
   "startTime": "09:00",
   "endTime": "17:00",
   "penaltyHours": null,
-  "supervisorCode": "N56DTXU",
+  "supervisorOfficerCode": "N56DTXU",
   "contactOutcomeCode": "UAAB",
   "enforcementActionCode": "EA05",
   "respondBy": null,

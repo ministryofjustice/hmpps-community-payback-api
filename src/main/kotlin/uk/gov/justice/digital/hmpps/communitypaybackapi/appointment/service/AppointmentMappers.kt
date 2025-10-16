@@ -6,9 +6,13 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.dto.Appointm
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.dto.AppointmentWorkQualityDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.dto.AttendanceDataDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.dto.EnforcementDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.dto.LocationDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.dto.PickUpDataDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.entity.AppointmentOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.entity.Behaviour
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.entity.WorkQuality
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.Location
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.PickUpData
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAppointmentBehaviour
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAppointmentWorkQuality
@@ -37,14 +41,15 @@ fun Behaviour.Companion.fromDto(dto: AppointmentBehaviourDto) = Behaviour.entrie
 
 fun ProjectAppointment.toDto(offenderInfoResult: OffenderInfoResult) = AppointmentDto(
   id = this.id,
-  projectName = this.projectName,
-  projectCode = this.projectCode,
-  projectTypeName = this.projectTypeName,
-  projectTypeCode = this.projectTypeCode,
+  projectName = this.project.name,
+  projectCode = this.project.code,
+  projectTypeName = this.projectType.name,
+  projectTypeCode = this.projectType.code,
   offender = offenderInfoResult.toDto(),
-  supervisingTeam = this.supervisingTeam,
-  supervisingTeamCode = this.supervisingTeamCode,
-  providerCode = this.providerCode,
+  supervisingTeam = this.team.name,
+  supervisingTeamCode = this.team.code,
+  providerCode = this.provider.code,
+  pickUpData = this.pickUpData?.toDto(),
   date = this.date,
   startTime = this.startTime,
   endTime = this.endTime,
@@ -54,7 +59,7 @@ fun ProjectAppointment.toDto(offenderInfoResult: OffenderInfoResult) = Appointme
     penaltyTime = this.penaltyTime,
     workQuality = this.workQuality?.toDto(),
     behaviour = this.behaviour?.toDto(),
-    supervisorOfficerCode = this.supervisorCode,
+    supervisorOfficerCode = this.supervisorOfficerCode,
     contactOutcomeId = this.contactOutcomeId,
   ),
   enforcementData = EnforcementDto(
@@ -62,6 +67,20 @@ fun ProjectAppointment.toDto(offenderInfoResult: OffenderInfoResult) = Appointme
     respondBy = this.respondBy,
   ),
   notes = this.notes,
+)
+
+fun PickUpData.toDto() = PickUpDataDto(
+  location = location?.toDto(),
+  time = time,
+)
+
+fun Location.toDto() = LocationDto(
+  buildingName = this.buildingName,
+  buildingNumber = this.buildingNumber,
+  streetName = this.streetName,
+  townCity = this.townCity,
+  county = this.county,
+  postCode = this.postCode,
 )
 
 fun ProjectAppointmentWorkQuality.toDto() = when (this) {

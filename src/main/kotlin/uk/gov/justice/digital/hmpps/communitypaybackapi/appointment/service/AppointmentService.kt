@@ -37,7 +37,7 @@ class AppointmentService(
   fun getAppointment(id: Long): AppointmentDto = try {
     communityPaybackAndDeliusClient.getProjectAppointment(id)
       .let { projectAppointment ->
-        val offenderInfoResult = offenderService.getOffenderInfo(projectAppointment.crn)
+        val offenderInfoResult = offenderService.getOffenderInfo(projectAppointment.case.crn)
         projectAppointment.toDto(offenderInfoResult)
       }
   } catch (_: WebClientResponseException.NotFound) {
@@ -53,7 +53,7 @@ class AppointmentService(
     outcome: UpdateAppointmentOutcomeDto,
   ) {
     val crn = try {
-      communityPaybackAndDeliusClient.getProjectAppointment(deliusId).crn
+      communityPaybackAndDeliusClient.getProjectAppointment(deliusId).case.crn
     } catch (_: WebClientResponseException.NotFound) {
       throw NotFoundException("Appointment", deliusId.toString())
     }

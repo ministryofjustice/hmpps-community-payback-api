@@ -13,9 +13,16 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.entity.WorkQ
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.service.fromDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.service.toDomainEventDetail
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.service.toDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CaseSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.Location
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.PickUpData
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.Project
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAppointmentBehaviour
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAppointmentWorkQuality
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectType
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.Provider
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.Team
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.dto.OffenderDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.service.OffenderInfoResult
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
@@ -83,11 +90,18 @@ class AppointmentMappersTest {
       val supervisingTeam = "Team Lincoln"
       val supervisingTeamCode = "TL01"
       val providerCode = "PC01"
+      val pickUpBuildingName = "Building 1"
+      val pickUpBuildingNumber = "2"
+      val pickUpStreetName = "Street 3"
+      val pickUpTownCity = "Town 4"
+      val pickUpCounty = "County 5"
+      val pickUpPostCode = "NN11 8UU"
+      val pickUpTime = LocalTime.of(12, 25)
       val date = LocalDate.of(2025, 9, 1)
       val startTime = LocalTime.of(9, 0)
       val endTime = LocalTime.of(17, 0)
       val penaltyTime = LocalTime.of(0, 0)
-      val supervisorCode = "CRN1"
+      val supervisorOfficerCode = "CRN1"
       val respondBy = LocalDate.of(2025, 10, 1)
       val hiVisWorn = true
       val workedIntensively = false
@@ -96,19 +110,39 @@ class AppointmentMappersTest {
       val notes = "This is a test note"
       val projectAppointment = ProjectAppointment(
         id = id,
-        projectName = projectName,
-        projectCode = projectCode,
-        projectTypeName = projectTypeName,
-        projectTypeCode = projectTypeCode,
-        crn = crn,
-        supervisingTeam = supervisingTeam,
-        supervisingTeamCode = supervisingTeamCode,
-        providerCode = providerCode,
+        project = Project(
+          name = projectName,
+          code = projectCode,
+        ),
+        projectType = ProjectType(
+          name = projectTypeName,
+          code = projectTypeCode,
+        ),
+        case = CaseSummary.valid().copy(crn = crn),
+        team = Team(
+          name = supervisingTeam,
+          code = supervisingTeamCode,
+        ),
+        provider = Provider(
+          name = "not mapped",
+          code = providerCode,
+        ),
+        pickUpData = PickUpData(
+          location = Location(
+            buildingName = pickUpBuildingName,
+            buildingNumber = pickUpBuildingNumber,
+            streetName = pickUpStreetName,
+            townCity = pickUpTownCity,
+            county = pickUpCounty,
+            postCode = pickUpPostCode,
+          ),
+          time = pickUpTime,
+        ),
         date = date,
         startTime = startTime,
         endTime = endTime,
         penaltyTime = penaltyTime,
-        supervisorCode = supervisorCode,
+        supervisorOfficerCode = supervisorOfficerCode,
         contactOutcomeId = contactOutcomeId,
         enforcementActionId = enforcementActionId,
         respondBy = respondBy,
@@ -128,7 +162,17 @@ class AppointmentMappersTest {
       assertThat(result.supervisingTeam).isEqualTo(supervisingTeam)
       assertThat(result.supervisingTeamCode).isEqualTo(supervisingTeamCode)
       assertThat(result.providerCode).isEqualTo(providerCode)
-      assertThat(result.attendanceData?.supervisorOfficerCode).isEqualTo(supervisorCode)
+
+      val pickUpData = result.pickUpData!!
+      assertThat(pickUpData.location!!.buildingName).isEqualTo(pickUpBuildingName)
+      assertThat(pickUpData.location.buildingNumber).isEqualTo(pickUpBuildingNumber)
+      assertThat(pickUpData.location.streetName).isEqualTo(pickUpStreetName)
+      assertThat(pickUpData.location.townCity).isEqualTo(pickUpTownCity)
+      assertThat(pickUpData.location.county).isEqualTo(pickUpCounty)
+      assertThat(pickUpData.location.postCode).isEqualTo(pickUpPostCode)
+      assertThat(pickUpData.time).isEqualTo(pickUpTime)
+
+      assertThat(result.attendanceData?.supervisorOfficerCode).isEqualTo(supervisorOfficerCode)
       assertThat(result.attendanceData?.penaltyTime).isEqualTo(penaltyTime)
       assertThat(result.attendanceData?.behaviour).isEqualTo(AppointmentBehaviourDto.SATISFACTORY)
       assertThat(result.attendanceData?.workQuality).isEqualTo(AppointmentWorkQualityDto.SATISFACTORY)

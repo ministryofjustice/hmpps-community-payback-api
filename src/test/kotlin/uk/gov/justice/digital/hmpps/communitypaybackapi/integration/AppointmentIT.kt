@@ -12,6 +12,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.entity.Appoi
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CaseName
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CaseSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CaseSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.Project
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.dto.FormKeyDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.entity.FormCacheEntity
@@ -98,8 +99,8 @@ class AppointmentIT : IntegrationTestBase() {
       CommunityPaybackAndDeliusMockServer.projectAppointment(
         ProjectAppointment.valid().copy(
           id = id,
-          projectName = projectName,
-          crn = crn,
+          project = Project.valid().copy(name = projectName),
+          case = CaseSummary.valid().copy(crn = crn),
         ),
       )
 
