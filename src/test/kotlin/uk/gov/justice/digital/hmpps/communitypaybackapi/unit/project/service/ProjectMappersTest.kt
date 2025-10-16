@@ -31,8 +31,6 @@ class ProjectMappersTest {
       val projectSessions = ProjectSessionSummaries(
         listOf(
           ProjectSummary(
-            id = 1L,
-            projectId = 101L,
             projectName = "Community Garden",
             date = LocalDate.of(2025, 9, 1),
             startTime = LocalTime.of(9, 0),
@@ -43,8 +41,6 @@ class ProjectMappersTest {
             enforcementActionNeededCount = 2,
           ),
           ProjectSummary(
-            id = 2L,
-            projectId = 102L,
             projectName = "Park Cleanup",
             date = LocalDate.of(2025, 9, 8),
             startTime = LocalTime.of(8, 0),
@@ -61,8 +57,6 @@ class ProjectMappersTest {
 
       assertThat(projectAllocationsDto.allocations).hasSize(2)
 
-      assertThat(projectAllocationsDto.allocations[0].id).isEqualTo(1L)
-      assertThat(projectAllocationsDto.allocations[0].projectId).isEqualTo(101L)
       assertThat(projectAllocationsDto.allocations[0].projectName).isEqualTo("Community Garden")
       assertThat(projectAllocationsDto.allocations[0].date).isEqualTo(LocalDate.of(2025, 9, 1))
       assertThat(projectAllocationsDto.allocations[0].startTime).isEqualTo(LocalTime.of(9, 0))
@@ -72,8 +66,6 @@ class ProjectMappersTest {
       assertThat(projectAllocationsDto.allocations[0].numberOfOffendersWithOutcomes).isEqualTo(1)
       assertThat(projectAllocationsDto.allocations[0].numberOfOffendersWithEA).isEqualTo(2)
 
-      assertThat(projectAllocationsDto.allocations[1].id).isEqualTo(2L)
-      assertThat(projectAllocationsDto.allocations[1].projectId).isEqualTo(102L)
       assertThat(projectAllocationsDto.allocations[1].projectName).isEqualTo("Park Cleanup")
       assertThat(projectAllocationsDto.allocations[1].date).isEqualTo(LocalDate.of(2025, 9, 8))
       assertThat(projectAllocationsDto.allocations[1].startTime).isEqualTo(LocalTime.of(8, 0))
@@ -90,8 +82,6 @@ class ProjectMappersTest {
     @Test
     fun `should map ProjectAllocation to DTO correctly`() {
       val projectAllocation = ProjectSummary(
-        id = 1L,
-        projectId = 2L,
         projectName = "Community Garden",
         date = LocalDate.of(2025, 9, 1),
         startTime = LocalTime.of(9, 0),
@@ -104,8 +94,8 @@ class ProjectMappersTest {
 
       assertThat(projectAllocation.toDto()).isEqualTo(
         SessionSummaryDto(
-          id = 1L,
-          projectId = 2L,
+          id = 0L,
+          projectId = 0L,
           projectName = "Community Garden",
           date = LocalDate.of(2025, 9, 1),
           startTime = LocalTime.of(9, 0),

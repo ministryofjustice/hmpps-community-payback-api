@@ -79,8 +79,6 @@ data class ProjectSessionSummaries(
 )
 
 data class ProjectSummary(
-  val id: Long,
-  val projectId: Long,
   val date: LocalDate,
   val projectName: String,
   val projectCode: String,
