@@ -17,7 +17,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectSum
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.RequirementProgress
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.UserAccess
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.dto.OffenderDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.bodyAsObject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.CommunityPaybackAndDeliusMockServer
 import uk.gov.justice.digital.hmpps.communitypaybackapi.project.dto.SessionDto

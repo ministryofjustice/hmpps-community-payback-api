@@ -26,6 +26,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.Provider
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.Team
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.dto.OffenderDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.service.OffenderInfoResult
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.entity.ContactOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.entity.EnforcementActionEntity

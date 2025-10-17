@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.communitypaybackapi.factory
+package uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client
 
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CaseSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.PickUpData
@@ -9,11 +9,14 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectApp
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.Provider
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.Team
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.random
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.randomLocalDate
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.randomLocalTime
 import java.util.UUID
 
 fun ProjectAppointment.Companion.valid() = ProjectAppointment(
-  id = Long.random(),
-  project = Project.valid(),
+  id = Long.Companion.random(),
+  project = Project.Companion.valid(),
   projectType = ProjectType.valid(),
   case = CaseSummary.valid(),
   team = Team.valid(),

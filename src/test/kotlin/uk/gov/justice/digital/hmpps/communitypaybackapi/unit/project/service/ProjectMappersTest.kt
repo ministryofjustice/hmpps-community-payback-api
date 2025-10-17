@@ -12,7 +12,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectSes
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.RequirementProgress
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.service.OffenderInfoResult
-import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.project.dto.SessionSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.project.service.toDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.project.service.toFullAddress
