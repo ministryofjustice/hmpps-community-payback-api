@@ -12,6 +12,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectLoc
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectSession
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectSessionSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectSessionSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.RequirementProgress
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.UserAccess
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.dto.OffenderDto
@@ -73,8 +74,8 @@ class ProjectsIT : IntegrationTestBase() {
       CommunityPaybackAndDeliusMockServer.getSessions(
         ProjectSessionSummaries(
           listOf(
-            ProjectSessionSummary.valid().copy(projectName = "Community Garden Maintenance"),
-            ProjectSessionSummary.valid().copy(projectName = "Park Cleanup"),
+            ProjectSessionSummary.valid().copy(project = ProjectSummary.valid().copy(name = "Community Garden Maintenance")),
+            ProjectSessionSummary.valid().copy(project = ProjectSummary.valid().copy(name = "Park Cleanup")),
           ),
         ),
       )
