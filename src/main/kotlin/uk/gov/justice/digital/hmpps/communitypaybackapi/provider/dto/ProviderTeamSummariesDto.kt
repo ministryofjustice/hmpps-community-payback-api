@@ -3,8 +3,9 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.provider.dto
 import io.swagger.v3.oas.annotations.media.Schema
 
 data class ProviderTeamSummaryDto(
-  @param:Schema(description = "Community Payback (UPW) provider team id", example = "1001")
-  val id: Long,
+  @Deprecated("Id will be removed")
+  @param:Schema(description = "Community Payback (UPW) provider team id", example = "1001", deprecated = true)
+  val id: Long? = null,
   @param:Schema(description = "Community Payback (UPW) provider team code", example = "ABD123")
   val code: String,
   @param:Schema(description = "Community Payback (UPW) provider team name", example = "Team Lincoln")

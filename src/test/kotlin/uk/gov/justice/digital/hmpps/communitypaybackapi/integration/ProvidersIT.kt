@@ -1,6 +1,6 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.integration
 
-import org.assertj.core.api.Assertions
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -71,9 +71,9 @@ class ProvidersIT : IntegrationTestBase() {
         .isOk
         .bodyAsObject<ProviderSummariesDto>()
 
-      Assertions.assertThat(providers.providers).hasSize(3)
-      Assertions.assertThat(providers.providers[0].id).isEqualTo(1L)
-      Assertions.assertThat(providers.providers[0].name).isEqualTo("Entry 1")
+      assertThat(providers.providers).hasSize(3)
+      assertThat(providers.providers[0].id).isEqualTo(1L)
+      assertThat(providers.providers[0].name).isEqualTo("Entry 1")
     }
   }
 
@@ -116,9 +116,9 @@ class ProvidersIT : IntegrationTestBase() {
         providerCode = "N123456789",
         ProviderTeamSummaries(
           listOf(
-            ProviderTeamSummary(11, code = "ABC123", "Team 1"),
-            ProviderTeamSummary(12, code = "DEF123", "Team 2"),
-            ProviderTeamSummary(13, code = "GHI123", "Team 3"),
+            ProviderTeamSummary(code = "ABC123", "Team 1"),
+            ProviderTeamSummary(code = "DEF123", "Team 2"),
+            ProviderTeamSummary(code = "GHI123", "Team 3"),
           ),
         ),
       )
@@ -131,9 +131,9 @@ class ProvidersIT : IntegrationTestBase() {
         .isOk
         .bodyAsObject<ProviderTeamSummariesDto>()
 
-      Assertions.assertThat(providers.providers).hasSize(3)
-      Assertions.assertThat(providers.providers[0].id).isEqualTo(11L)
-      Assertions.assertThat(providers.providers[0].name).isEqualTo("Team 1")
+      assertThat(providers.providers).hasSize(3)
+      assertThat(providers.providers[0].code).isEqualTo("ABC123")
+      assertThat(providers.providers[0].name).isEqualTo("Team 1")
     }
   }
 
@@ -179,11 +179,11 @@ class ProvidersIT : IntegrationTestBase() {
         .isOk
         .bodyAsObject<SupervisorSummariesDto>()
 
-      Assertions.assertThat(supervisors.supervisors).hasSize(2)
-      Assertions.assertThat(supervisors.supervisors[0].code).isEqualTo("FF01")
-      Assertions.assertThat(supervisors.supervisors[0].name).isEqualTo("Fred Flintstone [PO]")
-      Assertions.assertThat(supervisors.supervisors[1].code).isEqualTo("BR01")
-      Assertions.assertThat(supervisors.supervisors[1].name).isEqualTo("Barney Rubble [PO]")
+      assertThat(supervisors.supervisors).hasSize(2)
+      assertThat(supervisors.supervisors[0].code).isEqualTo("FF01")
+      assertThat(supervisors.supervisors[0].name).isEqualTo("Fred Flintstone [PO]")
+      assertThat(supervisors.supervisors[1].code).isEqualTo("BR01")
+      assertThat(supervisors.supervisors[1].name).isEqualTo("Barney Rubble [PO]")
     }
 
     @Test
@@ -200,7 +200,7 @@ class ProvidersIT : IntegrationTestBase() {
         .isOk
         .bodyAsObject<SupervisorSummariesDto>()
 
-      Assertions.assertThat(supervisors.supervisors).isEmpty()
+      assertThat(supervisors.supervisors).isEmpty()
     }
   }
 }
