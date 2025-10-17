@@ -95,9 +95,9 @@ object CommunityPaybackAndDeliusMockServer {
   ) {
     WireMock.stubFor(
       get(
-        "/community-payback-and-delius/projects/${projectSession.projectCode}/sessions/${projectSession.date.toIsoDateString()}" +
-          "?startTime=${projectSession.sessionStartTime.toHourMinuteString()}" +
-          "&endTime=${projectSession.sessionEndTime.toHourMinuteString()}",
+        "/community-payback-and-delius/projects/${projectSession.project.code}/sessions/${projectSession.date.toIsoDateString()}" +
+          "?startTime=${projectSession.startTime.toHourMinuteString()}" +
+          "&endTime=${projectSession.endTime.toHourMinuteString()}",
       )
         .willReturn(
           aResponse()

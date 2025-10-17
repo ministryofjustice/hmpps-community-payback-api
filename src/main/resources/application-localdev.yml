@@ -4,6 +4,13 @@
 # for why we can't (easily) configure this via env vars
 logging:
   level:
+    # Uncomment the two entries below to see SQL binding
+    #org.hibernate.orm.jdbc.bind: TRACE
+    #org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    # Log jdbc template queries
+    # allows us to see incoming requests
     org.springframework.web.filter.CommonsRequestLoggingFilter: DEBUG
+    # Uncomment the entry below to see upstream request URL and method
+    #reactor.netty.http.client.HttpClientConnect: DEBUG
   request:
     include-headers: true

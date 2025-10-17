@@ -90,11 +90,9 @@ data class ProjectSummary(
 )
 
 data class ProjectSession(
-  val projectName: String,
-  val projectCode: String,
-  val projectLocation: String,
-  val sessionStartTime: LocalTime,
-  val sessionEndTime: LocalTime,
+  val project: Project,
+  val startTime: LocalTime,
+  val endTime: LocalTime,
   val date: LocalDate,
   val appointmentSummaries: List<ProjectAppointmentSummary>,
 ) {
@@ -102,8 +100,14 @@ data class ProjectSession(
 }
 
 data class ProjectAppointmentSummary(
-  val appointmentId: Long,
-  val crn: String,
+  val id: Long,
+  val case: CaseSummary,
+  val requirementProgress: RequirementProgress,
+) {
+  companion object
+}
+
+data class RequirementProgress(
   val requirementMinutes: Int,
   val completedMinutes: Int,
 ) {
@@ -156,23 +160,23 @@ data class PickUpData(
 }
 
 data class PickUpLocation(
-  val buildingName: String?,
-  val buildingNumber: String?,
-  val streetName: String?,
-  val townCity: String?,
-  val county: String?,
-  val postCode: String?,
+  val buildingName: String? = null,
+  val buildingNumber: String? = null,
+  val streetName: String? = null,
+  val townCity: String? = null,
+  val county: String? = null,
+  val postCode: String? = null,
 ) {
   companion object
 }
 
 data class ProjectLocation(
-  val buildingName: String?,
-  val addressNumber: String?,
-  val streetName: String?,
-  val townCity: String?,
-  val county: String?,
-  val postCode: String?,
+  val buildingName: String? = null,
+  val addressNumber: String? = null,
+  val streetName: String? = null,
+  val townCity: String? = null,
+  val county: String? = null,
+  val postCode: String? = null,
 ) {
   companion object
 }
