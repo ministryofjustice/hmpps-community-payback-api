@@ -70,7 +70,7 @@ class ProjectsIT : IntegrationTestBase() {
 
     @Test
     fun `should return OK with project session summaries`() {
-      CommunityPaybackAndDeliusMockServer.projectSessionSummaries(
+      CommunityPaybackAndDeliusMockServer.getSessions(
         ProjectSessionSummaries(
           listOf(
             ProjectSummary(
@@ -118,7 +118,7 @@ class ProjectsIT : IntegrationTestBase() {
 
     @Test
     fun `should return empty list when no session summaries found`() {
-      CommunityPaybackAndDeliusMockServer.projectSessionSummaries(
+      CommunityPaybackAndDeliusMockServer.getSessions(
         ProjectSessionSummaries(emptyList()),
       )
 

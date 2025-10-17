@@ -52,11 +52,11 @@ object CommunityPaybackAndDeliusMockServer {
     )
   }
 
-  fun projectSessionSummaries(
+  fun getSessions(
     projectSessions: ProjectSessionSummaries,
   ) {
     WireMock.stubFor(
-      get("/community-payback-and-delius/projects/session-search?startDate=2025-01-09&endDate=2025-07-09&teamCode=999")
+      get("/community-payback-and-delius/sessions?startDate=2025-01-09&endDate=2025-07-09&teamCode=999")
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")

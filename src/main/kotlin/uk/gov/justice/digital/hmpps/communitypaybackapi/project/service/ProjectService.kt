@@ -16,7 +16,7 @@ class ProjectService(
     startDate: LocalDate,
     endDate: LocalDate,
     teamCode: String,
-  ) = communityPaybackAndDeliusClient.getProjectSessions(startDate, endDate, teamCode).toDto()
+  ) = communityPaybackAndDeliusClient.getSessions(startDate, endDate, teamCode).toDto()
 
   fun getSession(
     projectCode: String,
