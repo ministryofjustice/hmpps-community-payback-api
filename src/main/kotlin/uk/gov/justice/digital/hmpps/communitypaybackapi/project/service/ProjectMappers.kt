@@ -4,7 +4,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectApp
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectLocation
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectSession
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectSessionSummaries
-import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectSessionSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.service.OffenderInfoResult
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.service.toDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.project.dto.AppointmentSummaryDto
@@ -13,11 +13,11 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.project.dto.SessionSumma
 import uk.gov.justice.digital.hmpps.communitypaybackapi.project.dto.SessionSummaryDto
 
 fun ProjectSessionSummaries.toDto() = SessionSummariesDto(this.sessions.map { it.toDto() })
-fun ProjectSummary.toDto() = SessionSummaryDto(
+fun ProjectSessionSummary.toDto() = SessionSummaryDto(
   id = 0,
   projectId = 0,
-  projectName = this.projectName,
-  projectCode = this.projectCode,
+  projectName = this.project.name,
+  projectCode = this.project.code,
   date = this.date,
   startTime = this.startTime,
   endTime = this.endTime,

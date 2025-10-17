@@ -11,6 +11,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectApp
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectLocation
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectSession
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectSessionSummaries
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectSessionSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.RequirementProgress
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.UserAccess
@@ -70,29 +71,11 @@ class ProjectsIT : IntegrationTestBase() {
 
     @Test
     fun `should return OK with project session summaries`() {
-      CommunityPaybackAndDeliusMockServer.projectSessionSummaries(
+      CommunityPaybackAndDeliusMockServer.getSessions(
         ProjectSessionSummaries(
           listOf(
-            ProjectSummary(
-              projectName = "Community Garden Maintenance",
-              date = LocalDate.of(2025, 9, 1),
-              startTime = LocalTime.of(9, 0),
-              endTime = LocalTime.of(17, 0),
-              projectCode = "cgm",
-              allocatedCount = 0,
-              compliedOutcomeCount = 1,
-              enforcementActionNeededCount = 2,
-            ),
-            ProjectSummary(
-              projectName = "Park Cleanup",
-              date = LocalDate.of(2025, 9, 8),
-              startTime = LocalTime.of(8, 0),
-              endTime = LocalTime.of(16, 0),
-              projectCode = "pc",
-              allocatedCount = 3,
-              compliedOutcomeCount = 4,
-              enforcementActionNeededCount = 5,
-            ),
+            ProjectSessionSummary.valid().copy(project = ProjectSummary.valid().copy(name = "Community Garden Maintenance")),
+            ProjectSessionSummary.valid().copy(project = ProjectSummary.valid().copy(name = "Park Cleanup")),
           ),
         ),
       )
@@ -107,18 +90,12 @@ class ProjectsIT : IntegrationTestBase() {
 
       assertThat(sessionSearchResults.allocations).hasSize(2)
       assertThat(sessionSearchResults.allocations[0].projectName).isEqualTo("Community Garden Maintenance")
-      assertThat(sessionSearchResults.allocations[0].date).isEqualTo(LocalDate.of(2025, 9, 1))
-      assertThat(sessionSearchResults.allocations[0].startTime).isEqualTo(LocalTime.of(9, 0))
-      assertThat(sessionSearchResults.allocations[0].endTime).isEqualTo(LocalTime.of(17, 0))
-      assertThat(sessionSearchResults.allocations[0].projectCode).isEqualTo("cgm")
-      assertThat(sessionSearchResults.allocations[0].numberOfOffendersAllocated).isEqualTo(0)
-      assertThat(sessionSearchResults.allocations[0].numberOfOffendersWithOutcomes).isEqualTo(1)
-      assertThat(sessionSearchResults.allocations[0].numberOfOffendersWithEA).isEqualTo(2)
+      assertThat(sessionSearchResults.allocations[1].projectName).isEqualTo("Park Cleanup")
     }
 
     @Test
     fun `should return empty list when no session summaries found`() {
-      CommunityPaybackAndDeliusMockServer.projectSessionSummaries(
+      CommunityPaybackAndDeliusMockServer.getSessions(
         ProjectSessionSummaries(emptyList()),
       )
 

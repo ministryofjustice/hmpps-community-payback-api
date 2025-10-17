@@ -9,6 +9,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectApp
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectLocation
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectSession
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectSessionSummaries
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectSessionSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.RequirementProgress
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.service.OffenderInfoResult
@@ -28,22 +29,26 @@ class ProjectMappersTest {
     fun `should map ProjectAllocations to DTO correctly`() {
       val projectSessions = ProjectSessionSummaries(
         listOf(
-          ProjectSummary(
-            projectName = "Community Garden",
+          ProjectSessionSummary(
+            project = ProjectSummary(
+              code = "cg",
+              name = "Community Garden",
+            ),
             date = LocalDate.of(2025, 9, 1),
             startTime = LocalTime.of(9, 0),
             endTime = LocalTime.of(17, 0),
-            projectCode = "cg",
             allocatedCount = 0,
             compliedOutcomeCount = 1,
             enforcementActionNeededCount = 2,
           ),
-          ProjectSummary(
-            projectName = "Park Cleanup",
+          ProjectSessionSummary(
+            project = ProjectSummary(
+              code = "pc",
+              name = "Park Cleanup",
+            ),
             date = LocalDate.of(2025, 9, 8),
             startTime = LocalTime.of(8, 0),
             endTime = LocalTime.of(16, 0),
-            projectCode = "pc",
             allocatedCount = 3,
             compliedOutcomeCount = 4,
             enforcementActionNeededCount = 5,
@@ -79,12 +84,14 @@ class ProjectMappersTest {
   inner class ProjectAllocationMapper {
     @Test
     fun `should map ProjectAllocation to DTO correctly`() {
-      val projectAllocation = ProjectSummary(
-        projectName = "Community Garden",
+      val projectAllocation = ProjectSessionSummary(
+        project = ProjectSummary(
+          code = "cg",
+          name = "Community Garden",
+        ),
         date = LocalDate.of(2025, 9, 1),
         startTime = LocalTime.of(9, 0),
         endTime = LocalTime.of(17, 0),
-        projectCode = "cg",
         allocatedCount = 40,
         compliedOutcomeCount = 0,
         enforcementActionNeededCount = 0,

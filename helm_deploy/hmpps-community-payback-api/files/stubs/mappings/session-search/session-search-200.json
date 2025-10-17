@@ -12,7 +12,7 @@
         "matches": "N56DTX"
       }
     },
-    "urlPath": "/projects/session-search"
+    "urlPath": "/sessions"
   },
   "response": {
     "status": 200,

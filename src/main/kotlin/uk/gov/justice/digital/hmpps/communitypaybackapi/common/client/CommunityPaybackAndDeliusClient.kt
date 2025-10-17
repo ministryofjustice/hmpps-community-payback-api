@@ -17,8 +17,8 @@ interface CommunityPaybackAndDeliusClient {
   @GetExchange("/providers/{providerCode}/teams")
   fun getProviderTeams(@PathVariable providerCode: String): ProviderTeamSummaries
 
-  @GetExchange("/projects/session-search")
-  fun getProjectSessions(
+  @GetExchange("/sessions")
+  fun getSessions(
     @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) startDate: LocalDate,
     @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) endDate: LocalDate,
     @RequestParam teamCode: String,
@@ -68,19 +68,20 @@ data class ProviderTeamSummary(
   val description: String,
 )
 data class ProjectSessionSummaries(
-  val sessions: List<ProjectSummary>,
+  val sessions: List<ProjectSessionSummary>,
 )
 
-data class ProjectSummary(
+data class ProjectSessionSummary(
   val date: LocalDate,
-  val projectName: String,
-  val projectCode: String,
+  val project: ProjectSummary,
   val startTime: LocalTime,
   val endTime: LocalTime,
   val allocatedCount: Int,
   val compliedOutcomeCount: Int,
   val enforcementActionNeededCount: Int,
-)
+) {
+  companion object
+}
 
 data class ProjectSession(
   val project: Project,
@@ -133,6 +134,9 @@ data class ProjectAppointment(
 }
 
 data class Project(val name: String, val code: String, val location: ProjectLocation) {
+  companion object
+}
+data class ProjectSummary(val name: String, val code: String) {
   companion object
 }
 data class ProjectType(val name: String, val code: String) {
