@@ -89,13 +89,14 @@ object CommunityPaybackAndDeliusMockServer {
 
   fun LocalTime.toHourMinuteString(): String = URLEncoder.encode(this.format(DateTimeFormatter.ofPattern("HH:mm")), "UTF-8")
 
-  fun projectSessions(
+  fun getProjectSession(
     projectSession: ProjectSession,
   ) {
     WireMock.stubFor(
       get(
-        "/community-payback-and-delius/projects/${projectSession.project.code}/sessions/${projectSession.date.toIsoDateString()}" +
-          "?startTime=${projectSession.startTime.toHourMinuteString()}" +
+        "/community-payback-and-delius/projects/${projectSession.project.code}/sessions/appointments" +
+          "?date=${projectSession.date.toIsoDateString()}" +
+          "&startTime=${projectSession.startTime.toHourMinuteString()}" +
           "&endTime=${projectSession.endTime.toHourMinuteString()}",
       )
         .willReturn(

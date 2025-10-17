@@ -179,7 +179,7 @@ class ProjectsIT : IntegrationTestBase() {
 
     @Test
     fun `should return OK with project session`() {
-      CommunityPaybackAndDeliusMockServer.projectSessions(
+      CommunityPaybackAndDeliusMockServer.getProjectSession(
         ProjectSession(
           project = Project(
             name = "Community Garden Maintenance",
@@ -236,7 +236,7 @@ class ProjectsIT : IntegrationTestBase() {
 
     @Test
     fun `Correctly handles limited offenders`() {
-      CommunityPaybackAndDeliusMockServer.projectSessions(
+      CommunityPaybackAndDeliusMockServer.getProjectSession(
         ProjectSession(
           project = Project(
             name = "Community Garden Maintenance",
