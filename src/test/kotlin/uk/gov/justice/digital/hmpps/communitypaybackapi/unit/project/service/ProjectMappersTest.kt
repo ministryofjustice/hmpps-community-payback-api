@@ -10,6 +10,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectLoc
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectSession
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectSessionSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectSessionSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.RequirementProgress
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.service.OffenderInfoResult
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
@@ -29,21 +30,25 @@ class ProjectMappersTest {
       val projectSessions = ProjectSessionSummaries(
         listOf(
           ProjectSessionSummary(
-            projectName = "Community Garden",
+            project = ProjectSummary(
+              code = "cg",
+              name = "Community Garden",
+            ),
             date = LocalDate.of(2025, 9, 1),
             startTime = LocalTime.of(9, 0),
             endTime = LocalTime.of(17, 0),
-            projectCode = "cg",
             allocatedCount = 0,
             compliedOutcomeCount = 1,
             enforcementActionNeededCount = 2,
           ),
           ProjectSessionSummary(
-            projectName = "Park Cleanup",
+            project = ProjectSummary(
+              code = "pc",
+              name = "Park Cleanup",
+            ),
             date = LocalDate.of(2025, 9, 8),
             startTime = LocalTime.of(8, 0),
             endTime = LocalTime.of(16, 0),
-            projectCode = "pc",
             allocatedCount = 3,
             compliedOutcomeCount = 4,
             enforcementActionNeededCount = 5,
@@ -80,11 +85,13 @@ class ProjectMappersTest {
     @Test
     fun `should map ProjectAllocation to DTO correctly`() {
       val projectAllocation = ProjectSessionSummary(
-        projectName = "Community Garden",
+        project = ProjectSummary(
+          code = "cg",
+          name = "Community Garden",
+        ),
         date = LocalDate.of(2025, 9, 1),
         startTime = LocalTime.of(9, 0),
         endTime = LocalTime.of(17, 0),
-        projectCode = "cg",
         allocatedCount = 40,
         compliedOutcomeCount = 0,
         enforcementActionNeededCount = 0,
