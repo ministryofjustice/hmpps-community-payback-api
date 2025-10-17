@@ -14,8 +14,8 @@ interface CommunityPaybackAndDeliusClient {
   @GetExchange("/providers")
   fun providers(): ProviderSummaries
 
-  @GetExchange("/teams")
-  fun providerTeams(@RequestParam providerCode: String): ProviderTeamSummaries
+  @GetExchange("/providers/{providerCode}/teams")
+  fun getProviderTeams(@PathVariable providerCode: String): ProviderTeamSummaries
 
   @GetExchange("/projects/session-search")
   fun getProjectSessions(
