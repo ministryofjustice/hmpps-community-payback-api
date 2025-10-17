@@ -1,12 +1,7 @@
 {
   "request": {
     "method": "GET",
-    "queryParameters": {
-      "providerCode": {
-        "matches": "N56"
-      }
-    },
-    "urlPath": "/teams"
+    "urlPath": "/providers/N56/teams"
   },
   "response": {
     "status": 200,
