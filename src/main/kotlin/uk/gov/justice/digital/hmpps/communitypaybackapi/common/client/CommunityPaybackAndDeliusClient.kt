@@ -80,7 +80,9 @@ data class ProjectSessionSummary(
   val allocatedCount: Int,
   val compliedOutcomeCount: Int,
   val enforcementActionNeededCount: Int,
-)
+) {
+  companion object
+}
 
 data class ProjectSession(
   val project: Project,
