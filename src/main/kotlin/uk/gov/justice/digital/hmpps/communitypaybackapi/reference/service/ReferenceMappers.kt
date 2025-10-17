@@ -17,4 +17,4 @@ fun List<ContactOutcomeEntity>.toDto() = ContactOutcomesDto(this.map { it.toDto(
 fun ContactOutcomeEntity.toDto() = ContactOutcomeDto(this.id, this.name, this.code, this.enforceable)
 
 fun List<EnforcementActionEntity>.toDto() = EnforcementActionsDto(this.map { it.toDto() })
-fun EnforcementActionEntity.toDto() = EnforcementActionDto(this.id, this.name, this.code)
+fun EnforcementActionEntity.toDto() = EnforcementActionDto(this.id, this.name, this.code, this.respondByDateRequired)

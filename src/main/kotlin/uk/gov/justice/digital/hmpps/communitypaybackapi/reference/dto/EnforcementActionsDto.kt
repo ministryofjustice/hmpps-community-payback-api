@@ -10,6 +10,8 @@ data class EnforcementActionDto(
   val name: String,
   @param:Schema(description = "Enforcement outcome code", example = "BRE02")
   val code: String,
+  @param:Schema(description = "Indicates if 'respondByDateRequired' is required on this enforcement outcome", example = "false")
+  val respondByDateRequired: Boolean,
 )
 
 data class EnforcementActionsDto(

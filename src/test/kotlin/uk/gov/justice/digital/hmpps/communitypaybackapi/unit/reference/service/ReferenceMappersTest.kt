@@ -174,11 +174,13 @@ class ReferenceMappersTest {
           id = UUID.fromString("070cfb0a-6fc2-44cb-994f-25ec4839ef60"),
           name = "Refer to Offender Manager",
           code = "ROM",
+          respondByDateRequired = true,
         ),
         EnforcementActionEntity(
           id = UUID.fromString("068dbac5-fe96-4d84-b621-84f3af83ac28"),
           name = "Breach / Recall Initiated",
           code = "IBR",
+          respondByDateRequired = false,
         ),
       )
 
@@ -204,6 +206,7 @@ class ReferenceMappersTest {
         id = UUID.fromString("070cfb0a-6fc2-44cb-994f-25ec4839ef60"),
         name = "Refer to Offender Manager",
         code = "ROM",
+        respondByDateRequired = true,
       )
 
       assertThat(enforcementAction.toDto()).isEqualTo(
@@ -211,6 +214,7 @@ class ReferenceMappersTest {
           id = UUID.fromString("070cfb0a-6fc2-44cb-994f-25ec4839ef60"),
           name = "Refer to Offender Manager",
           code = "ROM",
+          respondByDateRequired = true,
         ),
       )
     }
