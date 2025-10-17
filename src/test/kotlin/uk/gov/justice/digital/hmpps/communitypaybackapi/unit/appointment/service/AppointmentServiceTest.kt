@@ -35,6 +35,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.common.service.FormServi
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.service.OffenderInfoResult
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.service.OffenderService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.service.PersonReferenceType
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.unit.util.WebClientResponseExceptionFactory
 import java.time.LocalDate

@@ -17,6 +17,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectApp
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.dto.FormKeyDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.entity.FormCacheEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.entity.FormCacheEntityRepository
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.DomainEventListener
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.bodyAsObject
