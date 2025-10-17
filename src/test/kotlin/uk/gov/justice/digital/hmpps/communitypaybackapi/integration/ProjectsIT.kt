@@ -8,12 +8,16 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CaseAccess
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CaseName
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CaseSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CaseSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.Project
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAppointmentSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectLocation
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectSession
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectSessionSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.RequirementProgress
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.UserAccess
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.dto.OffenderDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.bodyAsObject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.CommunityPaybackAndDeliusMockServer
 import uk.gov.justice.digital.hmpps.communitypaybackapi.project.dto.SessionDto
@@ -179,24 +183,33 @@ class ProjectsIT : IntegrationTestBase() {
     fun `should return OK with project session`() {
       CommunityPaybackAndDeliusMockServer.projectSessions(
         ProjectSession(
-          projectName = "Community Garden Maintenance",
-          projectCode = "N123456789",
-          projectLocation = "Somwhere Lane, Surrey",
-          sessionStartTime = LocalTime.of(9, 0),
-          sessionEndTime = LocalTime.of(17, 0),
+          project = Project(
+            name = "Community Garden Maintenance",
+            code = "N123456789",
+            location = ProjectLocation(
+              streetName = "Somehere Lane",
+              county = "Surrey",
+            ),
+          ),
+          startTime = LocalTime.of(9, 0),
+          endTime = LocalTime.of(17, 0),
           date = LocalDate.of(2025, 1, 9),
           appointmentSummaries = listOf(
             ProjectAppointmentSummary(
-              appointmentId = 1L,
-              crn = "CRN1",
-              requirementMinutes = 520,
-              completedMinutes = 30,
+              id = 1L,
+              case = CaseSummary.valid().copy(crn = "CRN1"),
+              requirementProgress = RequirementProgress(
+                requirementMinutes = 520,
+                completedMinutes = 30,
+              ),
             ),
             ProjectAppointmentSummary(
-              appointmentId = 2L,
-              crn = "CRN2",
-              requirementMinutes = 600,
-              completedMinutes = 60,
+              id = 2L,
+              case = CaseSummary.valid().copy(crn = "CRN2"),
+              requirementProgress = RequirementProgress(
+                requirementMinutes = 600,
+                completedMinutes = 60,
+              ),
             ),
           ),
         ),
@@ -237,24 +250,33 @@ class ProjectsIT : IntegrationTestBase() {
     fun `Correctly handles limited and not found offenders`() {
       CommunityPaybackAndDeliusMockServer.projectSessions(
         ProjectSession(
-          projectName = "Community Garden Maintenance",
-          projectCode = "N123456789",
-          projectLocation = "Somwhere Lane, Surrey",
-          sessionStartTime = LocalTime.of(9, 0),
-          sessionEndTime = LocalTime.of(17, 0),
+          project = Project(
+            name = "Community Garden Maintenance",
+            code = "N123456789",
+            location = ProjectLocation(
+              streetName = "Somehere Lane",
+              county = "Surrey",
+            ),
+          ),
+          startTime = LocalTime.of(9, 0),
+          endTime = LocalTime.of(17, 0),
           date = LocalDate.of(2025, 1, 9),
           appointmentSummaries = listOf(
             ProjectAppointmentSummary(
-              appointmentId = 1L,
-              crn = "CRN1",
-              requirementMinutes = 520,
-              completedMinutes = 30,
+              id = 1L,
+              case = CaseSummary.valid().copy(crn = "CRN1"),
+              requirementProgress = RequirementProgress(
+                requirementMinutes = 520,
+                completedMinutes = 30,
+              ),
             ),
             ProjectAppointmentSummary(
-              appointmentId = 2L,
-              crn = "CRN2",
-              requirementMinutes = 600,
-              completedMinutes = 60,
+              id = 2L,
+              case = CaseSummary.valid().copy(crn = "CRN2"),
+              requirementProgress = RequirementProgress(
+                requirementMinutes = 600,
+                completedMinutes = 60,
+              ),
             ),
           ),
         ),

@@ -3,14 +3,19 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.unit.project.service
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.service.toDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CaseSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.Project
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAppointmentSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectLocation
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectSession
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectSessionSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.RequirementProgress
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.service.OffenderInfoResult
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.project.dto.SessionSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.project.service.toDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.project.service.toFullAddress
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -107,24 +112,37 @@ class ProjectMappersTest {
     @Test
     fun `should map ProjectSession to DTO correctly`() {
       val projectSession = ProjectSession(
-        projectName = "Park Cleanup",
-        projectCode = "N987654321",
-        projectLocation = "Somwhere Lane, Surrey",
+        project = Project(
+          name = "Park Cleanup",
+          code = "N987654321",
+          location = ProjectLocation(
+            buildingName = "The Tower",
+            addressNumber = "1a",
+            streetName = "Somewhere Lane",
+            townCity = "Guildford",
+            county = "Surrey",
+            postCode = "AA11 234",
+          ),
+        ),
         date = LocalDate.of(2025, 9, 8),
-        sessionStartTime = LocalTime.of(8, 0),
-        sessionEndTime = LocalTime.of(16, 0),
+        startTime = LocalTime.of(8, 0),
+        endTime = LocalTime.of(16, 0),
         appointmentSummaries = listOf(
           ProjectAppointmentSummary(
-            appointmentId = 1L,
-            requirementMinutes = 520,
-            completedMinutes = 30,
-            crn = "CRN1",
+            id = 1L,
+            case = CaseSummary.valid().copy(crn = "CRN1"),
+            requirementProgress = RequirementProgress(
+              requirementMinutes = 520,
+              completedMinutes = 30,
+            ),
           ),
           ProjectAppointmentSummary(
-            appointmentId = 2L,
-            requirementMinutes = 20,
-            completedMinutes = 10,
-            crn = "CRN2",
+            id = 2L,
+            case = CaseSummary.valid().copy(crn = "CRN2"),
+            requirementProgress = RequirementProgress(
+              requirementMinutes = 20,
+              completedMinutes = 10,
+            ),
           ),
         ),
       )
@@ -138,7 +156,7 @@ class ProjectMappersTest {
 
       assertThat(result.projectName).isEqualTo("Park Cleanup")
       assertThat(result.projectCode).isEqualTo("N987654321")
-      assertThat(result.projectLocation).isEqualTo("Somwhere Lane, Surrey")
+      assertThat(result.projectLocation).isEqualTo("The Tower, 1a Somewhere Lane, Guildford, Surrey, AA11 234")
       assertThat(result.date).isEqualTo(LocalDate.of(2025, 9, 8))
       assertThat(result.startTime).isEqualTo(LocalTime.of(8, 0))
       assertThat(result.endTime).isEqualTo(LocalTime.of(16, 0))
@@ -152,6 +170,52 @@ class ProjectMappersTest {
       assertThat(result.appointmentSummaries[1].requirementMinutes).isEqualTo(20)
       assertThat(result.appointmentSummaries[1].completedMinutes).isEqualTo(10)
       assertThat(result.appointmentSummaries[1].offender).isNotNull
+    }
+  }
+
+  @Nested
+  inner class ProjectLocation {
+
+    @Test
+    fun `empty location mapped to empty string`() {
+      assertThat(
+        ProjectLocation(
+          buildingName = null,
+          addressNumber = null,
+          streetName = null,
+          townCity = null,
+          county = null,
+          postCode = null,
+        ).toFullAddress(),
+      ).isEqualTo("")
+    }
+
+    @Test
+    fun `no address number`() {
+      assertThat(
+        ProjectLocation(
+          buildingName = "building",
+          addressNumber = null,
+          streetName = "street",
+          townCity = "townCity",
+          county = null,
+          postCode = "postcode",
+        ).toFullAddress(),
+      ).isEqualTo("building, street, townCity, postcode")
+    }
+
+    @Test
+    fun `all fields provided`() {
+      assertThat(
+        ProjectLocation(
+          buildingName = "building",
+          addressNumber = "address",
+          streetName = "street",
+          townCity = "townCity",
+          county = "county",
+          postCode = "postcode",
+        ).toFullAddress(),
+      ).isEqualTo("building, address street, townCity, county, postcode")
     }
   }
 }

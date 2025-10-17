@@ -1,28 +1,70 @@
 {
-  "projectName" : "Cleaning Streets",
-  "projectCode" : "N56123456",
-  "projectLocation": "15 Market Square, Peterborough, Cambridgeshire, PE1 1UD",
+  "project": {
+    "name": "Cleaning Streets",
+    "code": "N56123456",
+    "location": {
+      "streetName": "Peter Street",
+      "buildingName": null,
+      "addressNumber": "90",
+      "townCity": "Salford",
+      "county": null,
+      "postCode": "M5 560"
+    }
+  },
   "date": "2025-09-15",
-  "sessionStartTime" : "09:00",
-  "sessionEndTime" : "17:00",
+  "startTime" : "09:00",
+  "endTime" : "17:00",
   "appointmentSummaries": [
     {
-      "appointmentId": "2500629219",
-      "crn": "X948762",
-      "requirementMinutes": "1200000",
-      "completedMinutes": "3000"
+      "id": "2500629219",
+      "case": {
+        "crn": "X948762",
+        "name": {
+          "forename": "Harry",
+          "surname": "Wormwood",
+          "middleNames": []
+        },
+        "currentExclusion": false,
+        "currentRestriction": false
+      },
+      "requirementProgress": {
+        "requirementMinutes": "1200000",
+        "completedMinutes": "3000"
+      }
     },
     {
-      "appointmentId": "2500629735",
-      "crn": "X949551",
-      "requirementMinutes": "1200000",
-      "completedMinutes": "0"
+      "id": "2500629735",
+      "case": {
+        "crn": "X949551",
+        "name": {
+          "forename": "Agatha",
+          "surname": "Trunchbull",
+          "middleNames": []
+        },
+        "currentExclusion": false,
+        "currentRestriction": false
+      },
+      "requirementProgress": {
+        "requirementMinutes": "1200000",
+        "completedMinutes": "0"
+      }
     },
     {
-      "appointmentId": "2500628309",
-      "crn": "X949351",
-      "requirementMinutes": "1200000",
-      "completedMinutes": "1000"
+      "id": "2500628309",
+      "case": {
+        "crn": "X949351",
+        "name": {
+          "forename": "Zinnia",
+          "surname": "Wormwood",
+          "middleNames": []
+        },
+        "currentExclusion": false,
+        "currentRestriction": false
+      },
+      "requirementProgress": {
+        "requirementMinutes": "1200000",
+        "completedMinutes": "1000"
+      }
     }
   ]
 }

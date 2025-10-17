@@ -1,16 +1,36 @@
 {
-  "projectName" : "Test regional project",
-  "projectCode" : "N56777777",
-  "projectLocation": "Test Regional Location, UK",
+  "project": {
+    "name": "Test regional project",
+    "code": "N56777777",
+    "location": {
+      "streetName": "Some Street",
+      "buildingName": null,
+      "addressNumber": "25",
+      "townCity": "Corby",
+      "county": null,
+      "postCode": "NN15 5AA"
+    }
+  },
   "date" : "2025-09-22",
-  "sessionStartTime" : "09:00",
-  "sessionEndTime" : "17:00",
+  "startTime" : "09:00",
+  "endTime" : "17:00",
   "appointmentSummaries": [
     {
-      "appointmentId": "2500630001",
-      "crn": "X123456",
-      "requirementMinutes": "1200000",
-      "completedMinutes": "0"
+      "id": "2500630001",
+      "case": {
+        "crn": "X123456",
+        "name": {
+          "forename": "John",
+          "surname": "Example",
+          "middleNames": []
+        },
+        "currentExclusion": false,
+        "currentRestriction": false
+      },
+      "requirementProgress": {
+        "requirementMinutes": "1200000",
+        "completedMinutes": "0"
+      }
     }
   ]
 }
