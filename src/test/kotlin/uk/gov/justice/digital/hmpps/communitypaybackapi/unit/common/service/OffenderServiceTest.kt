@@ -17,7 +17,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.AllRoshRis
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ArnsClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CaseAccess
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CaseName
-import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CaseSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CaseSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CommunityPaybackAndDeliusClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.OverallRiskLevel
@@ -53,7 +52,7 @@ class OffenderServiceTest {
   private lateinit var service: OffenderService
 
   @Nested
-  inner class GetOffenderInfo {
+  inner class ToOffenderInfo {
 
     @BeforeEach
     fun setupMocks() {
@@ -61,34 +60,14 @@ class OffenderServiceTest {
     }
 
     @Test
-    fun `No CRNs, returns empty list`() {
+    fun `No case summaries provided, return empty list`() {
       assertThat(
-        service.getOffenderInfo(emptySet()),
+        service.toOffenderInfos(emptyList()),
       ).isEmpty()
     }
 
     @Test
-    fun `Requested number of CRNs exceeds batch size, throws exception`() {
-      assertThatThrownBy {
-        service.getOffenderInfo((1..501).map { it.toString() }.toSet())
-      }.hasMessage("Can only request up-to 500 CRNs. Have requested 501.")
-    }
-
-    @Test
-    fun `Offender not found`() {
-      every { communityPaybackAndDeliusClient.getCaseSummaries(setOf(CRN1)) } returns CaseSummaries(emptyList())
-
-      val result = service.getOffenderInfo(setOf(CRN1))
-
-      assertThat(result).hasSize(1)
-
-      val result1 = result[0]
-      assertThat(result1).isInstanceOf(OffenderInfoResult.NotFound::class.java)
-      assertThat(result1.crn).isEqualTo(CRN1)
-    }
-
-    @Test
-    fun `No limited access offenders, don't call user access endpoint`() {
+    fun `No limited access offenders in provided case summaries, don't call user access endpoint`() {
       val crn1CaseSummary = CaseSummary(
         crn = CRN1,
         name = CaseName(forename = "fn1", surname = "cn1"),
@@ -99,11 +78,7 @@ class OffenderServiceTest {
         name = CaseName(forename = "fn2", surname = "cn2"),
       )
 
-      every {
-        communityPaybackAndDeliusClient.getCaseSummaries(setOf(CRN1, CRN2))
-      } returns CaseSummaries(listOf(crn1CaseSummary, crn2CaseSummary))
-
-      val result = service.getOffenderInfo(setOf(CRN1, CRN2))
+      val result = service.toOffenderInfos(listOf(crn1CaseSummary, crn2CaseSummary))
 
       assertThat(result).hasSize(2)
 
@@ -123,7 +98,7 @@ class OffenderServiceTest {
     }
 
     @Test
-    fun `Offender has limited access, but user can access them`() {
+    fun `Offender with restriction that doesn't apply to the user, return full offender info`() {
       val crn1CaseSummary = CaseSummary(
         crn = CRN1,
         name = CaseName(forename = "fn1", surname = "cn1"),
@@ -131,13 +106,11 @@ class OffenderServiceTest {
         currentRestriction = true,
       )
 
-      every { communityPaybackAndDeliusClient.getCaseSummaries(setOf(CRN1)) } returns CaseSummaries(listOf(crn1CaseSummary))
-
       every {
         communityPaybackAndDeliusClient.getUsersAccess(USERNAME, setOf(CRN1))
       } returns UserAccess(listOf(CaseAccess(CRN1, userExcluded = false, userRestricted = false)))
 
-      val result = service.getOffenderInfo(setOf(CRN1))
+      val result = service.toOffenderInfos(listOf(crn1CaseSummary))
 
       assertThat(result).hasSize(1)
 
@@ -153,7 +126,7 @@ class OffenderServiceTest {
       "true,false",
       "false,true",
     )
-    fun `Offender has limited access that apply to user`(
+    fun `Offender with limited access that applies to the user, return limited offender`(
       isExcluded: Boolean,
       isRestricted: Boolean,
     ) {
@@ -164,13 +137,11 @@ class OffenderServiceTest {
         currentRestriction = isRestricted,
       )
 
-      every { communityPaybackAndDeliusClient.getCaseSummaries(setOf(CRN1)) } returns CaseSummaries(listOf(crn1CaseSummary))
-
       every {
         communityPaybackAndDeliusClient.getUsersAccess(USERNAME, setOf(CRN1))
       } returns UserAccess(listOf(CaseAccess(CRN1, isExcluded, isRestricted)))
 
-      val result = service.getOffenderInfo(setOf(CRN1))
+      val result = service.toOffenderInfos(listOf(crn1CaseSummary))
 
       assertThat(result).hasSize(1)
 
@@ -180,60 +151,52 @@ class OffenderServiceTest {
     }
 
     /**
-     * CRN1 - not found
-     * CRN2 - not limited
-     * CRN3 - restricted
-     * CRN4 - excluded
+     * CRN1 - not limited
+     * CRN2 - restricted
+     * CRN3 - excluded
      */
     @Test
     fun `All variations in one result`() {
-      val crn2CaseSummary = CaseSummary(
-        crn = CRN2,
+      val crn1CaseSummary = CaseSummary(
+        crn = CRN1,
         name = CaseName(forename = "fn2", surname = "cn2"),
       )
 
-      val crn3CaseSummary = CaseSummary(
-        crn = CRN3,
+      val crn2CaseSummaryRestriction = CaseSummary(
+        crn = CRN2,
         name = CaseName(forename = "fn3", surname = "cn3"),
         currentExclusion = false,
         currentRestriction = true,
       )
 
-      val crn4CaseSummary = CaseSummary(
-        crn = CRN4,
+      val crn3CaseSummaryExclusion = CaseSummary(
+        crn = CRN3,
         name = CaseName(forename = "fn4", surname = "cn4"),
         currentExclusion = true,
         currentRestriction = false,
       )
 
       every {
-        communityPaybackAndDeliusClient.getCaseSummaries(setOf(CRN1, CRN2, CRN3, CRN4))
-      } returns CaseSummaries(listOf(crn2CaseSummary, crn3CaseSummary, crn4CaseSummary))
-
-      every {
-        communityPaybackAndDeliusClient.getUsersAccess(USERNAME, setOf(CRN3, CRN4))
+        communityPaybackAndDeliusClient.getUsersAccess(USERNAME, setOf(CRN2, CRN3))
       } returns UserAccess(
         listOf(
-          CaseAccess(CRN3, userExcluded = false, userRestricted = true),
-          CaseAccess(CRN4, userExcluded = true, userRestricted = false),
+          CaseAccess(CRN2, userExcluded = false, userRestricted = true),
+          CaseAccess(CRN3, userExcluded = true, userRestricted = false),
         ),
       )
 
-      val result = service.getOffenderInfo(setOf(CRN1, CRN2, CRN3, CRN4))
+      val result = service.toOffenderInfos(listOf(crn1CaseSummary, crn2CaseSummaryRestriction, crn3CaseSummaryExclusion))
 
-      assertThat(result).hasSize(4)
+      assertThat(result).hasSize(3)
 
       assertThat(result[0].crn).isEqualTo(CRN1)
-      assertThat(result[0]).isInstanceOf(OffenderInfoResult.NotFound::class.java)
+      assertThat(result[0]).isInstanceOf(OffenderInfoResult.Full::class.java)
 
       assertThat(result[1].crn).isEqualTo(CRN2)
-      assertThat(result[1]).isInstanceOf(OffenderInfoResult.Full::class.java)
+      assertThat(result[1]).isInstanceOf(OffenderInfoResult.Limited::class.java)
 
       assertThat(result[2].crn).isEqualTo(CRN3)
       assertThat(result[2]).isInstanceOf(OffenderInfoResult.Limited::class.java)
-
-      assertThat(result[3].crn).isEqualTo(CRN4)
-      assertThat(result[3]).isInstanceOf(OffenderInfoResult.Limited::class.java)
     }
   }
 

@@ -5,8 +5,6 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CaseAccess
-import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CaseName
-import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CaseSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CaseSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.Project
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAppointmentSummary
@@ -215,16 +213,6 @@ class ProjectsIT : IntegrationTestBase() {
         ),
       )
 
-      CommunityPaybackAndDeliusMockServer.probationCasesSummaries(
-        crns = listOf("CRN1", "CRN2"),
-        response = CaseSummaries(
-          listOf(
-            CaseSummary(crn = "CRN1", name = CaseName("Jeff", "Jeffity")),
-            CaseSummary(crn = "CRN2", name = CaseName("Jim", "Jimmity")),
-          ),
-        ),
-      )
-
       val sessionSearchResults = webTestClient.get()
         .uri("/projects/N123456789/sessions/2025-01-09?startTime=09:00&endTime=17:00")
         .addUiAuthHeader()
@@ -247,7 +235,7 @@ class ProjectsIT : IntegrationTestBase() {
     }
 
     @Test
-    fun `Correctly handles limited and not found offenders`() {
+    fun `Correctly handles limited offenders`() {
       CommunityPaybackAndDeliusMockServer.projectSessions(
         ProjectSession(
           project = Project(
@@ -264,7 +252,10 @@ class ProjectsIT : IntegrationTestBase() {
           appointmentSummaries = listOf(
             ProjectAppointmentSummary(
               id = 1L,
-              case = CaseSummary.valid().copy(crn = "CRN1"),
+              case = CaseSummary.valid().copy(
+                crn = "CRN1",
+                currentExclusion = true,
+              ),
               requirementProgress = RequirementProgress(
                 requirementMinutes = 520,
                 completedMinutes = 30,
@@ -272,7 +263,10 @@ class ProjectsIT : IntegrationTestBase() {
             ),
             ProjectAppointmentSummary(
               id = 2L,
-              case = CaseSummary.valid().copy(crn = "CRN2"),
+              case = CaseSummary.valid().copy(
+                crn = "CRN2",
+                currentExclusion = true,
+              ),
               requirementProgress = RequirementProgress(
                 requirementMinutes = 600,
                 completedMinutes = 60,
@@ -282,20 +276,12 @@ class ProjectsIT : IntegrationTestBase() {
         ),
       )
 
-      CommunityPaybackAndDeliusMockServer.probationCasesSummaries(
-        crns = listOf("CRN1", "CRN2"),
-        response = CaseSummaries(
-          listOf(
-            CaseSummary(crn = "CRN2", name = CaseName("Jim", "Jimmity"), currentExclusion = true),
-          ),
-        ),
-      )
-
       CommunityPaybackAndDeliusMockServer.usersAccess(
         username = "USER1",
-        crns = listOf("CRN2"),
+        crns = listOf("CRN1", "CRN2"),
         response = UserAccess(
           listOf(
+            CaseAccess(crn = "CRN1", userExcluded = false, userRestricted = false),
             CaseAccess(crn = "CRN2", userExcluded = true, userRestricted = false),
           ),
         ),
@@ -312,7 +298,7 @@ class ProjectsIT : IntegrationTestBase() {
       assertThat(session.appointmentSummaries).hasSize(2)
 
       assertThat(session.appointmentSummaries[0].offender.crn).isEqualTo("CRN1")
-      assertThat(session.appointmentSummaries[0].offender).isInstanceOf(OffenderDto.OffenderNotFoundDto::class.java)
+      assertThat(session.appointmentSummaries[0].offender).isInstanceOf(OffenderDto.OffenderFullDto::class.java)
 
       assertThat(session.appointmentSummaries[1].offender.crn).isEqualTo("CRN2")
       assertThat(session.appointmentSummaries[1].offender).isInstanceOf(OffenderDto.OffenderLimitedDto::class.java)

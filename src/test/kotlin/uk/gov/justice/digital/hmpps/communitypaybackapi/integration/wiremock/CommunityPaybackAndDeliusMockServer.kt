@@ -9,7 +9,6 @@ import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.equalToJson
 import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.post
-import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CaseSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectSession
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectSessionSummaries
@@ -103,21 +102,6 @@ object CommunityPaybackAndDeliusMockServer {
           aResponse()
             .withHeader("Content-Type", "application/json")
             .withBody(objectMapper.writeValueAsString(projectSession)),
-        ),
-    )
-  }
-
-  fun probationCasesSummaries(
-    crns: List<String>,
-    response: CaseSummaries,
-  ) {
-    WireMock.stubFor(
-      post("/community-payback-and-delius/probation-cases/summaries")
-        .withRequestBody(equalToJson(objectMapper.writeValueAsString(crns)))
-        .willReturn(
-          aResponse()
-            .withHeader("Content-Type", "application/json")
-            .withBody(objectMapper.writeValueAsString(response)),
         ),
     )
   }

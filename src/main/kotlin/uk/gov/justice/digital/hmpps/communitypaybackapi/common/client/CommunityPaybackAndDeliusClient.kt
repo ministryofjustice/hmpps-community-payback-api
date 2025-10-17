@@ -37,11 +37,6 @@ interface CommunityPaybackAndDeliusClient {
     @RequestParam("endTime") @DateTimeFormat(pattern = "HH:mm") end: LocalTime,
   ): ProjectSession
 
-  @PostExchange("/probation-cases/summaries")
-  fun getCaseSummaries(
-    @RequestBody crns: Set<String>,
-  ): CaseSummaries
-
   @PostExchange("/users/access")
   fun getUsersAccess(
     @RequestParam username: String,
@@ -198,10 +193,6 @@ enum class ProjectAppointmentBehaviour {
   SATISFACTORY,
   UNSATISFACTORY,
 }
-
-data class CaseSummaries(
-  var cases: List<CaseSummary>,
-)
 
 data class CaseSummary(
   val crn: String,

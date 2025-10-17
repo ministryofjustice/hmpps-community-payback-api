@@ -25,7 +25,7 @@ class ProjectService(
     end: LocalTime,
   ): SessionDto {
     val projectSession = communityPaybackAndDeliusClient.getProjectSession(projectCode, date, start, end)
-    val crns = projectSession.appointmentSummaries.map { it.case.crn }.toSet()
-    return projectSession.toDto(offenderService.getOffenderInfo(crns))
+    val caseSummaries = projectSession.appointmentSummaries.map { it.case }.toList()
+    return projectSession.toDto(offenderService.toOffenderInfos(caseSummaries))
   }
 }
