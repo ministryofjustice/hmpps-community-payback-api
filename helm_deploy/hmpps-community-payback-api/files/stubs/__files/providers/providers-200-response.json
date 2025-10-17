@@ -1,7 +1,6 @@
 {
   "providers": [
     {
-      "id": 1234,
       "code": "N56",
       "name": "East of England"
     }

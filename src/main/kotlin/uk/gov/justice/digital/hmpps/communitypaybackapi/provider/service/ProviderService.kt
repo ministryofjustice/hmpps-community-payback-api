@@ -7,8 +7,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CommunityP
 class ProviderService(
   val communityPaybackAndDeliusClient: CommunityPaybackAndDeliusClient,
 ) {
-  // we need to determine how to handle upstream errors
-  fun getProviders() = communityPaybackAndDeliusClient.providers().toDto()
+  fun getProviders() = communityPaybackAndDeliusClient.getProviders().toDto()
 
   fun getProviderTeams(providerCode: String) = communityPaybackAndDeliusClient.getProviderTeams(providerCode).toDto()
 

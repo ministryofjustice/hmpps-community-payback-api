@@ -14,7 +14,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.provider.dto.SupervisorS
 import uk.gov.justice.digital.hmpps.communitypaybackapi.provider.dto.SupervisorSummaryDto
 
 fun ProviderSummaries.toDto() = ProviderSummariesDto(this.providers.map { it.toDto() })
-fun ProviderSummary.toDto() = ProviderSummaryDto(this.id, this.code, this.name)
+fun ProviderSummary.toDto() = ProviderSummaryDto(this.code, this.name)
 
 fun ProviderTeamSummaries.toDto() = ProviderTeamSummariesDto(this.teams.map { it.toDto() })
 fun ProviderTeamSummary.toDto() = ProviderTeamSummaryDto(this.code, this.description)

@@ -20,18 +20,15 @@ class ProviderMappersTest {
     fun `should map using toDto() correctly`() {
       val providersSummaries = ProviderSummaries(
         listOf(
-          ProviderSummary(1000, code = "ABC123", "East of England"),
-          ProviderSummary(2000, code = "DEF123", "North East Region"),
-          ProviderSummary(3000, code = "GHI123", "North West Region"),
+          ProviderSummary(code = "ABC123", "East of England"),
+          ProviderSummary(code = "DEF123", "North East Region"),
+          ProviderSummary(code = "GHI123", "North West Region"),
         ),
       )
       val providerSummariesDto = providersSummaries.toDto()
       assertThat(providerSummariesDto.providers).hasSize(3)
-      assertThat(providerSummariesDto.providers[0].id).isEqualTo(1000L)
       assertThat(providerSummariesDto.providers[0].name).isEqualTo("East of England")
-      assertThat(providerSummariesDto.providers[1].id).isEqualTo(2000L)
       assertThat(providerSummariesDto.providers[1].name).isEqualTo("North East Region")
-      assertThat(providerSummariesDto.providers[2].id).isEqualTo(3000L)
       assertThat(providerSummariesDto.providers[2].name).isEqualTo("North West Region")
     }
   }
@@ -40,8 +37,8 @@ class ProviderMappersTest {
   inner class ProviderSummariesMapper {
     @Test
     fun `should map using toDto() correctly`() {
-      val providerSummary = ProviderSummary(1000, code = "GHI123", "East of England")
-      assertThat(providerSummary.toDto()).isEqualTo(ProviderSummaryDto(1000, code = "GHI123", "East of England"))
+      val providerSummary = ProviderSummary(code = "GHI123", name = "East of England")
+      assertThat(providerSummary.toDto()).isEqualTo(ProviderSummaryDto(code = "GHI123", name = "East of England"))
     }
   }
 
