@@ -11,7 +11,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectApp
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectLocation
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectSession
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectSessionSummaries
-import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectSessionSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.RequirementProgress
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.UserAccess
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.dto.OffenderDto
@@ -73,7 +73,7 @@ class ProjectsIT : IntegrationTestBase() {
       CommunityPaybackAndDeliusMockServer.getSessions(
         ProjectSessionSummaries(
           listOf(
-            ProjectSummary(
+            ProjectSessionSummary(
               projectName = "Community Garden Maintenance",
               date = LocalDate.of(2025, 9, 1),
               startTime = LocalTime.of(9, 0),
@@ -83,7 +83,7 @@ class ProjectsIT : IntegrationTestBase() {
               compliedOutcomeCount = 1,
               enforcementActionNeededCount = 2,
             ),
-            ProjectSummary(
+            ProjectSessionSummary(
               projectName = "Park Cleanup",
               date = LocalDate.of(2025, 9, 8),
               startTime = LocalTime.of(8, 0),

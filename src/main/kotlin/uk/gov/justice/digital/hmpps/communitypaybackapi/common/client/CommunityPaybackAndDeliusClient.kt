@@ -68,10 +68,10 @@ data class ProviderTeamSummary(
   val description: String,
 )
 data class ProjectSessionSummaries(
-  val sessions: List<ProjectSummary>,
+  val sessions: List<ProjectSessionSummary>,
 )
 
-data class ProjectSummary(
+data class ProjectSessionSummary(
   val date: LocalDate,
   val projectName: String,
   val projectCode: String,
