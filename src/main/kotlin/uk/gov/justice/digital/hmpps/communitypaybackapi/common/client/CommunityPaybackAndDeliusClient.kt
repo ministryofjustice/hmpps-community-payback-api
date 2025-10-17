@@ -12,7 +12,7 @@ import java.util.UUID
 
 interface CommunityPaybackAndDeliusClient {
   @GetExchange("/providers")
-  fun providers(): ProviderSummaries
+  fun getProviders(): ProviderSummaries
 
   @GetExchange("/providers/{providerCode}/teams")
   fun getProviderTeams(@PathVariable providerCode: String): ProviderTeamSummaries
@@ -55,7 +55,6 @@ data class ProviderSummaries(
 )
 
 data class ProviderSummary(
-  val id: Long,
   val code: String,
   val name: String,
 )

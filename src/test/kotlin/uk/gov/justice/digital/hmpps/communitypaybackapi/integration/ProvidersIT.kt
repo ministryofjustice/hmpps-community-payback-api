@@ -56,9 +56,9 @@ class ProvidersIT : IntegrationTestBase() {
       CommunityPaybackAndDeliusMockServer.providers(
         ProviderSummaries(
           listOf(
-            ProviderSummary(1, code = "ABC123", "Entry 1"),
-            ProviderSummary(2, code = "DEF123", "Entry 2"),
-            ProviderSummary(3, code = "GHI123", "Entry 3"),
+            ProviderSummary(code = "ABC123", "Entry 1"),
+            ProviderSummary(code = "DEF123", "Entry 2"),
+            ProviderSummary(code = "GHI123", "Entry 3"),
           ),
         ),
       )
@@ -72,7 +72,7 @@ class ProvidersIT : IntegrationTestBase() {
         .bodyAsObject<ProviderSummariesDto>()
 
       assertThat(providers.providers).hasSize(3)
-      assertThat(providers.providers[0].id).isEqualTo(1L)
+      assertThat(providers.providers[0].code).isEqualTo("ABC123")
       assertThat(providers.providers[0].name).isEqualTo("Entry 1")
     }
   }
