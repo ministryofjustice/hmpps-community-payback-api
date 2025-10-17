@@ -15,25 +15,14 @@ class OffenderService(
   val contextService: ContextService,
 ) {
 
-  companion object {
-    const val MAX_OFFENDER_REQUEST_COUNT = 500
-  }
+  fun toOffenderInfo(
+    caseSummary: CaseSummary,
+  ) = toOffenderInfos(listOf(caseSummary))[0]
 
-  fun getOffenderInfo(crn: String) = getOffenderInfo(setOf(crn))[0]
-
-  fun getOffenderInfo(
-    crns: Set<String>,
+  fun toOffenderInfos(
+    caseSummaries: List<CaseSummary>,
   ): List<OffenderInfoResult> {
-    require(crns.size <= MAX_OFFENDER_REQUEST_COUNT) { "Can only request up-to $MAX_OFFENDER_REQUEST_COUNT CRNs. Have requested ${crns.size}." }
-
-    if (crns.isEmpty()) {
-      return emptyList()
-    }
-
-    val caseSummaryByCrn = communityPaybackAndDeliusClient.getCaseSummaries(crns)
-      .cases.associateBy(keySelector = { it.crn })
-
-    val laoCrns = crns.filter { caseSummaryByCrn[it]?.hasLimitations() == true }.toSet()
+    val laoCrns = caseSummaries.filter { it.hasLimitations() }.map { it.crn }.toSet()
 
     val userAccessByCrn = if (laoCrns.isNotEmpty()) {
       communityPaybackAndDeliusClient
@@ -43,12 +32,11 @@ class OffenderService(
       emptyMap()
     }
 
-    return crns.map { crn ->
-      val caseSummary = caseSummaryByCrn[crn]
+    return caseSummaries.map { caseSummary ->
+      val crn = caseSummary.crn
       val userAccess = userAccessByCrn[crn]
 
       when {
-        caseSummary == null -> OffenderInfoResult.NotFound(crn)
         userAccess?.isLimited() == true -> OffenderInfoResult.Limited(crn)
         else -> OffenderInfoResult.Full(crn, caseSummary)
       }

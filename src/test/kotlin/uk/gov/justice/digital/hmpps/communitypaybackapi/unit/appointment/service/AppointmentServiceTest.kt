@@ -77,11 +77,13 @@ class AppointmentServiceTest {
 
     @Test
     fun `appointment found`() {
+      val caseSummary = CaseSummary.valid().copy(crn = "CRN123")
+
       every {
         communityPaybackAndDeliusClient.getProjectAppointment(101L)
-      } returns ProjectAppointment.valid().copy(id = 101L, case = CaseSummary.valid().copy(crn = "CRN123"))
+      } returns ProjectAppointment.valid().copy(id = 101L, case = caseSummary)
 
-      every { offenderService.getOffenderInfo("CRN123") } returns OffenderInfoResult.Full.valid(crn = "CRN123")
+      every { offenderService.toOffenderInfo(caseSummary) } returns OffenderInfoResult.Full.valid(crn = "CRN123")
 
       val result = service.getAppointment(101L)
 

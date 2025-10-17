@@ -37,7 +37,7 @@ class AppointmentService(
   fun getAppointment(id: Long): AppointmentDto = try {
     communityPaybackAndDeliusClient.getProjectAppointment(id)
       .let { projectAppointment ->
-        val offenderInfoResult = offenderService.getOffenderInfo(projectAppointment.case.crn)
+        val offenderInfoResult = offenderService.toOffenderInfo(projectAppointment.case)
         projectAppointment.toDto(offenderInfoResult)
       }
   } catch (_: WebClientResponseException.NotFound) {

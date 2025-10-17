@@ -9,8 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.entity.AppointmentOutcomeEntityRepository
-import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CaseName
-import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CaseSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CaseSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.Project
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAppointment
@@ -102,15 +100,6 @@ class AppointmentIT : IntegrationTestBase() {
           id = id,
           project = Project.valid().copy(name = projectName),
           case = CaseSummary.valid().copy(crn = crn),
-        ),
-      )
-
-      CommunityPaybackAndDeliusMockServer.probationCasesSummaries(
-        crns = listOf(crn),
-        response = CaseSummaries(
-          listOf(
-            CaseSummary(crn = crn, name = CaseName("Jeff", "Jeffity")),
-          ),
         ),
       )
 
