@@ -2,6 +2,9 @@
   "request": {
     "method": "GET",
     "queryParameters": {
+      "date": {
+        "matches": "[0-9]{4}-[0-9]{1,2}-[0-9]{1,2}"
+      },
       "startTime": {
         "matches": "09:00"
       },
@@ -9,7 +12,7 @@
         "matches": "17:00"
       }
     },
-    "urlPathPattern": "/projects/N56777777/sessions/[0-9]{4}-[0-9]{1,2}-[0-9]{1,2}"
+    "urlPathPattern": "/projects/N56777777/sessions/appointments"
   },
   "response": {
     "status": 200,

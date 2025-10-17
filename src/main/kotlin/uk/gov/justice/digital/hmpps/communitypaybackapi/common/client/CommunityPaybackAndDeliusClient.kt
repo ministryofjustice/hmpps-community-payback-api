@@ -24,18 +24,18 @@ interface CommunityPaybackAndDeliusClient {
     @RequestParam teamCode: String,
   ): ProjectSessionSummaries
 
+  @GetExchange("/projects/{projectCode}/sessions/appointments")
+  fun getProjectSession(
+    @PathVariable projectCode: String,
+    @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate,
+    @RequestParam @DateTimeFormat(pattern = "HH:mm") startTime: LocalTime,
+    @RequestParam @DateTimeFormat(pattern = "HH:mm") endTime: LocalTime,
+  ): ProjectSession
+
   @GetExchange("/appointments/{appointmentId}")
   fun getProjectAppointment(
     @PathVariable appointmentId: Long,
   ): ProjectAppointment
-
-  @GetExchange("/projects/{projectCode}/sessions/{date}")
-  fun getProjectSession(
-    @PathVariable projectCode: String,
-    @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate,
-    @RequestParam("startTime") @DateTimeFormat(pattern = "HH:mm") start: LocalTime,
-    @RequestParam("endTime") @DateTimeFormat(pattern = "HH:mm") end: LocalTime,
-  ): ProjectSession
 
   @PostExchange("/users/access")
   fun getUsersAccess(
