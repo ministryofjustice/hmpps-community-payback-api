@@ -20,6 +20,7 @@ data class EnforcementActionEntity(
   val id: UUID,
   val code: String,
   val name: String,
+  val respondByDateRequired: Boolean,
   @CreationTimestamp
   val createdAt: OffsetDateTime? = null,
   @UpdateTimestamp
@@ -34,7 +35,7 @@ data class EnforcementActionEntity(
 
   override fun hashCode(): Int = id.hashCode()
 
-  override fun toString(): String = "EnforcementAction(id=$id, code='$code', name='$name')"
+  override fun toString(): String = "EnforcementAction(id=$id, code='$code', name='$name', respondByDateRequired=$respondByDateRequired)"
 
   companion object
 }
