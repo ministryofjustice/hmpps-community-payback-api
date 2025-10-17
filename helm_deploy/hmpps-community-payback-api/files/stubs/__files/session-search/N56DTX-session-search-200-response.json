@@ -2,8 +2,10 @@
   "sessions": [
     {
       "date": "2025-09-22",
-      "projectName": "Cleaning Streets",
-      "projectCode": "N56123456",
+      "project": {
+        "code": "N56123456",
+        "name": "Cleaning Streets"
+      },
       "startTime": "09:00",
       "endTime": "17:00",
       "allocatedCount": 3,
@@ -12,8 +14,10 @@
     },
     {
       "date": "2025-09-22",
-      "projectName": "Test regional project",
-      "projectCode": "N56777777",
+      "project": {
+        "code": "N56777777",
+        "name": "Test regional project"
+      },
       "startTime": "09:00",
       "endTime": "17:00",
       "allocatedCount": 1,
@@ -22,8 +26,10 @@
     },
     {
       "date": "2025-09-22",
-      "projectName": "Tree Planting UK",
-      "projectCode": "N56456456",
+      "project": {
+        "code": "N56456456",
+        "name": "Tree Planting UK"
+      },
       "startTime": "09:00",
       "endTime": "17:00",
       "allocatedCount": 1,

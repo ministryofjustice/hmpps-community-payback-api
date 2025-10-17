@@ -73,8 +73,7 @@ data class ProjectSessionSummaries(
 
 data class ProjectSessionSummary(
   val date: LocalDate,
-  val projectName: String,
-  val projectCode: String,
+  val project: ProjectSummary,
   val startTime: LocalTime,
   val endTime: LocalTime,
   val allocatedCount: Int,
@@ -135,6 +134,9 @@ data class ProjectAppointment(
 }
 
 data class Project(val name: String, val code: String, val location: ProjectLocation) {
+  companion object
+}
+data class ProjectSummary(val name: String, val code: String) {
   companion object
 }
 data class ProjectType(val name: String, val code: String) {
