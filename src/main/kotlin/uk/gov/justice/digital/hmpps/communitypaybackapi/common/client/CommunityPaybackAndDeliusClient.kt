@@ -65,7 +65,6 @@ data class ProviderTeamSummaries(
 )
 
 data class ProviderTeamSummary(
-  val id: Long,
   val code: String,
   val description: String,
 )
