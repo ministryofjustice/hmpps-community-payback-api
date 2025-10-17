@@ -44,7 +44,7 @@ object CommunityPaybackAndDeliusMockServer {
     providerTeams: ProviderTeamSummaries,
   ) {
     WireMock.stubFor(
-      get("/community-payback-and-delius/teams?providerCode=$providerCode").willReturn(
+      get("/community-payback-and-delius/providers/$providerCode/teams").willReturn(
         aResponse()
           .withHeader("Content-Type", "application/json")
           .withBody(objectMapper.writeValueAsString(providerTeams)),

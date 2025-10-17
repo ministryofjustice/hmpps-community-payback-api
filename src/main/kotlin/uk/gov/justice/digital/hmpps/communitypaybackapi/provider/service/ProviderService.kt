@@ -10,7 +10,7 @@ class ProviderService(
   // we need to determine how to handle upstream errors
   fun getProviders() = communityPaybackAndDeliusClient.providers().toDto()
 
-  fun getProviderTeams(providerCode: String) = communityPaybackAndDeliusClient.providerTeams(providerCode).toDto()
+  fun getProviderTeams(providerCode: String) = communityPaybackAndDeliusClient.getProviderTeams(providerCode).toDto()
 
   fun getTeamSupervisors(providerCode: String, teamCode: String) = communityPaybackAndDeliusClient.teamSupervisors(providerCode, teamCode).toDto()
 }
