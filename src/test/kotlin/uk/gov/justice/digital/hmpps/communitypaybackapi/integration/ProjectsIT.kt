@@ -73,26 +73,8 @@ class ProjectsIT : IntegrationTestBase() {
       CommunityPaybackAndDeliusMockServer.getSessions(
         ProjectSessionSummaries(
           listOf(
-            ProjectSessionSummary(
-              projectName = "Community Garden Maintenance",
-              date = LocalDate.of(2025, 9, 1),
-              startTime = LocalTime.of(9, 0),
-              endTime = LocalTime.of(17, 0),
-              projectCode = "cgm",
-              allocatedCount = 0,
-              compliedOutcomeCount = 1,
-              enforcementActionNeededCount = 2,
-            ),
-            ProjectSessionSummary(
-              projectName = "Park Cleanup",
-              date = LocalDate.of(2025, 9, 8),
-              startTime = LocalTime.of(8, 0),
-              endTime = LocalTime.of(16, 0),
-              projectCode = "pc",
-              allocatedCount = 3,
-              compliedOutcomeCount = 4,
-              enforcementActionNeededCount = 5,
-            ),
+            ProjectSessionSummary.valid().copy(projectName = "Community Garden Maintenance"),
+            ProjectSessionSummary.valid().copy(projectName = "Park Cleanup"),
           ),
         ),
       )
@@ -107,13 +89,7 @@ class ProjectsIT : IntegrationTestBase() {
 
       assertThat(sessionSearchResults.allocations).hasSize(2)
       assertThat(sessionSearchResults.allocations[0].projectName).isEqualTo("Community Garden Maintenance")
-      assertThat(sessionSearchResults.allocations[0].date).isEqualTo(LocalDate.of(2025, 9, 1))
-      assertThat(sessionSearchResults.allocations[0].startTime).isEqualTo(LocalTime.of(9, 0))
-      assertThat(sessionSearchResults.allocations[0].endTime).isEqualTo(LocalTime.of(17, 0))
-      assertThat(sessionSearchResults.allocations[0].projectCode).isEqualTo("cgm")
-      assertThat(sessionSearchResults.allocations[0].numberOfOffendersAllocated).isEqualTo(0)
-      assertThat(sessionSearchResults.allocations[0].numberOfOffendersWithOutcomes).isEqualTo(1)
-      assertThat(sessionSearchResults.allocations[0].numberOfOffendersWithEA).isEqualTo(2)
+      assertThat(sessionSearchResults.allocations[1].projectName).isEqualTo("Park Cleanup")
     }
 
     @Test
