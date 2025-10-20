@@ -28,6 +28,7 @@ class AppointmentService(
   private val communityPaybackAndDeliusClient: CommunityPaybackAndDeliusClient,
   private val offenderService: OffenderService,
   private val formService: FormService,
+  private val appointmentOutcomeValidationService: AppointmentOutcomeValidationService,
 ) {
   private companion object {
     private val log = LoggerFactory.getLogger(this::class.java)
@@ -57,6 +58,8 @@ class AppointmentService(
     } catch (_: WebClientResponseException.NotFound) {
       throw NotFoundException("Appointment", deliusId.toString())
     }
+
+    appointmentOutcomeValidationService.validate(outcome)
 
     val proposedEntity = toEntity(deliusId, outcome)
 
