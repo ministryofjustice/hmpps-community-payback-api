@@ -21,6 +21,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.entity.Appoi
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.entity.AppointmentOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.entity.Behaviour
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.entity.WorkQuality
+import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.service.AppointmentOutcomeValidationService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.service.AppointmentService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CaseSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CommunityPaybackAndDeliusClient
@@ -59,6 +60,10 @@ class AppointmentServiceTest {
 
   @MockK(relaxed = true)
   lateinit var formService: FormService
+
+  @SuppressWarnings("UnusedPrivateProperty")
+  @MockK(relaxed = true)
+  private lateinit var appointmentOutcomeValidationService: AppointmentOutcomeValidationService
 
   @InjectMockKs
   private lateinit var service: AppointmentService
@@ -199,6 +204,8 @@ class AppointmentServiceTest {
         appointmentOutcomeEntityRepository.findTopByAppointmentDeliusIdOrderByUpdatedAtDesc(1L)
       } returns existingIdenticalEntity
 
+      every { communityPaybackAndDeliusClient.getProjectAppointment(1L) } returns ProjectAppointment.valid().copy(case = CaseSummary.valid().copy(crn = "CRN1"))
+
       service.updateAppointmentOutcome(
         deliusId = 1L,
         outcome = updateAppointmentDto,
@@ -222,6 +229,8 @@ class AppointmentServiceTest {
       } returnsArgument 0
 
       every { domainEventService.publish(any(), any(), any()) } just Runs
+
+      every { communityPaybackAndDeliusClient.getProjectAppointment(1L) } returns ProjectAppointment.valid().copy(case = CaseSummary.valid().copy(crn = "CRN1"))
 
       service.updateAppointmentOutcome(
         deliusId = 1L,
