@@ -4,9 +4,9 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.AllRoshRisk
-import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.OverallRiskLevel
-import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.RiskRoshSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.AllRoshRisk
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.OverallRiskLevel
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.RiskRoshSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.bodyAsObject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.ArnsMockServer
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse

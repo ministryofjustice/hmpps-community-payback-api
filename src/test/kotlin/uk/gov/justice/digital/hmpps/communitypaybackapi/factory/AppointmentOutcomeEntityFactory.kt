@@ -1,10 +1,10 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.factory
 
-import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.entity.AppointmentOutcomeEntity
-import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.entity.Behaviour
-import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.entity.WorkQuality
-import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.entity.ContactOutcomeEntity
-import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.entity.EnforcementActionEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentOutcomeEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.Behaviour
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EnforcementActionEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.WorkQuality
 import java.util.UUID
 
 fun AppointmentOutcomeEntity.Companion.valid(

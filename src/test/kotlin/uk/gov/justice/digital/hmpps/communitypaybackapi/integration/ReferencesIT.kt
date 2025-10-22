@@ -5,11 +5,11 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ContactOutcomesDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EnforcementActionsDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypesDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ProjectTypeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.bodyAsObject
-import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.dto.ContactOutcomesDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.dto.EnforcementActionsDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.dto.ProjectTypesDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.reference.entity.ProjectTypeEntityRepository
 
 class ReferencesIT : IntegrationTestBase() {
 

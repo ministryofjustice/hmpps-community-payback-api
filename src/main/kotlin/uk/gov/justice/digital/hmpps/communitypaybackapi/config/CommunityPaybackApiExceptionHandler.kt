@@ -13,8 +13,8 @@ import org.springframework.web.bind.MissingServletRequestParameterException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.servlet.resource.NoResourceFoundException
-import uk.gov.justice.digital.hmpps.communitypaybackapi.common.dto.BadRequestException
-import uk.gov.justice.digital.hmpps.communitypaybackapi.common.dto.NotFoundException
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.BadRequestException
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.NotFoundException
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 
 @RestControllerAdvice

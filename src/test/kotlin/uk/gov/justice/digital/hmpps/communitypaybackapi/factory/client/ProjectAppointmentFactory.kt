@@ -1,14 +1,14 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client
 
-import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CaseSummary
-import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.PickUpData
-import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.Project
-import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAppointment
-import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAppointmentBehaviour
-import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectAppointmentWorkQuality
-import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProjectType
-import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.Provider
-import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.Team
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CaseSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.PickUpData
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Project
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectAppointment
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectAppointmentBehaviour
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectAppointmentWorkQuality
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectType
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Provider
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Team
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.random
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.randomLocalDate
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.randomLocalTime

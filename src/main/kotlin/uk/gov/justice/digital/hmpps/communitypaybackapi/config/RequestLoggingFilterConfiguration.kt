@@ -6,7 +6,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.web.filter.CommonsRequestLoggingFilter
-import uk.gov.justice.digital.hmpps.communitypaybackapi.common.service.EnvironmentService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.EnvironmentService
 
 @Configuration
 @ConditionalOnProperty(name = ["community-payback.request-logging-enabled"], havingValue = "true")

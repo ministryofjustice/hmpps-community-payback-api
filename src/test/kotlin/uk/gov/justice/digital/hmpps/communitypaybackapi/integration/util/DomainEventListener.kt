@@ -6,7 +6,7 @@ import org.awaitility.Awaitility.await
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.test.context.event.annotation.BeforeTestMethod
-import uk.gov.justice.digital.hmpps.communitypaybackapi.common.service.internal.HmppsDomainEvent
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.HmppsDomainEvent
 import java.util.concurrent.TimeUnit
 import kotlin.collections.first
 import kotlin.jvm.java
