@@ -76,3 +76,4 @@ sonar-project.properties
 .DS_Store
 /.env
 /src/main/resources/application-local.yml
+/tools/cp-stack/.env.sui
