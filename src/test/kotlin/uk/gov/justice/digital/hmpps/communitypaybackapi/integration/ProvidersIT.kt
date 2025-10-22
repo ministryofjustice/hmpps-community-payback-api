@@ -65,7 +65,7 @@ class ProvidersIT : IntegrationTestBase() {
 
       val providers = webTestClient.get()
         .uri("/providers")
-        .addUiAuthHeader()
+        .addAdminUiAuthHeader()
         .exchange()
         .expectStatus()
         .isOk
@@ -125,7 +125,7 @@ class ProvidersIT : IntegrationTestBase() {
 
       val providers = webTestClient.get()
         .uri("/providers/N123456789/teams")
-        .addUiAuthHeader()
+        .addAdminUiAuthHeader()
         .exchange()
         .expectStatus()
         .isOk
@@ -173,7 +173,7 @@ class ProvidersIT : IntegrationTestBase() {
 
       val supervisors = webTestClient.get()
         .uri("/providers/123/teams/99/supervisors")
-        .addUiAuthHeader()
+        .addAdminUiAuthHeader()
         .exchange()
         .expectStatus()
         .isOk
@@ -194,7 +194,7 @@ class ProvidersIT : IntegrationTestBase() {
 
       val supervisors = webTestClient.get()
         .uri("/providers/123/teams/99/supervisors")
-        .addUiAuthHeader()
+        .addAdminUiAuthHeader()
         .exchange()
         .expectStatus()
         .isOk

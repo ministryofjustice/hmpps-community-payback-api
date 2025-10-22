@@ -1,18 +1,18 @@
-package uk.gov.justice.digital.hmpps.communitypaybackapi.controller
+package uk.gov.justice.digital.hmpps.communitypaybackapi.controller.common
 
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
+import io.swagger.v3.oas.annotations.parameters.RequestBody
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PutMapping
-import org.springframework.web.bind.annotation.RequestBody
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.FormService
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 
-@CommunityPaybackController
+@CommonController
 class FormController(
   private val formService: FormService,
 ) {
@@ -50,7 +50,7 @@ class FormController(
   )
   @Operation(
     description = """Store the JSON blob provided as the request body using the type and id in the request path""",
-    requestBody = io.swagger.v3.oas.annotations.parameters.RequestBody(
+    requestBody = RequestBody(
       description = "JSON blob that will be stored",
     ),
     responses = [
@@ -63,7 +63,7 @@ class FormController(
   fun formPut(
     @PathVariable formType: String,
     @PathVariable id: String,
-    @RequestBody json: String,
+    @org.springframework.web.bind.annotation.RequestBody json: String,
   ) {
     formService.formPut(formType, id, json)
   }

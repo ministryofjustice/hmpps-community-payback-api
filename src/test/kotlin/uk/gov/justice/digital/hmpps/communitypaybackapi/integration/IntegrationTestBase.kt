@@ -10,7 +10,6 @@ import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.wiremock.spring.EnableWireMock
-import uk.gov.justice.digital.hmpps.communitypaybackapi.config.SecurityConfiguration
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.container.LocalStackContainer
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.container.LocalStackContainer.setLocalStackProperties
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.container.PostgresContainer
@@ -62,10 +61,17 @@ abstract class IntegrationTestBase {
     HmppsAuthMockServer.stubHealthPing(status)
   }
 
-  fun <S : WebTestClient.RequestHeadersSpec<S>> S.addUiAuthHeader(username: String = "AUTH_ADM"): S = this.headers(
+  fun <S : WebTestClient.RequestHeadersSpec<S>> S.addAdminUiAuthHeader(username: String = "AUTH_ADM"): S = this.headers(
     setAuthorisation(
       username = username,
-      roles = listOf(SecurityConfiguration.ROLE_UI),
+      roles = listOf("ROLE_COMMUNITY_PAYBACK__COMMUNITY_PAYBACK_UI"),
+    ),
+  ) as S
+
+  fun <S : WebTestClient.RequestHeadersSpec<S>> S.addSupervisorUiAuthHeader(username: String = "AUTH_ADM"): S = this.headers(
+    setAuthorisation(
+      username = username,
+      roles = listOf("ROLE_COMMUNITY_PAYBACK__SUPERVISOR"),
     ),
   ) as S
 }

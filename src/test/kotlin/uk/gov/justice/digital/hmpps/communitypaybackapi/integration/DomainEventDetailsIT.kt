@@ -62,7 +62,7 @@ class DomainEventDetailsIT : IntegrationTestBase() {
     fun `should return forbidden if wrong role`() {
       webTestClient.get()
         .uri("/domain-event-details/appointment-outcome/$id")
-        .addUiAuthHeader()
+        .addAdminUiAuthHeader()
         .exchange()
         .expectStatus()
         .isForbidden

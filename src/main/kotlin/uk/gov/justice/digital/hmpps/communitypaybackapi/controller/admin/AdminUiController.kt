@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.communitypaybackapi.controller
+package uk.gov.justice.digital.hmpps.communitypaybackapi.controller.admin
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import org.springframework.http.MediaType
@@ -14,6 +14,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.config.SecurityConfigura
 @RequestMapping(
   produces = [MediaType.APPLICATION_JSON_VALUE],
 )
-@PreAuthorize("hasRole('" + SecurityConfiguration.Companion.ROLE_UI + "')")
-@SecurityRequirement(name = OpenApiConfiguration.Companion.SECURITY_SCHEME_UI)
-internal annotation class CommunityPaybackController
+@PreAuthorize("hasRole('" + SecurityConfiguration.ROLE_ADMIN_UI + "')")
+@SecurityRequirement(name = OpenApiConfiguration.Companion.SECURITY_SCHEME_ADMIN_UI)
+internal annotation class AdminUiController

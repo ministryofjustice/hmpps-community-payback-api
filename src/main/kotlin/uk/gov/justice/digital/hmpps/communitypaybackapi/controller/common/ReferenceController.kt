@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.communitypaybackapi.controller
+package uk.gov.justice.digital.hmpps.communitypaybackapi.controller.common
 
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.responses.ApiResponse
@@ -10,7 +10,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EnforcementActionsDt
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ReferenceService
 
-@CommunityPaybackController
+@CommonController
 @RequestMapping(
   path = [ "/references" ],
   produces = [MediaType.APPLICATION_JSON_VALUE],
