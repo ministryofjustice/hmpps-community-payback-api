@@ -14,13 +14,13 @@ import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 class OffenderIT : IntegrationTestBase() {
 
   @Nested
-  @DisplayName("GET /offender/{crn}/riskSummary")
+  @DisplayName("GET /common/offender/{crn}/riskSummary")
   inner class GetOffenderRisk {
 
     @Test
     fun `should return unauthorized if no token`() {
       webTestClient.get()
-        .uri("/offender/CRN123/riskSummary")
+        .uri("/common/offender/CRN123/riskSummary")
         .exchange()
         .expectStatus()
         .isUnauthorized
@@ -29,7 +29,7 @@ class OffenderIT : IntegrationTestBase() {
     @Test
     fun `should return forbidden if no role`() {
       webTestClient.get()
-        .uri("/offender/CRN123/riskSummary")
+        .uri("/common/offender/CRN123/riskSummary")
         .headers(setAuthorisation())
         .exchange()
         .expectStatus()
@@ -39,7 +39,7 @@ class OffenderIT : IntegrationTestBase() {
     @Test
     fun `should return forbidden if wrong role`() {
       webTestClient.get()
-        .uri("/offender/CRN123/riskSummary")
+        .uri("/common/offender/CRN123/riskSummary")
         .headers(setAuthorisation(roles = listOf("ROLE_WRONG")))
         .exchange()
         .expectStatus()
@@ -51,7 +51,7 @@ class OffenderIT : IntegrationTestBase() {
       ArnsMockServer.roshNotFound("CRN123")
 
       val response = webTestClient.get()
-        .uri("/offender/CRN123/riskSummary")
+        .uri("/common/offender/CRN123/riskSummary")
         .addAdminUiAuthHeader()
         .exchange()
         .expectStatus()
@@ -69,7 +69,7 @@ class OffenderIT : IntegrationTestBase() {
       )
 
       val response = webTestClient.get()
-        .uri("/offender/CRN123/riskSummary")
+        .uri("/common/offender/CRN123/riskSummary")
         .addAdminUiAuthHeader()
         .exchange()
         .expectStatus()

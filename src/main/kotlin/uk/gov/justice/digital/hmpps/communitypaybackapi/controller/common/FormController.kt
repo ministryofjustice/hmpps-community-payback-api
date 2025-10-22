@@ -18,7 +18,7 @@ class FormController(
 ) {
 
   @GetMapping(
-    path = ["/forms/{formType}/{id}"],
+    path = ["/forms/{formType}/{id}", "/common/forms/{formType}/{id}"],
   )
   @Operation(
     description = """Fetches the blob stored against this type and id""",
@@ -45,7 +45,7 @@ class FormController(
   ): String = formService.formGet(formType, id)
 
   @PutMapping(
-    path = ["/forms/{formType}/{id}"],
+    path = ["/forms/{formType}/{id}", "/common/forms/{formType}/{id}"],
     consumes = [MediaType.APPLICATION_JSON_VALUE],
   )
   @Operation(
