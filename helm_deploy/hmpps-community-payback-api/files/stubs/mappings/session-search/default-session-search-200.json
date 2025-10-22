@@ -1,0 +1,25 @@
+{
+  "priority": 100,
+  "request": {
+    "method": "GET",
+    "queryParameters": {
+      "startDate": {
+        "matches": "^(19|20)\\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$"
+      },
+      "endDate": {
+        "matches": "^(19|20)\\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$"
+      },
+      "teamCode": {
+        "matches": ".*"
+      }
+    },
+    "urlPath": "/sessions"
+  },
+  "response": {
+    "status": 200,
+    "bodyFileName": "session-search/default-session-search-200-response.json",
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}
