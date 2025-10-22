@@ -24,7 +24,7 @@ elif [ "$command" = "stop" ]; then
 else
   echo "Usage: cp-stack <command>"
   echo "Commands:"
-  echo "  start [--local-ui] [--local-api]"
+  echo "  start [--local-ui] [--local-sui] [--local-api]"
   echo "  stop [--clear-databases]"
   exit 1
 fi

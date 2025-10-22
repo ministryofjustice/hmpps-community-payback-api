@@ -36,6 +36,19 @@ services:
       - "3000:3000"
     entrypoint: "node dist/server.js | bunyan"
 
+  sui:
+    image: ghcr.io/ministryofjustice/hmpps-community-payback-supervisors-ui:latest
+    container_name: cp-stack-sui
+    pull_policy: always
+    env_file:
+      - path: .env.sui
+        format: raw
+    environment:
+      - COMMUNITY_PAYBACK_API_URL=http://host.docker.internal:8080
+    ports:
+      - "3001:3000"
+    entrypoint: "node dist/server.js | bunyan"
+
   localstack:
     image: localstack/localstack:latest
     container_name: cp-stack-localstack

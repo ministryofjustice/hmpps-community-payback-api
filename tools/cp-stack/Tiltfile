@@ -8,9 +8,11 @@ resources = [
 
 config.define_bool("local-api")
 config.define_bool("local-ui")
+config.define_bool("local-sui")
 cfg = config.parse()
 local_api = cfg.get("local-api", False)
 local_ui = cfg.get("local-ui", False)
+local_sui = cfg.get("local-sui", False)
 
 if local_api:
     print("Running local API")
@@ -58,6 +60,25 @@ if local_ui:
 else:
     print("Running docker UI")
     resources.append("ui")
+
+if local_sui:
+    print("Running local Supervisors UI")
+    npm_command='export $(cat ' + os.getcwd() + '/.env.ui) && npm run start:dev'
+
+    local_resource(
+        "sui-local",
+        cmd="npm install",
+        serve_cmd=npm_command,
+        serve_dir=os.getenv("LOCAL_CP_SUI_PATH"),
+        dir=os.getenv("LOCAL_CP_SUI_PATH"),
+        readiness_probe=probe(
+            period_secs=15, http_get=http_get_action(port=3001, path="/health")
+        )
+    )
+    resources.append("sui-local")
+else:
+    print("Running docker Supervisors UI")
+    resources.append("sui")
 
 
 config.clear_enabled_resources()

@@ -8,6 +8,7 @@ The tool manages local instances of the following:
 
 * Community Payback API - Either via docker or gradle
 * Community Payback UI - Either via docker or node (to run local code)
+* Community Payback Supervisor UI - Either via docker or node (to run local code)
 * Wiremock - Proxies all requests to upstream services, allowing us to selectively intercept and mock responses
 
 All upstream services are provided by the [Cloud Platform's](https://user-guide.cloud-platform.service.justice.gov.uk/) 'Dev' environment, proxied via Wiremock (excluding hmpps-auth, which is not proxied)
@@ -31,6 +32,7 @@ Add the following to your profile (~/.zshrc or ~/.bashrc), changing the paths to
 ```shell
 export LOCAL_CP_API_PATH=$HOME/Desktop/hmpps/hmpps-community-payback-api
 export LOCAL_CP_UI_PATH=$HOME/hmpps/hmpps-community-payback-ui
+export LOCAL_CP_SUI_PATH=$HOME/hmpps/hmpps-community-payback-supervisors-ui
 export PATH="$PATH:$LOCAL_CP_API_PATH/tools/cp-stack/bin"
 ```
 
@@ -42,9 +44,9 @@ source ~/.zshrc # or source ~/.bashrc
 
 You can then start the stack using
 
-``cp-stack start [--local-api] [--local-ui]``
+``cp-stack start [--local-api] [--local-ui] [--local-sui]``
 
-If using the 'local' options, the UI and/or API will be run directly from your checked out project. Otherwise, the latest docker image will be pulled and ran instead
+If using the 'local' options, the UIs and/or API will be run directly from your checked out project. Otherwise, the latest docker image will be pulled and ran instead
 
 To stop the stack, use
 
@@ -54,15 +56,16 @@ The API database will be retained over stop/starts of the stack, unless `--clear
 
 ## Service Ports
 
-| Tool                  | Port |
-|-----------------------|------|
-| Community Payback API | 8080 |
-| Community Payback UI  | 3000 |
-| Wiremock              | 9004 |
+| Tool                             | Port |
+|----------------------------------|------|
+| Community Payback API            | 8080 |
+| Community Payback UI             | 3000 |
+| Community Payback Supervisors UI | 3001 |
+| Wiremock                         | 9004 |
 
 ## Configuration
 
-Any overrides to the default configuration is defined via environment variables defined in [.env.api.template](.env.api.template) and [.env.ui.template](.env.ui.template). These are copied into .env.api and .env.ui files on startup, with any variables in them resolved from k8s secrets
+Any overrides to the default configuration is defined via environment variables defined in [.env.api.template](.env.api.template), [.env.ui.template](.env.ui.template) and [.env.sui.template](.env.sui.template). These are copied into .env.api, .env.sui and .env.ui files on startup, with any variables in them resolved from k8s secrets
 
 To resolve a secret from k8s use the ${SECRET_KEY} notation. You may also need to update the [start-server script](bin/start-server) to add the secret name if it's not already being resolved
 
