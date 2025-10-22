@@ -4,17 +4,17 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProviderSummaries
-import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProviderSummary
-import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProviderTeamSummaries
-import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.ProviderTeamSummary
-import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.SupervisorSummaries
-import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.SupervisorSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProviderSummaries
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProviderSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProviderTeamSummaries
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProviderTeamSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.SupervisorSummaries
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.SupervisorSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProviderSummariesDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProviderTeamSummariesDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SupervisorSummariesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.bodyAsObject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.CommunityPaybackAndDeliusMockServer
-import uk.gov.justice.digital.hmpps.communitypaybackapi.provider.dto.ProviderSummariesDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.provider.dto.ProviderTeamSummariesDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.provider.dto.SupervisorSummariesDto
 
 class ProvidersIT : IntegrationTestBase() {
 

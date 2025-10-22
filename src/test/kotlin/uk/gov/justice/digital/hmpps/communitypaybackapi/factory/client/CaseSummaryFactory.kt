@@ -1,7 +1,7 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client
 
-import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CaseName
-import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CaseSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CaseName
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CaseSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.random
 
 fun CaseSummary.Companion.valid() = CaseSummary(

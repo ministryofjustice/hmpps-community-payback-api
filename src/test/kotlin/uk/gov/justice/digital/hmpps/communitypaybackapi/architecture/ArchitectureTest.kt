@@ -10,14 +10,15 @@ class ArchitectureTest {
   fun `Ensure packages are correctly isolated`() {
     Konsist.scopeFromProduction()
       .assertArchitecture {
-        val controller = Layer("controller", "..communitypaybackapi..controller..")
-        val dto = Layer("dto", "..communitypaybackapi..dto..")
-        val service = Layer("service", "..communitypaybackapi..service..")
-        val serviceInternal = Layer("service.internal", "..communitypaybackapi..service.internal..")
-        val client = Layer("client", "..communitypaybackapi....client..")
+        val controller = Layer("controller", "..communitypaybackapi.controller..")
+        val dto = Layer("dto", "..communitypaybackapi.dto..")
+        val service = Layer("service", "..communitypaybackapi.service..")
+        val serviceInternal = Layer("service.internal", "..communitypaybackapi.service.internal..")
+        val serviceMappers = Layer("service.mappers", "..communitypaybackapi.service.mappers..")
+        val client = Layer("client", "..communitypaybackapi.client..")
 
         dto.dependsOnNothing()
-        controller.doesNotDependOn(client, serviceInternal)
+        controller.doesNotDependOn(client, serviceInternal, serviceMappers)
         service.doesNotDependOn(controller)
         client.dependsOnNothing()
       }

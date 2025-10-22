@@ -1,10 +1,10 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.factory
 
-import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.dto.AppointmentBehaviourDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.dto.AppointmentWorkQualityDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.dto.AttendanceDataDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.dto.EnforcementDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.appointment.dto.UpdateAppointmentOutcomeDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentBehaviourDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentWorkQualityDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AttendanceDataDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EnforcementDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import java.util.UUID
 
 fun UpdateAppointmentOutcomeDto.Companion.valid(

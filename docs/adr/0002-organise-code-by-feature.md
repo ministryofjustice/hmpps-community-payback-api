@@ -4,7 +4,9 @@ Date 2025-09-24
 
 ## Status
 
-✅ Accepted
+✅ Rescinded
+
+This approach has been, at least in the short term, rescinded as the functional packaging complicated organisation of the UI-specific APIs required to support both the admin and supervisor UI.
 
 ## Context
 

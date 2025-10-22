@@ -1,8 +1,8 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.factory
 
-import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.CaseSummary
-import uk.gov.justice.digital.hmpps.communitypaybackapi.common.service.OffenderInfoResult
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CaseSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.OffenderInfoResult
 
 fun OffenderInfoResult.Full.Companion.valid(
   crn: String = String.random(8),

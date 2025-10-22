@@ -7,7 +7,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.get
-import uk.gov.justice.digital.hmpps.communitypaybackapi.common.client.AllRoshRisk
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.AllRoshRisk
 
 object ArnsMockServer {
 

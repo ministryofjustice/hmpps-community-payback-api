@@ -6,7 +6,7 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import java.nio.charset.Charset
 
 object WebClientResponseExceptionFactory {
-  fun notFound() = WebClientResponseException.create(
+  fun notFound(): WebClientResponseException = WebClientResponseException.create(
     HttpStatus.NOT_FOUND.value(),
     "Not Found",
     HttpHeaders(),
