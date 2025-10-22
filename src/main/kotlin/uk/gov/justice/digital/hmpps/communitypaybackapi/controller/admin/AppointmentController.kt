@@ -19,7 +19,7 @@ class AppointmentController(
 ) {
 
   @GetMapping(
-    path = ["/appointments/{appointmentId}"],
+    path = ["/appointments/{appointmentId}", "/admin/appointments/{appointmentId}"],
     produces = [MediaType.APPLICATION_JSON_VALUE],
   )
   @Operation(
@@ -45,7 +45,7 @@ class AppointmentController(
   ) = appointmentService.getAppointment(appointmentId)
 
   @PostMapping(
-    path = ["/appointments/{deliusAppointmentId}/outcome"],
+    path = ["/appointments/{deliusAppointmentId}/outcome", "/admin/appointments/{deliusAppointmentId}/outcome"],
     consumes = [MediaType.APPLICATION_JSON_VALUE],
   )
   @Operation(
