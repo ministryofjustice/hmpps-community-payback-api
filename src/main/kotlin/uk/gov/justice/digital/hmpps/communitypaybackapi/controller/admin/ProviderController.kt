@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.communitypaybackapi.controller
+package uk.gov.justice.digital.hmpps.communitypaybackapi.controller.admin
 
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
@@ -14,7 +14,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SupervisorSummariesD
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ProviderService
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 
-@CommunityPaybackController
+@AdminUiController
 @RequestMapping(
   path = [ "/providers" ],
   produces = [MediaType.APPLICATION_JSON_VALUE],

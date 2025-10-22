@@ -52,7 +52,7 @@ class OffenderIT : IntegrationTestBase() {
 
       val response = webTestClient.get()
         .uri("/offender/CRN123/riskSummary")
-        .addUiAuthHeader()
+        .addAdminUiAuthHeader()
         .exchange()
         .expectStatus()
         .isNotFound()
@@ -70,7 +70,7 @@ class OffenderIT : IntegrationTestBase() {
 
       val response = webTestClient.get()
         .uri("/offender/CRN123/riskSummary")
-        .addUiAuthHeader()
+        .addAdminUiAuthHeader()
         .exchange()
         .expectStatus()
         .isOk()

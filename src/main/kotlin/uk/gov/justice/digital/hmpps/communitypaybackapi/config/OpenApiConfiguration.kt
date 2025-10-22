@@ -21,8 +21,10 @@ class OpenApiConfiguration(buildProperties: BuildProperties) {
   private val version: String = buildProperties.version
 
   companion object {
-    const val SECURITY_SCHEME_UI = "community-payback-ui"
+    const val SECURITY_SCHEME_ANY_UI = "any-ui"
+    const val SECURITY_SCHEME_ADMIN_UI = "admin-ui"
     const val SECURITY_SCHEME_DOMAIN_EVENT_DETAILS = "domain-event-details"
+    const val SECURITY_SCHEME_SUPERVISOR_UI = "supervisor-ui"
   }
 
   @Bean
@@ -47,13 +49,22 @@ class OpenApiConfiguration(buildProperties: BuildProperties) {
     .components(
       Components()
         .addSecuritySchemes(
-          SECURITY_SCHEME_UI,
-          SecurityScheme().addBearerJwtRequirement(SecurityConfiguration.ROLE_UI),
+          SECURITY_SCHEME_ADMIN_UI,
+          SecurityScheme().addBearerJwtRequirement(SecurityConfiguration.ROLE_ADMIN_UI),
         )
         .addSecuritySchemes(
-          "domain-event-details",
+          SECURITY_SCHEME_ANY_UI,
+          SecurityScheme().addBearerJwtRequirement(SecurityConfiguration.ROLE_ADMIN_UI, SecurityConfiguration.ROLE_SUPERVISOR_UI),
+        )
+        .addSecuritySchemes(
+          SECURITY_SCHEME_DOMAIN_EVENT_DETAILS,
           SecurityScheme().addBearerJwtRequirement(SecurityConfiguration.ROLE_DOMAIN_EVENT_DETAILS),
+        )
+        .addSecuritySchemes(
+          SECURITY_SCHEME_SUPERVISOR_UI,
+          SecurityScheme().addBearerJwtRequirement(SecurityConfiguration.ROLE_SUPERVISOR_UI),
         ),
+
     )
 
   @Bean
@@ -63,11 +74,20 @@ class OpenApiConfiguration(buildProperties: BuildProperties) {
     .addOpenApiCustomizer(defaultErrorResponseCustomizer())
     .build()
 
+  @Deprecated("This will be replaced by ForCommunityPaybackAdminUI")
   @Bean
   fun forCommunityPaybackUI(): GroupedOpenApi = GroupedOpenApi.builder()
     .group("ForCommunityPaybackUI")
-    .displayName("For Community Payback UI")
-    .pathsToExclude("/queue-admin/**", "/domain-event-details/**")
+    .displayName("For Community Payback UI (Deprecated, use ForCommunityPaybackAdminUI)")
+    .pathsToExclude("/queue-admin/**", "/domain-event-details/**", "/supervisor/**")
+    .addOpenApiCustomizer(defaultErrorResponseCustomizer())
+    .build()
+
+  @Bean
+  fun forCommunityPaybackAdminUI(): GroupedOpenApi = GroupedOpenApi.builder()
+    .group("ForCommunityPaybackAdminUI")
+    .displayName("For Community Payback Admin UI")
+    .pathsToExclude("/queue-admin/**", "/domain-event-details/**", "/supervisor/**")
     .addOpenApiCustomizer(defaultErrorResponseCustomizer())
     .build()
 
@@ -79,12 +99,20 @@ class OpenApiConfiguration(buildProperties: BuildProperties) {
     .addOpenApiCustomizer(defaultErrorResponseCustomizer())
     .build()
 
-  private fun SecurityScheme.addBearerJwtRequirement(role: String): SecurityScheme = type(SecurityScheme.Type.HTTP)
+  @Bean
+  fun forSupervisorUI(): GroupedOpenApi = GroupedOpenApi.builder()
+    .group("ForCommunityPaybackSupervisorUI")
+    .displayName("For Community Payback Supervisor UI")
+    .pathsToMatch("/supervisor/**")
+    .addOpenApiCustomizer(defaultErrorResponseCustomizer())
+    .build()
+
+  private fun SecurityScheme.addBearerJwtRequirement(vararg roles: String): SecurityScheme = type(SecurityScheme.Type.HTTP)
     .scheme("bearer")
     .bearerFormat("JWT")
     .`in`(SecurityScheme.In.HEADER)
     .name("Authorization")
-    .description("A HMPPS Auth access token with the `$role` role.")
+    .description("A HMPPS Auth access token with one of the roles `$roles`.")
 
   /**
    * Adds 401, 403 and 500 error response structures to all endpoints, aligned

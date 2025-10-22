@@ -55,7 +55,7 @@ class ReferencesIT : IntegrationTestBase() {
 
       val projectTypes = webTestClient.get()
         .uri("/references/project-types")
-        .addUiAuthHeader()
+        .addAdminUiAuthHeader()
         .exchange()
         .expectStatus()
         .isOk
@@ -108,7 +108,7 @@ class ReferencesIT : IntegrationTestBase() {
     fun `should return OK with contact outcomes`() {
       val contactOutcomes = webTestClient.get()
         .uri("/references/contact-outcomes")
-        .addUiAuthHeader()
+        .addAdminUiAuthHeader()
         .exchange()
         .expectStatus()
         .isOk
@@ -164,7 +164,7 @@ class ReferencesIT : IntegrationTestBase() {
     fun `should return OK with enforcement actions`() {
       val enforementActions = webTestClient.get()
         .uri("/references/enforcement-actions")
-        .addUiAuthHeader()
+        .addAdminUiAuthHeader()
         .exchange()
         .expectStatus()
         .isOk

@@ -39,7 +39,7 @@ class FormControllerIT : IntegrationTestBase() {
   fun `GET returns 404 when no data`() {
     webTestClient.get()
       .uri("/forms/appointment/unknown-id")
-      .addUiAuthHeader()
+      .addAdminUiAuthHeader()
       .header("Content-Type", MediaType.APPLICATION_JSON_VALUE)
       .exchange()
       .expectStatus().isNotFound
@@ -54,7 +54,7 @@ class FormControllerIT : IntegrationTestBase() {
     // PUT store
     webTestClient.put()
       .uri("/forms/$formType/$id")
-      .addUiAuthHeader()
+      .addAdminUiAuthHeader()
       .contentType(MediaType.APPLICATION_JSON)
       .bodyValue(json)
       .exchange()
@@ -63,7 +63,7 @@ class FormControllerIT : IntegrationTestBase() {
     // GET retrieve
     webTestClient.get()
       .uri("/forms/$formType/$id")
-      .addUiAuthHeader()
+      .addAdminUiAuthHeader()
       .header("Content-Type", MediaType.APPLICATION_JSON_VALUE)
       .exchange()
       .expectStatus().isOk

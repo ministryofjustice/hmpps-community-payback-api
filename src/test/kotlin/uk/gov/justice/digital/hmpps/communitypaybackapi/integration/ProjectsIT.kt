@@ -28,7 +28,7 @@ class ProjectsIT : IntegrationTestBase() {
 
   @Nested
   @DisplayName("GET /projects/session-search")
-  inner class ProjectAllocationsEndpoint {
+  inner class SessionSearchEndpoint {
 
     @Test
     fun `should return unauthorized if no token`() {
@@ -63,7 +63,7 @@ class ProjectsIT : IntegrationTestBase() {
     fun `should return bad request if missing parameters`() {
       webTestClient.get()
         .uri("/projects/session-search")
-        .addUiAuthHeader()
+        .addAdminUiAuthHeader()
         .exchange()
         .expectStatus()
         .is4xxClientError
@@ -82,7 +82,7 @@ class ProjectsIT : IntegrationTestBase() {
 
       val sessionSearchResults = webTestClient.get()
         .uri("/projects/session-search?startDate=2025-01-09&endDate=2025-07-09&teamCode=999")
-        .addUiAuthHeader()
+        .addAdminUiAuthHeader()
         .exchange()
         .expectStatus()
         .isOk
@@ -101,7 +101,7 @@ class ProjectsIT : IntegrationTestBase() {
 
       val sessionSummaries = webTestClient.get()
         .uri("/projects/session-search?startDate=2025-01-09&endDate=2025-07-09&teamCode=999")
-        .addUiAuthHeader()
+        .addAdminUiAuthHeader()
         .exchange()
         .expectStatus()
         .isOk
@@ -148,7 +148,7 @@ class ProjectsIT : IntegrationTestBase() {
     fun `should return bad request if missing parameters`() {
       webTestClient.get()
         .uri("/projects/123/sessions/2025-01-09")
-        .addUiAuthHeader()
+        .addAdminUiAuthHeader()
         .exchange()
         .expectStatus()
         .is4xxClientError
@@ -192,7 +192,7 @@ class ProjectsIT : IntegrationTestBase() {
 
       val sessionSearchResults = webTestClient.get()
         .uri("/projects/N123456789/sessions/2025-01-09?startTime=09:00&endTime=17:00")
-        .addUiAuthHeader()
+        .addAdminUiAuthHeader()
         .exchange()
         .expectStatus()
         .isOk
@@ -266,7 +266,7 @@ class ProjectsIT : IntegrationTestBase() {
 
       val session = webTestClient.get()
         .uri("/projects/N123456789/sessions/2025-01-09?startTime=09:00&endTime=17:00")
-        .addUiAuthHeader(username = "USER1")
+        .addAdminUiAuthHeader(username = "USER1")
         .exchange()
         .expectStatus()
         .isOk

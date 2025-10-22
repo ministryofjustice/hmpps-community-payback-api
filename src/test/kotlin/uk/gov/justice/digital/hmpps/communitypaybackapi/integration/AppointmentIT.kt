@@ -80,7 +80,7 @@ class AppointmentIT : IntegrationTestBase() {
 
       val response = webTestClient.get()
         .uri("/appointments/101")
-        .addUiAuthHeader()
+        .addAdminUiAuthHeader()
         .exchange()
         .expectStatus()
         .isNotFound()
@@ -105,7 +105,7 @@ class AppointmentIT : IntegrationTestBase() {
 
       val response = webTestClient.get()
         .uri("/appointments/101")
-        .addUiAuthHeader()
+        .addAdminUiAuthHeader()
         .exchange()
         .expectStatus()
         .isOk()
@@ -163,7 +163,7 @@ class AppointmentIT : IntegrationTestBase() {
 
       val response = webTestClient.post()
         .uri("/appointments/1234/outcome")
-        .addUiAuthHeader()
+        .addAdminUiAuthHeader()
         .bodyValue(UpdateAppointmentOutcomeDto.valid())
         .exchange()
         .expectStatus()
@@ -190,7 +190,7 @@ class AppointmentIT : IntegrationTestBase() {
 
       webTestClient.post()
         .uri("/appointments/1234/outcome")
-        .addUiAuthHeader()
+        .addAdminUiAuthHeader()
         .bodyValue(
           UpdateAppointmentOutcomeDto.valid(
             contactOutcomeId = contactOutcomeEntity.id,

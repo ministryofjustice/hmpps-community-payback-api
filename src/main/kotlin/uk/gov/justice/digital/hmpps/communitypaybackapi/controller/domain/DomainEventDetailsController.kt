@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.communitypaybackapi.controller
+package uk.gov.justice.digital.hmpps.communitypaybackapi.controller.domain
 
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
@@ -25,7 +25,7 @@ import java.util.UUID
   produces = [MediaType.APPLICATION_JSON_VALUE],
 )
 @PreAuthorize("hasRole('" + SecurityConfiguration.ROLE_DOMAIN_EVENT_DETAILS + "')")
-@SecurityRequirement(name = OpenApiConfiguration.SECURITY_SCHEME_DOMAIN_EVENT_DETAILS)
+@SecurityRequirement(name = OpenApiConfiguration.Companion.SECURITY_SCHEME_DOMAIN_EVENT_DETAILS)
 class DomainEventDetailsController(
   val appointmentService: AppointmentService,
 ) {

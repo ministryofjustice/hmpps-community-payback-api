@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.communitypaybackapi.controller
+package uk.gov.justice.digital.hmpps.communitypaybackapi.controller.admin
 
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
@@ -17,7 +17,7 @@ import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 import java.time.LocalDate
 import java.time.LocalTime
 
-@CommunityPaybackController
+@AdminUiController
 @RequestMapping("/projects")
 class ProjectController(val projectService: ProjectService) {
 
