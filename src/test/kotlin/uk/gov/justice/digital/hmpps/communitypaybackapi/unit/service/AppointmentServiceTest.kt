@@ -15,21 +15,16 @@ import org.junit.jupiter.api.extension.ExtendWith
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CaseSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectAppointment
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentBehaviourDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentWorkQualityDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AttendanceDataDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EnforcementDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.FormKeyDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.NotFoundException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.OffenderDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentOutcomeEntityRepository
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.Behaviour
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.WorkQuality
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdditionalInformationType
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentOutcomeEntityFactory
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentOutcomeValidationService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.DomainEventService
@@ -39,9 +34,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.OffenderInfoResu
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.OffenderService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.PersonReferenceType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.unit.util.WebClientResponseExceptionFactory
-import java.time.LocalDate
-import java.time.LocalTime
-import java.util.UUID
 
 @ExtendWith(MockKExtension::class)
 class AppointmentServiceTest {
@@ -64,6 +56,9 @@ class AppointmentServiceTest {
   @SuppressWarnings("UnusedPrivateProperty")
   @MockK(relaxed = true)
   private lateinit var appointmentOutcomeValidationService: AppointmentOutcomeValidationService
+
+  @MockK(relaxed = true)
+  private lateinit var appointmentOutcomeEntityFactory: AppointmentOutcomeEntityFactory
 
   @InjectMockKs
   private lateinit var service: AppointmentService
@@ -115,64 +110,29 @@ class AppointmentServiceTest {
 
     @Test
     fun `if there's no existing entries for the delius appointment ids, persist new entry and raise domain events`() {
+      val updateOutcomeDto = UpdateAppointmentOutcomeDto.valid()
+
       every {
         communityPaybackAndDeliusClient.getProjectAppointment(101L)
       } returns ProjectAppointment.valid().copy(case = CaseSummary.valid().copy(crn = "CRN1"))
 
       every { appointmentOutcomeEntityRepository.findTopByAppointmentDeliusIdOrderByCreatedAtDesc(1L) } returns null
 
+      val entityReturnedByFactory = AppointmentOutcomeEntity.valid()
+      every {
+        appointmentOutcomeEntityFactory.toEntity(101L, updateOutcomeDto)
+      } returns entityReturnedByFactory
+
       val entityCaptor = mutableListOf<AppointmentOutcomeEntity>()
       every { appointmentOutcomeEntityRepository.save(capture(entityCaptor)) } returnsArgument 0
 
-      val deliusVersion = UUID.randomUUID()
-
       service.updateAppointmentOutcome(
         deliusId = 101L,
-        outcome = UpdateAppointmentOutcomeDto(
-          deliusVersionToUpdate = deliusVersion,
-          startTime = LocalTime.of(10, 1, 2),
-          endTime = LocalTime.of(16, 3, 4),
-          contactOutcomeId = UUID.fromString("4306c7ca-b717-4995-9eea-91e41d95d44a"),
-          supervisorOfficerCode = "N45",
-          notes = "some notes",
-          attendanceData = AttendanceDataDto(
-            hiVisWorn = false,
-            workedIntensively = true,
-            penaltyTime = LocalTime.of(5, 0),
-            workQuality = AppointmentWorkQualityDto.SATISFACTORY,
-            behaviour = AppointmentBehaviourDto.UNSATISFACTORY,
-          ),
-          enforcementData = EnforcementDto(
-            enforcementActionId = UUID.fromString("52bffba3-2366-4941-aff5-9418b4fbca7e"),
-            respondBy = LocalDate.of(2026, 8, 10),
-          ),
-          formKeyToDelete = null,
-          alertActive = false,
-          sensitive = true,
-        ),
+        outcome = updateOutcomeDto,
       )
 
       assertThat(entityCaptor).hasSize(1)
-
-      val firstEntity = entityCaptor[0]
-
-      assertThat(firstEntity.id).isNotNull
-      assertThat(firstEntity.deliusVersionToUpdate).isEqualTo(deliusVersion)
-      assertThat(firstEntity.appointmentDeliusId).isEqualTo(101L)
-      assertThat(firstEntity.startTime).isEqualTo(LocalTime.of(10, 1, 2))
-      assertThat(firstEntity.endTime).isEqualTo(LocalTime.of(16, 3, 4))
-      assertThat(firstEntity.contactOutcomeId).isEqualTo(UUID.fromString("4306c7ca-b717-4995-9eea-91e41d95d44a"))
-      assertThat(firstEntity.enforcementActionId).isEqualTo(UUID.fromString("52bffba3-2366-4941-aff5-9418b4fbca7e"))
-      assertThat(firstEntity.supervisorOfficerCode).isEqualTo("N45")
-      assertThat(firstEntity.notes).isEqualTo("some notes")
-      assertThat(firstEntity.hiVisWorn).isEqualTo(false)
-      assertThat(firstEntity.workedIntensively).isEqualTo(true)
-      assertThat(firstEntity.penaltyMinutes).isEqualTo(300L)
-      assertThat(firstEntity.workQuality).isEqualTo(WorkQuality.SATISFACTORY)
-      assertThat(firstEntity.behaviour).isEqualTo(Behaviour.UNSATISFACTORY)
-      assertThat(firstEntity.respondBy).isEqualTo(LocalDate.of(2026, 8, 10))
-      assertThat(firstEntity.alertActive).isEqualTo(false)
-      assertThat(firstEntity.sensitive).isEqualTo(true)
+      assertThat(entityCaptor[0]).isSameAs(entityReturnedByFactory)
 
       verify {
         domainEventService.publish(
@@ -207,12 +167,14 @@ class AppointmentServiceTest {
     fun `if there's an existing entry for the delius appointment id and it's logically identical, do not persist a new entry`() {
       val updateAppointmentDto = UpdateAppointmentOutcomeDto.valid()
 
-      val existingIdenticalEntity = service.toEntity(1L, updateAppointmentDto)
+      val existingIdenticalEntity = AppointmentOutcomeEntity.valid()
       every {
         appointmentOutcomeEntityRepository.findTopByAppointmentDeliusIdOrderByCreatedAtDesc(1L)
       } returns existingIdenticalEntity
 
       every { communityPaybackAndDeliusClient.getProjectAppointment(1L) } returns ProjectAppointment.valid().copy(case = CaseSummary.valid().copy(crn = "CRN1"))
+
+      every { appointmentOutcomeEntityFactory.toEntity(1L, updateAppointmentDto) } returns existingIdenticalEntity
 
       service.updateAppointmentOutcome(
         deliusId = 1L,
@@ -226,8 +188,7 @@ class AppointmentServiceTest {
     fun `if there's an existing entry for the delius appointment id but it's not logically identical, persist new entry and raise domain event`() {
       val updateAppointmentDto = UpdateAppointmentOutcomeDto.valid()
 
-      val existingAlmostIdenticalEntity = service.toEntity(1L, updateAppointmentDto)
-        .copy(notes = "some different notes")
+      val existingAlmostIdenticalEntity = AppointmentOutcomeEntity.valid().copy(notes = "some different notes")
       every {
         appointmentOutcomeEntityRepository.findTopByAppointmentDeliusIdOrderByCreatedAtDesc(1L)
       } returns existingAlmostIdenticalEntity
