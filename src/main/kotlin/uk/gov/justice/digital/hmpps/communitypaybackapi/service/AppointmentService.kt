@@ -44,7 +44,6 @@ class AppointmentService(
 
   fun getOutcomeDomainEventDetails(id: UUID) = appointmentOutcomeEntityRepository.findByIdOrNullForDomainEventDetails(id)?.toDomainEventDetail()
 
-  // DA: we should validate presence of attendanceData and enforcementData against contact outcome, once we have the reference data to do this
   @Transactional
   fun updateAppointmentOutcome(
     deliusId: Long,
@@ -60,10 +59,10 @@ class AppointmentService(
 
     val proposedEntity = toEntity(deliusId, outcome)
 
-    val mostRecentAppointmentOutcome = appointmentOutcomeEntityRepository.findTopByAppointmentDeliusIdOrderByUpdatedAtDesc(deliusId)
+    val mostRecentAppointmentOutcome = appointmentOutcomeEntityRepository.findTopByAppointmentDeliusIdOrderByCreatedAtDesc(deliusId)
 
     if (mostRecentAppointmentOutcome.isLogicallyIdentical(proposedEntity)) {
-      log.debug("Not persisting update for appointment $deliusId because existing logically identical entry exists")
+      log.debug("Not applying update for appointment $deliusId because the most recent update is logically identical")
       return
     }
 
