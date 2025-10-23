@@ -22,6 +22,7 @@ data class AppointmentOutcomeEntity(
   @Id
   val id: UUID,
   val appointmentDeliusId: Long,
+  val deliusVersionToUpdate: UUID,
   val startTime: LocalTime,
   val endTime: LocalTime,
 
@@ -52,6 +53,9 @@ data class AppointmentOutcomeEntity(
   val behaviour: Behaviour? = null,
 
   val respondBy: LocalDate? = null,
+
+  val alertActive: Boolean,
+  val sensitive: Boolean,
 
   @CreationTimestamp
   val createdAt: OffsetDateTime = OffsetDateTime.now(),

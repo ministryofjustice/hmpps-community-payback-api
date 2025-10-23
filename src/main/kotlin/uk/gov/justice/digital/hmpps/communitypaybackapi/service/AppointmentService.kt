@@ -83,6 +83,7 @@ class AppointmentService(
   fun toEntity(deliusId: Long, outcome: UpdateAppointmentOutcomeDto) = AppointmentOutcomeEntity(
     id = UUID.randomUUID(),
     appointmentDeliusId = deliusId,
+    deliusVersionToUpdate = outcome.deliusVersionToUpdate,
     startTime = outcome.startTime,
     endTime = outcome.endTime,
     contactOutcomeId = outcome.contactOutcomeId,
@@ -95,6 +96,8 @@ class AppointmentService(
     workQuality = outcome.attendanceData?.workQuality?.let { WorkQuality.fromDto(it) },
     behaviour = outcome.attendanceData?.behaviour?.let { Behaviour.fromDto(it) },
     respondBy = outcome.enforcementData?.respondBy,
+    alertActive = outcome.alertActive,
+    sensitive = outcome.sensitive,
   )
 
   private fun AppointmentOutcomeEntity?.isLogicallyIdentical(other: AppointmentOutcomeEntity) = this != null &&

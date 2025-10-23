@@ -11,6 +11,7 @@ fun UpdateAppointmentOutcomeDto.Companion.valid(
   contactOutcomeId: UUID = UUID.randomUUID(),
   enforcementActionId: UUID = UUID.randomUUID(),
 ) = UpdateAppointmentOutcomeDto(
+  deliusVersionToUpdate = UUID.randomUUID(),
   startTime = randomLocalTime(),
   endTime = randomLocalTime(),
   contactOutcomeId = contactOutcomeId,
@@ -28,4 +29,6 @@ fun UpdateAppointmentOutcomeDto.Companion.valid(
     respondBy = randomLocalDate(),
   ),
   formKeyToDelete = null,
+  alertActive = Boolean.random(),
+  sensitive = Boolean.random(),
 )
