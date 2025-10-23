@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ConflictException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.NotFoundException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentOutcomeEntity
@@ -66,6 +67,8 @@ class AppointmentService(
       )
     } catch (_: WebClientResponseException.NotFound) {
       throw NotFoundException("Appointment", deliusId.toString())
+    } catch (_: WebClientResponseException.Conflict) {
+      throw ConflictException("A newer version of the appointment exists. Stale version is '${outcome.deliusVersionToUpdate}'")
     }
 
     outcome.formKeyToDelete?.let {

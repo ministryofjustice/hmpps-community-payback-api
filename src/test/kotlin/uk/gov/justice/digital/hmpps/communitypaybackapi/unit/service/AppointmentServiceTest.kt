@@ -13,6 +13,7 @@ import org.junit.jupiter.api.extension.ExtendWith
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CaseSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectAppointment
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ConflictException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.FormKeyDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.NotFoundException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.OffenderDto
@@ -28,6 +29,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.FormService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.OffenderInfoResult
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.OffenderService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.unit.util.WebClientResponseExceptionFactory
+import java.util.UUID
 
 @ExtendWith(MockKExtension::class)
 class AppointmentServiceTest {
@@ -103,6 +105,26 @@ class AppointmentServiceTest {
           outcome = UpdateAppointmentOutcomeDto.valid(),
         )
       }.isInstanceOf(NotFoundException::class.java).hasMessage("Appointment not found for ID '101'")
+    }
+
+    @Test
+    fun `if appointment has newer version, throw conflict exception`() {
+      every { appointmentOutcomeEntityRepository.findTopByAppointmentDeliusIdOrderByCreatedAtDesc(1L) } returns null
+      every { appointmentOutcomeEntityFactory.toEntity(any(), any()) } returns AppointmentOutcomeEntity.valid()
+      every { appointmentOutcomeEntityRepository.save(any()) } returnsArgument 0
+
+      every {
+        communityPaybackAndDeliusClient.updateAppointment(any(), any())
+      } throws WebClientResponseExceptionFactory.conflict()
+
+      val version = UUID.randomUUID()
+
+      assertThatThrownBy {
+        service.updateAppointmentOutcome(
+          deliusId = 101L,
+          outcome = UpdateAppointmentOutcomeDto.valid().copy(deliusVersionToUpdate = version),
+        )
+      }.isInstanceOf(ConflictException::class.java).hasMessage("A newer version of the appointment exists. Stale version is '$version'")
     }
 
     @Test

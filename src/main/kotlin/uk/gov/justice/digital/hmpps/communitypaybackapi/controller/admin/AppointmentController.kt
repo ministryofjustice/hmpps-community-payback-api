@@ -71,6 +71,16 @@ class AppointmentController(
           ),
         ],
       ),
+      ApiResponse(
+        responseCode = "409",
+        description = "A newer version of the appointment exists in Delius",
+        content = [
+          Content(
+            mediaType = "application/json",
+            schema = Schema(implementation = ErrorResponse::class),
+          ),
+        ],
+      ),
     ],
   )
   fun updateAppointmentOutcome(
