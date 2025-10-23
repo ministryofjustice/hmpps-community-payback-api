@@ -63,7 +63,7 @@ else:
 
 if local_sui:
     print("Running local Supervisors UI")
-    npm_command='export $(cat ' + os.getcwd() + '/.env.ui) && npm run start:dev'
+    npm_command='export $(cat ' + os.getcwd() + '/.env.sui) && npm run start:dev'
 
     local_resource(
         "sui-local",
