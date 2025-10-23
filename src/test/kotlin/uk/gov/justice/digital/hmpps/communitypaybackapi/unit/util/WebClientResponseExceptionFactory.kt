@@ -6,6 +6,14 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import java.nio.charset.Charset
 
 object WebClientResponseExceptionFactory {
+  fun conflict(): WebClientResponseException = WebClientResponseException.create(
+    HttpStatus.CONFLICT.value(),
+    "Conflict",
+    HttpHeaders(),
+    "the body".toByteArray(Charset.forName("UTF-8")),
+    null,
+  )
+
   fun notFound(): WebClientResponseException = WebClientResponseException.create(
     HttpStatus.NOT_FOUND.value(),
     "Not Found",
