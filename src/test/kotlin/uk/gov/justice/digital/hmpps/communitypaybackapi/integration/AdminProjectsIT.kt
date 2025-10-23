@@ -22,16 +22,16 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.Com
 import java.time.LocalDate
 import java.time.LocalTime
 
-class ProjectsIT : IntegrationTestBase() {
+class AdminProjectsIT : IntegrationTestBase() {
 
   @Nested
-  @DisplayName("GET /projects/session-search")
+  @DisplayName("GET /admin/projects/session-search")
   inner class SessionSearchEndpoint {
 
     @Test
     fun `should return unauthorized if no token`() {
       webTestClient.get()
-        .uri("/projects/session-search?startDate=2025-09-01&endDate=2025-09-07&teamCode=1")
+        .uri("/admin/projects/session-search?startDate=2025-09-01&endDate=2025-09-07&teamCode=1")
         .exchange()
         .expectStatus()
         .isUnauthorized
@@ -40,7 +40,7 @@ class ProjectsIT : IntegrationTestBase() {
     @Test
     fun `should return forbidden if no role`() {
       webTestClient.get()
-        .uri("/projects/session-search?startDate=2025-09-01&endDate=2025-09-07&teamCode=1")
+        .uri("/admin/projects/session-search?startDate=2025-09-01&endDate=2025-09-07&teamCode=1")
         .headers(setAuthorisation())
         .exchange()
         .expectStatus()
@@ -50,7 +50,7 @@ class ProjectsIT : IntegrationTestBase() {
     @Test
     fun `should return forbidden if wrong role`() {
       webTestClient.get()
-        .uri("/projects/session-search?startDate=2025-09-01&endDate=2025-09-07&teamCode=1")
+        .uri("/admin/projects/session-search?startDate=2025-09-01&endDate=2025-09-07&teamCode=1")
         .headers(setAuthorisation(roles = listOf("ROLE_WRONG")))
         .exchange()
         .expectStatus()
@@ -60,7 +60,7 @@ class ProjectsIT : IntegrationTestBase() {
     @Test
     fun `should return bad request if missing parameters`() {
       webTestClient.get()
-        .uri("/projects/session-search")
+        .uri("/admin/projects/session-search")
         .addAdminUiAuthHeader()
         .exchange()
         .expectStatus()
@@ -79,7 +79,7 @@ class ProjectsIT : IntegrationTestBase() {
       )
 
       val sessionSearchResults = webTestClient.get()
-        .uri("/projects/session-search?startDate=2025-01-09&endDate=2025-07-09&teamCode=999")
+        .uri("/admin/projects/session-search?startDate=2025-01-09&endDate=2025-07-09&teamCode=999")
         .addAdminUiAuthHeader()
         .exchange()
         .expectStatus()
@@ -98,7 +98,7 @@ class ProjectsIT : IntegrationTestBase() {
       )
 
       val sessionSummaries = webTestClient.get()
-        .uri("/projects/session-search?startDate=2025-01-09&endDate=2025-07-09&teamCode=999")
+        .uri("/admin/projects/session-search?startDate=2025-01-09&endDate=2025-07-09&teamCode=999")
         .addAdminUiAuthHeader()
         .exchange()
         .expectStatus()
@@ -110,13 +110,13 @@ class ProjectsIT : IntegrationTestBase() {
   }
 
   @Nested
-  @DisplayName("GET /projects/123/sessions/2025-01-09")
+  @DisplayName("GET /admin/projects/123/sessions/2025-01-09")
   inner class ProjectSessionsEndpoint {
 
     @Test
     fun `should return unauthorized if no token`() {
       webTestClient.get()
-        .uri("/projects/123/sessions/2025-01-09?start=09:00&end=17:00")
+        .uri("/admin/projects/123/sessions/2025-01-09?start=09:00&end=17:00")
         .exchange()
         .expectStatus()
         .isUnauthorized
@@ -125,7 +125,7 @@ class ProjectsIT : IntegrationTestBase() {
     @Test
     fun `should return forbidden if no role`() {
       webTestClient.get()
-        .uri("/projects/123/sessions/2025-01-09?startTime=09:00&endTime=17:00")
+        .uri("/admin/projects/123/sessions/2025-01-09?startTime=09:00&endTime=17:00")
         .headers(setAuthorisation())
         .exchange()
         .expectStatus()
@@ -135,7 +135,7 @@ class ProjectsIT : IntegrationTestBase() {
     @Test
     fun `should return forbidden if wrong role`() {
       webTestClient.get()
-        .uri("/projects/123/sessions/2025-01-09?startTime=09:00&endTime=17:00")
+        .uri("/admin/projects/123/sessions/2025-01-09?startTime=09:00&endTime=17:00")
         .headers(setAuthorisation(roles = listOf("ROLE_WRONG")))
         .exchange()
         .expectStatus()
@@ -145,7 +145,7 @@ class ProjectsIT : IntegrationTestBase() {
     @Test
     fun `should return bad request if missing parameters`() {
       webTestClient.get()
-        .uri("/projects/123/sessions/2025-01-09")
+        .uri("/admin/projects/123/sessions/2025-01-09")
         .addAdminUiAuthHeader()
         .exchange()
         .expectStatus()
@@ -167,7 +167,7 @@ class ProjectsIT : IntegrationTestBase() {
       )
 
       val sessionSearchResults = webTestClient.get()
-        .uri("/projects/N123456789/sessions/2025-01-09?startTime=09:00&endTime=17:00")
+        .uri("/admin/projects/N123456789/sessions/2025-01-09?startTime=09:00&endTime=17:00")
         .addAdminUiAuthHeader()
         .exchange()
         .expectStatus()
@@ -223,7 +223,7 @@ class ProjectsIT : IntegrationTestBase() {
       )
 
       val session = webTestClient.get()
-        .uri("/projects/N123456789/sessions/2025-01-09?startTime=09:00&endTime=17:00")
+        .uri("/admin/projects/N123456789/sessions/2025-01-09?startTime=09:00&endTime=17:00")
         .addAdminUiAuthHeader(username = "USER1")
         .exchange()
         .expectStatus()

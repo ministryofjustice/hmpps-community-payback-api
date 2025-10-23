@@ -11,7 +11,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.bodyAsO
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.ArnsMockServer
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 
-class OffenderIT : IntegrationTestBase() {
+class CommonOffenderIT : IntegrationTestBase() {
 
   @Nested
   @DisplayName("GET /common/offender/{crn}/riskSummary")

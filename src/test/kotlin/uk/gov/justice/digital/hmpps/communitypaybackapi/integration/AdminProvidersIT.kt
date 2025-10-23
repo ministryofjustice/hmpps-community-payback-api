@@ -16,16 +16,16 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SupervisorSummariesD
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.bodyAsObject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.CommunityPaybackAndDeliusMockServer
 
-class ProvidersIT : IntegrationTestBase() {
+class AdminProvidersIT : IntegrationTestBase() {
 
   @Nested
-  @DisplayName("GET /providers")
+  @DisplayName("GET /admin/providers")
   inner class ProviderEndpoint {
 
     @Test
     fun `should return unauthorized if no token`() {
       webTestClient.get()
-        .uri("/providers")
+        .uri("/admin/providers")
         .exchange()
         .expectStatus()
         .isUnauthorized
@@ -34,7 +34,7 @@ class ProvidersIT : IntegrationTestBase() {
     @Test
     fun `should return forbidden if no role`() {
       webTestClient.get()
-        .uri("/providers")
+        .uri("/admin/providers")
         .headers(setAuthorisation())
         .exchange()
         .expectStatus()
@@ -44,7 +44,7 @@ class ProvidersIT : IntegrationTestBase() {
     @Test
     fun `should return forbidden if wrong role`() {
       webTestClient.get()
-        .uri("/providers")
+        .uri("/admin/providers")
         .headers(setAuthorisation(roles = listOf("ROLE_WRONG")))
         .exchange()
         .expectStatus()
@@ -64,7 +64,7 @@ class ProvidersIT : IntegrationTestBase() {
       )
 
       val providers = webTestClient.get()
-        .uri("/providers")
+        .uri("/admin/providers")
         .addAdminUiAuthHeader()
         .exchange()
         .expectStatus()
@@ -78,13 +78,13 @@ class ProvidersIT : IntegrationTestBase() {
   }
 
   @Nested
-  @DisplayName("GET /providers/123/teams")
+  @DisplayName("GET /admin/providers/123/teams")
   inner class ProviderTeamsEndpoint {
 
     @Test
     fun `should return unauthorized if no token`() {
       webTestClient.get()
-        .uri("/providers/123/teams")
+        .uri("/admin/providers/123/teams")
         .exchange()
         .expectStatus()
         .isUnauthorized
@@ -93,7 +93,7 @@ class ProvidersIT : IntegrationTestBase() {
     @Test
     fun `should return forbidden if no role`() {
       webTestClient.get()
-        .uri("/providers/123/teams")
+        .uri("/admin/providers/123/teams")
         .headers(setAuthorisation())
         .exchange()
         .expectStatus()
@@ -103,7 +103,7 @@ class ProvidersIT : IntegrationTestBase() {
     @Test
     fun `should return forbidden if wrong role`() {
       webTestClient.get()
-        .uri("/providers/123/teams")
+        .uri("/admin/providers/123/teams")
         .headers(setAuthorisation(roles = listOf("ROLE_WRONG")))
         .exchange()
         .expectStatus()
@@ -124,7 +124,7 @@ class ProvidersIT : IntegrationTestBase() {
       )
 
       val providers = webTestClient.get()
-        .uri("/providers/N123456789/teams")
+        .uri("/admin/providers/N123456789/teams")
         .addAdminUiAuthHeader()
         .exchange()
         .expectStatus()
@@ -138,13 +138,13 @@ class ProvidersIT : IntegrationTestBase() {
   }
 
   @Nested
-  @DisplayName("GET /providers/{providerCode}/teams/{teamCode}/supervisors")
+  @DisplayName("GET /admin/providers/{providerCode}/teams/{teamCode}/supervisors")
   inner class TeamSupervisorsEndpoint {
 
     @Test
     fun `should return unauthorized if no token`() {
       webTestClient.get()
-        .uri("/providers/123/teams/99/supervisors")
+        .uri("/admin/providers/123/teams/99/supervisors")
         .exchange()
         .expectStatus()
         .isUnauthorized
@@ -153,7 +153,7 @@ class ProvidersIT : IntegrationTestBase() {
     @Test
     fun `should return forbidden if no role`() {
       webTestClient.get()
-        .uri("/providers/123/teams/99/supervisors")
+        .uri("/admin/providers/123/teams/99/supervisors")
         .headers(setAuthorisation())
         .exchange()
         .expectStatus()
@@ -172,7 +172,7 @@ class ProvidersIT : IntegrationTestBase() {
       )
 
       val supervisors = webTestClient.get()
-        .uri("/providers/123/teams/99/supervisors")
+        .uri("/admin/providers/123/teams/99/supervisors")
         .addAdminUiAuthHeader()
         .exchange()
         .expectStatus()
@@ -193,7 +193,7 @@ class ProvidersIT : IntegrationTestBase() {
       )
 
       val supervisors = webTestClient.get()
-        .uri("/providers/123/teams/99/supervisors")
+        .uri("/admin/providers/123/teams/99/supervisors")
         .addAdminUiAuthHeader()
         .exchange()
         .expectStatus()

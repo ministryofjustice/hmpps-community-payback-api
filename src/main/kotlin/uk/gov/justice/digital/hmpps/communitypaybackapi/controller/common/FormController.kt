@@ -9,16 +9,21 @@ import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PutMapping
+import org.springframework.web.bind.annotation.RequestMapping
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.FormService
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 
 @CommonController
+@RequestMapping(
+  "/common/forms",
+  produces = [MediaType.APPLICATION_JSON_VALUE],
+)
 class FormController(
   private val formService: FormService,
 ) {
 
   @GetMapping(
-    path = ["/forms/{formType}/{id}", "/common/forms/{formType}/{id}"],
+    path = ["/{formType}/{id}"],
   )
   @Operation(
     description = """Fetches the blob stored against this type and id""",
@@ -45,7 +50,7 @@ class FormController(
   ): String = formService.formGet(formType, id)
 
   @PutMapping(
-    path = ["/forms/{formType}/{id}", "/common/forms/{formType}/{id}"],
+    path = ["/{formType}/{id}"],
     consumes = [MediaType.APPLICATION_JSON_VALUE],
   )
   @Operation(
