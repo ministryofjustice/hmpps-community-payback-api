@@ -1,11 +1,13 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.client
 
+import io.swagger.v3.oas.annotations.media.Schema
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.service.annotation.GetExchange
 import org.springframework.web.service.annotation.PostExchange
+import org.springframework.web.service.annotation.PutExchange
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
@@ -36,6 +38,12 @@ interface CommunityPaybackAndDeliusClient {
   fun getProjectAppointment(
     @PathVariable appointmentId: Long,
   ): ProjectAppointment
+
+  @PutExchange("/appointments/{appointmentId}")
+  fun updateAppointment(
+    @PathVariable appointmentId: Long,
+    @RequestBody updateAppointment: UpdateAppointment,
+  )
 
   @PostExchange("/users/access")
   fun getUsersAccess(
@@ -229,4 +237,24 @@ data class SupervisorSummary(
   val forename2: String?,
   val officerCode: String,
   val staffGrade: String,
+)
+
+data class UpdateAppointment(
+  val version: UUID,
+  @param:Schema(example = "09:00", description = "The start local time of the appointment", pattern = "^([0-1][0-9]|2[0-3]):[0-5][0-9]$")
+  val startTime: LocalTime,
+  @param:Schema(example = "09:00", description = "The end local time of the appointment", pattern = "^([0-1][0-9]|2[0-3]):[0-5][0-9]$")
+  val endTime: LocalTime,
+  val contactOutcomeCode: String? = null,
+  val supervisorOfficerCode: String? = null,
+  val notes: String? = null,
+  val hiVisWorn: Boolean? = null,
+  val workedIntensively: Boolean? = null,
+  val penaltyMinutes: Long? = null,
+  val workQuality: ProjectAppointmentWorkQuality? = null,
+  val behaviour: ProjectAppointmentBehaviour? = null,
+  val sensitive: Boolean,
+  val alertActive: Boolean,
+  val enforcementActionCode: String? = null,
+  val respondBy: LocalDate? = null,
 )

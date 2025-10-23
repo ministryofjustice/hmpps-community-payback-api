@@ -13,6 +13,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentOutcom
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDomainEventDetail
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toUpdateAppointment
 import java.util.UUID
 
 @SuppressWarnings("LongParameterList")
@@ -65,6 +66,11 @@ class AppointmentService(
     }
 
     val persistedEntity = appointmentOutcomeEntityRepository.save(proposedEntity)
+
+    communityPaybackAndDeliusClient.updateAppointment(
+      appointmentId = deliusId,
+      updateAppointment = persistedEntity.toUpdateAppointment(),
+    )
 
     domainEventService.publish(
       id = persistedEntity.id,

@@ -95,7 +95,7 @@ class AdminAppointmentIT : IntegrationTestBase() {
       val projectName = "Community Garden Maintenance"
       val crn = "X434334"
 
-      CommunityPaybackAndDeliusMockServer.projectAppointment(
+      CommunityPaybackAndDeliusMockServer.getAppointment(
         ProjectAppointment.valid().copy(
           id = id,
           project = Project.valid().copy(name = projectName),
@@ -174,8 +174,9 @@ class AdminAppointmentIT : IntegrationTestBase() {
     }
 
     @Test
-    fun `Should persist update, raising domain event and deleting form data`() {
-      CommunityPaybackAndDeliusMockServer.projectAppointment(ProjectAppointment.valid().copy(id = 1234L))
+    fun `Should persist update, raising domain event, send update and delete form data`() {
+      CommunityPaybackAndDeliusMockServer.getAppointment(ProjectAppointment.valid().copy(id = 1234L))
+      CommunityPaybackAndDeliusMockServer.putAppointment(1234L)
 
       val contactOutcomeEntity = contactOutcomeEntityRepository.findAll().first()
       val enforcementOutcomeEntity = enforcementActionEntityRepository.findAll().first()
@@ -210,6 +211,8 @@ class AdminAppointmentIT : IntegrationTestBase() {
 
       val domainEvent = domainEventListener.blockForDomainEventOfType("community-payback.appointment.outcome")
       assertThat(domainEvent.detailUrl).isEqualTo("http://localhost:8080/domain-event-details/appointment-outcome/$persistedId")
+
+      CommunityPaybackAndDeliusMockServer.putAppointmentVerify(1234L)
 
       assertThat(formCacheEntityRepository.count()).isEqualTo(0)
     }
