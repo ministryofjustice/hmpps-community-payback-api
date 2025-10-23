@@ -101,6 +101,17 @@ object CommunityPaybackAndDeliusMockServer {
     )
   }
 
+  fun putAppointmentNotFound(
+    id: Long,
+  ) {
+    WireMock.stubFor(
+      put("/community-payback-and-delius/appointments/$id")
+        .willReturn(
+          aResponse().withStatus(404),
+        ),
+    )
+  }
+
   fun putAppointmentVerify(id: Long) {
     WireMock.verify(putRequestedFor(urlEqualTo("/community-payback-and-delius/appointments/$id")))
   }
