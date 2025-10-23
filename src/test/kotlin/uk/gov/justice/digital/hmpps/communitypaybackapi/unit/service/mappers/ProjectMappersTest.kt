@@ -1,11 +1,12 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.unit.service.mappers
 
-import org.assertj.core.api.Assertions
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CaseSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Project
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectAppointmentSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectLocation
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectSession
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectSessionSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectSessionSummary
@@ -57,25 +58,25 @@ class ProjectMappersTest {
 
       val projectAllocationsDto = projectSessions.toDto()
 
-      Assertions.assertThat(projectAllocationsDto.allocations).hasSize(2)
+      assertThat(projectAllocationsDto.allocations).hasSize(2)
 
-      Assertions.assertThat(projectAllocationsDto.allocations[0].projectName).isEqualTo("Community Garden")
-      Assertions.assertThat(projectAllocationsDto.allocations[0].date).isEqualTo(LocalDate.of(2025, 9, 1))
-      Assertions.assertThat(projectAllocationsDto.allocations[0].startTime).isEqualTo(LocalTime.of(9, 0))
-      Assertions.assertThat(projectAllocationsDto.allocations[0].endTime).isEqualTo(LocalTime.of(17, 0))
-      Assertions.assertThat(projectAllocationsDto.allocations[0].projectCode).isEqualTo("cg")
-      Assertions.assertThat(projectAllocationsDto.allocations[0].numberOfOffendersAllocated).isEqualTo(0)
-      Assertions.assertThat(projectAllocationsDto.allocations[0].numberOfOffendersWithOutcomes).isEqualTo(1)
-      Assertions.assertThat(projectAllocationsDto.allocations[0].numberOfOffendersWithEA).isEqualTo(2)
+      assertThat(projectAllocationsDto.allocations[0].projectName).isEqualTo("Community Garden")
+      assertThat(projectAllocationsDto.allocations[0].date).isEqualTo(LocalDate.of(2025, 9, 1))
+      assertThat(projectAllocationsDto.allocations[0].startTime).isEqualTo(LocalTime.of(9, 0))
+      assertThat(projectAllocationsDto.allocations[0].endTime).isEqualTo(LocalTime.of(17, 0))
+      assertThat(projectAllocationsDto.allocations[0].projectCode).isEqualTo("cg")
+      assertThat(projectAllocationsDto.allocations[0].numberOfOffendersAllocated).isEqualTo(0)
+      assertThat(projectAllocationsDto.allocations[0].numberOfOffendersWithOutcomes).isEqualTo(1)
+      assertThat(projectAllocationsDto.allocations[0].numberOfOffendersWithEA).isEqualTo(2)
 
-      Assertions.assertThat(projectAllocationsDto.allocations[1].projectName).isEqualTo("Park Cleanup")
-      Assertions.assertThat(projectAllocationsDto.allocations[1].date).isEqualTo(LocalDate.of(2025, 9, 8))
-      Assertions.assertThat(projectAllocationsDto.allocations[1].startTime).isEqualTo(LocalTime.of(8, 0))
-      Assertions.assertThat(projectAllocationsDto.allocations[1].endTime).isEqualTo(LocalTime.of(16, 0))
-      Assertions.assertThat(projectAllocationsDto.allocations[1].projectCode).isEqualTo("pc")
-      Assertions.assertThat(projectAllocationsDto.allocations[1].numberOfOffendersAllocated).isEqualTo(3)
-      Assertions.assertThat(projectAllocationsDto.allocations[1].numberOfOffendersWithOutcomes).isEqualTo(4)
-      Assertions.assertThat(projectAllocationsDto.allocations[1].numberOfOffendersWithEA).isEqualTo(5)
+      assertThat(projectAllocationsDto.allocations[1].projectName).isEqualTo("Park Cleanup")
+      assertThat(projectAllocationsDto.allocations[1].date).isEqualTo(LocalDate.of(2025, 9, 8))
+      assertThat(projectAllocationsDto.allocations[1].startTime).isEqualTo(LocalTime.of(8, 0))
+      assertThat(projectAllocationsDto.allocations[1].endTime).isEqualTo(LocalTime.of(16, 0))
+      assertThat(projectAllocationsDto.allocations[1].projectCode).isEqualTo("pc")
+      assertThat(projectAllocationsDto.allocations[1].numberOfOffendersAllocated).isEqualTo(3)
+      assertThat(projectAllocationsDto.allocations[1].numberOfOffendersWithOutcomes).isEqualTo(4)
+      assertThat(projectAllocationsDto.allocations[1].numberOfOffendersWithEA).isEqualTo(5)
     }
   }
 
@@ -96,7 +97,7 @@ class ProjectMappersTest {
         enforcementActionNeededCount = 0,
       )
 
-      Assertions.assertThat(projectAllocation.toDto()).isEqualTo(
+      assertThat(projectAllocation.toDto()).isEqualTo(
         SessionSummaryDto(
           id = 0L,
           projectId = 0L,
@@ -121,7 +122,7 @@ class ProjectMappersTest {
         project = Project(
           name = "Park Cleanup",
           code = "N987654321",
-          location = uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectLocation(
+          location = ProjectLocation(
             buildingName = "The Tower",
             addressNumber = "1a",
             streetName = "Somewhere Lane",
@@ -160,31 +161,38 @@ class ProjectMappersTest {
         ),
       )
 
-      Assertions.assertThat(result.projectName).isEqualTo("Park Cleanup")
-      Assertions.assertThat(result.projectCode).isEqualTo("N987654321")
-      Assertions.assertThat(result.projectLocation).isEqualTo("The Tower, 1a Somewhere Lane, Guildford, Surrey, AA11 234")
-      Assertions.assertThat(result.date).isEqualTo(LocalDate.of(2025, 9, 8))
-      Assertions.assertThat(result.startTime).isEqualTo(LocalTime.of(8, 0))
-      Assertions.assertThat(result.endTime).isEqualTo(LocalTime.of(16, 0))
-      Assertions.assertThat(result.appointmentSummaries).hasSize(2)
-      Assertions.assertThat(result.appointmentSummaries[0].id).isEqualTo(1L)
-      Assertions.assertThat(result.appointmentSummaries[0].requirementMinutes).isEqualTo(520)
-      Assertions.assertThat(result.appointmentSummaries[0].completedMinutes).isEqualTo(30)
-      Assertions.assertThat(result.appointmentSummaries[0].offender).isNotNull
+      assertThat(result.projectName).isEqualTo("Park Cleanup")
+      assertThat(result.projectCode).isEqualTo("N987654321")
+      assertThat(result.projectLocation).isEqualTo("The Tower, 1a Somewhere Lane, Guildford, Surrey, AA11 234")
+      assertThat(result.location.buildingName).isEqualTo("The Tower")
+      assertThat(result.location.addressNumber).isEqualTo("1a")
+      assertThat(result.location.streetName).isEqualTo("Somewhere Lane")
+      assertThat(result.location.townCity).isEqualTo("Guildford")
+      assertThat(result.location.county).isEqualTo("Surrey")
+      assertThat(result.location.postCode).isEqualTo("AA11 234")
 
-      Assertions.assertThat(result.appointmentSummaries[1].id).isEqualTo(2L)
-      Assertions.assertThat(result.appointmentSummaries[1].requirementMinutes).isEqualTo(20)
-      Assertions.assertThat(result.appointmentSummaries[1].completedMinutes).isEqualTo(10)
-      Assertions.assertThat(result.appointmentSummaries[1].offender).isNotNull
+      assertThat(result.date).isEqualTo(LocalDate.of(2025, 9, 8))
+      assertThat(result.startTime).isEqualTo(LocalTime.of(8, 0))
+      assertThat(result.endTime).isEqualTo(LocalTime.of(16, 0))
+      assertThat(result.appointmentSummaries).hasSize(2)
+      assertThat(result.appointmentSummaries[0].id).isEqualTo(1L)
+      assertThat(result.appointmentSummaries[0].requirementMinutes).isEqualTo(520)
+      assertThat(result.appointmentSummaries[0].completedMinutes).isEqualTo(30)
+      assertThat(result.appointmentSummaries[0].offender).isNotNull
+
+      assertThat(result.appointmentSummaries[1].id).isEqualTo(2L)
+      assertThat(result.appointmentSummaries[1].requirementMinutes).isEqualTo(20)
+      assertThat(result.appointmentSummaries[1].completedMinutes).isEqualTo(10)
+      assertThat(result.appointmentSummaries[1].offender).isNotNull
     }
   }
 
   @Nested
-  inner class ProjectLocation {
+  inner class ProjectLocationMapper {
 
     @Test
     fun `empty location mapped to empty string`() {
-      Assertions.assertThat(
+      assertThat(
         uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectLocation(
           buildingName = null,
           addressNumber = null,
@@ -198,7 +206,7 @@ class ProjectMappersTest {
 
     @Test
     fun `no address number`() {
-      Assertions.assertThat(
+      assertThat(
         uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectLocation(
           buildingName = "building",
           addressNumber = null,
@@ -212,7 +220,7 @@ class ProjectMappersTest {
 
     @Test
     fun `all fields provided`() {
-      Assertions.assertThat(
+      assertThat(
         uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectLocation(
           buildingName = "building",
           addressNumber = "address",

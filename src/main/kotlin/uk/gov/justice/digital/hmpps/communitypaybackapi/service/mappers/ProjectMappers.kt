@@ -29,6 +29,7 @@ fun ProjectSession.toDto(offenderInfoResults: List<OffenderInfoResult>) = Sessio
   projectCode = this.project.code,
   projectName = this.project.name,
   projectLocation = this.project.location.toFullAddress(),
+  location = this.project.location.toDto(),
   startTime = this.startTime,
   endTime = this.endTime,
   date = this.date,
