@@ -11,19 +11,19 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ProjectTypeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.bodyAsObject
 
-class ReferencesIT : IntegrationTestBase() {
+class CommonReferencesIT : IntegrationTestBase() {
 
   @Autowired
   lateinit var projectTypeEntityRepository: ProjectTypeEntityRepository
 
   @Nested
-  @DisplayName("GET /references/project-types")
+  @DisplayName("GET /common/references/project-types")
   inner class ProjectTypesEndpoint {
 
     @Test
     fun `should return unauthorized if no token`() {
       webTestClient.get()
-        .uri("/references/project-types")
+        .uri("/common/references/project-types")
         .exchange()
         .expectStatus()
         .isUnauthorized
@@ -32,7 +32,7 @@ class ReferencesIT : IntegrationTestBase() {
     @Test
     fun `should return forbidden if no role`() {
       webTestClient.get()
-        .uri("/references/project-types")
+        .uri("/common/references/project-types")
         .headers(setAuthorisation())
         .exchange()
         .expectStatus()
@@ -42,7 +42,7 @@ class ReferencesIT : IntegrationTestBase() {
     @Test
     fun `should return forbidden if wrong role`() {
       webTestClient.get()
-        .uri("/references/project-types")
+        .uri("/common/references/project-types")
         .headers(setAuthorisation(roles = listOf("ROLE_WRONG")))
         .exchange()
         .expectStatus()
@@ -54,7 +54,7 @@ class ReferencesIT : IntegrationTestBase() {
       val seededProjectTypes = projectTypeEntityRepository.findAll()
 
       val projectTypes = webTestClient.get()
-        .uri("/references/project-types")
+        .uri("/common/references/project-types")
         .addAdminUiAuthHeader()
         .exchange()
         .expectStatus()
@@ -72,13 +72,13 @@ class ReferencesIT : IntegrationTestBase() {
   }
 
   @Nested
-  @DisplayName("GET /references/contact-outcomes")
+  @DisplayName("GET /common/references/contact-outcomes")
   inner class ContactOutcomesEndpoint {
 
     @Test
     fun `should return unauthorized if no token`() {
       webTestClient.get()
-        .uri("/references/contact-outcomes")
+        .uri("/common/references/contact-outcomes")
         .exchange()
         .expectStatus()
         .isUnauthorized
@@ -87,7 +87,7 @@ class ReferencesIT : IntegrationTestBase() {
     @Test
     fun `should return forbidden if no role`() {
       webTestClient.get()
-        .uri("/references/contact-outcomes")
+        .uri("/common/references/contact-outcomes")
         .headers(setAuthorisation())
         .exchange()
         .expectStatus()
@@ -97,7 +97,7 @@ class ReferencesIT : IntegrationTestBase() {
     @Test
     fun `should return forbidden if wrong role`() {
       webTestClient.get()
-        .uri("/references/contact-outcomes")
+        .uri("/common/references/contact-outcomes")
         .headers(setAuthorisation(roles = listOf("ROLE_WRONG")))
         .exchange()
         .expectStatus()
@@ -107,7 +107,7 @@ class ReferencesIT : IntegrationTestBase() {
     @Test
     fun `should return OK with contact outcomes`() {
       val contactOutcomes = webTestClient.get()
-        .uri("/references/contact-outcomes")
+        .uri("/common/references/contact-outcomes")
         .addAdminUiAuthHeader()
         .exchange()
         .expectStatus()
@@ -128,13 +128,13 @@ class ReferencesIT : IntegrationTestBase() {
   }
 
   @Nested
-  @DisplayName("GET /references/enforcement-actions")
+  @DisplayName("GET /common/references/enforcement-actions")
   inner class EnforcementActionsEndpoint {
 
     @Test
     fun `should return unauthorized if no token`() {
       webTestClient.get()
-        .uri("/references/enforcement-actions")
+        .uri("/common/references/enforcement-actions")
         .exchange()
         .expectStatus()
         .isUnauthorized
@@ -143,7 +143,7 @@ class ReferencesIT : IntegrationTestBase() {
     @Test
     fun `should return forbidden if no role`() {
       webTestClient.get()
-        .uri("/references/enforcement-actions")
+        .uri("/common/references/enforcement-actions")
         .headers(setAuthorisation())
         .exchange()
         .expectStatus()
@@ -153,7 +153,7 @@ class ReferencesIT : IntegrationTestBase() {
     @Test
     fun `should return forbidden if wrong role`() {
       webTestClient.get()
-        .uri("/references/enforcement-actions")
+        .uri("/common/references/enforcement-actions")
         .headers(setAuthorisation(roles = listOf("ROLE_WRONG")))
         .exchange()
         .expectStatus()
@@ -163,7 +163,7 @@ class ReferencesIT : IntegrationTestBase() {
     @Test
     fun `should return OK with enforcement actions`() {
       val enforementActions = webTestClient.get()
-        .uri("/references/enforcement-actions")
+        .uri("/common/references/enforcement-actions")
         .addAdminUiAuthHeader()
         .exchange()
         .expectStatus()

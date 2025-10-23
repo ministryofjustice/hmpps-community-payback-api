@@ -9,6 +9,7 @@ import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionSummariesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ProjectService
@@ -17,10 +18,14 @@ import java.time.LocalDate
 import java.time.LocalTime
 
 @AdminUiController
+@RequestMapping(
+  "/admin/projects",
+  produces = [MediaType.APPLICATION_JSON_VALUE],
+)
 class ProjectController(val projectService: ProjectService) {
 
   @GetMapping(
-    path = [ "/projects/session-search", "/admin/projects/session-search"],
+    path = [ "/session-search"],
     produces = [MediaType.APPLICATION_JSON_VALUE],
   )
   @Operation(
@@ -62,7 +67,7 @@ class ProjectController(val projectService: ProjectService) {
   ): SessionSummariesDto = projectService.getProjectSessions(startDate, endDate, teamCode)
 
   @GetMapping(
-    path = [ "/projects/{projectCode}/sessions/{date}", "/admin/projects/{projectCode}/sessions/{date}"],
+    path = [ "/{projectCode}/sessions/{date}"],
     produces = [MediaType.APPLICATION_JSON_VALUE],
   )
   @Operation(

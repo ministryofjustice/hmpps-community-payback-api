@@ -4,12 +4,12 @@ import org.junit.jupiter.api.Test
 import org.springframework.http.MediaType
 import org.springframework.test.web.reactive.server.expectBody
 
-class FormControllerIT : IntegrationTestBase() {
+class CommonFormControllerIT : IntegrationTestBase() {
 
   @Test
   fun `should return unauthorized if no token`() {
     webTestClient.get()
-      .uri("/forms/appointment/unknown")
+      .uri("/common/forms/appointment/unknown")
       .exchange()
       .expectStatus()
       .isUnauthorized
@@ -18,7 +18,7 @@ class FormControllerIT : IntegrationTestBase() {
   @Test
   fun `should return forbidden if no role`() {
     webTestClient.get()
-      .uri("/forms/appointment/unknown")
+      .uri("/common/forms/appointment/unknown")
       .headers(setAuthorisation())
       .exchange()
       .expectStatus()
@@ -28,7 +28,7 @@ class FormControllerIT : IntegrationTestBase() {
   @Test
   fun `should return forbidden if wrong role`() {
     webTestClient.get()
-      .uri("/forms/appointment/unknown")
+      .uri("/common/forms/appointment/unknown")
       .headers(setAuthorisation(roles = listOf("ROLE_WRONG")))
       .exchange()
       .expectStatus()
@@ -38,7 +38,7 @@ class FormControllerIT : IntegrationTestBase() {
   @Test
   fun `GET returns 404 when no data`() {
     webTestClient.get()
-      .uri("/forms/appointment/unknown-id")
+      .uri("/common/forms/appointment/unknown-id")
       .addAdminUiAuthHeader()
       .header("Content-Type", MediaType.APPLICATION_JSON_VALUE)
       .exchange()
@@ -53,7 +53,7 @@ class FormControllerIT : IntegrationTestBase() {
 
     // PUT store
     webTestClient.put()
-      .uri("/forms/$formType/$id")
+      .uri("/common/forms/$formType/$id")
       .addAdminUiAuthHeader()
       .contentType(MediaType.APPLICATION_JSON)
       .bodyValue(json)
@@ -62,7 +62,7 @@ class FormControllerIT : IntegrationTestBase() {
 
     // GET retrieve
     webTestClient.get()
-      .uri("/forms/$formType/$id")
+      .uri("/common/forms/$formType/$id")
       .addAdminUiAuthHeader()
       .header("Content-Type", MediaType.APPLICATION_JSON_VALUE)
       .exchange()

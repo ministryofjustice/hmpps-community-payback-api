@@ -24,7 +24,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.bodyAsO
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.CommunityPaybackAndDeliusMockServer
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 
-class AppointmentIT : IntegrationTestBase() {
+class AdminAppointmentIT : IntegrationTestBase() {
 
   @Autowired
   lateinit var appointmentOutcomeEntityRepository: AppointmentOutcomeEntityRepository
@@ -42,13 +42,13 @@ class AppointmentIT : IntegrationTestBase() {
   lateinit var domainEventListener: DomainEventListener
 
   @Nested
-  @DisplayName("GET /appointment/{appointmentId}")
+  @DisplayName("GET /admin/appointment/{appointmentId}")
   inner class GetAppointment {
 
     @Test
     fun `should return unauthorized if no token`() {
       webTestClient.get()
-        .uri("/appointments/101")
+        .uri("/admin/appointments/101")
         .exchange()
         .expectStatus()
         .isUnauthorized
@@ -57,7 +57,7 @@ class AppointmentIT : IntegrationTestBase() {
     @Test
     fun `should return forbidden if no role`() {
       webTestClient.get()
-        .uri("/appointments/101")
+        .uri("/admin/appointments/101")
         .headers(setAuthorisation())
         .exchange()
         .expectStatus()
@@ -67,7 +67,7 @@ class AppointmentIT : IntegrationTestBase() {
     @Test
     fun `should return forbidden if wrong role`() {
       webTestClient.get()
-        .uri("/appointments/101")
+        .uri("/admin/appointments/101")
         .headers(setAuthorisation(roles = listOf("ROLE_WRONG")))
         .exchange()
         .expectStatus()
@@ -79,7 +79,7 @@ class AppointmentIT : IntegrationTestBase() {
       CommunityPaybackAndDeliusMockServer.projectAppointmentNotFound(101L)
 
       val response = webTestClient.get()
-        .uri("/appointments/101")
+        .uri("/admin/appointments/101")
         .addAdminUiAuthHeader()
         .exchange()
         .expectStatus()
@@ -104,7 +104,7 @@ class AppointmentIT : IntegrationTestBase() {
       )
 
       val response = webTestClient.get()
-        .uri("/appointments/101")
+        .uri("/admin/appointments/101")
         .addAdminUiAuthHeader()
         .exchange()
         .expectStatus()
@@ -117,7 +117,7 @@ class AppointmentIT : IntegrationTestBase() {
   }
 
   @Nested
-  @DisplayName("PUT /appointments/{deliusAppointmentId}/outcome")
+  @DisplayName("PUT /admin/appointments/{deliusAppointmentId}/outcome")
   inner class PutAppointmentOutcomeEndpoint {
 
     @BeforeEach
@@ -128,7 +128,7 @@ class AppointmentIT : IntegrationTestBase() {
     @Test
     fun `should return unauthorized if no token`() {
       webTestClient.post()
-        .uri("/appointments/1234/outcome")
+        .uri("/admin/appointments/1234/outcome")
         .bodyValue(UpdateAppointmentOutcomeDto.valid())
         .exchange()
         .expectStatus()
@@ -138,7 +138,7 @@ class AppointmentIT : IntegrationTestBase() {
     @Test
     fun `should return forbidden if no role`() {
       webTestClient.post()
-        .uri("/appointments/1234/outcome")
+        .uri("/admin/appointments/1234/outcome")
         .bodyValue(UpdateAppointmentOutcomeDto.valid())
         .headers(setAuthorisation())
         .exchange()
@@ -149,7 +149,7 @@ class AppointmentIT : IntegrationTestBase() {
     @Test
     fun `should return forbidden if wrong role`() {
       webTestClient.post()
-        .uri("/appointments/1234/outcome")
+        .uri("/admin/appointments/1234/outcome")
         .bodyValue(UpdateAppointmentOutcomeDto.valid())
         .headers(setAuthorisation(roles = listOf("ROLE_WRONG")))
         .exchange()
@@ -162,7 +162,7 @@ class AppointmentIT : IntegrationTestBase() {
       CommunityPaybackAndDeliusMockServer.projectAppointmentNotFound(1234L)
 
       val response = webTestClient.post()
-        .uri("/appointments/1234/outcome")
+        .uri("/admin/appointments/1234/outcome")
         .addAdminUiAuthHeader()
         .bodyValue(UpdateAppointmentOutcomeDto.valid())
         .exchange()
@@ -189,7 +189,7 @@ class AppointmentIT : IntegrationTestBase() {
       )
 
       webTestClient.post()
-        .uri("/appointments/1234/outcome")
+        .uri("/admin/appointments/1234/outcome")
         .addAdminUiAuthHeader()
         .bodyValue(
           UpdateAppointmentOutcomeDto.valid(

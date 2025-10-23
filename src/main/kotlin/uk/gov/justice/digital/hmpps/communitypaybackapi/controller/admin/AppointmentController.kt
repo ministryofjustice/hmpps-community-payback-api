@@ -9,17 +9,22 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestMapping
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentService
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 
 @AdminUiController
+@RequestMapping(
+  "/admin/appointments",
+  produces = [MediaType.APPLICATION_JSON_VALUE],
+)
 class AppointmentController(
   private val appointmentService: AppointmentService,
 ) {
 
   @GetMapping(
-    path = ["/appointments/{appointmentId}", "/admin/appointments/{appointmentId}"],
+    path = ["/{deliusAppointmentId}"],
     produces = [MediaType.APPLICATION_JSON_VALUE],
   )
   @Operation(
@@ -41,11 +46,11 @@ class AppointmentController(
     ],
   )
   fun getAppointment(
-    @PathVariable appointmentId: Long,
-  ) = appointmentService.getAppointment(appointmentId)
+    @PathVariable deliusAppointmentId: Long,
+  ) = appointmentService.getAppointment(deliusAppointmentId)
 
   @PostMapping(
-    path = ["/appointments/{deliusAppointmentId}/outcome", "/admin/appointments/{deliusAppointmentId}/outcome"],
+    path = ["/{deliusAppointmentId}/outcome"],
     consumes = [MediaType.APPLICATION_JSON_VALUE],
   )
   @Operation(
