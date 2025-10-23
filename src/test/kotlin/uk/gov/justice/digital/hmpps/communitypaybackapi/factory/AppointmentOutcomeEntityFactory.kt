@@ -13,6 +13,7 @@ fun AppointmentOutcomeEntity.Companion.valid(
 ) = AppointmentOutcomeEntity(
   id = UUID.randomUUID(),
   appointmentDeliusId = Long.random(),
+  deliusVersionToUpdate = UUID.randomUUID(),
   startTime = randomLocalTime(),
   endTime = randomLocalTime(),
   contactOutcomeId = contactOutcomeEntity.id,
@@ -27,4 +28,6 @@ fun AppointmentOutcomeEntity.Companion.valid(
   enforcementActionId = enforcementActionEntity.id,
   enforcementActionEntity = enforcementActionEntity,
   respondBy = randomLocalDate(),
+  alertActive = Boolean.random(),
+  sensitive = Boolean.random(),
 )

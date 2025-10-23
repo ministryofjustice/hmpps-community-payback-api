@@ -124,9 +124,12 @@ class AppointmentServiceTest {
       val entityCaptor = mutableListOf<AppointmentOutcomeEntity>()
       every { appointmentOutcomeEntityRepository.save(capture(entityCaptor)) } returnsArgument 0
 
+      val deliusVersion = UUID.randomUUID()
+
       service.updateAppointmentOutcome(
         deliusId = 101L,
         outcome = UpdateAppointmentOutcomeDto(
+          deliusVersionToUpdate = deliusVersion,
           startTime = LocalTime.of(10, 1, 2),
           endTime = LocalTime.of(16, 3, 4),
           contactOutcomeId = UUID.fromString("4306c7ca-b717-4995-9eea-91e41d95d44a"),
@@ -144,6 +147,8 @@ class AppointmentServiceTest {
             respondBy = LocalDate.of(2026, 8, 10),
           ),
           formKeyToDelete = null,
+          alertActive = false,
+          sensitive = true,
         ),
       )
 
@@ -152,6 +157,7 @@ class AppointmentServiceTest {
       val firstEntity = entityCaptor[0]
 
       assertThat(firstEntity.id).isNotNull
+      assertThat(firstEntity.deliusVersionToUpdate).isEqualTo(deliusVersion)
       assertThat(firstEntity.appointmentDeliusId).isEqualTo(101L)
       assertThat(firstEntity.startTime).isEqualTo(LocalTime.of(10, 1, 2))
       assertThat(firstEntity.endTime).isEqualTo(LocalTime.of(16, 3, 4))
@@ -165,6 +171,8 @@ class AppointmentServiceTest {
       assertThat(firstEntity.workQuality).isEqualTo(WorkQuality.SATISFACTORY)
       assertThat(firstEntity.behaviour).isEqualTo(Behaviour.UNSATISFACTORY)
       assertThat(firstEntity.respondBy).isEqualTo(LocalDate.of(2026, 8, 10))
+      assertThat(firstEntity.alertActive).isEqualTo(false)
+      assertThat(firstEntity.sensitive).isEqualTo(true)
 
       verify {
         domainEventService.publish(
