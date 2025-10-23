@@ -1,18 +1,26 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.unit.service
 
+import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
+import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import org.springframework.data.repository.findByIdOrNull
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentBehaviourDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentWorkQualityDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AttendanceDataDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EnforcementDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.Behaviour
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EnforcementActionEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EnforcementActionEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.WorkQuality
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentOutcomeEntityFactory
 import java.time.LocalDate
 import java.time.LocalTime
@@ -21,8 +29,19 @@ import java.util.UUID
 @ExtendWith(MockKExtension::class)
 class AppointmentOutcomeEntityFactoryTest {
 
+  @MockK
+  lateinit var contactOutcomeEntityRepository: ContactOutcomeEntityRepository
+
+  @MockK
+  lateinit var enforcementActionEntityRepository: EnforcementActionEntityRepository
+
   @InjectMockKs
   lateinit var service: AppointmentOutcomeEntityFactory
+
+  companion object {
+    val CONTACT_OUTCOME_ID: UUID = UUID.randomUUID()
+    val ENFORCEMENT_ACTION_ID: UUID = UUID.randomUUID()
+  }
 
   @Nested
   inner class ToEntity {
@@ -31,13 +50,19 @@ class AppointmentOutcomeEntityFactoryTest {
     fun `to entity`() {
       val deliusVersion = UUID.randomUUID()
 
+      val contactOutcomeEntity = ContactOutcomeEntity.valid()
+      every { contactOutcomeEntityRepository.findByIdOrNull(CONTACT_OUTCOME_ID) } returns contactOutcomeEntity
+
+      val enforcementActionEntity = EnforcementActionEntity.valid()
+      every { enforcementActionEntityRepository.findByIdOrNull(ENFORCEMENT_ACTION_ID) } returns enforcementActionEntity
+
       val result = service.toEntity(
         101L,
         UpdateAppointmentOutcomeDto(
           deliusVersionToUpdate = deliusVersion,
           startTime = LocalTime.of(10, 1, 2),
           endTime = LocalTime.of(16, 3, 4),
-          contactOutcomeId = UUID.fromString("4306c7ca-b717-4995-9eea-91e41d95d44a"),
+          contactOutcomeId = CONTACT_OUTCOME_ID,
           supervisorOfficerCode = "N45",
           notes = "some notes",
           attendanceData = AttendanceDataDto(
@@ -48,7 +73,7 @@ class AppointmentOutcomeEntityFactoryTest {
             behaviour = AppointmentBehaviourDto.UNSATISFACTORY,
           ),
           enforcementData = EnforcementDto(
-            enforcementActionId = UUID.fromString("52bffba3-2366-4941-aff5-9418b4fbca7e"),
+            enforcementActionId = ENFORCEMENT_ACTION_ID,
             respondBy = LocalDate.of(2026, 8, 10),
           ),
           formKeyToDelete = null,
@@ -62,8 +87,8 @@ class AppointmentOutcomeEntityFactoryTest {
       assertThat(result.appointmentDeliusId).isEqualTo(101L)
       assertThat(result.startTime).isEqualTo(LocalTime.of(10, 1, 2))
       assertThat(result.endTime).isEqualTo(LocalTime.of(16, 3, 4))
-      assertThat(result.contactOutcomeId).isEqualTo(UUID.fromString("4306c7ca-b717-4995-9eea-91e41d95d44a"))
-      assertThat(result.enforcementActionId).isEqualTo(UUID.fromString("52bffba3-2366-4941-aff5-9418b4fbca7e"))
+      assertThat(result.contactOutcome).isEqualTo(contactOutcomeEntity)
+      assertThat(result.enforcementAction).isEqualTo(enforcementActionEntity)
       assertThat(result.supervisorOfficerCode).isEqualTo("N45")
       assertThat(result.notes).isEqualTo("some notes")
       assertThat(result.hiVisWorn).isEqualTo(false)

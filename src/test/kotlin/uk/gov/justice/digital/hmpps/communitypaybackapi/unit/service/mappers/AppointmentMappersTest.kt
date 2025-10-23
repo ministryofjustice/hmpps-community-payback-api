@@ -46,7 +46,7 @@ class AppointmentMappersTest {
         appointmentDeliusId = 101L,
         startTime = LocalTime.of(3, 2, 1),
         endTime = LocalTime.of(12, 11, 10),
-        contactOutcomeEntity = ContactOutcomeEntity.valid().copy(code = "COE1"),
+        contactOutcome = ContactOutcomeEntity.valid().copy(code = "COE1"),
         supervisorOfficerCode = "WO3736",
         notes = "The notes",
         hiVisWorn = true,
@@ -54,7 +54,7 @@ class AppointmentMappersTest {
         penaltyMinutes = 105,
         workQuality = WorkQuality.NOT_APPLICABLE,
         behaviour = Behaviour.UNSATISFACTORY,
-        enforcementActionEntity = EnforcementActionEntity.valid().copy(code = "EA01"),
+        enforcementAction = EnforcementActionEntity.valid().copy(code = "EA01"),
         respondBy = LocalDate.of(2025, 1, 2),
       )
 
