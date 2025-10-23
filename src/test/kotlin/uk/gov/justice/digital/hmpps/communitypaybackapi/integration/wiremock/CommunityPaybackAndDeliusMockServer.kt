@@ -9,6 +9,9 @@ import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.equalToJson
 import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.post
+import com.github.tomakehurst.wiremock.client.WireMock.put
+import com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor
+import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectSession
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectSessionSummaries
@@ -74,7 +77,7 @@ object CommunityPaybackAndDeliusMockServer {
     )
   }
 
-  fun projectAppointment(
+  fun getAppointment(
     projectAppointment: ProjectAppointment,
   ) {
     WireMock.stubFor(
@@ -85,6 +88,21 @@ object CommunityPaybackAndDeliusMockServer {
             .withBody(objectMapper.writeValueAsString(projectAppointment)),
         ),
     )
+  }
+
+  fun putAppointment(
+    id: Long,
+  ) {
+    WireMock.stubFor(
+      put("/community-payback-and-delius/appointments/$id")
+        .willReturn(
+          aResponse().withStatus(200),
+        ),
+    )
+  }
+
+  fun putAppointmentVerify(id: Long) {
+    WireMock.verify(putRequestedFor(urlEqualTo("/community-payback-and-delius/appointments/$id")))
   }
 
   fun LocalTime.toHourMinuteString(): String = URLEncoder.encode(this.format(DateTimeFormatter.ofPattern("HH:mm")), "UTF-8")

@@ -5,6 +5,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.PickUpLocation
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectAppointmentBehaviour
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectAppointmentWorkQuality
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.UpdateAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentBehaviourDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentOutcomeDomainEventDetailDto
@@ -31,6 +32,24 @@ fun AppointmentOutcomeEntity.toDomainEventDetail() = AppointmentOutcomeDomainEve
   penaltyMinutes = this.penaltyMinutes,
   workQuality = this.workQuality?.dtoType,
   behaviour = this.behaviour?.dtoType,
+  enforcementActionCode = this.enforcementAction!!.code,
+  respondBy = this.respondBy,
+)
+
+fun AppointmentOutcomeEntity.toUpdateAppointment() = UpdateAppointment(
+  version = this.deliusVersionToUpdate,
+  startTime = this.startTime,
+  endTime = this.endTime,
+  contactOutcomeCode = this.contactOutcome.code,
+  supervisorOfficerCode = this.supervisorOfficerCode,
+  notes = this.notes,
+  hiVisWorn = this.hiVisWorn,
+  workedIntensively = workedIntensively,
+  penaltyMinutes = this.penaltyMinutes,
+  workQuality = this.workQuality?.upstreamType,
+  behaviour = this.behaviour?.upstreamType,
+  sensitive = this.sensitive,
+  alertActive = this.alertActive,
   enforcementActionCode = this.enforcementAction!!.code,
   respondBy = this.respondBy,
 )

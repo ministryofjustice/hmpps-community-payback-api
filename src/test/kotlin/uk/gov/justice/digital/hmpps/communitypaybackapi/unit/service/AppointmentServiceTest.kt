@@ -109,7 +109,7 @@ class AppointmentServiceTest {
     }
 
     @Test
-    fun `if there's no existing entries for the delius appointment ids, persist new entry and raise domain events`() {
+    fun `if there's no existing entries for the delius appointment ids, persist new entry, raise domain events and invoke update endpoint`() {
       val updateOutcomeDto = UpdateAppointmentOutcomeDto.valid()
 
       every {
@@ -133,6 +133,10 @@ class AppointmentServiceTest {
 
       assertThat(entityCaptor).hasSize(1)
       assertThat(entityCaptor[0]).isSameAs(entityReturnedByFactory)
+
+      verify {
+        communityPaybackAndDeliusClient.updateAppointment(101L, any())
+      }
 
       verify {
         domainEventService.publish(
