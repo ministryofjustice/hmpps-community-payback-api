@@ -11,8 +11,8 @@ interface AppointmentOutcomeEntityRepository : JpaRepository<AppointmentOutcomeE
   @Query(
     """
     select ao from AppointmentOutcomeEntity ao
-    join fetch ao.contactOutcomeEntity 
-    join fetch ao.enforcementActionEntity
+    join fetch ao.contactOutcome
+    join fetch ao.enforcementAction
     where ao.id = :id""",
   )
   fun findByIdOrNullForDomainEventDetails(id: UUID): AppointmentOutcomeEntity?

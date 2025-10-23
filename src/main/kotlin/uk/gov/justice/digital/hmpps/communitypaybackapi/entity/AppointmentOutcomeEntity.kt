@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.entity
 
-import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
@@ -26,19 +25,13 @@ data class AppointmentOutcomeEntity(
   val startTime: LocalTime,
   val endTime: LocalTime,
 
-  @Column(name = "contact_outcome_id")
-  val contactOutcomeId: UUID,
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "contact_outcome_id", referencedColumnName = "id")
+  val contactOutcome: ContactOutcomeEntity,
 
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "contact_outcome_id", referencedColumnName = "id", nullable = false, insertable = false, updatable = false)
-  val contactOutcomeEntity: ContactOutcomeEntity? = null,
-
-  @Column(name = "enforcement_action_id")
-  val enforcementActionId: UUID? = null,
-
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "enforcement_action_id", referencedColumnName = "id", nullable = true, insertable = false, updatable = false)
-  val enforcementActionEntity: EnforcementActionEntity? = null,
+  @JoinColumn(name = "enforcement_action_id", referencedColumnName = "id")
+  val enforcementAction: EnforcementActionEntity? = null,
 
   val supervisorOfficerCode: String,
   val notes: String? = null,

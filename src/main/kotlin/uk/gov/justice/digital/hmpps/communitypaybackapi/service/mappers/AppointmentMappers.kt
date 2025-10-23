@@ -23,7 +23,7 @@ fun AppointmentOutcomeEntity.toDomainEventDetail() = AppointmentOutcomeDomainEve
   appointmentDeliusId = this.appointmentDeliusId,
   startTime = this.startTime,
   endTime = this.endTime,
-  contactOutcomeCode = this.contactOutcomeEntity!!.code,
+  contactOutcomeCode = this.contactOutcome.code,
   supervisorOfficerCode = this.supervisorOfficerCode,
   notes = this.notes,
   hiVisWorn = this.hiVisWorn,
@@ -31,7 +31,7 @@ fun AppointmentOutcomeEntity.toDomainEventDetail() = AppointmentOutcomeDomainEve
   penaltyMinutes = this.penaltyMinutes,
   workQuality = this.workQuality?.dtoType,
   behaviour = this.behaviour?.dtoType,
-  enforcementActionCode = this.enforcementActionEntity!!.code,
+  enforcementActionCode = this.enforcementAction!!.code,
   respondBy = this.respondBy,
 )
 

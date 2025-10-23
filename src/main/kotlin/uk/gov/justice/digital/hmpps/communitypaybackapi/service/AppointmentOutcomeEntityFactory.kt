@@ -1,15 +1,21 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.service
 
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.Behaviour
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EnforcementActionEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.WorkQuality
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.fromDto
 import java.util.UUID
 
 @Service
-class AppointmentOutcomeEntityFactory {
+class AppointmentOutcomeEntityFactory(
+  private val contactOutcomeEntityRepository: ContactOutcomeEntityRepository,
+  private val enforcementActionEntityRepository: EnforcementActionEntityRepository,
+) {
 
   private companion object {
     const val SECONDS_PER_MINUTE = 60L
@@ -24,8 +30,8 @@ class AppointmentOutcomeEntityFactory {
     deliusVersionToUpdate = outcome.deliusVersionToUpdate,
     startTime = outcome.startTime,
     endTime = outcome.endTime,
-    contactOutcomeId = outcome.contactOutcomeId,
-    enforcementActionId = outcome.enforcementData?.enforcementActionId,
+    contactOutcome = contactOutcomeEntityRepository.findByIdOrNull(outcome.contactOutcomeId)!!,
+    enforcementAction = outcome.enforcementData?.enforcementActionId?.let { enforcementActionEntityRepository.findByIdOrNull(it)!! },
     supervisorOfficerCode = outcome.supervisorOfficerCode,
     notes = outcome.notes,
     hiVisWorn = outcome.attendanceData?.hiVisWorn,
