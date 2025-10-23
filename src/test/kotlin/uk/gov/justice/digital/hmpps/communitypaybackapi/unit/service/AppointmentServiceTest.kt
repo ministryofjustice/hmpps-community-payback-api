@@ -119,7 +119,7 @@ class AppointmentServiceTest {
         communityPaybackAndDeliusClient.getProjectAppointment(101L)
       } returns ProjectAppointment.valid().copy(case = CaseSummary.valid().copy(crn = "CRN1"))
 
-      every { appointmentOutcomeEntityRepository.findTopByAppointmentDeliusIdOrderByUpdatedAtDesc(1L) } returns null
+      every { appointmentOutcomeEntityRepository.findTopByAppointmentDeliusIdOrderByCreatedAtDesc(1L) } returns null
 
       val entityCaptor = mutableListOf<AppointmentOutcomeEntity>()
       every { appointmentOutcomeEntityRepository.save(capture(entityCaptor)) } returnsArgument 0
@@ -201,7 +201,7 @@ class AppointmentServiceTest {
 
       val existingIdenticalEntity = service.toEntity(1L, updateAppointmentDto)
       every {
-        appointmentOutcomeEntityRepository.findTopByAppointmentDeliusIdOrderByUpdatedAtDesc(1L)
+        appointmentOutcomeEntityRepository.findTopByAppointmentDeliusIdOrderByCreatedAtDesc(1L)
       } returns existingIdenticalEntity
 
       every { communityPaybackAndDeliusClient.getProjectAppointment(1L) } returns ProjectAppointment.valid().copy(case = CaseSummary.valid().copy(crn = "CRN1"))
@@ -221,7 +221,7 @@ class AppointmentServiceTest {
       val existingAlmostIdenticalEntity = service.toEntity(1L, updateAppointmentDto)
         .copy(notes = "some different notes")
       every {
-        appointmentOutcomeEntityRepository.findTopByAppointmentDeliusIdOrderByUpdatedAtDesc(1L)
+        appointmentOutcomeEntityRepository.findTopByAppointmentDeliusIdOrderByCreatedAtDesc(1L)
       } returns existingAlmostIdenticalEntity
 
       every {

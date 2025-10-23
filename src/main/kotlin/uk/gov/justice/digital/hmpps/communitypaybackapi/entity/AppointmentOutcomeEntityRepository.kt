@@ -17,5 +17,5 @@ interface AppointmentOutcomeEntityRepository : JpaRepository<AppointmentOutcomeE
   )
   fun findByIdOrNullForDomainEventDetails(id: UUID): AppointmentOutcomeEntity?
 
-  fun findTopByAppointmentDeliusIdOrderByUpdatedAtDesc(appointmentDeliusId: Long): AppointmentOutcomeEntity?
+  fun findTopByAppointmentDeliusIdOrderByCreatedAtDesc(appointmentDeliusId: Long): AppointmentOutcomeEntity?
 }
