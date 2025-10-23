@@ -16,11 +16,9 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toUpdateAppointment
 import java.util.UUID
 
-@SuppressWarnings("LongParameterList")
 @Service
 class AppointmentService(
   private val appointmentOutcomeEntityRepository: AppointmentOutcomeEntityRepository,
-  private val domainEventService: DomainEventService,
   private val communityPaybackAndDeliusClient: CommunityPaybackAndDeliusClient,
   private val offenderService: OffenderService,
   private val formService: FormService,
@@ -48,12 +46,6 @@ class AppointmentService(
     deliusId: Long,
     outcome: UpdateAppointmentOutcomeDto,
   ) {
-    val crn = try {
-      communityPaybackAndDeliusClient.getProjectAppointment(deliusId).case.crn
-    } catch (_: WebClientResponseException.NotFound) {
-      throw NotFoundException("Appointment", deliusId.toString())
-    }
-
     appointmentOutcomeValidationService.validate(outcome)
 
     val proposedEntity = appointmentOutcomeEntityFactory.toEntity(deliusId, outcome)
@@ -67,17 +59,14 @@ class AppointmentService(
 
     val persistedEntity = appointmentOutcomeEntityRepository.save(proposedEntity)
 
-    communityPaybackAndDeliusClient.updateAppointment(
-      appointmentId = deliusId,
-      updateAppointment = persistedEntity.toUpdateAppointment(),
-    )
-
-    domainEventService.publish(
-      id = persistedEntity.id,
-      type = DomainEventType.APPOINTMENT_OUTCOME,
-      additionalInformation = mapOf(AdditionalInformationType.APPOINTMENT_ID to deliusId),
-      personReferences = mapOf(PersonReferenceType.CRN to crn),
-    )
+    try {
+      communityPaybackAndDeliusClient.updateAppointment(
+        appointmentId = deliusId,
+        updateAppointment = persistedEntity.toUpdateAppointment(),
+      )
+    } catch (_: WebClientResponseException.NotFound) {
+      throw NotFoundException("Appointment", deliusId.toString())
+    }
 
     outcome.formKeyToDelete?.let {
       formService.deleteIfExists(it)

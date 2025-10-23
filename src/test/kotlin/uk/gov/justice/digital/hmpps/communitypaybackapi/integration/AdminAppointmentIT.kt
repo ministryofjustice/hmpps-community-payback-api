@@ -159,12 +159,17 @@ class AdminAppointmentIT : IntegrationTestBase() {
 
     @Test
     fun `Should return 404 if an appointment can't be found`() {
-      CommunityPaybackAndDeliusMockServer.projectAppointmentNotFound(1234L)
+      CommunityPaybackAndDeliusMockServer.putAppointmentNotFound(1234L)
 
       val response = webTestClient.post()
         .uri("/admin/appointments/1234/outcome")
         .addAdminUiAuthHeader()
-        .bodyValue(UpdateAppointmentOutcomeDto.valid())
+        .bodyValue(
+          UpdateAppointmentOutcomeDto.valid(
+            contactOutcomeId = contactOutcomeEntityRepository.findAll().first().id,
+            enforcementActionId = enforcementActionEntityRepository.findAll().first().id,
+          ),
+        )
         .exchange()
         .expectStatus()
         .isNotFound()
@@ -174,12 +179,8 @@ class AdminAppointmentIT : IntegrationTestBase() {
     }
 
     @Test
-    fun `Should persist update, raising domain event, send update and delete form data`() {
-      CommunityPaybackAndDeliusMockServer.getAppointment(ProjectAppointment.valid().copy(id = 1234L))
+    fun `Should send update and delete form data`() {
       CommunityPaybackAndDeliusMockServer.putAppointment(1234L)
-
-      val contactOutcomeEntity = contactOutcomeEntityRepository.findAll().first()
-      val enforcementOutcomeEntity = enforcementActionEntityRepository.findAll().first()
 
       formCacheEntityRepository.save(
         FormCacheEntity(
@@ -194,8 +195,8 @@ class AdminAppointmentIT : IntegrationTestBase() {
         .addAdminUiAuthHeader()
         .bodyValue(
           UpdateAppointmentOutcomeDto.valid(
-            contactOutcomeId = contactOutcomeEntity.id,
-            enforcementActionId = enforcementOutcomeEntity.id,
+            contactOutcomeId = contactOutcomeEntityRepository.findAll().first().id,
+            enforcementActionId = enforcementActionEntityRepository.findAll().first().id,
           ).copy(
             formKeyToDelete = FormKeyDto(
               id = "id1",
@@ -206,11 +207,6 @@ class AdminAppointmentIT : IntegrationTestBase() {
         .exchange()
         .expectStatus()
         .isOk()
-
-      val persistedId = appointmentOutcomeEntityRepository.findAll()[0].id
-
-      val domainEvent = domainEventListener.blockForDomainEventOfType("community-payback.appointment.outcome")
-      assertThat(domainEvent.detailUrl).isEqualTo("http://localhost:8080/domain-event-details/appointment-outcome/$persistedId")
 
       CommunityPaybackAndDeliusMockServer.putAppointmentVerify(1234L)
 

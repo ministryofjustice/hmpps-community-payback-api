@@ -1,11 +1,9 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.unit.service
 
-import io.mockk.Runs
 import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
-import io.mockk.just
 import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
@@ -23,16 +21,12 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentOutcom
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdditionalInformationType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentOutcomeEntityFactory
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentOutcomeValidationService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentService
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.DomainEventService
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.DomainEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.FormService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.OffenderInfoResult
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.OffenderService
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.PersonReferenceType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.unit.util.WebClientResponseExceptionFactory
 
 @ExtendWith(MockKExtension::class)
@@ -40,9 +34,6 @@ class AppointmentServiceTest {
 
   @MockK(relaxed = true)
   lateinit var appointmentOutcomeEntityRepository: AppointmentOutcomeEntityRepository
-
-  @MockK(relaxed = true)
-  lateinit var domainEventService: DomainEventService
 
   @MockK(relaxed = true)
   lateinit var communityPaybackAndDeliusClient: CommunityPaybackAndDeliusClient
@@ -98,7 +89,13 @@ class AppointmentServiceTest {
 
     @Test
     fun `if appointment not found, throw not found exception`() {
-      every { communityPaybackAndDeliusClient.getProjectAppointment(101L) } throws WebClientResponseExceptionFactory.notFound()
+      every { appointmentOutcomeEntityRepository.findTopByAppointmentDeliusIdOrderByCreatedAtDesc(1L) } returns null
+      every { appointmentOutcomeEntityFactory.toEntity(any(), any()) } returns AppointmentOutcomeEntity.valid()
+      every { appointmentOutcomeEntityRepository.save(any()) } returnsArgument 0
+
+      every {
+        communityPaybackAndDeliusClient.updateAppointment(any(), any())
+      } throws WebClientResponseExceptionFactory.notFound()
 
       assertThatThrownBy {
         service.updateAppointmentOutcome(
@@ -109,12 +106,8 @@ class AppointmentServiceTest {
     }
 
     @Test
-    fun `if there's no existing entries for the delius appointment ids, persist new entry, raise domain events and invoke update endpoint`() {
+    fun `if there's no existing entries for the delius appointment ids, persist new entry and invoke update endpoint`() {
       val updateOutcomeDto = UpdateAppointmentOutcomeDto.valid()
-
-      every {
-        communityPaybackAndDeliusClient.getProjectAppointment(101L)
-      } returns ProjectAppointment.valid().copy(case = CaseSummary.valid().copy(crn = "CRN1"))
 
       every { appointmentOutcomeEntityRepository.findTopByAppointmentDeliusIdOrderByCreatedAtDesc(1L) } returns null
 
@@ -136,15 +129,6 @@ class AppointmentServiceTest {
 
       verify {
         communityPaybackAndDeliusClient.updateAppointment(101L, any())
-      }
-
-      verify {
-        domainEventService.publish(
-          id = entityCaptor[0].id,
-          type = DomainEventType.APPOINTMENT_OUTCOME,
-          additionalInformation = mapOf(AdditionalInformationType.APPOINTMENT_ID to 101L),
-          personReferences = mapOf(PersonReferenceType.CRN to "CRN1"),
-        )
       }
     }
 
@@ -176,8 +160,6 @@ class AppointmentServiceTest {
         appointmentOutcomeEntityRepository.findTopByAppointmentDeliusIdOrderByCreatedAtDesc(1L)
       } returns existingIdenticalEntity
 
-      every { communityPaybackAndDeliusClient.getProjectAppointment(1L) } returns ProjectAppointment.valid().copy(case = CaseSummary.valid().copy(crn = "CRN1"))
-
       every { appointmentOutcomeEntityFactory.toEntity(1L, updateAppointmentDto) } returns existingIdenticalEntity
 
       service.updateAppointmentOutcome(
@@ -189,7 +171,7 @@ class AppointmentServiceTest {
     }
 
     @Test
-    fun `if there's an existing entry for the delius appointment id but it's not logically identical, persist new entry and raise domain event`() {
+    fun `if there's an existing entry for the delius appointment id but it's not logically identical, persist new entry send an update`() {
       val updateAppointmentDto = UpdateAppointmentOutcomeDto.valid()
 
       val existingAlmostIdenticalEntity = AppointmentOutcomeEntity.valid().copy(notes = "some different notes")
@@ -201,17 +183,13 @@ class AppointmentServiceTest {
         appointmentOutcomeEntityRepository.save(any())
       } returnsArgument 0
 
-      every { domainEventService.publish(any(), any(), any()) } just Runs
-
-      every { communityPaybackAndDeliusClient.getProjectAppointment(1L) } returns ProjectAppointment.valid().copy(case = CaseSummary.valid().copy(crn = "CRN1"))
-
       service.updateAppointmentOutcome(
         deliusId = 1L,
         outcome = updateAppointmentDto,
       )
 
       verify { appointmentOutcomeEntityRepository.save(any()) }
-      verify { domainEventService.publish(any(), DomainEventType.APPOINTMENT_OUTCOME, any(), any()) }
+      verify { communityPaybackAndDeliusClient.updateAppointment(1L, any()) }
     }
   }
 }
