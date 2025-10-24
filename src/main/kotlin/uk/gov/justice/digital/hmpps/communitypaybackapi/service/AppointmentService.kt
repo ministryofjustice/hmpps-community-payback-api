@@ -10,6 +10,8 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ConflictException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.NotFoundException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomesDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentsOutcomesResultDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.AppointmentMappers
@@ -71,6 +73,14 @@ class AppointmentService(
     outcome.formKeyToDelete?.let {
       formService.deleteIfExists(it)
     }
+  }
+
+  fun updateAppointmentOutcomes(
+    request: UpdateAppointmentOutcomesDto,
+  ): UpdateAppointmentsOutcomesResultDto {
+    request.updates.forEach { appointmentOutcomeValidationService.validate(it) }
+
+    return UpdateAppointmentsOutcomesResultDto(emptyList())
   }
 
   private fun AppointmentOutcomeEntity?.isLogicallyIdentical(other: AppointmentOutcomeEntity) = this != null &&
