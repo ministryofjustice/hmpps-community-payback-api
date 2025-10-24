@@ -37,9 +37,8 @@ dependencies {
   implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
 
   implementation("org.flywaydb:flyway-core:11.14.1")
-  implementation("org.postgresql:postgresql:42.7.8")
-
-  runtimeOnly("org.flywaydb:flyway-database-postgresql:11.14.1")
+  implementation("org.postgresql:postgresql")
+  runtimeOnly("org.flywaydb:flyway-database-postgresql")
 
   testImplementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter-test:1.7.0")
   testImplementation("org.wiremock:wiremock-standalone:3.13.1")
