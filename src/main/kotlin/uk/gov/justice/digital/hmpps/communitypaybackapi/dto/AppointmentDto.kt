@@ -26,4 +26,6 @@ data class AppointmentDto(
   val notes: String?,
   val sensitive: Boolean?,
   val alertActive: Boolean?,
-)
+) {
+  companion object
+}
