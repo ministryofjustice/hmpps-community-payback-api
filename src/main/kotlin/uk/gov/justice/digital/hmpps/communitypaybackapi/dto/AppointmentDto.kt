@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.dto
 
 import java.time.LocalDate
 import java.time.LocalTime
+import java.util.UUID
 
 data class AppointmentDto(
   val id: Long,
@@ -17,7 +18,9 @@ data class AppointmentDto(
   val date: LocalDate,
   val startTime: LocalTime,
   val endTime: LocalTime,
+  val contactOutcomeId: UUID? = null,
   val attendanceData: AttendanceDataDto?,
   val enforcementData: EnforcementDto?,
+  val supervisorOfficerCode: String? = null,
   val notes: String?,
 )
