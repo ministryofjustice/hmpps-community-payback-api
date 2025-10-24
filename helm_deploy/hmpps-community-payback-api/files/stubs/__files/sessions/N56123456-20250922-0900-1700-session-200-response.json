@@ -24,6 +24,7 @@
           "surname": "Wormwood",
           "middleNames": []
         },
+        "dateOfBirth": "1972-01-05",
         "currentExclusion": false,
         "currentRestriction": false
       },
@@ -41,6 +42,7 @@
           "surname": "Trunchbull",
           "middleNames": []
         },
+        "dateOfBirth": "2003-12-28",
         "currentExclusion": false,
         "currentRestriction": false
       },
@@ -58,6 +60,7 @@
           "surname": "Wormwood",
           "middleNames": []
         },
+        "dateOfBirth": "1985-05-12",
         "currentExclusion": false,
         "currentRestriction": false
       },

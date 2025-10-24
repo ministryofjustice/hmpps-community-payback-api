@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.media.Schema
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.OffenderDto.OffenderFullDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.OffenderDto.OffenderLimitedDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.OffenderDto.OffenderNotFoundDto
+import java.time.LocalDate
 
 @JsonTypeInfo(
   use = JsonTypeInfo.Id.NAME,
@@ -50,6 +51,7 @@ sealed interface OffenderDto {
     val forename: String,
     val surname: String,
     val middleNames: List<String>,
+    val dateOfBirth: LocalDate,
   ) : OffenderDto {
     override val objectType = OffenderType.FULL
   }

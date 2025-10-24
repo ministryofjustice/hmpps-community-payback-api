@@ -218,6 +218,7 @@ enum class ProjectAppointmentBehaviour {
 data class CaseSummary(
   val crn: String,
   val name: Name,
+  val dateOfBirth: LocalDate,
   val currentExclusion: Boolean = false,
   val currentRestriction: Boolean = false,
 ) {

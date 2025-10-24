@@ -18,11 +18,11 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ArnsClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CaseAccess
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CaseSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Name
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.OverallRiskLevel
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.RiskRoshSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.UserAccess
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.NotFoundException
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ContextService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.OffenderInfoResult
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.OffenderService
@@ -68,15 +68,8 @@ class OffenderServiceTest {
 
     @Test
     fun `No limited access offenders in provided case summaries, don't call user access endpoint`() {
-      val crn1CaseSummary = CaseSummary(
-        crn = CRN1,
-        name = Name(forename = "fn1", surname = "cn1"),
-      )
-
-      val crn2CaseSummary = CaseSummary(
-        crn = CRN2,
-        name = Name(forename = "fn2", surname = "cn2"),
-      )
+      val crn1CaseSummary = CaseSummary.valid().copy(crn = CRN1)
+      val crn2CaseSummary = CaseSummary.valid().copy(crn = CRN2)
 
       val result = service.toOffenderInfos(listOf(crn1CaseSummary, crn2CaseSummary))
 
@@ -99,9 +92,8 @@ class OffenderServiceTest {
 
     @Test
     fun `Offender with restriction that doesn't apply to the user, return full offender info`() {
-      val crn1CaseSummary = CaseSummary(
+      val crn1CaseSummary = CaseSummary.valid().copy(
         crn = CRN1,
-        name = Name(forename = "fn1", surname = "cn1"),
         currentExclusion = false,
         currentRestriction = true,
       )
@@ -130,9 +122,8 @@ class OffenderServiceTest {
       isExcluded: Boolean,
       isRestricted: Boolean,
     ) {
-      val crn1CaseSummary = CaseSummary(
+      val crn1CaseSummary = CaseSummary.valid().copy(
         crn = CRN1,
-        name = Name(forename = "fn1", surname = "cn1"),
         currentExclusion = isExcluded,
         currentRestriction = isRestricted,
       )
@@ -157,21 +148,18 @@ class OffenderServiceTest {
      */
     @Test
     fun `All variations in one result`() {
-      val crn1CaseSummary = CaseSummary(
+      val crn1CaseSummary = CaseSummary.valid().copy(
         crn = CRN1,
-        name = Name(forename = "fn2", surname = "cn2"),
       )
 
-      val crn2CaseSummaryRestriction = CaseSummary(
+      val crn2CaseSummaryRestriction = CaseSummary.valid().copy(
         crn = CRN2,
-        name = Name(forename = "fn3", surname = "cn3"),
         currentExclusion = false,
         currentRestriction = true,
       )
 
-      val crn3CaseSummaryExclusion = CaseSummary(
+      val crn3CaseSummaryExclusion = CaseSummary.valid().copy(
         crn = CRN3,
-        name = Name(forename = "fn4", surname = "cn4"),
         currentExclusion = true,
         currentRestriction = false,
       )

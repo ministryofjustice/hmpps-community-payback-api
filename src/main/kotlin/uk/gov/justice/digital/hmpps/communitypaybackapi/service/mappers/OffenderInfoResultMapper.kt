@@ -14,6 +14,7 @@ private fun OffenderInfoResult.Full.toDto() = OffenderDto.OffenderFullDto(
   forename = this.summary.name.forename,
   surname = this.summary.name.surname,
   middleNames = this.summary.name.middleNames,
+  dateOfBirth = this.summary.dateOfBirth,
 )
 
 private fun OffenderInfoResult.Limited.toDto() = OffenderDto.OffenderLimitedDto(crn = this.crn)
