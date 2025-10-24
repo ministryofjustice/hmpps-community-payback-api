@@ -1,9 +1,11 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.unit.service
 
+import io.mockk.Runs
 import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
+import io.mockk.just
 import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
@@ -14,10 +16,12 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CaseSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.BadRequestException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ConflictException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.FormKeyDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.NotFoundException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
@@ -207,6 +211,28 @@ class AppointmentServiceTest {
 
       verify { appointmentOutcomeEntityRepository.save(any()) }
       verify { communityPaybackAndDeliusClient.updateAppointment(1L, any()) }
+    }
+  }
+
+  @Nested
+  inner class UpdateAppointmentOutcomes {
+
+    @Test
+    fun `don't proceed if validation fails`() {
+      val update1 = UpdateAppointmentOutcomeDto.valid()
+      val update2 = UpdateAppointmentOutcomeDto.valid()
+
+      val request = UpdateAppointmentOutcomesDto(listOf(update1, update2))
+
+      every { appointmentOutcomeValidationService.validate(update1) } just Runs
+      every { appointmentOutcomeValidationService.validate(update2) } throws BadRequestException("oh dear")
+
+      assertThatThrownBy {
+        service.updateAppointmentOutcomes(request)
+      }.isInstanceOf(BadRequestException::class.java)
+
+      verify(exactly = 0) { communityPaybackAndDeliusClient.updateAppointment(any(), any()) }
+      verify(exactly = 0) { appointmentOutcomeEntityRepository.save(any()) }
     }
   }
 }
