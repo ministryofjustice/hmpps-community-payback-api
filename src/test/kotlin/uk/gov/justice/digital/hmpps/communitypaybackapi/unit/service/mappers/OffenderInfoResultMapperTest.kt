@@ -3,8 +3,8 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.unit.service.mappers
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CaseName
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CaseSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Name
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.OffenderDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.OffenderInfoResult
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
@@ -20,7 +20,7 @@ class OffenderInfoResultMapperTest {
         crn = "CRN1",
         summary = CaseSummary(
           crn = "CRN1",
-          name = CaseName(
+          name = Name(
             forename = "John",
             surname = "Smith",
             middleNames = listOf("J", "Jam"),

@@ -50,7 +50,14 @@
   "startTime": "09:00",
   "endTime": "17:00",
   "penaltyHours": null,
-  "supervisorOfficerCode": "N56A108",
+  "supervisor": {
+    "code": "N56A108",
+    "name": {
+      "forename": "Super",
+      "surname": "Visor",
+      "middleNames": []
+    }
+  },
   "contactOutcomeCode": "ATTC",
   "enforcementActionCode": null,
   "respondBy": null,

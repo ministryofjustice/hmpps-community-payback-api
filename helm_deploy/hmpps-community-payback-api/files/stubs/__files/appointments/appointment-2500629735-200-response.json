@@ -50,7 +50,14 @@
   "startTime": "09:00",
   "endTime": "17:00",
   "penaltyHours": null,
-  "supervisorOfficerCode": "N56DTXU",
+  "supervisor": {
+    "code": "N56DTXU",
+    "name": {
+      "forename": "Tim",
+      "surname": "Thompson",
+      "middleNames": []
+    }
+  },
   "contactOutcomeCode": "UAAB",
   "enforcementActionCode": "EA05",
   "respondBy": null,

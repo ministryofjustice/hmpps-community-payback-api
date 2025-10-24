@@ -129,7 +129,7 @@ data class ProjectAppointment(
   val startTime: LocalTime,
   val endTime: LocalTime,
   val penaltyTime: LocalTime?,
-  val supervisorOfficerCode: String?,
+  val supervisor: AppointmentSupervisor?,
   val contactOutcomeId: UUID?,
   val enforcementActionId: UUID?,
   val respondBy: LocalDate?,
@@ -144,6 +144,9 @@ data class ProjectAppointment(
   companion object
 }
 
+data class AppointmentSupervisor(val code: String, val name: Name) {
+  companion object
+}
 data class Project(val name: String, val code: String, val location: ProjectLocation) {
   companion object
 }
@@ -209,18 +212,20 @@ enum class ProjectAppointmentBehaviour {
 
 data class CaseSummary(
   val crn: String,
-  val name: CaseName,
+  val name: Name,
   val currentExclusion: Boolean = false,
   val currentRestriction: Boolean = false,
 ) {
   companion object
 }
 
-data class CaseName(
+data class Name(
   val forename: String,
   val surname: String,
   val middleNames: List<String> = emptyList(),
-)
+) {
+  companion object
+}
 
 data class CaseAccess(
   val crn: String,
