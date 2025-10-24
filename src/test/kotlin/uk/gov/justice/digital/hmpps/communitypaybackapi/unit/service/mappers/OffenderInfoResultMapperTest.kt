@@ -8,6 +8,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Name
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.OffenderDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.OffenderInfoResult
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
+import java.time.LocalDate
 
 class OffenderInfoResultMapperTest {
 
@@ -25,6 +26,7 @@ class OffenderInfoResultMapperTest {
             surname = "Smith",
             middleNames = listOf("J", "Jam"),
           ),
+          dateOfBirth = LocalDate.of(1970, 2, 3),
         ),
       ).toDto()
 
@@ -34,6 +36,7 @@ class OffenderInfoResultMapperTest {
       assertThat(result.forename).isEqualTo("John")
       assertThat(result.surname).isEqualTo("Smith")
       assertThat(result.middleNames).isEqualTo(listOf("J", "Jam"))
+      assertThat(result.dateOfBirth).isEqualTo(LocalDate.of(1970, 2, 3))
     }
 
     @Test

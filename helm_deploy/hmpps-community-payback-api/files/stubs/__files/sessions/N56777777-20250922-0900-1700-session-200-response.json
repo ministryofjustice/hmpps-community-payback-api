@@ -24,6 +24,7 @@
           "surname": "Example",
           "middleNames": []
         },
+        "dateOfBirth": "1993-12-16",
         "currentExclusion": false,
         "currentRestriction": false
       },
