@@ -5,4 +5,6 @@ import org.springframework.stereotype.Repository
 import java.util.UUID
 
 @Repository
-interface ContactOutcomeEntityRepository : JpaRepository<ContactOutcomeEntity, UUID>
+interface ContactOutcomeEntityRepository : JpaRepository<ContactOutcomeEntity, UUID> {
+  fun findByCode(code: String): ContactOutcomeEntity?
+}

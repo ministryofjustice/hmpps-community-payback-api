@@ -58,7 +58,10 @@
       "middleNames": []
     }
   },
-  "contactOutcomeCode": "ATTC",
+  "outcome": {
+    "code": "ATTC",
+    "description": "Attended - Complied"
+  },
   "enforcementActionCode": null,
   "respondBy": null,
   "hiVisWorn": true,

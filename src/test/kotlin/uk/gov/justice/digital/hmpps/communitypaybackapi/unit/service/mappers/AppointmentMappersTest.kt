@@ -12,6 +12,7 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.AppointmentSupervisor
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CaseSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ContactOutcome
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Name
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.PickUpData
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.PickUpLocation
@@ -29,6 +30,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.OffenderDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.Behaviour
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EnforcementActionEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.WorkQuality
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
@@ -48,6 +50,9 @@ class AppointmentMappersTest {
 
   @MockK(relaxed = true)
   private lateinit var offenderService: OffenderService
+
+  @MockK(relaxed = true)
+  private lateinit var contactOutcomeEntityRepository: ContactOutcomeEntityRepository
 
   @InjectMockKs
   private lateinit var service: AppointmentMappers
@@ -170,7 +175,7 @@ class AppointmentMappersTest {
           code = supervisorOfficerCode,
           name = Name.valid(),
         ),
-        contactOutcomeId = contactOutcomeId,
+        outcome = ContactOutcome.valid().copy(code = "OUTCOME1"),
         enforcementActionId = enforcementActionId,
         respondBy = respondBy,
         hiVisWorn = hiVisWorn,
@@ -183,6 +188,7 @@ class AppointmentMappersTest {
       )
 
       every { offenderService.toOffenderInfo(caseSummary) } returns OffenderInfoResult.Limited(crn = crn)
+      every { contactOutcomeEntityRepository.findByCode("OUTCOME1") } returns ContactOutcomeEntity.valid().copy(id = contactOutcomeId)
 
       val result = service.toDto(projectAppointment)
 
