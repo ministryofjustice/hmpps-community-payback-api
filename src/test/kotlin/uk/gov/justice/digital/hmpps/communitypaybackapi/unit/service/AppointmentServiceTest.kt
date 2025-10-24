@@ -13,10 +13,10 @@ import org.junit.jupiter.api.extension.ExtendWith
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CaseSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectAppointment
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ConflictException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.FormKeyDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.NotFoundException
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.OffenderDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentOutcomeEntityRepository
@@ -26,8 +26,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentOutco
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentOutcomeValidationService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.FormService
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.OffenderInfoResult
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.OffenderService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.AppointmentMappers
 import uk.gov.justice.digital.hmpps.communitypaybackapi.unit.util.WebClientResponseExceptionFactory
 import java.util.UUID
 
@@ -41,7 +40,7 @@ class AppointmentServiceTest {
   lateinit var communityPaybackAndDeliusClient: CommunityPaybackAndDeliusClient
 
   @MockK(relaxed = true)
-  lateinit var offenderService: OffenderService
+  lateinit var appointmentMappers: AppointmentMappers
 
   @MockK(relaxed = true)
   lateinit var formService: FormService
@@ -70,19 +69,15 @@ class AppointmentServiceTest {
 
     @Test
     fun `appointment found`() {
-      val caseSummary = CaseSummary.valid().copy(crn = "CRN123")
+      val appointment = ProjectAppointment.valid()
+      every { communityPaybackAndDeliusClient.getProjectAppointment(101L) } returns appointment
 
-      every {
-        communityPaybackAndDeliusClient.getProjectAppointment(101L)
-      } returns ProjectAppointment.valid().copy(id = 101L, case = caseSummary)
-
-      every { offenderService.toOffenderInfo(caseSummary) } returns OffenderInfoResult.Full.valid(crn = "CRN123")
+      val appointmentDto = AppointmentDto.valid()
+      every { appointmentMappers.toDto(appointment) } returns appointmentDto
 
       val result = service.getAppointment(101L)
 
-      assertThat(result.id).isEqualTo(101L)
-      assertThat(result.offender.crn).isEqualTo("CRN123")
-      assertThat(result.offender).isInstanceOf(OffenderDto.OffenderFullDto::class.java)
+      assertThat(result).isSameAs(appointmentDto)
     }
   }
 

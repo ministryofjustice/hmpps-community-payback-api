@@ -1,8 +1,13 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.unit.service.mappers
 
+import io.mockk.every
+import io.mockk.impl.annotations.InjectMockKs
+import io.mockk.impl.annotations.MockK
+import io.mockk.junit5.MockKExtension
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.AppointmentSupervisor
@@ -29,6 +34,8 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.WorkQuality
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.OffenderInfoResult
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.OffenderService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.AppointmentMappers
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.fromDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDomainEventDetail
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
@@ -36,7 +43,14 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
 
+@ExtendWith(MockKExtension::class)
 class AppointmentMappersTest {
+
+  @MockK(relaxed = true)
+  private lateinit var offenderService: OffenderService
+
+  @InjectMockKs
+  private lateinit var service: AppointmentMappers
 
   @Nested
   inner class ToAppointOutcomeDomainEventDetail {
@@ -113,6 +127,9 @@ class AppointmentMappersTest {
       val workQuality = ProjectAppointmentWorkQuality.SATISFACTORY
       val behaviour = ProjectAppointmentBehaviour.SATISFACTORY
       val notes = "This is a test note"
+
+      val caseSummary = CaseSummary.valid().copy(crn = crn)
+
       val projectAppointment = ProjectAppointment(
         id = id,
         version = version,
@@ -125,7 +142,7 @@ class AppointmentMappersTest {
           name = projectTypeName,
           code = projectTypeCode,
         ),
-        case = CaseSummary.valid().copy(crn = crn),
+        case = caseSummary,
         team = Team(
           name = supervisingTeam,
           code = supervisingTeamCode,
@@ -165,7 +182,9 @@ class AppointmentMappersTest {
         alertActive = true,
       )
 
-      val result = projectAppointment.toDto(OffenderInfoResult.Limited("CRN1"))
+      every { offenderService.toOffenderInfo(caseSummary) } returns OffenderInfoResult.Limited(crn = crn)
+
+      val result = service.toDto(projectAppointment)
 
       assertThat(result.id).isEqualTo(id)
       assertThat(result.version).isEqualTo(version)

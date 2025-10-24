@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers
 
+import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.PickUpData
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.PickUpLocation
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectAppointment
@@ -17,7 +18,52 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.PickUpDataDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.Behaviour
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.WorkQuality
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.OffenderInfoResult
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.OffenderService
+
+@Service
+class AppointmentMappers(
+  private val offenderService: OffenderService,
+) {
+
+  fun toDto(
+    appointment: ProjectAppointment,
+  ): AppointmentDto {
+    val offenderInfoResult = offenderService.toOffenderInfo(appointment.case)
+
+    return AppointmentDto(
+      id = appointment.id,
+      version = appointment.version,
+      projectName = appointment.project.name,
+      projectCode = appointment.project.code,
+      projectTypeName = appointment.projectType.name,
+      projectTypeCode = appointment.projectType.code,
+      offender = offenderInfoResult.toDto(),
+      supervisingTeam = appointment.team.name,
+      supervisingTeamCode = appointment.team.code,
+      providerCode = appointment.provider.code,
+      pickUpData = appointment.pickUpData?.toDto(),
+      date = appointment.date,
+      startTime = appointment.startTime,
+      endTime = appointment.endTime,
+      contactOutcomeId = appointment.contactOutcomeId,
+      attendanceData = AttendanceDataDto(
+        hiVisWorn = appointment.hiVisWorn,
+        workedIntensively = appointment.workedIntensively,
+        penaltyTime = appointment.penaltyTime,
+        workQuality = appointment.workQuality?.toDto(),
+        behaviour = appointment.behaviour?.toDto(),
+      ),
+      enforcementData = EnforcementDto(
+        enforcementActionId = appointment.enforcementActionId,
+        respondBy = appointment.respondBy,
+      ),
+      supervisorOfficerCode = appointment.supervisor?.code,
+      notes = appointment.notes,
+      sensitive = appointment.sensitive,
+      alertActive = appointment.alertActive,
+    )
+  }
+}
 
 fun AppointmentOutcomeEntity.toDomainEventDetail() = AppointmentOutcomeDomainEventDetailDto(
   id = this.id,
@@ -56,39 +102,6 @@ fun AppointmentOutcomeEntity.toUpdateAppointment() = UpdateAppointment(
 
 fun WorkQuality.Companion.fromDto(dto: AppointmentWorkQualityDto) = WorkQuality.entries.first { it.dtoType == dto }
 fun Behaviour.Companion.fromDto(dto: AppointmentBehaviourDto) = Behaviour.entries.first { it.dtoType == dto }
-
-fun ProjectAppointment.toDto(offenderInfoResult: OffenderInfoResult) = AppointmentDto(
-  id = this.id,
-  version = this.version,
-  projectName = this.project.name,
-  projectCode = this.project.code,
-  projectTypeName = this.projectType.name,
-  projectTypeCode = this.projectType.code,
-  offender = offenderInfoResult.toDto(),
-  supervisingTeam = this.team.name,
-  supervisingTeamCode = this.team.code,
-  providerCode = this.provider.code,
-  pickUpData = this.pickUpData?.toDto(),
-  date = this.date,
-  startTime = this.startTime,
-  endTime = this.endTime,
-  contactOutcomeId = this.contactOutcomeId,
-  attendanceData = AttendanceDataDto(
-    hiVisWorn = this.hiVisWorn,
-    workedIntensively = this.workedIntensively,
-    penaltyTime = this.penaltyTime,
-    workQuality = this.workQuality?.toDto(),
-    behaviour = this.behaviour?.toDto(),
-  ),
-  enforcementData = EnforcementDto(
-    enforcementActionId = this.enforcementActionId,
-    respondBy = this.respondBy,
-  ),
-  supervisorOfficerCode = this.supervisor?.code,
-  notes = this.notes,
-  sensitive = this.sensitive,
-  alertActive = this.alertActive,
-)
 
 fun PickUpData.toDto() = PickUpDataDto(
   location = pickUpLocation?.toDto(),

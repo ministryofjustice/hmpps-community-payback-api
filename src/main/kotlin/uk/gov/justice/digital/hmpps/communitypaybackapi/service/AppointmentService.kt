@@ -12,6 +12,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.NotFoundException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentOutcomeEntityRepository
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.AppointmentMappers
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDomainEventDetail
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toUpdateAppointment
@@ -21,7 +22,7 @@ import java.util.UUID
 class AppointmentService(
   private val appointmentOutcomeEntityRepository: AppointmentOutcomeEntityRepository,
   private val communityPaybackAndDeliusClient: CommunityPaybackAndDeliusClient,
-  private val offenderService: OffenderService,
+  private val appointmentMappers: AppointmentMappers,
   private val formService: FormService,
   private val appointmentOutcomeValidationService: AppointmentOutcomeValidationService,
   private val appointmentOutcomeEntityFactory: AppointmentOutcomeEntityFactory,
@@ -31,11 +32,7 @@ class AppointmentService(
   }
 
   fun getAppointment(id: Long): AppointmentDto = try {
-    communityPaybackAndDeliusClient.getProjectAppointment(id)
-      .let { projectAppointment ->
-        val offenderInfoResult = offenderService.toOffenderInfo(projectAppointment.case)
-        projectAppointment.toDto(offenderInfoResult)
-      }
+    communityPaybackAndDeliusClient.getProjectAppointment(id).let { appointmentMappers.toDto(it) }
   } catch (_: WebClientResponseException.NotFound) {
     throw NotFoundException("Appointment", id.toString())
   }
