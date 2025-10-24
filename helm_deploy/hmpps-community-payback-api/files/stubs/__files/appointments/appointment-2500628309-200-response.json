@@ -62,8 +62,11 @@
     "code": "UAAB",
     "description": "Unacceptable Absence"
   },
-  "enforcementActionCode": "ROM",
-  "respondBy": null,
+  "enforcementAction": {
+    "code": "ROM",
+    "description": "Refer to offender manager",
+    "respondBy": null
+  },
   "hiVisWorn": null,
   "workedIntensively": null,
   "workQuality": null,
