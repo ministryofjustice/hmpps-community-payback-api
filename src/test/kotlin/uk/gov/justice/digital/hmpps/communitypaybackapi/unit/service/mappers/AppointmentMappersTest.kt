@@ -175,14 +175,16 @@ class AppointmentMappersTest {
       assertThat(pickUpData.location.postCode).isEqualTo(pickUpPostCode)
       assertThat(pickUpData.time).isEqualTo(pickUpTime)
 
-      assertThat(result.attendanceData?.supervisorOfficerCode).isEqualTo(supervisorOfficerCode)
+      assertThat(result.contactOutcomeId).isEqualTo(contactOutcomeId)
+
       assertThat(result.attendanceData?.penaltyTime).isEqualTo(penaltyTime)
       assertThat(result.attendanceData?.behaviour).isEqualTo(AppointmentBehaviourDto.SATISFACTORY)
       assertThat(result.attendanceData?.workQuality).isEqualTo(AppointmentWorkQualityDto.SATISFACTORY)
       assertThat(result.attendanceData?.hiVisWorn).isEqualTo(hiVisWorn)
-      assertThat(result.attendanceData?.contactOutcomeId).isEqualTo(contactOutcomeId)
       assertThat(result.enforcementData?.enforcementActionId).isEqualTo(enforcementActionId)
       assertThat(result.enforcementData?.respondBy).isEqualTo(respondBy)
+
+      assertThat(result.supervisorOfficerCode).isEqualTo(supervisorOfficerCode)
       assertThat(result.notes).isEqualTo(notes)
       assertThat(result.offender.crn).isEqualTo(crn)
       assertThat(result.offender).isInstanceOf(OffenderDto.OffenderLimitedDto::class.java)

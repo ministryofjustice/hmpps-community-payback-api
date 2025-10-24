@@ -52,19 +52,19 @@ fun ProjectAppointment.toDto(offenderInfoResult: OffenderInfoResult) = Appointme
   date = this.date,
   startTime = this.startTime,
   endTime = this.endTime,
+  contactOutcomeId = this.contactOutcomeId,
   attendanceData = AttendanceDataDto(
     hiVisWorn = this.hiVisWorn,
     workedIntensively = this.workedIntensively,
     penaltyTime = this.penaltyTime,
     workQuality = this.workQuality?.toDto(),
     behaviour = this.behaviour?.toDto(),
-    supervisorOfficerCode = this.supervisorOfficerCode,
-    contactOutcomeId = this.contactOutcomeId,
   ),
   enforcementData = EnforcementDto(
     enforcementActionId = this.enforcementActionId,
     respondBy = this.respondBy,
   ),
+  supervisorOfficerCode = this.supervisorOfficerCode,
   notes = this.notes,
 )
 

@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.dto
 
 import java.time.LocalTime
-import java.util.UUID
 
 data class AttendanceDataDto(
   val hiVisWorn: Boolean? = null,
@@ -9,8 +8,6 @@ data class AttendanceDataDto(
   val penaltyTime: LocalTime? = null,
   val workQuality: AppointmentWorkQualityDto? = null,
   val behaviour: AppointmentBehaviourDto? = null,
-  val supervisorOfficerCode: String? = null,
-  val contactOutcomeId: UUID? = null,
 )
 
 enum class AppointmentWorkQualityDto {
