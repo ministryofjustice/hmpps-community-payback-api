@@ -5,11 +5,13 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.PickUpData
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.PickUpLocation
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectAppointmentBehaviour
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectAppointmentSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectAppointmentWorkQuality
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.UpdateAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentBehaviourDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentOutcomeDomainEventDetailDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentWorkQualityDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AttendanceDataDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EnforcementDto
@@ -20,6 +22,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.Behaviour
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EnforcementActionEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.WorkQuality
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.OffenderInfoResult
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.OffenderService
 
 @Service
@@ -71,6 +74,19 @@ class AppointmentMappers(
       alertActive = appointment.alertActive,
     )
   }
+
+  fun toDto(
+    appointmentSummary: ProjectAppointmentSummary,
+    offenderInfoResult: OffenderInfoResult,
+  ) = AppointmentSummaryDto(
+    id = appointmentSummary.id,
+    contactOutcome = appointmentSummary.outcome?.code?.let {
+      contactOutcomeEntityRepository.findByCode(it)?.toDto() ?: error("Can't find outcome for code $it")
+    },
+    requirementMinutes = appointmentSummary.requirementProgress.requirementMinutes,
+    completedMinutes = appointmentSummary.requirementProgress.completedMinutes,
+    offender = offenderInfoResult.toDto(),
+  )
 }
 
 fun AppointmentOutcomeEntity.toDomainEventDetail() = AppointmentOutcomeDomainEventDetailDto(

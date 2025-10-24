@@ -74,6 +74,10 @@ class SupervisorProjectsIT : IntegrationTestBase() {
           startTime = LocalTime.of(9, 0),
           endTime = LocalTime.of(17, 0),
           date = LocalDate.of(2025, 1, 9),
+          appointmentSummaries = listOf(
+            ProjectAppointmentSummary.valid().copy(outcome = null),
+            ProjectAppointmentSummary.valid().copy(outcome = null),
+          ),
         ),
       )
 
@@ -110,6 +114,7 @@ class SupervisorProjectsIT : IntegrationTestBase() {
                 crn = "CRN1",
                 currentExclusion = true,
               ),
+              outcome = null,
             ),
             ProjectAppointmentSummary.valid().copy(
               id = 2L,
@@ -117,6 +122,7 @@ class SupervisorProjectsIT : IntegrationTestBase() {
                 crn = "CRN2",
                 currentExclusion = true,
               ),
+              outcome = null,
             ),
           ),
         ),
