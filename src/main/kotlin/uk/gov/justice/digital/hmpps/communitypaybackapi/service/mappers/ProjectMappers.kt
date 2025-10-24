@@ -1,15 +1,39 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers
 
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectAppointmentSummary
+import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectLocation
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectSession
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectSessionSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectSessionSummary
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionSummariesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.OffenderInfoResult
+
+@Service
+class ProjectMappers(
+  val appointmentMappers: AppointmentMappers,
+) {
+
+  fun toDto(
+    session: ProjectSession,
+    offenderInfoResults: List<OffenderInfoResult>,
+  ) = SessionDto(
+    projectCode = session.project.code,
+    projectName = session.project.name,
+    projectLocation = session.project.location.toFullAddress(),
+    location = session.project.location.toDto(),
+    startTime = session.startTime,
+    endTime = session.endTime,
+    date = session.date,
+    appointmentSummaries = session.appointmentSummaries.map { appointmentSummary ->
+      appointmentMappers.toDto(
+        appointmentSummary,
+        offenderInfoResults.first { it.crn == appointmentSummary.case.crn },
+      )
+    },
+  )
+}
 
 fun ProjectSessionSummaries.toDto() = SessionSummariesDto(this.sessions.map { it.toDto() })
 fun ProjectSessionSummary.toDto() = SessionSummaryDto(
@@ -23,28 +47,6 @@ fun ProjectSessionSummary.toDto() = SessionSummaryDto(
   numberOfOffendersAllocated = this.allocatedCount,
   numberOfOffendersWithOutcomes = this.compliedOutcomeCount,
   numberOfOffendersWithEA = this.enforcementActionNeededCount,
-)
-
-fun ProjectSession.toDto(offenderInfoResults: List<OffenderInfoResult>) = SessionDto(
-  projectCode = this.project.code,
-  projectName = this.project.name,
-  projectLocation = this.project.location.toFullAddress(),
-  location = this.project.location.toDto(),
-  startTime = this.startTime,
-  endTime = this.endTime,
-  date = this.date,
-  appointmentSummaries = this.appointmentSummaries.toDtos(offenderInfoResults),
-)
-
-fun List<ProjectAppointmentSummary>.toDtos(offenderInfoResults: List<OffenderInfoResult>) = this.map { it.toDto(offenderInfoResults) }
-
-fun ProjectAppointmentSummary.toDto(
-  offenderInfoResults: List<OffenderInfoResult>,
-) = AppointmentSummaryDto(
-  id = this.id,
-  requirementMinutes = this.requirementProgress.requirementMinutes,
-  completedMinutes = this.requirementProgress.completedMinutes,
-  offender = offenderInfoResults.first { it.crn == this.case.crn }.toDto(),
 )
 
 fun ProjectLocation.toFullAddress() = listOfNotNull(

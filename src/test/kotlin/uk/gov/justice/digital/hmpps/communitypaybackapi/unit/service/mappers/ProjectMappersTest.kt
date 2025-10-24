@@ -1,8 +1,13 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.unit.service.mappers
 
+import io.mockk.every
+import io.mockk.impl.annotations.InjectMockKs
+import io.mockk.impl.annotations.MockK
+import io.mockk.junit5.MockKExtension
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CaseSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Project
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectAppointmentSummary
@@ -11,16 +16,26 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectSession
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectSessionSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectSessionSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectSummary
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.RequirementProgress
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.OffenderInfoResult
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.AppointmentMappers
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.ProjectMappers
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toFullAddress
 import java.time.LocalDate
 import java.time.LocalTime
 
+@ExtendWith(MockKExtension::class)
 class ProjectMappersTest {
+
+  @MockK(relaxed = true)
+  private lateinit var appointmentMappers: AppointmentMappers
+
+  @InjectMockKs
+  private lateinit var service: ProjectMappers
 
   @Nested
   inner class ProjectAllocationsMapper {
@@ -118,6 +133,17 @@ class ProjectMappersTest {
   inner class ProjectSessionMapper {
     @Test
     fun `should map ProjectSession to DTO correctly`() {
+      val appointmentSummary1 = ProjectAppointmentSummary.valid().copy(case = CaseSummary.valid().copy(crn = "CRN1"))
+      val appointmentSummary2 = ProjectAppointmentSummary.valid().copy(case = CaseSummary.valid().copy(crn = "CRN2"))
+
+      val offenderInfoResult1 = OffenderInfoResult.Limited("CRN1")
+      val offenderInfoResult2 = OffenderInfoResult.Limited("CRN2")
+
+      val appointmentSummaryDto1 = AppointmentSummaryDto.valid()
+      val appointmentSummaryDto2 = AppointmentSummaryDto.valid()
+      every { appointmentMappers.toDto(appointmentSummary1, offenderInfoResult1) } returns appointmentSummaryDto1
+      every { appointmentMappers.toDto(appointmentSummary2, offenderInfoResult2) } returns appointmentSummaryDto2
+
       val projectSession = ProjectSession(
         project = Project(
           name = "Park Cleanup",
@@ -134,30 +160,14 @@ class ProjectMappersTest {
         date = LocalDate.of(2025, 9, 8),
         startTime = LocalTime.of(8, 0),
         endTime = LocalTime.of(16, 0),
-        appointmentSummaries = listOf(
-          ProjectAppointmentSummary(
-            id = 1L,
-            case = CaseSummary.Companion.valid().copy(crn = "CRN1"),
-            requirementProgress = RequirementProgress(
-              requirementMinutes = 520,
-              completedMinutes = 30,
-            ),
-          ),
-          ProjectAppointmentSummary(
-            id = 2L,
-            case = CaseSummary.Companion.valid().copy(crn = "CRN2"),
-            requirementProgress = RequirementProgress(
-              requirementMinutes = 20,
-              completedMinutes = 10,
-            ),
-          ),
-        ),
+        appointmentSummaries = listOf(appointmentSummary1, appointmentSummary2),
       )
 
-      val result = projectSession.toDto(
+      val result = service.toDto(
+        projectSession,
         offenderInfoResults = listOf(
-          OffenderInfoResult.Limited("CRN1"),
-          OffenderInfoResult.NotFound("CRN2"),
+          offenderInfoResult1,
+          offenderInfoResult2,
         ),
       )
 
@@ -174,16 +184,7 @@ class ProjectMappersTest {
       assertThat(result.date).isEqualTo(LocalDate.of(2025, 9, 8))
       assertThat(result.startTime).isEqualTo(LocalTime.of(8, 0))
       assertThat(result.endTime).isEqualTo(LocalTime.of(16, 0))
-      assertThat(result.appointmentSummaries).hasSize(2)
-      assertThat(result.appointmentSummaries[0].id).isEqualTo(1L)
-      assertThat(result.appointmentSummaries[0].requirementMinutes).isEqualTo(520)
-      assertThat(result.appointmentSummaries[0].completedMinutes).isEqualTo(30)
-      assertThat(result.appointmentSummaries[0].offender).isNotNull
-
-      assertThat(result.appointmentSummaries[1].id).isEqualTo(2L)
-      assertThat(result.appointmentSummaries[1].requirementMinutes).isEqualTo(20)
-      assertThat(result.appointmentSummaries[1].completedMinutes).isEqualTo(10)
-      assertThat(result.appointmentSummaries[1].offender).isNotNull
+      assertThat(result.appointmentSummaries).isEqualTo(listOf(appointmentSummaryDto1, appointmentSummaryDto2))
     }
   }
 

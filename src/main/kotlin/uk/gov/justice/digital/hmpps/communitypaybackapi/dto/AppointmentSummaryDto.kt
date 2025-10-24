@@ -8,8 +8,11 @@ data class AppointmentSummaryDto(
     description = "How many community payback minutes the offender is required to complete",
     example = "2400",
   )
+  val contactOutcome: ContactOutcomeDto?,
   val requirementMinutes: Int,
   @param:Schema(description = "How many community payback minutes the offender has completed to date", example = "480")
   val completedMinutes: Int,
   val offender: OffenderDto,
-)
+) {
+  companion object
+}

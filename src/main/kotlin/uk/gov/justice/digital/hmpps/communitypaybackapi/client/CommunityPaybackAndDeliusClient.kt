@@ -104,6 +104,7 @@ data class ProjectSession(
 data class ProjectAppointmentSummary(
   val id: Long,
   val case: CaseSummary,
+  val outcome: ContactOutcome?,
   val requirementProgress: RequirementProgress,
 ) {
   companion object
