@@ -74,15 +74,6 @@ class OpenApiConfiguration(buildProperties: BuildProperties) {
     .addOpenApiCustomizer(defaultErrorResponseCustomizer())
     .build()
 
-  @Deprecated("This will be replaced by ForCommunityPaybackAdminUI")
-  @Bean
-  fun forCommunityPaybackUI(): GroupedOpenApi = GroupedOpenApi.builder()
-    .group("ForCommunityPaybackUI")
-    .displayName("For Community Payback UI (Deprecated, use ForCommunityPaybackAdminUI)")
-    .pathsToExclude("/queue-admin/**", "/domain-event-details/**", "/supervisor/**")
-    .addOpenApiCustomizer(defaultErrorResponseCustomizer())
-    .build()
-
   @Bean
   fun forCommunityPaybackAdminUI(): GroupedOpenApi = GroupedOpenApi.builder()
     .group("ForCommunityPaybackAdminUI")
