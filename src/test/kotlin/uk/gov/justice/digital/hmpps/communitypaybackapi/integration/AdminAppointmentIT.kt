@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CaseSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ContactOutcome
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.EnforcementAction
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Project
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
@@ -102,6 +103,7 @@ class AdminAppointmentIT : IntegrationTestBase() {
           project = Project.valid().copy(name = projectName),
           case = CaseSummary.valid().copy(crn = crn),
           outcome = ContactOutcome.valid().copy(code = contactOutcomeEntityRepository.findAll().first().code),
+          enforcementAction = EnforcementAction.valid().copy(code = enforcementActionEntityRepository.findAll().first().code),
         ),
       )
 

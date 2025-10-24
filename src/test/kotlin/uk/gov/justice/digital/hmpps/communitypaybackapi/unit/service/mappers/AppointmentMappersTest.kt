@@ -13,6 +13,7 @@ import org.junit.jupiter.params.provider.CsvSource
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.AppointmentSupervisor
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CaseSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ContactOutcome
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.EnforcementAction
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Name
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.PickUpData
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.PickUpLocation
@@ -32,6 +33,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.Behaviour
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EnforcementActionEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EnforcementActionEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.WorkQuality
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
@@ -53,6 +55,9 @@ class AppointmentMappersTest {
 
   @MockK(relaxed = true)
   private lateinit var contactOutcomeEntityRepository: ContactOutcomeEntityRepository
+
+  @MockK(relaxed = true)
+  private lateinit var enforcementActionEntityRepository: EnforcementActionEntityRepository
 
   @InjectMockKs
   private lateinit var service: AppointmentMappers
@@ -176,8 +181,10 @@ class AppointmentMappersTest {
           name = Name.valid(),
         ),
         outcome = ContactOutcome.valid().copy(code = "OUTCOME1"),
-        enforcementActionId = enforcementActionId,
-        respondBy = respondBy,
+        enforcementAction = EnforcementAction.valid().copy(
+          code = "ENFORCE1",
+          respondBy = respondBy,
+        ),
         hiVisWorn = hiVisWorn,
         workedIntensively = workedIntensively,
         workQuality = workQuality,
@@ -189,6 +196,7 @@ class AppointmentMappersTest {
 
       every { offenderService.toOffenderInfo(caseSummary) } returns OffenderInfoResult.Limited(crn = crn)
       every { contactOutcomeEntityRepository.findByCode("OUTCOME1") } returns ContactOutcomeEntity.valid().copy(id = contactOutcomeId)
+      every { enforcementActionEntityRepository.findByCode("ENFORCE1") } returns EnforcementActionEntity.valid().copy(id = enforcementActionId)
 
       val result = service.toDto(projectAppointment)
 

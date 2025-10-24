@@ -5,4 +5,6 @@ import org.springframework.stereotype.Repository
 import java.util.UUID
 
 @Repository
-interface EnforcementActionEntityRepository : JpaRepository<EnforcementActionEntity, UUID>
+interface EnforcementActionEntityRepository : JpaRepository<EnforcementActionEntity, UUID> {
+  fun findByCode(code: String): EnforcementActionEntity?
+}

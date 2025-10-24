@@ -62,8 +62,11 @@
     "code": "UAAB",
     "description": "Unacceptable Absence"
   },
-  "enforcementActionCode": "EA05",
-  "respondBy": null,
+  "enforcementAction": {
+    "code": "EA05",
+    "description": "Other Enforcement Letter Sent",
+    "respondBy": null
+  },
   "hiVisWorn": null,
   "workedIntensively": null,
   "workQuality": null,

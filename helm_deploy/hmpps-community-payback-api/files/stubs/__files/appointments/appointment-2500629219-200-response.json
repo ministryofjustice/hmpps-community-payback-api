@@ -62,8 +62,7 @@
     "code": "ATTC",
     "description": "Attended - Complied"
   },
-  "enforcementActionCode": null,
-  "respondBy": null,
+  "enforcementAction": null,
   "hiVisWorn": true,
   "workedIntensively": false,
   "workQuality": "GOOD",

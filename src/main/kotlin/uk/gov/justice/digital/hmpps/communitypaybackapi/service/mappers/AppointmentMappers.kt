@@ -18,6 +18,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.PickUpDataDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.Behaviour
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EnforcementActionEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.WorkQuality
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.OffenderService
 
@@ -25,6 +26,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.OffenderService
 class AppointmentMappers(
   private val offenderService: OffenderService,
   private val contactOutcomeEntityRepository: ContactOutcomeEntityRepository,
+  private val enforcementActionEntityRepository: EnforcementActionEntityRepository,
 ) {
 
   fun toDto(
@@ -57,10 +59,12 @@ class AppointmentMappers(
         workQuality = appointment.workQuality?.toDto(),
         behaviour = appointment.behaviour?.toDto(),
       ),
-      enforcementData = EnforcementDto(
-        enforcementActionId = appointment.enforcementActionId,
-        respondBy = appointment.respondBy,
-      ),
+      enforcementData = appointment.enforcementAction?.let {
+        EnforcementDto(
+          enforcementActionId = enforcementActionEntityRepository.findByCode(it.code)?.id ?: error("Can't find enforcement action for code: ${it.code}"),
+          respondBy = it.respondBy,
+        )
+      },
       supervisorOfficerCode = appointment.supervisor?.code,
       notes = appointment.notes,
       sensitive = appointment.sensitive,
