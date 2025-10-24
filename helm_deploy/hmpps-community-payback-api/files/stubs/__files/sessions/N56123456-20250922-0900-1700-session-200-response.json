@@ -28,6 +28,10 @@
         "currentExclusion": false,
         "currentRestriction": false
       },
+      "outcome": {
+        "code": "ATTC",
+        "description": "Attended - Complied"
+      },
       "requirementProgress": {
         "requirementMinutes": "1200000",
         "completedMinutes": "3000"
@@ -46,6 +50,10 @@
         "currentExclusion": false,
         "currentRestriction": false
       },
+      "outcome": {
+        "code": "UAAB",
+        "description": "Unacceptable Absence"
+      },
       "requirementProgress": {
         "requirementMinutes": "1200000",
         "completedMinutes": "0"
@@ -63,6 +71,10 @@
         "dateOfBirth": "1985-05-12",
         "currentExclusion": false,
         "currentRestriction": false
+      },
+      "outcome": {
+        "code": "UAAB",
+        "description": "Unacceptable Absence"
       },
       "requirementProgress": {
         "requirementMinutes": "1200000",

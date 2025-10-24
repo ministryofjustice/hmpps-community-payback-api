@@ -20,10 +20,12 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.PickUpLocation
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Project
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectAppointmentBehaviour
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectAppointmentSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectAppointmentWorkQuality
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectLocation
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Provider
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.RequirementProgress
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Team
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentBehaviourDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentWorkQualityDto
@@ -235,6 +237,34 @@ class AppointmentMappersTest {
 
       assertThat(result.sensitive).isFalse
       assertThat(result.alertActive).isTrue
+    }
+  }
+
+  @Nested
+  inner class ProjectAppointmentSummaryMapper {
+
+    @Test
+    fun success() {
+      every { contactOutcomeEntityRepository.findByCode("OUTCOME1") } returns ContactOutcomeEntity.valid().copy(name = "The outcome")
+
+      val result = service.toDto(
+        appointmentSummary = ProjectAppointmentSummary(
+          id = 1L,
+          case = CaseSummary.Companion.valid().copy(crn = "CRN1"),
+          outcome = ContactOutcome.valid().copy(code = "OUTCOME1"),
+          requirementProgress = RequirementProgress(
+            requirementMinutes = 520,
+            completedMinutes = 30,
+          ),
+        ),
+        offenderInfoResult = OffenderInfoResult.Limited(crn = "CRN1"),
+      )
+
+      assertThat(result.id).isEqualTo(1L)
+      assertThat(result.contactOutcome?.name).isEqualTo("The outcome")
+      assertThat(result.offender).isNotNull
+      assertThat(result.requirementMinutes).isEqualTo(520)
+      assertThat(result.completedMinutes).isEqualTo(30)
     }
   }
 

@@ -11,7 +11,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EnforcementAction
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ProjectTypeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
 import java.util.UUID
-import kotlin.collections.get
 
 class ReferenceMappersTest {
 

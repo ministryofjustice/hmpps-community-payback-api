@@ -28,6 +28,10 @@
         "currentExclusion": false,
         "currentRestriction": false
       },
+      "outcome": {
+        "code": "ATTC",
+        "description": "Attended - Complied"
+      },
       "requirementProgress": {
         "requirementMinutes": "1200000",
         "completedMinutes": "0"
