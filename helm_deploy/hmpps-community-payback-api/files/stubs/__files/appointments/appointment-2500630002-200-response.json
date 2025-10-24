@@ -1,5 +1,6 @@
 {
   "id": 2500630002,
+  "version": "E72A89A6-8A6E-45B1-A6B5-B74847E5E5ED",
   "project" : {
     "name": "Tree Planting UK",
     "code": "N56456456",
@@ -58,5 +59,7 @@
   "workQuality": "GOOD",
   "behaviour": "GOOD",
   "notes": "[System scheduled appointment]",
-  "updatedAt": "2025-09-22T17:00:00"
+  "updatedAt": "2025-09-22T17:00:00",
+  "sensitive": true,
+  "alertActive": true
 }

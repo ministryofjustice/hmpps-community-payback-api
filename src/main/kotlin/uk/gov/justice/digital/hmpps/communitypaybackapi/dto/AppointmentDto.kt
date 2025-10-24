@@ -6,6 +6,7 @@ import java.util.UUID
 
 data class AppointmentDto(
   val id: Long,
+  val version: UUID,
   val projectName: String,
   val projectCode: String,
   val projectTypeName: String,
@@ -23,4 +24,6 @@ data class AppointmentDto(
   val enforcementData: EnforcementDto?,
   val supervisorOfficerCode: String? = null,
   val notes: String?,
+  val sensitive: Boolean?,
+  val alertActive: Boolean?,
 )

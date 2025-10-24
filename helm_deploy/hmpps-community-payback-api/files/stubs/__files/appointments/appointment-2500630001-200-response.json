@@ -1,5 +1,6 @@
 {
   "id": 2500630001,
+  "version": "20189FF5-9799-4A0F-BF31-A635064DA352",
   "project": {
     "name": "Test regional project",
     "code": "N56777777",
@@ -58,5 +59,7 @@
   "workQuality": "GOOD",
   "behaviour": "GOOD",
   "notes": "[System scheduled appointment]",
-  "updatedAt": "2025-09-22T17:00:00"
+  "updatedAt": "2025-09-22T17:00:00",
+  "sensitive": false,
+  "alertActive": true
 }
