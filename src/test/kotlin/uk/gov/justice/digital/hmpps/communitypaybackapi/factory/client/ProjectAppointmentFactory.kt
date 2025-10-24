@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client
 
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.AppointmentSupervisor
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CaseSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.PickUpData
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Project
@@ -27,7 +28,7 @@ fun ProjectAppointment.Companion.valid() = ProjectAppointment(
   startTime = randomLocalTime(),
   endTime = randomLocalTime(),
   penaltyTime = randomLocalTime(),
-  supervisorOfficerCode = String.random(),
+  supervisor = AppointmentSupervisor.valid(),
   contactOutcomeId = UUID.randomUUID(),
   enforcementActionId = UUID.randomUUID(),
   respondBy = randomLocalDate(),

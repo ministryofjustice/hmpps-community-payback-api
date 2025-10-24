@@ -5,7 +5,9 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.AppointmentSupervisor
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CaseSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Name
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.PickUpData
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.PickUpLocation
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Project
@@ -147,7 +149,10 @@ class AppointmentMappersTest {
         startTime = startTime,
         endTime = endTime,
         penaltyTime = penaltyTime,
-        supervisorOfficerCode = supervisorOfficerCode,
+        supervisor = AppointmentSupervisor(
+          code = supervisorOfficerCode,
+          name = Name.valid(),
+        ),
         contactOutcomeId = contactOutcomeId,
         enforcementActionId = enforcementActionId,
         respondBy = respondBy,

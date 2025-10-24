@@ -84,7 +84,7 @@ fun ProjectAppointment.toDto(offenderInfoResult: OffenderInfoResult) = Appointme
     enforcementActionId = this.enforcementActionId,
     respondBy = this.respondBy,
   ),
-  supervisorOfficerCode = this.supervisorOfficerCode,
+  supervisorOfficerCode = this.supervisor?.code,
   notes = this.notes,
   sensitive = this.sensitive,
   alertActive = this.alertActive,
