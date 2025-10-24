@@ -2,7 +2,7 @@ import java.net.InetSocketAddress
 import java.net.Socket
 
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "9.1.3"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "9.1.4"
   kotlin("plugin.spring") version "2.2.21"
   kotlin("plugin.jpa") version "2.2.21"
   id("io.gitlab.arturbosch.detekt") version "1.23.8"
@@ -36,7 +36,7 @@ dependencies {
 
   implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
 
-  implementation("org.flywaydb:flyway-core:11.14.1")
+  implementation("org.flywaydb:flyway-core:11.15.0")
   implementation("org.postgresql:postgresql")
   runtimeOnly("org.flywaydb:flyway-database-postgresql")
 
