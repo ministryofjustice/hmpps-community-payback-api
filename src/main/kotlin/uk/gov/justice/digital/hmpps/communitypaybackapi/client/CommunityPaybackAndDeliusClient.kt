@@ -130,7 +130,7 @@ data class ProjectAppointment(
   val endTime: LocalTime,
   val penaltyTime: LocalTime?,
   val supervisor: AppointmentSupervisor?,
-  val contactOutcomeId: UUID?,
+  val outcome: ContactOutcome?,
   val enforcementActionId: UUID?,
   val respondBy: LocalDate?,
   val hiVisWorn: Boolean?,
@@ -145,6 +145,9 @@ data class ProjectAppointment(
 }
 
 data class AppointmentSupervisor(val code: String, val name: Name) {
+  companion object
+}
+data class ContactOutcome(val code: String, val description: String) {
   companion object
 }
 data class Project(val name: String, val code: String, val location: ProjectLocation) {

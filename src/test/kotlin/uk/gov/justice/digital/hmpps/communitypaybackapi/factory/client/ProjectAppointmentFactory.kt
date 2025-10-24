@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client
 
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.AppointmentSupervisor
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CaseSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ContactOutcome
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.PickUpData
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Project
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectAppointment
@@ -29,7 +30,7 @@ fun ProjectAppointment.Companion.valid() = ProjectAppointment(
   endTime = randomLocalTime(),
   penaltyTime = randomLocalTime(),
   supervisor = AppointmentSupervisor.valid(),
-  contactOutcomeId = UUID.randomUUID(),
+  outcome = ContactOutcome.valid(),
   enforcementActionId = UUID.randomUUID(),
   respondBy = randomLocalDate(),
   hiVisWorn = Boolean.random(),

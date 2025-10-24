@@ -17,12 +17,14 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.LocationDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.PickUpDataDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.Behaviour
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.WorkQuality
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.OffenderService
 
 @Service
 class AppointmentMappers(
   private val offenderService: OffenderService,
+  private val contactOutcomeEntityRepository: ContactOutcomeEntityRepository,
 ) {
 
   fun toDto(
@@ -45,7 +47,9 @@ class AppointmentMappers(
       date = appointment.date,
       startTime = appointment.startTime,
       endTime = appointment.endTime,
-      contactOutcomeId = appointment.contactOutcomeId,
+      contactOutcomeId = appointment.outcome?.code?.let {
+        contactOutcomeEntityRepository.findByCode(it)?.id ?: error("Can't find outcome for code $it")
+      },
       attendanceData = AttendanceDataDto(
         hiVisWorn = appointment.hiVisWorn,
         workedIntensively = appointment.workedIntensively,

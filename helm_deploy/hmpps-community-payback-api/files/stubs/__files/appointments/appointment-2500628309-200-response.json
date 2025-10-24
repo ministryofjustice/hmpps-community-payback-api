@@ -58,7 +58,10 @@
       "middleNames": []
     }
   },
-  "contactOutcomeCode": "UAAB",
+  "outcome": {
+    "code": "UAAB",
+    "description": "Unacceptable Absence"
+  },
   "enforcementActionCode": "ROM",
   "respondBy": null,
   "hiVisWorn": null,
