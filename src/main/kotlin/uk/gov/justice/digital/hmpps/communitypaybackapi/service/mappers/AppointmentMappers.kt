@@ -59,6 +59,7 @@ fun Behaviour.Companion.fromDto(dto: AppointmentBehaviourDto) = Behaviour.entrie
 
 fun ProjectAppointment.toDto(offenderInfoResult: OffenderInfoResult) = AppointmentDto(
   id = this.id,
+  version = this.version,
   projectName = this.project.name,
   projectCode = this.project.code,
   projectTypeName = this.projectType.name,
@@ -85,6 +86,8 @@ fun ProjectAppointment.toDto(offenderInfoResult: OffenderInfoResult) = Appointme
   ),
   supervisorOfficerCode = this.supervisorOfficerCode,
   notes = this.notes,
+  sensitive = this.sensitive,
+  alertActive = this.alertActive,
 )
 
 fun PickUpData.toDto() = PickUpDataDto(

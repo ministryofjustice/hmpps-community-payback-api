@@ -82,6 +82,7 @@ class AppointmentMappersTest {
     @Test
     fun `should map ProjectAppointment to DTO correctly`() {
       val id = 101L
+      val version = UUID.randomUUID()
       val projectName = "Community Garden Maintenance"
       val projectCode = "CGM101"
       val projectTypeName = "MAINTENANCE"
@@ -112,6 +113,7 @@ class AppointmentMappersTest {
       val notes = "This is a test note"
       val projectAppointment = ProjectAppointment(
         id = id,
+        version = version,
         project = Project(
           name = projectName,
           code = projectCode,
@@ -154,11 +156,14 @@ class AppointmentMappersTest {
         workQuality = workQuality,
         behaviour = behaviour,
         notes = notes,
+        sensitive = false,
+        alertActive = true,
       )
 
       val result = projectAppointment.toDto(OffenderInfoResult.Limited("CRN1"))
 
       assertThat(result.id).isEqualTo(id)
+      assertThat(result.version).isEqualTo(version)
       assertThat(result.projectName).isEqualTo(projectName)
       assertThat(result.projectCode).isEqualTo(projectCode)
       assertThat(result.date).isEqualTo(date)
@@ -186,8 +191,12 @@ class AppointmentMappersTest {
 
       assertThat(result.supervisorOfficerCode).isEqualTo(supervisorOfficerCode)
       assertThat(result.notes).isEqualTo(notes)
+
       assertThat(result.offender.crn).isEqualTo(crn)
       assertThat(result.offender).isInstanceOf(OffenderDto.OffenderLimitedDto::class.java)
+
+      assertThat(result.sensitive).isFalse
+      assertThat(result.alertActive).isTrue
     }
   }
 

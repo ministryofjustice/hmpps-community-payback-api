@@ -118,6 +118,7 @@ data class RequirementProgress(
 
 data class ProjectAppointment(
   val id: Long,
+  val version: UUID,
   val project: Project,
   val projectType: ProjectType,
   val case: CaseSummary,
@@ -137,6 +138,8 @@ data class ProjectAppointment(
   val workQuality: ProjectAppointmentWorkQuality?,
   val behaviour: ProjectAppointmentBehaviour?,
   val notes: String?,
+  val sensitive: Boolean?,
+  val alertActive: Boolean?,
 ) {
   companion object
 }

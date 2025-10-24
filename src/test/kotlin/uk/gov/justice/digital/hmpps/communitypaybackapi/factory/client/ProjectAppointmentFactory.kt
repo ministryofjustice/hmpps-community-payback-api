@@ -16,6 +16,7 @@ import java.util.UUID
 
 fun ProjectAppointment.Companion.valid() = ProjectAppointment(
   id = Long.Companion.random(),
+  version = UUID.randomUUID(),
   project = Project.Companion.valid(),
   projectType = ProjectType.valid(),
   case = CaseSummary.valid(),
@@ -35,4 +36,6 @@ fun ProjectAppointment.Companion.valid() = ProjectAppointment(
   workQuality = ProjectAppointmentWorkQuality.entries.toTypedArray().random(),
   behaviour = ProjectAppointmentBehaviour.entries.toTypedArray().random(),
   notes = String.random(),
+  sensitive = Boolean.random(),
+  alertActive = Boolean.random(),
 )
