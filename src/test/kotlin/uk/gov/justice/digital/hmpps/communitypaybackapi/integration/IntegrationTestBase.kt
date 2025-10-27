@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
+import org.springframework.context.ApplicationContext
 import org.springframework.http.HttpHeaders
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.DynamicPropertyRegistry
@@ -21,6 +22,9 @@ import uk.gov.justice.hmpps.test.kotlin.auth.JwtAuthorisationHelper
 @ActiveProfiles("integrationtest")
 @EnableWireMock
 abstract class IntegrationTestBase {
+
+  @Autowired
+  protected lateinit var ctx: ApplicationContext
 
   @Autowired
   protected lateinit var webTestClient: WebTestClient

@@ -1,10 +1,13 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.factory
 
+import org.springframework.context.ApplicationContext
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentBehaviourDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentWorkQualityDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AttendanceDataDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EnforcementDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EnforcementActionEntityRepository
 import java.util.UUID
 
 fun UpdateAppointmentOutcomeDto.Companion.valid(
@@ -32,4 +35,9 @@ fun UpdateAppointmentOutcomeDto.Companion.valid(
   formKeyToDelete = null,
   alertActive = Boolean.random(),
   sensitive = Boolean.random(),
+)
+
+fun UpdateAppointmentOutcomeDto.Companion.valid(ctx: ApplicationContext) = UpdateAppointmentOutcomeDto.valid(
+  contactOutcomeId = ctx.getBean(ContactOutcomeEntityRepository::class.java).findAll().first().id,
+  enforcementActionId = ctx.getBean(EnforcementActionEntityRepository::class.java).findAll().first().id,
 )
