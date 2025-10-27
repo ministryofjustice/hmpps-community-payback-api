@@ -22,11 +22,10 @@ class AppointmentOutcomeEntityFactory(
   }
 
   fun toEntity(
-    deliusId: Long,
     outcome: UpdateAppointmentOutcomeDto,
   ) = AppointmentOutcomeEntity(
     id = UUID.randomUUID(),
-    appointmentDeliusId = deliusId,
+    appointmentDeliusId = outcome.deliusId,
     deliusVersionToUpdate = outcome.deliusVersionToUpdate,
     startTime = outcome.startTime,
     endTime = outcome.endTime,

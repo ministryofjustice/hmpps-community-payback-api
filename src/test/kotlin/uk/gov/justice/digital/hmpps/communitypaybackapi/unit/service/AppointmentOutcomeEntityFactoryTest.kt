@@ -57,8 +57,8 @@ class AppointmentOutcomeEntityFactoryTest {
       every { enforcementActionEntityRepository.findByIdOrNull(ENFORCEMENT_ACTION_ID) } returns enforcementActionEntity
 
       val result = service.toEntity(
-        101L,
         UpdateAppointmentOutcomeDto(
+          deliusId = 101L,
           deliusVersionToUpdate = deliusVersion,
           startTime = LocalTime.of(10, 1, 2),
           endTime = LocalTime.of(16, 3, 4),

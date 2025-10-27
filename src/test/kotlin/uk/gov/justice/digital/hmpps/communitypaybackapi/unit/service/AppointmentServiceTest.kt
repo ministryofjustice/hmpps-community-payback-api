@@ -86,8 +86,8 @@ class AppointmentServiceTest {
 
     @Test
     fun `if appointment not found, throw not found exception`() {
-      every { appointmentOutcomeEntityRepository.findTopByAppointmentDeliusIdOrderByCreatedAtDesc(1L) } returns null
-      every { appointmentOutcomeEntityFactory.toEntity(any(), any()) } returns AppointmentOutcomeEntity.valid()
+      every { appointmentOutcomeEntityRepository.findTopByAppointmentDeliusIdOrderByCreatedAtDesc(101L) } returns null
+      every { appointmentOutcomeEntityFactory.toEntity(any()) } returns AppointmentOutcomeEntity.valid()
       every { appointmentOutcomeEntityRepository.save(any()) } returnsArgument 0
 
       every {
@@ -96,8 +96,7 @@ class AppointmentServiceTest {
 
       assertThatThrownBy {
         service.updateAppointmentOutcome(
-          deliusId = 101L,
-          outcome = UpdateAppointmentOutcomeDto.valid(),
+          outcome = UpdateAppointmentOutcomeDto.valid().copy(deliusId = 101L),
         )
       }.isInstanceOf(NotFoundException::class.java).hasMessage("Appointment not found for ID '101'")
     }
@@ -105,7 +104,7 @@ class AppointmentServiceTest {
     @Test
     fun `if appointment has newer version, throw conflict exception`() {
       every { appointmentOutcomeEntityRepository.findTopByAppointmentDeliusIdOrderByCreatedAtDesc(1L) } returns null
-      every { appointmentOutcomeEntityFactory.toEntity(any(), any()) } returns AppointmentOutcomeEntity.valid()
+      every { appointmentOutcomeEntityFactory.toEntity(any()) } returns AppointmentOutcomeEntity.valid()
       every { appointmentOutcomeEntityRepository.save(any()) } returnsArgument 0
 
       every {
@@ -116,28 +115,29 @@ class AppointmentServiceTest {
 
       assertThatThrownBy {
         service.updateAppointmentOutcome(
-          deliusId = 101L,
-          outcome = UpdateAppointmentOutcomeDto.valid().copy(deliusVersionToUpdate = version),
+          outcome = UpdateAppointmentOutcomeDto.valid().copy(
+            deliusId = 1L,
+            deliusVersionToUpdate = version,
+          ),
         )
       }.isInstanceOf(ConflictException::class.java).hasMessage("A newer version of the appointment exists. Stale version is '$version'")
     }
 
     @Test
     fun `if there's no existing entries for the delius appointment ids, persist new entry and invoke update endpoint`() {
-      val updateOutcomeDto = UpdateAppointmentOutcomeDto.valid()
+      val updateOutcomeDto = UpdateAppointmentOutcomeDto.valid().copy(deliusId = 101L)
 
       every { appointmentOutcomeEntityRepository.findTopByAppointmentDeliusIdOrderByCreatedAtDesc(1L) } returns null
 
       val entityReturnedByFactory = AppointmentOutcomeEntity.valid()
       every {
-        appointmentOutcomeEntityFactory.toEntity(101L, updateOutcomeDto)
+        appointmentOutcomeEntityFactory.toEntity(updateOutcomeDto)
       } returns entityReturnedByFactory
 
       val entityCaptor = mutableListOf<AppointmentOutcomeEntity>()
       every { appointmentOutcomeEntityRepository.save(capture(entityCaptor)) } returnsArgument 0
 
       service.updateAppointmentOutcome(
-        deliusId = 101L,
         outcome = updateOutcomeDto,
       )
 
@@ -158,8 +158,8 @@ class AppointmentServiceTest {
       every { appointmentOutcomeEntityRepository.save(any()) } returnsArgument 0
 
       service.updateAppointmentOutcome(
-        deliusId = 101L,
         outcome = UpdateAppointmentOutcomeDto.valid().copy(
+          deliusId = 101L,
           formKeyToDelete = FormKeyDto(
             id = "formKeyId",
             type = "formKeyType",
@@ -170,17 +170,16 @@ class AppointmentServiceTest {
 
     @Test
     fun `if there's an existing entry for the delius appointment id and it's logically identical, do not persist a new entry`() {
-      val updateAppointmentDto = UpdateAppointmentOutcomeDto.valid()
+      val updateAppointmentDto = UpdateAppointmentOutcomeDto.valid().copy(deliusId = 1L)
 
       val existingIdenticalEntity = AppointmentOutcomeEntity.valid()
       every {
         appointmentOutcomeEntityRepository.findTopByAppointmentDeliusIdOrderByCreatedAtDesc(1L)
       } returns existingIdenticalEntity
 
-      every { appointmentOutcomeEntityFactory.toEntity(1L, updateAppointmentDto) } returns existingIdenticalEntity
+      every { appointmentOutcomeEntityFactory.toEntity(updateAppointmentDto) } returns existingIdenticalEntity
 
       service.updateAppointmentOutcome(
-        deliusId = 1L,
         outcome = updateAppointmentDto,
       )
 
@@ -189,7 +188,7 @@ class AppointmentServiceTest {
 
     @Test
     fun `if there's an existing entry for the delius appointment id but it's not logically identical, persist new entry send an update`() {
-      val updateAppointmentDto = UpdateAppointmentOutcomeDto.valid()
+      val updateAppointmentDto = UpdateAppointmentOutcomeDto.valid().copy(deliusId = 1L)
 
       val existingAlmostIdenticalEntity = AppointmentOutcomeEntity.valid().copy(notes = "some different notes")
       every {
@@ -201,7 +200,6 @@ class AppointmentServiceTest {
       } returnsArgument 0
 
       service.updateAppointmentOutcome(
-        deliusId = 1L,
         outcome = updateAppointmentDto,
       )
 
