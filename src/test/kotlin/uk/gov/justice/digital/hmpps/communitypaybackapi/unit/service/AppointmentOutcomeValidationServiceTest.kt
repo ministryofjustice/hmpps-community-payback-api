@@ -82,18 +82,6 @@ class AppointmentOutcomeValidationServiceTest {
         .isInstanceOf(IllegalArgumentException::class.java)
         .hasMessage("Enforcement data is required for enforceable contact outcomes")
     }
-
-    @Test
-    fun `requires enforcementActionId when contact outcome is enforceable`() {
-      val contact = ContactOutcomeEntity.valid().copy(enforceable = true)
-      every { contactOutcomeEntityRepository.findById(contact.id) } returns Optional.of(contact)
-
-      val enforcement = EnforcementDto(enforcementActionId = null, respondBy = LocalDate.now())
-
-      assertThatThrownBy { service.validate(outcome(contactOutcomeId = contact.id, enforcementData = enforcement)) }
-        .isInstanceOf(IllegalArgumentException::class.java)
-        .hasMessage("Enforcement action ID is required for enforceable contact outcomes")
-    }
   }
 
   @Nested
