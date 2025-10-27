@@ -79,7 +79,7 @@ class AppointmentOutcomeValidationServiceTest {
       every { contactOutcomeEntityRepository.findById(contact.id) } returns Optional.of(contact)
 
       assertThatThrownBy { service.validate(outcome(contactOutcomeId = contact.id, enforcementData = null)) }
-        .isInstanceOf(IllegalArgumentException::class.java)
+        .isInstanceOf(BadRequestException::class.java)
         .hasMessage("Enforcement data is required for enforceable contact outcomes")
     }
   }
@@ -126,7 +126,7 @@ class AppointmentOutcomeValidationServiceTest {
       val dtoMissingRespondBy = EnforcementDto(enforcementActionId = enforcement.id, respondBy = null)
 
       assertThatThrownBy { service.validate(outcome(contactOutcomeId = contact.id, enforcementData = dtoMissingRespondBy)) }
-        .isInstanceOf(IllegalArgumentException::class.java)
+        .isInstanceOf(BadRequestException::class.java)
         .hasMessage("Respond by date is required for enforceable contact outcomes")
     }
   }

@@ -6,6 +6,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.BadRequestException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EnforcementActionEntityRepository
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.validateNotNull
 
 @Service
 class AppointmentOutcomeValidationService(
@@ -18,7 +19,7 @@ class AppointmentOutcomeValidationService(
     val contactOutcome = contactOutcomeEntityRepository.findByIdOrNull(outcome.contactOutcomeId) ?: throw BadRequestException("Contact outcome not found for ID " + outcome.contactOutcomeId.toString())
 
     if (contactOutcome.enforceable) {
-      val enforcementDto = requireNotNull(outcome.enforcementData) {
+      val enforcementDto = validateNotNull(outcome.enforcementData) {
         "Enforcement data is required for enforceable contact outcomes"
       }
 
@@ -27,7 +28,7 @@ class AppointmentOutcomeValidationService(
       val enforcement = enforcementActionEntityRepository.findById(enforcementActionId)
         .orElseThrow { BadRequestException("Enforcement action not found for ID $enforcementActionId") }
       if (enforcement.respondByDateRequired) {
-        require(outcome.enforcementData.respondBy != null) {
+        validateNotNull(outcome.enforcementData.respondBy) {
           "Respond by date is required for enforceable contact outcomes"
         }
       }
