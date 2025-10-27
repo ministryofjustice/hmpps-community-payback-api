@@ -15,13 +15,10 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.FormKeyDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentOutcomeEntityRepository
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EnforcementActionEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.FormCacheEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.FormCacheEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
-import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.DomainEventListener
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.bodyAsObject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.CommunityPaybackAndDeliusMockServer
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
@@ -32,16 +29,7 @@ class AdminAppointmentIT : IntegrationTestBase() {
   lateinit var appointmentOutcomeEntityRepository: AppointmentOutcomeEntityRepository
 
   @Autowired
-  lateinit var contactOutcomeEntityRepository: ContactOutcomeEntityRepository
-
-  @Autowired
-  lateinit var enforcementActionEntityRepository: EnforcementActionEntityRepository
-
-  @Autowired
   lateinit var formCacheEntityRepository: FormCacheEntityRepository
-
-  @Autowired
-  lateinit var domainEventListener: DomainEventListener
 
   @Nested
   @DisplayName("GET /admin/appointment/{appointmentId}")
@@ -102,8 +90,8 @@ class AdminAppointmentIT : IntegrationTestBase() {
           id = id,
           project = Project.valid().copy(name = projectName),
           case = CaseSummary.valid().copy(crn = crn),
-          outcome = ContactOutcome.valid().copy(code = contactOutcomeEntityRepository.findAll().first().code),
-          enforcementAction = EnforcementAction.valid().copy(code = enforcementActionEntityRepository.findAll().first().code),
+          outcome = ContactOutcome.valid(ctx),
+          enforcementAction = EnforcementAction.valid(ctx),
         ),
       )
 
@@ -169,10 +157,7 @@ class AdminAppointmentIT : IntegrationTestBase() {
         .uri("/admin/appointments/1234/outcome")
         .addAdminUiAuthHeader()
         .bodyValue(
-          UpdateAppointmentOutcomeDto.valid(
-            contactOutcomeId = contactOutcomeEntityRepository.findAll().first().id,
-            enforcementActionId = enforcementActionEntityRepository.findAll().first().id,
-          ).copy(
+          UpdateAppointmentOutcomeDto.valid(ctx).copy(
             deliusId = 1234L,
           ),
         )
@@ -200,10 +185,7 @@ class AdminAppointmentIT : IntegrationTestBase() {
         .uri("/admin/appointments/1234/outcome")
         .addAdminUiAuthHeader()
         .bodyValue(
-          UpdateAppointmentOutcomeDto.valid(
-            contactOutcomeId = contactOutcomeEntityRepository.findAll().first().id,
-            enforcementActionId = enforcementActionEntityRepository.findAll().first().id,
-          ).copy(
+          UpdateAppointmentOutcomeDto.valid(ctx).copy(
             deliusId = 1234L,
             formKeyToDelete = FormKeyDto(
               id = "id1",
