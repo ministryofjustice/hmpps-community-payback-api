@@ -36,7 +36,7 @@ dependencies {
 
   implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
 
-  implementation("org.flywaydb:flyway-core:11.15.0")
+  implementation("org.flywaydb:flyway-core")
   implementation("org.postgresql:postgresql")
   runtimeOnly("org.flywaydb:flyway-database-postgresql")
 
