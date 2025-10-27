@@ -22,9 +22,7 @@ class AppointmentOutcomeValidationService(
         "Enforcement data is required for enforceable contact outcomes"
       }
 
-      val enforcementActionId = requireNotNull(enforcementDto.enforcementActionId) {
-        "Enforcement action ID is required for enforceable contact outcomes"
-      }
+      val enforcementActionId = enforcementDto.enforcementActionId
 
       val enforcement = enforcementActionEntityRepository.findById(enforcementActionId)
         .orElseThrow { BadRequestException("Enforcement action not found for ID $enforcementActionId") }
