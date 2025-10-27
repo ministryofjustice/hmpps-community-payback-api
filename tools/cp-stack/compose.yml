@@ -79,7 +79,7 @@ services:
       test: bash -c "exec 6<> /dev/tcp/localhost/8080"
 
   postgres:
-    image: "postgres:16.8"
+    image: "postgres:16.10"
     container_name: cp-stack-postgres
     environment:
       - POSTGRES_USER=community_payback
