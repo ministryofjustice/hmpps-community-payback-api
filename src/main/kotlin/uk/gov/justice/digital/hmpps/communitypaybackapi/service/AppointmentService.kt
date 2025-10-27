@@ -41,12 +41,13 @@ class AppointmentService(
 
   @Transactional
   fun updateAppointmentOutcome(
-    deliusId: Long,
     outcome: UpdateAppointmentOutcomeDto,
   ) {
+    val deliusId = outcome.deliusId
+
     appointmentOutcomeValidationService.validate(outcome)
 
-    val proposedEntity = appointmentOutcomeEntityFactory.toEntity(deliusId, outcome)
+    val proposedEntity = appointmentOutcomeEntityFactory.toEntity(outcome)
 
     val mostRecentAppointmentOutcome = appointmentOutcomeEntityRepository.findTopByAppointmentDeliusIdOrderByCreatedAtDesc(deliusId)
 

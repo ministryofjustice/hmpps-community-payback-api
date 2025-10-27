@@ -5,6 +5,8 @@ import java.time.LocalTime
 import java.util.UUID
 
 data class UpdateAppointmentOutcomeDto(
+  @param:Schema(description = "Delius ID of the appointment to update")
+  val deliusId: Long,
   @param:Schema(description = "The version of the appointment retrieved from delius this update is being applied to")
   val deliusVersionToUpdate: UUID,
   @param:Schema(example = "09:00", description = "The start local time of the appointment", pattern = "^([0-1][0-9]|2[0-3]):[0-5][0-9]$")

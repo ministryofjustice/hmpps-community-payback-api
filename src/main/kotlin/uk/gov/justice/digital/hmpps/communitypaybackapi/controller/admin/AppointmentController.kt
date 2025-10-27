@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.BadRequestException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentService
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
@@ -87,8 +88,11 @@ class AppointmentController(
     @PathVariable deliusAppointmentId: Long,
     @RequestBody outcome: UpdateAppointmentOutcomeDto,
   ) {
+    if (outcome.deliusId != deliusAppointmentId) {
+      throw BadRequestException("ID in URL should match ID in payload")
+    }
+
     appointmentService.updateAppointmentOutcome(
-      deliusId = deliusAppointmentId,
       outcome = outcome,
     )
   }

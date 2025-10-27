@@ -11,6 +11,7 @@ fun UpdateAppointmentOutcomeDto.Companion.valid(
   contactOutcomeId: UUID = UUID.randomUUID(),
   enforcementActionId: UUID = UUID.randomUUID(),
 ) = UpdateAppointmentOutcomeDto(
+  deliusId = Long.random(),
   deliusVersionToUpdate = UUID.randomUUID(),
   startTime = randomLocalTime(),
   endTime = randomLocalTime(),

@@ -172,6 +172,8 @@ class AdminAppointmentIT : IntegrationTestBase() {
           UpdateAppointmentOutcomeDto.valid(
             contactOutcomeId = contactOutcomeEntityRepository.findAll().first().id,
             enforcementActionId = enforcementActionEntityRepository.findAll().first().id,
+          ).copy(
+            deliusId = 1234L,
           ),
         )
         .exchange()
@@ -202,6 +204,7 @@ class AdminAppointmentIT : IntegrationTestBase() {
             contactOutcomeId = contactOutcomeEntityRepository.findAll().first().id,
             enforcementActionId = enforcementActionEntityRepository.findAll().first().id,
           ).copy(
+            deliusId = 1234L,
             formKeyToDelete = FormKeyDto(
               id = "id1",
               type = "formtype",
