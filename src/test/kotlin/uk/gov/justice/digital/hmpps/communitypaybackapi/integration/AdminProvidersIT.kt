@@ -13,6 +13,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.SupervisorSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProviderSummariesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProviderTeamSummariesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SupervisorSummariesDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.bodyAsObject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.CommunityPaybackAndDeliusMockServer
 
@@ -164,10 +165,7 @@ class AdminProvidersIT : IntegrationTestBase() {
     fun `should return OK with team supervisors`() {
       CommunityPaybackAndDeliusMockServer.teamSupervisors(
         SupervisorSummaries(
-          listOf(
-            SupervisorSummary(forename = "Fred", forename2 = null, surname = "Flintstone", officerCode = "FF01", staffGrade = "PO"),
-            SupervisorSummary(forename = "Barney", forename2 = null, surname = "Rubble", officerCode = "BR01", staffGrade = "PO"),
-          ),
+          listOf(SupervisorSummary.valid(), SupervisorSummary.valid()),
         ),
       )
 
@@ -180,10 +178,6 @@ class AdminProvidersIT : IntegrationTestBase() {
         .bodyAsObject<SupervisorSummariesDto>()
 
       assertThat(supervisors.supervisors).hasSize(2)
-      assertThat(supervisors.supervisors[0].code).isEqualTo("FF01")
-      assertThat(supervisors.supervisors[0].name).isEqualTo("Fred Flintstone [PO]")
-      assertThat(supervisors.supervisors[1].code).isEqualTo("BR01")
-      assertThat(supervisors.supervisors[1].name).isEqualTo("Barney Rubble [PO]")
     }
 
     @Test

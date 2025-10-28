@@ -1,10 +1,12 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.unit.service.mappers
 
-import org.assertj.core.api.Assertions
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Grade
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProviderSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProviderSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.SupervisorName
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.SupervisorSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.SupervisorSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProviderSummaryDto
@@ -26,10 +28,10 @@ class ProviderMappersTest {
         ),
       )
       val providerSummariesDto = providersSummaries.toDto()
-      Assertions.assertThat(providerSummariesDto.providers).hasSize(3)
-      Assertions.assertThat(providerSummariesDto.providers[0].name).isEqualTo("East of England")
-      Assertions.assertThat(providerSummariesDto.providers[1].name).isEqualTo("North East Region")
-      Assertions.assertThat(providerSummariesDto.providers[2].name).isEqualTo("North West Region")
+      assertThat(providerSummariesDto.providers).hasSize(3)
+      assertThat(providerSummariesDto.providers[0].name).isEqualTo("East of England")
+      assertThat(providerSummariesDto.providers[1].name).isEqualTo("North East Region")
+      assertThat(providerSummariesDto.providers[2].name).isEqualTo("North West Region")
     }
   }
 
@@ -38,7 +40,7 @@ class ProviderMappersTest {
     @Test
     fun `should map using toDto() correctly`() {
       val providerSummary = ProviderSummary(code = "GHI123", name = "East of England")
-      Assertions.assertThat(providerSummary.toDto())
+      assertThat(providerSummary.toDto())
         .isEqualTo(ProviderSummaryDto(code = "GHI123", name = "East of England"))
     }
   }
@@ -51,25 +53,31 @@ class ProviderMappersTest {
       val supervisorSummaries = SupervisorSummaries(
         listOf(
           SupervisorSummary(
-            forename = "Fred",
-            forename2 = null,
-            surname = "Flintstone",
-            officerCode = "FF01",
-            staffGrade = "PO",
+            name = SupervisorName(
+              forename = "Fred",
+              middleName = null,
+              surname = "Flintstone",
+            ),
+            code = "FF01",
+            grade = Grade("PO", "PO Description"),
           ),
           SupervisorSummary(
-            forename = "Wilma",
-            forename2 = null,
-            surname = "Flintstone",
-            officerCode = "WF01",
-            staffGrade = "PO",
+            name = SupervisorName(
+              forename = "Wilma",
+              middleName = null,
+              surname = "Flintstone",
+            ),
+            code = "WF01",
+            grade = Grade("S1", "S1 Description"),
           ),
           SupervisorSummary(
-            forename = "Barney",
-            forename2 = null,
-            surname = "Rubble",
-            officerCode = "BR01",
-            staffGrade = "PO",
+            name = SupervisorName(
+              forename = "Barney",
+              middleName = null,
+              surname = "Rubble",
+            ),
+            code = "BR01",
+            grade = null,
           ),
 
         ),
@@ -77,27 +85,29 @@ class ProviderMappersTest {
 
       val supervisorSummariesDto = supervisorSummaries.toDto()
 
-      Assertions.assertThat(supervisorSummariesDto.supervisors).hasSize(3)
-      Assertions.assertThat(supervisorSummariesDto.supervisors[0].code).isEqualTo("FF01")
-      Assertions.assertThat(supervisorSummariesDto.supervisors[0].name).isEqualTo("Fred Flintstone [PO]")
-      Assertions.assertThat(supervisorSummariesDto.supervisors[1].code).isEqualTo("WF01")
-      Assertions.assertThat(supervisorSummariesDto.supervisors[1].name).isEqualTo("Wilma Flintstone [PO]")
-      Assertions.assertThat(supervisorSummariesDto.supervisors[2].code).isEqualTo("BR01")
-      Assertions.assertThat(supervisorSummariesDto.supervisors[2].name).isEqualTo("Barney Rubble [PO]")
+      assertThat(supervisorSummariesDto.supervisors).hasSize(3)
+      assertThat(supervisorSummariesDto.supervisors[0].code).isEqualTo("FF01")
+      assertThat(supervisorSummariesDto.supervisors[0].name).isEqualTo("Fred Flintstone [PO - PO Description]")
+      assertThat(supervisorSummariesDto.supervisors[1].code).isEqualTo("WF01")
+      assertThat(supervisorSummariesDto.supervisors[1].name).isEqualTo("Wilma Flintstone [S1 - S1 Description]")
+      assertThat(supervisorSummariesDto.supervisors[2].code).isEqualTo("BR01")
+      assertThat(supervisorSummariesDto.supervisors[2].name).isEqualTo("Barney Rubble")
     }
 
     @Test
     fun `should map SupervisorSummary to DTO correctly`() {
       val supervisorSummary = SupervisorSummary(
-        forename = "Fred",
-        forename2 = null,
-        surname = "Flintstone",
-        officerCode = "FF01",
-        staffGrade = "PO",
+        name = SupervisorName(
+          forename = "Fred",
+          middleName = null,
+          surname = "Flintstone",
+        ),
+        code = "FF01",
+        grade = Grade("PO", "PO Description"),
       )
 
-      Assertions.assertThat(supervisorSummary.toDto()).isEqualTo(
-        SupervisorSummaryDto(code = "FF01", name = "Fred Flintstone [PO]"),
+      assertThat(supervisorSummary.toDto()).isEqualTo(
+        SupervisorSummaryDto(code = "FF01", name = "Fred Flintstone [PO - PO Description]"),
       )
     }
 
@@ -106,7 +116,7 @@ class ProviderMappersTest {
       val supervisorSummaries = SupervisorSummaries(emptyList())
       val supervisorSummariesDto = supervisorSummaries.toDto()
 
-      Assertions.assertThat(supervisorSummariesDto.supervisors).isEmpty()
+      assertThat(supervisorSummariesDto.supervisors).isEmpty()
     }
   }
 }

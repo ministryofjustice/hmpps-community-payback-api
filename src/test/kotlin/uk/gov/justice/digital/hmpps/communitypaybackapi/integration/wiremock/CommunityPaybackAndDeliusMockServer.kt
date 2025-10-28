@@ -154,7 +154,7 @@ object CommunityPaybackAndDeliusMockServer {
 
   fun teamSupervisors(supervisorSummaries: SupervisorSummaries) {
     WireMock.stubFor(
-      get("/community-payback-and-delius/supervisors?providerCode=123&teamCode=99")
+      get("/community-payback-and-delius/providers/123/teams/99/supervisors")
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")
