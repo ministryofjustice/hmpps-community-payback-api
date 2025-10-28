@@ -1,9 +1,11 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers
 
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Grade
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProviderSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProviderSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProviderTeamSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProviderTeamSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.SupervisorName
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.SupervisorSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.SupervisorSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProviderSummariesDto
@@ -21,6 +23,12 @@ fun ProviderTeamSummary.toDto() = ProviderTeamSummaryDto(this.code, this.descrip
 
 fun SupervisorSummaries.toDto() = SupervisorSummariesDto(this.supervisors.map { it.toDto() })
 fun SupervisorSummary.toDto() = SupervisorSummaryDto(
-  this.officerCode,
-  "${this.forename}${this.forename2?.let { " $it " } ?: " "}${this.surname} [${this.staffGrade}]",
+  this.code,
+  this.name.toDtoValue() + (this.grade?.let { " ${it.toDtoValue()}" } ?: ""),
 )
+
+fun SupervisorName.toDtoValue() = forename + " " +
+  (middleName?.let { "$it " } ?: "") +
+  surname
+
+fun Grade.toDtoValue() = "[$code - $description]"

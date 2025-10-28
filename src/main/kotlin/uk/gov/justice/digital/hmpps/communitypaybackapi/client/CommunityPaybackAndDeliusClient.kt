@@ -51,10 +51,10 @@ interface CommunityPaybackAndDeliusClient {
     @RequestBody crns: Set<String>,
   ): UserAccess
 
-  @GetExchange("/supervisors")
+  @GetExchange("/providers/{providerCode}/teams/{teamCode}/supervisors")
   fun teamSupervisors(
-    @RequestParam providerCode: String,
-    @RequestParam teamCode: String,
+    @PathVariable providerCode: String,
+    @PathVariable teamCode: String,
   ): SupervisorSummaries
 }
 
@@ -247,12 +247,25 @@ data class SupervisorSummaries(
 )
 
 data class SupervisorSummary(
-  val surname: String,
-  val forename: String,
-  val forename2: String?,
-  val officerCode: String,
-  val staffGrade: String,
+  val name: SupervisorName,
+  val code: String,
+  val grade: Grade?,
+) {
+  companion object
+}
+
+data class Grade(
+  val code: String,
+  val description: String,
 )
+
+data class SupervisorName(
+  val forename: String,
+  val surname: String,
+  val middleName: String?,
+) {
+  companion object
+}
 
 data class UpdateAppointment(
   val version: UUID,

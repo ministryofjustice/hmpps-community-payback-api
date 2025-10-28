@@ -1,46 +1,72 @@
 {
   "supervisors": [
     {
-      "surname": "Xavier",
-      "forename": "Charles",
-      "forename2": null,
-      "officerCode": "N56A108",
-      "staffGrade": "PS - Other"
+      "name": {
+        "surname": "Xavier",
+        "forename": "Charles",
+        "middleName": null
+      },
+      "code": "N56A108",
+      "grade": {
+        "code": "PS",
+        "description": "Other"
+      }
     },
     {
-      "surname": "Summers",
-      "forename": "Scott",
-      "forename2": null,
-      "officerCode": "N56A096",
-      "staffGrade": "PS - Other"
+      "name": {
+        "surname": "Summers",
+        "forename": "Scott",
+        "middleName": null
+      },
+      "code": "N56A096",
+      "grade": {
+        "code": "PS",
+        "description": "Other"
+      }
     },
     {
+      "name": {
       "surname": "Grey",
       "forename": "Jean",
-      "forename2": null,
-      "officerCode": "N56A074",
-      "staffGrade": "PS - Other"
+      "middleName": null
+      },
+      "code": "N56A074",
+      "grade": {
+        "code": "PS",
+        "description": "Other"
+      }
     },
     {
-      "surname": "Munroe",
-      "forename": "Ororo",
-      "forename2": null,
-      "officerCode": "N56A089",
-      "staffGrade": "PS - Other"
+      "name": {
+        "surname": "Munroe",
+        "forename": "Ororo",
+        "middleName": null
+      },
+      "code": "N56A089",
+      "grade": {
+        "code": "PS",
+        "description": "Other"
+      }
     },
     {
-      "surname": "Howlett",
-      "forename": "Logan",
-      "forename2": null,
-      "officerCode": "N56A094",
-      "staffGrade": "PS - Other"
+      "name": {
+        "surname": "Howlett",
+        "forename": "Logan",
+        "middleName": null
+      },
+      "code": "N56A094",
+      "grade": {
+        "code": "PS",
+        "description": "Other"
+      }
     },
     {
-      "surname": "Hank",
-      "forename": "McCoy",
-      "forename2": null,
-      "officerCode": "N56A075",
-      "staffGrade": "PS - Other"
+      "name": {
+        "surname": "Hank",
+        "forename": "McCoy",
+        "middleName": null
+      },
+      "code": "N56A075"
     }
   ]
 }
