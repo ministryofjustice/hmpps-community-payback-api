@@ -27,10 +27,14 @@ fun SupervisorSummaries.toDto() = SupervisorSummariesDto(
     .map { it.toDto() },
 )
 
-fun SupervisorSummary.toDto() = SupervisorSummaryDto(
-  this.code,
-  this.name.toDtoValue() + (this.grade?.let { " ${it.toDtoValue()}" } ?: ""),
-)
+fun SupervisorSummary.toDto(): SupervisorSummaryDto {
+  val fullName = this.name.toDtoValue() + (this.grade?.let { " ${it.toDtoValue()}" } ?: "")
+  return SupervisorSummaryDto(
+    code = this.code,
+    name = fullName,
+    fullName = fullName,
+  )
+}
 
 fun SupervisorName.toDtoValue() = forename + " " +
   (middleName?.let { "$it " } ?: "") +
