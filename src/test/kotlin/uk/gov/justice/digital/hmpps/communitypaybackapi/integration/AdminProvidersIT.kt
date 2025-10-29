@@ -35,7 +35,7 @@ class AdminProvidersIT : IntegrationTestBase() {
     @Test
     fun `should return forbidden if no role`() {
       webTestClient.get()
-        .uri("/admin/providers")
+        .uri("/admin/providers?username=doesntmatter")
         .headers(setAuthorisation())
         .exchange()
         .expectStatus()
@@ -45,7 +45,7 @@ class AdminProvidersIT : IntegrationTestBase() {
     @Test
     fun `should return forbidden if wrong role`() {
       webTestClient.get()
-        .uri("/admin/providers")
+        .uri("/admin/providers?username=doesntmatter")
         .headers(setAuthorisation(roles = listOf("ROLE_WRONG")))
         .exchange()
         .expectStatus()
@@ -55,7 +55,8 @@ class AdminProvidersIT : IntegrationTestBase() {
     @Test
     fun `should return OK`() {
       CommunityPaybackAndDeliusMockServer.providers(
-        ProviderSummaries(
+        username = "calling_user",
+        providers = ProviderSummaries(
           listOf(
             ProviderSummary(code = "ABC123", "Entry 1"),
             ProviderSummary(code = "DEF123", "Entry 2"),
@@ -65,7 +66,7 @@ class AdminProvidersIT : IntegrationTestBase() {
       )
 
       val providers = webTestClient.get()
-        .uri("/admin/providers")
+        .uri("/admin/providers?username=calling_user")
         .addAdminUiAuthHeader()
         .exchange()
         .expectStatus()

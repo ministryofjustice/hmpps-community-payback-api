@@ -8,6 +8,7 @@ import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProviderSummariesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProviderTeamSummariesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SupervisorSummariesDto
@@ -23,7 +24,7 @@ class ProviderController(val providerService: ProviderService) {
 
   @GetMapping
   @Operation(
-    description = "Get list of provider summaries",
+    description = "Get list of provider summaries available for a given user",
     responses = [
       ApiResponse(
         responseCode = "200",
@@ -31,7 +32,9 @@ class ProviderController(val providerService: ProviderService) {
       ),
     ],
   )
-  fun getProviders(): ProviderSummariesDto = providerService.getProviders()
+  fun getProviders(
+    @RequestParam username: String,
+  ): ProviderSummariesDto = providerService.getProviders(username)
 
   @GetMapping("/{providerCode}/teams")
   @Operation(

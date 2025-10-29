@@ -31,10 +31,11 @@ object CommunityPaybackAndDeliusMockServer {
     .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
 
   fun providers(
+    username: String,
     providers: ProviderSummaries,
   ) {
     WireMock.stubFor(
-      get("/community-payback-and-delius/providers").willReturn(
+      get("/community-payback-and-delius/providers?username=$username").willReturn(
         aResponse()
           .withHeader("Content-Type", "application/json")
           .withBody(objectMapper.writeValueAsString(providers)),

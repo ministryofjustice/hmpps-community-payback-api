@@ -14,7 +14,9 @@ import java.util.UUID
 
 interface CommunityPaybackAndDeliusClient {
   @GetExchange("/providers")
-  fun getProviders(): ProviderSummaries
+  fun getProviders(
+    @RequestParam username: String,
+  ): ProviderSummaries
 
   @GetExchange("/providers/{providerCode}/teams")
   fun getProviderTeams(@PathVariable providerCode: String): ProviderTeamSummaries
