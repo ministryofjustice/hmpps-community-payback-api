@@ -30,7 +30,7 @@ spring:
 
       client:
         registration:
-          arns:
+          api-client:
             provider: hmpps-auth
             client-id: override-me
             client-secret: override-me

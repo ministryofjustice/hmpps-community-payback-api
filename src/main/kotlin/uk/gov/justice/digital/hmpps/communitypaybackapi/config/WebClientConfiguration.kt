@@ -4,13 +4,11 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.DependsOn
-import org.springframework.http.client.reactive.ReactorClientHttpConnector
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager
 import org.springframework.web.context.annotation.RequestScope
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.support.WebClientAdapter
 import org.springframework.web.service.invoker.HttpServiceProxyFactory
-import reactor.netty.http.client.HttpClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ArnsClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
 import uk.gov.justice.hmpps.kotlin.auth.authorisedWebClient
@@ -28,6 +26,11 @@ class WebClientConfiguration(
   @param:Value("\${client.arns.url}") val arnsUrl: String,
   @param:Value("\${client.arns.timeout:5s}") val arnsTimeout: Duration,
 ) {
+
+  companion object {
+    const val API_CLIENT_ID: String = "api-client"
+  }
+
   // HMPPS Auth health ping is required if your service calls HMPPS Auth to get a token to call other services
   @Bean
   fun hmppsAuthHealthWebClient(builder: WebClient.Builder): WebClient = builder.healthWebClient(hmppsAuthBaseUri, healthTimeout)
@@ -35,10 +38,16 @@ class WebClientConfiguration(
   // When configuring this for the actual endpoint we should configure authorisation via builder.authorisedWebClient
   @Bean
   @RequestScope
-  fun communityPaybackAndDeliusWebClient(builder: WebClient.Builder): WebClient = builder
-    .baseUrl(communityPaybackAndDeliusUrl)
-    .clientConnector(ReactorClientHttpConnector(HttpClient.create().responseTimeout(communityPaybackAndDeliusTimeout)))
-    .build()
+  fun communityPaybackAndDeliusWebClient(
+    authorizedClientManager: OAuth2AuthorizedClientManager,
+    builder: WebClient.Builder,
+  ): WebClient = builder
+    .authorisedWebClient(
+      authorizedClientManager = authorizedClientManager,
+      registrationId = API_CLIENT_ID,
+      url = communityPaybackAndDeliusUrl,
+      timeout = communityPaybackAndDeliusTimeout,
+    )
 
   @Bean
   @DependsOn("communityPaybackAndDeliusWebClient")
@@ -55,7 +64,7 @@ class WebClientConfiguration(
   ): WebClient = builder
     .authorisedWebClient(
       authorizedClientManager = authorizedClientManager,
-      registrationId = "arns",
+      registrationId = API_CLIENT_ID,
       url = arnsUrl,
       timeout = arnsTimeout,
     )
