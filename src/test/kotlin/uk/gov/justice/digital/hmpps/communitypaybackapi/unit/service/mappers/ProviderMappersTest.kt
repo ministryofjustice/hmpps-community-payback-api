@@ -9,6 +9,8 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProviderSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.SupervisorName
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.SupervisorSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.SupervisorSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.GradeDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.NameDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProviderSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SupervisorSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
@@ -108,8 +110,16 @@ class ProviderMappersTest {
       assertThat(supervisorSummary.toDto()).isEqualTo(
         SupervisorSummaryDto(
           code = "FF01",
-          name = "Fred Flintstone [PO - PO Description]",
+          name = NameDto(
+            forename = "Fred",
+            surname = "Flintstone",
+            middleNames = emptyList(),
+          ),
           fullName = "Fred Flintstone [PO - PO Description]",
+          grade = GradeDto(
+            code = "PO",
+            description = "PO Description",
+          ),
         ),
       )
     }

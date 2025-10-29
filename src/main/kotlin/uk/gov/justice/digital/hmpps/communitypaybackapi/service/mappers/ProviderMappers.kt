@@ -8,6 +8,8 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProviderTeamSumma
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.SupervisorName
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.SupervisorSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.SupervisorSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.GradeDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.NameDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProviderSummariesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProviderSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProviderTeamSummariesDto
@@ -27,14 +29,21 @@ fun SupervisorSummaries.toDto() = SupervisorSummariesDto(
     .map { it.toDto() },
 )
 
-fun SupervisorSummary.toDto(): SupervisorSummaryDto {
-  val fullName = this.name.toDtoValue() + (this.grade?.let { " ${it.toDtoValue()}" } ?: "")
-  return SupervisorSummaryDto(
-    code = this.code,
-    name = fullName,
-    fullName = fullName,
-  )
-}
+fun SupervisorSummary.toDto() = SupervisorSummaryDto(
+  code = this.code,
+  name = NameDto(
+    forename = this.name.forename,
+    surname = this.name.surname,
+    middleNames = this.name.middleName?.let { listOf(it) } ?: emptyList(),
+  ),
+  fullName = this.name.toDtoValue() + (this.grade?.let { " ${it.toDtoValue()}" } ?: ""),
+  grade = this.grade?.toDto(),
+)
+
+fun Grade.toDto() = GradeDto(
+  code = this.code,
+  description = this.description,
+)
 
 fun SupervisorName.toDtoValue() = forename + " " +
   (middleName?.let { "$it " } ?: "") +
