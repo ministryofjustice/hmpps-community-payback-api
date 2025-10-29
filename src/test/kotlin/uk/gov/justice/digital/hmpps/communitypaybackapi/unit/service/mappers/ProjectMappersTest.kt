@@ -175,7 +175,7 @@ class ProjectMappersTest {
       assertThat(result.projectCode).isEqualTo("N987654321")
       assertThat(result.projectLocation).isEqualTo("The Tower, 1a Somewhere Lane, Guildford, Surrey, AA11 234")
       assertThat(result.location.buildingName).isEqualTo("The Tower")
-      assertThat(result.location.addressNumber).isEqualTo("1a")
+      assertThat(result.location.buildingNumber).isEqualTo("1a")
       assertThat(result.location.streetName).isEqualTo("Somewhere Lane")
       assertThat(result.location.townCity).isEqualTo("Guildford")
       assertThat(result.location.county).isEqualTo("Surrey")
@@ -194,7 +194,7 @@ class ProjectMappersTest {
     @Test
     fun `empty location mapped to empty string`() {
       assertThat(
-        uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectLocation(
+        ProjectLocation(
           buildingName = null,
           addressNumber = null,
           streetName = null,
@@ -208,7 +208,7 @@ class ProjectMappersTest {
     @Test
     fun `no address number`() {
       assertThat(
-        uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectLocation(
+        ProjectLocation(
           buildingName = "building",
           addressNumber = null,
           streetName = "street",
@@ -222,7 +222,7 @@ class ProjectMappersTest {
     @Test
     fun `all fields provided`() {
       assertThat(
-        uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectLocation(
+        ProjectLocation(
           buildingName = "building",
           addressNumber = "address",
           streetName = "street",

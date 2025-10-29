@@ -1,11 +1,11 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers
 
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectLocation
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectLocationDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.LocationDto
 
-fun ProjectLocation.toDto() = ProjectLocationDto(
+fun ProjectLocation.toDto() = LocationDto(
   buildingName = this.buildingName,
-  addressNumber = this.addressNumber,
+  buildingNumber = this.addressNumber,
   streetName = this.streetName,
   townCity = this.townCity,
   county = this.county,
