@@ -54,18 +54,9 @@ class ProviderMappersTest {
         listOf(
           SupervisorSummary(
             name = SupervisorName(
-              forename = "Fred",
+              forename = "wilma",
               middleName = null,
-              surname = "Flintstone",
-            ),
-            code = "FF01",
-            grade = Grade("PO", "PO Description"),
-          ),
-          SupervisorSummary(
-            name = SupervisorName(
-              forename = "Wilma",
-              middleName = null,
-              surname = "Flintstone",
+              surname = "flintstone",
             ),
             code = "WF01",
             grade = Grade("S1", "S1 Description"),
@@ -79,7 +70,15 @@ class ProviderMappersTest {
             code = "BR01",
             grade = null,
           ),
-
+          SupervisorSummary(
+            name = SupervisorName(
+              forename = "Fred",
+              middleName = null,
+              surname = "Flintstone",
+            ),
+            code = "FF01",
+            grade = Grade("PO", "PO Description"),
+          ),
         ),
       )
 
@@ -89,7 +88,7 @@ class ProviderMappersTest {
       assertThat(supervisorSummariesDto.supervisors[0].code).isEqualTo("FF01")
       assertThat(supervisorSummariesDto.supervisors[0].name).isEqualTo("Fred Flintstone [PO - PO Description]")
       assertThat(supervisorSummariesDto.supervisors[1].code).isEqualTo("WF01")
-      assertThat(supervisorSummariesDto.supervisors[1].name).isEqualTo("Wilma Flintstone [S1 - S1 Description]")
+      assertThat(supervisorSummariesDto.supervisors[1].name).isEqualTo("wilma flintstone [S1 - S1 Description]")
       assertThat(supervisorSummariesDto.supervisors[2].code).isEqualTo("BR01")
       assertThat(supervisorSummariesDto.supervisors[2].name).isEqualTo("Barney Rubble")
     }
