@@ -86,11 +86,11 @@ class ProviderMappersTest {
 
       assertThat(supervisorSummariesDto.supervisors).hasSize(3)
       assertThat(supervisorSummariesDto.supervisors[0].code).isEqualTo("FF01")
-      assertThat(supervisorSummariesDto.supervisors[0].name).isEqualTo("Fred Flintstone [PO - PO Description]")
+      assertThat(supervisorSummariesDto.supervisors[0].fullName).isEqualTo("Fred Flintstone [PO - PO Description]")
       assertThat(supervisorSummariesDto.supervisors[1].code).isEqualTo("WF01")
-      assertThat(supervisorSummariesDto.supervisors[1].name).isEqualTo("wilma flintstone [S1 - S1 Description]")
+      assertThat(supervisorSummariesDto.supervisors[1].fullName).isEqualTo("wilma flintstone [S1 - S1 Description]")
       assertThat(supervisorSummariesDto.supervisors[2].code).isEqualTo("BR01")
-      assertThat(supervisorSummariesDto.supervisors[2].name).isEqualTo("Barney Rubble")
+      assertThat(supervisorSummariesDto.supervisors[2].fullName).isEqualTo("Barney Rubble")
     }
 
     @Test
@@ -106,7 +106,11 @@ class ProviderMappersTest {
       )
 
       assertThat(supervisorSummary.toDto()).isEqualTo(
-        SupervisorSummaryDto(code = "FF01", name = "Fred Flintstone [PO - PO Description]"),
+        SupervisorSummaryDto(
+          code = "FF01",
+          name = "Fred Flintstone [PO - PO Description]",
+          fullName = "Fred Flintstone [PO - PO Description]",
+        ),
       )
     }
 
