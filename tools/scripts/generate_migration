@@ -2,8 +2,11 @@
 
 set -e
 
+cd "$(dirname "$0")"
+script_dir="$(pwd)"
+
 timestamp=`date "+%Y%m%d%H%M%S"`
 migration_name=`echo "$1" | awk '{print tolower($0)}' | tr ' ' '_'`
 filename="$(echo ${timestamp}__${migration_name}).sql"
 echo "Creating migration: $filename"
-touch "src/main/resources/db/migration/$filename"
+touch "${script_dir}/../../src/main/resources/db/migration/$filename"
