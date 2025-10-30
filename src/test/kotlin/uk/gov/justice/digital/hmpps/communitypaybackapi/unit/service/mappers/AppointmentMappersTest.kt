@@ -44,6 +44,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.OffenderService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.AppointmentMappers
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.fromDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDomainEventDetail
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toUpdateAppointment
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
@@ -62,6 +63,45 @@ class AppointmentMappersTest {
 
   @InjectMockKs
   private lateinit var service: AppointmentMappers
+
+  @Nested
+  inner class AppointmentOutcomeEntityToUpdateAppointment {
+
+    @Test
+    fun success() {
+      val appointmentOutcomeEntity = AppointmentOutcomeEntity.valid().copy(
+        id = UUID.randomUUID(),
+        appointmentDeliusId = 101L,
+        startTime = LocalTime.of(3, 2, 1),
+        endTime = LocalTime.of(12, 11, 10),
+        contactOutcome = ContactOutcomeEntity.valid().copy(code = "COE1"),
+        supervisorOfficerCode = "WO3736",
+        notes = "The notes",
+        hiVisWorn = true,
+        workedIntensively = false,
+        penaltyMinutes = 105,
+        workQuality = WorkQuality.NOT_APPLICABLE,
+        behaviour = Behaviour.UNSATISFACTORY,
+        enforcementAction = EnforcementActionEntity.valid().copy(code = "EA01"),
+        respondBy = LocalDate.of(2025, 1, 2),
+      )
+
+      val result = appointmentOutcomeEntity.toUpdateAppointment()
+
+      assertThat(result.startTime).isEqualTo(LocalTime.of(3, 2, 1))
+      assertThat(result.endTime).isEqualTo(LocalTime.of(12, 11, 10))
+      assertThat(result.contactOutcomeCode).isEqualTo("COE1")
+      assertThat(result.supervisorOfficerCode).isEqualTo("WO3736")
+      assertThat(result.notes).isEqualTo("The notes")
+      assertThat(result.hiVisWorn).isTrue
+      assertThat(result.workedIntensively).isFalse
+      assertThat(result.penaltyMinutes).isEqualTo(105)
+      assertThat(result.workQuality).isEqualTo(ProjectAppointmentWorkQuality.NOT_APPLICABLE)
+      assertThat(result.behaviour).isEqualTo(ProjectAppointmentBehaviour.UNSATISFACTORY)
+      assertThat(result.enforcementActionCode).isEqualTo("EA01")
+      assertThat(result.respondBy).isEqualTo(LocalDate.of(2025, 1, 2))
+    }
+  }
 
   @Nested
   inner class AppointmentOutcomeEntityToDomainEventDetail {
