@@ -8,4 +8,5 @@ fun ContactOutcomeEntity.Companion.valid() = ContactOutcomeEntity(
   code = String.random(length = 3),
   name = String.random(length = 20),
   enforceable = false,
+  attended = false,
 )

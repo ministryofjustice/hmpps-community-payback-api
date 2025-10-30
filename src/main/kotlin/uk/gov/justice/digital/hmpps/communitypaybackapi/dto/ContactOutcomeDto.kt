@@ -12,6 +12,8 @@ data class ContactOutcomeDto(
   val code: String,
   @param:Schema(description = "Whether this outcome requires an enforcement action to take place", example = "false")
   val enforceable: Boolean,
+  @param:Schema(description = "Whether this outcome represents attendance, and as such attendance information is required", example = "false")
+  val attended: Boolean,
 ) {
   companion object
 }
