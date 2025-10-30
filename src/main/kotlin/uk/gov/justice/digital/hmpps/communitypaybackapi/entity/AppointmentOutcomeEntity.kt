@@ -31,24 +31,24 @@ data class AppointmentOutcomeEntity(
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "enforcement_action_id", referencedColumnName = "id")
-  val enforcementAction: EnforcementActionEntity? = null,
+  val enforcementAction: EnforcementActionEntity?,
 
   val supervisorOfficerCode: String,
-  val notes: String? = null,
-  val hiVisWorn: Boolean? = null,
-  val workedIntensively: Boolean? = null,
-  val penaltyMinutes: Long? = null,
+  val notes: String?,
+  val hiVisWorn: Boolean?,
+  val workedIntensively: Boolean?,
+  val penaltyMinutes: Long?,
 
   @Enumerated(EnumType.STRING)
-  val workQuality: WorkQuality? = null,
+  val workQuality: WorkQuality?,
 
   @Enumerated(EnumType.STRING)
-  val behaviour: Behaviour? = null,
+  val behaviour: Behaviour?,
 
-  val respondBy: LocalDate? = null,
+  val respondBy: LocalDate?,
 
-  val alertActive: Boolean? = null,
-  val sensitive: Boolean? = null,
+  val alertActive: Boolean?,
+  val sensitive: Boolean?,
 
   @CreationTimestamp
   val createdAt: OffsetDateTime = OffsetDateTime.now(),
