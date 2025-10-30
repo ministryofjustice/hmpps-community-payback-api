@@ -100,5 +100,48 @@ class AppointmentOutcomeEntityFactoryTest {
       assertThat(result.alertActive).isEqualTo(false)
       assertThat(result.sensitive).isEqualTo(true)
     }
+
+    @Test
+    fun `to entity, mandatory fields only`() {
+      val deliusVersion = UUID.randomUUID()
+
+      val contactOutcomeEntity = ContactOutcomeEntity.valid()
+      every { contactOutcomeEntityRepository.findByIdOrNull(CONTACT_OUTCOME_ID) } returns contactOutcomeEntity
+
+      val result = service.toEntity(
+        UpdateAppointmentOutcomeDto(
+          deliusId = 101L,
+          deliusVersionToUpdate = deliusVersion,
+          startTime = LocalTime.of(10, 1, 2),
+          endTime = LocalTime.of(16, 3, 4),
+          contactOutcomeId = CONTACT_OUTCOME_ID,
+          supervisorOfficerCode = "N45",
+          notes = null,
+          attendanceData = null,
+          enforcementData = null,
+          formKeyToDelete = null,
+          alertActive = null,
+          sensitive = null,
+        ),
+      )
+
+      assertThat(result.id).isNotNull
+      assertThat(result.deliusVersionToUpdate).isEqualTo(deliusVersion)
+      assertThat(result.appointmentDeliusId).isEqualTo(101L)
+      assertThat(result.startTime).isEqualTo(LocalTime.of(10, 1, 2))
+      assertThat(result.endTime).isEqualTo(LocalTime.of(16, 3, 4))
+      assertThat(result.contactOutcome).isEqualTo(contactOutcomeEntity)
+      assertThat(result.enforcementAction).isNull()
+      assertThat(result.supervisorOfficerCode).isEqualTo("N45")
+      assertThat(result.notes).isNull()
+      assertThat(result.hiVisWorn).isNull()
+      assertThat(result.workedIntensively).isNull()
+      assertThat(result.penaltyMinutes).isNull()
+      assertThat(result.workQuality).isNull()
+      assertThat(result.behaviour).isNull()
+      assertThat(result.respondBy).isNull()
+      assertThat(result.alertActive).isNull()
+      assertThat(result.sensitive).isNull()
+    }
   }
 }

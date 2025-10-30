@@ -107,6 +107,47 @@ class AppointmentMappersTest {
       assertThat(result.alertActive).isFalse
       assertThat(result.sensitive).isTrue
     }
+
+    @Test
+    fun `success with only mandatory fields`() {
+      val appointmentOutcomeEntity = AppointmentOutcomeEntity(
+        id = UUID.randomUUID(),
+        appointmentDeliusId = 101L,
+        deliusVersionToUpdate = UUID.randomUUID(),
+        startTime = LocalTime.of(3, 2, 1),
+        endTime = LocalTime.of(12, 11, 10),
+        contactOutcome = ContactOutcomeEntity.valid().copy(code = "COE1"),
+        enforcementAction = null,
+        supervisorOfficerCode = "WO3736",
+        notes = null,
+        hiVisWorn = null,
+        workedIntensively = null,
+        penaltyMinutes = null,
+        workQuality = null,
+        behaviour = null,
+        respondBy = null,
+        alertActive = null,
+        sensitive = null,
+      )
+
+      val result = appointmentOutcomeEntity.toUpdateAppointment()
+
+      assertThat(result.version).isEqualTo(appointmentOutcomeEntity.deliusVersionToUpdate)
+      assertThat(result.startTime).isEqualTo(LocalTime.of(3, 2, 1))
+      assertThat(result.endTime).isEqualTo(LocalTime.of(12, 11, 10))
+      assertThat(result.contactOutcomeCode).isEqualTo("COE1")
+      assertThat(result.enforcementActionCode).isNull()
+      assertThat(result.supervisorOfficerCode).isEqualTo("WO3736")
+      assertThat(result.notes).isNull()
+      assertThat(result.hiVisWorn).isNull()
+      assertThat(result.workedIntensively).isNull()
+      assertThat(result.penaltyMinutes).isNull()
+      assertThat(result.workQuality).isNull()
+      assertThat(result.behaviour).isNull()
+      assertThat(result.respondBy).isNull()
+      assertThat(result.alertActive).isNull()
+      assertThat(result.sensitive).isNull()
+    }
   }
 
   @Nested
