@@ -69,12 +69,14 @@ class AppointmentMappersTest {
 
     @Test
     fun success() {
-      val appointmentOutcomeEntity = AppointmentOutcomeEntity.valid().copy(
+      val appointmentOutcomeEntity = AppointmentOutcomeEntity(
         id = UUID.randomUUID(),
         appointmentDeliusId = 101L,
+        deliusVersionToUpdate = UUID.randomUUID(),
         startTime = LocalTime.of(3, 2, 1),
         endTime = LocalTime.of(12, 11, 10),
         contactOutcome = ContactOutcomeEntity.valid().copy(code = "COE1"),
+        enforcementAction = EnforcementActionEntity.valid().copy(code = "EA01"),
         supervisorOfficerCode = "WO3736",
         notes = "The notes",
         hiVisWorn = true,
@@ -82,15 +84,18 @@ class AppointmentMappersTest {
         penaltyMinutes = 105,
         workQuality = WorkQuality.NOT_APPLICABLE,
         behaviour = Behaviour.UNSATISFACTORY,
-        enforcementAction = EnforcementActionEntity.valid().copy(code = "EA01"),
         respondBy = LocalDate.of(2025, 1, 2),
+        alertActive = false,
+        sensitive = true,
       )
 
       val result = appointmentOutcomeEntity.toUpdateAppointment()
 
+      assertThat(result.version).isEqualTo(appointmentOutcomeEntity.deliusVersionToUpdate)
       assertThat(result.startTime).isEqualTo(LocalTime.of(3, 2, 1))
       assertThat(result.endTime).isEqualTo(LocalTime.of(12, 11, 10))
       assertThat(result.contactOutcomeCode).isEqualTo("COE1")
+      assertThat(result.enforcementActionCode).isEqualTo("EA01")
       assertThat(result.supervisorOfficerCode).isEqualTo("WO3736")
       assertThat(result.notes).isEqualTo("The notes")
       assertThat(result.hiVisWorn).isTrue
@@ -98,8 +103,9 @@ class AppointmentMappersTest {
       assertThat(result.penaltyMinutes).isEqualTo(105)
       assertThat(result.workQuality).isEqualTo(ProjectAppointmentWorkQuality.NOT_APPLICABLE)
       assertThat(result.behaviour).isEqualTo(ProjectAppointmentBehaviour.UNSATISFACTORY)
-      assertThat(result.enforcementActionCode).isEqualTo("EA01")
       assertThat(result.respondBy).isEqualTo(LocalDate.of(2025, 1, 2))
+      assertThat(result.alertActive).isFalse
+      assertThat(result.sensitive).isTrue
     }
   }
 
