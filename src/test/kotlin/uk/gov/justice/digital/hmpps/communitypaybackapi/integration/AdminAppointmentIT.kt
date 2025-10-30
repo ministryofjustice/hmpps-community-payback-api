@@ -170,7 +170,7 @@ class AdminAppointmentIT : IntegrationTestBase() {
     }
 
     @Test
-    fun `Should send update and delete form data`() {
+    fun `Should send update upstream and delete corresponding form data`() {
       CommunityPaybackAndDeliusMockServer.putAppointment(1234L)
 
       formCacheEntityRepository.save(

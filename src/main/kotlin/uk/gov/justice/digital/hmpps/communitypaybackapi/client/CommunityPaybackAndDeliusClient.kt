@@ -283,8 +283,8 @@ data class UpdateAppointment(
   val penaltyMinutes: Long? = null,
   val workQuality: ProjectAppointmentWorkQuality? = null,
   val behaviour: ProjectAppointmentBehaviour? = null,
-  val sensitive: Boolean,
-  val alertActive: Boolean,
+  val sensitive: Boolean? = null,
+  val alertActive: Boolean? = null,
   val enforcementActionCode: String? = null,
   val respondBy: LocalDate? = null,
 )
