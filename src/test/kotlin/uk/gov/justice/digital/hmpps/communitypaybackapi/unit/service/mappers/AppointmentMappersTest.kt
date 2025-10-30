@@ -44,7 +44,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.OffenderService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.AppointmentMappers
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.fromDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDomainEventDetail
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
@@ -65,7 +64,7 @@ class AppointmentMappersTest {
   private lateinit var service: AppointmentMappers
 
   @Nested
-  inner class ToAppointOutcomeDomainEventDetail {
+  inner class AppointmentOutcomeEntityToDomainEventDetail {
 
     @Test
     fun success() {
@@ -106,7 +105,7 @@ class AppointmentMappersTest {
   }
 
   @Nested
-  inner class ProjectAppointmentMapper {
+  inner class ProjectAppointmentToDtoMapper {
     @Test
     fun `should map ProjectAppointment to DTO correctly`() {
       val id = 101L
@@ -241,7 +240,7 @@ class AppointmentMappersTest {
   }
 
   @Nested
-  inner class ProjectAppointmentSummaryMapper {
+  inner class ProjectAppointmentSummaryToDto {
 
     @Test
     fun success() {
