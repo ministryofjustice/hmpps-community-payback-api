@@ -103,7 +103,7 @@ class OpenApiConfiguration(buildProperties: BuildProperties) {
     .bearerFormat("JWT")
     .`in`(SecurityScheme.In.HEADER)
     .name("Authorization")
-    .description("A HMPPS Auth access token with one of the roles `$roles`.")
+    .description("A HMPPS Auth access token with one of the roles `${roles.toList()}`.")
 
   /**
    * Adds 401, 403 and 500 error response structures to all endpoints, aligned
