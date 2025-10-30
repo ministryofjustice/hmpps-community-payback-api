@@ -47,8 +47,8 @@ data class AppointmentOutcomeEntity(
 
   val respondBy: LocalDate? = null,
 
-  val alertActive: Boolean,
-  val sensitive: Boolean,
+  val alertActive: Boolean? = null,
+  val sensitive: Boolean? = null,
 
   @CreationTimestamp
   val createdAt: OffsetDateTime = OffsetDateTime.now(),

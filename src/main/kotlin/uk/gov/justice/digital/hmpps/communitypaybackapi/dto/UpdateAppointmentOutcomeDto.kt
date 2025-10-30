@@ -21,9 +21,9 @@ data class UpdateAppointmentOutcomeDto(
   @param:Schema(description = "If provided, the corresponding form data will be deleted")
   val formKeyToDelete: FormKeyDto?,
   @param:Schema(description = "If the corresponding delius contact should be alerted")
-  val alertActive: Boolean,
+  val alertActive: Boolean?,
   @param:Schema(description = "If the corresponding delius contact should be marked as sensitive")
-  val sensitive: Boolean,
+  val sensitive: Boolean?,
 ) {
   companion object
 }
