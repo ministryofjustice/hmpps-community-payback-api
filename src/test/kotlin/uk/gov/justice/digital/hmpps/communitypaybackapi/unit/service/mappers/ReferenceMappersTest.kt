@@ -102,18 +102,21 @@ class ReferenceMappersTest {
           name = "Attended - Complied",
           code = "ATTC",
           enforceable = false,
+          attended = true,
         ),
         ContactOutcomeEntity(
           id = UUID.fromString("f352472b-a277-4976-b8b4-224898d4a9b8"),
           name = "Attended - Failed to Comply",
           code = "AFTC",
           enforceable = true,
+          attended = false,
         ),
         ContactOutcomeEntity(
           id = UUID.fromString("5e8f3124-d794-43b1-b844-df0bb95814dc"),
           name = "Attended - Sent Home (behaviour)",
           code = "ATSH",
           enforceable = true,
+          attended = false,
         ),
       )
 
@@ -144,6 +147,7 @@ class ReferenceMappersTest {
         name = "Attended - Complied",
         code = "ATTC",
         enforceable = false,
+        attended = true,
       )
 
       Assertions.assertThat(contactOutcome.toDto()).isEqualTo(
@@ -152,6 +156,7 @@ class ReferenceMappersTest {
           name = "Attended - Complied",
           code = "ATTC",
           enforceable = false,
+          attended = true,
         ),
       )
     }

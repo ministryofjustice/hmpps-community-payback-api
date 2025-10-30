@@ -8,4 +8,5 @@ fun ContactOutcomeDto.Companion.valid() = ContactOutcomeDto(
   name = String.random(),
   code = String.random(5),
   enforceable = Boolean.random(),
+  attended = Boolean.random(),
 )

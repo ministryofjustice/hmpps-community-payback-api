@@ -19,6 +19,7 @@ data class ContactOutcomeEntity(
   val code: String,
   val name: String,
   val enforceable: Boolean,
+  val attended: Boolean,
   @CreationTimestamp
   val createdAt: OffsetDateTime = OffsetDateTime.now(),
   @UpdateTimestamp
