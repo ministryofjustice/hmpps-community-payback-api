@@ -1,0 +1,1 @@
+ALTER TABLE contact_outcomes ADD available_to_supervisors bool NOT NULL DEFAULT FALSE;

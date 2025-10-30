@@ -10,10 +10,12 @@ data class ContactOutcomeDto(
   val name: String,
   @param:Schema(description = "Contact outcome code", example = "ATTC")
   val code: String,
-  @param:Schema(description = "Whether this outcome requires an enforcement action to take place", example = "false")
+  @param:Schema(description = "If this outcome requires an enforcement action to take place", example = "false")
   val enforceable: Boolean,
-  @param:Schema(description = "Whether this outcome represents attendance, and as such attendance information is required", example = "false")
+  @param:Schema(description = "If this outcome represents attendance, and as such attendance information is required", example = "false")
   val attended: Boolean,
+  @param:Schema(description = "If this outcome can be used by a supervisor", example = "false")
+  val availableToSupervisors: Boolean,
 ) {
   companion object
 }
