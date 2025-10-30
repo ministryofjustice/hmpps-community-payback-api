@@ -33,5 +33,11 @@ class AppointmentOutcomeValidationService(
         }
       }
     }
+
+    if (contactOutcome.attended) {
+      validateNotNull(outcome.attendanceData) {
+        "Attendance data is required for 'attended' contact outcomes"
+      }
+    }
   }
 }

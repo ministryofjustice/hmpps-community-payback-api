@@ -1,7 +1,5 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.factory
 
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentBehaviourDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentWorkQualityDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AttendanceDataDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EnforcementDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
@@ -18,13 +16,7 @@ fun UpdateAppointmentOutcomeDto.Companion.valid(
   contactOutcomeId = contactOutcomeId,
   supervisorOfficerCode = String.random(),
   notes = String.random(400),
-  attendanceData = AttendanceDataDto(
-    hiVisWorn = Boolean.random(),
-    workedIntensively = Boolean.random(),
-    penaltyTime = randomLocalTime(),
-    workQuality = AppointmentWorkQualityDto.entries.toTypedArray().random(),
-    behaviour = AppointmentBehaviourDto.entries.toTypedArray().random(),
-  ),
+  attendanceData = AttendanceDataDto.valid(),
   enforcementData = EnforcementDto(
     enforcementActionId = enforcementActionId,
     respondBy = randomLocalDate(),

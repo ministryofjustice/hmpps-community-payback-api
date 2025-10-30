@@ -10,6 +10,7 @@ import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AttendanceDataDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.BadRequestException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EnforcementDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
@@ -128,6 +129,47 @@ class AppointmentOutcomeValidationServiceTest {
       assertThatThrownBy { service.validate(outcome(contactOutcomeId = contact.id, enforcementData = dtoMissingRespondBy)) }
         .isInstanceOf(BadRequestException::class.java)
         .hasMessage("Respond by date is required for enforceable contact outcomes")
+    }
+  }
+
+  @Nested
+  inner class AttendedOutcome {
+
+    @Test
+    fun `if outcome attended is false, attendance data isn't required`() {
+      val outcome = ContactOutcomeEntity.valid().copy(attended = false, enforceable = false)
+      every { contactOutcomeEntityRepository.findById(outcome.id) } returns Optional.of(outcome)
+
+      service.validate(UpdateAppointmentOutcomeDto.valid().copy(contactOutcomeId = outcome.id))
+    }
+
+    @Test
+    fun `if outcome attended is true and attendance data isn't provided, throw exception`() {
+      val outcome = ContactOutcomeEntity.valid().copy(attended = true, enforceable = false)
+      every { contactOutcomeEntityRepository.findById(outcome.id) } returns Optional.of(outcome)
+
+      assertThatThrownBy {
+        service.validate(
+          UpdateAppointmentOutcomeDto.valid().copy(
+            contactOutcomeId = outcome.id,
+            attendanceData = null,
+          ),
+        )
+      }.isInstanceOf(BadRequestException::class.java)
+        .hasMessage("Attendance data is required for 'attended' contact outcomes")
+    }
+
+    @Test
+    fun `if outcome attended is true and attendance data is provided, don't throw exception`() {
+      val outcome = ContactOutcomeEntity.valid().copy(attended = true, enforceable = false)
+      every { contactOutcomeEntityRepository.findById(outcome.id) } returns Optional.of(outcome)
+
+      service.validate(
+        UpdateAppointmentOutcomeDto.valid().copy(
+          contactOutcomeId = outcome.id,
+          attendanceData = AttendanceDataDto.valid(),
+        ),
+      )
     }
   }
 }

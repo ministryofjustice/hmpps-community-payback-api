@@ -8,7 +8,9 @@ data class AttendanceDataDto(
   val penaltyTime: LocalTime? = null,
   val workQuality: AppointmentWorkQualityDto? = null,
   val behaviour: AppointmentBehaviourDto? = null,
-)
+) {
+  companion object
+}
 
 enum class AppointmentWorkQualityDto {
   EXCELLENT,
