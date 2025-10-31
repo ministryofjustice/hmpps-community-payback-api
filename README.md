@@ -4,7 +4,7 @@
 [![Docker Repository on ghcr](https://img.shields.io/badge/ghcr.io-repository-2496ED.svg?logo=docker)](https://ghcr.io/ministryofjustice/hmpps-community-payback-api)
 [![API docs](https://img.shields.io/badge/API_docs_-view-85EA2D.svg?logo=swagger)](https://community-payback-api-dev.hmpps.service.justice.gov.uk/v3/api-docs)
 
-HMPPS Community Payback API is a Kotlin/Spring Boot service that exposes APIs to support Community Payback use cases. It follows HMPPS platform conventions for security, observability, CI/CD, and deployment to the MoJ Cloud Platform via Helm.
+HMPPS Community Payback API is a Kotlin/Spring Boot service that exposes APIs to support Community Payback UIs. It follows HMPPS platform conventions for security, observability, CI/CD, and deployment to the MoJ Cloud Platform via Helm.
 
 - Language/Runtime: Kotlin 2 (Java 21), Spring Boot
 - Build: Gradle (Wrapper included)
@@ -13,24 +13,16 @@ HMPPS Community Payback API is a Kotlin/Spring Boot service that exposes APIs to
 - Security: OAuth2 Resource Server (JWTs from HMPPS Auth)
 - Observability: Application Insights, Sentry
 
-## Environments
-
-| Environment | Base URL |
-|-------------|----------|
-| Dev | https://community-payback-api-dev.hmpps.service.justice.gov.uk/ |
-
-Important links:
-- Dev OpenAPI spec: https://community-payback-api-dev.hmpps.service.justice.gov.uk/v3/api-docs
-- Dev Swagger UI: https://community-payback-api-dev.hmpps.service.justice.gov.uk/swagger-ui/index.html
-
 ## Getting started (local development)
 
-[cp-stack](tools/cp-stack/README.md) is used to run the stack locally, either using the latest docker images or running spring boot directly via gradle
+cp-stack is used to run the stack locally, either using the latest docker images or running spring boot directly via gradle. For more information see the [cp-stack README](tools/cp-stack/README.md)
 
 If you want to run spring boot directly you will need:
 
 - JDK 21
 - curl (optional, for health checks)
+
+Once the API is started you can run a test scenario against it using the [Intellij http-client test scripts](tools/http-client/README.md).
 
 ### Configuration
 
@@ -40,15 +32,16 @@ Configuration is primarily via Spring properties which can be overwritten via en
 
 ### API docs
 
-- OpenAPI JSON: `GET /v3/api-docs`
-- Swagger UI: `GET /swagger-ui/index.html`
+The latest version of the API docs can be retrieved from a local deployment, or from the dev deployment:
+
+- OpenAPI spec: https://community-payback-api-dev.hmpps.service.justice.gov.uk/v3/api-docs
+- Swagger UI: https://community-payback-api-dev.hmpps.service.justice.gov.uk/swagger-ui/index.html
 
 ### Security
 
 This service is an OAuth2 Resource Server. Most non-actuator endpoints require a valid Bearer token issued by HMPPS Auth and appropriate roles.
 
-Getting a token locally:
-- For end-to-end manual testing, run the local `hmpps-auth` container and use its UI at `http://localhost:8090/auth` to authenticate and retrieve a token, or use client credentials if configured in your environment.
+To get a token for local calls, use `tools/scripts/fetch_token.sh`
 
 ## Build, Test, and Quality
 

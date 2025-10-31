@@ -1,0 +1,103 @@
+##
+## This script will record an outcome for the first appointment it can find that is
+## scheduled in the next 7 days for test team N56DTX (Default Designated Transfer Team)
+##
+
+### Find session
+
+< {%
+    import {addDays,toIsoDate} from './utils.js';
+
+    request.variables.set("todayIso", toIsoDate(new Date()))
+    request.variables.set("todayPlus7DaysIso", toIsoDate(addDays(new Date(), 7)))
+%}
+GET {{base-url}}/admin/projects/session-search?startDate={{todayIso}}&endDate={{todayPlus7DaysIso}}&teamCode=N56DTX
+Authorization: Bearer {{$auth.token("hmpps-auth-ui-client")}}
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+
+    client.test("Has at least one session", function() {
+       client.assert(response.body.allocations.length > 0)
+    });
+
+    client.global.set("allocation_project_code", response.body.allocations[0].projectCode);
+    client.global.set("allocation_date", response.body.allocations[0].date);
+    client.global.set("allocation_start_time", response.body.allocations[0].startTime);
+    client.global.set("allocation_end_time", response.body.allocations[0].endTime);
+%}
+
+### Get appointments for session and select an appointment to use
+
+GET {{base-url}}/admin/projects/{{allocation_project_code}}/sessions/{{allocation_date}}?startTime={{allocation_start_time}}&endTime={{allocation_end_time}}
+Authorization: Bearer {{$auth.token("hmpps-auth-ui-client")}}
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+
+    client.test("Has at least one appointment", function() {
+        client.assert(response.body.appointmentSummaries.length > 0)
+    });
+
+    client.global.set("appointment_id", response.body.appointmentSummaries[0].id.toString());
+%}
+
+### Get appointment details
+
+GET {{base-url}}/admin/appointments/{{appointment_id}}
+Authorization: Bearer {{$auth.token("hmpps-auth-ui-client")}}
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+
+    client.global.set("appointment", response.body);
+%}
+
+### get non enforceable contact outcome to use
+
+GET {{base-url}}/common/references/contact-outcomes
+Authorization: Bearer {{$auth.token("hmpps-auth-ui-client")}}
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+
+    let nonEnforceableOutcomes = jsonPath(response.body, "$.contactOutcomes[?(@.enforceable == false)]")
+    client.global.set("contact_outcome_id", nonEnforceableOutcomes[0].id.toString());
+    client.log("Using contact outcome id " + client.global.get("contact_outcome_id"))
+%}
+
+### update appointment outcome
+
+POST {{base-url}}/admin/appointments/{{appointment_id}}/outcome
+Authorization: Bearer {{$auth.token("hmpps-auth-ui-client")}}
+Content-Type: application/json
+
+{
+  "deliusId": "{{appointment_id}}",
+  "deliusVersionToUpdate": "{{appointment.version}}",
+  "startTime": "{{appointment.startTime}}",
+  "endTime": "{{appointment.endTime}}",
+  "contactOutcomeId": "{{contact_outcome_id}}",
+  "attendanceData":  {
+    "hiVisWorn": true,
+    "workedIntensively": true,
+    "penaltyTime": null,
+    "workQuality": "GOOD",
+    "behaviour": "GOOD"
+  },
+  "supervisorOfficerCode": "{{appointment.supervisorOfficerCode}}"
+}
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
