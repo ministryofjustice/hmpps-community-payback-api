@@ -7,7 +7,7 @@ set -o pipefail
 cd "$(dirname "$0")"
 script_dir="$(pwd)"
 
-. "$script_dir"/utils/resolve_secrets.sh
+. "$script_dir"/../../scripts/resolve_secrets.sh
 
 local_ui=0
 local_sui=0
