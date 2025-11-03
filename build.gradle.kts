@@ -7,7 +7,7 @@ plugins {
   kotlin("plugin.jpa") version "2.2.21"
   id("io.gitlab.arturbosch.detekt") version "1.23.8"
   jacoco
-  id("io.sentry.jvm.gradle") version "5.12.1"
+  id("io.sentry.jvm.gradle") version "5.12.2"
 }
 
 configurations {
