@@ -2,6 +2,8 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.factory
 
 import java.time.LocalDate
 import java.time.LocalTime
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 import kotlin.random.Random
 
 fun Boolean.Companion.random() = Random.nextBoolean()
@@ -11,3 +13,4 @@ fun String.Companion.random(length: Int = 50) = String(CharArray(length) { (('A'
 
 fun randomLocalDate(): LocalDate = LocalDate.now().plusDays(Long.random(0, 2000))
 fun randomLocalTime(): LocalTime = LocalTime.ofSecondOfDay(Long.random(0, 60 * 60 * 12))
+fun randomOffsetDateTime(): OffsetDateTime = OffsetDateTime.of(randomLocalDate(), randomLocalTime(), ZoneOffset.UTC)

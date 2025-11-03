@@ -9,6 +9,7 @@ import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.PreUpdate
 import jakarta.persistence.Table
+import org.apache.commons.lang3.builder.CompareToBuilder.reflectionCompare
 import org.hibernate.annotations.CreationTimestamp
 import java.time.LocalDate
 import java.time.LocalTime
@@ -65,6 +66,28 @@ data class AppointmentOutcomeEntity(
   override fun hashCode(): Int = id.hashCode()
 
   override fun toString(): String = "AppointmentOutcomeEntity(id=$id, appointmentDeliusId='$appointmentDeliusId')"
+
+  /**
+   * Used when determining if an update has already been applied
+   *
+   * This function should be updated if a new JPA relationship is added to this entity,
+   * adding an explicit comparison and excluding it from the call to [reflectionCompare]
+   */
+  fun isLogicallyIdentical(other: AppointmentOutcomeEntity): Boolean {
+    if (this.contactOutcome.id != other.contactOutcome.id) return false
+    if (this.enforcementAction?.id != other.enforcementAction?.id) return false
+
+    return reflectionCompare(
+      this,
+      other,
+      listOf(
+        "id",
+        "createdAt",
+        "contactOutcome",
+        "enforcementAction",
+      ),
+    ) == 0
+  }
 
   companion object
 }
