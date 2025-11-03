@@ -114,8 +114,6 @@ class ProjectMappersTest {
 
       assertThat(projectAllocation.toDto()).isEqualTo(
         SessionSummaryDto(
-          id = 0L,
-          projectId = 0L,
           projectName = "Community Garden",
           date = LocalDate.of(2025, 9, 1),
           startTime = LocalTime.of(9, 0),

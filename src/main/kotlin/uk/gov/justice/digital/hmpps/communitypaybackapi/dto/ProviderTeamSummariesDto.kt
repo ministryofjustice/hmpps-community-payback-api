@@ -7,9 +7,6 @@ data class ProviderTeamSummaryDto(
   val code: String,
   @param:Schema(description = "Community Payback (UPW) provider team name", example = "Team Lincoln")
   val name: String,
-  @Deprecated("Id will be removed")
-  @param:Schema(description = "Community Payback (UPW) provider team id", example = "1001", deprecated = true)
-  val id: Long = 0,
 )
 
 data class ProviderTeamSummariesDto(
