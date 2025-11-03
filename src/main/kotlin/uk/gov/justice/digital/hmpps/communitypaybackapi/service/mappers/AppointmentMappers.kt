@@ -1,12 +1,12 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers
 
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Appointment
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.AppointmentBehaviour
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.AppointmentSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.AppointmentWorkQuality
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.PickUpData
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.PickUpLocation
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectAppointment
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectAppointmentBehaviour
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectAppointmentSummary
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectAppointmentWorkQuality
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.UpdateAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentBehaviourDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
@@ -33,7 +33,7 @@ class AppointmentMappers(
 ) {
 
   fun toDto(
-    appointment: ProjectAppointment,
+    appointment: Appointment,
   ): AppointmentDto {
     val offenderInfoResult = offenderService.toOffenderInfo(appointment.case)
 
@@ -76,7 +76,7 @@ class AppointmentMappers(
   }
 
   fun toDto(
-    appointmentSummary: ProjectAppointmentSummary,
+    appointmentSummary: AppointmentSummary,
     offenderInfoResult: OffenderInfoResult,
   ) = AppointmentSummaryDto(
     id = appointmentSummary.id,
@@ -141,20 +141,20 @@ fun PickUpLocation.toDto() = LocationDto(
   postCode = this.postCode,
 )
 
-fun ProjectAppointmentWorkQuality.toDto() = when (this) {
-  ProjectAppointmentWorkQuality.EXCELLENT -> AppointmentWorkQualityDto.EXCELLENT
-  ProjectAppointmentWorkQuality.GOOD -> AppointmentWorkQualityDto.GOOD
-  ProjectAppointmentWorkQuality.NOT_APPLICABLE -> AppointmentWorkQualityDto.NOT_APPLICABLE
-  ProjectAppointmentWorkQuality.POOR -> AppointmentWorkQualityDto.POOR
-  ProjectAppointmentWorkQuality.SATISFACTORY -> AppointmentWorkQualityDto.SATISFACTORY
-  ProjectAppointmentWorkQuality.UNSATISFACTORY -> AppointmentWorkQualityDto.UNSATISFACTORY
+fun AppointmentWorkQuality.toDto() = when (this) {
+  AppointmentWorkQuality.EXCELLENT -> AppointmentWorkQualityDto.EXCELLENT
+  AppointmentWorkQuality.GOOD -> AppointmentWorkQualityDto.GOOD
+  AppointmentWorkQuality.NOT_APPLICABLE -> AppointmentWorkQualityDto.NOT_APPLICABLE
+  AppointmentWorkQuality.POOR -> AppointmentWorkQualityDto.POOR
+  AppointmentWorkQuality.SATISFACTORY -> AppointmentWorkQualityDto.SATISFACTORY
+  AppointmentWorkQuality.UNSATISFACTORY -> AppointmentWorkQualityDto.UNSATISFACTORY
 }
 
-fun ProjectAppointmentBehaviour.toDto() = when (this) {
-  ProjectAppointmentBehaviour.EXCELLENT -> AppointmentBehaviourDto.EXCELLENT
-  ProjectAppointmentBehaviour.GOOD -> AppointmentBehaviourDto.GOOD
-  ProjectAppointmentBehaviour.NOT_APPLICABLE -> AppointmentBehaviourDto.NOT_APPLICABLE
-  ProjectAppointmentBehaviour.POOR -> AppointmentBehaviourDto.POOR
-  ProjectAppointmentBehaviour.SATISFACTORY -> AppointmentBehaviourDto.SATISFACTORY
-  ProjectAppointmentBehaviour.UNSATISFACTORY -> AppointmentBehaviourDto.UNSATISFACTORY
+fun AppointmentBehaviour.toDto() = when (this) {
+  AppointmentBehaviour.EXCELLENT -> AppointmentBehaviourDto.EXCELLENT
+  AppointmentBehaviour.GOOD -> AppointmentBehaviourDto.GOOD
+  AppointmentBehaviour.NOT_APPLICABLE -> AppointmentBehaviourDto.NOT_APPLICABLE
+  AppointmentBehaviour.POOR -> AppointmentBehaviourDto.POOR
+  AppointmentBehaviour.SATISFACTORY -> AppointmentBehaviourDto.SATISFACTORY
+  AppointmentBehaviour.UNSATISFACTORY -> AppointmentBehaviourDto.UNSATISFACTORY
 }

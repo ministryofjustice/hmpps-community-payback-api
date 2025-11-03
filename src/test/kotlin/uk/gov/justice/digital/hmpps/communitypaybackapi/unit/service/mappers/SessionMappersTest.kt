@@ -8,9 +8,9 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.AppointmentSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CaseSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Project
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectAppointmentSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectLocation
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Session
@@ -131,8 +131,8 @@ class SessionMappersTest {
   inner class ProjectSessionMapper {
     @Test
     fun `should map ProjectSession to DTO correctly`() {
-      val appointmentSummary1 = ProjectAppointmentSummary.valid().copy(case = CaseSummary.valid().copy(crn = "CRN1"))
-      val appointmentSummary2 = ProjectAppointmentSummary.valid().copy(case = CaseSummary.valid().copy(crn = "CRN2"))
+      val appointmentSummary1 = AppointmentSummary.valid().copy(case = CaseSummary.valid().copy(crn = "CRN1"))
+      val appointmentSummary2 = AppointmentSummary.valid().copy(case = CaseSummary.valid().copy(crn = "CRN2"))
 
       val offenderInfoResult1 = OffenderInfoResult.Limited("CRN1")
       val offenderInfoResult2 = OffenderInfoResult.Limited("CRN2")

@@ -4,10 +4,10 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.AppointmentSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CaseAccess
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CaseSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Project
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectAppointmentSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Session
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.UserAccess
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.OffenderDto
@@ -75,8 +75,8 @@ class SupervisorSessionsIT : IntegrationTestBase() {
           endTime = LocalTime.of(17, 0),
           date = LocalDate.of(2025, 1, 9),
           appointmentSummaries = listOf(
-            ProjectAppointmentSummary.valid().copy(outcome = null),
-            ProjectAppointmentSummary.valid().copy(outcome = null),
+            AppointmentSummary.valid().copy(outcome = null),
+            AppointmentSummary.valid().copy(outcome = null),
           ),
         ),
       )
@@ -108,7 +108,7 @@ class SupervisorSessionsIT : IntegrationTestBase() {
           endTime = LocalTime.of(17, 0),
           date = LocalDate.of(2025, 1, 9),
           appointmentSummaries = listOf(
-            ProjectAppointmentSummary.valid().copy(
+            AppointmentSummary.valid().copy(
               id = 1L,
               case = CaseSummary.valid().copy(
                 crn = "CRN1",
@@ -116,7 +116,7 @@ class SupervisorSessionsIT : IntegrationTestBase() {
               ),
               outcome = null,
             ),
-            ProjectAppointmentSummary.valid().copy(
+            AppointmentSummary.valid().copy(
               id = 2L,
               case = CaseSummary.valid().copy(
                 crn = "CRN2",

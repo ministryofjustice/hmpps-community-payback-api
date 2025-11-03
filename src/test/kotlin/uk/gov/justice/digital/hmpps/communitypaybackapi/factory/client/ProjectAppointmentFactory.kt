@@ -1,14 +1,14 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client
 
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Appointment
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.AppointmentBehaviour
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.AppointmentSupervisor
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.AppointmentWorkQuality
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CaseSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ContactOutcome
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.EnforcementAction
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.PickUpData
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Project
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectAppointment
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectAppointmentBehaviour
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectAppointmentWorkQuality
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Provider
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Team
@@ -17,7 +17,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.randomLocalDate
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.randomLocalTime
 import java.util.UUID
 
-fun ProjectAppointment.Companion.valid() = ProjectAppointment(
+fun Appointment.Companion.valid() = Appointment(
   id = Long.Companion.random(),
   version = UUID.randomUUID(),
   project = Project.Companion.valid(),
@@ -35,8 +35,8 @@ fun ProjectAppointment.Companion.valid() = ProjectAppointment(
   enforcementAction = EnforcementAction.valid(),
   hiVisWorn = Boolean.random(),
   workedIntensively = Boolean.random(),
-  workQuality = ProjectAppointmentWorkQuality.entries.toTypedArray().random(),
-  behaviour = ProjectAppointmentBehaviour.entries.toTypedArray().random(),
+  workQuality = AppointmentWorkQuality.entries.toTypedArray().random(),
+  behaviour = AppointmentBehaviour.entries.toTypedArray().random(),
   notes = String.random(),
   sensitive = Boolean.random(),
   alertActive = Boolean.random(),

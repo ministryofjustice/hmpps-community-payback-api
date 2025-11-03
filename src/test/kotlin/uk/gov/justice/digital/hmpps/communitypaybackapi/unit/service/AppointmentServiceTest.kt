@@ -10,9 +10,9 @@ import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Appointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CaseSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ConflictException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.FormKeyDto
@@ -60,7 +60,7 @@ class AppointmentServiceTest {
 
     @Test
     fun `if appointment not found, throw not found exception`() {
-      every { communityPaybackAndDeliusClient.getProjectAppointment(101L) } throws WebClientResponseExceptionFactory.notFound()
+      every { communityPaybackAndDeliusClient.getAppointment(101L) } throws WebClientResponseExceptionFactory.notFound()
 
       assertThatThrownBy {
         service.getAppointment(101L)
@@ -69,8 +69,8 @@ class AppointmentServiceTest {
 
     @Test
     fun `appointment found`() {
-      val appointment = ProjectAppointment.valid()
-      every { communityPaybackAndDeliusClient.getProjectAppointment(101L) } returns appointment
+      val appointment = Appointment.valid()
+      every { communityPaybackAndDeliusClient.getAppointment(101L) } returns appointment
 
       val appointmentDto = AppointmentDto.valid()
       every { appointmentMappers.toDto(appointment) } returns appointmentDto
@@ -152,8 +152,8 @@ class AppointmentServiceTest {
     @Test
     fun `if there's an existing entry and form data key is specified, remove the form data`() {
       every {
-        communityPaybackAndDeliusClient.getProjectAppointment(101L)
-      } returns ProjectAppointment.valid().copy(case = CaseSummary.valid().copy(crn = "CRN1"))
+        communityPaybackAndDeliusClient.getAppointment(101L)
+      } returns Appointment.valid().copy(case = CaseSummary.valid().copy(crn = "CRN1"))
 
       every { appointmentOutcomeEntityRepository.save(any()) } returnsArgument 0
 

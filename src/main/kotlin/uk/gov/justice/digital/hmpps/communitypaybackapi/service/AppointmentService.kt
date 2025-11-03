@@ -14,7 +14,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentOutcom
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.AppointmentMappers
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDomainEventDetail
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toUpdateAppointment
 import java.util.UUID
 
@@ -32,7 +31,7 @@ class AppointmentService(
   }
 
   fun getAppointment(id: Long): AppointmentDto = try {
-    communityPaybackAndDeliusClient.getProjectAppointment(id).let { appointmentMappers.toDto(it) }
+    communityPaybackAndDeliusClient.getAppointment(id).let { appointmentMappers.toDto(it) }
   } catch (_: WebClientResponseException.NotFound) {
     throw NotFoundException("Appointment", id.toString())
   }
