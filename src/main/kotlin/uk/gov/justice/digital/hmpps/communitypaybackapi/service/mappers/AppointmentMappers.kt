@@ -35,6 +35,10 @@ class AppointmentMappers(
   fun toDto(
     appointment: ProjectAppointment,
   ): AppointmentDto {
+    val contactOutcomeEntity = appointment.outcome?.code?.let {
+      contactOutcomeEntityRepository.findByCode(it) ?: error("Can't find outcome for code $it")
+    }
+
     val offenderInfoResult = offenderService.toOffenderInfo(appointment.case)
 
     return AppointmentDto(
@@ -52,16 +56,18 @@ class AppointmentMappers(
       date = appointment.date,
       startTime = appointment.startTime,
       endTime = appointment.endTime,
-      contactOutcomeId = appointment.outcome?.code?.let {
-        contactOutcomeEntityRepository.findByCode(it)?.id ?: error("Can't find outcome for code $it")
+      contactOutcomeId = contactOutcomeEntity?.id,
+      attendanceData = if (contactOutcomeEntity?.attended == true) {
+        AttendanceDataDto(
+          hiVisWorn = appointment.hiVisWorn,
+          workedIntensively = appointment.workedIntensively,
+          penaltyTime = appointment.penaltyTime,
+          workQuality = appointment.workQuality?.toDto(),
+          behaviour = appointment.behaviour?.toDto(),
+        )
+      } else {
+        null
       },
-      attendanceData = AttendanceDataDto(
-        hiVisWorn = appointment.hiVisWorn,
-        workedIntensively = appointment.workedIntensively,
-        penaltyTime = appointment.penaltyTime,
-        workQuality = appointment.workQuality?.toDto(),
-        behaviour = appointment.behaviour?.toDto(),
-      ),
       enforcementData = appointment.enforcementAction?.let {
         EnforcementDto(
           enforcementActionId = enforcementActionEntityRepository.findByCode(it.code)?.id ?: error("Can't find enforcement action for code: ${it.code}"),

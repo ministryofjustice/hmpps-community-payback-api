@@ -283,7 +283,7 @@ class AppointmentMappersTest {
       )
 
       every { offenderService.toOffenderInfo(caseSummary) } returns OffenderInfoResult.Limited(crn = crn)
-      every { contactOutcomeEntityRepository.findByCode("OUTCOME1") } returns ContactOutcomeEntity.valid().copy(id = contactOutcomeId)
+      every { contactOutcomeEntityRepository.findByCode("OUTCOME1") } returns ContactOutcomeEntity.valid().copy(id = contactOutcomeId, attended = true)
       every { enforcementActionEntityRepository.findByCode("ENFORCE1") } returns EnforcementActionEntity.valid().copy(id = enforcementActionId)
 
       val result = service.toDto(projectAppointment)
@@ -323,6 +323,38 @@ class AppointmentMappersTest {
 
       assertThat(result.sensitive).isFalse
       assertThat(result.alertActive).isTrue
+    }
+
+    @Test
+    fun `Populate attendance data if corresponding outcome is for attendance`() {
+      val projectAppointment = ProjectAppointment.valid().copy(
+        outcome = ContactOutcome.valid().copy(code = "OUTCOME1"),
+        enforcementAction = EnforcementAction.valid().copy(code = "ENFORCE1"),
+      )
+
+      every { offenderService.toOffenderInfo(projectAppointment.case) } returns OffenderInfoResult.Limited(crn = projectAppointment.case.crn)
+      every { contactOutcomeEntityRepository.findByCode("OUTCOME1") } returns ContactOutcomeEntity.valid().copy(attended = true)
+      every { enforcementActionEntityRepository.findByCode("ENFORCE1") } returns EnforcementActionEntity.valid()
+
+      val result = service.toDto(projectAppointment)
+
+      assertThat(result.attendanceData).isNotNull()
+    }
+
+    @Test
+    fun `Don't populate attendance data if corresponding outcome is not for attendance`() {
+      val projectAppointment = ProjectAppointment.valid().copy(
+        outcome = ContactOutcome.valid().copy(code = "OUTCOME1"),
+        enforcementAction = EnforcementAction.valid().copy(code = "ENFORCE1"),
+      )
+
+      every { offenderService.toOffenderInfo(projectAppointment.case) } returns OffenderInfoResult.Limited(crn = projectAppointment.case.crn)
+      every { contactOutcomeEntityRepository.findByCode("OUTCOME1") } returns ContactOutcomeEntity.valid().copy(attended = false)
+      every { enforcementActionEntityRepository.findByCode("ENFORCE1") } returns EnforcementActionEntity.valid()
+
+      val result = service.toDto(projectAppointment)
+
+      assertThat(result.attendanceData).isNull()
     }
   }
 
