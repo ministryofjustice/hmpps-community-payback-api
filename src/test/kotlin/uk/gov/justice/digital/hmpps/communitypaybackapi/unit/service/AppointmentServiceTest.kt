@@ -20,6 +20,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.NotFoundException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentOutcomeEntityRepository
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentOutcomeEntityFactory
@@ -189,15 +190,12 @@ class AppointmentServiceTest {
     @Test
     fun `if there's an existing entry for the delius appointment id but it's not logically identical, persist new entry send an update`() {
       val updateAppointmentDto = UpdateAppointmentOutcomeDto.valid().copy(deliusId = 1L)
+      val newOutcomeEntity = AppointmentOutcomeEntity.valid()
+      val existingOutcomeEntity = newOutcomeEntity.copy(contactOutcome = ContactOutcomeEntity.valid())
 
-      val existingAlmostIdenticalEntity = AppointmentOutcomeEntity.valid().copy(notes = "some different notes")
-      every {
-        appointmentOutcomeEntityRepository.findTopByAppointmentDeliusIdOrderByCreatedAtDesc(1L)
-      } returns existingAlmostIdenticalEntity
-
-      every {
-        appointmentOutcomeEntityRepository.save(any())
-      } returnsArgument 0
+      every { appointmentOutcomeEntityFactory.toEntity(updateAppointmentDto) } returns newOutcomeEntity
+      every { appointmentOutcomeEntityRepository.findTopByAppointmentDeliusIdOrderByCreatedAtDesc(1L) } returns existingOutcomeEntity
+      every { appointmentOutcomeEntityRepository.save(any()) } returnsArgument 0
 
       service.updateAppointmentOutcome(
         outcome = updateAppointmentDto,
