@@ -37,8 +37,6 @@ class ProjectMappers(
 
 fun ProjectSessionSummaries.toDto() = SessionSummariesDto(this.sessions.map { it.toDto() })
 fun ProjectSessionSummary.toDto() = SessionSummaryDto(
-  id = 0,
-  projectId = 0,
   projectName = this.project.name,
   projectCode = this.project.code,
   date = this.date,
