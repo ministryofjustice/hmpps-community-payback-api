@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionSummariesDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ProjectService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.SessionService
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 import java.time.LocalDate
 import java.time.LocalTime
@@ -22,7 +22,7 @@ import java.time.LocalTime
   "/admin/projects",
   produces = [MediaType.APPLICATION_JSON_VALUE],
 )
-class ProjectController(val projectService: ProjectService) {
+class SessionController(val sessionService: SessionService) {
 
   @GetMapping(
     path = [ "/session-search"],
@@ -55,7 +55,7 @@ class ProjectController(val projectService: ProjectService) {
       ),
     ],
   )
-  fun getProjectSessions(
+  fun getSessions(
     @Parameter(description = "Start date", example = "2025-09-01")
     @RequestParam
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) startDate: LocalDate,
@@ -64,7 +64,7 @@ class ProjectController(val projectService: ProjectService) {
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) endDate: LocalDate,
     @Parameter(description = "Team Code", example = "ABC123")
     @RequestParam teamCode: String,
-  ): SessionSummariesDto = projectService.getProjectSessions(startDate, endDate, teamCode)
+  ): SessionSummariesDto = sessionService.getSessions(startDate, endDate, teamCode)
 
   @GetMapping(
     path = [ "/{projectCode}/sessions/{date}"],
@@ -99,5 +99,5 @@ class ProjectController(val projectService: ProjectService) {
     @Parameter(description = "End time", example = "17:00")
     @RequestParam
     @DateTimeFormat(pattern = "HH:mm") endTime: LocalTime,
-  ) = projectService.getSession(projectCode, date, startTime, endTime)
+  ) = sessionService.getSession(projectCode, date, startTime, endTime)
 }

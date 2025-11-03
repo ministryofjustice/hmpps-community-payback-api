@@ -26,15 +26,15 @@ interface CommunityPaybackAndDeliusClient {
     @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) startDate: LocalDate,
     @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) endDate: LocalDate,
     @RequestParam teamCode: String,
-  ): ProjectSessionSummaries
+  ): SessionSummaries
 
   @GetExchange("/projects/{projectCode}/sessions/appointments")
-  fun getProjectSession(
+  fun getSession(
     @PathVariable projectCode: String,
     @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate,
     @RequestParam @DateTimeFormat(pattern = "HH:mm") startTime: LocalTime,
     @RequestParam @DateTimeFormat(pattern = "HH:mm") endTime: LocalTime,
-  ): ProjectSession
+  ): Session
 
   @GetExchange("/appointments/{appointmentId}")
   fun getProjectAppointment(
@@ -77,11 +77,11 @@ data class ProviderTeamSummary(
   val code: String,
   val description: String,
 )
-data class ProjectSessionSummaries(
-  val sessions: List<ProjectSessionSummary>,
+data class SessionSummaries(
+  val sessions: List<SessionSummary>,
 )
 
-data class ProjectSessionSummary(
+data class SessionSummary(
   val date: LocalDate,
   val project: ProjectSummary,
   val startTime: LocalTime,
@@ -93,7 +93,7 @@ data class ProjectSessionSummary(
   companion object
 }
 
-data class ProjectSession(
+data class Session(
   val project: Project,
   val startTime: LocalTime,
   val endTime: LocalTime,

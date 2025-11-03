@@ -12,39 +12,39 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CaseSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Project
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectAppointmentSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectLocation
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectSession
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectSessionSummaries
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectSessionSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Session
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.SessionSummaries
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.SessionSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.OffenderInfoResult
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.AppointmentMappers
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.ProjectMappers
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.SessionMappers
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toFullAddress
 import java.time.LocalDate
 import java.time.LocalTime
 
 @ExtendWith(MockKExtension::class)
-class ProjectMappersTest {
+class SessionMappersTest {
 
   @MockK(relaxed = true)
   private lateinit var appointmentMappers: AppointmentMappers
 
   @InjectMockKs
-  private lateinit var service: ProjectMappers
+  private lateinit var service: SessionMappers
 
   @Nested
   inner class ProjectAllocationsMapper {
 
     @Test
     fun `should map ProjectAllocations to DTO correctly`() {
-      val projectSessions = ProjectSessionSummaries(
+      val projectSessions = SessionSummaries(
         listOf(
-          ProjectSessionSummary(
+          SessionSummary(
             project = ProjectSummary(
               code = "cg",
               name = "Community Garden",
@@ -56,7 +56,7 @@ class ProjectMappersTest {
             compliedOutcomeCount = 1,
             enforcementActionNeededCount = 2,
           ),
-          ProjectSessionSummary(
+          SessionSummary(
             project = ProjectSummary(
               code = "pc",
               name = "Park Cleanup",
@@ -99,7 +99,7 @@ class ProjectMappersTest {
   inner class ProjectAllocationMapper {
     @Test
     fun `should map ProjectAllocation to DTO correctly`() {
-      val projectAllocation = ProjectSessionSummary(
+      val projectAllocation = SessionSummary(
         project = ProjectSummary(
           code = "cg",
           name = "Community Garden",
@@ -142,7 +142,7 @@ class ProjectMappersTest {
       every { appointmentMappers.toDto(appointmentSummary1, offenderInfoResult1) } returns appointmentSummaryDto1
       every { appointmentMappers.toDto(appointmentSummary2, offenderInfoResult2) } returns appointmentSummaryDto2
 
-      val projectSession = ProjectSession(
+      val session = Session(
         project = Project(
           name = "Park Cleanup",
           code = "N987654321",
@@ -162,7 +162,7 @@ class ProjectMappersTest {
       )
 
       val result = service.toDto(
-        projectSession,
+        session,
         offenderInfoResults = listOf(
           offenderInfoResult1,
           offenderInfoResult2,

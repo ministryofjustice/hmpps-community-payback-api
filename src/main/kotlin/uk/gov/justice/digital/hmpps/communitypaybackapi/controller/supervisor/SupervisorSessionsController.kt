@@ -10,14 +10,14 @@ import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestParam
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ProjectService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.SessionService
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 import java.time.LocalDate
 import java.time.LocalTime
 
 @SupervisorUiController
-class SupervisorProjectsController(
-  val projectService: ProjectService,
+class SupervisorSessionsController(
+  val sessionService: SessionService,
 ) {
 
   @GetMapping(
@@ -53,5 +53,5 @@ class SupervisorProjectsController(
     @Parameter(description = "End time", example = "17:00")
     @RequestParam
     @DateTimeFormat(pattern = "HH:mm") endTime: LocalTime,
-  ) = projectService.getSession(projectCode, date, startTime, endTime)
+  ) = sessionService.getSession(projectCode, date, startTime, endTime)
 }

@@ -8,10 +8,10 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CaseAccess
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CaseSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Project
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectAppointmentSummary
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectSession
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectSessionSummaries
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectSessionSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Session
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.SessionSummaries
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.SessionSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.UserAccess
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.OffenderDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionDto
@@ -22,7 +22,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.Com
 import java.time.LocalDate
 import java.time.LocalTime
 
-class AdminProjectsIT : IntegrationTestBase() {
+class AdminSessionsIT : IntegrationTestBase() {
 
   @Nested
   @DisplayName("GET /admin/projects/session-search")
@@ -70,10 +70,10 @@ class AdminProjectsIT : IntegrationTestBase() {
     @Test
     fun `should return OK with project session summaries`() {
       CommunityPaybackAndDeliusMockServer.getSessions(
-        ProjectSessionSummaries(
+        SessionSummaries(
           listOf(
-            ProjectSessionSummary.valid().copy(project = ProjectSummary.valid().copy(name = "Community Garden Maintenance")),
-            ProjectSessionSummary.valid().copy(project = ProjectSummary.valid().copy(name = "Park Cleanup")),
+            SessionSummary.valid().copy(project = ProjectSummary.valid().copy(name = "Community Garden Maintenance")),
+            SessionSummary.valid().copy(project = ProjectSummary.valid().copy(name = "Park Cleanup")),
           ),
         ),
       )
@@ -94,7 +94,7 @@ class AdminProjectsIT : IntegrationTestBase() {
     @Test
     fun `should return empty list when no session summaries found`() {
       CommunityPaybackAndDeliusMockServer.getSessions(
-        ProjectSessionSummaries(emptyList()),
+        SessionSummaries(emptyList()),
       )
 
       val sessionSummaries = webTestClient.get()
@@ -155,7 +155,7 @@ class AdminProjectsIT : IntegrationTestBase() {
     @Test
     fun `should return OK with project session`() {
       CommunityPaybackAndDeliusMockServer.getProjectSession(
-        ProjectSession.valid().copy(
+        Session.valid().copy(
           project = Project.valid().copy(
             name = "Community Garden Maintenance",
             code = "N123456789",
@@ -189,7 +189,7 @@ class AdminProjectsIT : IntegrationTestBase() {
     @Test
     fun `Correctly handles limited offenders`() {
       CommunityPaybackAndDeliusMockServer.getProjectSession(
-        ProjectSession.valid().copy(
+        Session.valid().copy(
           project = Project.valid().copy(
             code = "N123456789",
           ),
