@@ -59,11 +59,11 @@ class AppointmentMappers(
       contactOutcomeId = contactOutcomeEntity?.id,
       attendanceData = if (contactOutcomeEntity?.attended == true) {
         AttendanceDataDto(
-          hiVisWorn = appointment.hiVisWorn,
-          workedIntensively = appointment.workedIntensively,
+          hiVisWorn = appointment.hiVisWorn!!,
+          workedIntensively = appointment.workedIntensively!!,
           penaltyTime = appointment.penaltyTime,
-          workQuality = appointment.workQuality?.toDto(),
-          behaviour = appointment.behaviour?.toDto(),
+          workQuality = appointment.workQuality!!.toDto(),
+          behaviour = appointment.behaviour!!.toDto(),
         )
       } else {
         null
