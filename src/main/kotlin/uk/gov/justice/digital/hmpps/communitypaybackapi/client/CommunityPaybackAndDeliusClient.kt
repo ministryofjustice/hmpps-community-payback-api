@@ -35,9 +35,9 @@ interface CommunityPaybackAndDeliusClient {
   ): Session
 
   @GetExchange("/appointments/{appointmentId}")
-  fun getProjectAppointment(
+  fun getAppointment(
     @PathVariable appointmentId: Long,
-  ): ProjectAppointment
+  ): Appointment
 
   @PutExchange("/appointments/{appointmentId}")
   fun updateAppointment(
@@ -92,12 +92,12 @@ data class SessionSummary(
 data class Session(
   val project: Project,
   val date: LocalDate,
-  val appointmentSummaries: List<ProjectAppointmentSummary>,
+  val appointmentSummaries: List<AppointmentSummary>,
 ) {
   companion object
 }
 
-data class ProjectAppointmentSummary(
+data class AppointmentSummary(
   val id: Long,
   val startTime: LocalTime,
   val endTime: LocalTime,
@@ -115,7 +115,7 @@ data class RequirementProgress(
   companion object
 }
 
-data class ProjectAppointment(
+data class Appointment(
   val id: Long,
   val version: UUID,
   val project: Project,
@@ -133,8 +133,8 @@ data class ProjectAppointment(
   val enforcementAction: EnforcementAction?,
   val hiVisWorn: Boolean?,
   val workedIntensively: Boolean?,
-  val workQuality: ProjectAppointmentWorkQuality?,
-  val behaviour: ProjectAppointmentBehaviour?,
+  val workQuality: AppointmentWorkQuality?,
+  val behaviour: AppointmentBehaviour?,
   val notes: String?,
   val sensitive: Boolean?,
   val alertActive: Boolean?,
@@ -196,7 +196,7 @@ data class ProjectLocation(
   companion object
 }
 
-enum class ProjectAppointmentWorkQuality {
+enum class AppointmentWorkQuality {
   EXCELLENT,
   GOOD,
   NOT_APPLICABLE,
@@ -205,7 +205,7 @@ enum class ProjectAppointmentWorkQuality {
   UNSATISFACTORY,
 }
 
-enum class ProjectAppointmentBehaviour {
+enum class AppointmentBehaviour {
   EXCELLENT,
   GOOD,
   NOT_APPLICABLE,
@@ -277,8 +277,8 @@ data class UpdateAppointment(
   val hiVisWorn: Boolean? = null,
   val workedIntensively: Boolean? = null,
   val penaltyMinutes: Long? = null,
-  val workQuality: ProjectAppointmentWorkQuality? = null,
-  val behaviour: ProjectAppointmentBehaviour? = null,
+  val workQuality: AppointmentWorkQuality? = null,
+  val behaviour: AppointmentBehaviour? = null,
   val sensitive: Boolean? = null,
   val alertActive: Boolean? = null,
   val enforcementActionCode: String? = null,

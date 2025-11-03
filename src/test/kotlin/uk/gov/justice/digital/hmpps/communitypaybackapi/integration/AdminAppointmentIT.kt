@@ -6,11 +6,11 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Appointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CaseSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ContactOutcome
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.EnforcementAction
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Project
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.FormKeyDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
@@ -66,7 +66,7 @@ class AdminAppointmentIT : IntegrationTestBase() {
 
     @Test
     fun `Should return 404 if an appointment can't be found`() {
-      CommunityPaybackAndDeliusMockServer.projectAppointmentNotFound(101L)
+      CommunityPaybackAndDeliusMockServer.appointmentNotFound(101L)
 
       val response = webTestClient.get()
         .uri("/admin/appointments/101")
@@ -86,7 +86,7 @@ class AdminAppointmentIT : IntegrationTestBase() {
       val crn = "X434334"
 
       CommunityPaybackAndDeliusMockServer.getAppointment(
-        ProjectAppointment.valid().copy(
+        Appointment.valid().copy(
           id = id,
           project = Project.valid().copy(name = projectName),
           case = CaseSummary.valid().copy(crn = crn),

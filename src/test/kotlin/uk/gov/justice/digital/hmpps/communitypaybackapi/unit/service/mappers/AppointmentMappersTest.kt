@@ -10,7 +10,11 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Appointment
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.AppointmentBehaviour
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.AppointmentSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.AppointmentSupervisor
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.AppointmentWorkQuality
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CaseSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ContactOutcome
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.EnforcementAction
@@ -18,10 +22,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Name
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.PickUpData
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.PickUpLocation
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Project
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectAppointment
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectAppointmentBehaviour
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectAppointmentSummary
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectAppointmentWorkQuality
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectLocation
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Provider
@@ -101,8 +101,8 @@ class AppointmentMappersTest {
       assertThat(result.hiVisWorn).isTrue
       assertThat(result.workedIntensively).isFalse
       assertThat(result.penaltyMinutes).isEqualTo(105)
-      assertThat(result.workQuality).isEqualTo(ProjectAppointmentWorkQuality.NOT_APPLICABLE)
-      assertThat(result.behaviour).isEqualTo(ProjectAppointmentBehaviour.UNSATISFACTORY)
+      assertThat(result.workQuality).isEqualTo(AppointmentWorkQuality.NOT_APPLICABLE)
+      assertThat(result.behaviour).isEqualTo(AppointmentBehaviour.UNSATISFACTORY)
       assertThat(result.respondBy).isEqualTo(LocalDate.of(2025, 1, 2))
       assertThat(result.alertActive).isFalse
       assertThat(result.sensitive).isTrue
@@ -192,7 +192,7 @@ class AppointmentMappersTest {
   }
 
   @Nested
-  inner class ProjectAppointmentToDtoMapper {
+  inner class AppointmentToDtoMapper {
     @Test
     fun `should map ProjectAppointment to DTO correctly`() {
       val id = 101L
@@ -222,13 +222,13 @@ class AppointmentMappersTest {
       val respondBy = LocalDate.of(2025, 10, 1)
       val hiVisWorn = true
       val workedIntensively = false
-      val workQuality = ProjectAppointmentWorkQuality.SATISFACTORY
-      val behaviour = ProjectAppointmentBehaviour.SATISFACTORY
+      val workQuality = AppointmentWorkQuality.SATISFACTORY
+      val behaviour = AppointmentBehaviour.SATISFACTORY
       val notes = "This is a test note"
 
       val caseSummary = CaseSummary.valid().copy(crn = crn)
 
-      val projectAppointment = ProjectAppointment(
+      val appointment = Appointment(
         id = id,
         version = version,
         project = Project(
@@ -286,7 +286,7 @@ class AppointmentMappersTest {
       every { contactOutcomeEntityRepository.findByCode("OUTCOME1") } returns ContactOutcomeEntity.valid().copy(id = contactOutcomeId, attended = true)
       every { enforcementActionEntityRepository.findByCode("ENFORCE1") } returns EnforcementActionEntity.valid().copy(id = enforcementActionId)
 
-      val result = service.toDto(projectAppointment)
+      val result = service.toDto(appointment)
 
       assertThat(result.id).isEqualTo(id)
       assertThat(result.version).isEqualTo(version)
@@ -366,7 +366,7 @@ class AppointmentMappersTest {
       every { contactOutcomeEntityRepository.findByCode("OUTCOME1") } returns ContactOutcomeEntity.valid().copy(name = "The outcome")
 
       val result = service.toDto(
-        appointmentSummary = ProjectAppointmentSummary(
+        appointmentSummary = AppointmentSummary(
           id = 1L,
           startTime = LocalTime.of(1, 2),
           endTime = LocalTime.of(3, 4),
