@@ -2,21 +2,21 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers
 
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectLocation
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectSession
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectSessionSummaries
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectSessionSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Session
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.SessionSummaries
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.SessionSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionSummariesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.OffenderInfoResult
 
 @Service
-class ProjectMappers(
+class SessionMappers(
   val appointmentMappers: AppointmentMappers,
 ) {
 
   fun toDto(
-    session: ProjectSession,
+    session: Session,
     offenderInfoResults: List<OffenderInfoResult>,
   ) = SessionDto(
     projectCode = session.project.code,
@@ -35,8 +35,8 @@ class ProjectMappers(
   )
 }
 
-fun ProjectSessionSummaries.toDto() = SessionSummariesDto(this.sessions.map { it.toDto() })
-fun ProjectSessionSummary.toDto() = SessionSummaryDto(
+fun SessionSummaries.toDto() = SessionSummariesDto(this.sessions.map { it.toDto() })
+fun SessionSummary.toDto() = SessionSummaryDto(
   projectName = this.project.name,
   projectCode = this.project.code,
   date = this.date,

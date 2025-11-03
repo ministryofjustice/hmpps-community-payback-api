@@ -3,18 +3,18 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.service
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.ProjectMappers
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.SessionMappers
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
 import java.time.LocalDate
 import java.time.LocalTime
 
 @Service
-class ProjectService(
+class SessionService(
   val communityPaybackAndDeliusClient: CommunityPaybackAndDeliusClient,
   val offenderService: OffenderService,
-  val projectMappers: ProjectMappers,
+  val sessionMappers: SessionMappers,
 ) {
-  fun getProjectSessions(
+  fun getSessions(
     startDate: LocalDate,
     endDate: LocalDate,
     teamCode: String,
@@ -26,8 +26,8 @@ class ProjectService(
     start: LocalTime,
     end: LocalTime,
   ): SessionDto {
-    val projectSession = communityPaybackAndDeliusClient.getProjectSession(projectCode, date, start, end)
+    val projectSession = communityPaybackAndDeliusClient.getSession(projectCode, date, start, end)
     val caseSummaries = projectSession.appointmentSummaries.map { it.case }.toList()
-    return projectMappers.toDto(projectSession, offenderService.toOffenderInfos(caseSummaries))
+    return sessionMappers.toDto(projectSession, offenderService.toOffenderInfos(caseSummaries))
   }
 }

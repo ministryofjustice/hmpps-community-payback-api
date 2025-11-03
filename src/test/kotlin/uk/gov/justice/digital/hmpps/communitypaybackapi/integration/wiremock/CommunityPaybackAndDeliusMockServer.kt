@@ -13,10 +13,10 @@ import com.github.tomakehurst.wiremock.client.WireMock.put
 import com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor
 import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectAppointment
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectSession
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectSessionSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProviderSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProviderTeamSummaries
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Session
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.SessionSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.SupervisorSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.UserAccess
 import java.net.URLEncoder
@@ -57,7 +57,7 @@ object CommunityPaybackAndDeliusMockServer {
   }
 
   fun getSessions(
-    projectSessions: ProjectSessionSummaries,
+    projectSessions: SessionSummaries,
   ) {
     WireMock.stubFor(
       get("/community-payback-and-delius/sessions?startDate=2025-01-09&endDate=2025-07-09&teamCode=999")
@@ -120,19 +120,19 @@ object CommunityPaybackAndDeliusMockServer {
   fun LocalTime.toHourMinuteString(): String = URLEncoder.encode(this.format(DateTimeFormatter.ofPattern("HH:mm")), "UTF-8")
 
   fun getProjectSession(
-    projectSession: ProjectSession,
+    session: Session,
   ) {
     WireMock.stubFor(
       get(
-        "/community-payback-and-delius/projects/${projectSession.project.code}/sessions/appointments" +
-          "?date=${projectSession.date.toIsoDateString()}" +
-          "&startTime=${projectSession.startTime.toHourMinuteString()}" +
-          "&endTime=${projectSession.endTime.toHourMinuteString()}",
+        "/community-payback-and-delius/projects/${session.project.code}/sessions/appointments" +
+          "?date=${session.date.toIsoDateString()}" +
+          "&startTime=${session.startTime.toHourMinuteString()}" +
+          "&endTime=${session.endTime.toHourMinuteString()}",
       )
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")
-            .withBody(objectMapper.writeValueAsString(projectSession)),
+            .withBody(objectMapper.writeValueAsString(session)),
         ),
     )
   }

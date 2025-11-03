@@ -8,7 +8,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CaseAccess
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CaseSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Project
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectAppointmentSummary
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectSession
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Session
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.UserAccess
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.OffenderDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionDto
@@ -18,7 +18,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.Com
 import java.time.LocalDate
 import java.time.LocalTime
 
-class SupervisorProjectsIT : IntegrationTestBase() {
+class SupervisorSessionsIT : IntegrationTestBase() {
 
   @Nested
   @DisplayName("GET /supervisor/projects/123/sessions/2025-01-09")
@@ -66,7 +66,7 @@ class SupervisorProjectsIT : IntegrationTestBase() {
     @Test
     fun `should return OK with project session`() {
       CommunityPaybackAndDeliusMockServer.getProjectSession(
-        ProjectSession.valid().copy(
+        Session.valid().copy(
           project = Project.valid().copy(
             name = "Community Garden Maintenance",
             code = "N123456789",
@@ -100,7 +100,7 @@ class SupervisorProjectsIT : IntegrationTestBase() {
     @Test
     fun `Correctly handles limited offenders`() {
       CommunityPaybackAndDeliusMockServer.getProjectSession(
-        ProjectSession.valid().copy(
+        Session.valid().copy(
           project = Project.valid().copy(
             code = "N123456789",
           ),
