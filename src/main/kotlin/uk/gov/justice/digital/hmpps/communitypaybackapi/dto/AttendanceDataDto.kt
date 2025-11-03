@@ -3,11 +3,11 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.dto
 import java.time.LocalTime
 
 data class AttendanceDataDto(
-  val hiVisWorn: Boolean? = null,
-  val workedIntensively: Boolean? = null,
+  val hiVisWorn: Boolean,
+  val workedIntensively: Boolean,
   val penaltyTime: LocalTime? = null,
-  val workQuality: AppointmentWorkQualityDto? = null,
-  val behaviour: AppointmentBehaviourDto? = null,
+  val workQuality: AppointmentWorkQualityDto,
+  val behaviour: AppointmentBehaviourDto,
 ) {
   companion object
 }
