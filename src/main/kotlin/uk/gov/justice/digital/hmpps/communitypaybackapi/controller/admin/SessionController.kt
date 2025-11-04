@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.MediaType
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -128,6 +129,29 @@ class SessionController(val sessionService: SessionService) {
     sessionService.allocateSupervisor(
       sessionId = SessionIdDto(projectCode, date),
       supervisorCode = allocation.supervisorCode,
+    )
+  }
+
+  @DeleteMapping(
+    path = ["/{projectCode}/sessions/{date}/supervisor"],
+  )
+  @Operation(
+    description = """Remove current supervisor allocation for a session""",
+    responses = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Session no longer has an allocation",
+      ),
+    ],
+  )
+  fun deallocateSupervisor(
+    @PathVariable projectCode: String,
+    @Parameter(description = "Date", example = "2025-01-01")
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+    @PathVariable date: LocalDate,
+  ) {
+    sessionService.deallocateSupervisor(
+      sessionId = SessionIdDto(projectCode, date),
     )
   }
 }
