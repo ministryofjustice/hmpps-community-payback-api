@@ -1,11 +1,13 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.service
 
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionIdDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.SessionSupervisorEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.SessionSupervisorEntityRepository
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.SessionSupervisorId
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.SessionMappers
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
 import java.time.LocalDate
@@ -18,6 +20,10 @@ class SessionService(
   val sessionSupervisorEntityRepository: SessionSupervisorEntityRepository,
   val contextService: ContextService,
 ) {
+  private companion object {
+    private val log = LoggerFactory.getLogger(this::class.java)
+  }
+
   fun getSessions(
     startDate: LocalDate,
     endDate: LocalDate,
@@ -45,5 +51,17 @@ class SessionService(
         allocatedByUsername = contextService.getUserName(),
       ),
     )
+    log.info("Session [$sessionId] allocated to [$supervisorCode]")
+  }
+
+  fun deallocateSupervisor(sessionId: SessionIdDto) {
+    sessionSupervisorEntityRepository.deleteById(
+      SessionSupervisorId(
+        projectCode = sessionId.projectCode,
+        day = sessionId.day,
+      ),
+    )
+
+    log.info("Session [$sessionId] deallocated")
   }
 }
