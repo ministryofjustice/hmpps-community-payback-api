@@ -1,0 +1,7 @@
+POST {{base-url}}/admin/projects/N56123456/sessions/2025-09-15/supervisor
+Authorization: Bearer {{$auth.token("hmpps-auth-ui-client")}}
+Content-Type: application/json
+
+{
+  "supervisorCode": "supervisor_code_2"
+}
