@@ -1,12 +1,12 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.entity
 
+import jakarta.persistence.Embeddable
 import jakarta.persistence.Entity
 import jakarta.persistence.Id
 import jakarta.persistence.IdClass
 import jakarta.persistence.Table
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.UpdateTimestamp
-import java.io.Serializable
 import java.time.OffsetDateTime
 
 @Entity
@@ -40,11 +40,8 @@ data class FormCacheEntity(
   companion object
 }
 
+@Embeddable
 data class FormCacheId(
-  val formId: String = "",
-  val formType: String = "",
-) : Serializable {
-  companion object {
-    private const val serialVersionUID: Long = 1L
-  }
-}
+  val formId: String,
+  val formType: String,
+)
