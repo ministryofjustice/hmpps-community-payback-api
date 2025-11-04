@@ -41,7 +41,9 @@ val fetchK8sClientCreds = tasks.register("fetchK8sClientCreds") {
                 .redirectErrorStream(true)
                 .start()
             val exit = proc.waitFor()
-            val out = proc.inputStream.bufferedReader().readText().trim()
+            val out = proc.inputStream.bufferedReader().use { reader ->
+              reader.readLines().last().trim()
+            }
             return exit == 0 && out == "0"
         }
 
