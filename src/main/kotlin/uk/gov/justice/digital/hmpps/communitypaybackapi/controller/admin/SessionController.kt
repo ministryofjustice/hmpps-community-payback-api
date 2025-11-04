@@ -9,8 +9,12 @@ import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AllocateSupervisorToSessionDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionIdDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionSummariesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.SessionService
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
@@ -100,4 +104,30 @@ class SessionController(val sessionService: SessionService) {
     @RequestParam
     @DateTimeFormat(pattern = "HH:mm") endTime: LocalTime,
   ) = sessionService.getSession(projectCode, date, startTime, endTime)
+
+  @PostMapping(
+    path = ["/{projectCode}/sessions/{date}/supervisor"],
+    consumes = [MediaType.APPLICATION_JSON_VALUE],
+  )
+  @Operation(
+    description = """Allocate a supervisor to a session""",
+    responses = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Session has been allocated",
+      ),
+    ],
+  )
+  fun allocateSupervisor(
+    @PathVariable projectCode: String,
+    @Parameter(description = "Date", example = "2025-01-01")
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+    @PathVariable date: LocalDate,
+    @RequestBody allocation: AllocateSupervisorToSessionDto,
+  ) {
+    sessionService.allocateSupervisor(
+      sessionId = SessionIdDto(projectCode, date),
+      supervisorCode = allocation.supervisorCode,
+    )
+  }
 }

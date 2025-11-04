@@ -4,6 +4,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.AppointmentSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CaseAccess
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CaseSummary
@@ -13,9 +14,11 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Session
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.SessionSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.SessionSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.UserAccess
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AllocateSupervisorToSessionDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.OffenderDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionSummariesDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.SessionSupervisorEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.bodyAsObject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.CommunityPaybackAndDeliusMockServer
@@ -23,6 +26,9 @@ import java.time.LocalDate
 import java.time.LocalTime
 
 class AdminSessionsIT : IntegrationTestBase() {
+
+  @Autowired
+  lateinit var sessionSupervisorEntityRepository: SessionSupervisorEntityRepository
 
   @Nested
   @DisplayName("GET /admin/projects/session-search")
@@ -111,7 +117,7 @@ class AdminSessionsIT : IntegrationTestBase() {
 
   @Nested
   @DisplayName("GET /admin/projects/123/sessions/2025-01-09")
-  inner class ProjectSessionsEndpoint {
+  inner class GetSessionEndpoint {
 
     @Test
     fun `should return unauthorized if no token`() {
@@ -243,6 +249,59 @@ class AdminSessionsIT : IntegrationTestBase() {
 
       assertThat(session.appointmentSummaries[1].offender.crn).isEqualTo("CRN2")
       assertThat(session.appointmentSummaries[1].offender).isInstanceOf(OffenderDto.OffenderLimitedDto::class.java)
+    }
+  }
+
+  @Nested
+  @DisplayName("POST /admin/projects/123/sessions/2025-01-09/supervisor")
+  inner class AllocateSupervisorEndpoint {
+
+    @Test
+    fun `should return unauthorized if no token`() {
+      webTestClient.post()
+        .uri("/admin/projects/123/sessions/2025-01-09/supervisor")
+        .exchange()
+        .expectStatus()
+        .isUnauthorized
+    }
+
+    @Test
+    fun `should return forbidden if no role`() {
+      webTestClient.post()
+        .uri("/admin/projects/123/sessions/2025-01-09/supervisor")
+        .bodyValue(AllocateSupervisorToSessionDto("s1"))
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .isForbidden
+    }
+
+    @Test
+    fun `should return forbidden if wrong role`() {
+      webTestClient.post()
+        .uri("/admin/projects/123/sessions/2025-01-09/supervisor")
+        .bodyValue(AllocateSupervisorToSessionDto("s1"))
+        .headers(setAuthorisation(roles = listOf("ROLE_WRONG")))
+        .exchange()
+        .expectStatus()
+        .isForbidden
+    }
+
+    @Test
+    fun `add allocation`() {
+      webTestClient.post()
+        .uri("/admin/projects/123/sessions/2025-01-09/supervisor")
+        .addAdminUiAuthHeader(username = "ADMIN_USER1")
+        .bodyValue(AllocateSupervisorToSessionDto("supervisor_code_1"))
+        .exchange()
+        .expectStatus()
+        .isOk
+
+      val allocation = sessionSupervisorEntityRepository.findAll().first()
+      assertThat(allocation.projectCode).isEqualTo("123")
+      assertThat(allocation.day).isEqualTo(LocalDate.of(2025, 1, 9))
+      assertThat(allocation.supervisorCode).isEqualTo("supervisor_code_1")
+      assertThat(allocation.allocatedByUsername).isEqualTo("ADMIN_USER1")
     }
   }
 }
