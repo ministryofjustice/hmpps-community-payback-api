@@ -30,6 +30,11 @@ val fetchK8sClientCreds = tasks.register("fetchK8sClientCreds") {
     description = "Fetches CLIENT_CREDS_CLIENT_ID and CLIENT_CREDS_CLIENT_SECRET from K8s secret hmpps-community-payback-ui-client-creds in hmpps-community-payback-<.env> namespace"
 
     doLast {
+        val dotenvfile = File(System.getProperty("user.dir") + "/gatling", ".env")
+        if (!dotenvfile.exists()) {
+          dotenvfile.createNewFile()
+        }
+        System.out.println("[GATLING][Gradle] Running fetchK8sClientCreds task")
         val envName = (project.findProperty(".env") as String?)
             ?: System.getenv(".env")
             ?: "dev"
