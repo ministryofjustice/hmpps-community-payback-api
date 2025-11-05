@@ -8,12 +8,14 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.SessionSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionSummariesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionSummaryDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.OffenderInfoResult
 import java.time.LocalTime
 
 @Service
 class SessionMappers(
   val appointmentMappers: AppointmentMappers,
+  val contactOutcomeEntityRepository: ContactOutcomeEntityRepository,
 ) {
 
   fun toDto(
@@ -34,6 +36,21 @@ class SessionMappers(
       )
     },
   )
+
+  fun toSummaryDto(
+    session: Session,
+  ) = SessionSummaryDto(
+    projectName = session.project.name,
+    projectCode = session.project.code,
+    date = session.date,
+    startTime = LocalTime.of(0, 0),
+    endTime = LocalTime.of(0, 0),
+    numberOfOffendersAllocated = session.appointmentSummaries.size,
+    numberOfOffendersWithEA = session.appointmentSummaries.count { it.hasOutcome() && findOutcome(it.outcome!!.code).enforceable },
+    numberOfOffendersWithOutcomes = session.appointmentSummaries.count { it.hasOutcome() },
+  )
+
+  private fun findOutcome(deliusCode: String) = contactOutcomeEntityRepository.findByCode(deliusCode) ?: error("Can't find outcome for code $deliusCode")
 }
 
 fun SessionSummaries.toDto() = SessionSummariesDto(this.sessions.map { it.toDto() })

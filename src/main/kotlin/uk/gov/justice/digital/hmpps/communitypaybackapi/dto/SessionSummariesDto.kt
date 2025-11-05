@@ -26,6 +26,6 @@ data class SessionSummaryDto(
   val numberOfOffendersAllocated: Int,
   @param:Schema(description = "Number of offenders with outcomes", example = "2")
   val numberOfOffendersWithOutcomes: Int,
-  @param:Schema(description = "Number of offenders with enforcements", example = "3")
+  @param:Schema(description = "Number of offenders with outcomes requiring enforcement", example = "3")
   val numberOfOffendersWithEA: Int,
 )
