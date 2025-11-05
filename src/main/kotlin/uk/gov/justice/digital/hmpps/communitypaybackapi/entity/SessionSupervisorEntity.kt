@@ -50,6 +50,8 @@ data class SessionSupervisorEntity(
   override fun hashCode(): Int = Objects.hash(projectCode, day)
 
   override fun toString(): String = "SessionSupervisorEntity(projectCode='$projectCode', day='$day', supervisorCode='$supervisorCode')"
+
+  companion object
 }
 
 @Embeddable

@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.AppointmentSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CaseSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ContactOutcome
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Project
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectLocation
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectSummary
@@ -18,6 +19,8 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.SessionSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.SessionSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionSummaryDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.OffenderInfoResult
@@ -34,11 +37,14 @@ class SessionMappersTest {
   @MockK(relaxed = true)
   private lateinit var appointmentMappers: AppointmentMappers
 
+  @MockK(relaxed = true)
+  private lateinit var contactOutcomeEntityRepository: ContactOutcomeEntityRepository
+
   @InjectMockKs
   private lateinit var service: SessionMappers
 
   @Nested
-  inner class ProjectAllocationsMapper {
+  inner class SessionSummariesToSessionSummariesDto {
 
     @Test
     fun `should map ProjectAllocations to DTO correctly`() {
@@ -92,7 +98,7 @@ class SessionMappersTest {
   }
 
   @Nested
-  inner class ProjectAllocationMapper {
+  inner class SessionSummaryToSessionSummaryDto {
     @Test
     fun `should map ProjectAllocation to DTO correctly`() {
       val projectAllocation = SessionSummary(
@@ -122,7 +128,7 @@ class SessionMappersTest {
   }
 
   @Nested
-  inner class ProjectSessionMapper {
+  inner class SessionToSessionDto {
     @Test
     fun `should map ProjectSession to DTO correctly`() {
       val appointmentSummary1 = AppointmentSummary.valid().copy(case = CaseSummary.valid().copy(crn = "CRN1"))
@@ -177,7 +183,46 @@ class SessionMappersTest {
   }
 
   @Nested
-  inner class ProjectLocationMapper {
+  inner class SessionToSessionSummaryDto {
+
+    @Test
+    fun `Should map correctly`() {
+      val session = Session(
+        project = Project(
+          name = "Park Cleanup",
+          code = "N987654321",
+          location = ProjectLocation.valid(),
+        ),
+        date = LocalDate.of(2025, 9, 8),
+        appointmentSummaries = listOf(
+          AppointmentSummary.valid().copy(outcome = ContactOutcome.valid().copy(code = "ATTEND-1")),
+          AppointmentSummary.valid().copy(outcome = ContactOutcome.valid().copy(code = "ATTEND-1")),
+          AppointmentSummary.valid().copy(outcome = ContactOutcome.valid().copy(code = "ATTEND-2")),
+          AppointmentSummary.valid().copy(outcome = ContactOutcome.valid().copy(code = "ENFORCE-1")),
+          AppointmentSummary.valid().copy(outcome = ContactOutcome.valid().copy(code = "ENFORCE-2")),
+          AppointmentSummary.valid().copy(outcome = null),
+          AppointmentSummary.valid().copy(outcome = null),
+        ),
+      )
+
+      every { contactOutcomeEntityRepository.findByCode("ATTEND-1") } returns ContactOutcomeEntity.valid().copy(attended = true, enforceable = false)
+      every { contactOutcomeEntityRepository.findByCode("ATTEND-2") } returns ContactOutcomeEntity.valid().copy(attended = true, enforceable = false)
+      every { contactOutcomeEntityRepository.findByCode("ENFORCE-1") } returns ContactOutcomeEntity.valid().copy(attended = false, enforceable = true)
+      every { contactOutcomeEntityRepository.findByCode("ENFORCE-2") } returns ContactOutcomeEntity.valid().copy(attended = false, enforceable = true)
+
+      val result = service.toSummaryDto(session)
+
+      assertThat(result.projectCode).isEqualTo("N987654321")
+      assertThat(result.projectName).isEqualTo("Park Cleanup")
+      assertThat(result.date).isEqualTo(LocalDate.of(2025, 9, 8))
+      assertThat(result.numberOfOffendersAllocated).isEqualTo(7)
+      assertThat(result.numberOfOffendersWithOutcomes).isEqualTo(5)
+      assertThat(result.numberOfOffendersWithEA).isEqualTo(2)
+    }
+  }
+
+  @Nested
+  inner class ProjectLocationToFullAddress {
 
     @Test
     fun `empty location mapped to empty string`() {

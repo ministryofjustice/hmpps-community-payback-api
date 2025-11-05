@@ -19,15 +19,32 @@ class SupervisorSessionsController(
 ) {
 
   @GetMapping(
+    path = [ "/supervisor/supervisors/{supervisorCode}/sessions/future"],
+    produces = [MediaType.APPLICATION_JSON_VALUE],
+  )
+  @Operation(
+    description = "Get all future sessions allocated to the supervisor. This includes sessions running today.",
+    responses = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Successful response",
+      ),
+    ],
+  )
+  fun getFutureAllocations(
+    @PathVariable supervisorCode: String,
+  ) = sessionService.getFutureAllocationsForSupervisor(supervisorCode)
+
+  @GetMapping(
     path = [ "/supervisor/projects/{projectCode}/sessions/{date}"],
     produces = [MediaType.APPLICATION_JSON_VALUE],
   )
   @Operation(
-    description = "Get project allocations within date range for a specific team",
+    description = "Get session information",
     responses = [
       ApiResponse(
         responseCode = "200",
-        description = "Successful project allocations response",
+        description = "Successful session response",
       ),
       ApiResponse(
         responseCode = "400",
