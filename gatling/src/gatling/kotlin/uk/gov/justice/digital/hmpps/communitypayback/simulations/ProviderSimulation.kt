@@ -17,7 +17,7 @@ class ProviderSimulation(
   private val scn = scenario("Provider Endpoints")
     .exec(
       http("Provider Summary Endpoint")
-        .get("/providers")
+        .get("/admin/providers")
         .check(
           status().`is`(200),
           jsonPath("$.providers[0].id").saveAs("providerId"),
@@ -30,7 +30,7 @@ class ProviderSimulation(
         .get { session ->
           val providerId = session.getString("providerId")
           jsonPath("$.providers[0].id").saveAs("teamId")
-          "/providers/$providerId/teams"
+          "/admin//providers/$providerId/teams"
         }
         .check(
           status().`is`(200),
@@ -44,7 +44,7 @@ class ProviderSimulation(
         .get { session ->
           val providerId = session.getString("providerId")
           val teamId = session.getString("teamId")
-          "/providers/$providerId/teams/$teamId/supervisors"
+          "/admin//providers/$providerId/teams/$teamId/supervisors"
         }
         .check(
           status().`is`(200),

@@ -16,7 +16,7 @@ class ReferenceSimulation(
   private val scn = scenario("Project Types Endpoints")
     .exec(
       http("Project Types Endpoint")
-        .get("/references/project-types")
+        .get("/common/references/project-types")
         .check(
           status().`is`(200),
           bodyString().saveAs("responseBody")
@@ -26,7 +26,7 @@ class ReferenceSimulation(
 
     .exec(
       http("Contact outcomes Endpoint")
-        .get("/references/contact-outcomes")
+        .get("/common/references/contact-outcomes")
         .check(
           status().`is`(200),
           bodyString().saveAs("responseBody")
@@ -36,7 +36,7 @@ class ReferenceSimulation(
 
     .exec(
       http("Enforcement Actions Endpoint")
-        .get("/references/enforcement-actions")
+        .get("/common/references/enforcement-actions")
         .check(
           status().`is`(200),
           bodyString().saveAs("responseBody")
