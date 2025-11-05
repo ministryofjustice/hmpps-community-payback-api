@@ -112,6 +112,8 @@ tasks.register<Exec>("gatlingRunWithK8sCreds") {
     val args = mutableListOf("gatlingRun")
     if (!simulationFqn.isNullOrBlank()) {
         args += listOf("--simulation", simulationFqn)
+    } else {
+      args += listOf("--all")
     }
 
   workingDir = project.rootDir
