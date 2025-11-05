@@ -20,7 +20,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.bodyAsObject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.CommunityPaybackAndDeliusMockServer
 import java.time.LocalDate
-import java.time.LocalTime
 
 class AdminSessionsIT : IntegrationTestBase() {
 
@@ -116,7 +115,7 @@ class AdminSessionsIT : IntegrationTestBase() {
     @Test
     fun `should return unauthorized if no token`() {
       webTestClient.get()
-        .uri("/admin/projects/123/sessions/2025-01-09?start=09:00&end=17:00")
+        .uri("/admin/projects/123/sessions/2025-01-09")
         .exchange()
         .expectStatus()
         .isUnauthorized
@@ -125,7 +124,7 @@ class AdminSessionsIT : IntegrationTestBase() {
     @Test
     fun `should return forbidden if no role`() {
       webTestClient.get()
-        .uri("/admin/projects/123/sessions/2025-01-09?startTime=09:00&endTime=17:00")
+        .uri("/admin/projects/123/sessions/2025-01-09")
         .headers(setAuthorisation())
         .exchange()
         .expectStatus()
@@ -135,21 +134,11 @@ class AdminSessionsIT : IntegrationTestBase() {
     @Test
     fun `should return forbidden if wrong role`() {
       webTestClient.get()
-        .uri("/admin/projects/123/sessions/2025-01-09?startTime=09:00&endTime=17:00")
+        .uri("/admin/projects/123/sessions/2025-01-09")
         .headers(setAuthorisation(roles = listOf("ROLE_WRONG")))
         .exchange()
         .expectStatus()
         .isForbidden
-    }
-
-    @Test
-    fun `should return bad request if missing parameters`() {
-      webTestClient.get()
-        .uri("/admin/projects/123/sessions/2025-01-09")
-        .addAdminUiAuthHeader()
-        .exchange()
-        .expectStatus()
-        .is4xxClientError
     }
 
     @Test
@@ -160,8 +149,6 @@ class AdminSessionsIT : IntegrationTestBase() {
             name = "Community Garden Maintenance",
             code = "N123456789",
           ),
-          startTime = LocalTime.of(9, 0),
-          endTime = LocalTime.of(17, 0),
           date = LocalDate.of(2025, 1, 9),
           appointmentSummaries = listOf(
             ProjectAppointmentSummary.valid().copy(outcome = null),
@@ -171,7 +158,7 @@ class AdminSessionsIT : IntegrationTestBase() {
       )
 
       val sessionSearchResults = webTestClient.get()
-        .uri("/admin/projects/N123456789/sessions/2025-01-09?startTime=09:00&endTime=17:00")
+        .uri("/admin/projects/N123456789/sessions/2025-01-09")
         .addAdminUiAuthHeader()
         .exchange()
         .expectStatus()
@@ -180,8 +167,6 @@ class AdminSessionsIT : IntegrationTestBase() {
 
       assertThat(sessionSearchResults.projectName).isEqualTo("Community Garden Maintenance")
       assertThat(sessionSearchResults.projectCode).isEqualTo("N123456789")
-      assertThat(sessionSearchResults.endTime).isEqualTo(LocalTime.of(17, 0))
-      assertThat(sessionSearchResults.startTime).isEqualTo(LocalTime.of(9, 0))
       assertThat(sessionSearchResults.date).isEqualTo(LocalDate.of(2025, 1, 9))
       assertThat(sessionSearchResults.appointmentSummaries).hasSize(2)
     }
@@ -193,8 +178,6 @@ class AdminSessionsIT : IntegrationTestBase() {
           project = Project.valid().copy(
             code = "N123456789",
           ),
-          startTime = LocalTime.of(9, 0),
-          endTime = LocalTime.of(17, 0),
           date = LocalDate.of(2025, 1, 9),
           appointmentSummaries = listOf(
             ProjectAppointmentSummary.valid().copy(

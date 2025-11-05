@@ -32,8 +32,6 @@ interface CommunityPaybackAndDeliusClient {
   fun getSession(
     @PathVariable projectCode: String,
     @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate,
-    @RequestParam @DateTimeFormat(pattern = "HH:mm") startTime: LocalTime,
-    @RequestParam @DateTimeFormat(pattern = "HH:mm") endTime: LocalTime,
   ): Session
 
   @GetExchange("/appointments/{appointmentId}")
@@ -93,8 +91,6 @@ data class SessionSummary(
 
 data class Session(
   val project: Project,
-  val startTime: LocalTime,
-  val endTime: LocalTime,
   val date: LocalDate,
   val appointmentSummaries: List<ProjectAppointmentSummary>,
 ) {
@@ -103,6 +99,8 @@ data class Session(
 
 data class ProjectAppointmentSummary(
   val id: Long,
+  val startTime: LocalTime,
+  val endTime: LocalTime,
   val case: CaseSummary,
   val outcome: ContactOutcome?,
   val requirementProgress: RequirementProgress,

@@ -12,11 +12,11 @@
     }
   },
   "date": "2025-09-15",
-  "startTime" : "09:00",
-  "endTime" : "17:00",
   "appointmentSummaries": [
     {
       "id": "2500629219",
+      "startTime" : "09:00",
+      "endTime" : "17:00",
       "case": {
         "crn": "X948762",
         "name": {
@@ -39,6 +39,8 @@
     },
     {
       "id": "2500629735",
+      "startTime" : "09:00",
+      "endTime" : "17:00",
       "case": {
         "crn": "X949551",
         "name": {
@@ -61,6 +63,8 @@
     },
     {
       "id": "2500628309",
+      "startTime" : "09:00",
+      "endTime" : "11:00",
       "case": {
         "crn": "X949351",
         "name": {

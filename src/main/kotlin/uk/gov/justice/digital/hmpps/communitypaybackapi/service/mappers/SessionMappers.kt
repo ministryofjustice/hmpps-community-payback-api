@@ -24,8 +24,8 @@ class SessionMappers(
     projectName = session.project.name,
     projectLocation = session.project.location.toFullAddress(),
     location = session.project.location.toDto(),
-    startTime = session.startTime,
-    endTime = session.endTime,
+    startTime = LocalTime.of(0, 0),
+    endTime = LocalTime.of(0, 0),
     date = session.date,
     appointmentSummaries = session.appointmentSummaries.map { appointmentSummary ->
       appointmentMappers.toDto(

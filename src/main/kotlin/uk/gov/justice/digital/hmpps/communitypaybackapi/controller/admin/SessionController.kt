@@ -15,7 +15,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionSummariesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.SessionService
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 import java.time.LocalDate
-import java.time.LocalTime
 
 @AdminUiController
 @RequestMapping(
@@ -93,11 +92,5 @@ class SessionController(val sessionService: SessionService) {
     @Parameter(description = "Date", example = "2025-01-01")
     @PathVariable
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate,
-    @Parameter(description = "Start time", example = "09:00")
-    @RequestParam
-    @DateTimeFormat(pattern = "HH:mm") startTime: LocalTime,
-    @Parameter(description = "End time", example = "17:00")
-    @RequestParam
-    @DateTimeFormat(pattern = "HH:mm") endTime: LocalTime,
-  ) = sessionService.getSession(projectCode, date, startTime, endTime)
+  ) = sessionService.getSession(projectCode, date)
 }

@@ -6,7 +6,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.SessionMappers
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
 import java.time.LocalDate
-import java.time.LocalTime
 
 @Service
 class SessionService(
@@ -23,10 +22,8 @@ class SessionService(
   fun getSession(
     projectCode: String,
     date: LocalDate,
-    start: LocalTime,
-    end: LocalTime,
   ): SessionDto {
-    val projectSession = communityPaybackAndDeliusClient.getSession(projectCode, date, start, end)
+    val projectSession = communityPaybackAndDeliusClient.getSession(projectCode, date)
     val caseSummaries = projectSession.appointmentSummaries.map { it.case }.toList()
     return sessionMappers.toDto(projectSession, offenderService.toOffenderInfos(caseSummaries))
   }

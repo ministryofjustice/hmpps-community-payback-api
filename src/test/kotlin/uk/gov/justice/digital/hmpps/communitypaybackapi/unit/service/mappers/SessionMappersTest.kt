@@ -150,8 +150,6 @@ class SessionMappersTest {
           ),
         ),
         date = LocalDate.of(2025, 9, 8),
-        startTime = LocalTime.of(8, 0),
-        endTime = LocalTime.of(16, 0),
         appointmentSummaries = listOf(appointmentSummary1, appointmentSummary2),
       )
 
@@ -174,8 +172,6 @@ class SessionMappersTest {
       assertThat(result.location.postCode).isEqualTo("AA11 234")
 
       assertThat(result.date).isEqualTo(LocalDate.of(2025, 9, 8))
-      assertThat(result.startTime).isEqualTo(LocalTime.of(8, 0))
-      assertThat(result.endTime).isEqualTo(LocalTime.of(16, 0))
       assertThat(result.appointmentSummaries).isEqualTo(listOf(appointmentSummaryDto1, appointmentSummaryDto2))
     }
   }
