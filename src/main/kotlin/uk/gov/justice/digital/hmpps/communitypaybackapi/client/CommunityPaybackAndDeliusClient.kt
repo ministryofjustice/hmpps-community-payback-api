@@ -84,8 +84,6 @@ data class SessionSummaries(
 data class SessionSummary(
   val date: LocalDate,
   val project: ProjectSummary,
-  val startTime: LocalTime,
-  val endTime: LocalTime,
   val allocatedCount: Int,
   val compliedOutcomeCount: Int,
   val enforcementActionNeededCount: Int,
