@@ -86,6 +86,8 @@ class AppointmentMappers(
     offenderInfoResult: OffenderInfoResult,
   ) = AppointmentSummaryDto(
     id = appointmentSummary.id,
+    startTime = appointmentSummary.startTime,
+    endTime = appointmentSummary.endTime,
     contactOutcome = appointmentSummary.outcome?.code?.let {
       contactOutcomeEntityRepository.findByCode(it)?.toDto() ?: error("Can't find outcome for code $it")
     },

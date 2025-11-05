@@ -7,6 +7,8 @@ import kotlin.Long
 
 fun AppointmentSummaryDto.Companion.valid() = AppointmentSummaryDto(
   id = Long.random(),
+  startTime = randomLocalTime(),
+  endTime = randomLocalTime(),
   contactOutcome = ContactOutcomeDto.valid(),
   requirementMinutes = Int.random(),
   completedMinutes = Int.random(),

@@ -4,12 +4,6 @@
     "queryParameters": {
       "date": {
         "matches": "[0-9]{4}-[0-9]{1,2}-[0-9]{1,2}"
-      },
-      "startTime": {
-        "matches": "09:00"
-      },
-      "endTime": {
-        "matches": "17:00"
       }
     },
     "urlPathPattern": "/projects/N56123456/sessions/appointments"

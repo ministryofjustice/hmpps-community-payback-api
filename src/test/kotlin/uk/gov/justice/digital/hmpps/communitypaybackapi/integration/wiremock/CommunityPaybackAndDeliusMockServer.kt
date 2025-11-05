@@ -19,9 +19,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Session
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.SessionSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.SupervisorSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.UserAccess
-import java.net.URLEncoder
 import java.time.LocalDate
-import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
 object CommunityPaybackAndDeliusMockServer {
@@ -117,17 +115,13 @@ object CommunityPaybackAndDeliusMockServer {
     WireMock.verify(putRequestedFor(urlEqualTo("/community-payback-and-delius/appointments/$id")))
   }
 
-  fun LocalTime.toHourMinuteString(): String = URLEncoder.encode(this.format(DateTimeFormatter.ofPattern("HH:mm")), "UTF-8")
-
   fun getProjectSession(
     session: Session,
   ) {
     WireMock.stubFor(
       get(
         "/community-payback-and-delius/projects/${session.project.code}/sessions/appointments" +
-          "?date=${session.date.toIsoDateString()}" +
-          "&startTime=${session.startTime.toHourMinuteString()}" +
-          "&endTime=${session.endTime.toHourMinuteString()}",
+          "?date=${session.date.toIsoDateString()}",
       )
         .willReturn(
           aResponse()

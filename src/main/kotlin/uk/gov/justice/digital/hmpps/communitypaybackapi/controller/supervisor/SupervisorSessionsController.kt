@@ -9,11 +9,9 @@ import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.RequestParam
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.SessionService
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 import java.time.LocalDate
-import java.time.LocalTime
 
 @SupervisorUiController
 class SupervisorSessionsController(
@@ -47,11 +45,5 @@ class SupervisorSessionsController(
     @Parameter(description = "Date", example = "2025-01-01")
     @PathVariable
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate,
-    @Parameter(description = "Start time", example = "09:00")
-    @RequestParam
-    @DateTimeFormat(pattern = "HH:mm") startTime: LocalTime,
-    @Parameter(description = "End time", example = "17:00")
-    @RequestParam
-    @DateTimeFormat(pattern = "HH:mm") endTime: LocalTime,
-  ) = sessionService.getSession(projectCode, date, startTime, endTime)
+  ) = sessionService.getSession(projectCode, date)
 }
