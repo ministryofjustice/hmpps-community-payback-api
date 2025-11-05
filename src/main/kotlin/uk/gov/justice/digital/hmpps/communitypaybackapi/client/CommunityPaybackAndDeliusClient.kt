@@ -105,6 +105,8 @@ data class AppointmentSummary(
   val outcome: ContactOutcome?,
   val requirementProgress: RequirementProgress,
 ) {
+  fun hasOutcome() = outcome != null
+
   companion object
 }
 

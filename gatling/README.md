@@ -39,4 +39,4 @@ Notes:
  * run e2e tests in th ui package
  * grab the logs in to a file (e2e.log)
  * `grep "CommunityPaybackRequestLoggingFilter : Request data" e2e.log > e2e-request-data.log` > e2e-requests.log
- * Ask Junie to update the script: "Using e2e-request-data.log as a source, can you update the E2E simulation to execute those requests?"
+ * Ask a verified llm to update the script: "Using e2e-request-data.log as a source, can you update the E2E simulation to execute those requests?"

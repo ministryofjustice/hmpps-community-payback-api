@@ -4,6 +4,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.AppointmentSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CaseAccess
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CaseSummary
@@ -12,16 +13,23 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Session
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.UserAccess
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.OffenderDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SupervisorSessionsDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.SessionSupervisorEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.SessionSupervisorEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.bodyAsObject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.CommunityPaybackAndDeliusMockServer
 import java.time.LocalDate
 
 class SupervisorSessionsIT : IntegrationTestBase() {
 
+  @Autowired
+  lateinit var sessionSupervisorEntityRepository: SessionSupervisorEntityRepository
+
   @Nested
-  @DisplayName("GET /supervisor/projects/123/sessions/2025-01-09")
-  inner class ProjectSessionsEndpoint {
+  @DisplayName("GET /supervisor/projects/{projectCode}/sessions/{date}")
+  inner class GetSessionEndpoint {
 
     @Test
     fun `should return unauthorized if no token`() {
@@ -147,6 +155,90 @@ class SupervisorSessionsIT : IntegrationTestBase() {
 
       assertThat(session.appointmentSummaries[1].offender.crn).isEqualTo("CRN2")
       assertThat(session.appointmentSummaries[1].offender).isInstanceOf(OffenderDto.OffenderLimitedDto::class.java)
+    }
+  }
+
+  @Nested
+  @DisplayName("GET /supervisor/supervisors/{supervisorCode}/sessions/future")
+  inner class GetFutureSessionEndpoint {
+
+    @Test
+    fun `should return unauthorized if no token`() {
+      webTestClient.get()
+        .uri("/supervisor/supervisors/SUPERVISOR001/sessions/future")
+        .exchange()
+        .expectStatus()
+        .isUnauthorized
+    }
+
+    @Test
+    fun `should return forbidden if no role`() {
+      webTestClient.get()
+        .uri("/supervisor/supervisors/SUPERVISOR001/sessions/future")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .isForbidden
+    }
+
+    @Test
+    fun `should return forbidden if wrong role`() {
+      webTestClient.get()
+        .uri("/supervisor/supervisors/SUPERVISOR001/sessions/future")
+        .headers(setAuthorisation(roles = listOf("ROLE_WRONG")))
+        .exchange()
+        .expectStatus()
+        .isForbidden
+    }
+
+    @Test
+    fun `should return OK with project session`() {
+      val yesterday = LocalDate.now().minusDays(1)
+      allocateSessionToSupervisor1("IGNORED_PROJECT_YESTERDAY", yesterday)
+
+      val today = LocalDate.now()
+      allocateSessionToSupervisor1("PROJ1", today)
+
+      CommunityPaybackAndDeliusMockServer.getProjectSession(
+        Session.valid(ctx).copy(
+          project = Project.valid().copy(code = "PROJ1"),
+          date = today,
+        ),
+      )
+
+      val nextYear = LocalDate.now().plusYears(5)
+      allocateSessionToSupervisor1("PROJ2", nextYear)
+
+      CommunityPaybackAndDeliusMockServer.getProjectSession(
+        Session.valid(ctx).copy(
+          project = Project.valid().copy(code = "PROJ2"),
+          date = nextYear,
+        ),
+      )
+
+      val result = webTestClient.get()
+        .uri("/supervisor/supervisors/SUPERVISOR001/sessions/future")
+        .addSupervisorUiAuthHeader()
+        .exchange()
+        .expectStatus()
+        .isOk
+        .bodyAsObject<SupervisorSessionsDto>()
+
+      assertThat(result.sessions).hasSize(2)
+      assertThat(result.sessions.map { it.projectCode }).containsExactly("PROJ1", "PROJ2")
+    }
+
+    private fun allocateSessionToSupervisor1(
+      projectCode: String,
+      day: LocalDate,
+    ) {
+      sessionSupervisorEntityRepository.save(
+        SessionSupervisorEntity.valid().copy(
+          projectCode = projectCode,
+          day = day,
+          supervisorCode = "SUPERVISOR001",
+        ),
+      )
     }
   }
 }
