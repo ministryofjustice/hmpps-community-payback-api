@@ -50,8 +50,6 @@ class SessionMappersTest {
               name = "Community Garden",
             ),
             date = LocalDate.of(2025, 9, 1),
-            startTime = LocalTime.of(9, 0),
-            endTime = LocalTime.of(17, 0),
             allocatedCount = 0,
             compliedOutcomeCount = 1,
             enforcementActionNeededCount = 2,
@@ -62,8 +60,6 @@ class SessionMappersTest {
               name = "Park Cleanup",
             ),
             date = LocalDate.of(2025, 9, 8),
-            startTime = LocalTime.of(8, 0),
-            endTime = LocalTime.of(16, 0),
             allocatedCount = 3,
             compliedOutcomeCount = 4,
             enforcementActionNeededCount = 5,
@@ -77,8 +73,8 @@ class SessionMappersTest {
 
       assertThat(projectAllocationsDto.allocations[0].projectName).isEqualTo("Community Garden")
       assertThat(projectAllocationsDto.allocations[0].date).isEqualTo(LocalDate.of(2025, 9, 1))
-      assertThat(projectAllocationsDto.allocations[0].startTime).isEqualTo(LocalTime.of(9, 0))
-      assertThat(projectAllocationsDto.allocations[0].endTime).isEqualTo(LocalTime.of(17, 0))
+      assertThat(projectAllocationsDto.allocations[0].startTime).isEqualTo(LocalTime.of(0, 0))
+      assertThat(projectAllocationsDto.allocations[0].endTime).isEqualTo(LocalTime.of(0, 0))
       assertThat(projectAllocationsDto.allocations[0].projectCode).isEqualTo("cg")
       assertThat(projectAllocationsDto.allocations[0].numberOfOffendersAllocated).isEqualTo(0)
       assertThat(projectAllocationsDto.allocations[0].numberOfOffendersWithOutcomes).isEqualTo(1)
@@ -86,8 +82,8 @@ class SessionMappersTest {
 
       assertThat(projectAllocationsDto.allocations[1].projectName).isEqualTo("Park Cleanup")
       assertThat(projectAllocationsDto.allocations[1].date).isEqualTo(LocalDate.of(2025, 9, 8))
-      assertThat(projectAllocationsDto.allocations[1].startTime).isEqualTo(LocalTime.of(8, 0))
-      assertThat(projectAllocationsDto.allocations[1].endTime).isEqualTo(LocalTime.of(16, 0))
+      assertThat(projectAllocationsDto.allocations[1].startTime).isEqualTo(LocalTime.of(0, 0))
+      assertThat(projectAllocationsDto.allocations[1].endTime).isEqualTo(LocalTime.of(0, 0))
       assertThat(projectAllocationsDto.allocations[1].projectCode).isEqualTo("pc")
       assertThat(projectAllocationsDto.allocations[1].numberOfOffendersAllocated).isEqualTo(3)
       assertThat(projectAllocationsDto.allocations[1].numberOfOffendersWithOutcomes).isEqualTo(4)
@@ -105,8 +101,6 @@ class SessionMappersTest {
           name = "Community Garden",
         ),
         date = LocalDate.of(2025, 9, 1),
-        startTime = LocalTime.of(9, 0),
-        endTime = LocalTime.of(17, 0),
         allocatedCount = 40,
         compliedOutcomeCount = 0,
         enforcementActionNeededCount = 0,
@@ -116,8 +110,8 @@ class SessionMappersTest {
         SessionSummaryDto(
           projectName = "Community Garden",
           date = LocalDate.of(2025, 9, 1),
-          startTime = LocalTime.of(9, 0),
-          endTime = LocalTime.of(17, 0),
+          startTime = LocalTime.of(0, 0),
+          endTime = LocalTime.of(0, 0),
           projectCode = "cg",
           numberOfOffendersAllocated = 40,
           numberOfOffendersWithOutcomes = 0,

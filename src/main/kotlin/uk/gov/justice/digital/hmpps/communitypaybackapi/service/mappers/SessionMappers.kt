@@ -9,6 +9,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionSummariesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.OffenderInfoResult
+import java.time.LocalTime
 
 @Service
 class SessionMappers(
@@ -40,8 +41,8 @@ fun SessionSummary.toDto() = SessionSummaryDto(
   projectName = this.project.name,
   projectCode = this.project.code,
   date = this.date,
-  startTime = this.startTime,
-  endTime = this.endTime,
+  startTime = LocalTime.of(0, 0),
+  endTime = LocalTime.of(0, 0),
   numberOfOffendersAllocated = this.allocatedCount,
   numberOfOffendersWithOutcomes = this.compliedOutcomeCount,
   numberOfOffendersWithEA = this.enforcementActionNeededCount,
