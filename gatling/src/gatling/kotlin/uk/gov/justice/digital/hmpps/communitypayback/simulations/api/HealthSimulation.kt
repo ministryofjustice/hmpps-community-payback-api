@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.communitypayback.simulations
+package uk.gov.justice.digital.hmpps.communitypayback.simulations.api
 
 import io.gatling.javaapi.core.CoreDsl.atOnceUsers
 import io.gatling.javaapi.core.CoreDsl.bodyString
