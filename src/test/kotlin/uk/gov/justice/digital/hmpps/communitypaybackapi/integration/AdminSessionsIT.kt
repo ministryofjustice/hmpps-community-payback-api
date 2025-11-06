@@ -76,7 +76,11 @@ class AdminSessionsIT : IntegrationTestBase() {
     @Test
     fun `should return OK with project session summaries`() {
       CommunityPaybackAndDeliusMockServer.getSessions(
-        SessionSummaries(
+        providerCode = "UNKNOWN",
+        teamCode = "999",
+        startDate = LocalDate.of(2025, 1, 9),
+        endDate = LocalDate.of(2025, 7, 9),
+        projectSessions = SessionSummaries(
           listOf(
             SessionSummary.valid().copy(project = ProjectSummary.valid().copy(name = "Community Garden Maintenance")),
             SessionSummary.valid().copy(project = ProjectSummary.valid().copy(name = "Park Cleanup")),
@@ -100,7 +104,11 @@ class AdminSessionsIT : IntegrationTestBase() {
     @Test
     fun `should return empty list when no session summaries found`() {
       CommunityPaybackAndDeliusMockServer.getSessions(
-        SessionSummaries(emptyList()),
+        providerCode = "UNKNOWN",
+        teamCode = "999",
+        startDate = LocalDate.of(2025, 1, 9),
+        endDate = LocalDate.of(2025, 7, 9),
+        projectSessions = SessionSummaries(emptyList()),
       )
 
       val sessionSummaries = webTestClient.get()

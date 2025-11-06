@@ -26,10 +26,11 @@ class SessionService(
   }
 
   fun getSessions(
+    providerCode: String,
+    teamCode: String,
     startDate: LocalDate,
     endDate: LocalDate,
-    teamCode: String,
-  ) = communityPaybackAndDeliusClient.getSessions(startDate, endDate, teamCode).toDto()
+  ) = communityPaybackAndDeliusClient.getSessions(providerCode, teamCode, startDate, endDate).toDto()
 
   fun getSession(
     projectCode: String,

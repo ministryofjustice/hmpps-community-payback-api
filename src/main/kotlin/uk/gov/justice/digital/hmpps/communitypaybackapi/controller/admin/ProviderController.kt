@@ -1,9 +1,11 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.controller.admin
 
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
+import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -13,14 +15,19 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProviderSummariesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProviderTeamSummariesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SupervisorSummariesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ProviderService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.SessionService
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
+import java.time.LocalDate
 
 @AdminUiController
 @RequestMapping(
   "/admin/providers",
   produces = [MediaType.APPLICATION_JSON_VALUE],
 )
-class ProviderController(val providerService: ProviderService) {
+class ProviderController(
+  val providerService: ProviderService,
+  val sessionService: SessionService,
+) {
 
   @GetMapping
   @Operation(
@@ -80,4 +87,39 @@ class ProviderController(val providerService: ProviderService) {
     @PathVariable providerCode: String,
     @PathVariable teamCode: String,
   ): SupervisorSummariesDto = providerService.getTeamSupervisors(providerCode, teamCode)
+
+  @GetMapping("/{providerCode}/teams/{teamCode}/sessions")
+  @Operation(
+    description = "Get sessions within a date range for a specific team",
+    responses = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Successful sessions response",
+      ),
+      ApiResponse(
+        responseCode = "404",
+        description = "Provider or team not found",
+        content = [
+          Content(
+            schema = Schema(implementation = ErrorResponse::class),
+          ),
+        ],
+      ),
+    ],
+  )
+  fun getSessions(
+    @PathVariable providerCode: String,
+    @PathVariable teamCode: String,
+    @RequestParam
+    @Parameter(description = "Start date, inclusive", example = "2025-09-01")
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) startDate: LocalDate,
+    @RequestParam
+    @Parameter(description = "End date, inclusive", example = "2025-09-01")
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) endDate: LocalDate,
+  ) = sessionService.getSessions(
+    providerCode,
+    teamCode,
+    startDate,
+    endDate,
+  )
 }
