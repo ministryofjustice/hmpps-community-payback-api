@@ -33,7 +33,9 @@ class SessionController(val sessionService: SessionService) {
     produces = [MediaType.APPLICATION_JSON_VALUE],
   )
   @Operation(
-    description = "Get project sessions within date range for a specific team",
+    description = "Get project sessions within date range for a specific team. " +
+      "Deprecated, use '/admin/providers/{providerCode}/teams/{teamCode}/sessions' instead ",
+    deprecated = true,
     responses = [
       ApiResponse(
         responseCode = "200",
@@ -59,6 +61,7 @@ class SessionController(val sessionService: SessionService) {
       ),
     ],
   )
+  @Deprecated("Use version in [ProviderController] instead")
   fun getSessions(
     @Parameter(description = "Start date", example = "2025-09-01")
     @RequestParam
@@ -68,7 +71,12 @@ class SessionController(val sessionService: SessionService) {
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) endDate: LocalDate,
     @Parameter(description = "Team Code", example = "ABC123")
     @RequestParam teamCode: String,
-  ): SessionSummariesDto = sessionService.getSessions(startDate, endDate, teamCode)
+  ): SessionSummariesDto = sessionService.getSessions(
+    providerCode = "UNKNOWN",
+    teamCode = teamCode,
+    startDate = startDate,
+    endDate = endDate,
+  )
 
   @GetMapping(
     path = [ "/{projectCode}/sessions/{date}"],

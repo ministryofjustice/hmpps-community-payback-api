@@ -55,10 +55,14 @@ object CommunityPaybackAndDeliusMockServer {
   }
 
   fun getSessions(
+    providerCode: String,
+    teamCode: String,
+    startDate: LocalDate,
+    endDate: LocalDate,
     projectSessions: SessionSummaries,
   ) {
     WireMock.stubFor(
-      get("/community-payback-and-delius/sessions?startDate=2025-01-09&endDate=2025-07-09&teamCode=999")
+      get("/community-payback-and-delius/providers/$providerCode/teams/$teamCode/sessions?startDate=${startDate.toIsoDateString()}&endDate=${endDate.toIsoDateString()}")
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")
