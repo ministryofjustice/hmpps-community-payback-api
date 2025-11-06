@@ -327,7 +327,7 @@ class AppointmentMappersTest {
 
     @Test
     fun `Populate attendance data if corresponding outcome is for attendance`() {
-      val projectAppointment = ProjectAppointment.valid().copy(
+      val projectAppointment = Appointment.valid().copy(
         outcome = ContactOutcome.valid().copy(code = "OUTCOME1"),
         enforcementAction = EnforcementAction.valid().copy(code = "ENFORCE1"),
       )
@@ -343,7 +343,7 @@ class AppointmentMappersTest {
 
     @Test
     fun `Don't populate attendance data if corresponding outcome is not for attendance`() {
-      val projectAppointment = ProjectAppointment.valid().copy(
+      val projectAppointment = Appointment.valid().copy(
         outcome = ContactOutcome.valid().copy(code = "OUTCOME1"),
         enforcementAction = EnforcementAction.valid().copy(code = "ENFORCE1"),
       )
