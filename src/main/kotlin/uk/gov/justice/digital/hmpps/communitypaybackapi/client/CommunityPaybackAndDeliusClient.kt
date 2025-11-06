@@ -21,11 +21,12 @@ interface CommunityPaybackAndDeliusClient {
   @GetExchange("/providers/{providerCode}/teams")
   fun getProviderTeams(@PathVariable providerCode: String): ProviderTeamSummaries
 
-  @GetExchange("/sessions")
+  @GetExchange("/providers/{providerCode}/teams/{teamCode}/sessions")
   fun getSessions(
+    @PathVariable providerCode: String,
+    @PathVariable teamCode: String,
     @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) startDate: LocalDate,
     @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) endDate: LocalDate,
-    @RequestParam teamCode: String,
   ): SessionSummaries
 
   @GetExchange("/projects/{projectCode}/sessions/appointments")
