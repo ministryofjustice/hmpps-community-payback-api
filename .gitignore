@@ -79,3 +79,4 @@ sonar-project.properties
 /tools/cp-stack/.env.sui
 
 /tools/http-client/http-client.private.env.json
+gatling/.env

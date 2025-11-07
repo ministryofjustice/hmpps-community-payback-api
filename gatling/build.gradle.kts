@@ -30,6 +30,11 @@ val fetchK8sClientCreds = tasks.register("fetchK8sClientCreds") {
     description = "Fetches CLIENT_CREDS_CLIENT_ID and CLIENT_CREDS_CLIENT_SECRET from K8s secret hmpps-community-payback-ui-client-creds in hmpps-community-payback-<.env> namespace"
 
     doLast {
+        val dotenvfile = File(System.getProperty("user.dir") + "/gatling", ".env")
+        if (!dotenvfile.exists()) {
+          dotenvfile.createNewFile()
+        }
+        System.out.println("[GATLING][Gradle] Running fetchK8sClientCreds task")
         val envName = (project.findProperty(".env") as String?)
             ?: System.getenv(".env")
             ?: "dev"
@@ -41,7 +46,9 @@ val fetchK8sClientCreds = tasks.register("fetchK8sClientCreds") {
                 .redirectErrorStream(true)
                 .start()
             val exit = proc.waitFor()
-            val out = proc.inputStream.bufferedReader().readText().trim()
+            val out = proc.inputStream.bufferedReader().use { reader ->
+              reader.readLines().last().trim()
+            }
             return exit == 0 && out == "0"
         }
 
@@ -105,10 +112,13 @@ tasks.register<Exec>("gatlingRunWithK8sCreds") {
     val args = mutableListOf("gatlingRun")
     if (!simulationFqn.isNullOrBlank()) {
         args += listOf("--simulation", simulationFqn)
+    } else {
+      args += listOf("--all")
     }
 
-  workingDir = project.rootDir
-  val wrapper = if (org.gradle.internal.os.OperatingSystem.current().isWindows) "gradlew.bat" else "./gradlew"
+    workingDir = project.rootDir
+    val wrapper = if (org.gradle.internal.os.OperatingSystem.current().isWindows) "gradlew.bat" else "./gradlew"
+    logger.lifecycle("[GATLING][Gradle] Calling $wrapper ${args.joinToString(" ")}")
     commandLine(wrapper, *args.toTypedArray())
 
     doFirst {
