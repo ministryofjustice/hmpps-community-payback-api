@@ -71,9 +71,9 @@ object CommunityPaybackAndDeliusMockServer {
     )
   }
 
-  fun appointmentNotFound(appointmentId: Long) {
+  fun appointmentNotFound(projectCode: String, appointmentId: Long) {
     WireMock.stubFor(
-      get("/community-payback-and-delius/appointments/$appointmentId")
+      get("/community-payback-and-delius/projects/$projectCode/appointments/$appointmentId")
         .willReturn(
           aResponse().withStatus(404),
         ),

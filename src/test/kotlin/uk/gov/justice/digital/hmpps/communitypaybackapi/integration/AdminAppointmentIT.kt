@@ -33,7 +33,7 @@ class AdminAppointmentIT : IntegrationTestBase() {
 
   @Nested
   @DisplayName("GET /admin/appointment/{appointmentId}")
-  inner class GetAppointment {
+  inner class GetAppointmentDeprecated {
 
     @Test
     fun `should return unauthorized if no token`() {
@@ -66,7 +66,7 @@ class AdminAppointmentIT : IntegrationTestBase() {
 
     @Test
     fun `Should return 404 if an appointment can't be found`() {
-      CommunityPaybackAndDeliusMockServer.appointmentNotFound(101L)
+      CommunityPaybackAndDeliusMockServer.appointmentNotFound("UNKNOWN", 101L)
 
       val response = webTestClient.get()
         .uri("/admin/appointments/101")
@@ -97,6 +97,83 @@ class AdminAppointmentIT : IntegrationTestBase() {
 
       val response = webTestClient.get()
         .uri("/admin/appointments/101")
+        .addAdminUiAuthHeader()
+        .exchange()
+        .expectStatus()
+        .isOk()
+        .bodyAsObject<AppointmentDto>()
+
+      assertThat(response.id).isEqualTo(id)
+      assertThat(response.projectName).isEqualTo(projectName)
+    }
+  }
+
+  @Nested
+  @DisplayName("GET /admin/projects/{projectCode}/appointments/{appointmentId}")
+  inner class GetAppointment {
+
+    @Test
+    fun `should return unauthorized if no token`() {
+      webTestClient.get()
+        .uri("/admin/projects/PC01/appointments/101")
+        .exchange()
+        .expectStatus()
+        .isUnauthorized
+    }
+
+    @Test
+    fun `should return forbidden if no role`() {
+      webTestClient.get()
+        .uri("/admin/projects/PC01/appointments/101")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .isForbidden
+    }
+
+    @Test
+    fun `should return forbidden if wrong role`() {
+      webTestClient.get()
+        .uri("/admin/projects/PC01/appointments/101")
+        .headers(setAuthorisation(roles = listOf("ROLE_WRONG")))
+        .exchange()
+        .expectStatus()
+        .isForbidden
+    }
+
+    @Test
+    fun `Should return 404 if an appointment can't be found`() {
+      CommunityPaybackAndDeliusMockServer.appointmentNotFound("PC01", 101L)
+
+      val response = webTestClient.get()
+        .uri("/admin/projects/PC01/appointments/101")
+        .addAdminUiAuthHeader()
+        .exchange()
+        .expectStatus()
+        .isNotFound()
+        .bodyAsObject<ErrorResponse>()
+
+      assertThat(response.userMessage).isEqualTo("No resource found failure: Appointment not found for ID '101'")
+    }
+
+    @Test
+    fun `Should return existing appointment with offender info`() {
+      val id = 101L
+      val projectName = "Community Garden Maintenance"
+      val crn = "X434334"
+
+      CommunityPaybackAndDeliusMockServer.getAppointment(
+        Appointment.valid().copy(
+          id = id,
+          project = Project.valid().copy(name = projectName, code = "PC01"),
+          case = CaseSummary.valid().copy(crn = crn),
+          outcome = ContactOutcome.valid(ctx),
+          enforcementAction = EnforcementAction.valid(ctx),
+        ),
+      )
+
+      val response = webTestClient.get()
+        .uri("/admin/projects/PC01/appointments/101")
         .addAdminUiAuthHeader()
         .exchange()
         .expectStatus()

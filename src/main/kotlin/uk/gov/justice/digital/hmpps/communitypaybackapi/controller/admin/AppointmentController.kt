@@ -17,7 +17,7 @@ import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 
 @AdminUiController
 @RequestMapping(
-  "/admin/appointments",
+  "/admin",
   produces = [MediaType.APPLICATION_JSON_VALUE],
 )
 class AppointmentController(
@@ -25,7 +25,38 @@ class AppointmentController(
 ) {
 
   @GetMapping(
-    path = ["/{deliusAppointmentId}"],
+    path = ["/appointments/{deliusAppointmentId}"],
+    produces = [MediaType.APPLICATION_JSON_VALUE],
+  )
+  @Operation(
+    description = "Get appointment given its ID. Deprecated, use '/projects/{projectCode}/appointments/{deliusAppointmentId}'",
+    deprecated = true,
+    responses = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Successful appointment response",
+      ),
+      ApiResponse(
+        responseCode = "404",
+        description = "Invalid appointment ID",
+        content = [
+          Content(
+            schema = Schema(implementation = ErrorResponse::class),
+          ),
+        ],
+      ),
+    ],
+  )
+  @Deprecated("Use version that takes projectCode")
+  fun getAppointment(
+    @PathVariable deliusAppointmentId: Long,
+  ) = appointmentService.getAppointment(
+    projectCode = "UNKNOWN",
+    appointmentId = deliusAppointmentId,
+  )
+
+  @GetMapping(
+    path = ["/projects/{projectCode}/appointments/{deliusAppointmentId}"],
     produces = [MediaType.APPLICATION_JSON_VALUE],
   )
   @Operation(
@@ -47,14 +78,15 @@ class AppointmentController(
     ],
   )
   fun getAppointment(
+    @PathVariable projectCode: String,
     @PathVariable deliusAppointmentId: Long,
   ) = appointmentService.getAppointment(
-    projectCode = "UNKNOWN",
+    projectCode = projectCode,
     appointmentId = deliusAppointmentId,
   )
 
   @PostMapping(
-    path = ["/{deliusAppointmentId}/outcome"],
+    path = ["/appointments/{deliusAppointmentId}/outcome"],
     consumes = [MediaType.APPLICATION_JSON_VALUE],
   )
   @Operation(
