@@ -39,7 +39,7 @@
   "pickUpData": {
     "location": {
       "buildingName": "4th Floor Ashby House",
-      "buildingNumber": null,
+      "addressNumber": null,
       "streetName": "Brook Street",
       "townCity": "Chelmsford",
       "county": "Essex",
@@ -50,7 +50,7 @@
   "date": "2025-09-22",
   "startTime": "09:00",
   "endTime": "17:00",
-  "penaltyHours": null,
+  "penaltyTime": null,
   "supervisor": {
     "code": "N56A108",
     "name": {

@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Address
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Appointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.AppointmentBehaviour
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.AppointmentSummary
@@ -20,9 +21,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ContactOutcome
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.EnforcementAction
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Name
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.PickUpData
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.PickUpLocation
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Project
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectLocation
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Provider
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.RequirementProgress
@@ -234,7 +233,7 @@ class AppointmentMappersTest {
         project = Project(
           name = projectName,
           code = projectCode,
-          location = ProjectLocation.valid(),
+          location = Address.valid(),
         ),
         projectType = ProjectType(
           name = projectTypeName,
@@ -250,9 +249,9 @@ class AppointmentMappersTest {
           code = providerCode,
         ),
         pickUpData = PickUpData(
-          pickUpLocation = PickUpLocation(
+          pickUpLocation = Address(
             buildingName = pickUpBuildingName,
-            buildingNumber = pickUpBuildingNumber,
+            addressNumber = pickUpBuildingNumber,
             streetName = pickUpStreetName,
             townCity = pickUpTownCity,
             county = pickUpCounty,
@@ -263,7 +262,7 @@ class AppointmentMappersTest {
         date = date,
         startTime = startTime,
         endTime = endTime,
-        penaltyTime = penaltyTime,
+        penaltyHours = penaltyTime,
         supervisor = AppointmentSupervisor(
           code = supervisorOfficerCode,
           name = Name.valid(),

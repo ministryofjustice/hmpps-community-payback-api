@@ -130,7 +130,7 @@ data class Appointment(
   val date: LocalDate,
   val startTime: LocalTime,
   val endTime: LocalTime,
-  val penaltyTime: LocalTime?,
+  val penaltyHours: LocalTime?,
   val supervisor: AppointmentSupervisor?,
   val outcome: ContactOutcome?,
   val enforcementAction: EnforcementAction?,
@@ -154,7 +154,7 @@ data class ContactOutcome(val code: String, val description: String) {
 data class EnforcementAction(val code: String, val description: String, val respondBy: LocalDate?) {
   companion object
 }
-data class Project(val name: String, val code: String, val location: ProjectLocation) {
+data class Project(val name: String, val code: String, val location: Address) {
   companion object
 }
 data class ProjectSummary(val name: String, val code: String) {
@@ -171,24 +171,13 @@ data class Provider(val name: String, val code: String) {
 }
 
 data class PickUpData(
-  val pickUpLocation: PickUpLocation?,
+  val pickUpLocation: Address?,
   val time: LocalTime?,
 ) {
   companion object
 }
 
-data class PickUpLocation(
-  val buildingName: String? = null,
-  val buildingNumber: String? = null,
-  val streetName: String? = null,
-  val townCity: String? = null,
-  val county: String? = null,
-  val postCode: String? = null,
-) {
-  companion object
-}
-
-data class ProjectLocation(
+data class Address(
   val buildingName: String? = null,
   val addressNumber: String? = null,
   val streetName: String? = null,
