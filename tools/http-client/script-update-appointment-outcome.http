@@ -46,7 +46,7 @@ Authorization: Bearer {{$auth.token("hmpps-auth-ui-client")}}
 
 ### Get appointment details
 
-GET {{base-url}}/admin/appointments/{{appointment_id}}
+GET {{base-url}}/admin/projects/{{allocation_project_code}}/appointments/{{appointment_id}}
 Authorization: Bearer {{$auth.token("hmpps-auth-ui-client")}}
 
 > {%
