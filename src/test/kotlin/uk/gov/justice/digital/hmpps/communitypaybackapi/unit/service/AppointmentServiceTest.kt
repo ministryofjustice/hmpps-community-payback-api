@@ -61,22 +61,27 @@ class AppointmentServiceTest {
 
     @Test
     fun `if appointment not found, throw not found exception`() {
-      every { communityPaybackAndDeliusClient.getAppointment(101L) } throws WebClientResponseExceptionFactory.notFound()
+      every {
+        communityPaybackAndDeliusClient.getAppointment(
+          projectCode = "PC1",
+          appointmentId = 101L,
+        )
+      } throws WebClientResponseExceptionFactory.notFound()
 
       assertThatThrownBy {
-        service.getAppointment(101L)
+        service.getAppointment("PC1", 101L)
       }.isInstanceOf(NotFoundException::class.java).hasMessage("Appointment not found for ID '101'")
     }
 
     @Test
     fun `appointment found`() {
       val appointment = Appointment.valid()
-      every { communityPaybackAndDeliusClient.getAppointment(101L) } returns appointment
+      every { communityPaybackAndDeliusClient.getAppointment("PC1", 101L) } returns appointment
 
       val appointmentDto = AppointmentDto.valid()
       every { appointmentMappers.toDto(appointment) } returns appointmentDto
 
-      val result = service.getAppointment(101L)
+      val result = service.getAppointment("PC1", 101L)
 
       assertThat(result).isSameAs(appointmentDto)
     }
@@ -153,7 +158,10 @@ class AppointmentServiceTest {
     @Test
     fun `if there's an existing entry and form data key is specified, remove the form data`() {
       every {
-        communityPaybackAndDeliusClient.getAppointment(101L)
+        communityPaybackAndDeliusClient.getAppointment(
+          projectCode = "PC1",
+          appointmentId = 101L,
+        )
       } returns Appointment.valid().copy(case = CaseSummary.valid().copy(crn = "CRN1"))
 
       every { appointmentOutcomeEntityRepository.save(any()) } returnsArgument 0

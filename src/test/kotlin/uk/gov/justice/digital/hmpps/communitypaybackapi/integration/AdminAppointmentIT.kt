@@ -88,7 +88,7 @@ class AdminAppointmentIT : IntegrationTestBase() {
       CommunityPaybackAndDeliusMockServer.getAppointment(
         Appointment.valid().copy(
           id = id,
-          project = Project.valid().copy(name = projectName),
+          project = Project.valid().copy(name = projectName, code = "UNKNOWN"),
           case = CaseSummary.valid().copy(crn = crn),
           outcome = ContactOutcome.valid(ctx),
           enforcementAction = EnforcementAction.valid(ctx),

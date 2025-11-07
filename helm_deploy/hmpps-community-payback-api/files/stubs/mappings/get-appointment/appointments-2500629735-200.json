@@ -1,7 +1,7 @@
 {
   "request": {
     "method": "GET",
-    "urlPath": "/appointments/2500629735"
+    "urlPathPattern": "/projects/.*/appointments/2500629735"
   },
   "response": {
     "status": 200,
