@@ -16,7 +16,12 @@ class AppointmentOutcomeValidationService(
 
   @SuppressWarnings("ThrowsCount")
   fun validate(outcome: UpdateAppointmentOutcomeDto) {
-    val contactOutcome = contactOutcomeEntityRepository.findByIdOrNull(outcome.contactOutcomeId) ?: throw BadRequestException("Contact outcome not found for ID " + outcome.contactOutcomeId.toString())
+    validateContactOutcome(outcome)
+  }
+
+  private fun validateContactOutcome(outcome: UpdateAppointmentOutcomeDto) {
+    val contactOutcome = contactOutcomeEntityRepository.findByIdOrNull(outcome.contactOutcomeId)
+      ?: throw BadRequestException("Contact outcome not found for ID " + outcome.contactOutcomeId.toString())
 
     if (contactOutcome.enforceable) {
       val enforcementDto = validateNotNull(outcome.enforcementData) {
