@@ -6,7 +6,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.AppointmentBehavi
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.AppointmentSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.AppointmentWorkQuality
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.PickUpData
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.PickUpLocation
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.UpdateAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentBehaviourDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
@@ -15,7 +14,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentSummaryDt
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentWorkQualityDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AttendanceDataDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EnforcementDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.LocationDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.PickUpDataDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.Behaviour
@@ -61,7 +59,7 @@ class AppointmentMappers(
         AttendanceDataDto(
           hiVisWorn = appointment.hiVisWorn!!,
           workedIntensively = appointment.workedIntensively!!,
-          penaltyTime = appointment.penaltyTime,
+          penaltyTime = appointment.penaltyHours,
           workQuality = appointment.workQuality!!.toDto(),
           behaviour = appointment.behaviour!!.toDto(),
         )
@@ -138,15 +136,6 @@ fun Behaviour.Companion.fromDto(dto: AppointmentBehaviourDto) = Behaviour.entrie
 fun PickUpData.toDto() = PickUpDataDto(
   location = pickUpLocation?.toDto(),
   time = time,
-)
-
-fun PickUpLocation.toDto() = LocationDto(
-  buildingName = this.buildingName,
-  buildingNumber = this.buildingNumber,
-  streetName = this.streetName,
-  townCity = this.townCity,
-  county = this.county,
-  postCode = this.postCode,
 )
 
 fun AppointmentWorkQuality.toDto() = when (this) {

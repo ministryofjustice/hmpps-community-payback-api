@@ -8,11 +8,11 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Address
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.AppointmentSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CaseSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ContactOutcome
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Project
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectLocation
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Session
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.SessionSummaries
@@ -146,7 +146,7 @@ class SessionMappersTest {
         project = Project(
           name = "Park Cleanup",
           code = "N987654321",
-          location = ProjectLocation(
+          location = Address(
             buildingName = "The Tower",
             addressNumber = "1a",
             streetName = "Somewhere Lane",
@@ -191,7 +191,7 @@ class SessionMappersTest {
         project = Project(
           name = "Park Cleanup",
           code = "N987654321",
-          location = ProjectLocation.valid(),
+          location = Address.valid(),
         ),
         date = LocalDate.of(2025, 9, 8),
         appointmentSummaries = listOf(
@@ -227,7 +227,7 @@ class SessionMappersTest {
     @Test
     fun `empty location mapped to empty string`() {
       assertThat(
-        ProjectLocation(
+        Address(
           buildingName = null,
           addressNumber = null,
           streetName = null,
@@ -241,7 +241,7 @@ class SessionMappersTest {
     @Test
     fun `no address number`() {
       assertThat(
-        ProjectLocation(
+        Address(
           buildingName = "building",
           addressNumber = null,
           streetName = "street",
@@ -255,7 +255,7 @@ class SessionMappersTest {
     @Test
     fun `all fields provided`() {
       assertThat(
-        ProjectLocation(
+        Address(
           buildingName = "building",
           addressNumber = "address",
           streetName = "street",

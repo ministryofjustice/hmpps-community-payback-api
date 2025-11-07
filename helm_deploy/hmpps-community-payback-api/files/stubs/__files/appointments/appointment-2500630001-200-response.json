@@ -39,7 +39,7 @@
   "pickUpData": {
     "location": {
       "buildingName": null,
-      "buildingNumber": "1",
+      "addressNumber": "1",
       "streetName": "Made Up Street",
       "townCity": "Kettering",
       "county": "Northants",
@@ -50,7 +50,7 @@
   "date": "2025-09-22",
   "startTime": "09:00",
   "endTime": "17:00",
-  "penaltyHours": null,
+  "penaltyTime": null,
   "supervisor": {
     "code": "N56A108",
     "name": {

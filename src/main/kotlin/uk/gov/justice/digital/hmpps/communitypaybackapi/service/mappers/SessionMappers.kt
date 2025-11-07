@@ -1,7 +1,7 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers
 
 import org.springframework.stereotype.Service
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectLocation
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Address
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Session
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.SessionSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.SessionSummary
@@ -65,7 +65,7 @@ fun SessionSummary.toDto() = SessionSummaryDto(
   numberOfOffendersWithEA = this.enforcementActionNeededCount,
 )
 
-fun ProjectLocation.toFullAddress() = listOfNotNull(
+fun Address.toFullAddress() = listOfNotNull(
   this.buildingName,
   listOfNotNull(
     this.addressNumber,
