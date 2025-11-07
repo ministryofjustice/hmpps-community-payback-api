@@ -35,8 +35,9 @@ interface CommunityPaybackAndDeliusClient {
     @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate,
   ): Session
 
-  @GetExchange("/appointments/{appointmentId}")
+  @GetExchange("/projects/{projectCode}/appointments/{appointmentId}")
   fun getAppointment(
+    @PathVariable projectCode: String,
     @PathVariable appointmentId: Long,
   ): Appointment
 

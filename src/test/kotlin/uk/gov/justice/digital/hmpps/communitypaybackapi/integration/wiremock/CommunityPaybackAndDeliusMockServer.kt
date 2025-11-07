@@ -84,7 +84,7 @@ object CommunityPaybackAndDeliusMockServer {
     appointment: Appointment,
   ) {
     WireMock.stubFor(
-      get("/community-payback-and-delius/appointments/${appointment.id}")
+      get("/community-payback-and-delius/projects/${appointment.project.code}/appointments/${appointment.id}")
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")

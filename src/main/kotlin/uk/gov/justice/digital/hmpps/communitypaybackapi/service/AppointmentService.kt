@@ -28,10 +28,16 @@ class AppointmentService(
     private val log = LoggerFactory.getLogger(this::class.java)
   }
 
-  fun getAppointment(id: Long): AppointmentDto = try {
-    communityPaybackAndDeliusClient.getAppointment(id).let { appointmentMappers.toDto(it) }
+  fun getAppointment(
+    projectCode: String,
+    appointmentId: Long,
+  ): AppointmentDto = try {
+    communityPaybackAndDeliusClient.getAppointment(
+      projectCode = projectCode,
+      appointmentId = appointmentId,
+    ).let { appointmentMappers.toDto(it) }
   } catch (_: WebClientResponseException.NotFound) {
-    throw NotFoundException("Appointment", id.toString())
+    throw NotFoundException("Appointment", appointmentId.toString())
   }
 
   fun getOutcomeDomainEventDetails(id: UUID) = appointmentOutcomeEntityRepository.findByIdOrNullForDomainEventDetails(id)?.toDomainEventDetail()

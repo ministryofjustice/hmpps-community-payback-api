@@ -48,7 +48,10 @@ class AppointmentController(
   )
   fun getAppointment(
     @PathVariable deliusAppointmentId: Long,
-  ) = appointmentService.getAppointment(deliusAppointmentId)
+  ) = appointmentService.getAppointment(
+    projectCode = "UNKNOWN",
+    appointmentId = deliusAppointmentId,
+  )
 
   @PostMapping(
     path = ["/{deliusAppointmentId}/outcome"],
