@@ -30,26 +30,18 @@ val fetchK8sClientCreds = tasks.register("fetchK8sClientCreds") {
     description = "Fetches CLIENT_CREDS_CLIENT_ID and CLIENT_CREDS_CLIENT_SECRET from K8s secret hmpps-community-payback-ui-client-creds in hmpps-community-payback-<.env> namespace"
 
     doLast {
-        val dotenvfile = File(System.getProperty("user.dir") + "/gatling", ".env")
-        if (!dotenvfile.exists()) {
-          dotenvfile.createNewFile()
-        }
-        System.out.println("[GATLING][Gradle] Running fetchK8sClientCreds task")
-        val envName = (project.findProperty(".env") as String?)
-            ?: System.getenv(".env")
-            ?: "dev"
+        val envName = (project.findProperty(".env") as String?) ?: "dev"
         val namespace = "hmpps-community-payback-$envName"
         val secretName = "hmpps-community-payback-ui-client-creds"
 
         fun checkCmd(cmd: String): Boolean {
-            val proc = ProcessBuilder("bash", "-lc", "command -v $cmd >/dev/null 2>&1; echo $?")
-                .redirectErrorStream(true)
-                .start()
-            val exit = proc.waitFor()
-            val out = proc.inputStream.bufferedReader().use { reader ->
-              reader.readLines().last().trim()
-            }
-            return exit == 0 && out == "0"
+          val proc = ProcessBuilder("bash", "-lc", "command -v $cmd >/dev/null 2>&1; echo $?")
+            .redirectErrorStream(true)
+            .start()
+          val exit = proc.waitFor()
+          val out = proc.inputStream.bufferedReader().readText().trim()
+          val lastLine = out.lines().lastOrNull() ?: ""
+          return exit == 0 && lastLine == "0"
         }
 
         if (!checkCmd("kubectl")) {
@@ -104,31 +96,90 @@ val fetchK8sClientCreds = tasks.register("fetchK8sClientCreds") {
 }
 
 tasks.register<Exec>("gatlingRunWithK8sCreds") {
-    group = "gatling"
-    description = "Fetch creds from K8s and run gatlingRun (pass -Penv=dev and optionally -PsimulationFqn=<FQN>)"
-    dependsOn(fetchK8sClientCreds)
+  group = "gatling"
+  description = "Fetch creds from K8s and run gatlingRun (pass -Penv=dev and optionally -PsimulationFqn=<FQN>)"
+  dependsOn(fetchK8sClientCreds)
 
-    val simulationFqn = (project.findProperty("simulationFqn") as String?)
-    val args = mutableListOf("gatlingRun")
-    if (!simulationFqn.isNullOrBlank()) {
-        args += listOf("--simulation", simulationFqn)
-    } else {
-      args += listOf("--all")
+  val simulationFqn = (project.findProperty("simulationFqn") as String?)
+  val nothingFor = (project.findProperty("nothingFor") as String?)
+  val atOnceUsers = (project.findProperty("atOnceUsers") as String?)
+  val rampUsers = (project.findProperty("rampUsers") as String?)
+  val rampUsersDuring = (project.findProperty("rampUsersDuring") as String?)
+  val constantUsersPerSec = (project.findProperty("constantUsersPerSec") as String?)
+  val constantUsersPerSecDuring = (project.findProperty("constantUsersPerSecDuring") as String?)
+
+  environment("NOTHING_FOR", nothingFor ?: "5")
+  environment("AT_ONCE_USERS", atOnceUsers ?: "10")
+  environment("RAMP_USERS", rampUsers ?: "50")
+  environment("RAMP_USERS_DURING", rampUsersDuring ?: "30")
+  environment("CONSTANT_USERS_PER_SEC", constantUsersPerSec ?: "10.0")
+  environment("CONSTANT_USERS_PER_SEC_DURING", constantUsersPerSecDuring ?: "60")
+
+  val args = mutableListOf("gatlingRun")
+  if (!simulationFqn.isNullOrBlank()) {
+    args += listOf("--simulation", simulationFqn)
+  } else {
+    args += listOf("--all")
+  }
+
+  workingDir = project.rootDir
+  val wrapper = if (org.gradle.internal.os.OperatingSystem.current().isWindows) "gradlew.bat" else "./gradlew"
+  println("[GATLING][Gradle] $wrapper ${args.joinToString(" ")}")
+  commandLine(wrapper, *args.toTypedArray())
+
+  doFirst {
+    val extra = project.extensions.extraProperties
+    if (extra.has("clientIdFromK8s")) {
+      environment("CLIENT_ID", extra.get("clientIdFromK8s") as String)
     }
-
-    workingDir = project.rootDir
-    val wrapper = if (org.gradle.internal.os.OperatingSystem.current().isWindows) "gradlew.bat" else "./gradlew"
-    logger.lifecycle("[GATLING][Gradle] Calling $wrapper ${args.joinToString(" ")}")
-    commandLine(wrapper, *args.toTypedArray())
-
-    doFirst {
-        val extra = project.extensions.extraProperties
-        if (extra.has("clientIdFromK8s")) {
-            environment("CLIENT_ID", extra.get("clientIdFromK8s") as String)
-        }
-        if (extra.has("clientSecretFromK8s")) {
-            environment("CLIENT_SECRET", extra.get("clientSecretFromK8s") as String)
-        }
-        println("[GATLING][Gradle] Launching nested gatlingRun with CLIENT_ID/CLIENT_SECRET .env vars if available")
+    if (extra.has("clientSecretFromK8s")) {
+      environment("CLIENT_SECRET", extra.get("clientSecretFromK8s") as String)
     }
+    println("[GATLING][Gradle] Launching nested gatlingRun with CLIENT_ID/CLIENT_SECRET .env vars if available")
+  }
 }
+
+
+tasks.register<Exec>("gatlingRunCi") {
+  group = "gatling"
+  description = "Run un-attended in github ci)"
+
+  val simulationFqn = (project.findProperty("simulationFqn") as String?)
+  val nothingFor = (project.findProperty("nothingFor") as String?)
+  val atOnceUsers = (project.findProperty("atOnceUsers") as String?)
+  val rampUsers = (project.findProperty("rampUsers") as String?)
+  val rampUsersDuring = (project.findProperty("rampUsersDuring") as String?)
+  val constantUsersPerSec = (project.findProperty("constantUsersPerSec") as String?)
+  val constantUsersPerSecDuring = (project.findProperty("constantUsersPerSecDuring") as String?)
+  val clientId = (project.findProperty("CLIENT_ID") as String?)
+  val clientSecret = (project.findProperty("CLIENT_SECRET") as String?)
+  val envName = (project.findProperty("environment") as String?)
+
+  val auth = "https://sign-in-$envName.hmpps.service.justice.gov.uk/auth"
+  val domain = "https://community-payback-api-$envName.hmpps.service.justice.gov.uk/"
+
+  environment("NOTHING_FOR", nothingFor ?: "5")
+  environment("AT_ONCE_USERS", atOnceUsers ?: "10")
+  environment("RAMP_USERS", rampUsers ?: "50")
+  environment("RAMP_USERS_DURING", rampUsersDuring ?: "30")
+  environment("CONSTANT_USERS_PER_SEC", constantUsersPerSec ?: "10.0")
+  environment("CONSTANT_USERS_PER_SEC_DURING", constantUsersPerSecDuring ?: "60")
+
+  environment("AUTH_BASE_URL", auth)
+  environment("DOMAIN", domain)
+  environment("CLIENT_ID", clientId ?: "")
+  environment("CLIENT_SECRET", clientSecret ?: "")
+
+  val args = mutableListOf("gatlingRun")
+  if (!simulationFqn.isNullOrBlank()) {
+    args += listOf("--simulation", simulationFqn)
+  } else {
+    args += listOf("--all")
+  }
+
+  workingDir = project.rootDir
+  val wrapper = if (org.gradle.internal.os.OperatingSystem.current().isWindows) "gradlew.bat" else "./gradlew"
+  println("[GATLING][Gradle] $wrapper ${args.joinToString(" ")}")
+  commandLine(wrapper, *args.toTypedArray())
+}
+
