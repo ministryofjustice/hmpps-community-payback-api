@@ -169,6 +169,43 @@ class AppointmentOutcomeValidationServiceTest {
   }
 
   @Nested
+  inner class AppointmentDuration {
+
+    @Test
+    fun `if end time same as start time, do nothing`() {
+      service.validateDuration(
+        UpdateAppointmentOutcomeDto.valid().copy(
+          startTime = LocalTime.of(10, 0),
+          endTime = LocalTime.of(10, 0),
+        ),
+      )
+    }
+
+    @Test
+    fun `if end time after start time, do nothing`() {
+      service.validateDuration(
+        UpdateAppointmentOutcomeDto.valid().copy(
+          startTime = LocalTime.of(10, 0),
+          endTime = LocalTime.of(10, 1),
+        ),
+      )
+    }
+
+    @Test
+    fun `if end time before start time, throw exception`() {
+      assertThatThrownBy {
+        service.validateDuration(
+          UpdateAppointmentOutcomeDto.valid().copy(
+            startTime = LocalTime.of(10, 1),
+            endTime = LocalTime.of(10, 0),
+          ),
+        )
+      }.isInstanceOf(BadRequestException::class.java)
+        .hasMessage("End Time '10:00' is before Start Time '10:01'")
+    }
+  }
+
+  @Nested
   inner class PenaltyTimeDuration {
 
     @Test
