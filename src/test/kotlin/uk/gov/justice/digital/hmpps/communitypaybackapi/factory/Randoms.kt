@@ -1,5 +1,7 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.factory
 
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.HourMinuteDuration
+import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.OffsetDateTime
@@ -14,3 +16,4 @@ fun String.Companion.random(length: Int = 50) = String(CharArray(length) { (('A'
 fun randomLocalDate(): LocalDate = LocalDate.now().plusDays(Long.random(0, 2000))
 fun randomLocalTime(): LocalTime = LocalTime.ofSecondOfDay(Long.random(0, 60 * 60 * 12))
 fun randomOffsetDateTime(): OffsetDateTime = OffsetDateTime.of(randomLocalDate(), randomLocalTime(), ZoneOffset.UTC)
+fun randomTimeDuration(): HourMinuteDuration = HourMinuteDuration(Duration.ofHours(Long.random(0, 12)).plusMinutes(Long.random(0, 60)))

@@ -35,7 +35,7 @@ class AppointmentOutcomeEntityFactory(
     notes = outcome.notes,
     hiVisWorn = outcome.attendanceData?.hiVisWorn,
     workedIntensively = outcome.attendanceData?.workedIntensively,
-    penaltyMinutes = outcome.attendanceData?.penaltyTime?.toSecondOfDay()?.div(SECONDS_PER_MINUTE),
+    penaltyMinutes = outcome.attendanceData?.penaltyTime?.duration?.toMinutes(),
     workQuality = outcome.attendanceData?.workQuality?.let { WorkQuality.fromDto(it) },
     behaviour = outcome.attendanceData?.behaviour?.let { Behaviour.fromDto(it) },
     respondBy = outcome.enforcementData?.respondBy,

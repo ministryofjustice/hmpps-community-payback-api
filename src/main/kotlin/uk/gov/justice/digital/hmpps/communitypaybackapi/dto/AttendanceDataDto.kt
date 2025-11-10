@@ -1,11 +1,11 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.dto
 
-import java.time.LocalTime
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.HourMinuteDuration
 
 data class AttendanceDataDto(
   val hiVisWorn: Boolean,
   val workedIntensively: Boolean,
-  val penaltyTime: LocalTime? = null,
+  val penaltyTime: HourMinuteDuration? = null,
   val workQuality: AppointmentWorkQualityDto,
   val behaviour: AppointmentBehaviourDto,
 ) {
