@@ -17,6 +17,7 @@ class AppointmentOutcomeValidationService(
 
   fun validate(outcome: UpdateAppointmentOutcomeDto) {
     validateContactOutcome(outcome)
+    validateDuration(outcome)
     validatePenaltyTime(outcome)
   }
 
@@ -44,6 +45,12 @@ class AppointmentOutcomeValidationService(
       validateNotNull(outcome.attendanceData) {
         "Attendance data is required for 'attended' contact outcomes"
       }
+    }
+  }
+
+  fun validateDuration(outcome: UpdateAppointmentOutcomeDto) {
+    if (outcome.endTime < outcome.startTime) {
+      throw BadRequestException("End Time '${outcome.endTime}' is before Start Time '${outcome.startTime}'")
     }
   }
 
