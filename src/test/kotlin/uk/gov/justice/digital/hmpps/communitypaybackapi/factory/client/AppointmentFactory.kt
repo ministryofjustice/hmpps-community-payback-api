@@ -15,6 +15,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Team
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.random
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.randomLocalDate
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.randomLocalTime
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.randomTimeDuration
 import java.util.UUID
 
 fun Appointment.Companion.valid() = Appointment(
@@ -29,7 +30,7 @@ fun Appointment.Companion.valid() = Appointment(
   date = randomLocalDate(),
   startTime = randomLocalTime(),
   endTime = randomLocalTime(),
-  penaltyHours = randomLocalTime(),
+  penaltyHours = randomTimeDuration(),
   supervisor = AppointmentSupervisor.valid(),
   outcome = ContactOutcome.valid(),
   enforcementAction = EnforcementAction.valid(),

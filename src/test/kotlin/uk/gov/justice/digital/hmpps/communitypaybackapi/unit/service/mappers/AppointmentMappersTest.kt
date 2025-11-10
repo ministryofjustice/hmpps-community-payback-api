@@ -26,6 +26,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Provider
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.RequirementProgress
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Team
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.HourMinuteDuration
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentBehaviourDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentWorkQualityDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.OffenderDto
@@ -44,6 +45,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.Appointm
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.fromDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDomainEventDetail
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toUpdateAppointment
+import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
@@ -216,7 +218,7 @@ class AppointmentMappersTest {
       val date = LocalDate.of(2025, 9, 1)
       val startTime = LocalTime.of(9, 0)
       val endTime = LocalTime.of(17, 0)
-      val penaltyTime = LocalTime.of(0, 0)
+      val penaltyTime = HourMinuteDuration(Duration.ofMinutes(0))
       val supervisorOfficerCode = "CRN1"
       val respondBy = LocalDate.of(2025, 10, 1)
       val hiVisWorn = true

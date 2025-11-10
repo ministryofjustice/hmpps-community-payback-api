@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.service.annotation.GetExchange
 import org.springframework.web.service.annotation.PostExchange
 import org.springframework.web.service.annotation.PutExchange
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.HourMinuteDuration
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
@@ -131,7 +132,7 @@ data class Appointment(
   val date: LocalDate,
   val startTime: LocalTime,
   val endTime: LocalTime,
-  val penaltyHours: LocalTime?,
+  val penaltyHours: HourMinuteDuration?,
   val supervisor: AppointmentSupervisor?,
   val outcome: ContactOutcome?,
   val enforcementAction: EnforcementAction?,

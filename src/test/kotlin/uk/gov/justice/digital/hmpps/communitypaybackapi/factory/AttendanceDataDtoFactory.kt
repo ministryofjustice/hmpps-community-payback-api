@@ -8,7 +8,7 @@ import kotlin.collections.random
 fun AttendanceDataDto.Companion.valid() = AttendanceDataDto(
   hiVisWorn = Boolean.random(),
   workedIntensively = Boolean.random(),
-  penaltyTime = randomLocalTime(),
+  penaltyTime = randomTimeDuration(),
   workQuality = AppointmentWorkQualityDto.entries.toTypedArray().random(),
   behaviour = AppointmentBehaviourDto.entries.toTypedArray().random(),
 )

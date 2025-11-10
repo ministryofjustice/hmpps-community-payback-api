@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.data.repository.findByIdOrNull
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.HourMinuteDuration
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentBehaviourDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentWorkQualityDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AttendanceDataDto
@@ -22,6 +23,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EnforcementAction
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.WorkQuality
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentOutcomeEntityFactory
+import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
@@ -68,7 +70,7 @@ class AppointmentOutcomeEntityFactoryTest {
           attendanceData = AttendanceDataDto(
             hiVisWorn = false,
             workedIntensively = true,
-            penaltyTime = LocalTime.of(5, 0),
+            penaltyTime = HourMinuteDuration(Duration.ofMinutes(300)),
             workQuality = AppointmentWorkQualityDto.SATISFACTORY,
             behaviour = AppointmentBehaviourDto.UNSATISFACTORY,
           ),
