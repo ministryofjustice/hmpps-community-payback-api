@@ -10,6 +10,7 @@ import io.gatling.javaapi.core.CoreDsl.scenario
 import io.gatling.javaapi.http.HttpDsl.http
 import io.gatling.javaapi.http.HttpDsl.status
 import uk.gov.justice.digital.hmpps.communitypayback.BaseSimulationBackEndApi
+import uk.gov.justice.digital.hmpps.communitypayback.config.ScenarioConfig
 
 class ProviderSimulation(
 ) : BaseSimulationBackEndApi() {

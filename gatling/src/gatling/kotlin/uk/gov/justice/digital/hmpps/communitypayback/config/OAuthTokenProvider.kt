@@ -7,9 +7,11 @@ import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 import java.nio.charset.StandardCharsets
 import java.util.Base64
+import org.slf4j.LoggerFactory
 
 object OAuthTokenProvider {
   private val httpClient: HttpClient = HttpClient.newHttpClient()
+  private val logger = LoggerFactory.getLogger(OAuthTokenProvider::class.java)
 
   fun fetchAccessToken(): String? {
     val clientId = System.getenv("CLIENT_ID")
@@ -22,8 +24,9 @@ object OAuthTokenProvider {
     }
 
     val url = "$authBaseUrl/oauth/token?grant_type=$encodedGrantType"
-
     val basic = Base64.getEncoder().encodeToString("$clientId:$clientSecret".toByteArray(StandardCharsets.UTF_8))
+
+    logger.debug("[GATLING][Auth] Fetching access token from $url")
 
     val request = HttpRequest.newBuilder()
       .uri(URI.create(url))
