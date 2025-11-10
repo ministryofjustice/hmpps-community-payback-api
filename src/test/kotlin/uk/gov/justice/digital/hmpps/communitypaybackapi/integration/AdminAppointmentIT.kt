@@ -12,6 +12,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ContactOutcome
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.EnforcementAction
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Project
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AttendanceDataDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.FormKeyDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentOutcomeEntityRepository
@@ -236,6 +237,7 @@ class AdminAppointmentIT : IntegrationTestBase() {
         .bodyValue(
           UpdateAppointmentOutcomeDto.valid(ctx).copy(
             deliusId = 1234L,
+            attendanceData = AttendanceDataDto.valid(),
           ),
         )
         .exchange()
@@ -264,6 +266,7 @@ class AdminAppointmentIT : IntegrationTestBase() {
         .bodyValue(
           UpdateAppointmentOutcomeDto.valid(ctx).copy(
             deliusId = 1234L,
+            attendanceData = AttendanceDataDto.valid(),
             formKeyToDelete = FormKeyDto(
               id = "id1",
               type = "formtype",

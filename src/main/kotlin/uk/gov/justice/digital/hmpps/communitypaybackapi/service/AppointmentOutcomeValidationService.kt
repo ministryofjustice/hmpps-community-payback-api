@@ -7,6 +7,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOut
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EnforcementActionEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.validateNotNull
+import java.time.Duration
 
 @Service
 class AppointmentOutcomeValidationService(
@@ -16,6 +17,7 @@ class AppointmentOutcomeValidationService(
 
   fun validate(outcome: UpdateAppointmentOutcomeDto) {
     validateContactOutcome(outcome)
+    validatePenaltyTime(outcome)
   }
 
   fun validateContactOutcome(outcome: UpdateAppointmentOutcomeDto) {
@@ -41,6 +43,15 @@ class AppointmentOutcomeValidationService(
     if (contactOutcome.attended) {
       validateNotNull(outcome.attendanceData) {
         "Attendance data is required for 'attended' contact outcomes"
+      }
+    }
+  }
+
+  fun validatePenaltyTime(outcome: UpdateAppointmentOutcomeDto) {
+    outcome.attendanceData?.penaltyTime?.duration?.let { penaltyDuration ->
+      val appointmentDuration = Duration.between(outcome.startTime, outcome.endTime)
+      if (penaltyDuration > appointmentDuration) {
+        throw BadRequestException("Penalty duration '$penaltyDuration' is greater than appointment duration '$appointmentDuration'")
       }
     }
   }
