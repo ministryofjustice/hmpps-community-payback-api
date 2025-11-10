@@ -10,6 +10,7 @@ import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.HourMinuteDuration
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AttendanceDataDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.BadRequestException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EnforcementDto
@@ -20,7 +21,9 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EnforcementAction
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EnforcementActionEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentOutcomeValidationService
+import java.time.Duration
 import java.time.LocalDate
+import java.time.LocalTime
 import java.util.Optional
 import java.util.UUID
 
@@ -162,6 +165,63 @@ class AppointmentOutcomeValidationServiceTest {
           attendanceData = AttendanceDataDto.valid(),
         ),
       )
+    }
+  }
+
+  @Nested
+  inner class PenaltyTimeDuration {
+
+    @Test
+    fun `if no penalty time, do nothing`() {
+      service.validatePenaltyTime(
+        UpdateAppointmentOutcomeDto.valid().copy(
+          attendanceData = AttendanceDataDto.valid().copy(
+            penaltyTime = null,
+          ),
+        ),
+      )
+    }
+
+    @Test
+    fun `if penalty time is less than duration, do nothing`() {
+      service.validatePenaltyTime(
+        UpdateAppointmentOutcomeDto.valid().copy(
+          startTime = LocalTime.of(10, 0),
+          endTime = LocalTime.of(16, 35),
+          attendanceData = AttendanceDataDto.valid().copy(
+            penaltyTime = HourMinuteDuration(Duration.ofHours(6).plusMinutes(30)),
+          ),
+        ),
+      )
+    }
+
+    @Test
+    fun `if penalty time is same as duration, do nothing`() {
+      service.validatePenaltyTime(
+        UpdateAppointmentOutcomeDto.valid().copy(
+          startTime = LocalTime.of(10, 0),
+          endTime = LocalTime.of(16, 35),
+          attendanceData = AttendanceDataDto.valid().copy(
+            penaltyTime = HourMinuteDuration(Duration.ofHours(6).plusMinutes(35)),
+          ),
+        ),
+      )
+    }
+
+    @Test
+    fun `if penalty time is greater than as duration, throw exception`() {
+      assertThatThrownBy {
+        service.validatePenaltyTime(
+          UpdateAppointmentOutcomeDto.valid().copy(
+            startTime = LocalTime.of(10, 0),
+            endTime = LocalTime.of(16, 35),
+            attendanceData = AttendanceDataDto.valid().copy(
+              penaltyTime = HourMinuteDuration(Duration.ofHours(6).plusMinutes(36)),
+            ),
+          ),
+        )
+      }.isInstanceOf(BadRequestException::class.java)
+        .hasMessage("Penalty duration 'PT6H36M' is greater than appointment duration 'PT6H35M'")
     }
   }
 }
