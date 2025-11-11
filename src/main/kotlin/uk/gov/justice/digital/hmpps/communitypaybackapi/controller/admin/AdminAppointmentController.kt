@@ -20,7 +20,7 @@ import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
   "/admin",
   produces = [MediaType.APPLICATION_JSON_VALUE],
 )
-class AppointmentController(
+class AdminAppointmentController(
   private val appointmentService: AppointmentService,
 ) {
 
