@@ -4,24 +4,109 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Appointment
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CaseSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ContactOutcome
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.EnforcementAction
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Project
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeResultType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentsOutcomesResultDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.bodyAsObject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.CommunityPaybackAndDeliusMockServer
+import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 
 class SupervisorAppointmentsIT : IntegrationTestBase() {
 
   @Nested
-  @DisplayName("POST /supervisor/appointments/bulk")
+  @DisplayName("GET /supervisor/projects/{projectCode}/appointments/{appointmentId}")
+  inner class GetAppointment {
+
+    @Test
+    fun `should return unauthorized if no token`() {
+      webTestClient.get()
+        .uri("/supervisor/projects/PC01/appointments/101")
+        .exchange()
+        .expectStatus()
+        .isUnauthorized
+    }
+
+    @Test
+    fun `should return forbidden if no role`() {
+      webTestClient.get()
+        .uri("/supervisor/projects/PC01/appointments/101")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .isForbidden
+    }
+
+    @Test
+    fun `should return forbidden if wrong role`() {
+      webTestClient.get()
+        .uri("/supervisor/projects/PC01/appointments/101")
+        .headers(setAuthorisation(roles = listOf("ROLE_WRONG")))
+        .exchange()
+        .expectStatus()
+        .isForbidden
+    }
+
+    @Test
+    fun `Should return 404 if an appointment can't be found`() {
+      CommunityPaybackAndDeliusMockServer.appointmentNotFound("PC01", 101L)
+
+      val response = webTestClient.get()
+        .uri("/supervisor/projects/PC01/appointments/101")
+        .addSupervisorUiAuthHeader()
+        .exchange()
+        .expectStatus()
+        .isNotFound()
+        .bodyAsObject<ErrorResponse>()
+
+      assertThat(response.userMessage).isEqualTo("No resource found failure: Appointment not found for ID '101'")
+    }
+
+    @Test
+    fun `Should return existing appointment with offender info`() {
+      val id = 101L
+      val projectName = "Community Garden Maintenance"
+      val crn = "X434334"
+
+      CommunityPaybackAndDeliusMockServer.getAppointment(
+        Appointment.valid().copy(
+          id = id,
+          project = Project.valid().copy(name = projectName, code = "PC01"),
+          case = CaseSummary.valid().copy(crn = crn),
+          outcome = ContactOutcome.valid(ctx),
+          enforcementAction = EnforcementAction.valid(ctx),
+        ),
+      )
+
+      val response = webTestClient.get()
+        .uri("/supervisor/projects/PC01/appointments/101")
+        .addSupervisorUiAuthHeader()
+        .exchange()
+        .expectStatus()
+        .isOk()
+        .bodyAsObject<AppointmentDto>()
+
+      assertThat(response.id).isEqualTo(id)
+      assertThat(response.projectName).isEqualTo(projectName)
+    }
+  }
+
+  @Nested
+  @DisplayName("POST /supervisor/projects/{projectCode}/appointments/bulk")
   inner class UpdateAppointmentOutcomes {
 
     @Test
     fun `should return unauthorized if no token`() {
       webTestClient.post()
-        .uri("/supervisor/appointments/bulk")
+        .uri("/supervisor/projects/PC01/appointments/bulk")
         .bodyValue(UpdateAppointmentOutcomesDto.valid())
         .exchange()
         .expectStatus()
@@ -31,7 +116,7 @@ class SupervisorAppointmentsIT : IntegrationTestBase() {
     @Test
     fun `should return forbidden if no role`() {
       webTestClient.post()
-        .uri("/supervisor/appointments/bulk")
+        .uri("/supervisor/projects/PC01/appointments/bulk")
         .headers(setAuthorisation())
         .bodyValue(UpdateAppointmentOutcomesDto.valid())
         .exchange()
@@ -42,7 +127,7 @@ class SupervisorAppointmentsIT : IntegrationTestBase() {
     @Test
     fun `should return forbidden if wrong role`() {
       webTestClient.post()
-        .uri("/supervisor/appointments/bulk")
+        .uri("/supervisor/projects/PC01/appointments/bulk")
         .headers(setAuthorisation(roles = listOf("ROLE_WRONG")))
         .bodyValue(UpdateAppointmentOutcomesDto.valid())
         .exchange()
@@ -56,7 +141,7 @@ class SupervisorAppointmentsIT : IntegrationTestBase() {
       CommunityPaybackAndDeliusMockServer.putAppointment(5678L)
 
       val result = webTestClient.post()
-        .uri("/supervisor/appointments/bulk")
+        .uri("/supervisor/projects/PC01/appointments/bulk")
         .addSupervisorUiAuthHeader()
         .bodyValue(
           UpdateAppointmentOutcomesDto(
