@@ -15,7 +15,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ReferenceService
   "/common/references",
   produces = [MediaType.APPLICATION_JSON_VALUE],
 )
-class ReferenceController(val referenceService: ReferenceService) {
+class CommonReferenceController(val referenceService: ReferenceService) {
 
   @GetMapping("/project-types")
   @Operation(

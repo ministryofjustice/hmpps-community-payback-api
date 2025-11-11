@@ -18,7 +18,7 @@ import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
   "/common/forms",
   produces = [MediaType.APPLICATION_JSON_VALUE],
 )
-class FormController(
+class CommonFormController(
   private val formService: FormService,
 ) {
 
