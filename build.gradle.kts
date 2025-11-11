@@ -47,7 +47,7 @@ dependencies {
   }
   testImplementation("org.testcontainers:localstack:1.21.3")
   testImplementation("org.awaitility:awaitility-kotlin:4.3.0")
-  testImplementation("org.wiremock.integrations:wiremock-spring-boot:3.10.6")
+  testImplementation("org.wiremock.integrations:wiremock-spring-boot:4.0.7")
   testImplementation("io.mockk:mockk:1.14.6")
   testImplementation("com.lemonappdev:konsist:0.17.3")
   testImplementation("org.testcontainers:postgresql:1.21.3")
