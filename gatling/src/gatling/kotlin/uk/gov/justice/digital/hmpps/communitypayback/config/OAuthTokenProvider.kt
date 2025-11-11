@@ -14,20 +14,20 @@ object OAuthTokenProvider {
   private val logger = LoggerFactory.getLogger(OAuthTokenProvider::class.java)
 
   fun fetchAccessToken(): String? {
-    val clientId = System.getenv("CLIENT_ID")
-    val clientSecret = System.getenv("CLIENT_SECRET")
+    val clientId = System.getenv("CLIENT_ID").trim()
+    val clientSecret = System.getenv("CLIENT_SECRET").trim()
     val authBaseUrl = System.getenv("AUTH_BASE_URL") ?: "https://sign-in-dev.hmpps.service.justice.gov.uk/auth"
     val encodedGrantType = URLEncoder.encode("client_credentials", StandardCharsets.UTF_8)
 
-    if (clientId.isNullOrBlank() || clientSecret.isNullOrBlank()) {
+    if (clientId.isBlank() || clientSecret.isBlank()) {
       throw IllegalStateException("Client credentials not configured - clientId and clientSecret must be provided")
     }
 
     val url = "$authBaseUrl/oauth/token?grant_type=$encodedGrantType"
     val basic = Base64.getEncoder().encodeToString("$clientId:$clientSecret".toByteArray(StandardCharsets.UTF_8))
 
-    logger.debug("[GATLING][Auth] Fetching access token from $url")
-
+    logger.debug("[GATLING][Auth] Fetching access token from $url, with Basic auth $basic")
+    
     val request = HttpRequest.newBuilder()
       .uri(URI.create(url))
       .POST(HttpRequest.BodyPublishers.noBody())
