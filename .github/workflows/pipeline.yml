@@ -77,10 +77,15 @@ jobs:
       - deploy_dev
     uses: ./.github/workflows/e2e.yml
     secrets: inherit
-  generate_types:
+  generate_types_case_admin_ui:
     needs: e2e_test
-    name: Run the generate types job for the Community Payback UI
-    uses: ./.github/workflows/generate-types.yml
+    name: Run the generate types job for the Community Payback Case Admin UI
+    uses: ./.github/workflows/generate-types-case-admin-ui.yml
+    secrets: inherit
+  generate_types_supervisor_ui:
+    needs: e2e_test
+    name: Run the generate types job for the Community Payback Supervisor UI
+    uses: ./.github/workflows/generate-types-supervisor-ui.yml
     secrets: inherit
   # deploy_preprod:
   #   name: Deploy to pre-production environment

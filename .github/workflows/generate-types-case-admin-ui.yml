@@ -1,0 +1,33 @@
+name: Generate Community Payback Case Admin UI Types
+
+on:
+  workflow_call:
+  workflow_dispatch:
+
+jobs:
+  generate-ui:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate Token
+        uses: actions/create-github-app-token@v2
+        id: generate-token
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          permission-actions: write
+          repositories: 
+            hmpps-community-payback-ui
+  
+      - name: Trigger Community Payback UI Type Generation Workflow
+        if: ${{ github.ref == 'refs/heads/main' }}
+        uses: actions/github-script@v8
+        with:
+          github-token: ${{ steps.generate-token.outputs.token }}
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: 'hmpps-community-payback-ui',
+              workflow_id: 'generate-types.yml',
+              ref: 'main'
+            })
