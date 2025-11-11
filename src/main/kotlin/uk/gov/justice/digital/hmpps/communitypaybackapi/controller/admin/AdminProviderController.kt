@@ -24,7 +24,7 @@ import java.time.LocalDate
   "/admin/providers",
   produces = [MediaType.APPLICATION_JSON_VALUE],
 )
-class ProviderController(
+class AdminProviderController(
   val providerService: ProviderService,
   val sessionService: SessionService,
 ) {
