@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.communitypayback.simulations.ui
 import io.gatling.javaapi.core.CoreDsl
 import io.gatling.javaapi.http.HttpDsl
 import uk.gov.justice.digital.hmpps.communitypayback.BaseSimulationBackEndApi
+import uk.gov.justice.digital.hmpps.communitypayback.config.ScenarioConfig
 
 class E2E(
 ) : BaseSimulationBackEndApi() {

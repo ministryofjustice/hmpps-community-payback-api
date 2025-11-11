@@ -30,7 +30,7 @@ val fetchK8sClientCreds = tasks.register("fetchK8sClientCreds") {
     description = "Fetches CLIENT_CREDS_CLIENT_ID and CLIENT_CREDS_CLIENT_SECRET from K8s secret hmpps-community-payback-ui-client-creds in hmpps-community-payback-<.env> namespace"
 
     doLast {
-        val envName = (project.findProperty(".env") as String?) ?: "dev"
+        val envName = (project.findProperty("envName") as String?) ?: "dev"
         val namespace = "hmpps-community-payback-$envName"
         val secretName = "hmpps-community-payback-ui-client-creds"
 
@@ -97,7 +97,7 @@ val fetchK8sClientCreds = tasks.register("fetchK8sClientCreds") {
 
 tasks.register<Exec>("gatlingRunWithK8sCreds") {
   group = "gatling"
-  description = "Fetch creds from K8s and run gatlingRun (pass -Penv=dev and optionally -PsimulationFqn=<FQN>)"
+  description = "Fetch creds from K8s and run gatlingRun (pass -PenvName=dev and optionally -PsimulationFqn=<FQN>)"
   dependsOn(fetchK8sClientCreds)
 
   val simulationFqn = (project.findProperty("simulationFqn") as String?)
@@ -153,7 +153,7 @@ tasks.register<Exec>("gatlingRunCi") {
   val constantUsersPerSecDuring = (project.findProperty("constantUsersPerSecDuring") as String?)
   val clientId = (project.findProperty("CLIENT_ID") as String?)
   val clientSecret = (project.findProperty("CLIENT_SECRET") as String?)
-  val envName = (project.findProperty("environment") as String?)
+  val envName = (project.findProperty("envName") as String?)
 
   val auth = "https://sign-in-$envName.hmpps.service.justice.gov.uk/auth"
   val domain = "https://community-payback-api-$envName.hmpps.service.justice.gov.uk/"
