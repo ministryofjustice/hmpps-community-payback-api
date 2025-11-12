@@ -304,4 +304,39 @@ class AppointmentOutcomeValidationServiceTest {
         .hasMessage("Penalty duration 'PT6H36M' is greater than appointment duration 'PT6H35M'")
     }
   }
+
+  @Nested
+  inner class NotesValidation {
+
+    @Test
+    fun `null notes is accepted`() {
+      assertThatCode {
+        service.validateNotes(UpdateAppointmentOutcomeDto.valid().copy(notes = null))
+      }.doesNotThrowAnyException()
+    }
+
+    @Test
+    fun `empty notes is accepted`() {
+      assertThatCode {
+        service.validateNotes(UpdateAppointmentOutcomeDto.valid().copy(notes = ""))
+      }.doesNotThrowAnyException()
+    }
+
+    @Test
+    fun `notes length 4000 is accepted`() {
+      val notes = "a".repeat(4000)
+      assertThatCode {
+        service.validateNotes(UpdateAppointmentOutcomeDto.valid().copy(notes = notes))
+      }.doesNotThrowAnyException()
+    }
+
+    @Test
+    fun `notes length 4001 throws BadRequest`() {
+      val notes = "a".repeat(4001)
+      assertThatThrownBy {
+        service.validateNotes(UpdateAppointmentOutcomeDto.valid().copy(notes = notes))
+      }.isInstanceOf(BadRequestException::class.java)
+        .hasMessage("Outcome notes must be fewer than 4000 characters")
+    }
+  }
 }

@@ -6,6 +6,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.BadRequestException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EnforcementActionEntityRepository
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.validateLengthLessThan
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.validateNotInPast
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.validateNotNull
 import java.time.Duration
@@ -20,6 +21,7 @@ class AppointmentOutcomeValidationService(
     validateContactOutcome(outcome)
     validateDuration(outcome)
     validatePenaltyTime(outcome)
+    validateNotes(outcome)
   }
 
   fun validateContactOutcome(outcome: UpdateAppointmentOutcomeDto) {
@@ -65,6 +67,13 @@ class AppointmentOutcomeValidationService(
       if (penaltyDuration > appointmentDuration) {
         throw BadRequestException("Penalty duration '$penaltyDuration' is greater than appointment duration '$appointmentDuration'")
       }
+    }
+  }
+
+  @SuppressWarnings("MagicNumber")
+  fun validateNotes(outcome: UpdateAppointmentOutcomeDto) {
+    validateLengthLessThan(outcome.notes, 4000) { _, _ ->
+      "Outcome notes must be fewer than 4000 characters"
     }
   }
 }
