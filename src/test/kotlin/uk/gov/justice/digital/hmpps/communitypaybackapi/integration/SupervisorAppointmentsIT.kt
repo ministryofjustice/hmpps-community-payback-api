@@ -1,19 +1,26 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.integration
 
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Appointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CaseSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ContactOutcome
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.EnforcementAction
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Project
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AttendanceDataDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.FormKeyDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeResultType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentsOutcomesResultDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentOutcomeEntityRepository
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.FormCacheEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.FormCacheEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.bodyAsObject
@@ -21,6 +28,12 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.Com
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 
 class SupervisorAppointmentsIT : IntegrationTestBase() {
+
+  @Autowired
+  lateinit var appointmentOutcomeEntityRepository: AppointmentOutcomeEntityRepository
+
+  @Autowired
+  lateinit var formCacheEntityRepository: FormCacheEntityRepository
 
   @Nested
   @DisplayName("GET /supervisor/projects/{projectCode}/appointments/{appointmentId}")
@@ -100,8 +113,111 @@ class SupervisorAppointmentsIT : IntegrationTestBase() {
   }
 
   @Nested
+  @DisplayName("POST /supervisor/projects/{projectCode}/appointments/{deliusAppointmentId}/outcome")
+  inner class UpdateAppointmentOutcome {
+
+    @BeforeEach
+    fun setUp() {
+      appointmentOutcomeEntityRepository.deleteAll()
+      formCacheEntityRepository.deleteAll()
+    }
+
+    @Test
+    fun `should return unauthorized if no token`() {
+      webTestClient.post()
+        .uri("/supervisor/projects/PC01/appointments/1234/outcome")
+        .bodyValue(UpdateAppointmentOutcomeDto.valid())
+        .exchange()
+        .expectStatus()
+        .isUnauthorized
+    }
+
+    @Test
+    fun `should return forbidden if no role`() {
+      webTestClient.post()
+        .uri("/supervisor/projects/PC01/appointments/1234/outcome")
+        .bodyValue(UpdateAppointmentOutcomeDto.valid())
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .isForbidden
+    }
+
+    @Test
+    fun `should return forbidden if wrong role`() {
+      webTestClient.post()
+        .uri("/supervisor/projects/PC01/appointments/1234/outcome")
+        .bodyValue(UpdateAppointmentOutcomeDto.valid())
+        .headers(setAuthorisation(roles = listOf("ROLE_WRONG")))
+        .exchange()
+        .expectStatus()
+        .isForbidden
+    }
+
+    @Test
+    fun `Should return 404 if an appointment can't be found`() {
+      CommunityPaybackAndDeliusMockServer.putAppointmentNotFound(1234L)
+
+      val response = webTestClient.post()
+        .uri("/supervisor/projects/PC01/appointments/1234/outcome")
+        .addSupervisorUiAuthHeader()
+        .bodyValue(
+          UpdateAppointmentOutcomeDto.valid(ctx).copy(
+            deliusId = 1234L,
+            attendanceData = AttendanceDataDto.valid(),
+          ),
+        )
+        .exchange()
+        .expectStatus()
+        .isNotFound()
+        .bodyAsObject<ErrorResponse>()
+
+      assertThat(response.userMessage).isEqualTo("No resource found failure: Appointment not found for ID '1234'")
+    }
+
+    @Test
+    fun `Should send update upstream and delete corresponding form data`() {
+      CommunityPaybackAndDeliusMockServer.putAppointment(1234L)
+
+      formCacheEntityRepository.save(
+        FormCacheEntity(
+          formId = "id1",
+          formType = "formtype",
+          formData = "data",
+        ),
+      )
+
+      webTestClient.post()
+        .uri("/supervisor/projects/PC01/appointments/1234/outcome")
+        .addSupervisorUiAuthHeader()
+        .bodyValue(
+          UpdateAppointmentOutcomeDto.valid(ctx).copy(
+            deliusId = 1234L,
+            attendanceData = AttendanceDataDto.valid(),
+            formKeyToDelete = FormKeyDto(
+              id = "id1",
+              type = "formtype",
+            ),
+          ),
+        )
+        .exchange()
+        .expectStatus()
+        .isOk()
+
+      CommunityPaybackAndDeliusMockServer.putAppointmentVerify(1234L)
+
+      assertThat(formCacheEntityRepository.count()).isEqualTo(0)
+    }
+  }
+
+  @Nested
   @DisplayName("POST /supervisor/projects/{projectCode}/appointments/bulk")
   inner class UpdateAppointmentOutcomes {
+
+    @BeforeEach
+    fun setUp() {
+      appointmentOutcomeEntityRepository.deleteAll()
+    }
 
     @Test
     fun `should return unauthorized if no token`() {
