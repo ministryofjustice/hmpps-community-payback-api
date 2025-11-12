@@ -125,6 +125,49 @@ class AppointmentOutcomeValidationServiceTest {
         .isInstanceOf(BadRequestException::class.java)
         .hasMessage("Respond by date is required for enforceable contact outcomes")
     }
+
+    @Test
+    fun `if provided, respond by in the past throws BadRequest`() {
+      val contact = ContactOutcomeEntity.valid().copy(enforceable = true)
+      val enforcement = EnforcementActionEntity.valid().copy(respondByDateRequired = false)
+      every { contactOutcomeEntityRepository.findById(contact.id) } returns Optional.of(contact)
+      every { enforcementActionEntityRepository.findById(enforcement.id) } returns Optional.of(enforcement)
+
+      val past = LocalDate.now().minusDays(1)
+      val dto = EnforcementDto(enforcementActionId = enforcement.id, respondBy = past)
+
+      assertThatThrownBy { service.validateContactOutcome(outcome(contactOutcomeId = contact.id, enforcementData = dto)) }
+        .isInstanceOf(BadRequestException::class.java)
+        .hasMessage("Respond by date '$past' must be today or in the future")
+    }
+
+    @Test
+    fun `if provided, respond by today is accepted`() {
+      val contact = ContactOutcomeEntity.valid().copy(enforceable = true)
+      val enforcement = EnforcementActionEntity.valid().copy(respondByDateRequired = false)
+      every { contactOutcomeEntityRepository.findById(contact.id) } returns Optional.of(contact)
+      every { enforcementActionEntityRepository.findById(enforcement.id) } returns Optional.of(enforcement)
+
+      val today = LocalDate.now()
+      val dto = EnforcementDto(enforcementActionId = enforcement.id, respondBy = today)
+
+      assertThatCode { service.validateContactOutcome(outcome(contactOutcomeId = contact.id, enforcementData = dto)) }
+        .doesNotThrowAnyException()
+    }
+
+    @Test
+    fun `if provided, respond by in the future is accepted`() {
+      val contact = ContactOutcomeEntity.valid().copy(enforceable = true)
+      val enforcement = EnforcementActionEntity.valid().copy(respondByDateRequired = false)
+      every { contactOutcomeEntityRepository.findById(contact.id) } returns Optional.of(contact)
+      every { enforcementActionEntityRepository.findById(enforcement.id) } returns Optional.of(enforcement)
+
+      val future = LocalDate.now().plusDays(1)
+      val dto = EnforcementDto(enforcementActionId = enforcement.id, respondBy = future)
+
+      assertThatCode { service.validateContactOutcome(outcome(contactOutcomeId = contact.id, enforcementData = dto)) }
+        .doesNotThrowAnyException()
+    }
   }
 
   @Nested
