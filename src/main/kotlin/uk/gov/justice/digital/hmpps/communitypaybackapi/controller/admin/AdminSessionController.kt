@@ -26,7 +26,7 @@ import java.time.LocalDate
   "/admin/projects",
   produces = [MediaType.APPLICATION_JSON_VALUE],
 )
-class SessionController(val sessionService: SessionService) {
+class AdminSessionController(val sessionService: SessionService) {
 
   @GetMapping(
     path = [ "/session-search"],
