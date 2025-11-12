@@ -27,3 +27,17 @@ inline fun validateNotInPast(date: LocalDate?, lazyMessage: (LocalDate) -> Any) 
     }
   }
 }
+
+inline fun validateLengthLessThan(
+  value: String?,
+  maxExclusive: Int,
+  lazyMessage: (actualLength: Int, maxExclusive: Int) -> Any,
+) {
+  value?.let { provided ->
+    val length = provided.length
+    if (length > maxExclusive) {
+      val message = lazyMessage(length, maxExclusive)
+      throw BadRequestException(message.toString())
+    }
+  }
+}
