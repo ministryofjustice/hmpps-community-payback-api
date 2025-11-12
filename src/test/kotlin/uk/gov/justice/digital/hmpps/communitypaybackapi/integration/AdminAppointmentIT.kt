@@ -193,6 +193,7 @@ class AdminAppointmentIT : IntegrationTestBase() {
     @BeforeEach
     fun setUp() {
       appointmentOutcomeEntityRepository.deleteAll()
+      formCacheEntityRepository.deleteAll()
     }
 
     @Test
