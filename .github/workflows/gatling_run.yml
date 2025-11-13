@@ -19,9 +19,9 @@ on:
         options:
           - ""
           - uk.gov.justice.digital.hmpps.communitypayback.stories.ui.E2E
-          - uk.gov.justice.digital.hmpps.communitypayback.simulations.HealthSimulation
-          - uk.gov.justice.digital.hmpps.communitypayback.simulations.admin.ProviderSimulation
-          - uk.gov.justice.digital.hmpps.communitypayback.simulations.common.ReferenceSimulation
+          - uk.gov.justice.digital.hmpps.communitypayback.simulations.api.HealthSimulation
+          - uk.gov.justice.digital.hmpps.communitypayback.simulations.api.admin.ProviderSimulation
+          - uk.gov.justice.digital.hmpps.communitypayback.simulations.api.common.ReferenceSimulation
       nothingFor:
         description: "How long to wait before starting the onslaught"
         required: false
