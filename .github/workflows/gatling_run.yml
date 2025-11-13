@@ -54,10 +54,9 @@ on:
         type: string
 
 jobs:
-  runs-on: self-hosted
   gatling-run:
     name: Run Gatling simulations
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     permissions:
       contents: read
       actions: read
