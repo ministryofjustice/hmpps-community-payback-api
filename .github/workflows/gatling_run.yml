@@ -156,7 +156,7 @@ jobs:
 
       - name: Upload Gatling reports
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: gatling-reports
           path: |
