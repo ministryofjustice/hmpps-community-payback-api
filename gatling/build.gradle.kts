@@ -142,7 +142,7 @@ tasks.register<Exec>("gatlingRunWithK8sCreds") {
 
 tasks.register<Exec>("gatlingRunCi") {
   group = "gatling"
-  description = "Run un-attended in github ci)"
+  description = "Run un-attended in github ci"
 
   val simulationFqn = (project.findProperty("simulationFqn") as String?)
   val nothingFor = (project.findProperty("nothingFor") as String?)
