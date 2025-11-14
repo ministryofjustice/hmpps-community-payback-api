@@ -1,5 +1,7 @@
 # Self hosted runner
 
-Renewing the token
+Gatling tests require a self-hosted runner.
 
-./config.sh --url https://github.com/ministryofjustice/hmpps-community-payback-api --token BNEWNQL7GU5EFCWLS6SVXBTJCXL4O
+## Setup
+
+Instructions are here https://github.com/ministryofjustice/hmpps-community-payback-api/settings/actions/runners/new
