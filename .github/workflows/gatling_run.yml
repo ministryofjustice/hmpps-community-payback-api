@@ -92,43 +92,28 @@ jobs:
           GATLING_TEST_CLIENT_ID: ${{ secrets.GATLING_TEST_CLIENT_ID }}
           GATLING_TEST_CLIENT_SECRET: ${{ secrets.GATLING_TEST_CLIENT_SECRET }}
         run: |
+            export SIMULATION_FQN="${{ github.event.inputs.simulationFqn }}"
+            export NOTHING_FOR="${{ github.event.inputs.nothingFor }}"
+            export AT_ONCE_USERS="${{ github.event.inputs.atOnceUsers }}"
+            export RAMP_USERS="${{ github.event.inputs.rampUsers }}"
+            export RAMP_USERS_DURING="${{ github.event.inputs.rampUsersDuring }}"
+            export CONSTANT_USERS_PER_SEC="${{ github.event.inputs.constantUsersPerSec }}"
+            export CONSTANT_USERS_PER_SEC_DURING="${{ github.event.inputs.constantUsersPerSecDuring }}"
+            export ENV_NAME="${{ github.event.inputs.envName }}"
 
-            if [ "${{ github.event_name }}" = "pull_request" ]; then
-              export SIMULATION_FQN=""
-              export NOTHING_FOR=5
-              export AT_ONCE_USERS=10
-              export RAMP_USERS=50
-              export RAMP_USERS_DURING=30
-              export CONSTANT_USERS_PER_SEC=10.0
-              export CONSTANT_USERS_PER_SEC_DURING=60
-              export ENV_NAME=dev
-            else
-              # Set variables from inputs, using shell parameter expansion for defaults
-              export SIMULATION_FQN="${{ github.event.inputs.simulationFqn }}"
-              export NOTHING_FOR="${{ github.event.inputs.nothingFor }}"
-              export AT_ONCE_USERS="${{ github.event.inputs.atOnceUsers }}"
-              export RAMP_USERS="${{ github.event.inputs.rampUsers }}"
-              export RAMP_USERS_DURING="${{ github.event.inputs.rampUsersDuring }}"
-              export CONSTANT_USERS_PER_SEC="${{ github.event.inputs.constantUsersPerSec }}"
-              export CONSTANT_USERS_PER_SEC_DURING="${{ github.event.inputs.constantUsersPerSecDuring }}"
-              export ENV_NAME="${{ github.event.inputs.envName }}"
-
-              # Provide defaults if any values are empty
-              NOTHING_FOR="${NOTHING_FOR:-5}"
-              AT_ONCE_USERS="${AT_ONCE_USERS:-10}"
-              RAMP_USERS="${RAMP_USERS:-50}"
-              RAMP_USERS_DURING="${RAMP_USERS_DURING:-30}"
-              CONSTANT_USERS_PER_SEC="${CONSTANT_USERS_PER_SEC:-10.0}"
-              CONSTANT_USERS_PER_SEC_DURING="${CONSTANT_USERS_PER_SEC_DURING:-60}"
-              ENV_NAME="${ENV_NAME:-dev}"
-            fi
+            NOTHING_FOR="${NOTHING_FOR:-5}"
+            AT_ONCE_USERS="${AT_ONCE_USERS:-10}"
+            RAMP_USERS="${RAMP_USERS:-50}"
+            RAMP_USERS_DURING="${RAMP_USERS_DURING:-30}"
+            CONSTANT_USERS_PER_SEC="${CONSTANT_USERS_PER_SEC:-10.0}"
+            CONSTANT_USERS_PER_SEC_DURING="${CONSTANT_USERS_PER_SEC_DURING:-60}"
+            ENV_NAME="${ENV_NAME:-dev}"
 
             set -eo pipefail
             ARGS=("--no-daemon")
             ARGS+=("--stacktrace")
             ARGS+=("gatlingRunCi")
 
-            # Pass all workflow inputs as Gradle properties
             if [ -n "${{ github.event.inputs.simulationFqn }}" ]; then
                 ARGS+=("-PsimulationFqn=$SIMULATION_FQN")
             fi
