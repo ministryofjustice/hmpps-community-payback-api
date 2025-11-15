@@ -41,13 +41,13 @@ dependencies {
   runtimeOnly("org.flywaydb:flyway-database-postgresql")
 
   testImplementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter-test:1.8.1")
-  testImplementation("org.wiremock:wiremock-standalone:3.13.1")
+  testImplementation("org.wiremock:wiremock-standalone:3.13.2")
   testImplementation("io.swagger.parser.v3:swagger-parser:2.1.35") {
     exclude(group = "io.swagger.core.v3")
   }
   testImplementation("org.testcontainers:localstack:1.21.3")
   testImplementation("org.awaitility:awaitility-kotlin:4.3.0")
-  testImplementation("org.wiremock.integrations:wiremock-spring-boot:4.0.7")
+  testImplementation("org.wiremock.integrations:wiremock-spring-boot:4.0.8")
   testImplementation("io.mockk:mockk:1.14.6")
   testImplementation("com.lemonappdev:konsist:0.17.3")
   testImplementation("org.testcontainers:postgresql:1.21.3")
