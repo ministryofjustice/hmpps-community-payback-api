@@ -72,7 +72,7 @@ class AppointmentMappers(
           respondBy = it.respondBy,
         )
       },
-      supervisorOfficerCode = appointment.supervisor?.code,
+      supervisorOfficerCode = appointment.supervisor.code,
       notes = appointment.notes,
       sensitive = appointment.sensitive,
       alertActive = appointment.alertActive,

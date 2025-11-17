@@ -22,7 +22,7 @@ data class AppointmentDto(
   val contactOutcomeId: UUID? = null,
   val attendanceData: AttendanceDataDto?,
   val enforcementData: EnforcementDto?,
-  val supervisorOfficerCode: String? = null,
+  val supervisorOfficerCode: String,
   val notes: String?,
   val sensitive: Boolean?,
   val alertActive: Boolean?,
