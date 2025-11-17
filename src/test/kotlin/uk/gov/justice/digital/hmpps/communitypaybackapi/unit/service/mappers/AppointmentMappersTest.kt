@@ -203,7 +203,7 @@ class AppointmentMappersTest {
       val projectTypeName = "MAINTENANCE"
       val projectTypeCode = "MAINT"
       val crn = "CRN1"
-      val contactOutcomeId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000")
+      val contactOutcomeCode = "OUTCOME1"
       val enforcementActionId = UUID.fromString("123e4567-e89b-12d3-a456-426614174001")
       val supervisingTeam = "Team Lincoln"
       val supervisingTeamCode = "TL01"
@@ -284,7 +284,7 @@ class AppointmentMappersTest {
       )
 
       every { offenderService.toOffenderInfo(caseSummary) } returns OffenderInfoResult.Limited(crn = crn)
-      every { contactOutcomeEntityRepository.findByCode("OUTCOME1") } returns ContactOutcomeEntity.valid().copy(id = contactOutcomeId, attended = true)
+      every { contactOutcomeEntityRepository.findByCode("OUTCOME1") } returns ContactOutcomeEntity.valid().copy(code = contactOutcomeCode, attended = true)
       every { enforcementActionEntityRepository.findByCode("ENFORCE1") } returns EnforcementActionEntity.valid().copy(id = enforcementActionId)
 
       val result = service.toDto(appointment)
@@ -307,7 +307,7 @@ class AppointmentMappersTest {
       assertThat(pickUpData.location.postCode).isEqualTo(pickUpPostCode)
       assertThat(pickUpData.time).isEqualTo(pickUpTime)
 
-      assertThat(result.contactOutcomeId).isEqualTo(contactOutcomeId)
+      assertThat(result.contactOutcomeCode).isEqualTo(contactOutcomeCode)
 
       assertThat(result.attendanceData?.penaltyTime).isEqualTo(penaltyTime)
       assertThat(result.attendanceData?.behaviour).isEqualTo(AppointmentBehaviourDto.SATISFACTORY)

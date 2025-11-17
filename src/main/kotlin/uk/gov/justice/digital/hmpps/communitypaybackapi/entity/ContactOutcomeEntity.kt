@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.entity
 
+import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.Id
 import jakarta.persistence.Table
@@ -16,6 +17,7 @@ data class ContactOutcomeEntity(
 
   @Id
   val id: UUID,
+  @Column(unique = true)
   val code: String,
   val name: String,
   val enforceable: Boolean,

@@ -19,7 +19,7 @@ data class AppointmentDto(
   val date: LocalDate,
   val startTime: LocalTime,
   val endTime: LocalTime,
-  val contactOutcomeId: UUID? = null,
+  val contactOutcomeCode: String? = null,
   val attendanceData: AttendanceDataDto?,
   val enforcementData: EnforcementDto?,
   val supervisorOfficerCode: String,

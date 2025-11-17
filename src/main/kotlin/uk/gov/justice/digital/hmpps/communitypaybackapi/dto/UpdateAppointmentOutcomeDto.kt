@@ -13,7 +13,7 @@ data class UpdateAppointmentOutcomeDto(
   val startTime: LocalTime,
   @param:Schema(example = "14:00", description = "The end local time of the appointment", pattern = "^([0-1][0-9]|2[0-3]):[0-5][0-9]$")
   val endTime: LocalTime,
-  val contactOutcomeId: UUID,
+  val contactOutcomeCode: String?,
   val attendanceData: AttendanceDataDto?,
   val enforcementData: EnforcementDto?,
   val supervisorOfficerCode: String,

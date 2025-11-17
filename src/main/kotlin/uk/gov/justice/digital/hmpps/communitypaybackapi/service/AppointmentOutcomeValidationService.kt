@@ -1,6 +1,4 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.service
-
-import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.BadRequestException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
@@ -25,8 +23,10 @@ class AppointmentOutcomeValidationService(
   }
 
   fun validateContactOutcome(outcome: UpdateAppointmentOutcomeDto) {
-    val contactOutcome = contactOutcomeEntityRepository.findByIdOrNull(outcome.contactOutcomeId)
-      ?: throw BadRequestException("Contact outcome not found for ID " + outcome.contactOutcomeId.toString())
+    val code = outcome.contactOutcomeCode ?: return
+
+    val contactOutcome = contactOutcomeEntityRepository.findByCode(code)
+      ?: throw BadRequestException("Contact outcome not found for code $code")
 
     if (contactOutcome.enforceable) {
       val enforcementDto = validateNotNull(outcome.enforcementData) {

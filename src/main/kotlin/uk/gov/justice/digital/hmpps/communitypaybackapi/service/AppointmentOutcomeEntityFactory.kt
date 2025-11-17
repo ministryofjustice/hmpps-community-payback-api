@@ -29,7 +29,7 @@ class AppointmentOutcomeEntityFactory(
     deliusVersionToUpdate = outcome.deliusVersionToUpdate,
     startTime = outcome.startTime,
     endTime = outcome.endTime,
-    contactOutcome = contactOutcomeEntityRepository.findByIdOrNull(outcome.contactOutcomeId)!!,
+    contactOutcome = contactOutcomeEntityRepository.findByCode(outcome.contactOutcomeCode!!)!!,
     enforcementAction = outcome.enforcementData?.enforcementActionId?.let { enforcementActionEntityRepository.findByIdOrNull(it)!! },
     supervisorOfficerCode = outcome.supervisorOfficerCode,
     notes = outcome.notes,

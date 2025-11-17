@@ -28,7 +28,7 @@ data class AppointmentOutcomeEntity(
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "contact_outcome_id", referencedColumnName = "id")
-  val contactOutcome: ContactOutcomeEntity,
+  val contactOutcome: ContactOutcomeEntity?,
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "enforcement_action_id", referencedColumnName = "id")
@@ -74,7 +74,14 @@ data class AppointmentOutcomeEntity(
    * adding an explicit comparison and excluding it from the call to [reflectionCompare]
    */
   fun isLogicallyIdentical(other: AppointmentOutcomeEntity): Boolean {
-    if (this.contactOutcome.id != other.contactOutcome.id) return false
+    val contactOutcomeEqual = when {
+      this.contactOutcome == null && other.contactOutcome == null -> true
+      this.contactOutcome != null && other.contactOutcome != null ->
+        this.contactOutcome.code == other.contactOutcome.code
+      else -> false
+    }
+
+    if (!contactOutcomeEqual) return false
     if (this.enforcementAction?.id != other.enforcementAction?.id) return false
 
     return reflectionCompare(

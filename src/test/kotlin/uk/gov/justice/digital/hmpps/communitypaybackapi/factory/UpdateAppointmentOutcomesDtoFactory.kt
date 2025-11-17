@@ -11,6 +11,6 @@ fun UpdateAppointmentOutcomesDto.Companion.valid() = UpdateAppointmentOutcomesDt
 )
 
 fun UpdateAppointmentOutcomeDto.Companion.valid(ctx: ApplicationContext) = UpdateAppointmentOutcomeDto.valid(
-  contactOutcomeId = ctx.getBean(ContactOutcomeEntityRepository::class.java).findAll().first().id,
+  contactOutcomeCode = ctx.getBean(ContactOutcomeEntityRepository::class.java).findAll().first().code,
   enforcementActionId = ctx.getBean(EnforcementActionEntityRepository::class.java).findAll().first().id,
 )

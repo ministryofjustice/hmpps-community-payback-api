@@ -54,7 +54,7 @@ class AppointmentMappers(
       date = appointment.date,
       startTime = appointment.startTime,
       endTime = appointment.endTime,
-      contactOutcomeId = contactOutcomeEntity?.id,
+      contactOutcomeCode = contactOutcomeEntity?.code,
       attendanceData = if (contactOutcomeEntity?.attended == true) {
         AttendanceDataDto(
           hiVisWorn = appointment.hiVisWorn!!,
@@ -100,7 +100,7 @@ fun AppointmentOutcomeEntity.toDomainEventDetail() = AppointmentOutcomeDomainEve
   appointmentDeliusId = this.appointmentDeliusId,
   startTime = this.startTime,
   endTime = this.endTime,
-  contactOutcomeCode = this.contactOutcome.code,
+  contactOutcomeCode = this.contactOutcome?.code,
   supervisorOfficerCode = this.supervisorOfficerCode,
   notes = this.notes,
   hiVisWorn = this.hiVisWorn,
@@ -116,7 +116,7 @@ fun AppointmentOutcomeEntity.toUpdateAppointment() = UpdateAppointment(
   version = this.deliusVersionToUpdate,
   startTime = this.startTime,
   endTime = this.endTime,
-  contactOutcomeCode = this.contactOutcome.code,
+  contactOutcomeCode = this.contactOutcome?.code,
   supervisorOfficerCode = this.supervisorOfficerCode,
   notes = this.notes,
   hiVisWorn = this.hiVisWorn,
