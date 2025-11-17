@@ -133,7 +133,7 @@ data class Appointment(
   val startTime: LocalTime,
   val endTime: LocalTime,
   val penaltyHours: HourMinuteDuration?,
-  val supervisor: AppointmentSupervisor?,
+  val supervisor: AppointmentSupervisor,
   val outcome: ContactOutcome?,
   val enforcementAction: EnforcementAction?,
   val hiVisWorn: Boolean?,
