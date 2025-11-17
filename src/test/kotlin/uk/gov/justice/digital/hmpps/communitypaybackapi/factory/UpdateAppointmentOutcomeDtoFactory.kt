@@ -4,17 +4,16 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AttendanceDataDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EnforcementDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import java.time.LocalTime
-import java.util.UUID
 
 fun UpdateAppointmentOutcomeDto.Companion.valid(
-  contactOutcomeId: UUID = UUID.randomUUID(),
-  enforcementActionId: UUID = UUID.randomUUID(),
+  contactOutcomeCode: String = "OUTCOME1",
+  enforcementActionId: java.util.UUID = java.util.UUID.randomUUID(),
 ) = UpdateAppointmentOutcomeDto(
   deliusId = Long.random(),
-  deliusVersionToUpdate = UUID.randomUUID(),
+  deliusVersionToUpdate = java.util.UUID.randomUUID(),
   startTime = LocalTime.of(10, 0),
   endTime = LocalTime.of(16, 0),
-  contactOutcomeId = contactOutcomeId,
+  contactOutcomeCode = contactOutcomeCode,
   supervisorOfficerCode = String.random(),
   notes = String.random(400),
   attendanceData = AttendanceDataDto.valid(),

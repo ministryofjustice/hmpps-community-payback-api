@@ -41,7 +41,7 @@ class AppointmentOutcomeEntityFactoryTest {
   lateinit var service: AppointmentOutcomeEntityFactory
 
   companion object {
-    val CONTACT_OUTCOME_ID: UUID = UUID.randomUUID()
+    const val CONTACT_OUTCOME_CODE: String = "CONTACT-1"
     val ENFORCEMENT_ACTION_ID: UUID = UUID.randomUUID()
   }
 
@@ -52,8 +52,8 @@ class AppointmentOutcomeEntityFactoryTest {
     fun `to entity`() {
       val deliusVersion = UUID.randomUUID()
 
-      val contactOutcomeEntity = ContactOutcomeEntity.valid()
-      every { contactOutcomeEntityRepository.findByIdOrNull(CONTACT_OUTCOME_ID) } returns contactOutcomeEntity
+      val contactOutcomeEntity = ContactOutcomeEntity.valid().copy(code = CONTACT_OUTCOME_CODE)
+      every { contactOutcomeEntityRepository.findByCode(CONTACT_OUTCOME_CODE) } returns contactOutcomeEntity
 
       val enforcementActionEntity = EnforcementActionEntity.valid()
       every { enforcementActionEntityRepository.findByIdOrNull(ENFORCEMENT_ACTION_ID) } returns enforcementActionEntity
@@ -64,7 +64,7 @@ class AppointmentOutcomeEntityFactoryTest {
           deliusVersionToUpdate = deliusVersion,
           startTime = LocalTime.of(10, 1, 2),
           endTime = LocalTime.of(16, 3, 4),
-          contactOutcomeId = CONTACT_OUTCOME_ID,
+          contactOutcomeCode = CONTACT_OUTCOME_CODE,
           supervisorOfficerCode = "N45",
           notes = "some notes",
           attendanceData = AttendanceDataDto(
@@ -107,8 +107,8 @@ class AppointmentOutcomeEntityFactoryTest {
     fun `to entity, mandatory fields only`() {
       val deliusVersion = UUID.randomUUID()
 
-      val contactOutcomeEntity = ContactOutcomeEntity.valid()
-      every { contactOutcomeEntityRepository.findByIdOrNull(CONTACT_OUTCOME_ID) } returns contactOutcomeEntity
+      val contactOutcomeEntity = ContactOutcomeEntity.valid().copy(code = CONTACT_OUTCOME_CODE)
+      every { contactOutcomeEntityRepository.findByCode(CONTACT_OUTCOME_CODE) } returns contactOutcomeEntity
 
       val result = service.toEntity(
         UpdateAppointmentOutcomeDto(
@@ -116,7 +116,7 @@ class AppointmentOutcomeEntityFactoryTest {
           deliusVersionToUpdate = deliusVersion,
           startTime = LocalTime.of(10, 1, 2),
           endTime = LocalTime.of(16, 3, 4),
-          contactOutcomeId = CONTACT_OUTCOME_ID,
+          contactOutcomeCode = CONTACT_OUTCOME_CODE,
           supervisorOfficerCode = "N45",
           notes = null,
           attendanceData = null,
