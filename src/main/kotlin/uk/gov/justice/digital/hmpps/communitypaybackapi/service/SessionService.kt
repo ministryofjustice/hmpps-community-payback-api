@@ -43,7 +43,11 @@ class SessionService(
       username = contextService.getUserName(),
     )
     val caseSummaries = projectSession.appointmentSummaries.map { it.case }.toList()
-    return sessionMappers.toDto(projectSession, offenderService.toOffenderInfos(caseSummaries))
+    return sessionMappers.toDto(
+      date = date,
+      session = projectSession,
+      offenderInfoResults = offenderService.toOffenderInfos(caseSummaries),
+    )
   }
 
   fun allocateSupervisor(
@@ -93,6 +97,7 @@ class SessionService(
   }
 
   private fun SessionSupervisorEntity.toDto() = sessionMappers.toSummaryDto(
+    date = day,
     communityPaybackAndDeliusClient.getSession(
       projectCode = projectCode,
       date = day,

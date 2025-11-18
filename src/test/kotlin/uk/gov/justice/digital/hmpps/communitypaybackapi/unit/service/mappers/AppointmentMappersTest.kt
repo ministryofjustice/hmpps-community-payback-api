@@ -369,8 +369,6 @@ class AppointmentMappersTest {
       val result = service.toDto(
         appointmentSummary = AppointmentSummary(
           id = 1L,
-          startTime = LocalTime.of(1, 2),
-          endTime = LocalTime.of(3, 4),
           case = CaseSummary.Companion.valid().copy(crn = "CRN1"),
           outcome = ContactOutcome.valid().copy(code = "OUTCOME1"),
           requirementProgress = RequirementProgress(
@@ -382,8 +380,6 @@ class AppointmentMappersTest {
       )
 
       assertThat(result.id).isEqualTo(1L)
-      assertThat(result.startTime).isEqualTo(LocalTime.of(1, 2))
-      assertThat(result.endTime).isEqualTo(LocalTime.of(3, 4))
       assertThat(result.contactOutcome?.name).isEqualTo("The outcome")
       assertThat(result.offender).isNotNull
       assertThat(result.requirementMinutes).isEqualTo(520)
