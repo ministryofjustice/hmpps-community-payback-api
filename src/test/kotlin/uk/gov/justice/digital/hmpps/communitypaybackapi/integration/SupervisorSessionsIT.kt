@@ -75,6 +75,8 @@ class SupervisorSessionsIT : IntegrationTestBase() {
     @Test
     fun `should return OK with project session`() {
       CommunityPaybackAndDeliusMockServer.getProjectSession(
+        username = "USER1",
+        session =
         Session.valid().copy(
           project = Project.valid().copy(
             name = "Community Garden Maintenance",
@@ -90,7 +92,7 @@ class SupervisorSessionsIT : IntegrationTestBase() {
 
       val sessionSearchResults = webTestClient.get()
         .uri("/supervisor/projects/N123456789/sessions/2025-01-09")
-        .addSupervisorUiAuthHeader()
+        .addSupervisorUiAuthHeader(username = "USER1")
         .exchange()
         .expectStatus()
         .isOk
@@ -105,6 +107,8 @@ class SupervisorSessionsIT : IntegrationTestBase() {
     @Test
     fun `Correctly handles limited offenders`() {
       CommunityPaybackAndDeliusMockServer.getProjectSession(
+        username = "USER1",
+        session =
         Session.valid().copy(
           project = Project.valid().copy(
             code = "N123456789",
@@ -288,6 +292,8 @@ class SupervisorSessionsIT : IntegrationTestBase() {
       allocateSessionToSupervisor1("PROJ1", today)
 
       CommunityPaybackAndDeliusMockServer.getProjectSession(
+        username = "USER1",
+        session =
         Session.valid(ctx).copy(
           project = Project.valid().copy(code = "PROJ1"),
           date = today,
@@ -298,7 +304,8 @@ class SupervisorSessionsIT : IntegrationTestBase() {
       allocateSessionToSupervisor1("PROJ2", nextYear)
 
       CommunityPaybackAndDeliusMockServer.getProjectSession(
-        Session.valid(ctx).copy(
+        username = "USER1",
+        session = Session.valid(ctx).copy(
           project = Project.valid().copy(code = "PROJ2"),
           date = nextYear,
         ),
@@ -306,7 +313,7 @@ class SupervisorSessionsIT : IntegrationTestBase() {
 
       val result = webTestClient.get()
         .uri("/supervisor/supervisors/SUPERVISOR001/sessions/future")
-        .addSupervisorUiAuthHeader()
+        .addSupervisorUiAuthHeader(username = "USER1")
         .exchange()
         .expectStatus()
         .isOk
