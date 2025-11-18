@@ -37,7 +37,11 @@ class SessionService(
     projectCode: String,
     date: LocalDate,
   ): SessionDto {
-    val projectSession = communityPaybackAndDeliusClient.getSession(projectCode, date)
+    val projectSession = communityPaybackAndDeliusClient.getSession(
+      projectCode = projectCode,
+      date = date,
+      username = contextService.getUserName(),
+    )
     val caseSummaries = projectSession.appointmentSummaries.map { it.case }.toList()
     return sessionMappers.toDto(projectSession, offenderService.toOffenderInfos(caseSummaries))
   }
@@ -90,8 +94,9 @@ class SessionService(
 
   private fun SessionSupervisorEntity.toDto() = sessionMappers.toSummaryDto(
     communityPaybackAndDeliusClient.getSession(
-      projectCode,
-      day,
+      projectCode = projectCode,
+      date = day,
+      username = contextService.getUserName(),
     ),
   )
 }

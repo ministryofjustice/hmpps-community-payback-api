@@ -159,7 +159,8 @@ class AdminSessionsIT : IntegrationTestBase() {
     @Test
     fun `should return OK with project session`() {
       CommunityPaybackAndDeliusMockServer.getProjectSession(
-        Session.valid().copy(
+        username = "USER1",
+        session = Session.valid().copy(
           project = Project.valid().copy(
             name = "Community Garden Maintenance",
             code = "N123456789",
@@ -174,7 +175,7 @@ class AdminSessionsIT : IntegrationTestBase() {
 
       val sessionSearchResults = webTestClient.get()
         .uri("/admin/projects/N123456789/sessions/2025-01-09")
-        .addAdminUiAuthHeader()
+        .addAdminUiAuthHeader(username = "USER1")
         .exchange()
         .expectStatus()
         .isOk
@@ -189,7 +190,8 @@ class AdminSessionsIT : IntegrationTestBase() {
     @Test
     fun `Correctly handles limited offenders`() {
       CommunityPaybackAndDeliusMockServer.getProjectSession(
-        Session.valid().copy(
+        username = "USER1",
+        session = Session.valid().copy(
           project = Project.valid().copy(
             code = "N123456789",
           ),
