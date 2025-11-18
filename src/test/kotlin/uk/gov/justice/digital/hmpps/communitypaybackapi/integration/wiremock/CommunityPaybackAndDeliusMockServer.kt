@@ -126,7 +126,7 @@ object CommunityPaybackAndDeliusMockServer {
   ) {
     WireMock.stubFor(
       get(
-        "/community-payback-and-delius/projects/${session.project.code}/sessions/appointments" +
+        "/community-payback-and-delius/projects/${session.project.code}/appointments" +
           "?date=${session.date.toIsoDateString()}",
       )
         .willReturn(

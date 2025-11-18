@@ -30,7 +30,7 @@ interface CommunityPaybackAndDeliusClient {
     @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) endDate: LocalDate,
   ): SessionSummaries
 
-  @GetExchange("/projects/{projectCode}/sessions/appointments")
+  @GetExchange("/projects/{projectCode}/appointments")
   fun getSession(
     @PathVariable projectCode: String,
     @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate,

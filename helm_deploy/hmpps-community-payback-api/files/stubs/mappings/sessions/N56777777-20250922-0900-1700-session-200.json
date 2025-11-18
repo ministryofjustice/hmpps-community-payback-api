@@ -6,7 +6,7 @@
         "matches": "[0-9]{4}-[0-9]{1,2}-[0-9]{1,2}"
       }
     },
-    "urlPathPattern": "/projects/N56777777/sessions/appointments"
+    "urlPathPattern": "/projects/N56777777/appointments"
   },
   "response": {
     "status": 200,
