@@ -76,13 +76,13 @@ class SupervisorSessionsIT : IntegrationTestBase() {
     fun `should return OK with project session`() {
       CommunityPaybackAndDeliusMockServer.getProjectSession(
         username = "USER1",
+        date = LocalDate.of(2025, 1, 9),
         session =
         Session.valid().copy(
           project = Project.valid().copy(
             name = "Community Garden Maintenance",
             code = "N123456789",
           ),
-          date = LocalDate.of(2025, 1, 9),
           appointmentSummaries = listOf(
             AppointmentSummary.valid().copy(outcome = null),
             AppointmentSummary.valid().copy(outcome = null),
@@ -108,12 +108,12 @@ class SupervisorSessionsIT : IntegrationTestBase() {
     fun `Correctly handles limited offenders`() {
       CommunityPaybackAndDeliusMockServer.getProjectSession(
         username = "USER1",
+        date = LocalDate.of(2025, 1, 9),
         session =
         Session.valid().copy(
           project = Project.valid().copy(
             code = "N123456789",
           ),
-          date = LocalDate.of(2025, 1, 9),
           appointmentSummaries = listOf(
             AppointmentSummary.valid().copy(
               id = 1L,
@@ -227,15 +227,16 @@ class SupervisorSessionsIT : IntegrationTestBase() {
       allocateSessionToSupervisor1("PROJ1", today)
 
       CommunityPaybackAndDeliusMockServer.getProjectSession(
-        Session.valid(ctx).copy(
+        username = "USER1",
+        date = today,
+        session = Session.valid(ctx).copy(
           project = Project.valid().copy(code = "PROJ1"),
-          date = today,
         ),
       )
 
       val result = webTestClient.get()
         .uri("/supervisor/supervisors/SUPERVISOR001/sessions/next")
-        .addSupervisorUiAuthHeader()
+        .addSupervisorUiAuthHeader(username = "USER1")
         .exchange()
         .expectStatus()
         .isOk
@@ -293,10 +294,10 @@ class SupervisorSessionsIT : IntegrationTestBase() {
 
       CommunityPaybackAndDeliusMockServer.getProjectSession(
         username = "USER1",
+        date = today,
         session =
         Session.valid(ctx).copy(
           project = Project.valid().copy(code = "PROJ1"),
-          date = today,
         ),
       )
 
@@ -305,9 +306,9 @@ class SupervisorSessionsIT : IntegrationTestBase() {
 
       CommunityPaybackAndDeliusMockServer.getProjectSession(
         username = "USER1",
+        date = nextYear,
         session = Session.valid(ctx).copy(
           project = Project.valid().copy(code = "PROJ2"),
-          date = nextYear,
         ),
       )
 

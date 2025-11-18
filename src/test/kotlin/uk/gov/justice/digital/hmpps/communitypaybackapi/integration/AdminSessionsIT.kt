@@ -160,12 +160,12 @@ class AdminSessionsIT : IntegrationTestBase() {
     fun `should return OK with project session`() {
       CommunityPaybackAndDeliusMockServer.getProjectSession(
         username = "USER1",
+        date = LocalDate.of(2025, 1, 9),
         session = Session.valid().copy(
           project = Project.valid().copy(
             name = "Community Garden Maintenance",
             code = "N123456789",
           ),
-          date = LocalDate.of(2025, 1, 9),
           appointmentSummaries = listOf(
             AppointmentSummary.valid().copy(outcome = null),
             AppointmentSummary.valid().copy(outcome = null),
@@ -191,11 +191,11 @@ class AdminSessionsIT : IntegrationTestBase() {
     fun `Correctly handles limited offenders`() {
       CommunityPaybackAndDeliusMockServer.getProjectSession(
         username = "USER1",
+        date = LocalDate.of(2025, 1, 9),
         session = Session.valid().copy(
           project = Project.valid().copy(
             code = "N123456789",
           ),
-          date = LocalDate.of(2025, 1, 9),
           appointmentSummaries = listOf(
             AppointmentSummary.valid().copy(
               id = 1L,

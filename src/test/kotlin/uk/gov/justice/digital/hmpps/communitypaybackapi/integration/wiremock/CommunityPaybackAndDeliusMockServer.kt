@@ -123,12 +123,13 @@ object CommunityPaybackAndDeliusMockServer {
 
   fun getProjectSession(
     username: String,
+    date: LocalDate,
     session: Session,
   ) {
     WireMock.stubFor(
       get(
         "/community-payback-and-delius/projects/${session.project.code}/appointments" +
-          "?date=${session.date.toIsoDateString()}&username=$username",
+          "?date=${date.toIsoDateString()}&username=$username",
       )
         .willReturn(
           aResponse()

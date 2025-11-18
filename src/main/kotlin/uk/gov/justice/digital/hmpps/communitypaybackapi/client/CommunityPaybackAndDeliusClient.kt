@@ -95,7 +95,6 @@ data class SessionSummary(
 
 data class Session(
   val project: Project,
-  val date: LocalDate,
   val appointmentSummaries: List<AppointmentSummary>,
 ) {
   companion object
@@ -103,8 +102,6 @@ data class Session(
 
 data class AppointmentSummary(
   val id: Long,
-  val startTime: LocalTime,
-  val endTime: LocalTime,
   val case: CaseSummary,
   val outcome: ContactOutcome?,
   val requirementProgress: RequirementProgress,

@@ -10,6 +10,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionSummariesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.OffenderInfoResult
+import java.time.LocalDate
 import java.time.LocalTime
 
 @Service
@@ -19,6 +20,7 @@ class SessionMappers(
 ) {
 
   fun toDto(
+    date: LocalDate,
     session: Session,
     offenderInfoResults: List<OffenderInfoResult>,
   ) = SessionDto(
@@ -28,7 +30,7 @@ class SessionMappers(
     location = session.project.location.toDto(),
     startTime = LocalTime.of(0, 0),
     endTime = LocalTime.of(0, 0),
-    date = session.date,
+    date = date,
     appointmentSummaries = session.appointmentSummaries.map { appointmentSummary ->
       appointmentMappers.toDto(
         appointmentSummary,
@@ -38,11 +40,12 @@ class SessionMappers(
   )
 
   fun toSummaryDto(
+    date: LocalDate,
     session: Session,
   ) = SessionSummaryDto(
     projectName = session.project.name,
     projectCode = session.project.code,
-    date = session.date,
+    date = date,
     startTime = LocalTime.of(0, 0),
     endTime = LocalTime.of(0, 0),
     numberOfOffendersAllocated = session.appointmentSummaries.size,

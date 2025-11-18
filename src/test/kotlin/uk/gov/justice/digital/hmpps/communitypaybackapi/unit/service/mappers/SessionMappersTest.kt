@@ -155,12 +155,12 @@ class SessionMappersTest {
             postCode = "AA11 234",
           ),
         ),
-        date = LocalDate.of(2025, 9, 8),
         appointmentSummaries = listOf(appointmentSummary1, appointmentSummary2),
       )
 
       val result = service.toDto(
-        session,
+        date = LocalDate.of(2025, 9, 8),
+        session = session,
         offenderInfoResults = listOf(
           offenderInfoResult1,
           offenderInfoResult2,
@@ -193,7 +193,6 @@ class SessionMappersTest {
           code = "N987654321",
           location = Address.valid(),
         ),
-        date = LocalDate.of(2025, 9, 8),
         appointmentSummaries = listOf(
           AppointmentSummary.valid().copy(outcome = ContactOutcome.valid().copy(code = "ATTEND-1")),
           AppointmentSummary.valid().copy(outcome = ContactOutcome.valid().copy(code = "ATTEND-1")),
@@ -210,7 +209,10 @@ class SessionMappersTest {
       every { contactOutcomeEntityRepository.findByCode("ENFORCE-1") } returns ContactOutcomeEntity.valid().copy(attended = false, enforceable = true)
       every { contactOutcomeEntityRepository.findByCode("ENFORCE-2") } returns ContactOutcomeEntity.valid().copy(attended = false, enforceable = true)
 
-      val result = service.toSummaryDto(session)
+      val result = service.toSummaryDto(
+        date = LocalDate.of(2025, 9, 8),
+        session = session,
+      )
 
       assertThat(result.projectCode).isEqualTo("N987654321")
       assertThat(result.projectName).isEqualTo("Park Cleanup")
