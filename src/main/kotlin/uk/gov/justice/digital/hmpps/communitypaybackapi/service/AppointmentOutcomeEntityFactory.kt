@@ -17,10 +17,6 @@ class AppointmentOutcomeEntityFactory(
   private val enforcementActionEntityRepository: EnforcementActionEntityRepository,
 ) {
 
-  private companion object {
-    const val SECONDS_PER_MINUTE = 60L
-  }
-
   fun toEntity(
     outcome: UpdateAppointmentOutcomeDto,
   ) = AppointmentOutcomeEntity(
@@ -29,7 +25,7 @@ class AppointmentOutcomeEntityFactory(
     deliusVersionToUpdate = outcome.deliusVersionToUpdate,
     startTime = outcome.startTime,
     endTime = outcome.endTime,
-    contactOutcome = contactOutcomeEntityRepository.findByCode(outcome.contactOutcomeCode!!)!!,
+    contactOutcome = outcome.contactOutcomeCode?.let { contactOutcomeEntityRepository.findByCode(it)!! },
     enforcementAction = outcome.enforcementData?.enforcementActionId?.let { enforcementActionEntityRepository.findByIdOrNull(it)!! },
     supervisorOfficerCode = outcome.supervisorOfficerCode,
     notes = outcome.notes,
