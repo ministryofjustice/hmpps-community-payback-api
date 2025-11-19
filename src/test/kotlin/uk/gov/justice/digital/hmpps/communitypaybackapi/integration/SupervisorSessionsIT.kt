@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.integration
 
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -13,6 +14,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Session
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.UserAccess
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.OffenderDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SupervisorSessionsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.SessionSupervisorEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.SessionSupervisorEntityRepository
@@ -159,8 +161,94 @@ class SupervisorSessionsIT : IntegrationTestBase() {
   }
 
   @Nested
+  @DisplayName("GET /supervisor/supervisors/{supervisorCode}/sessions/next")
+  inner class GetNextSessionEndpoint {
+
+    @BeforeEach
+    fun setUp() {
+      sessionSupervisorEntityRepository.deleteAll()
+    }
+
+    @Test
+    fun `should return unauthorized if no token`() {
+      webTestClient.get()
+        .uri("/supervisor/supervisors/SUPERVISOR001/sessions/next")
+        .exchange()
+        .expectStatus()
+        .isUnauthorized
+    }
+
+    @Test
+    fun `should return forbidden if no role`() {
+      webTestClient.get()
+        .uri("/supervisor/supervisors/SUPERVISOR001/sessions/next")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .isForbidden
+    }
+
+    @Test
+    fun `should return forbidden if wrong role`() {
+      webTestClient.get()
+        .uri("/supervisor/supervisors/SUPERVISOR001/sessions/next")
+        .headers(setAuthorisation(roles = listOf("ROLE_WRONG")))
+        .exchange()
+        .expectStatus()
+        .isForbidden
+    }
+
+    @Test
+    fun `should return 404 if there is no future session`() {
+      val yesterday = LocalDate.now().minusDays(1)
+      allocateSessionToSupervisor1("IGNORED_PROJECT_YESTERDAY", yesterday)
+
+      webTestClient.get()
+        .uri("/supervisor/supervisors/SUPERVISOR001/sessions/next")
+        .addSupervisorUiAuthHeader()
+        .exchange()
+        .expectStatus()
+        .isNotFound
+    }
+
+    @Test
+    fun `should return OK with next project session`() {
+      val yesterday = LocalDate.now().minusDays(1)
+      allocateSessionToSupervisor1("IGNORED_PROJECT_YESTERDAY", yesterday)
+
+      val nextYear = LocalDate.now().plusYears(5)
+      allocateSessionToSupervisor1("PROJ2", nextYear)
+
+      val today = LocalDate.now()
+      allocateSessionToSupervisor1("PROJ1", today)
+
+      CommunityPaybackAndDeliusMockServer.getProjectSession(
+        Session.valid(ctx).copy(
+          project = Project.valid().copy(code = "PROJ1"),
+          date = today,
+        ),
+      )
+
+      val result = webTestClient.get()
+        .uri("/supervisor/supervisors/SUPERVISOR001/sessions/next")
+        .addSupervisorUiAuthHeader()
+        .exchange()
+        .expectStatus()
+        .isOk
+        .bodyAsObject<SessionSummaryDto>()
+
+      assertThat(result.projectCode).isEqualTo("PROJ1")
+    }
+  }
+
+  @Nested
   @DisplayName("GET /supervisor/supervisors/{supervisorCode}/sessions/future")
   inner class GetFutureSessionEndpoint {
+
+    @BeforeEach
+    fun setUp() {
+      sessionSupervisorEntityRepository.deleteAll()
+    }
 
     @Test
     fun `should return unauthorized if no token`() {
@@ -227,18 +315,18 @@ class SupervisorSessionsIT : IntegrationTestBase() {
       assertThat(result.sessions).hasSize(2)
       assertThat(result.sessions.map { it.projectCode }).containsExactly("PROJ1", "PROJ2")
     }
+  }
 
-    private fun allocateSessionToSupervisor1(
-      projectCode: String,
-      day: LocalDate,
-    ) {
-      sessionSupervisorEntityRepository.save(
-        SessionSupervisorEntity.valid().copy(
-          projectCode = projectCode,
-          day = day,
-          supervisorCode = "SUPERVISOR001",
-        ),
-      )
-    }
+  private fun allocateSessionToSupervisor1(
+    projectCode: String,
+    day: LocalDate,
+  ) {
+    sessionSupervisorEntityRepository.save(
+      SessionSupervisorEntity.valid().copy(
+        projectCode = projectCode,
+        day = day,
+        supervisorCode = "SUPERVISOR001",
+      ),
+    )
   }
 }
