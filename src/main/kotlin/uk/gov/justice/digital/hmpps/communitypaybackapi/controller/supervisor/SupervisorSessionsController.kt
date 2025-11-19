@@ -9,6 +9,7 @@ import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.NotFoundException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.SessionService
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 import java.time.LocalDate
@@ -17,6 +18,32 @@ import java.time.LocalDate
 class SupervisorSessionsController(
   val sessionService: SessionService,
 ) {
+
+  @GetMapping(
+    path = [ "/supervisor/supervisors/{supervisorCode}/sessions/next"],
+    produces = [MediaType.APPLICATION_JSON_VALUE],
+  )
+  @Operation(
+    description = "Get the next session allocated to the supervisor or return 404 if there are no remaining future sessions. This includes sessions running today.",
+    responses = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Successful response",
+      ),
+      ApiResponse(
+        responseCode = "404",
+        description = "There are no future sessions assigned to this supervisor code",
+        content = [
+          Content(
+            schema = Schema(implementation = ErrorResponse::class),
+          ),
+        ],
+      ),
+    ],
+  )
+  fun getNextAllocation(
+    @PathVariable supervisorCode: String,
+  ) = sessionService.getNextAllocationForSupervisor(supervisorCode) ?: throw NotFoundException("There are no future sessions for supervisor $supervisorCode")
 
   @GetMapping(
     path = [ "/supervisor/supervisors/{supervisorCode}/sessions/future"],
