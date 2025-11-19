@@ -116,7 +116,7 @@ class AppointmentOutcomeEntityFactoryTest {
           deliusVersionToUpdate = deliusVersion,
           startTime = LocalTime.of(10, 1, 2),
           endTime = LocalTime.of(16, 3, 4),
-          contactOutcomeCode = CONTACT_OUTCOME_CODE,
+          contactOutcomeCode = null,
           supervisorOfficerCode = "N45",
           notes = null,
           attendanceData = null,
@@ -132,7 +132,7 @@ class AppointmentOutcomeEntityFactoryTest {
       assertThat(result.appointmentDeliusId).isEqualTo(101L)
       assertThat(result.startTime).isEqualTo(LocalTime.of(10, 1, 2))
       assertThat(result.endTime).isEqualTo(LocalTime.of(16, 3, 4))
-      assertThat(result.contactOutcome).isEqualTo(contactOutcomeEntity)
+      assertThat(result.contactOutcome).isNull()
       assertThat(result.enforcementAction).isNull()
       assertThat(result.supervisorOfficerCode).isEqualTo("N45")
       assertThat(result.notes).isNull()
