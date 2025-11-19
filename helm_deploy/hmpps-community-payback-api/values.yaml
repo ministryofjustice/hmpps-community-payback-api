@@ -32,8 +32,11 @@ generic-service:
     SENTRY_SAMPLE-RATE: 1
     SENTRY_TRACES-SAMPLE-RATE: 0.01
     APPLICATIONINSIGHTS_CONFIGURATION_FILE: applicationinsights.json
-    CLIENT_COMMUNITY_PAYBACK_AND_DELIUS_URL: "http://localhost:8080/mocks/community-payback-and-delius"
     SPRING_DATASOURCE_URL: "jdbc:postgresql://${DB_HOST}/${DB_NAME}"
+
+    COMMUNITY_PAYBACK_COMMUNITY_CAMPUS_INTEGRATION_ENABLED: false
+
+    CLIENT_COMMUNITY_PAYBACK_AND_DELIUS_URL: "http://localhost:8080/mocks/community-payback-and-delius"
 
   # Pre-existing kubernetes secrets to load as environment variables in the deployment.
   # namespace_secrets:
