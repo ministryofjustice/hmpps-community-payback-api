@@ -19,6 +19,8 @@ spring:
     password: community_payback
 
 community-payback:
+  community-campus-integration:
+    enabled: true
   request-logging-enabled: true
   url-templates:
     domain-event-detail:
@@ -30,6 +32,11 @@ hmpps-auth:
 hmpps.sqs:
   provider: localstack
   queues:
+    communitycampuscoursecompletionqueue:
+      dlqName: ${random.uuid}
+      queueName: ${random.uuid}
+      dlqMaxReceiveCount: 1
+      errorVisibilityTimeout: 0
     # this queue listens to the domain event topics so we can retrieve produced events
     hmppsdomaineventsqueue:
       queueName: ${random.uuid}
