@@ -46,7 +46,7 @@ services:
     environment:
       - COMMUNITY_PAYBACK_API_URL=http://host.docker.internal:8080
     ports:
-      - "3001:3000"
+      - "3001:3001"
     entrypoint: "node dist/server.js | bunyan"
 
   localstack:
