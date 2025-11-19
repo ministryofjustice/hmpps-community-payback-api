@@ -15,11 +15,13 @@ class ArchitectureTest {
         val service = Layer("service", "..communitypaybackapi.service..")
         val serviceInternal = Layer("service.internal", "..communitypaybackapi.service.internal..")
         val serviceMappers = Layer("service.mappers", "..communitypaybackapi.service.mappers..")
+        val listener = Layer("listener", "..communitypaybackapi.listener..")
         val client = Layer("client", "..communitypaybackapi.client..")
 
         dto.dependsOnNothing()
         controller.doesNotDependOn(client, serviceInternal, serviceMappers)
         service.doesNotDependOn(controller)
+        listener.doesNotDependOn(controller)
         client.dependsOnNothing()
       }
   }
