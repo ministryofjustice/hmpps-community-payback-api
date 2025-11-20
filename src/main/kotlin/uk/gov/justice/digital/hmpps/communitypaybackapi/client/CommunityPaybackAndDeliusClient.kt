@@ -273,6 +273,4 @@ data class UpdateAppointment(
   val behaviour: AppointmentBehaviour? = null,
   val sensitive: Boolean? = null,
   val alertActive: Boolean? = null,
-  val enforcementActionCode: String? = null,
-  val respondBy: LocalDate? = null,
 )
