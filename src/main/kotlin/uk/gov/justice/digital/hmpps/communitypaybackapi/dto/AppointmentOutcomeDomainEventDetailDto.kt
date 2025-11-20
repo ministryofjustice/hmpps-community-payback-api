@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.dto
 
 import io.swagger.v3.oas.annotations.media.Schema
-import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
 
@@ -20,6 +19,4 @@ data class AppointmentOutcomeDomainEventDetailDto(
   val penaltyMinutes: Long? = null,
   val workQuality: AppointmentWorkQualityDto? = null,
   val behaviour: AppointmentBehaviourDto? = null,
-  val enforcementActionCode: String? = null,
-  val respondBy: LocalDate? = null,
 )

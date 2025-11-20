@@ -77,7 +77,6 @@ class AppointmentMappersTest {
         startTime = LocalTime.of(3, 2, 1),
         endTime = LocalTime.of(12, 11, 10),
         contactOutcome = ContactOutcomeEntity.valid().copy(code = "COE1"),
-        enforcementAction = EnforcementActionEntity.valid().copy(code = "EA01"),
         supervisorOfficerCode = "WO3736",
         notes = "The notes",
         hiVisWorn = true,
@@ -85,7 +84,6 @@ class AppointmentMappersTest {
         penaltyMinutes = 105,
         workQuality = WorkQuality.NOT_APPLICABLE,
         behaviour = Behaviour.UNSATISFACTORY,
-        respondBy = LocalDate.of(2025, 1, 2),
         alertActive = false,
         sensitive = true,
       )
@@ -116,7 +114,6 @@ class AppointmentMappersTest {
         startTime = LocalTime.of(3, 2, 1),
         endTime = LocalTime.of(12, 11, 10),
         contactOutcome = ContactOutcomeEntity.valid().copy(code = "COE1"),
-        enforcementAction = null,
         supervisorOfficerCode = "WO3736",
         notes = null,
         hiVisWorn = null,
@@ -124,7 +121,6 @@ class AppointmentMappersTest {
         penaltyMinutes = null,
         workQuality = null,
         behaviour = null,
-        respondBy = null,
         alertActive = null,
         sensitive = null,
       )
@@ -165,8 +161,6 @@ class AppointmentMappersTest {
         penaltyMinutes = 105,
         workQuality = WorkQuality.NOT_APPLICABLE,
         behaviour = Behaviour.UNSATISFACTORY,
-        enforcementAction = EnforcementActionEntity.valid().copy(code = "EA01"),
-        respondBy = LocalDate.of(2025, 1, 2),
       )
 
       val result = appointmentOutcomeEntity.toDomainEventDetail()
@@ -183,8 +177,6 @@ class AppointmentMappersTest {
       assertThat(result.penaltyMinutes).isEqualTo(105)
       assertThat(result.workQuality).isEqualTo(AppointmentWorkQualityDto.NOT_APPLICABLE)
       assertThat(result.behaviour).isEqualTo(AppointmentBehaviourDto.UNSATISFACTORY)
-      assertThat(result.enforcementActionCode).isEqualTo("EA01")
-      assertThat(result.respondBy).isEqualTo(LocalDate.of(2025, 1, 2))
     }
   }
 

@@ -11,7 +11,6 @@ import jakarta.persistence.PreUpdate
 import jakarta.persistence.Table
 import org.apache.commons.lang3.builder.CompareToBuilder.reflectionCompare
 import org.hibernate.annotations.CreationTimestamp
-import java.time.LocalDate
 import java.time.LocalTime
 import java.time.OffsetDateTime
 import java.util.UUID
@@ -30,10 +29,6 @@ data class AppointmentOutcomeEntity(
   @JoinColumn(name = "contact_outcome_id", referencedColumnName = "id")
   val contactOutcome: ContactOutcomeEntity?,
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "enforcement_action_id", referencedColumnName = "id")
-  val enforcementAction: EnforcementActionEntity?,
-
   val supervisorOfficerCode: String,
   val notes: String?,
   val hiVisWorn: Boolean?,
@@ -45,8 +40,6 @@ data class AppointmentOutcomeEntity(
 
   @Enumerated(EnumType.STRING)
   val behaviour: Behaviour?,
-
-  val respondBy: LocalDate?,
 
   val alertActive: Boolean?,
   val sensitive: Boolean?,
@@ -74,15 +67,7 @@ data class AppointmentOutcomeEntity(
    * adding an explicit comparison and excluding it from the call to [reflectionCompare]
    */
   fun isLogicallyIdentical(other: AppointmentOutcomeEntity): Boolean {
-    val contactOutcomeEqual = when {
-      this.contactOutcome == null && other.contactOutcome == null -> true
-      this.contactOutcome != null && other.contactOutcome != null ->
-        this.contactOutcome.code == other.contactOutcome.code
-      else -> false
-    }
-
-    if (!contactOutcomeEqual) return false
-    if (this.enforcementAction?.id != other.enforcementAction?.id) return false
+    if (this.contactOutcome?.id != other.contactOutcome?.id) return false
 
     return reflectionCompare(
       this,

@@ -1,12 +1,10 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.service
 
-import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.Behaviour
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EnforcementActionEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.WorkQuality
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.fromDto
 import java.util.UUID
@@ -14,7 +12,6 @@ import java.util.UUID
 @Service
 class AppointmentOutcomeEntityFactory(
   private val contactOutcomeEntityRepository: ContactOutcomeEntityRepository,
-  private val enforcementActionEntityRepository: EnforcementActionEntityRepository,
 ) {
 
   fun toEntity(
@@ -26,7 +23,6 @@ class AppointmentOutcomeEntityFactory(
     startTime = outcome.startTime,
     endTime = outcome.endTime,
     contactOutcome = outcome.contactOutcomeCode?.let { contactOutcomeEntityRepository.findByCode(it)!! },
-    enforcementAction = outcome.enforcementData?.enforcementActionId?.let { enforcementActionEntityRepository.findByIdOrNull(it)!! },
     supervisorOfficerCode = outcome.supervisorOfficerCode,
     notes = outcome.notes,
     hiVisWorn = outcome.attendanceData?.hiVisWorn,
@@ -34,7 +30,6 @@ class AppointmentOutcomeEntityFactory(
     penaltyMinutes = outcome.attendanceData?.penaltyTime?.duration?.toMinutes(),
     workQuality = outcome.attendanceData?.workQuality?.let { WorkQuality.fromDto(it) },
     behaviour = outcome.attendanceData?.behaviour?.let { Behaviour.fromDto(it) },
-    respondBy = outcome.enforcementData?.respondBy,
     alertActive = outcome.alertActive,
     sensitive = outcome.sensitive,
   )

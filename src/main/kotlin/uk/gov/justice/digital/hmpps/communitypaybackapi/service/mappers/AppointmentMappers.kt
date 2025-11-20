@@ -106,8 +106,6 @@ fun AppointmentOutcomeEntity.toDomainEventDetail() = AppointmentOutcomeDomainEve
   penaltyMinutes = this.penaltyMinutes,
   workQuality = this.workQuality?.dtoType,
   behaviour = this.behaviour?.dtoType,
-  enforcementActionCode = this.enforcementAction!!.code,
-  respondBy = this.respondBy,
 )
 
 fun AppointmentOutcomeEntity.toUpdateAppointment() = UpdateAppointment(

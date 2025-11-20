@@ -8,7 +8,6 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
-import org.springframework.data.repository.findByIdOrNull
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.HourMinuteDuration
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentBehaviourDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentWorkQualityDto
@@ -18,8 +17,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOut
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.Behaviour
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EnforcementActionEntity
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EnforcementActionEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.WorkQuality
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentOutcomeEntityFactory
@@ -33,9 +30,6 @@ class AppointmentOutcomeEntityFactoryTest {
 
   @MockK
   lateinit var contactOutcomeEntityRepository: ContactOutcomeEntityRepository
-
-  @MockK
-  lateinit var enforcementActionEntityRepository: EnforcementActionEntityRepository
 
   @InjectMockKs
   lateinit var service: AppointmentOutcomeEntityFactory
@@ -54,9 +48,6 @@ class AppointmentOutcomeEntityFactoryTest {
 
       val contactOutcomeEntity = ContactOutcomeEntity.valid().copy(code = CONTACT_OUTCOME_CODE)
       every { contactOutcomeEntityRepository.findByCode(CONTACT_OUTCOME_CODE) } returns contactOutcomeEntity
-
-      val enforcementActionEntity = EnforcementActionEntity.valid()
-      every { enforcementActionEntityRepository.findByIdOrNull(ENFORCEMENT_ACTION_ID) } returns enforcementActionEntity
 
       val result = service.toEntity(
         UpdateAppointmentOutcomeDto(
@@ -90,7 +81,6 @@ class AppointmentOutcomeEntityFactoryTest {
       assertThat(result.startTime).isEqualTo(LocalTime.of(10, 1, 2))
       assertThat(result.endTime).isEqualTo(LocalTime.of(16, 3, 4))
       assertThat(result.contactOutcome).isEqualTo(contactOutcomeEntity)
-      assertThat(result.enforcementAction).isEqualTo(enforcementActionEntity)
       assertThat(result.supervisorOfficerCode).isEqualTo("N45")
       assertThat(result.notes).isEqualTo("some notes")
       assertThat(result.hiVisWorn).isEqualTo(false)
@@ -98,7 +88,6 @@ class AppointmentOutcomeEntityFactoryTest {
       assertThat(result.penaltyMinutes).isEqualTo(300L)
       assertThat(result.workQuality).isEqualTo(WorkQuality.SATISFACTORY)
       assertThat(result.behaviour).isEqualTo(Behaviour.UNSATISFACTORY)
-      assertThat(result.respondBy).isEqualTo(LocalDate.of(2026, 8, 10))
       assertThat(result.alertActive).isEqualTo(false)
       assertThat(result.sensitive).isEqualTo(true)
     }
@@ -133,7 +122,6 @@ class AppointmentOutcomeEntityFactoryTest {
       assertThat(result.startTime).isEqualTo(LocalTime.of(10, 1, 2))
       assertThat(result.endTime).isEqualTo(LocalTime.of(16, 3, 4))
       assertThat(result.contactOutcome).isNull()
-      assertThat(result.enforcementAction).isNull()
       assertThat(result.supervisorOfficerCode).isEqualTo("N45")
       assertThat(result.notes).isNull()
       assertThat(result.hiVisWorn).isNull()
@@ -141,7 +129,6 @@ class AppointmentOutcomeEntityFactoryTest {
       assertThat(result.penaltyMinutes).isNull()
       assertThat(result.workQuality).isNull()
       assertThat(result.behaviour).isNull()
-      assertThat(result.respondBy).isNull()
       assertThat(result.alertActive).isNull()
       assertThat(result.sensitive).isNull()
     }

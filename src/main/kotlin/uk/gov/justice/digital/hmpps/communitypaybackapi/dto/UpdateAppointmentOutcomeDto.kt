@@ -15,6 +15,8 @@ data class UpdateAppointmentOutcomeDto(
   val endTime: LocalTime,
   val contactOutcomeCode: String?,
   val attendanceData: AttendanceDataDto?,
+  @Deprecated("Setting specific enforcement data is not supported")
+  @param:Schema(description = "Setting specific enforcement data is not supported", deprecated = true)
   val enforcementData: EnforcementDto?,
   val supervisorOfficerCode: String,
   val notes: String? = null,

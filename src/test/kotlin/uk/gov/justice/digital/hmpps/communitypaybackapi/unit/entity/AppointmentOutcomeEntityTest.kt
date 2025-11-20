@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EnforcementActionEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.randomOffsetDateTime
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import java.util.UUID
@@ -31,16 +30,6 @@ class AppointmentOutcomeEntityTest {
       val old = AppointmentOutcomeEntity.valid()
       val new = old.copy(
         contactOutcome = ContactOutcomeEntity.valid(),
-      )
-
-      assertThat(old.isLogicallyIdentical(new)).isFalse()
-    }
-
-    @Test
-    fun `If enforcement action changed, return false`() {
-      val old = AppointmentOutcomeEntity.valid()
-      val new = old.copy(
-        enforcementAction = EnforcementActionEntity.valid(),
       )
 
       assertThat(old.isLogicallyIdentical(new)).isFalse()
