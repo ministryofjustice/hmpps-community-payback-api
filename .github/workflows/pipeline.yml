@@ -72,19 +72,29 @@ jobs:
     with:
       environment: 'dev'
       app_version: '${{ needs.build.outputs.app_version }}'
-  e2e_test:
-    name: "E2E Test"
+  e2e_test_admin_ui:
+    name: "E2E Test Admin UI"
     needs:
       - deploy_dev
-    uses: ./.github/workflows/e2e.yml
+    uses: ./.github/workflows/e2e_admin.yml
+    secrets: inherit
+  e2e_test_supervisors_ui:
+    name: "E2E Test Supervisor UI"
+    needs:
+      - deploy_dev
+    uses: ./.github/workflows/e2e_supervisors.yml
     secrets: inherit
   generate_types_case_admin_ui:
-    needs: e2e_test
+    needs:
+      - e2e_test_admin_ui
+      - e2e_test_supervisors_ui
     name: Run the generate types job for the Community Payback Case Admin UI
     uses: ./.github/workflows/generate-types-case-admin-ui.yml
     secrets: inherit
   generate_types_supervisor_ui:
-    needs: e2e_test
+    needs:
+      - e2e_test_admin_ui
+      - e2e_test_supervisors_ui
     name: Run the generate types job for the Community Payback Supervisor UI
     uses: ./.github/workflows/generate-types-supervisor-ui.yml
     secrets: inherit
