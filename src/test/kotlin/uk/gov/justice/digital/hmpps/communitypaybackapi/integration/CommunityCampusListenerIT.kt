@@ -2,15 +2,18 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.integration
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.assertj.core.api.Assertions.assertThat
+import org.awaitility.Awaitility.await
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import software.amazon.awssdk.services.sqs.model.SendMessageRequest
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.CommunityCampusCourseCompletionMessage
-import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.CommunityCampusListener
 import uk.gov.justice.hmpps.sqs.HmppsQueueService
 import uk.gov.justice.hmpps.sqs.MissingQueueException
+import java.util.concurrent.TimeUnit
 
 class CommunityCampusListenerIT : IntegrationTestBase() {
 
@@ -20,12 +23,20 @@ class CommunityCampusListenerIT : IntegrationTestBase() {
   @Autowired
   lateinit var objectMapper: ObjectMapper
 
+  @Autowired
+  lateinit var eteCourseEventEntityRepository: EteCourseEventEntityRepository
+
   companion object {
     const val QUEUE_NAME = "communitycampuscoursecompletionqueue"
   }
 
   @Nested
   inner class CourseCompletion {
+
+    @BeforeEach
+    fun before() {
+      eteCourseEventEntityRepository.deleteAll()
+    }
 
     @Test
     fun `Message is received`() {
@@ -41,9 +52,9 @@ class CommunityCampusListenerIT : IntegrationTestBase() {
           .build(),
       )
 
-      Thread.sleep(1000)
-
-      assertThat(CommunityCampusListener.messageReceived).isTrue()
+      await().atMost(5, TimeUnit.SECONDS).untilAsserted {
+        assertThat(eteCourseEventEntityRepository.count()).isEqualTo(1)
+      }
     }
   }
 }
