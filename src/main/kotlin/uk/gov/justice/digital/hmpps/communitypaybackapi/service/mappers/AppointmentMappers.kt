@@ -124,8 +124,6 @@ fun AppointmentOutcomeEntity.toUpdateAppointment() = UpdateAppointment(
   behaviour = this.behaviour?.upstreamType,
   sensitive = this.sensitive,
   alertActive = this.alertActive,
-  enforcementActionCode = this.enforcementAction?.code,
-  respondBy = this.respondBy,
 )
 
 fun WorkQuality.Companion.fromDto(dto: AppointmentWorkQualityDto) = WorkQuality.entries.first { it.dtoType == dto }

@@ -96,7 +96,6 @@ class AppointmentMappersTest {
       assertThat(result.startTime).isEqualTo(LocalTime.of(3, 2, 1))
       assertThat(result.endTime).isEqualTo(LocalTime.of(12, 11, 10))
       assertThat(result.contactOutcomeCode).isEqualTo("COE1")
-      assertThat(result.enforcementActionCode).isEqualTo("EA01")
       assertThat(result.supervisorOfficerCode).isEqualTo("WO3736")
       assertThat(result.notes).isEqualTo("The notes")
       assertThat(result.hiVisWorn).isTrue
@@ -104,7 +103,6 @@ class AppointmentMappersTest {
       assertThat(result.penaltyMinutes).isEqualTo(105)
       assertThat(result.workQuality).isEqualTo(AppointmentWorkQuality.NOT_APPLICABLE)
       assertThat(result.behaviour).isEqualTo(AppointmentBehaviour.UNSATISFACTORY)
-      assertThat(result.respondBy).isEqualTo(LocalDate.of(2025, 1, 2))
       assertThat(result.alertActive).isFalse
       assertThat(result.sensitive).isTrue
     }
@@ -137,7 +135,6 @@ class AppointmentMappersTest {
       assertThat(result.startTime).isEqualTo(LocalTime.of(3, 2, 1))
       assertThat(result.endTime).isEqualTo(LocalTime.of(12, 11, 10))
       assertThat(result.contactOutcomeCode).isEqualTo("COE1")
-      assertThat(result.enforcementActionCode).isNull()
       assertThat(result.supervisorOfficerCode).isEqualTo("WO3736")
       assertThat(result.notes).isNull()
       assertThat(result.hiVisWorn).isNull()
@@ -145,7 +142,6 @@ class AppointmentMappersTest {
       assertThat(result.penaltyMinutes).isNull()
       assertThat(result.workQuality).isNull()
       assertThat(result.behaviour).isNull()
-      assertThat(result.respondBy).isNull()
       assertThat(result.alertActive).isNull()
       assertThat(result.sensitive).isNull()
     }
