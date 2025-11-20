@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.entity
 
 import jakarta.persistence.Entity
-import jakarta.persistence.GeneratedValue
 import jakarta.persistence.Id
 import jakarta.persistence.Table
 import org.hibernate.annotations.CreationTimestamp
@@ -16,7 +15,6 @@ import java.util.UUID
 data class EnforcementActionEntity(
 
   @Id
-  @GeneratedValue
   val id: UUID,
   val code: String,
   val name: String,
