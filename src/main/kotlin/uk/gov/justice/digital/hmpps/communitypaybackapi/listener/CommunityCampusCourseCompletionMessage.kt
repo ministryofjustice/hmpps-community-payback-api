@@ -20,7 +20,9 @@ data class CommunityCampusPerson(
   // pending enumeration
   val region: String,
   val email: String,
-)
+) {
+  companion object
+}
 
 data class CommunityCampusCourse(
   val courseName: String,
@@ -29,10 +31,12 @@ data class CommunityCampusCourse(
   val completionDateTime: LocalDateTime,
   val status: CommunityCampusCourseCompletionStatus,
   val totalTime: HourMinuteDuration,
-  val attempts: Int?,
+  val attempts: Int,
   val expectedMinutes: Int,
   val expectedMinutesAdditional: Int,
-)
+) {
+  companion object
+}
 
 enum class CommunityCampusCourseCompletionStatus {
   Completed,
