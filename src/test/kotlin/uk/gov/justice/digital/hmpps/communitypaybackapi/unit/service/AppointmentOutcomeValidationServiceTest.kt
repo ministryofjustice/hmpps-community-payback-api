@@ -4,7 +4,6 @@ import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
-import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThatCode
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Nested
@@ -17,14 +16,10 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EnforcementDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EnforcementActionEntity
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EnforcementActionEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentOutcomeValidationService
 import java.time.Duration
-import java.time.LocalDate
 import java.time.LocalTime
-import java.util.Optional
 import java.util.UUID
 
 @ExtendWith(MockKExtension::class)
@@ -32,9 +27,6 @@ class AppointmentOutcomeValidationServiceTest {
 
   @MockK
   lateinit var contactOutcomeEntityRepository: ContactOutcomeEntityRepository
-
-  @MockK
-  lateinit var enforcementActionEntityRepository: EnforcementActionEntityRepository
 
   @InjectMockKs
   lateinit var service: AppointmentOutcomeValidationService
@@ -59,114 +51,6 @@ class AppointmentOutcomeValidationServiceTest {
       assertThatThrownBy { service.validateContactOutcome(outcome(contactOutcomeCode = code)) }
         .isInstanceOf(BadRequestException::class.java)
         .hasMessage("Contact outcome not found for code $code")
-    }
-  }
-
-  @Nested
-  inner class ContactOutcomeEnforceableValidation {
-
-    @Test
-    fun `if contact outcome not enforceable, does not require enforcement data`() {
-      val contact = ContactOutcomeEntity.valid().copy(enforceable = false)
-      every { contactOutcomeEntityRepository.findByCode(contact.code) } returns contact
-
-      assertThatCode { service.validateContactOutcome(outcome(contactOutcomeCode = contact.code, enforcementData = null)) }
-
-      verify(exactly = 0) { enforcementActionEntityRepository.findById(any()) }
-    }
-
-    @Test
-    fun `if contact outcome enforceable, throws BadRequest when enforcement action not found`() {
-      val contact = ContactOutcomeEntity.valid().copy(enforceable = true)
-      val enforcementId = UUID.randomUUID()
-      every { contactOutcomeEntityRepository.findByCode(contact.code) } returns contact
-      every { enforcementActionEntityRepository.findById(enforcementId) } returns Optional.empty()
-
-      val enforcement = EnforcementDto(enforcementActionId = enforcementId, respondBy = LocalDate.now())
-
-      assertThatThrownBy { service.validateContactOutcome(outcome(contactOutcomeCode = contact.code, enforcementData = enforcement)) }
-        .isInstanceOf(BadRequestException::class.java)
-        .hasMessage("Enforcement action not found for ID $enforcementId")
-    }
-
-    @Test
-    fun `if enforceable, requires enforcementData`() {
-      val contact = ContactOutcomeEntity.valid().copy(enforceable = true)
-      every { contactOutcomeEntityRepository.findByCode(contact.code) } returns contact
-
-      assertThatThrownBy { service.validateContactOutcome(outcome(contactOutcomeCode = contact.code, enforcementData = null)) }
-        .isInstanceOf(BadRequestException::class.java)
-        .hasMessage("Enforcement data is required for enforceable contact outcomes")
-    }
-
-    @Test
-    fun `if enforceable, but respond by not required, respond by is optional`() {
-      val contact = ContactOutcomeEntity.valid().copy(enforceable = true)
-      val enforcement = EnforcementActionEntity.valid().copy(respondByDateRequired = false)
-      every { contactOutcomeEntityRepository.findByCode(contact.code) } returns contact
-      every { enforcementActionEntityRepository.findById(enforcement.id) } returns Optional.of(enforcement)
-
-      val dto = EnforcementDto(enforcementActionId = enforcement.id, respondBy = LocalDate.now())
-
-      assertThatCode { service.validateContactOutcome(outcome(contactOutcomeCode = contact.code, enforcementData = dto)) }
-        .doesNotThrowAnyException()
-    }
-
-    @Test
-    fun `if enforceable and respond by required, error if respond by not provided`() {
-      val contact = ContactOutcomeEntity.valid().copy(enforceable = true)
-      val enforcement = EnforcementActionEntity.valid().copy(respondByDateRequired = true)
-      every { contactOutcomeEntityRepository.findByCode(contact.code) } returns contact
-      every { enforcementActionEntityRepository.findById(enforcement.id) } returns Optional.of(enforcement)
-
-      val dtoMissingRespondBy = EnforcementDto(enforcementActionId = enforcement.id, respondBy = null)
-
-      assertThatThrownBy { service.validateContactOutcome(outcome(contactOutcomeCode = contact.code, enforcementData = dtoMissingRespondBy)) }
-        .isInstanceOf(BadRequestException::class.java)
-        .hasMessage("Respond by date is required for enforceable contact outcomes")
-    }
-
-    @Test
-    fun `if provided, respond by in the past throws BadRequest`() {
-      val contact = ContactOutcomeEntity.valid().copy(enforceable = true)
-      val enforcement = EnforcementActionEntity.valid().copy(respondByDateRequired = false)
-      every { contactOutcomeEntityRepository.findByCode(contact.code) } returns contact
-      every { enforcementActionEntityRepository.findById(enforcement.id) } returns Optional.of(enforcement)
-
-      val past = LocalDate.now().minusDays(1)
-      val dto = EnforcementDto(enforcementActionId = enforcement.id, respondBy = past)
-
-      assertThatThrownBy { service.validateContactOutcome(outcome(contactOutcomeCode = contact.code, enforcementData = dto)) }
-        .isInstanceOf(BadRequestException::class.java)
-        .hasMessage("Respond by date '$past' must be today or in the future")
-    }
-
-    @Test
-    fun `if provided, respond by today is accepted`() {
-      val contact = ContactOutcomeEntity.valid().copy(enforceable = true)
-      val enforcement = EnforcementActionEntity.valid().copy(respondByDateRequired = false)
-      every { contactOutcomeEntityRepository.findByCode(contact.code) } returns contact
-      every { enforcementActionEntityRepository.findById(enforcement.id) } returns Optional.of(enforcement)
-
-      val today = LocalDate.now()
-      val dto = EnforcementDto(enforcementActionId = enforcement.id, respondBy = today)
-
-      assertThatCode { service.validateContactOutcome(outcome(contactOutcomeCode = contact.code, enforcementData = dto)) }
-        .doesNotThrowAnyException()
-    }
-
-    @Test
-    fun `if provided, respond by in the future is accepted`() {
-      val contact = ContactOutcomeEntity.valid().copy(enforceable = true)
-      val enforcement = EnforcementActionEntity.valid().copy(respondByDateRequired = false)
-      every { contactOutcomeEntityRepository.findByCode(contact.code) } returns contact
-      every { enforcementActionEntityRepository.findById(enforcement.id) } returns Optional.of(enforcement)
-
-      val future = LocalDate.now().plusDays(1)
-      val dto = EnforcementDto(enforcementActionId = enforcement.id, respondBy = future)
-
-      assertThatCode { service.validateContactOutcome(outcome(contactOutcomeCode = contact.code, enforcementData = dto)) }
-        .doesNotThrowAnyException()
     }
   }
 
