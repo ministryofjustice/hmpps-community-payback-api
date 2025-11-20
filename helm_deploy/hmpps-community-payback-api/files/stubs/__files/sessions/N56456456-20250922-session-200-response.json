@@ -11,12 +11,9 @@
       "postCode": "CM1 1OH"
     }
   },
-  "date" : "2025-09-22",
   "appointmentSummaries": [
     {
       "id": "2500630002",
-      "startTime" : "09:00",
-      "endTime" : "17:00",
       "case" : {
         "crn": "X223344",
         "name": {

@@ -5,7 +5,7 @@
   },
   "response": {
     "status": 200,
-    "bodyFileName": "appointments/appointment-2500628309-200-response.json",
+    "bodyFileName": "get-appointment/appointment-2500628309-200-response.json",
     "headers": {
       "Content-Type": "application/json"
     }
