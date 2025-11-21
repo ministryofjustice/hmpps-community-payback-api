@@ -251,6 +251,11 @@ class AdminSessionsIT : IntegrationTestBase() {
   inner class AllocateSupervisorEndpoint {
 
     @Test
+    fun clearAllocations() {
+      sessionSupervisorEntityRepository.deleteAll()
+    }
+
+    @Test
     fun `should return unauthorized if no token`() {
       webTestClient.post()
         .uri("/admin/projects/123/sessions/2025-01-09/supervisor")
@@ -282,7 +287,7 @@ class AdminSessionsIT : IntegrationTestBase() {
     }
 
     @Test
-    fun `add allocation`() {
+    fun `allocate session`() {
       webTestClient.post()
         .uri("/admin/projects/123/sessions/2025-01-09/supervisor")
         .addAdminUiAuthHeader(username = "ADMIN_USER1")
@@ -296,6 +301,33 @@ class AdminSessionsIT : IntegrationTestBase() {
       assertThat(allocation.day).isEqualTo(LocalDate.of(2025, 1, 9))
       assertThat(allocation.supervisorCode).isEqualTo("supervisor_code_1")
       assertThat(allocation.allocatedByUsername).isEqualTo("ADMIN_USER1")
+    }
+
+    @Test
+    fun `reallocate session`() {
+      sessionSupervisorEntityRepository.save(
+        SessionSupervisorEntity(
+          projectCode = "123",
+          day = LocalDate.of(2025, 1, 9),
+          supervisorCode = "OTHER_USER",
+          allocatedByUsername = "OTHER_ALLOCATOR",
+        ),
+      )
+
+      webTestClient.post()
+        .uri("/admin/projects/123/sessions/2025-01-09/supervisor")
+        .addAdminUiAuthHeader(username = "ADMIN_USER1")
+        .bodyValue(AllocateSupervisorToSessionDto("supervisor_code_1"))
+        .exchange()
+        .expectStatus()
+        .isOk
+
+      val allocation = sessionSupervisorEntityRepository.findAll().first()
+      assertThat(allocation.projectCode).isEqualTo("123")
+      assertThat(allocation.day).isEqualTo(LocalDate.of(2025, 1, 9))
+      assertThat(allocation.supervisorCode).isEqualTo("supervisor_code_1")
+      assertThat(allocation.allocatedByUsername).isEqualTo("ADMIN_USER1")
+      assertThat(allocation.createdAt).isNotEqualTo(allocation.updatedAt)
     }
   }
 

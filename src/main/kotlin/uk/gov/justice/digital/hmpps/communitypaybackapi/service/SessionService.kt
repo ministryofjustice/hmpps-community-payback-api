@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.service
 
 import org.slf4j.LoggerFactory
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionDto
@@ -53,28 +54,36 @@ class SessionService(
   fun allocateSupervisor(
     sessionId: SessionIdDto,
     supervisorCode: String,
+    allocatedByUsername: String = contextService.getUserName(),
   ) {
+    val existingAllocation = sessionSupervisorEntityRepository.findByIdOrNull(sessionId.toJpaId())
+
     sessionSupervisorEntityRepository.save(
-      SessionSupervisorEntity(
-        projectCode = sessionId.projectCode,
-        day = sessionId.day,
-        supervisorCode = supervisorCode,
-        allocatedByUsername = contextService.getUserName(),
-      ),
+      existingAllocation?.apply {
+        this.supervisorCode = supervisorCode
+        this.allocatedByUsername = allocatedByUsername
+      }
+        ?: SessionSupervisorEntity(
+          projectCode = sessionId.projectCode,
+          day = sessionId.day,
+          supervisorCode = supervisorCode,
+          allocatedByUsername = allocatedByUsername,
+        ),
     )
+
     log.info("Session [$sessionId] allocated to [$supervisorCode]")
   }
 
   fun deallocateSupervisor(sessionId: SessionIdDto) {
-    sessionSupervisorEntityRepository.deleteById(
-      SessionSupervisorId(
-        projectCode = sessionId.projectCode,
-        day = sessionId.day,
-      ),
-    )
+    sessionSupervisorEntityRepository.deleteById(sessionId.toJpaId())
 
     log.info("Session [$sessionId] deallocated")
   }
+
+  private fun SessionIdDto.toJpaId() = SessionSupervisorId(
+    projectCode = projectCode,
+    day = day,
+  )
 
   fun getNextAllocationForSupervisor(supervisorCode: String): SessionSummaryDto? {
     val allocations = sessionSupervisorEntityRepository.findBySupervisorCodeAndDayGreaterThanEqualOrderByDayAsc(
