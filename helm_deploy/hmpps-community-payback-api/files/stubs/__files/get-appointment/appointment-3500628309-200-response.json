@@ -1,0 +1,79 @@
+{
+  "id": 3500628309,
+  "version": "A7C52A48-6F99-4603-941D-B0FF1465F8EC",
+  "project": {
+    "name": "Cleaning Streets",
+    "code": "N56123456",
+    "location": {
+      "streetName": "Peter Street",
+      "buildingName": null,
+      "addressNumber": "90",
+      "townCity": "Salford",
+      "county": null,
+      "postCode": "M5 560"
+    }
+  },
+  "projectType": {
+    "name": "CPxASB Rapid Deployment - Project Clean Streets",
+    "code": "PL"
+  },
+  "case": {
+    "crn": "X949351",
+    "name": {
+      "forename": "Zinnia",
+      "surname": "Wormwood",
+      "middleNames": []
+    },
+    "dateOfBirth": "1985-05-12",
+    "currentExclusion": false,
+    "currentRestriction": false
+  },
+  "team" : {
+    "name": "Default Designated Transfer Team",
+    "code": "N56DTX"
+  },
+  "provider" : {
+    "name": "East of England",
+    "code": "N56"
+  },
+  "pickUpData": {
+    "location": {
+      "buildingName": "4th Floor Ashby House",
+      "addressNumber": null,
+      "streetName": "Brook Street",
+      "townCity": "Chelmsford",
+      "county": "Essex",
+      "postCode": "CM1 1UH"
+    },
+    "time": "08:00"
+  },
+  "date": "2026-03-01",
+  "startTime": "09:00",
+  "endTime": "17:00",
+  "penaltyTime": "120:30",
+  "supervisor": {
+    "code": "N56A108",
+    "name": {
+      "forename": "Super",
+      "surname": "Visor",
+      "middleNames": []
+    }
+  },
+  "outcome": {
+    "code": "UAAB",
+    "description": "Unacceptable Absence"
+  },
+  "enforcementAction": {
+    "code": "ROM",
+    "description": "Refer to offender manager",
+    "respondBy": null
+  },
+  "hiVisWorn": null,
+  "workedIntensively": null,
+  "workQuality": null,
+  "behaviour": null,
+  "notes": "Comment added by D Patel on 04/09/2025 at 20:23\n[System scheduled appointment]\n---------------------------------------------------------\nComment added by D Patel on 22/09/2025 at 17:29\n22/09/2025 17:29\nEnforcement Action: Refer to Offender Manager",
+  "updatedAt": "2025-09-22T17:29:15",
+  "sensitive": false,
+  "alertActive": false
+}

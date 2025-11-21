@@ -1,0 +1,82 @@
+{
+  "project": {
+    "name": "Cleaning Streets",
+    "code": "N56123456",
+    "location": {
+      "streetName": "Peter Street",
+      "buildingName": null,
+      "addressNumber": "90",
+      "townCity": "Salford",
+      "county": null,
+      "postCode": "M5 560"
+    }
+  },
+  "appointmentSummaries": [
+    {
+      "id": "3500629219",
+      "case": {
+        "crn": "X948762",
+        "name": {
+          "forename": "Harry",
+          "surname": "Wormwood",
+          "middleNames": []
+        },
+        "dateOfBirth": "1972-01-05",
+        "currentExclusion": false,
+        "currentRestriction": false
+      },
+      "outcome": {
+        "code": "ATTC",
+        "description": "Attended - Complied"
+      },
+      "requirementProgress": {
+        "requirementMinutes": "12000",
+        "completedMinutes": "4000"
+      }
+    },
+    {
+      "id": "3500629735",
+      "case": {
+        "crn": "X949551",
+        "name": {
+          "forename": "Agatha",
+          "surname": "Trunchbull",
+          "middleNames": []
+        },
+        "dateOfBirth": "2003-12-28",
+        "currentExclusion": false,
+        "currentRestriction": false
+      },
+      "outcome": {
+        "code": "UAAB",
+        "description": "Unacceptable Absence"
+      },
+      "requirementProgress": {
+        "requirementMinutes": "12000",
+        "completedMinutes": "1000"
+      }
+    },
+    {
+      "id": "3500628309",
+      "case": {
+        "crn": "X949351",
+        "name": {
+          "forename": "Zinnia",
+          "surname": "Wormwood",
+          "middleNames": []
+        },
+        "dateOfBirth": "1985-05-12",
+        "currentExclusion": false,
+        "currentRestriction": false
+      },
+      "outcome": {
+        "code": "UAAB",
+        "description": "Unacceptable Absence"
+      },
+      "requirementProgress": {
+        "requirementMinutes": "12000",
+        "completedMinutes": "2000"
+      }
+    }
+  ]
+}
