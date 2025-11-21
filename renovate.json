@@ -13,5 +13,6 @@
       "matchManagers": ["github-actions"],
       "fileMatch": ["^\\.github/workflows/.*\\.yml$"]
     }
-  ]
+  ],
+  "ignoreDeps": ["postgres"]
 }
