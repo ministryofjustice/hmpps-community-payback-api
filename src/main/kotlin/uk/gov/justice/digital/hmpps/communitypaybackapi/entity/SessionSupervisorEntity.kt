@@ -22,9 +22,9 @@ data class SessionSupervisorEntity(
   @Id
   val day: LocalDate,
 
-  val supervisorCode: String,
+  var supervisorCode: String,
 
-  val allocatedByUsername: String,
+  var allocatedByUsername: String,
 
   @CreationTimestamp
   val createdAt: OffsetDateTime = OffsetDateTime.now(),
