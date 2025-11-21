@@ -29,6 +29,16 @@
       "allocatedCount": 1,
       "compliedOutcomeCount": 0,
       "enforcementActionNeededCount": 0
+    },
+    {
+      "date": "2026-03-01",
+      "project": {
+        "code": "N56123456",
+        "name": "Cleaning Streets"
+      },
+      "allocatedCount": 3,
+      "compliedOutcomeCount": 0,
+      "enforcementActionNeededCount": 0
     }
   ]
 }

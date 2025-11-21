@@ -1,0 +1,75 @@
+{
+  "id": 3500629219,
+  "version": "6AB6DADE-E96B-4243-95F7-D1B9FF023DB4",
+  "project": {
+    "name": "Cleaning Streets",
+    "code": "N56123456",
+    "location": {
+      "streetName": "Peter Street",
+      "buildingName": null,
+      "addressNumber": "90",
+      "townCity": "Salford",
+      "county": null,
+      "postCode": "M5 560"
+    }
+  },
+  "projectType": {
+    "name": "CPxASB Rapid Deployment - Project Clean Streets",
+    "code": "PL"
+  },
+  "case": {
+    "crn": "X948762",
+    "name": {
+      "forename": "Harry",
+      "surname": "Wormwood",
+      "middleNames": []
+    },
+    "dateOfBirth": "1972-01-05",
+    "currentExclusion": false,
+    "currentRestriction": false
+  },
+  "team" : {
+    "name": "Default Designated Transfer Team",
+    "code": "N56DTX"
+  },
+  "provider" : {
+    "name": "East of England",
+    "code": "N56"
+  },
+  "pickUpData": {
+    "location": {
+      "buildingName": "4th Floor Ashby House",
+      "addressNumber": null,
+      "streetName": "Brook Street",
+      "townCity": "Chelmsford",
+      "county": "Essex",
+      "postCode": "CM1 1UH"
+    },
+    "time": "08:00"
+  },
+  "date": "2026-03-01",
+  "startTime": "09:00",
+  "endTime": "17:00",
+  "penaltyTime": null,
+  "supervisor": {
+    "code": "N56A108",
+    "name": {
+      "forename": "Super",
+      "surname": "Visor",
+      "middleNames": []
+    }
+  },
+  "outcome": {
+    "code": "ATTC",
+    "description": "Attended - Complied"
+  },
+  "enforcementAction": null,
+  "hiVisWorn": true,
+  "workedIntensively": false,
+  "workQuality": "GOOD",
+  "behaviour": "GOOD",
+  "notes": "Comment added by D Patel on 08/09/2025 at 10:17\n[System scheduled appointment]",
+  "updatedAt": "2025-09-22T17:29:01",
+  "sensitive": null,
+  "alertActive": null
+}
