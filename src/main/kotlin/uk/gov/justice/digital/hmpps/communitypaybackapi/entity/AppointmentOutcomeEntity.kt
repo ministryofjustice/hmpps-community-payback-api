@@ -48,7 +48,7 @@ data class AppointmentOutcomeEntity(
   val createdAt: OffsetDateTime = OffsetDateTime.now(),
 ) {
   @PreUpdate
-  fun preUpdate(): Unit = throw UnsupportedOperationException()
+  fun preUpdate(): Unit = throw UnsupportedOperationException("This entity can't be updated")
 
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
