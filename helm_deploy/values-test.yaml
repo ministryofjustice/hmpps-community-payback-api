@@ -15,8 +15,9 @@ generic-service:
     SPRING_PROFILES_ACTIVE: test
 
     COMMUNITY_PAYBACK_URL_TEMPLATES_DOMAIN_EVENT_DETAIL_APPOINTMENT_OUTCOME: https://community-payback-api-test.hmpps.service.justice.gov.uk/domain-event-details/appointment-outcome
-    CLIENT_COMMUNITY_PAYBACK_AND_DELIUS_URL: http://hmpps-community-payback-api-stubs
+    COMMUNITY_PAYBACK_AUTO_SEED_ENABLED: true
 
+    CLIENT_COMMUNITY_PAYBACK_AND_DELIUS_URL: http://hmpps-community-payback-api-stubs
     CLIENT_ARNS_URL: https://assess-risks-and-needs-dev.hmpps.service.justice.gov.uk
 
 # CloudPlatform AlertManager receiver to route prometheus alerts to slack
