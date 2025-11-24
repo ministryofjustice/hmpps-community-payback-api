@@ -4,6 +4,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.RequirementProgre
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.random
 
 fun RequirementProgress.Companion.valid() = RequirementProgress(
-  requirementMinutes = Int.Companion.random(80, 1000),
+  requiredMinutes = Int.Companion.random(80, 1000),
   completedMinutes = Int.random(0, 1000),
 )

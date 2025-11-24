@@ -360,7 +360,7 @@ class AppointmentMappersTest {
           case = CaseSummary.Companion.valid().copy(crn = "CRN1"),
           outcome = ContactOutcome.valid().copy(code = "OUTCOME1"),
           requirementProgress = RequirementProgress(
-            requirementMinutes = 520,
+            requiredMinutes = 520,
             completedMinutes = 30,
           ),
         ),

@@ -112,7 +112,7 @@ data class AppointmentSummary(
 }
 
 data class RequirementProgress(
-  val requirementMinutes: Int,
+  val requiredMinutes: Int,
   val completedMinutes: Int,
 ) {
   companion object
