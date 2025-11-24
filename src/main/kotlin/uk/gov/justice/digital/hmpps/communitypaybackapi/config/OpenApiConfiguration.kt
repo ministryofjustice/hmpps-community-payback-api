@@ -78,7 +78,7 @@ class OpenApiConfiguration(buildProperties: BuildProperties) {
   fun forCommunityPaybackAdminUI(): GroupedOpenApi = GroupedOpenApi.builder()
     .group("ForCommunityPaybackAdminUI")
     .displayName("For Community Payback Admin UI")
-    .pathsToExclude("/queue-admin/**", "/domain-event-details/**", "/supervisor/**")
+    .pathsToMatch("/admin/**", "/common/**")
     .addOpenApiCustomizer(defaultErrorResponseCustomizer())
     .build()
 
@@ -94,7 +94,7 @@ class OpenApiConfiguration(buildProperties: BuildProperties) {
   fun forSupervisorUI(): GroupedOpenApi = GroupedOpenApi.builder()
     .group("ForCommunityPaybackSupervisorUI")
     .displayName("For Community Payback Supervisor UI")
-    .pathsToMatch("/supervisor/**")
+    .pathsToMatch("/supervisor/**", "/common/**")
     .addOpenApiCustomizer(defaultErrorResponseCustomizer())
     .build()
 
