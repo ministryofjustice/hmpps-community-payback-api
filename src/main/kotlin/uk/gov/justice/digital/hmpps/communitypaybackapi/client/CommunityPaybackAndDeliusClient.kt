@@ -87,8 +87,8 @@ data class SessionSummary(
   val date: LocalDate,
   val project: ProjectSummary,
   val allocatedCount: Int,
-  val compliedOutcomeCount: Int,
-  val enforcementActionNeededCount: Int,
+  val outcomeCount: Int,
+  val enforcementActionCount: Int,
 ) {
   companion object
 }
@@ -157,7 +157,7 @@ data class EnforcementAction(val code: String, val description: String, val resp
 data class Project(val name: String, val code: String, val location: Address) {
   companion object
 }
-data class ProjectSummary(val name: String, val code: String) {
+data class ProjectSummary(val description: String, val code: String) {
   companion object
 }
 data class ProjectType(val name: String, val code: String) {

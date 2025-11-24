@@ -9,6 +9,6 @@ fun SessionSummary.Companion.valid() = SessionSummary(
   project = ProjectSummary.valid(),
   date = randomLocalDate(),
   allocatedCount = Int.random(),
-  compliedOutcomeCount = Int.random(),
-  enforcementActionNeededCount = Int.random(),
+  outcomeCount = Int.random(),
+  enforcementActionCount = Int.random(),
 )
