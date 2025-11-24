@@ -82,8 +82,8 @@ class AdminSessionsIT : IntegrationTestBase() {
         endDate = LocalDate.of(2025, 7, 9),
         projectSessions = SessionSummaries(
           listOf(
-            SessionSummary.valid().copy(project = ProjectSummary.valid().copy(name = "Community Garden Maintenance")),
-            SessionSummary.valid().copy(project = ProjectSummary.valid().copy(name = "Park Cleanup")),
+            SessionSummary.valid().copy(project = ProjectSummary.valid().copy(description = "Community Garden Maintenance")),
+            SessionSummary.valid().copy(project = ProjectSummary.valid().copy(description = "Park Cleanup")),
           ),
         ),
       )

@@ -53,22 +53,22 @@ class SessionMappersTest {
           SessionSummary(
             project = ProjectSummary(
               code = "cg",
-              name = "Community Garden",
+              description = "Community Garden",
             ),
             date = LocalDate.of(2025, 9, 1),
             allocatedCount = 0,
-            compliedOutcomeCount = 1,
-            enforcementActionNeededCount = 2,
+            outcomeCount = 1,
+            enforcementActionCount = 2,
           ),
           SessionSummary(
             project = ProjectSummary(
               code = "pc",
-              name = "Park Cleanup",
+              description = "Park Cleanup",
             ),
             date = LocalDate.of(2025, 9, 8),
             allocatedCount = 3,
-            compliedOutcomeCount = 4,
-            enforcementActionNeededCount = 5,
+            outcomeCount = 4,
+            enforcementActionCount = 5,
           ),
         ),
       )
@@ -104,12 +104,12 @@ class SessionMappersTest {
       val projectAllocation = SessionSummary(
         project = ProjectSummary(
           code = "cg",
-          name = "Community Garden",
+          description = "Community Garden",
         ),
         date = LocalDate.of(2025, 9, 1),
         allocatedCount = 40,
-        compliedOutcomeCount = 0,
-        enforcementActionNeededCount = 0,
+        outcomeCount = 0,
+        enforcementActionCount = 0,
       )
 
       assertThat(projectAllocation.toDto()).isEqualTo(

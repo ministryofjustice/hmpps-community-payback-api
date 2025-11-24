@@ -5,5 +5,5 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.random
 
 fun ProjectSummary.Companion.valid() = ProjectSummary(
   code = String.random(5),
-  name = String.random(50),
+  description = String.random(50),
 )

@@ -4,41 +4,41 @@
       "date": "2025-09-15",
       "project": {
         "code": "N56123456",
-        "name": "Cleaning Streets"
+        "description": "Cleaning Streets"
       },
       "allocatedCount": 3,
-      "compliedOutcomeCount": 1,
-      "enforcementActionNeededCount": 1
+      "outcomeCount": 1,
+      "enforcementActionCount": 1
     },
     {
       "date": "2025-09-22",
       "project": {
         "code": "N56777777",
-        "name": "Test regional project"
+        "description": "Test regional project"
       },
       "allocatedCount": 1,
-      "compliedOutcomeCount": 0,
-      "enforcementActionNeededCount": 0
+      "outcomeCount": 0,
+      "enforcementActionCount": 0
     },
     {
       "date": "2025-09-22",
       "project": {
         "code": "N56456456",
-        "name": "Tree Planting UK"
+        "description": "Tree Planting UK"
       },
       "allocatedCount": 1,
-      "compliedOutcomeCount": 0,
-      "enforcementActionNeededCount": 0
+      "outcomeCount": 0,
+      "enforcementActionCount": 0
     },
     {
       "date": "2026-03-01",
       "project": {
         "code": "N56123456",
-        "name": "Cleaning Streets"
+        "description": "Cleaning Streets"
       },
       "allocatedCount": 3,
-      "compliedOutcomeCount": 0,
-      "enforcementActionNeededCount": 0
+      "outcomeCount": 0,
+      "enforcementActionCount": 0
     }
   ]
 }

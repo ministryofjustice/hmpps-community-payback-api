@@ -58,14 +58,14 @@ class SessionMappers(
 
 fun SessionSummaries.toDto() = SessionSummariesDto(this.sessions.map { it.toDto() })
 fun SessionSummary.toDto() = SessionSummaryDto(
-  projectName = this.project.name,
+  projectName = this.project.description,
   projectCode = this.project.code,
   date = this.date,
   startTime = LocalTime.of(0, 0),
   endTime = LocalTime.of(0, 0),
   numberOfOffendersAllocated = this.allocatedCount,
-  numberOfOffendersWithOutcomes = this.compliedOutcomeCount,
-  numberOfOffendersWithEA = this.enforcementActionNeededCount,
+  numberOfOffendersWithOutcomes = this.outcomeCount,
+  numberOfOffendersWithEA = this.enforcementActionCount,
 )
 
 fun Address.toFullAddress() = listOfNotNull(
