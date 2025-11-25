@@ -29,6 +29,8 @@ object LocalStackContainer {
   }
 
   private fun startLocalStackIfNotRunning(): LocalStackContainer? {
+    TestContainersUtil.setDockerApiVersion()
+
     if (localstackIsRunning()) {
       log.info("Localstack already available, won't start via test containers")
       return null
