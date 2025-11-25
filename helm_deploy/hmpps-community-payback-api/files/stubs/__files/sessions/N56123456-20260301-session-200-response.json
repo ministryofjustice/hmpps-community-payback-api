@@ -30,7 +30,7 @@
         "description": "Attended - Complied"
       },
       "requirementProgress": {
-        "requirementMinutes": "12000",
+        "requiredMinutes": "12000",
         "completedMinutes": "4000"
       }
     },
@@ -52,7 +52,7 @@
         "description": "Unacceptable Absence"
       },
       "requirementProgress": {
-        "requirementMinutes": "12000",
+        "requiredMinutes": "12000",
         "completedMinutes": "1000"
       }
     },
@@ -74,7 +74,7 @@
         "description": "Unacceptable Absence"
       },
       "requirementProgress": {
-        "requirementMinutes": "12000",
+        "requiredMinutes": "12000",
         "completedMinutes": "2000"
       }
     }

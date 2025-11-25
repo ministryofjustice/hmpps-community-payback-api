@@ -30,7 +30,7 @@
         "description": "Attended - Complied"
       },
       "requirementProgress": {
-        "requirementMinutes": "12000",
+        "requiredMinutes": "12000",
         "completedMinutes": "0"
       }
     }
