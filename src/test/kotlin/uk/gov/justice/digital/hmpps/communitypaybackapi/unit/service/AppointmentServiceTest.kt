@@ -2,11 +2,12 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.unit.service
 
 import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
-import io.mockk.impl.annotations.MockK
+import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -26,35 +27,48 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentOutcomeEntityFactory
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentOutcomeValidationService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ContextService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.FormService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.AppointmentMappers
 import uk.gov.justice.digital.hmpps.communitypaybackapi.unit.util.WebClientResponseExceptionFactory
 import java.util.UUID
 
+@SuppressWarnings("UnusedPrivateProperty")
 @ExtendWith(MockKExtension::class)
 class AppointmentServiceTest {
 
-  @MockK(relaxed = true)
+  @RelaxedMockK
   lateinit var appointmentOutcomeEntityRepository: AppointmentOutcomeEntityRepository
 
-  @MockK(relaxed = true)
+  @RelaxedMockK
   lateinit var communityPaybackAndDeliusClient: CommunityPaybackAndDeliusClient
 
-  @MockK(relaxed = true)
+  @RelaxedMockK
   lateinit var appointmentMappers: AppointmentMappers
 
-  @MockK(relaxed = true)
+  @RelaxedMockK
   lateinit var formService: FormService
 
-  @SuppressWarnings("UnusedPrivateProperty")
-  @MockK(relaxed = true)
+  @RelaxedMockK
   private lateinit var appointmentOutcomeValidationService: AppointmentOutcomeValidationService
 
-  @MockK(relaxed = true)
+  @RelaxedMockK
   private lateinit var appointmentOutcomeEntityFactory: AppointmentOutcomeEntityFactory
+
+  @RelaxedMockK
+  private lateinit var contextService: ContextService
 
   @InjectMockKs
   private lateinit var service: AppointmentService
+
+  private companion object {
+    const val USERNAME = "mr-user"
+  }
+
+  @BeforeEach
+  fun setupUsernameContext() {
+    every { contextService.getUserName() } returns USERNAME
+  }
 
   @Nested
   inner class GetAppointment {
@@ -65,6 +79,7 @@ class AppointmentServiceTest {
         communityPaybackAndDeliusClient.getAppointment(
           projectCode = "PC1",
           appointmentId = 101L,
+          username = USERNAME,
         )
       } throws WebClientResponseExceptionFactory.notFound()
 
@@ -76,7 +91,7 @@ class AppointmentServiceTest {
     @Test
     fun `appointment found`() {
       val appointment = Appointment.valid()
-      every { communityPaybackAndDeliusClient.getAppointment("PC1", 101L) } returns appointment
+      every { communityPaybackAndDeliusClient.getAppointment("PC1", 101L, USERNAME) } returns appointment
 
       val appointmentDto = AppointmentDto.valid()
       every { appointmentMappers.toDto(appointment) } returns appointmentDto
@@ -161,6 +176,7 @@ class AppointmentServiceTest {
         communityPaybackAndDeliusClient.getAppointment(
           projectCode = "PC1",
           appointmentId = 101L,
+          username = USERNAME,
         )
       } returns Appointment.valid().copy(case = CaseSummary.valid().copy(crn = "CRN1"))
 

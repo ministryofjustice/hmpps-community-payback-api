@@ -67,11 +67,15 @@ class AdminAppointmentIT : IntegrationTestBase() {
 
     @Test
     fun `Should return 404 if an appointment can't be found`() {
-      CommunityPaybackAndDeliusMockServer.appointmentNotFound("UNKNOWN", 101L)
+      CommunityPaybackAndDeliusMockServer.getAppointmentNotFound(
+        projectCode = "UNKNOWN",
+        appointmentId = 101L,
+        username = "theusername",
+      )
 
       val response = webTestClient.get()
         .uri("/admin/appointments/101")
-        .addAdminUiAuthHeader()
+        .addAdminUiAuthHeader("theusername")
         .exchange()
         .expectStatus()
         .isNotFound()
@@ -87,18 +91,19 @@ class AdminAppointmentIT : IntegrationTestBase() {
       val crn = "X434334"
 
       CommunityPaybackAndDeliusMockServer.getAppointment(
-        Appointment.valid().copy(
+        appointment = Appointment.valid().copy(
           id = id,
           project = Project.valid().copy(name = projectName, code = "UNKNOWN"),
           case = CaseSummary.valid().copy(crn = crn),
           outcome = ContactOutcome.valid(ctx),
           enforcementAction = EnforcementAction.valid(ctx),
         ),
+        username = "theusername",
       )
 
       val response = webTestClient.get()
         .uri("/admin/appointments/101")
-        .addAdminUiAuthHeader()
+        .addAdminUiAuthHeader("theusername")
         .exchange()
         .expectStatus()
         .isOk()
@@ -144,11 +149,15 @@ class AdminAppointmentIT : IntegrationTestBase() {
 
     @Test
     fun `Should return 404 if an appointment can't be found`() {
-      CommunityPaybackAndDeliusMockServer.appointmentNotFound("PC01", 101L)
+      CommunityPaybackAndDeliusMockServer.getAppointmentNotFound(
+        projectCode = "PC01",
+        appointmentId = 101L,
+        username = "theusername",
+      )
 
       val response = webTestClient.get()
         .uri("/admin/projects/PC01/appointments/101")
-        .addAdminUiAuthHeader()
+        .addAdminUiAuthHeader("theusername")
         .exchange()
         .expectStatus()
         .isNotFound()
@@ -164,18 +173,19 @@ class AdminAppointmentIT : IntegrationTestBase() {
       val crn = "X434334"
 
       CommunityPaybackAndDeliusMockServer.getAppointment(
-        Appointment.valid().copy(
+        appointment = Appointment.valid().copy(
           id = id,
           project = Project.valid().copy(name = projectName, code = "PC01"),
           case = CaseSummary.valid().copy(crn = crn),
           outcome = ContactOutcome.valid(ctx),
           enforcementAction = EnforcementAction.valid(ctx),
         ),
+        username = "theusername",
       )
 
       val response = webTestClient.get()
         .uri("/admin/projects/PC01/appointments/101")
-        .addAdminUiAuthHeader()
+        .addAdminUiAuthHeader("theusername")
         .exchange()
         .expectStatus()
         .isOk()

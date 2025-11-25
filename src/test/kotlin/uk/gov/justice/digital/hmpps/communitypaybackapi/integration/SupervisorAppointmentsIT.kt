@@ -70,11 +70,11 @@ class SupervisorAppointmentsIT : IntegrationTestBase() {
 
     @Test
     fun `Should return 404 if an appointment can't be found`() {
-      CommunityPaybackAndDeliusMockServer.appointmentNotFound("PC01", 101L)
+      CommunityPaybackAndDeliusMockServer.getAppointmentNotFound("PC01", 101L, "theusername")
 
       val response = webTestClient.get()
         .uri("/supervisor/projects/PC01/appointments/101")
-        .addSupervisorUiAuthHeader()
+        .addSupervisorUiAuthHeader("theusername")
         .exchange()
         .expectStatus()
         .isNotFound()
@@ -90,18 +90,19 @@ class SupervisorAppointmentsIT : IntegrationTestBase() {
       val crn = "X434334"
 
       CommunityPaybackAndDeliusMockServer.getAppointment(
-        Appointment.valid().copy(
+        appointment = Appointment.valid().copy(
           id = id,
           project = Project.valid().copy(name = projectName, code = "PC01"),
           case = CaseSummary.valid().copy(crn = crn),
           outcome = ContactOutcome.valid(ctx),
           enforcementAction = EnforcementAction.valid(ctx),
         ),
+        username = "theusername",
       )
 
       val response = webTestClient.get()
         .uri("/supervisor/projects/PC01/appointments/101")
-        .addSupervisorUiAuthHeader()
+        .addSupervisorUiAuthHeader("theusername")
         .exchange()
         .expectStatus()
         .isOk()
