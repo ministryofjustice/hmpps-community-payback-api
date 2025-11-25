@@ -56,6 +56,10 @@ class AppointmentServiceTest {
   @InjectMockKs
   private lateinit var service: AppointmentService
 
+  private companion object {
+    const val PROJECT_CODE = "PROJ123"
+  }
+
   @Nested
   inner class GetAppointment {
 
@@ -97,11 +101,12 @@ class AppointmentServiceTest {
       every { appointmentOutcomeEntityRepository.save(any()) } returnsArgument 0
 
       every {
-        communityPaybackAndDeliusClient.updateAppointment(any(), any())
+        communityPaybackAndDeliusClient.updateAppointment(any(), any(), any())
       } throws WebClientResponseExceptionFactory.notFound()
 
       assertThatThrownBy {
         service.updateAppointmentOutcome(
+          projectCode = PROJECT_CODE,
           outcome = UpdateAppointmentOutcomeDto.valid().copy(deliusId = 101L),
         )
       }.isInstanceOf(NotFoundException::class.java).hasMessage("Appointment not found for ID '101'")
@@ -114,13 +119,14 @@ class AppointmentServiceTest {
       every { appointmentOutcomeEntityRepository.save(any()) } returnsArgument 0
 
       every {
-        communityPaybackAndDeliusClient.updateAppointment(any(), any())
+        communityPaybackAndDeliusClient.updateAppointment(any(), any(), any())
       } throws WebClientResponseExceptionFactory.conflict()
 
       val version = UUID.randomUUID()
 
       assertThatThrownBy {
         service.updateAppointmentOutcome(
+          projectCode = PROJECT_CODE,
           outcome = UpdateAppointmentOutcomeDto.valid().copy(
             deliusId = 1L,
             deliusVersionToUpdate = version,
@@ -144,6 +150,7 @@ class AppointmentServiceTest {
       every { appointmentOutcomeEntityRepository.save(capture(entityCaptor)) } returnsArgument 0
 
       service.updateAppointmentOutcome(
+        projectCode = PROJECT_CODE,
         outcome = updateOutcomeDto,
       )
 
@@ -151,7 +158,7 @@ class AppointmentServiceTest {
       assertThat(entityCaptor[0]).isSameAs(entityReturnedByFactory)
 
       verify {
-        communityPaybackAndDeliusClient.updateAppointment(101L, any())
+        communityPaybackAndDeliusClient.updateAppointment(PROJECT_CODE, 101L, any())
       }
     }
 
@@ -167,6 +174,7 @@ class AppointmentServiceTest {
       every { appointmentOutcomeEntityRepository.save(any()) } returnsArgument 0
 
       service.updateAppointmentOutcome(
+        projectCode = PROJECT_CODE,
         outcome = UpdateAppointmentOutcomeDto.valid().copy(
           deliusId = 101L,
           formKeyToDelete = FormKeyDto(
@@ -189,6 +197,7 @@ class AppointmentServiceTest {
       every { appointmentOutcomeEntityFactory.toEntity(updateAppointmentDto) } returns existingIdenticalEntity
 
       service.updateAppointmentOutcome(
+        projectCode = PROJECT_CODE,
         outcome = updateAppointmentDto,
       )
 
@@ -206,11 +215,12 @@ class AppointmentServiceTest {
       every { appointmentOutcomeEntityRepository.save(any()) } returnsArgument 0
 
       service.updateAppointmentOutcome(
+        projectCode = PROJECT_CODE,
         outcome = updateAppointmentDto,
       )
 
       verify { appointmentOutcomeEntityRepository.save(any()) }
-      verify { communityPaybackAndDeliusClient.updateAppointment(1L, any()) }
+      verify { communityPaybackAndDeliusClient.updateAppointment(PROJECT_CODE, 1L, any()) }
     }
   }
 }

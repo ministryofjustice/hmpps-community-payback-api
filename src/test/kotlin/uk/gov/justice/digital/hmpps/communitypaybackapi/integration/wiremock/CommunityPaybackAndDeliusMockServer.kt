@@ -96,10 +96,11 @@ object CommunityPaybackAndDeliusMockServer {
   }
 
   fun putAppointment(
-    id: Long,
+    projectCode: String,
+    appointmentId: Long,
   ) {
     WireMock.stubFor(
-      put("/community-payback-and-delius/appointments/$id")
+      put("/community-payback-and-delius/projects/$projectCode/appointments/$appointmentId/outcome")
         .willReturn(
           aResponse().withStatus(200),
         ),
@@ -107,18 +108,22 @@ object CommunityPaybackAndDeliusMockServer {
   }
 
   fun putAppointmentNotFound(
-    id: Long,
+    projectCode: String,
+    appointmentId: Long,
   ) {
     WireMock.stubFor(
-      put("/community-payback-and-delius/appointments/$id")
+      put("/community-payback-and-delius/projects/$projectCode/appointments/$appointmentId/outcome")
         .willReturn(
           aResponse().withStatus(404),
         ),
     )
   }
 
-  fun putAppointmentVerify(id: Long) {
-    WireMock.verify(putRequestedFor(urlEqualTo("/community-payback-and-delius/appointments/$id")))
+  fun putAppointmentVerify(
+    projectCode: String,
+    appointmentId: Long,
+  ) {
+    WireMock.verify(putRequestedFor(urlEqualTo("/community-payback-and-delius/projects/$projectCode/appointments/$appointmentId/outcome")))
   }
 
   fun getProjectSession(

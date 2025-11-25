@@ -156,7 +156,10 @@ class SupervisorAppointmentsIT : IntegrationTestBase() {
 
     @Test
     fun `Should return 404 if an appointment can't be found`() {
-      CommunityPaybackAndDeliusMockServer.putAppointmentNotFound(1234L)
+      CommunityPaybackAndDeliusMockServer.putAppointmentNotFound(
+        projectCode = "PC01",
+        appointmentId = 1234L,
+      )
 
       val response = webTestClient.post()
         .uri("/supervisor/projects/PC01/appointments/1234/outcome")
@@ -177,7 +180,10 @@ class SupervisorAppointmentsIT : IntegrationTestBase() {
 
     @Test
     fun `Should send update upstream and delete corresponding form data`() {
-      CommunityPaybackAndDeliusMockServer.putAppointment(1234L)
+      CommunityPaybackAndDeliusMockServer.putAppointment(
+        projectCode = "PC01",
+        appointmentId = 1234L,
+      )
 
       formCacheEntityRepository.save(
         FormCacheEntity(
@@ -204,7 +210,10 @@ class SupervisorAppointmentsIT : IntegrationTestBase() {
         .expectStatus()
         .isOk()
 
-      CommunityPaybackAndDeliusMockServer.putAppointmentVerify(1234L)
+      CommunityPaybackAndDeliusMockServer.putAppointmentVerify(
+        projectCode = "PC01",
+        appointmentId = 1234L,
+      )
 
       assertThat(formCacheEntityRepository.count()).isEqualTo(0)
     }
@@ -253,8 +262,14 @@ class SupervisorAppointmentsIT : IntegrationTestBase() {
 
     @Test
     fun `succeeds and calls upstream endpoint`() {
-      CommunityPaybackAndDeliusMockServer.putAppointment(1234L)
-      CommunityPaybackAndDeliusMockServer.putAppointment(5678L)
+      CommunityPaybackAndDeliusMockServer.putAppointment(
+        projectCode = "PC01",
+        appointmentId = 1234L,
+      )
+      CommunityPaybackAndDeliusMockServer.putAppointment(
+        projectCode = "PC01",
+        appointmentId = 5678L,
+      )
 
       val result = webTestClient.post()
         .uri("/supervisor/projects/PC01/appointments/bulk")
@@ -276,8 +291,8 @@ class SupervisorAppointmentsIT : IntegrationTestBase() {
       assertThat(result.results[0].result).isEqualTo(UpdateAppointmentOutcomeResultType.SUCCESS)
       assertThat(result.results[1].result).isEqualTo(UpdateAppointmentOutcomeResultType.SUCCESS)
 
-      CommunityPaybackAndDeliusMockServer.putAppointmentVerify(1234L)
-      CommunityPaybackAndDeliusMockServer.putAppointmentVerify(5678L)
+      CommunityPaybackAndDeliusMockServer.putAppointmentVerify("PC01", 1234L)
+      CommunityPaybackAndDeliusMockServer.putAppointmentVerify("PC01", 5678L)
     }
   }
 }
