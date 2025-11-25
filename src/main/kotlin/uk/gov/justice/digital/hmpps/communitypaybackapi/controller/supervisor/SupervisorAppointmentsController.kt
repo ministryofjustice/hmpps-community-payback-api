@@ -91,7 +91,6 @@ class SupervisorAppointmentsController(
       ),
     ],
   )
-  @SuppressWarnings("UnusedParameter")
   fun updateAppointmentOutcome(
     @PathVariable projectCode: String,
     @PathVariable deliusAppointmentId: Long,
@@ -103,6 +102,7 @@ class SupervisorAppointmentsController(
 
     appointmentService.updateAppointmentOutcome(
       outcome = outcome,
+      projectCode = projectCode,
     )
   }
 
@@ -132,5 +132,5 @@ class SupervisorAppointmentsController(
   fun updateAppointmentOutcomes(
     @PathVariable projectCode: String,
     @RequestBody request: UpdateAppointmentOutcomesDto,
-  ) = appointmentBulkUpdateService.updateAppointmentOutcomes(request)
+  ) = appointmentBulkUpdateService.updateAppointmentOutcomes(projectCode, request)
 }
