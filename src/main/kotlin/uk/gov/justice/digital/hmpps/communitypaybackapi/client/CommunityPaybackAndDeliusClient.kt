@@ -264,8 +264,8 @@ data class UpdateAppointment(
   val startTime: LocalTime,
   @param:Schema(example = "09:00", description = "The end local time of the appointment", pattern = "^([0-1][0-9]|2[0-3]):[0-5][0-9]$")
   val endTime: LocalTime,
-  val contactOutcomeCode: String? = null,
-  val supervisorOfficerCode: String? = null,
+  val outcome: Code? = null,
+  val supervisor: Code,
   val notes: String? = null,
   val hiVisWorn: Boolean? = null,
   val workedIntensively: Boolean? = null,
@@ -274,4 +274,8 @@ data class UpdateAppointment(
   val behaviour: AppointmentBehaviour? = null,
   val sensitive: Boolean? = null,
   val alertActive: Boolean? = null,
+)
+
+data class Code(
+  val code: String,
 )
