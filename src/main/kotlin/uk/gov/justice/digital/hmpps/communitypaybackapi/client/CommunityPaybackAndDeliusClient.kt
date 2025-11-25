@@ -82,7 +82,9 @@ data class ProviderTeamSummary(
 )
 data class SessionSummaries(
   val sessions: List<SessionSummary>,
-)
+) {
+  companion object
+}
 
 data class SessionSummary(
   val date: LocalDate,

@@ -79,7 +79,7 @@ class AdminSessionsIT : IntegrationTestBase() {
         providerCode = "UNKNOWN",
         teamCode = "999",
         startDate = LocalDate.of(2025, 1, 9),
-        endDate = LocalDate.of(2025, 7, 9),
+        endDate = LocalDate.of(2025, 1, 12),
         projectSessions = SessionSummaries(
           listOf(
             SessionSummary.valid().copy(project = ProjectSummary.valid().copy(description = "Community Garden Maintenance")),
@@ -89,7 +89,7 @@ class AdminSessionsIT : IntegrationTestBase() {
       )
 
       val sessionSearchResults = webTestClient.get()
-        .uri("/admin/projects/session-search?startDate=2025-01-09&endDate=2025-07-09&teamCode=999")
+        .uri("/admin/projects/session-search?startDate=2025-01-09&endDate=2025-01-12&teamCode=999")
         .addAdminUiAuthHeader()
         .exchange()
         .expectStatus()
@@ -107,12 +107,12 @@ class AdminSessionsIT : IntegrationTestBase() {
         providerCode = "UNKNOWN",
         teamCode = "999",
         startDate = LocalDate.of(2025, 1, 9),
-        endDate = LocalDate.of(2025, 7, 9),
+        endDate = LocalDate.of(2025, 1, 11),
         projectSessions = SessionSummaries(emptyList()),
       )
 
       val sessionSummaries = webTestClient.get()
-        .uri("/admin/projects/session-search?startDate=2025-01-09&endDate=2025-07-09&teamCode=999")
+        .uri("/admin/projects/session-search?startDate=2025-01-09&endDate=2025-01-11&teamCode=999")
         .addAdminUiAuthHeader()
         .exchange()
         .expectStatus()
