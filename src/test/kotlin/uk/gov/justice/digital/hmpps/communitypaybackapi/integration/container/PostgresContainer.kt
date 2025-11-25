@@ -12,6 +12,8 @@ object PostgresContainer {
 
   val instance: PostgreSQLContainer<Nothing>? by lazy { startPostgresqlContainer() }
   private fun startPostgresqlContainer(): PostgreSQLContainer<Nothing>? = if (checkPostgresRunning().not()) {
+    TestContainersUtil.setDockerApiVersion()
+
     PostgreSQLContainer<Nothing>("postgres:16.8").apply {
       log.info("Starting postgres via test containers")
       withEnv("HOSTNAME_EXTERNAL", "localhost")
