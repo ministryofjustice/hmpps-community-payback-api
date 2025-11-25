@@ -18,9 +18,10 @@ class EnvironmentService(
 
   fun isLocalDev() = profileActive("localdev")
   fun isDev() = profileActive("dev")
+  fun isTest() = profileActive("test")
   fun isIntegrationTest() = profileActive("integrationtest")
 
-  fun isNotATestEnvironment() = !isLocalDev() && !isDev() && !isIntegrationTest()
+  fun isNotATestEnvironment() = !isLocalDev() && !isDev() && !isTest() && !isIntegrationTest()
 
   fun profileActive(name: String) = environment.activeProfiles.any { it.equals(name, ignoreCase = true) }
 }
