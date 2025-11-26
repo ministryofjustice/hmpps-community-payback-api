@@ -17,6 +17,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProviderSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProviderTeamSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Session
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.SessionSummaries
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Supervisor
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.SupervisorSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.UserAccess
 import uk.gov.justice.digital.hmpps.communitypaybackapi.config.JacksonCustomConfig
@@ -69,6 +70,31 @@ object CommunityPaybackAndDeliusMockServer {
           aResponse()
             .withHeader("Content-Type", "application/json")
             .withBody(objectMapper.writeValueAsString(projectSessions)),
+        ),
+    )
+  }
+
+  fun getSupervisor(
+    username: String,
+    supervisor: Supervisor,
+  ) {
+    WireMock.stubFor(
+      get("/community-payback-and-delius/supervisors?username=$username")
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withBody(objectMapper.writeValueAsString(supervisor)),
+        ),
+    )
+  }
+
+  fun getSupervisorNotFound(
+    username: String,
+  ) {
+    WireMock.stubFor(
+      get("/community-payback-and-delius/supervisors?username=$username")
+        .willReturn(
+          aResponse().withStatus(404),
         ),
     )
   }
