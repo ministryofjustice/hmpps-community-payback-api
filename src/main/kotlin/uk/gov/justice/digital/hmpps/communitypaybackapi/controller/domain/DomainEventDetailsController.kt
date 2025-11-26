@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
+import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
@@ -26,6 +27,7 @@ import java.util.UUID
 )
 @PreAuthorize("hasRole('" + SecurityConfiguration.ROLE_DOMAIN_EVENT_DETAILS + "')")
 @SecurityRequirement(name = OpenApiConfiguration.Companion.SECURITY_SCHEME_DOMAIN_EVENT_DETAILS)
+@Tag(name = "domain-event-details")
 class DomainEventDetailsController(
   val appointmentService: AppointmentService,
 ) {
