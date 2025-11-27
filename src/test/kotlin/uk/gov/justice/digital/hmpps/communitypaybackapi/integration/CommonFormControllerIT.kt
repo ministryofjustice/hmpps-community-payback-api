@@ -172,4 +172,76 @@ class CommonFormControllerIT : IntegrationTestBase() {
       assertThat(entry.formData).isEqualTo("""{"x":42,"y":"test"}""")
     }
   }
+
+  @Nested
+  @DisplayName("DELETE /common/forms/{formType}/{id}")
+  inner class DeleteFormData {
+
+    @Test
+    fun `should return unauthorized if no token`() {
+      webTestClient.delete()
+        .uri("/common/forms/$FORM_TYPE/$FORM_ID")
+        .exchange()
+        .expectStatus()
+        .isUnauthorized
+    }
+
+    @Test
+    fun `should return forbidden if no role`() {
+      webTestClient.delete()
+        .uri("/common/forms/$FORM_TYPE/$FORM_ID")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .isForbidden
+    }
+
+    @Test
+    fun `should return forbidden if wrong role`() {
+      webTestClient.delete()
+        .uri("/common/forms/$FORM_TYPE/$FORM_ID")
+        .headers(setAuthorisation(roles = listOf("ROLE_WRONG")))
+        .exchange()
+        .expectStatus()
+        .isForbidden
+    }
+
+    @Test
+    fun `Delete an existing value`() {
+      formCacheEntityRepository.save(
+        FormCacheEntity(
+          formId = FORM_ID,
+          formType = FORM_TYPE,
+          formData = "{}",
+        ),
+      )
+
+      formCacheEntityRepository.save(
+        FormCacheEntity(
+          formId = "some other id",
+          formType = FORM_TYPE,
+          formData = "{}",
+        ),
+      )
+
+      webTestClient.delete()
+        .uri("/common/forms/$FORM_TYPE/$FORM_ID")
+        .addAdminUiAuthHeader()
+        .exchange()
+        .expectStatus().isOk
+
+      assertThat(formCacheEntityRepository.count()).isEqualTo(1)
+    }
+
+    @Test
+    fun `Do nothing if no value exists`() {
+      webTestClient.delete()
+        .uri("/common/forms/$FORM_TYPE/$FORM_ID")
+        .addAdminUiAuthHeader()
+        .exchange()
+        .expectStatus().isOk
+
+      assertThat(formCacheEntityRepository.count()).isEqualTo(0)
+    }
+  }
 }
