@@ -13,6 +13,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.FormKeyDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.FormCacheEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.FormCacheEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.FormService
@@ -46,7 +47,7 @@ class FormServiceTest {
         formData = json,
       )
 
-      val result = service.formGet(formType, id)
+      val result = service.get(FormKeyDto(formType, id))
 
       Assertions.assertThat(result).isEqualTo(json)
       verify(exactly = 1) { repository.findByFormIdAndFormType(id, formType) }
@@ -57,7 +58,7 @@ class FormServiceTest {
       every { repository.findByFormIdAndFormType(id, formType) } returns null
 
       Assertions.assertThatThrownBy {
-        service.formGet(formType, id)
+        service.get(FormKeyDto(formType, id))
       }.hasMessage("Form data not found for ID 'assessment/12345'")
     }
   }
@@ -70,7 +71,7 @@ class FormServiceTest {
       val slotEntity: CapturingSlot<FormCacheEntity> = slot()
       every { repository.save(capture(slotEntity)) } answers { slotEntity.captured }
 
-      service.formPut(formType, id, json)
+      service.put(FormKeyDto(formType, id), json)
 
       verify(exactly = 1) { repository.save(any()) }
       val saved = slotEntity.captured
@@ -84,7 +85,7 @@ class FormServiceTest {
       val badJson = "{" // invalid
 
       val ex = org.junit.jupiter.api.Assertions.assertThrows(JsonParseException::class.java) {
-        service.formPut(formType, id, badJson)
+        service.put(FormKeyDto(formType, id), badJson)
       }
       Assertions.assertThat(ex).isNotNull
       verify(exactly = 0) { repository.save(any()) }
