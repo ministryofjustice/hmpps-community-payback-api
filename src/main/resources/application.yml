@@ -40,6 +40,12 @@ spring:
           hmpps-auth:
             token-uri: ${hmpps-auth.url}/oauth/token
 
+springdoc:
+  swagger-ui:
+    operations-sorter: alpha
+    tags-sorter: alpha
+
+
 server:
   port: 8080
   servlet:

@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.controller.common
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
+import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.MediaType
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.RequestMapping
@@ -18,4 +19,5 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.config.SecurityConfigura
   "hasAnyRole('" + SecurityConfiguration.ROLE_SUPERVISOR_UI + "','" + SecurityConfiguration.ROLE_ADMIN_UI + "')",
 )
 @SecurityRequirement(name = OpenApiConfiguration.Companion.SECURITY_SCHEME_ANY_UI)
+@Tag(name = "common")
 internal annotation class CommonController

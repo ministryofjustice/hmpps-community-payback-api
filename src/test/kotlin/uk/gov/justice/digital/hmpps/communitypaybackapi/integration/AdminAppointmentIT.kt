@@ -198,7 +198,7 @@ class AdminAppointmentIT : IntegrationTestBase() {
 
   @Nested
   @DisplayName("PUT /admin/appointments/{deliusAppointmentId}/outcome")
-  inner class PutAppointmentOutcomeEndpoint {
+  inner class PutAppointmentOutcomeEndpointDeprecated {
 
     @BeforeEach
     fun setUp() {
@@ -273,6 +273,104 @@ class AdminAppointmentIT : IntegrationTestBase() {
 
       webTestClient.post()
         .uri("/admin/appointments/1234/outcome")
+        .addAdminUiAuthHeader()
+        .bodyValue(
+          UpdateAppointmentOutcomeDto.valid(ctx).copy(
+            deliusId = 1234L,
+            attendanceData = AttendanceDataDto.valid(),
+            formKeyToDelete = FormKeyDto(
+              id = "id1",
+              type = "formtype",
+            ),
+          ),
+        )
+        .exchange()
+        .expectStatus()
+        .isOk()
+
+      CommunityPaybackAndDeliusMockServer.putAppointmentVerify(1234L)
+
+      assertThat(formCacheEntityRepository.count()).isEqualTo(0)
+    }
+  }
+
+  @Nested
+  @DisplayName("POST /admin/projects/{projectCode}/appointments/{deliusAppointmentId}/outcome")
+  inner class PostAppointmentOutcomeEndpoint {
+
+    @BeforeEach
+    fun setUp() {
+      appointmentOutcomeEntityRepository.deleteAll()
+      formCacheEntityRepository.deleteAll()
+    }
+
+    @Test
+    fun `should return unauthorized if no token`() {
+      webTestClient.post()
+        .uri("/admin/projects/PC01/appointments/1234/outcome")
+        .bodyValue(UpdateAppointmentOutcomeDto.valid())
+        .exchange()
+        .expectStatus()
+        .isUnauthorized
+    }
+
+    @Test
+    fun `should return forbidden if no role`() {
+      webTestClient.post()
+        .uri("/admin/projects/PC01/appointments/1234/outcome")
+        .bodyValue(UpdateAppointmentOutcomeDto.valid())
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .isForbidden
+    }
+
+    @Test
+    fun `should return forbidden if wrong role`() {
+      webTestClient.post()
+        .uri("/admin/projects/PC01/appointments/1234/outcome")
+        .bodyValue(UpdateAppointmentOutcomeDto.valid())
+        .headers(setAuthorisation(roles = listOf("ROLE_WRONG")))
+        .exchange()
+        .expectStatus()
+        .isForbidden
+    }
+
+    @Test
+    fun `Should return 404 if an appointment can't be found`() {
+      CommunityPaybackAndDeliusMockServer.putAppointmentNotFound(1234L)
+
+      val response = webTestClient.post()
+        .uri("/admin/projects/PC01/appointments/1234/outcome")
+        .addAdminUiAuthHeader()
+        .bodyValue(
+          UpdateAppointmentOutcomeDto.valid(ctx).copy(
+            deliusId = 1234L,
+            attendanceData = AttendanceDataDto.valid(),
+          ),
+        )
+        .exchange()
+        .expectStatus()
+        .isNotFound()
+        .bodyAsObject<ErrorResponse>()
+
+      assertThat(response.userMessage).isEqualTo("No resource found failure: Appointment not found for ID '1234'")
+    }
+
+    @Test
+    fun `Should send update upstream and delete corresponding form data`() {
+      CommunityPaybackAndDeliusMockServer.putAppointment(1234L)
+
+      formCacheEntityRepository.save(
+        FormCacheEntity(
+          formId = "id1",
+          formType = "formtype",
+          formData = "data",
+        ),
+      )
+
+      webTestClient.post()
+        .uri("/admin/projects/PC01/appointments/1234/outcome")
         .addAdminUiAuthHeader()
         .bodyValue(
           UpdateAppointmentOutcomeDto.valid(ctx).copy(
