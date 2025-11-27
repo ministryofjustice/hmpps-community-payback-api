@@ -33,8 +33,8 @@ class AppointmentOutcomeValidationService(
   }
 
   fun validateDuration(outcome: UpdateAppointmentOutcomeDto) {
-    if (outcome.endTime < outcome.startTime) {
-      throw BadRequestException("End Time '${outcome.endTime}' is before Start Time '${outcome.startTime}'")
+    if (outcome.endTime <= outcome.startTime) {
+      throw BadRequestException("End Time '${outcome.endTime}' must be after Start Time '${outcome.startTime}'")
     }
   }
 
