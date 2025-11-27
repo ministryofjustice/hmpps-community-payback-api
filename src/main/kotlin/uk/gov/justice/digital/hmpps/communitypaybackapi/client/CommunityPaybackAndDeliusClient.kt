@@ -37,6 +37,11 @@ interface CommunityPaybackAndDeliusClient {
     @RequestParam username: String,
   ): Session
 
+  @GetExchange("/supervisors")
+  fun getSupervisor(
+    @RequestParam username: String,
+  ): Supervisor
+
   @GetExchange("/projects/{projectCode}/appointments/{appointmentId}")
   fun getAppointment(
     @PathVariable projectCode: String,
@@ -235,6 +240,13 @@ data class CaseAccess(
 )
 
 data class UserAccess(val access: List<CaseAccess>)
+
+data class Supervisor(
+  val code: String,
+  val isUnpaidWorkTeamMember: Boolean,
+) {
+  companion object
+}
 
 data class SupervisorSummaries(
   val supervisors: List<SupervisorSummary>,
