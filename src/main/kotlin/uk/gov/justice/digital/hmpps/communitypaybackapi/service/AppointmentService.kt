@@ -47,6 +47,7 @@ class AppointmentService(
 
   @Transactional
   fun updateAppointmentOutcome(
+    projectCode: String,
     outcome: UpdateAppointmentOutcomeDto,
   ) {
     val deliusId = outcome.deliusId
@@ -66,6 +67,7 @@ class AppointmentService(
 
     try {
       communityPaybackAndDeliusClient.updateAppointment(
+        projectCode = projectCode,
         appointmentId = deliusId,
         updateAppointment = persistedEntity.toUpdateAppointment(),
       )

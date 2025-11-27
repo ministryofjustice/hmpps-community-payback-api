@@ -197,8 +197,8 @@ class AdminAppointmentIT : IntegrationTestBase() {
   }
 
   @Nested
-  @DisplayName("PUT /admin/appointments/{deliusAppointmentId}/outcome")
-  inner class PutAppointmentOutcomeEndpointDeprecated {
+  @DisplayName("POST /admin/appointments/{deliusAppointmentId}/outcome")
+  inner class PostAppointmentOutcomeEndpointDeprecated {
 
     @BeforeEach
     fun setUp() {
@@ -240,7 +240,10 @@ class AdminAppointmentIT : IntegrationTestBase() {
 
     @Test
     fun `Should return 404 if an appointment can't be found`() {
-      CommunityPaybackAndDeliusMockServer.putAppointmentNotFound(1234L)
+      CommunityPaybackAndDeliusMockServer.putAppointmentNotFound(
+        projectCode = "UNKNOWN",
+        appointmentId = 1234L,
+      )
 
       val response = webTestClient.post()
         .uri("/admin/appointments/1234/outcome")
@@ -261,7 +264,10 @@ class AdminAppointmentIT : IntegrationTestBase() {
 
     @Test
     fun `Should send update upstream and delete corresponding form data`() {
-      CommunityPaybackAndDeliusMockServer.putAppointment(1234L)
+      CommunityPaybackAndDeliusMockServer.putAppointment(
+        projectCode = "UNKNOWN",
+        appointmentId = 1234L,
+      )
 
       formCacheEntityRepository.save(
         FormCacheEntity(
@@ -288,7 +294,7 @@ class AdminAppointmentIT : IntegrationTestBase() {
         .expectStatus()
         .isOk()
 
-      CommunityPaybackAndDeliusMockServer.putAppointmentVerify(1234L)
+      CommunityPaybackAndDeliusMockServer.putAppointmentVerify("UNKNOWN", 1234L)
 
       assertThat(formCacheEntityRepository.count()).isEqualTo(0)
     }
@@ -307,7 +313,7 @@ class AdminAppointmentIT : IntegrationTestBase() {
     @Test
     fun `should return unauthorized if no token`() {
       webTestClient.post()
-        .uri("/admin/projects/PC01/appointments/1234/outcome")
+        .uri("/admin/projects/proj123/appointments/1234/outcome")
         .bodyValue(UpdateAppointmentOutcomeDto.valid())
         .exchange()
         .expectStatus()
@@ -317,7 +323,7 @@ class AdminAppointmentIT : IntegrationTestBase() {
     @Test
     fun `should return forbidden if no role`() {
       webTestClient.post()
-        .uri("/admin/projects/PC01/appointments/1234/outcome")
+        .uri("/admin/projects/proj123/appointments/1234/outcome")
         .bodyValue(UpdateAppointmentOutcomeDto.valid())
         .headers(setAuthorisation())
         .exchange()
@@ -328,7 +334,7 @@ class AdminAppointmentIT : IntegrationTestBase() {
     @Test
     fun `should return forbidden if wrong role`() {
       webTestClient.post()
-        .uri("/admin/projects/PC01/appointments/1234/outcome")
+        .uri("/admin/projects/proj123/appointments/1234/outcome")
         .bodyValue(UpdateAppointmentOutcomeDto.valid())
         .headers(setAuthorisation(roles = listOf("ROLE_WRONG")))
         .exchange()
@@ -338,10 +344,13 @@ class AdminAppointmentIT : IntegrationTestBase() {
 
     @Test
     fun `Should return 404 if an appointment can't be found`() {
-      CommunityPaybackAndDeliusMockServer.putAppointmentNotFound(1234L)
+      CommunityPaybackAndDeliusMockServer.putAppointmentNotFound(
+        projectCode = "proj123",
+        appointmentId = 1234L,
+      )
 
       val response = webTestClient.post()
-        .uri("/admin/projects/PC01/appointments/1234/outcome")
+        .uri("/admin/projects/proj123/appointments/1234/outcome")
         .addAdminUiAuthHeader()
         .bodyValue(
           UpdateAppointmentOutcomeDto.valid(ctx).copy(
@@ -359,7 +368,10 @@ class AdminAppointmentIT : IntegrationTestBase() {
 
     @Test
     fun `Should send update upstream and delete corresponding form data`() {
-      CommunityPaybackAndDeliusMockServer.putAppointment(1234L)
+      CommunityPaybackAndDeliusMockServer.putAppointment(
+        projectCode = "proj123",
+        appointmentId = 1234L,
+      )
 
       formCacheEntityRepository.save(
         FormCacheEntity(
@@ -370,7 +382,7 @@ class AdminAppointmentIT : IntegrationTestBase() {
       )
 
       webTestClient.post()
-        .uri("/admin/projects/PC01/appointments/1234/outcome")
+        .uri("/admin/projects/proj123/appointments/1234/outcome")
         .addAdminUiAuthHeader()
         .bodyValue(
           UpdateAppointmentOutcomeDto.valid(ctx).copy(
@@ -386,7 +398,10 @@ class AdminAppointmentIT : IntegrationTestBase() {
         .expectStatus()
         .isOk()
 
-      CommunityPaybackAndDeliusMockServer.putAppointmentVerify(1234L)
+      CommunityPaybackAndDeliusMockServer.putAppointmentVerify(
+        projectCode = "proj123",
+        appointmentId = 1234L,
+      )
 
       assertThat(formCacheEntityRepository.count()).isEqualTo(0)
     }

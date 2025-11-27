@@ -17,11 +17,12 @@ class AppointmentBulkUpdateService(
 ) {
 
   fun updateAppointmentOutcomes(
+    projectCode: String,
     request: UpdateAppointmentOutcomesDto,
   ): UpdateAppointmentsOutcomesResultDto {
     request.validate()
 
-    val outcomes = request.apply()
+    val outcomes = request.apply(projectCode)
 
     return UpdateAppointmentsOutcomesResultDto(outcomes)
   }
@@ -29,9 +30,9 @@ class AppointmentBulkUpdateService(
   private fun UpdateAppointmentOutcomesDto.validate() = updates.forEach { appointmentOutcomeValidationService.validate(it) }
 
   @SuppressWarnings("TooGenericExceptionCaught")
-  private fun UpdateAppointmentOutcomesDto.apply() = updates.map { updateAppointmentOutcome ->
+  private fun UpdateAppointmentOutcomesDto.apply(projectCode: String) = updates.map { updateAppointmentOutcome ->
     val outcome = try {
-      appointmentService.updateAppointmentOutcome(updateAppointmentOutcome)
+      appointmentService.updateAppointmentOutcome(projectCode, updateAppointmentOutcome)
       UpdateAppointmentOutcomeResultType.SUCCESS
     } catch (_: NotFoundException) {
       UpdateAppointmentOutcomeResultType.NOT_FOUND

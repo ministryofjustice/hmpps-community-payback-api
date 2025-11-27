@@ -92,7 +92,7 @@ class AdminAppointmentController(
   @Operation(
     description = """Record an appointment's outcome. This endpoint is idempotent -  
       If the most recent recorded outcome matches the values in the request nothing will be done and a 200 will be returned.
-      Deprecated, instead use /projects/{projectCode}/appointments/{deliusAppointmentId}/outcome""",
+      Deprecated, use POST '/projects/{projectCode}/appointments/{deliusAppointmentId}/outcome'""",
     deprecated = true,
     responses = [
       ApiResponse(
@@ -121,7 +121,7 @@ class AdminAppointmentController(
       ),
     ],
   )
-  @Deprecated("Use version that includes project code")
+  @Deprecated("Use version that takes projectCode")
   fun updateAppointmentOutcomeDeprecated(
     @PathVariable deliusAppointmentId: Long,
     @RequestBody outcome: UpdateAppointmentOutcomeDto,
@@ -131,6 +131,7 @@ class AdminAppointmentController(
     }
 
     appointmentService.updateAppointmentOutcome(
+      projectCode = "UNKNOWN",
       outcome = outcome,
     )
   }
@@ -141,7 +142,7 @@ class AdminAppointmentController(
   )
   @Operation(
     description = """Record an appointment's outcome. This endpoint is idempotent -  
-      If the most recent recorded outcome matches the values in the request nothing will be done and a 200 will be returned""",
+      If the most recent recorded outcome matches the values in the request nothing will be done and a 200 will be returned.""",
     responses = [
       ApiResponse(
         responseCode = "200",
@@ -180,6 +181,7 @@ class AdminAppointmentController(
     }
 
     appointmentService.updateAppointmentOutcome(
+      projectCode = projectCode,
       outcome = outcome,
     )
   }
