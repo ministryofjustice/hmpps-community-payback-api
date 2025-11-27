@@ -2,19 +2,17 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.integration.container
 
 import org.slf4j.LoggerFactory
 import org.springframework.test.context.DynamicPropertyRegistry
-import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.containers.wait.strategy.Wait
+import org.testcontainers.postgresql.PostgreSQLContainer
 import java.io.IOException
 import java.net.ServerSocket
 
 object PostgresContainer {
   private val log = LoggerFactory.getLogger(this::class.java)
 
-  val instance: PostgreSQLContainer<Nothing>? by lazy { startPostgresqlContainer() }
-  private fun startPostgresqlContainer(): PostgreSQLContainer<Nothing>? = if (checkPostgresRunning().not()) {
-    TestContainersUtil.setDockerApiVersion()
-
-    PostgreSQLContainer<Nothing>("postgres:16.8").apply {
+  val instance: PostgreSQLContainer? by lazy { startPostgresqlContainer() }
+  private fun startPostgresqlContainer(): PostgreSQLContainer? = if (checkPostgresRunning().not()) {
+    PostgreSQLContainer("postgres:16.8").apply {
       log.info("Starting postgres via test containers")
       withEnv("HOSTNAME_EXTERNAL", "localhost")
       withExposedPorts(5432)
@@ -37,7 +35,7 @@ object PostgresContainer {
     true
   }
 
-  fun setPostgresProperties(postgreSQLContainer: PostgreSQLContainer<Nothing>, registry: DynamicPropertyRegistry) {
+  fun setPostgresProperties(postgreSQLContainer: PostgreSQLContainer, registry: DynamicPropertyRegistry) {
     registry.add("spring.datasource.url") { postgreSQLContainer.jdbcUrl }
     registry.add("spring.datasource.username") { postgreSQLContainer.username }
     registry.add("spring.datasource.password") { postgreSQLContainer.password }

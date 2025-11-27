@@ -45,12 +45,12 @@ dependencies {
   testImplementation("io.swagger.parser.v3:swagger-parser:2.1.36") {
     exclude(group = "io.swagger.core.v3")
   }
-  testImplementation("org.testcontainers:localstack:1.21.3")
+  testImplementation("org.testcontainers:testcontainers-localstack:2.0.2")
+  testImplementation("org.testcontainers:testcontainers-postgresql:2.0.2")
   testImplementation("org.awaitility:awaitility-kotlin:4.3.0")
   testImplementation("org.wiremock.integrations:wiremock-spring-boot:4.0.8")
   testImplementation("io.mockk:mockk:1.14.6")
   testImplementation("com.lemonappdev:konsist:0.17.3")
-  testImplementation("org.testcontainers:postgresql:1.21.3")
 }
 
 kotlin {
