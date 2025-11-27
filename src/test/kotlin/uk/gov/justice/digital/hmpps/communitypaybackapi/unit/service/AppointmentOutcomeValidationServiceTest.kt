@@ -99,13 +99,16 @@ class AppointmentOutcomeValidationServiceTest {
   inner class AppointmentDuration {
 
     @Test
-    fun `if end time same as start time, do nothing`() {
-      service.validateDuration(
-        UpdateAppointmentOutcomeDto.valid().copy(
-          startTime = LocalTime.of(10, 0),
-          endTime = LocalTime.of(10, 0),
-        ),
-      )
+    fun `if end time same as start time, throw exception`() {
+      assertThatThrownBy {
+        service.validateDuration(
+          UpdateAppointmentOutcomeDto.valid().copy(
+            startTime = LocalTime.of(10, 0),
+            endTime = LocalTime.of(10, 0),
+          ),
+        )
+      }.isInstanceOf(BadRequestException::class.java)
+        .hasMessage("End Time '10:00' must be after Start Time '10:00'")
     }
 
     @Test
@@ -128,7 +131,7 @@ class AppointmentOutcomeValidationServiceTest {
           ),
         )
       }.isInstanceOf(BadRequestException::class.java)
-        .hasMessage("End Time '10:00' is before Start Time '10:01'")
+        .hasMessage("End Time '10:00' must be after Start Time '10:01'")
     }
   }
 
