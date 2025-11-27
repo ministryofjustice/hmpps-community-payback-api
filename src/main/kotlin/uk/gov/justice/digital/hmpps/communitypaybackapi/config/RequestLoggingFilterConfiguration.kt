@@ -17,9 +17,8 @@ class RequestLoggingFilterConfiguration(
   @Bean
   @SuppressWarnings("MagicNumber")
   fun logFilter(): CommonsRequestLoggingFilter? {
-    if (environmentService.isNotATestEnvironment()) {
-      error("request logging should not be enabled outside of test environments")
-    }
+    environmentService.ensureTestEnvironment("request logging should not be enabled outside of test environments")
+
     val filter = CommunityPaybackRequestLoggingFilter()
     filter.setIncludeQueryString(true)
     filter.setIncludePayload(true)

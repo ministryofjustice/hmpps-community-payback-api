@@ -14,10 +14,14 @@ generic-service:
     host: app-hostname.local # override per environment
     tlsSecretName: hmpps-community-payback-api-cert
     annotations:
-      # See HmppsQueueResource for why this needs securing in the ingress
+      # See HmppsQueueResource for why queue-admin needs securing in the ingress
       nginx.ingress.kubernetes.io/server-snippet: |
         server_tokens off;
         location /queue-admin/retry-all-dlqs {
+          deny all;
+          return 401;
+        }
+        location /test-support/ {
           deny all;
           return 401;
         }

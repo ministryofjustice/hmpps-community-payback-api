@@ -1,0 +1,23 @@
+#!/bin/sh
+
+set -e
+
+if [ -z "$1" ] || ! [[ "$1" =~ ^(local|dev|test)$ ]]; then
+  echo "Usage:"
+  echo "clear_form_data local|dev|test"
+  exit 1
+else
+  environment=$1
+fi
+
+CURL_CMD="curl -sS --fail -X DELETE http://localhost:8080/test-support/forms"
+
+if [ "$environment" = "local" ]; then
+  `$CURL_CMD`
+else
+
+  namespace="hmpps-community-payback-$environment"
+  pod=$(kubectl -n "$namespace" get pods -l app=hmpps-community-payback-api -o jsonpath='{.items[0].metadata.name}')
+  kubectl -n "$namespace" exec --stdin --tty "$pod" -- bash -c "$CURL_CMD"
+
+fi

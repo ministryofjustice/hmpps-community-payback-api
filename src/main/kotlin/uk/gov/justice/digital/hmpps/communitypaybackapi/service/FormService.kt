@@ -1,6 +1,8 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.service
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.FormKeyDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.NotFoundException
@@ -13,6 +15,10 @@ class FormService(
   private val repository: FormCacheEntityRepository,
   private val objectMapper: ObjectMapper,
 ) {
+  private companion object {
+    val log: Logger = LoggerFactory.getLogger(this::class.java)
+  }
+
   fun formGet(formType: String, id: String): String {
     val existing = repository.findByFormIdAndFormType(id, formType)
       ?: throw NotFoundException("Form data", "$formType/$id")
@@ -40,5 +46,10 @@ class FormService(
         formType = key.type,
       ),
     )
+  }
+
+  fun deleteAll() {
+    repository.deleteAll()
+    log.info("Have deleted all form data")
   }
 }

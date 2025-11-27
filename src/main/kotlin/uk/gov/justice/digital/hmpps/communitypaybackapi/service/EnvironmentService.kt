@@ -23,5 +23,11 @@ class EnvironmentService(
 
   fun isNotATestEnvironment() = !isLocalDev() && !isDev() && !isTest() && !isIntegrationTest()
 
+  fun ensureTestEnvironment(failureMessage: String) {
+    if (isNotATestEnvironment()) {
+      error(failureMessage)
+    }
+  }
+
   fun profileActive(name: String) = environment.activeProfiles.any { it.equals(name, ignoreCase = true) }
 }

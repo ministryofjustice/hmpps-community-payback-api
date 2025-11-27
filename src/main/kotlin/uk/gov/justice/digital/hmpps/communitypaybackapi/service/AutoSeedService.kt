@@ -21,9 +21,7 @@ class AutoSeedService(
 
   @PostConstruct
   fun onStartup() {
-    if (environmentService.isNotATestEnvironment()) {
-      error("auto seed should not be enabled outside of test environments")
-    }
+    environmentService.ensureTestEnvironment("auto seed should not be enabled outside of test environments")
 
     ensureSupervisorAllocationExists()
   }

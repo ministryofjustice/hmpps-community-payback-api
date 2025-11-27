@@ -22,6 +22,8 @@ community-payback:
   community-campus-integration:
     enabled: true
   request-logging-enabled: true
+  test-support:
+    enabled: true
   url-templates:
     domain-event-detail:
       appointment_outcome: http://localhost:8080/domain-event-details/appointment-outcome/#id
