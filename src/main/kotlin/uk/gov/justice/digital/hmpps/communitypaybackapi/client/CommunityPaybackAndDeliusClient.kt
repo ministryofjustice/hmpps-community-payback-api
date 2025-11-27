@@ -41,6 +41,7 @@ interface CommunityPaybackAndDeliusClient {
   fun getAppointment(
     @PathVariable projectCode: String,
     @PathVariable appointmentId: Long,
+    @RequestParam username: String,
   ): Appointment
 
   @PutExchange("/appointments/{appointmentId}")

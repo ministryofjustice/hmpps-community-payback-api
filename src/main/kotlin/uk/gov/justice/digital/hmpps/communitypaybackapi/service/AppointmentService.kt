@@ -15,6 +15,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDomain
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toUpdateAppointment
 import java.util.UUID
 
+@SuppressWarnings("LongParameterList")
 @Service
 class AppointmentService(
   private val appointmentOutcomeEntityRepository: AppointmentOutcomeEntityRepository,
@@ -23,6 +24,7 @@ class AppointmentService(
   private val formService: FormService,
   private val appointmentOutcomeValidationService: AppointmentOutcomeValidationService,
   private val appointmentOutcomeEntityFactory: AppointmentOutcomeEntityFactory,
+  private val contextService: ContextService,
 ) {
   private companion object {
     private val log = LoggerFactory.getLogger(this::class.java)
@@ -35,6 +37,7 @@ class AppointmentService(
     communityPaybackAndDeliusClient.getAppointment(
       projectCode = projectCode,
       appointmentId = appointmentId,
+      username = contextService.getUserName(),
     ).let { appointmentMappers.toDto(it) }
   } catch (_: WebClientResponseException.NotFound) {
     throw NotFoundException("Appointment", appointmentId.toString())

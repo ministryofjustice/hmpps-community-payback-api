@@ -73,9 +73,13 @@ object CommunityPaybackAndDeliusMockServer {
     )
   }
 
-  fun appointmentNotFound(projectCode: String, appointmentId: Long) {
+  fun getAppointmentNotFound(
+    projectCode: String,
+    appointmentId: Long,
+    username: String,
+  ) {
     WireMock.stubFor(
-      get("/community-payback-and-delius/projects/$projectCode/appointments/$appointmentId")
+      get("/community-payback-and-delius/projects/$projectCode/appointments/$appointmentId?username=$username")
         .willReturn(
           aResponse().withStatus(404),
         ),
@@ -84,9 +88,10 @@ object CommunityPaybackAndDeliusMockServer {
 
   fun getAppointment(
     appointment: Appointment,
+    username: String,
   ) {
     WireMock.stubFor(
-      get("/community-payback-and-delius/projects/${appointment.project.code}/appointments/${appointment.id}")
+      get("/community-payback-and-delius/projects/${appointment.project.code}/appointments/${appointment.id}?username=$username")
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")
