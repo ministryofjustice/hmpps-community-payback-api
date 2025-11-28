@@ -93,8 +93,8 @@ class AppointmentMappersTest {
       assertThat(result.version).isEqualTo(appointmentOutcomeEntity.deliusVersionToUpdate)
       assertThat(result.startTime).isEqualTo(LocalTime.of(3, 2, 1))
       assertThat(result.endTime).isEqualTo(LocalTime.of(12, 11, 10))
-      assertThat(result.contactOutcomeCode).isEqualTo("COE1")
-      assertThat(result.supervisorOfficerCode).isEqualTo("WO3736")
+      assertThat(result.outcome!!.code).isEqualTo("COE1")
+      assertThat(result.supervisor.code).isEqualTo("WO3736")
       assertThat(result.notes).isEqualTo("The notes")
       assertThat(result.hiVisWorn).isTrue
       assertThat(result.workedIntensively).isFalse
@@ -113,7 +113,7 @@ class AppointmentMappersTest {
         deliusVersionToUpdate = UUID.randomUUID(),
         startTime = LocalTime.of(3, 2, 1),
         endTime = LocalTime.of(12, 11, 10),
-        contactOutcome = ContactOutcomeEntity.valid().copy(code = "COE1"),
+        contactOutcome = null,
         supervisorOfficerCode = "WO3736",
         notes = null,
         hiVisWorn = null,
@@ -130,8 +130,8 @@ class AppointmentMappersTest {
       assertThat(result.version).isEqualTo(appointmentOutcomeEntity.deliusVersionToUpdate)
       assertThat(result.startTime).isEqualTo(LocalTime.of(3, 2, 1))
       assertThat(result.endTime).isEqualTo(LocalTime.of(12, 11, 10))
-      assertThat(result.contactOutcomeCode).isEqualTo("COE1")
-      assertThat(result.supervisorOfficerCode).isEqualTo("WO3736")
+      assertThat(result.outcome).isNull()
+      assertThat(result.supervisor.code).isEqualTo("WO3736")
       assertThat(result.notes).isNull()
       assertThat(result.hiVisWorn).isNull()
       assertThat(result.workedIntensively).isNull()
