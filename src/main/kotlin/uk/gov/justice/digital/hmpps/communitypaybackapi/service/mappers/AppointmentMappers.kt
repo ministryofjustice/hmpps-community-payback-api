@@ -5,6 +5,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Appointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.AppointmentBehaviour
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.AppointmentSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.AppointmentWorkQuality
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Code
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.PickUpData
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.UpdateAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentBehaviourDto
@@ -112,8 +113,8 @@ fun AppointmentOutcomeEntity.toUpdateAppointment() = UpdateAppointment(
   version = this.deliusVersionToUpdate,
   startTime = this.startTime,
   endTime = this.endTime,
-  contactOutcomeCode = this.contactOutcome?.code,
-  supervisorOfficerCode = this.supervisorOfficerCode,
+  outcome = this.contactOutcome?.let { Code(it.code) },
+  supervisor = Code(this.supervisorOfficerCode),
   notes = this.notes,
   hiVisWorn = this.hiVisWorn,
   workedIntensively = workedIntensively,
