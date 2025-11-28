@@ -13,20 +13,20 @@ class FormService(
   private val repository: FormCacheEntityRepository,
   private val objectMapper: ObjectMapper,
 ) {
-  fun formGet(formType: String, id: String): String {
-    val existing = repository.findByFormIdAndFormType(id, formType)
-      ?: throw NotFoundException("Form data", "$formType/$id")
+  fun get(key: FormKeyDto): String {
+    val existing = repository.findByFormIdAndFormType(key.id, key.type)
+      ?: throw NotFoundException("Form data", "${key.type}/${key.id}")
 
     return existing.formData
   }
 
-  fun formPut(formType: String, id: String, json: String) {
+  fun put(key: FormKeyDto, json: String) {
     // Validate JSON is well-formed
     objectMapper.readTree(json)
 
     val entity = FormCacheEntity(
-      formId = id,
-      formType = formType,
+      formId = key.id,
+      formType = key.type,
       formData = json,
     )
 

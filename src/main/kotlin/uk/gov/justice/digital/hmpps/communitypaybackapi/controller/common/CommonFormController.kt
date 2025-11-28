@@ -6,10 +6,12 @@ import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.parameters.RequestBody
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import org.springframework.http.MediaType
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestMapping
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.FormKeyDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.FormService
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 
@@ -47,7 +49,7 @@ class CommonFormController(
   fun formGet(
     @PathVariable formType: String,
     @PathVariable id: String,
-  ): String = formService.formGet(formType, id)
+  ): String = formService.get(FormKeyDto(formType, id))
 
   @PutMapping(
     path = ["/{formType}/{id}"],
@@ -70,6 +72,23 @@ class CommonFormController(
     @PathVariable id: String,
     @org.springframework.web.bind.annotation.RequestBody json: String,
   ) {
-    formService.formPut(formType, id, json)
+    formService.put(FormKeyDto(formType, id), json)
+  }
+
+  @DeleteMapping(path = ["/{formType}/{id}"])
+  @Operation(
+    description = """Delete any data stored for this form""",
+    responses = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Form data was removed, or there was no existing form data",
+      ),
+    ],
+  )
+  fun delete(
+    @PathVariable formType: String,
+    @PathVariable id: String,
+  ) {
+    formService.deleteIfExists(FormKeyDto(formType, id))
   }
 }
