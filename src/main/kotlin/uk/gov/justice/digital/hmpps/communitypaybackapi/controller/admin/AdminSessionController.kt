@@ -13,10 +13,8 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AllocateSupervisorToSessionDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionIdDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionSummariesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.SessionService
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 import java.time.LocalDate
@@ -27,56 +25,6 @@ import java.time.LocalDate
   produces = [MediaType.APPLICATION_JSON_VALUE],
 )
 class AdminSessionController(val sessionService: SessionService) {
-
-  @GetMapping(
-    path = [ "/session-search"],
-    produces = [MediaType.APPLICATION_JSON_VALUE],
-  )
-  @Operation(
-    description = "Get project sessions within date range for a specific team. " +
-      "Deprecated, use '/admin/providers/{providerCode}/teams/{teamCode}/sessions' instead ",
-    deprecated = true,
-    responses = [
-      ApiResponse(
-        responseCode = "200",
-        description = "Successful project allocations response",
-      ),
-      ApiResponse(
-        responseCode = "400",
-        description = "Bad request - invalid date format or parameters",
-        content = [
-          Content(
-            schema = Schema(implementation = ErrorResponse::class),
-          ),
-        ],
-      ),
-      ApiResponse(
-        responseCode = "404",
-        description = "Team not found",
-        content = [
-          Content(
-            schema = Schema(implementation = ErrorResponse::class),
-          ),
-        ],
-      ),
-    ],
-  )
-  @Deprecated("Use version in [ProviderController] instead")
-  fun getSessions(
-    @Parameter(description = "Start date", example = "2025-09-01")
-    @RequestParam
-    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) startDate: LocalDate,
-    @Parameter(description = "End date", example = "2025-09-01")
-    @RequestParam
-    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) endDate: LocalDate,
-    @Parameter(description = "Team Code", example = "ABC123")
-    @RequestParam teamCode: String,
-  ): SessionSummariesDto = sessionService.getSessions(
-    providerCode = "UNKNOWN",
-    teamCode = teamCode,
-    startDate = startDate,
-    endDate = endDate,
-  )
 
   @GetMapping(
     path = [ "/{projectCode}/sessions/{date}"],

@@ -4,18 +4,23 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProviderSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProviderSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProviderTeamSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProviderTeamSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.SessionSummaries
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.SessionSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.SupervisorSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.SupervisorSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProviderSummariesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProviderTeamSummariesDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionSummariesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SupervisorSummariesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.bodyAsObject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.CommunityPaybackAndDeliusMockServer
+import java.time.LocalDate
 
 class AdminProvidersIT : IntegrationTestBase() {
 
@@ -196,6 +201,99 @@ class AdminProvidersIT : IntegrationTestBase() {
         .bodyAsObject<SupervisorSummariesDto>()
 
       assertThat(supervisors.supervisors).isEmpty()
+    }
+  }
+
+  @Nested
+  @DisplayName("GET /admin/providers/{providerCode}/teams/{teamCode}/sessions")
+  inner class SessionSearchEndpoint {
+
+    @Test
+    fun `should return unauthorized if no token`() {
+      webTestClient.get()
+        .uri("/admin/providers/PC01/teams/1/sessions?startDate=2025-09-01&endDate=2025-09-07")
+        .exchange()
+        .expectStatus()
+        .isUnauthorized
+    }
+
+    @Test
+    fun `should return forbidden if no role`() {
+      webTestClient.get()
+        .uri("/admin/providers/PC01/teams/1/sessions?startDate=2025-09-01&endDate=2025-09-07")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .isForbidden
+    }
+
+    @Test
+    fun `should return forbidden if wrong role`() {
+      webTestClient.get()
+        .uri("/admin/providers/PC01/teams/1/sessions?startDate=2025-09-01&endDate=2025-09-07")
+        .headers(setAuthorisation(roles = listOf("ROLE_WRONG")))
+        .exchange()
+        .expectStatus()
+        .isForbidden
+    }
+
+    @Test
+    fun `should return bad request if missing parameters`() {
+      webTestClient.get()
+        .uri("/admin/providers/PC01/teams/1/sessions")
+        .addAdminUiAuthHeader()
+        .exchange()
+        .expectStatus()
+        .is4xxClientError
+    }
+
+    @Test
+    fun `should return OK with project session summaries`() {
+      CommunityPaybackAndDeliusMockServer.getSessions(
+        providerCode = "PC01",
+        teamCode = "999",
+        startDate = LocalDate.of(2025, 1, 9),
+        endDate = LocalDate.of(2025, 1, 12),
+        projectSessions = SessionSummaries(
+          listOf(
+            SessionSummary.valid().copy(project = ProjectSummary.valid().copy(description = "Community Garden Maintenance")),
+            SessionSummary.valid().copy(project = ProjectSummary.valid().copy(description = "Park Cleanup")),
+          ),
+        ),
+      )
+
+      val sessionSearchResults = webTestClient.get()
+        .uri("/admin/providers/PC01/teams/999/sessions?startDate=2025-01-09&endDate=2025-01-12")
+        .addAdminUiAuthHeader()
+        .exchange()
+        .expectStatus()
+        .isOk
+        .bodyAsObject<SessionSummariesDto>()
+
+      assertThat(sessionSearchResults.allocations).hasSize(2)
+      assertThat(sessionSearchResults.allocations[0].projectName).isEqualTo("Community Garden Maintenance")
+      assertThat(sessionSearchResults.allocations[1].projectName).isEqualTo("Park Cleanup")
+    }
+
+    @Test
+    fun `should return empty list when no session summaries found`() {
+      CommunityPaybackAndDeliusMockServer.getSessions(
+        providerCode = "PC01",
+        teamCode = "999",
+        startDate = LocalDate.of(2025, 1, 9),
+        endDate = LocalDate.of(2025, 1, 11),
+        projectSessions = SessionSummaries(emptyList()),
+      )
+
+      val sessionSummaries = webTestClient.get()
+        .uri("/admin/providers/PC01/teams/999/sessions?startDate=2025-01-09&endDate=2025-01-11")
+        .addAdminUiAuthHeader()
+        .exchange()
+        .expectStatus()
+        .isOk
+        .bodyAsObject<SessionSummariesDto>()
+
+      assertThat(sessionSummaries.allocations).isEmpty()
     }
   }
 }
