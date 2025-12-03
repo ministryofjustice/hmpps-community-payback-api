@@ -58,10 +58,11 @@ class SupervisorSessionsController(
       ),
     ],
   )
-  fun getFutureAllocations(
+  @SuppressWarnings("MagicNumber")
+  fun getFutureSessions(
     @PathVariable providerCode: String,
     @PathVariable teamCode: String,
-  ) = sessionService.getFutureAllocationsForSupervisor(providerCode, teamCode)
+  ) = sessionService.getSessions(providerCode, teamCode, LocalDate.now(), LocalDate.now().plusDays(7))
 
   @GetMapping(
     path = [ "/supervisor/projects/{projectCode}/sessions/{date}"],

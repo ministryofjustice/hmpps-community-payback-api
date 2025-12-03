@@ -9,7 +9,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionIdDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionSummariesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionSummaryDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SupervisorSessionsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.SessionSupervisorEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.SessionSupervisorEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.SessionSupervisorId
@@ -103,12 +102,6 @@ class SessionService(
 
     return allocations.firstOrNull()?.toDto()
   }
-
-  @SuppressWarnings("MagicNumber")
-  fun getFutureAllocationsForSupervisor(providerCode: String, teamCode: String) = SupervisorSessionsDto(
-    communityPaybackAndDeliusClient.getSessions(providerCode, teamCode, LocalDate.now(), LocalDate.now().plusDays(7))
-      .toDto().allocations,
-  )
 
   private fun SessionSupervisorEntity.toDto() = sessionMappers.toSummaryDto(
     date = day,

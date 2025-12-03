@@ -17,8 +17,8 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.SessionSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.UserAccess
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.OffenderDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionSummariesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionSummaryDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SupervisorSessionsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.SessionSupervisorEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.SessionSupervisorEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
@@ -308,11 +308,11 @@ class SupervisorSessionsIT : IntegrationTestBase() {
         .exchange()
         .expectStatus()
         .isOk
-        .bodyAsObject<SupervisorSessionsDto>()
+        .bodyAsObject<SessionSummariesDto>()
 
-      assertThat(result.sessions).hasSize(2)
-      assertThat(result.sessions[0].projectName).isEqualTo("Community Garden Maintenance")
-      assertThat(result.sessions[1].projectName).isEqualTo("Park Cleanup")
+      assertThat(result.allocations).hasSize(2)
+      assertThat(result.allocations[0].projectName).isEqualTo("Community Garden Maintenance")
+      assertThat(result.allocations[1].projectName).isEqualTo("Park Cleanup")
     }
   }
 
