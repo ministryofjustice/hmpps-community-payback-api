@@ -50,7 +50,7 @@ class SupervisorSessionsController(
     produces = [MediaType.APPLICATION_JSON_VALUE],
   )
   @Operation(
-    description = "Get sessions allocated to the supervisor 7 days into the future. This includes sessions running today.",
+    description = "Get sessions scheduled for the next 7 days (including today) that belong to a supervisor's provider and team.",
     responses = [
       ApiResponse(
         responseCode = "200",
