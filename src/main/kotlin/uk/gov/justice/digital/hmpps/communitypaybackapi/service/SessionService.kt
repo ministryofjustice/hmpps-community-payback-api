@@ -104,16 +104,11 @@ class SessionService(
     return allocations.firstOrNull()?.toDto()
   }
 
-  fun getFutureAllocationsForSupervisor(supervisorCode: String): SupervisorSessionsDto {
-    val allocations = sessionSupervisorEntityRepository.findBySupervisorCodeAndDayGreaterThanEqualOrderByDayAsc(
-      supervisorCode,
-      LocalDate.now(),
-    )
-
-    return SupervisorSessionsDto(
-      allocations.map { it.toDto() },
-    )
-  }
+  @SuppressWarnings("MagicNumber")
+  fun getFutureAllocationsForSupervisor(providerCode: String, teamCode: String) = SupervisorSessionsDto(
+    communityPaybackAndDeliusClient.getSessions(providerCode, teamCode, LocalDate.now(), LocalDate.now().plusDays(7))
+      .toDto().allocations,
+  )
 
   private fun SessionSupervisorEntity.toDto() = sessionMappers.toSummaryDto(
     date = day,
