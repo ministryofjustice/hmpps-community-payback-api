@@ -46,11 +46,11 @@ class SupervisorSessionsController(
   ) = sessionService.getNextAllocationForSupervisor(supervisorCode) ?: throw NotFoundException("There are no future sessions for supervisor $supervisorCode")
 
   @GetMapping(
-    path = [ "/supervisor/supervisors/{supervisorCode}/sessions/future"],
+    path = [ "/supervisor/providers/{providerCode}/teams/{teamCode}/sessions/future"],
     produces = [MediaType.APPLICATION_JSON_VALUE],
   )
   @Operation(
-    description = "Get all future sessions allocated to the supervisor. This includes sessions running today.",
+    description = "Get sessions scheduled for the next 7 days (including today) that belong to a supervisor's provider and team.",
     responses = [
       ApiResponse(
         responseCode = "200",
@@ -58,9 +58,11 @@ class SupervisorSessionsController(
       ),
     ],
   )
-  fun getFutureAllocations(
-    @PathVariable supervisorCode: String,
-  ) = sessionService.getFutureAllocationsForSupervisor(supervisorCode)
+  @SuppressWarnings("MagicNumber")
+  fun getFutureSessions(
+    @PathVariable providerCode: String,
+    @PathVariable teamCode: String,
+  ) = sessionService.getSessions(providerCode, teamCode, LocalDate.now(), LocalDate.now().plusDays(7))
 
   @GetMapping(
     path = [ "/supervisor/projects/{projectCode}/sessions/{date}"],

@@ -9,7 +9,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionIdDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionSummariesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionSummaryDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SupervisorSessionsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.SessionSupervisorEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.SessionSupervisorEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.SessionSupervisorId
@@ -102,17 +101,6 @@ class SessionService(
     )
 
     return allocations.firstOrNull()?.toDto()
-  }
-
-  fun getFutureAllocationsForSupervisor(supervisorCode: String): SupervisorSessionsDto {
-    val allocations = sessionSupervisorEntityRepository.findBySupervisorCodeAndDayGreaterThanEqualOrderByDayAsc(
-      supervisorCode,
-      LocalDate.now(),
-    )
-
-    return SupervisorSessionsDto(
-      allocations.map { it.toDto() },
-    )
   }
 
   private fun SessionSupervisorEntity.toDto() = sessionMappers.toSummaryDto(

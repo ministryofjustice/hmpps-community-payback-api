@@ -10,12 +10,15 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.AppointmentSummar
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CaseAccess
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CaseSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Project
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Session
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.SessionSummaries
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.SessionSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.UserAccess
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.OffenderDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionSummariesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionSummaryDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SupervisorSessionsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.SessionSupervisorEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.SessionSupervisorEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
@@ -258,7 +261,7 @@ class SupervisorSessionsIT : IntegrationTestBase() {
     @Test
     fun `should return unauthorized if no token`() {
       webTestClient.get()
-        .uri("/supervisor/supervisors/SUPERVISOR001/sessions/future")
+        .uri("/supervisor/providers/P123/teams/T456/sessions/future")
         .exchange()
         .expectStatus()
         .isUnauthorized
@@ -267,7 +270,7 @@ class SupervisorSessionsIT : IntegrationTestBase() {
     @Test
     fun `should return forbidden if no role`() {
       webTestClient.get()
-        .uri("/supervisor/supervisors/SUPERVISOR001/sessions/future")
+        .uri("/supervisor/providers/P123/teams/T456/sessions/future")
         .headers(setAuthorisation())
         .exchange()
         .expectStatus()
@@ -277,7 +280,7 @@ class SupervisorSessionsIT : IntegrationTestBase() {
     @Test
     fun `should return forbidden if wrong role`() {
       webTestClient.get()
-        .uri("/supervisor/supervisors/SUPERVISOR001/sessions/future")
+        .uri("/supervisor/providers/P123/teams/T456/sessions/future")
         .headers(setAuthorisation(roles = listOf("ROLE_WRONG")))
         .exchange()
         .expectStatus()
@@ -286,42 +289,30 @@ class SupervisorSessionsIT : IntegrationTestBase() {
 
     @Test
     fun `should return OK with project session`() {
-      val yesterday = LocalDate.now().minusDays(1)
-      allocateSessionToSupervisor1("IGNORED_PROJECT_YESTERDAY", yesterday)
-
-      val today = LocalDate.now()
-      allocateSessionToSupervisor1("PROJ1", today)
-
-      CommunityPaybackAndDeliusMockServer.getProjectSession(
-        username = "USER1",
-        date = today,
-        session =
-        Session.valid(ctx).copy(
-          project = Project.valid().copy(code = "PROJ1"),
-        ),
-      )
-
-      val nextYear = LocalDate.now().plusYears(5)
-      allocateSessionToSupervisor1("PROJ2", nextYear)
-
-      CommunityPaybackAndDeliusMockServer.getProjectSession(
-        username = "USER1",
-        date = nextYear,
-        session = Session.valid(ctx).copy(
-          project = Project.valid().copy(code = "PROJ2"),
+      CommunityPaybackAndDeliusMockServer.getSessions(
+        providerCode = "P123",
+        teamCode = "T456",
+        startDate = LocalDate.now(),
+        endDate = LocalDate.now().plusDays(7),
+        projectSessions = SessionSummaries(
+          listOf(
+            SessionSummary.valid().copy(project = ProjectSummary.valid().copy(description = "Community Garden Maintenance")),
+            SessionSummary.valid().copy(project = ProjectSummary.valid().copy(description = "Park Cleanup")),
+          ),
         ),
       )
 
       val result = webTestClient.get()
-        .uri("/supervisor/supervisors/SUPERVISOR001/sessions/future")
+        .uri("/supervisor/providers/P123/teams/T456/sessions/future")
         .addSupervisorUiAuthHeader(username = "USER1")
         .exchange()
         .expectStatus()
         .isOk
-        .bodyAsObject<SupervisorSessionsDto>()
+        .bodyAsObject<SessionSummariesDto>()
 
-      assertThat(result.sessions).hasSize(2)
-      assertThat(result.sessions.map { it.projectCode }).containsExactly("PROJ1", "PROJ2")
+      assertThat(result.allocations).hasSize(2)
+      assertThat(result.allocations[0].projectName).isEqualTo("Community Garden Maintenance")
+      assertThat(result.allocations[1].projectName).isEqualTo("Park Cleanup")
     }
   }
 
