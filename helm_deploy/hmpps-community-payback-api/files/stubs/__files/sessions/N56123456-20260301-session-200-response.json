@@ -31,7 +31,8 @@
       },
       "requirementProgress": {
         "requiredMinutes": "12000",
-        "completedMinutes": "4000"
+        "completedMinutes": "4000",
+        "adjustments": "60"
       }
     },
     {
@@ -53,7 +54,8 @@
       },
       "requirementProgress": {
         "requiredMinutes": "12000",
-        "completedMinutes": "1000"
+        "completedMinutes": "1000",
+        "adjustments": "0"
       }
     },
     {
@@ -75,7 +77,8 @@
       },
       "requirementProgress": {
         "requiredMinutes": "12000",
-        "completedMinutes": "2000"
+        "completedMinutes": "2000",
+        "adjustments": "0"
       }
     }
   ]

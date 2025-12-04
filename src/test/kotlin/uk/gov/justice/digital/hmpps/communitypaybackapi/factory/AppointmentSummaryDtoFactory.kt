@@ -9,6 +9,7 @@ fun AppointmentSummaryDto.Companion.valid() = AppointmentSummaryDto(
   id = Long.random(),
   contactOutcome = ContactOutcomeDto.valid(),
   requirementMinutes = Int.random(),
+  adjustmentMinutes = Int.random(),
   completedMinutes = Int.random(),
   offender = OffenderDto.OffenderLimitedDto("CRN01"),
 )
