@@ -59,15 +59,8 @@
       "middleNames": []
     }
   },
-  "outcome": {
-    "code": "UAAB",
-    "description": "Unacceptable Absence"
-  },
-  "enforcementAction": {
-    "code": "EA05",
-    "description": "Other Enforcement Letter Sent",
-    "respondBy": null
-  },
+  "outcome": null,
+  "enforcementAction": null,
   "hiVisWorn": null,
   "workedIntensively": null,
   "workQuality": null,
