@@ -361,6 +361,7 @@ class AppointmentMappersTest {
           outcome = ContactOutcome.valid().copy(code = "OUTCOME1"),
           requirementProgress = RequirementProgress(
             requiredMinutes = 520,
+            adjustments = 40,
             completedMinutes = 30,
           ),
         ),
@@ -371,6 +372,7 @@ class AppointmentMappersTest {
       assertThat(result.contactOutcome?.name).isEqualTo("The outcome")
       assertThat(result.offender).isNotNull
       assertThat(result.requirementMinutes).isEqualTo(520)
+      assertThat(result.adjustmentMinutes).isEqualTo(40)
       assertThat(result.completedMinutes).isEqualTo(30)
     }
   }

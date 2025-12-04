@@ -31,7 +31,8 @@
       },
       "requirementProgress": {
         "requiredMinutes": "12000",
-        "completedMinutes": "0"
+        "completedMinutes": "0",
+        "adjustments": "0"
       }
     }
   ]

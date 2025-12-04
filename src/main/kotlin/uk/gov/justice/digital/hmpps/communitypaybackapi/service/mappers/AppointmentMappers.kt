@@ -89,6 +89,7 @@ class AppointmentMappers(
       contactOutcomeEntityRepository.findByCode(it)?.toDto() ?: error("Can't find outcome for code $it")
     },
     requirementMinutes = appointmentSummary.requirementProgress.requiredMinutes,
+    adjustmentMinutes = appointmentSummary.requirementProgress.adjustments,
     completedMinutes = appointmentSummary.requirementProgress.completedMinutes,
     offender = offenderInfoResult.toDto(),
   )
