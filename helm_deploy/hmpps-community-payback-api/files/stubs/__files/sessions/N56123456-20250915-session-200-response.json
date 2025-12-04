@@ -25,10 +25,7 @@
         "currentExclusion": false,
         "currentRestriction": false
       },
-      "outcome": {
-        "code": "ATTC",
-        "description": "Attended - Complied"
-      },
+      "outcome": null,
       "requirementProgress": {
         "requiredMinutes": "12000",
         "completedMinutes": "3000",
@@ -48,10 +45,7 @@
         "currentExclusion": false,
         "currentRestriction": false
       },
-      "outcome": {
-        "code": "UAAB",
-        "description": "Unacceptable Absence"
-      },
+      "outcome": null,
       "requirementProgress": {
         "requiredMinutes": "12000",
         "completedMinutes": "0",
@@ -72,8 +66,8 @@
         "currentRestriction": false
       },
       "outcome": {
-        "code": "UAAB",
-        "description": "Unacceptable Absence"
+        "code": "RSOF",
+        "description": "Rescheduled - PoP Request"
       },
       "requirementProgress": {
         "requiredMinutes": "12000",
