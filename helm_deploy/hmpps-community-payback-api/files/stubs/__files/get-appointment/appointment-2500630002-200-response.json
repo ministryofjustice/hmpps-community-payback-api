@@ -59,15 +59,12 @@
       "middleNames": []
     }
   },
-  "outcome": {
-    "code": "ATTC",
-    "description": "Attended - Complied"
-  },
+  "outcome": null,
   "enforcementAction": null,
-  "hiVisWorn": true,
-  "workedIntensively": false,
-  "workQuality": "GOOD",
-  "behaviour": "GOOD",
+  "hiVisWorn": null,
+  "workedIntensively": null,
+  "workQuality": null,
+  "behaviour": null,
   "notes": "[System scheduled appointment]",
   "updatedAt": "2025-09-22T17:00:00",
   "sensitive": true,

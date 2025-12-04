@@ -48,10 +48,7 @@
         "currentExclusion": false,
         "currentRestriction": false
       },
-      "outcome": {
-        "code": "UAAB",
-        "description": "Unacceptable Absence"
-      },
+      "outcome": null,
       "requirementProgress": {
         "requiredMinutes": "12000",
         "completedMinutes": "1000",
@@ -71,10 +68,7 @@
         "currentExclusion": false,
         "currentRestriction": false
       },
-      "outcome": {
-        "code": "UAAB",
-        "description": "Unacceptable Absence"
-      },
+      "outcome": null,
       "requirementProgress": {
         "requiredMinutes": "12000",
         "completedMinutes": "2000",
