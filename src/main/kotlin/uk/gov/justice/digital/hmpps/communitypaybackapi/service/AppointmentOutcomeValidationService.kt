@@ -1,29 +1,43 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.service
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.BadRequestException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.validateLengthLessThan
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.validateNotNull
 import java.time.Duration
+import java.time.LocalDate
 
 @Service
 class AppointmentOutcomeValidationService(
   private val contactOutcomeEntityRepository: ContactOutcomeEntityRepository,
 ) {
 
-  fun validate(outcome: UpdateAppointmentOutcomeDto) {
-    validateContactOutcome(outcome)
+  fun validate(
+    appointment: AppointmentDto,
+    outcome: UpdateAppointmentOutcomeDto,
+  ) {
+    validateContactOutcome(appointment, outcome)
     validateDuration(outcome)
     validatePenaltyTime(outcome)
     validateNotes(outcome)
   }
 
-  fun validateContactOutcome(outcome: UpdateAppointmentOutcomeDto) {
+  fun validateContactOutcome(
+    appointment: AppointmentDto,
+    outcome: UpdateAppointmentOutcomeDto,
+  ) {
     val code = outcome.contactOutcomeCode ?: return
 
     val contactOutcome = contactOutcomeEntityRepository.findByCode(code)
       ?: throw BadRequestException("Contact outcome not found for code $code")
+
+    val appointmentIsInFuture = appointment.date.isAfter(LocalDate.now())
+    val attendanceOrEnforcementRecorded = contactOutcome.attended || contactOutcome.enforceable
+    if (appointmentIsInFuture && attendanceOrEnforcementRecorded) {
+      throw BadRequestException("If the appointment is in the future, only acceptable absences are permitted to be recorded")
+    }
 
     if (contactOutcome.attended) {
       validateNotNull(outcome.attendanceData) {
