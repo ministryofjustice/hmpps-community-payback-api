@@ -9,15 +9,11 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.AppointmentSummar
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CaseAccess
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CaseSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Project
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Session
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.SessionSummaries
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.SessionSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.UserAccess
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AllocateSupervisorToSessionDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.OffenderDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionSummariesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.SessionSupervisorEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.SessionSupervisorEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
@@ -29,99 +25,6 @@ class AdminSessionsIT : IntegrationTestBase() {
 
   @Autowired
   lateinit var sessionSupervisorEntityRepository: SessionSupervisorEntityRepository
-
-  @Nested
-  @DisplayName("GET /admin/projects/session-search")
-  inner class SessionSearchEndpoint {
-
-    @Test
-    fun `should return unauthorized if no token`() {
-      webTestClient.get()
-        .uri("/admin/projects/session-search?startDate=2025-09-01&endDate=2025-09-07&teamCode=1")
-        .exchange()
-        .expectStatus()
-        .isUnauthorized
-    }
-
-    @Test
-    fun `should return forbidden if no role`() {
-      webTestClient.get()
-        .uri("/admin/projects/session-search?startDate=2025-09-01&endDate=2025-09-07&teamCode=1")
-        .headers(setAuthorisation())
-        .exchange()
-        .expectStatus()
-        .isForbidden
-    }
-
-    @Test
-    fun `should return forbidden if wrong role`() {
-      webTestClient.get()
-        .uri("/admin/projects/session-search?startDate=2025-09-01&endDate=2025-09-07&teamCode=1")
-        .headers(setAuthorisation(roles = listOf("ROLE_WRONG")))
-        .exchange()
-        .expectStatus()
-        .isForbidden
-    }
-
-    @Test
-    fun `should return bad request if missing parameters`() {
-      webTestClient.get()
-        .uri("/admin/projects/session-search")
-        .addAdminUiAuthHeader()
-        .exchange()
-        .expectStatus()
-        .is4xxClientError
-    }
-
-    @Test
-    fun `should return OK with project session summaries`() {
-      CommunityPaybackAndDeliusMockServer.getSessions(
-        providerCode = "UNKNOWN",
-        teamCode = "999",
-        startDate = LocalDate.of(2025, 1, 9),
-        endDate = LocalDate.of(2025, 1, 12),
-        projectSessions = SessionSummaries(
-          listOf(
-            SessionSummary.valid().copy(project = ProjectSummary.valid().copy(description = "Community Garden Maintenance")),
-            SessionSummary.valid().copy(project = ProjectSummary.valid().copy(description = "Park Cleanup")),
-          ),
-        ),
-      )
-
-      val sessionSearchResults = webTestClient.get()
-        .uri("/admin/projects/session-search?startDate=2025-01-09&endDate=2025-01-12&teamCode=999")
-        .addAdminUiAuthHeader()
-        .exchange()
-        .expectStatus()
-        .isOk
-        .bodyAsObject<SessionSummariesDto>()
-
-      assertThat(sessionSearchResults.allocations).hasSize(2)
-      assertThat(sessionSearchResults.allocations[0].projectName).isEqualTo("Community Garden Maintenance")
-      assertThat(sessionSearchResults.allocations[1].projectName).isEqualTo("Park Cleanup")
-    }
-
-    @Test
-    fun `should return empty list when no session summaries found`() {
-      CommunityPaybackAndDeliusMockServer.getSessions(
-        providerCode = "UNKNOWN",
-        teamCode = "999",
-        startDate = LocalDate.of(2025, 1, 9),
-        endDate = LocalDate.of(2025, 1, 11),
-        projectSessions = SessionSummaries(emptyList()),
-      )
-
-      val sessionSummaries = webTestClient.get()
-        .uri("/admin/projects/session-search?startDate=2025-01-09&endDate=2025-01-11&teamCode=999")
-        .addAdminUiAuthHeader()
-        .exchange()
-        .expectStatus()
-        .isOk
-        .bodyAsObject<SessionSummariesDto>()
-
-      assertThat(sessionSummaries.allocations).isEmpty()
-    }
-  }
 
   @Nested
   @DisplayName("GET /admin/projects/123/sessions/2025-01-09")
