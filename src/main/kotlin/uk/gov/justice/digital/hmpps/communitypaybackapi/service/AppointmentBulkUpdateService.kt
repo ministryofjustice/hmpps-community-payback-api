@@ -12,7 +12,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.SentryS
 @Service
 class AppointmentBulkUpdateService(
   private val appointmentOutcomeValidationService: AppointmentOutcomeValidationService,
-  private val appointmentService: AppointmentService,
+  private val appointmentUpdateService: AppointmentUpdateService,
   private val sentryService: SentryService,
 ) {
 
@@ -32,7 +32,7 @@ class AppointmentBulkUpdateService(
   @SuppressWarnings("TooGenericExceptionCaught")
   private fun UpdateAppointmentOutcomesDto.apply(projectCode: String) = updates.map { updateAppointmentOutcome ->
     val outcome = try {
-      appointmentService.updateAppointmentOutcome(projectCode, updateAppointmentOutcome)
+      appointmentUpdateService.updateAppointmentOutcome(projectCode, updateAppointmentOutcome)
       UpdateAppointmentOutcomeResultType.SUCCESS
     } catch (_: NotFoundException) {
       UpdateAppointmentOutcomeResultType.NOT_FOUND

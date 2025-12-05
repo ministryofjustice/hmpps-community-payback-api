@@ -21,7 +21,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOut
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentBulkUpdateService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentOutcomeValidationService
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentUpdateService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.SentryService
 
 @ExtendWith(MockKExtension::class)
@@ -31,7 +31,7 @@ class AppointmentBulkUpdateServiceTest {
   private lateinit var appointmentOutcomeValidationService: AppointmentOutcomeValidationService
 
   @MockK(relaxed = true)
-  private lateinit var appointmentService: AppointmentService
+  private lateinit var appointmentUpdateService: AppointmentUpdateService
 
   @MockK(relaxed = true)
   private lateinit var sentryService: SentryService
@@ -61,7 +61,7 @@ class AppointmentBulkUpdateServiceTest {
         )
       }.isInstanceOf(BadRequestException::class.java)
 
-      verify(exactly = 0) { appointmentService.updateAppointmentOutcome(any(), any()) }
+      verify(exactly = 0) { appointmentUpdateService.updateAppointmentOutcome(any(), any()) }
     }
 
     @Test
@@ -69,7 +69,7 @@ class AppointmentBulkUpdateServiceTest {
       val update1 = UpdateAppointmentOutcomeDto.valid().copy(deliusId = 1L)
 
       every { appointmentOutcomeValidationService.validate(update1) } just Runs
-      every { appointmentService.updateAppointmentOutcome(PROJECT_CODE, update1) } throws NotFoundException("appointment", "1")
+      every { appointmentUpdateService.updateAppointmentOutcome(PROJECT_CODE, update1) } throws NotFoundException("appointment", "1")
 
       val result = service.updateAppointmentOutcomes(
         projectCode = PROJECT_CODE,
@@ -87,7 +87,7 @@ class AppointmentBulkUpdateServiceTest {
       val update1 = UpdateAppointmentOutcomeDto.valid().copy(deliusId = 1L)
 
       every { appointmentOutcomeValidationService.validate(update1) } just Runs
-      every { appointmentService.updateAppointmentOutcome(PROJECT_CODE, update1) } throws ConflictException("oh no")
+      every { appointmentUpdateService.updateAppointmentOutcome(PROJECT_CODE, update1) } throws ConflictException("oh no")
 
       val result = service.updateAppointmentOutcomes(
         projectCode = PROJECT_CODE,
@@ -106,7 +106,7 @@ class AppointmentBulkUpdateServiceTest {
       every { appointmentOutcomeValidationService.validate(update1) } just Runs
 
       val exceptionReturned = IllegalStateException("oh no")
-      every { appointmentService.updateAppointmentOutcome(PROJECT_CODE, update1) } throws exceptionReturned
+      every { appointmentUpdateService.updateAppointmentOutcome(PROJECT_CODE, update1) } throws exceptionReturned
 
       val result = service.updateAppointmentOutcomes(
         projectCode = PROJECT_CODE,
@@ -135,7 +135,7 @@ class AppointmentBulkUpdateServiceTest {
       assertThat(result.results[0].deliusId).isEqualTo(1L)
       assertThat(result.results[0].result).isEqualTo(UpdateAppointmentOutcomeResultType.SUCCESS)
 
-      verify { appointmentService.updateAppointmentOutcome(PROJECT_CODE, update1) }
+      verify { appointmentUpdateService.updateAppointmentOutcome(PROJECT_CODE, update1) }
     }
 
     @Test
@@ -147,9 +147,9 @@ class AppointmentBulkUpdateServiceTest {
 
       every { appointmentOutcomeValidationService.validate(any()) } just Runs
 
-      every { appointmentService.updateAppointmentOutcome(PROJECT_CODE, update1) } throws NotFoundException("appointment", "1")
-      every { appointmentService.updateAppointmentOutcome(PROJECT_CODE, update2) } throws ConflictException("oh no")
-      every { appointmentService.updateAppointmentOutcome(PROJECT_CODE, update3) } throws IllegalStateException("oh no")
+      every { appointmentUpdateService.updateAppointmentOutcome(PROJECT_CODE, update1) } throws NotFoundException("appointment", "1")
+      every { appointmentUpdateService.updateAppointmentOutcome(PROJECT_CODE, update2) } throws ConflictException("oh no")
+      every { appointmentUpdateService.updateAppointmentOutcome(PROJECT_CODE, update3) } throws IllegalStateException("oh no")
 
       val result = service.updateAppointmentOutcomes(
         projectCode = PROJECT_CODE,
