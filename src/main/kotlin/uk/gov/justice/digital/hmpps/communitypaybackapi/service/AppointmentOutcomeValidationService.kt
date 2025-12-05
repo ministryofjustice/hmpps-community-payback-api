@@ -1,4 +1,5 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.service
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.BadRequestException
@@ -11,6 +12,8 @@ import java.time.LocalDate
 
 @Service
 class AppointmentOutcomeValidationService(
+  @param:Value("\${community-payback.appointment-validation.only-acceptable-absences-permitted-in-advance:true}")
+  private val onlyAcceptableAbsencesPermittedInAdvance: Boolean = true,
   private val contactOutcomeEntityRepository: ContactOutcomeEntityRepository,
 ) {
 
@@ -24,6 +27,7 @@ class AppointmentOutcomeValidationService(
     validateNotes(outcome)
   }
 
+  @SuppressWarnings("ComplexCondition")
   fun validateContactOutcome(
     appointment: AppointmentDto,
     outcome: UpdateAppointmentOutcomeDto,
@@ -33,7 +37,10 @@ class AppointmentOutcomeValidationService(
     val contactOutcome = contactOutcomeEntityRepository.findByCode(code)
       ?: throw BadRequestException("Contact outcome not found for code $code")
 
-    if (appointment.date.isAfter(LocalDate.now()) && (contactOutcome.attended || contactOutcome.enforceable)) {
+    if (onlyAcceptableAbsencesPermittedInAdvance &&
+      appointment.date.isAfter(LocalDate.now()) &&
+      (contactOutcome.attended || contactOutcome.enforceable)
+    ) {
       throw BadRequestException("If the appointment is in the future, only acceptable absences are permitted to be recorded")
     }
 
