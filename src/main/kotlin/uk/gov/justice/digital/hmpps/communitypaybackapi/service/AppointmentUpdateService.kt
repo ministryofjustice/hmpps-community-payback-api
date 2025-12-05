@@ -15,6 +15,7 @@ import java.util.UUID
 
 @Service
 class AppointmentUpdateService(
+  private val appointmentRetrievalService: AppointmentRetrievalService,
   private val appointmentOutcomeEntityRepository: AppointmentOutcomeEntityRepository,
   private val communityPaybackAndDeliusClient: CommunityPaybackAndDeliusClient,
   private val formService: FormService,
@@ -34,7 +35,10 @@ class AppointmentUpdateService(
   ) {
     val deliusId = outcome.deliusId
 
-    appointmentOutcomeValidationService.validate(outcome)
+    appointmentOutcomeValidationService.validate(
+      appointment = appointmentRetrievalService.getAppointment(projectCode, outcome.deliusId),
+      outcome = outcome,
+    )
 
     val proposedEntity = appointmentOutcomeEntityFactory.toEntity(outcome)
 

@@ -24,6 +24,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentOutcomeEntityFactory
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentOutcomeValidationService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentRetrievalService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentUpdateService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.FormService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.unit.util.WebClientResponseExceptionFactory
@@ -32,6 +33,9 @@ import java.util.UUID
 @SuppressWarnings("UnusedPrivateProperty")
 @ExtendWith(MockKExtension::class)
 class AppointmentUpdateServiceTest {
+
+  @RelaxedMockK
+  lateinit var appointmentRetrievalService: AppointmentRetrievalService
 
   @RelaxedMockK
   lateinit var appointmentOutcomeEntityRepository: AppointmentOutcomeEntityRepository
@@ -54,13 +58,14 @@ class AppointmentUpdateServiceTest {
   private companion object {
     const val PROJECT_CODE = "PROJ123"
     const val USERNAME = "mr-user"
+    const val APPOINTMENT_ID = 101L
   }
 
   @Nested
   inner class UpdateAppointmentOutcome {
 
     @Test
-    fun `if appointment not found, throw not found exception`() {
+    fun `if appointment not found on update, throw not found exception`() {
       every { appointmentOutcomeEntityRepository.findTopByAppointmentDeliusIdOrderByCreatedAtDesc(101L) } returns null
       every { appointmentOutcomeEntityFactory.toEntity(any()) } returns AppointmentOutcomeEntity.valid()
       every { appointmentOutcomeEntityRepository.save(any()) } returnsArgument 0
@@ -72,7 +77,7 @@ class AppointmentUpdateServiceTest {
       assertThatThrownBy {
         service.updateAppointmentOutcome(
           projectCode = PROJECT_CODE,
-          outcome = UpdateAppointmentOutcomeDto.valid().copy(deliusId = 101L),
+          outcome = UpdateAppointmentOutcomeDto.valid().copy(deliusId = APPOINTMENT_ID),
         )
       }.isInstanceOf(NotFoundException::class.java).hasMessage("Appointment not found for ID '101'")
     }

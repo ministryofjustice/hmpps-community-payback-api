@@ -12,6 +12,7 @@ import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.BadRequestException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ConflictException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.NotFoundException
@@ -21,6 +22,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOut
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentBulkUpdateService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentOutcomeValidationService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentRetrievalService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentUpdateService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.SentryService
 
@@ -29,6 +31,9 @@ class AppointmentBulkUpdateServiceTest {
 
   @MockK(relaxed = true)
   private lateinit var appointmentOutcomeValidationService: AppointmentOutcomeValidationService
+
+  @MockK(relaxed = true)
+  private lateinit var appointmentRetrievalService: AppointmentRetrievalService
 
   @MockK(relaxed = true)
   private lateinit var appointmentUpdateService: AppointmentUpdateService
@@ -48,11 +53,16 @@ class AppointmentBulkUpdateServiceTest {
 
     @Test
     fun `don't proceed if validation fails`() {
+      val appointment1Dto = AppointmentDto.valid()
       val update1 = UpdateAppointmentOutcomeDto.valid()
+
+      val appointment2Dto = AppointmentDto.valid()
       val update2 = UpdateAppointmentOutcomeDto.valid()
 
-      every { appointmentOutcomeValidationService.validate(update1) } just Runs
-      every { appointmentOutcomeValidationService.validate(update2) } throws BadRequestException("oh dear")
+      every { appointmentRetrievalService.getAppointment(PROJECT_CODE, update1.deliusId) } returns appointment1Dto
+      every { appointmentOutcomeValidationService.validate(appointment1Dto, update1) } just Runs
+      every { appointmentRetrievalService.getAppointment(PROJECT_CODE, update2.deliusId) } returns appointment2Dto
+      every { appointmentOutcomeValidationService.validate(appointment2Dto, update2) } throws BadRequestException("oh dear")
 
       assertThatThrownBy {
         service.updateAppointmentOutcomes(
@@ -66,9 +76,11 @@ class AppointmentBulkUpdateServiceTest {
 
     @Test
     fun `not found returned as NOT_FOUND`() {
+      val appointment1Dto = AppointmentDto.valid()
       val update1 = UpdateAppointmentOutcomeDto.valid().copy(deliusId = 1L)
 
-      every { appointmentOutcomeValidationService.validate(update1) } just Runs
+      every { appointmentRetrievalService.getAppointment(PROJECT_CODE, update1.deliusId) } returns appointment1Dto
+      every { appointmentOutcomeValidationService.validate(appointment1Dto, update1) } just Runs
       every { appointmentUpdateService.updateAppointmentOutcome(PROJECT_CODE, update1) } throws NotFoundException("appointment", "1")
 
       val result = service.updateAppointmentOutcomes(
@@ -84,9 +96,11 @@ class AppointmentBulkUpdateServiceTest {
 
     @Test
     fun `version conflict returned as VERSION_CONFLICT`() {
+      val appointment1Dto = AppointmentDto.valid()
       val update1 = UpdateAppointmentOutcomeDto.valid().copy(deliusId = 1L)
 
-      every { appointmentOutcomeValidationService.validate(update1) } just Runs
+      every { appointmentRetrievalService.getAppointment(PROJECT_CODE, update1.deliusId) } returns appointment1Dto
+      every { appointmentOutcomeValidationService.validate(appointment1Dto, update1) } just Runs
       every { appointmentUpdateService.updateAppointmentOutcome(PROJECT_CODE, update1) } throws ConflictException("oh no")
 
       val result = service.updateAppointmentOutcomes(
@@ -101,9 +115,11 @@ class AppointmentBulkUpdateServiceTest {
 
     @Test
     fun `general exception returns SERVER_ERROR and raises sentry alert`() {
+      val appointment1Dto = AppointmentDto.valid()
       val update1 = UpdateAppointmentOutcomeDto.valid().copy(deliusId = 1L)
 
-      every { appointmentOutcomeValidationService.validate(update1) } just Runs
+      every { appointmentRetrievalService.getAppointment(PROJECT_CODE, update1.deliusId) } returns appointment1Dto
+      every { appointmentOutcomeValidationService.validate(appointment1Dto, update1) } just Runs
 
       val exceptionReturned = IllegalStateException("oh no")
       every { appointmentUpdateService.updateAppointmentOutcome(PROJECT_CODE, update1) } throws exceptionReturned
@@ -122,9 +138,11 @@ class AppointmentBulkUpdateServiceTest {
 
     @Test
     fun `success returned as SUCCESS`() {
+      val appointment1Dto = AppointmentDto.valid()
       val update1 = UpdateAppointmentOutcomeDto.valid().copy(deliusId = 1L)
 
-      every { appointmentOutcomeValidationService.validate(update1) } just Runs
+      every { appointmentRetrievalService.getAppointment(PROJECT_CODE, update1.deliusId) } returns appointment1Dto
+      every { appointmentOutcomeValidationService.validate(appointment1Dto, update1) } just Runs
 
       val result = service.updateAppointmentOutcomes(
         projectCode = PROJECT_CODE,
@@ -145,7 +163,7 @@ class AppointmentBulkUpdateServiceTest {
       val update3 = UpdateAppointmentOutcomeDto.valid().copy(deliusId = 3L)
       val update4 = UpdateAppointmentOutcomeDto.valid().copy(deliusId = 4L)
 
-      every { appointmentOutcomeValidationService.validate(any()) } just Runs
+      every { appointmentOutcomeValidationService.validate(any(), any()) } just Runs
 
       every { appointmentUpdateService.updateAppointmentOutcome(PROJECT_CODE, update1) } throws NotFoundException("appointment", "1")
       every { appointmentUpdateService.updateAppointmentOutcome(PROJECT_CODE, update2) } throws ConflictException("oh no")
