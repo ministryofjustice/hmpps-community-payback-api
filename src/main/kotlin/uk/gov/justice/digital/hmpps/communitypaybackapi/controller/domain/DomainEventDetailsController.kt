@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.communitypaybackapi.config.OpenApiConfiguration
 import uk.gov.justice.digital.hmpps.communitypaybackapi.config.SecurityConfiguration
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentOutcomeDomainEventDetailDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentUpdateService
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 import java.util.UUID
 
@@ -29,7 +29,7 @@ import java.util.UUID
 @SecurityRequirement(name = OpenApiConfiguration.Companion.SECURITY_SCHEME_DOMAIN_EVENT_DETAILS)
 @Tag(name = "domain-event-details")
 class DomainEventDetailsController(
-  val appointmentService: AppointmentService,
+  val appointmentUpdateService: AppointmentUpdateService,
 ) {
   @GetMapping(
     path = ["/appointment-outcome/{eventId}"],
@@ -52,7 +52,7 @@ class DomainEventDetailsController(
       ),
     ],
   )
-  fun appointmentOutcome(@PathVariable eventId: UUID): ResponseEntity<AppointmentOutcomeDomainEventDetailDto> = appointmentService.getOutcomeDomainEventDetails(eventId)?.let {
+  fun appointmentOutcome(@PathVariable eventId: UUID): ResponseEntity<AppointmentOutcomeDomainEventDetailDto> = appointmentUpdateService.getOutcomeDomainEventDetails(eventId)?.let {
     ResponseEntity.ok(it)
   } ?: ResponseEntity.notFound().build()
 }
