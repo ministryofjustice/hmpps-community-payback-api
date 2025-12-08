@@ -19,10 +19,12 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentOutcom
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.FormCacheEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.FormCacheEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.validNoOutcome
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.bodyAsObject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.CommunityPaybackAndDeliusMockServer
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
+import java.time.LocalDate
 
 class AdminAppointmentIT : IntegrationTestBase() {
 
@@ -158,14 +160,15 @@ class AdminAppointmentIT : IntegrationTestBase() {
 
     @Test
     fun `Should return 404 if an appointment can't be found`() {
-      CommunityPaybackAndDeliusMockServer.putAppointmentNotFound(
+      CommunityPaybackAndDeliusMockServer.getAppointmentNotFound(
         projectCode = "proj123",
         appointmentId = 1234L,
+        username = "theusername",
       )
 
       val response = webTestClient.post()
         .uri("/admin/projects/proj123/appointments/1234/outcome")
-        .addAdminUiAuthHeader()
+        .addAdminUiAuthHeader("theusername")
         .bodyValue(
           UpdateAppointmentOutcomeDto.valid(ctx).copy(
             deliusId = 1234L,
@@ -182,6 +185,15 @@ class AdminAppointmentIT : IntegrationTestBase() {
 
     @Test
     fun `Should send update upstream and delete corresponding form data`() {
+      CommunityPaybackAndDeliusMockServer.getAppointment(
+        appointment = Appointment.validNoOutcome().copy(
+          id = 1234L,
+          project = Project.valid().copy(code = "proj123"),
+          date = LocalDate.now(),
+        ),
+        username = "theusername",
+      )
+
       CommunityPaybackAndDeliusMockServer.putAppointment(
         projectCode = "proj123",
         appointmentId = 1234L,
@@ -197,7 +209,7 @@ class AdminAppointmentIT : IntegrationTestBase() {
 
       webTestClient.post()
         .uri("/admin/projects/proj123/appointments/1234/outcome")
-        .addAdminUiAuthHeader()
+        .addAdminUiAuthHeader("theusername")
         .bodyValue(
           UpdateAppointmentOutcomeDto.valid(ctx).copy(
             deliusId = 1234L,

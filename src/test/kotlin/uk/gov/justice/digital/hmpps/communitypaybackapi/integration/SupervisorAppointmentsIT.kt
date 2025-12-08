@@ -22,10 +22,12 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentOutcom
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.FormCacheEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.FormCacheEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.validNoOutcome
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.bodyAsObject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.CommunityPaybackAndDeliusMockServer
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
+import java.time.LocalDate
 
 class SupervisorAppointmentsIT : IntegrationTestBase() {
 
@@ -181,6 +183,14 @@ class SupervisorAppointmentsIT : IntegrationTestBase() {
 
     @Test
     fun `Should send update upstream and delete corresponding form data`() {
+      CommunityPaybackAndDeliusMockServer.getAppointment(
+        appointment = Appointment.validNoOutcome().copy(
+          id = 1234L,
+          project = Project.valid().copy(code = "PC01"),
+          date = LocalDate.now(),
+        ),
+        username = "theusername",
+      )
       CommunityPaybackAndDeliusMockServer.putAppointment(
         projectCode = "PC01",
         appointmentId = 1234L,
@@ -196,7 +206,7 @@ class SupervisorAppointmentsIT : IntegrationTestBase() {
 
       webTestClient.post()
         .uri("/supervisor/projects/PC01/appointments/1234/outcome")
-        .addSupervisorUiAuthHeader()
+        .addSupervisorUiAuthHeader("theusername")
         .bodyValue(
           UpdateAppointmentOutcomeDto.valid(ctx).copy(
             deliusId = 1234L,
@@ -263,9 +273,26 @@ class SupervisorAppointmentsIT : IntegrationTestBase() {
 
     @Test
     fun `succeeds and calls upstream endpoint`() {
+      CommunityPaybackAndDeliusMockServer.getAppointment(
+        appointment = Appointment.validNoOutcome().copy(
+          id = 1234L,
+          project = Project.valid().copy(code = "PC01"),
+          date = LocalDate.now(),
+        ),
+        username = "theusername",
+      )
       CommunityPaybackAndDeliusMockServer.putAppointment(
         projectCode = "PC01",
         appointmentId = 1234L,
+      )
+
+      CommunityPaybackAndDeliusMockServer.getAppointment(
+        appointment = Appointment.validNoOutcome().copy(
+          id = 5678L,
+          project = Project.valid().copy(code = "PC01"),
+          date = LocalDate.now(),
+        ),
+        username = "theusername",
       )
       CommunityPaybackAndDeliusMockServer.putAppointment(
         projectCode = "PC01",
@@ -274,7 +301,7 @@ class SupervisorAppointmentsIT : IntegrationTestBase() {
 
       val result = webTestClient.post()
         .uri("/supervisor/projects/PC01/appointments/bulk")
-        .addSupervisorUiAuthHeader()
+        .addSupervisorUiAuthHeader("theusername")
         .bodyValue(
           UpdateAppointmentOutcomesDto(
             updates = listOf(

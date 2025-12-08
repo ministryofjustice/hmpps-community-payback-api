@@ -18,6 +18,16 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.randomLocalDate
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.randomLocalTime
 import java.util.UUID
 
+fun Appointment.Companion.validNoOutcome() = Appointment.valid().copy(
+  outcome = null,
+  enforcementAction = null,
+  penaltyHours = null,
+  hiVisWorn = null,
+  workedIntensively = null,
+  workQuality = null,
+  behaviour = null,
+)
+
 fun Appointment.Companion.valid() = Appointment(
   id = Long.Companion.random(),
   version = UUID.randomUUID(),

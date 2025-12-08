@@ -25,6 +25,8 @@ community-payback:
   url-templates:
     domain-event-detail:
       appointment_outcome: http://localhost:8080/domain-event-details/appointment-outcome/#id
+  appointment-validation:
+    only-acceptable-absences-permitted-in-advance: true
 
 hmpps-auth:
   url: "http://localhost:${wiremock.server.port}/auth"

@@ -12,7 +12,8 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.BadRequestException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentRetrievalService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentUpdateService
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 
 @AdminUiController
@@ -21,7 +22,8 @@ import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
   produces = [MediaType.APPLICATION_JSON_VALUE],
 )
 class AdminAppointmentController(
-  private val appointmentService: AppointmentService,
+  private val appointmentRetrievalService: AppointmentRetrievalService,
+  private val appointmentUpdateService: AppointmentUpdateService,
 ) {
 
   @GetMapping(
@@ -49,7 +51,7 @@ class AdminAppointmentController(
   fun getAppointment(
     @PathVariable projectCode: String,
     @PathVariable deliusAppointmentId: Long,
-  ) = appointmentService.getAppointment(
+  ) = appointmentRetrievalService.getAppointment(
     projectCode = projectCode,
     appointmentId = deliusAppointmentId,
   )
@@ -98,7 +100,7 @@ class AdminAppointmentController(
       throw BadRequestException("ID in URL should match ID in payload")
     }
 
-    appointmentService.updateAppointmentOutcome(
+    appointmentUpdateService.updateAppointmentOutcome(
       projectCode = projectCode,
       outcome = outcome,
     )
