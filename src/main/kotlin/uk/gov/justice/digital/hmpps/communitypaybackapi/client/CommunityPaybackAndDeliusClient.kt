@@ -6,8 +6,10 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.service.annotation.GetExchange
+import org.springframework.web.service.annotation.PostExchange
 import org.springframework.web.service.annotation.PutExchange
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.HourMinuteDuration
+import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
@@ -55,11 +57,26 @@ interface CommunityPaybackAndDeliusClient {
     @RequestBody updateAppointment: UpdateAppointment,
   )
 
+  @PostExchange("/projects/{projectCode}/appointments")
+  fun createAppointment(
+    @PathVariable projectCode: String,
+    @RequestBody createAppointment: NDCreateAppointment,
+  )
+
   @GetExchange("/providers/{providerCode}/teams/{teamCode}/supervisors")
   fun teamSupervisors(
     @PathVariable providerCode: String,
     @PathVariable teamCode: String,
   ): SupervisorSummaries
+
+  @GetExchange("/offenders/{crn}/events/{eventNumber}/unpaidWorkRequirement")
+  fun getUnpaidWorkRequirement(
+    @PathVariable crn: String,
+    @PathVariable eventNumber: Int,
+  ): NDUnpaidWorkRequirement
+
+  @GetExchange("/nonWorkingDates")
+  fun getNonWorkingDates(): List<LocalDate>
 }
 
 data class ProviderSummaries(
@@ -271,6 +288,27 @@ data class SupervisorName(
   companion object
 }
 
+data class NDCreateAppointment(
+  val date: LocalDate,
+  val startTime: LocalTime,
+  val endTime: LocalTime,
+  val providerCode: Code,
+  val teamCode: Code,
+  val projectCode: Code,
+  val projectTypeCode: Code,
+  val outcome: Code? = null,
+  val supervisor: Code? = null,
+  val notes: String? = null,
+  val hiVisWorn: Boolean? = null,
+  val workedIntensively: Boolean? = null,
+  val penaltyMinutes: Long? = null,
+  val workQuality: AppointmentWorkQuality? = null,
+  val behaviour: AppointmentBehaviour? = null,
+  val sensitive: Boolean? = null,
+  val alertActive: Boolean? = null,
+  val allocationId: Long? = null,
+)
+
 data class UpdateAppointment(
   val version: UUID,
   @param:Schema(example = "09:00", description = "The start local time of the appointment", pattern = "^([0-1][0-9]|2[0-3]):[0-5][0-9]$")
@@ -293,3 +331,70 @@ data class UpdateAppointment(
 data class Code(
   val code: String,
 )
+
+data class NDUnpaidWorkRequirement(
+  val requirementProgress: RequirementProgress,
+  val allocations: List<NDSchedulingAllocation>,
+  val appointments: List<NDSchedulingAppointment>,
+)
+
+data class NDSchedulingAllocation(
+  val id: Long,
+  val project: NDSchedulingProject,
+  val projectAvailability: NDSchedulingAvailability?,
+  val frequency: NDSchedulingFrequency?,
+  val dayOfWeek: NDSchedulingDayOfWeek,
+  val startDateInclusive: LocalDate,
+  val endDateInclusive: LocalDate?,
+  val startTime: LocalTime,
+  val endTime: LocalTime,
+) {
+  companion object
+}
+
+data class NDSchedulingProject(
+  val code: Code,
+  val projectTypeCode: Code,
+  val providerCode: Code,
+  val teamCode: Code,
+  val expectedEndDateExclusive: LocalDate?,
+  val actualEndDateExclusive: LocalDate?,
+) {
+  companion object
+}
+
+data class NDSchedulingAvailability(
+  val frequency: NDSchedulingFrequency?,
+  val endDateExclusive: LocalDate?,
+) {
+  companion object
+}
+
+enum class NDSchedulingFrequency {
+  ONCE,
+  WEEKLY,
+  FORTNIGHTLY,
+}
+
+enum class NDSchedulingDayOfWeek {
+  MONDAY,
+  TUESDAY,
+  WEDNESDAY,
+  THURSDAY,
+  FRIDAY,
+  SATURDAY,
+  SUNDAY,
+}
+
+data class NDSchedulingAppointment(
+  val id: UUID,
+  val project: NDSchedulingProject,
+  val date: LocalDate,
+  val startTime: LocalTime,
+  val endTime: LocalTime,
+  val outcome: Code?,
+  val timeCredited: Duration?,
+  val allocation: NDSchedulingAllocation?,
+) {
+  companion object
+}

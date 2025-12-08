@@ -6,11 +6,17 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
+import com.github.tomakehurst.wiremock.client.WireMock.equalTo
 import com.github.tomakehurst.wiremock.client.WireMock.get
+import com.github.tomakehurst.wiremock.client.WireMock.matchingJsonPath
+import com.github.tomakehurst.wiremock.client.WireMock.post
+import com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor
 import com.github.tomakehurst.wiremock.client.WireMock.put
 import com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor
 import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
+import com.github.tomakehurst.wiremock.client.WireMock.urlMatching
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Appointment
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDUnpaidWorkRequirement
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProviderSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProviderTeamSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Session
@@ -18,6 +24,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.SessionSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Supervisor
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.SupervisorSummaries
 import java.time.LocalDate
+import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
 object CommunityPaybackAndDeliusMockServer {
@@ -121,6 +128,35 @@ object CommunityPaybackAndDeliusMockServer {
     )
   }
 
+  fun postAppointment(
+    projectCode: String,
+  ) {
+    WireMock.stubFor(
+      post("/community-payback-and-delius/projects/$projectCode/appointments")
+        .willReturn(
+          aResponse().withStatus(200),
+        ),
+    )
+  }
+
+  fun postAppointmentVerify(
+    projectCode: String,
+    date: LocalDate,
+    startTime: LocalTime,
+    endTime: LocalTime,
+  ) {
+    WireMock.verify(
+      postRequestedFor(urlEqualTo("/community-payback-and-delius/projects/$projectCode/appointments"))
+        .withRequestBody(matchingJsonPath("$.date", equalTo(date.toIsoDateString())))
+        .withRequestBody(matchingJsonPath("$.startTime", equalTo(startTime.format(DateTimeFormatter.ISO_TIME))))
+        .withRequestBody(matchingJsonPath("$.endTime", equalTo(endTime.format(DateTimeFormatter.ISO_TIME)))),
+    )
+  }
+
+  fun postAppointmentVerifyZeroCalls() {
+    WireMock.verify(0, postRequestedFor(urlMatching("/community-payback-and-delius/projects/.*/appointments")))
+  }
+
   fun putAppointment(
     projectCode: String,
     appointmentId: Long,
@@ -177,6 +213,34 @@ object CommunityPaybackAndDeliusMockServer {
           aResponse()
             .withHeader("Content-Type", "application/json")
             .withBody(objectMapper.writer().writeValueAsString(supervisorSummaries)),
+        ),
+    )
+  }
+
+  fun getUnpaidWorkRequirement(
+    crn: String,
+    eventNumber: Int,
+    requirement: NDUnpaidWorkRequirement,
+  ) {
+    WireMock.stubFor(
+      get("/community-payback-and-delius/offenders/$crn/events/$eventNumber/unpaidWorkRequirement")
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withBody(objectMapper.writer().writeValueAsString(requirement)),
+        ),
+    )
+  }
+
+  fun getNonWorkingDates(
+    nonWorkingDates: List<LocalDate>,
+  ) {
+    WireMock.stubFor(
+      get("/community-payback-and-delius/nonWorkingDates")
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withBody(objectMapper.writer().writeValueAsString(nonWorkingDates)),
         ),
     )
   }

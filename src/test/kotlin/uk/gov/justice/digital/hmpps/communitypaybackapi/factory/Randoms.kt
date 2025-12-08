@@ -16,4 +16,5 @@ fun String.Companion.random(length: Int = 50) = String(CharArray(length) { (('A'
 fun randomLocalDate(): LocalDate = LocalDate.now().plusDays(Long.random(0, 2000))
 fun randomLocalTime(): LocalTime = LocalTime.ofSecondOfDay(Long.random(0, 60 * 60 * 12))
 fun randomOffsetDateTime(): OffsetDateTime = OffsetDateTime.of(randomLocalDate(), randomLocalTime(), ZoneOffset.UTC)
-fun randomHourMinuteDuration(): HourMinuteDuration = HourMinuteDuration(Duration.ofHours(Long.random(0, 12)).plusMinutes(Long.random(0, 60)))
+fun randomDuration(): Duration = Duration.ofHours(Long.random(0, 12)).plusMinutes(Long.random(0, 60))
+fun randomHourMinuteDuration(): HourMinuteDuration = HourMinuteDuration(randomDuration())
