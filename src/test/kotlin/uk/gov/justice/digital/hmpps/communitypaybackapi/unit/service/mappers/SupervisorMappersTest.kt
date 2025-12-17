@@ -3,7 +3,11 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.unit.service.mappers
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CodeDescription
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Supervisor
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.SupervisorTeam
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProviderSummaryDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SupervisorTeamDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
 
 class SupervisorMappersTest {
@@ -16,10 +20,36 @@ class SupervisorMappersTest {
       val result = Supervisor(
         code = "SC1",
         isUnpaidWorkTeamMember = true,
+        unpaidWorkTeams = listOf(
+          SupervisorTeam(
+            code = "ST1",
+            description = "Team 1",
+            provider = CodeDescription("provider1", "description1"),
+          ),
+          SupervisorTeam(
+            code = "ST2",
+            description = "Team 2",
+            provider = CodeDescription("provider2", "description2"),
+          ),
+        ),
       ).toDto()
 
       assertThat(result.code).isEqualTo("SC1")
       assertThat(result.isUnpaidWorkTeamMember).isTrue()
+      assertThat(result.unpaidWorkTeams).hasSize(2)
+
+      assertThat(result.unpaidWorkTeams).containsExactly(
+        SupervisorTeamDto(
+          code = "ST1",
+          description = "Team 1",
+          provider = ProviderSummaryDto("provider1", "description1"),
+        ),
+        SupervisorTeamDto(
+          code = "ST2",
+          description = "Team 2",
+          provider = ProviderSummaryDto("provider2", "description2"),
+        ),
+      )
     }
   }
 }
