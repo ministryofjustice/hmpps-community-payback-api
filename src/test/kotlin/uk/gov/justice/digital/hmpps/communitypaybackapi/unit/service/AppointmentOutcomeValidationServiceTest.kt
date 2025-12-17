@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.HourMinuteDuration
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AttendanceDataDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.BadRequestException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EnforcementDto
@@ -19,6 +20,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEnt
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentOutcomeValidationService
 import java.time.Duration
+import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
 
@@ -48,9 +50,56 @@ class AppointmentOutcomeValidationServiceTest {
       val code = "MISSING_CODE"
       every { contactOutcomeEntityRepository.findByCode(code) } returns null
 
-      assertThatThrownBy { service.validateContactOutcome(outcome(contactOutcomeCode = code)) }
-        .isInstanceOf(BadRequestException::class.java)
+      assertThatThrownBy {
+        service.validateContactOutcome(
+          appointment = AppointmentDto.valid(),
+          outcome = outcome(contactOutcomeCode = code),
+        )
+      }.isInstanceOf(BadRequestException::class.java)
         .hasMessage("Contact outcome not found for code $code")
+    }
+  }
+
+  @Nested
+  inner class ContactOutcomeForFutureAppointment {
+
+    @Test
+    fun `if appointment is in future, attendance outcome can't be recorded`() {
+      val outcome = ContactOutcomeEntity.valid().copy(attended = true, enforceable = false)
+      every { contactOutcomeEntityRepository.findByCode(outcome.code) } returns outcome
+
+      assertThatThrownBy {
+        service.validateContactOutcome(
+          appointment = AppointmentDto.valid().copy(date = LocalDate.now().plusDays(1)),
+          outcome = UpdateAppointmentOutcomeDto.valid().copy(contactOutcomeCode = outcome.code),
+        )
+      }.isInstanceOf(BadRequestException::class.java)
+        .hasMessage("If the appointment is in the future, only acceptable absences are permitted to be recorded")
+    }
+
+    @Test
+    fun `if appointment is in future, enforceable outcome can't be recorded`() {
+      val outcome = ContactOutcomeEntity.valid().copy(attended = false, enforceable = true)
+      every { contactOutcomeEntityRepository.findByCode(outcome.code) } returns outcome
+
+      assertThatThrownBy {
+        service.validateContactOutcome(
+          appointment = AppointmentDto.valid().copy(date = LocalDate.now().plusDays(1)),
+          outcome = UpdateAppointmentOutcomeDto.valid().copy(contactOutcomeCode = outcome.code),
+        )
+      }.isInstanceOf(BadRequestException::class.java)
+        .hasMessage("If the appointment is in the future, only acceptable absences are permitted to be recorded")
+    }
+
+    @Test
+    fun `if appointment is in future, non-enforceable absence can be recorded`() {
+      val outcome = ContactOutcomeEntity.valid().copy(attended = false, enforceable = false)
+      every { contactOutcomeEntityRepository.findByCode(outcome.code) } returns outcome
+
+      service.validateContactOutcome(
+        appointment = AppointmentDto.valid().copy(date = LocalDate.now().plusDays(1)),
+        outcome = UpdateAppointmentOutcomeDto.valid().copy(contactOutcomeCode = outcome.code),
+      )
     }
   }
 
@@ -62,7 +111,10 @@ class AppointmentOutcomeValidationServiceTest {
       val outcome = ContactOutcomeEntity.valid().copy(attended = false, enforceable = false)
       every { contactOutcomeEntityRepository.findByCode(outcome.code) } returns outcome
 
-      service.validateContactOutcome(UpdateAppointmentOutcomeDto.valid().copy(contactOutcomeCode = outcome.code))
+      service.validateContactOutcome(
+        appointment = AppointmentDto.valid().copy(date = LocalDate.now()),
+        outcome = UpdateAppointmentOutcomeDto.valid().copy(contactOutcomeCode = outcome.code),
+      )
     }
 
     @Test
@@ -72,7 +124,8 @@ class AppointmentOutcomeValidationServiceTest {
 
       assertThatThrownBy {
         service.validateContactOutcome(
-          UpdateAppointmentOutcomeDto.valid().copy(
+          appointment = AppointmentDto.valid().copy(date = LocalDate.now()),
+          outcome = UpdateAppointmentOutcomeDto.valid().copy(
             contactOutcomeCode = outcome.code,
             attendanceData = null,
           ),
@@ -87,7 +140,8 @@ class AppointmentOutcomeValidationServiceTest {
       every { contactOutcomeEntityRepository.findByCode(outcome.code) } returns outcome
 
       service.validateContactOutcome(
-        UpdateAppointmentOutcomeDto.valid().copy(
+        appointment = AppointmentDto.valid().copy(date = LocalDate.now()),
+        outcome = UpdateAppointmentOutcomeDto.valid().copy(
           contactOutcomeCode = outcome.code,
           attendanceData = AttendanceDataDto.valid(),
         ),
