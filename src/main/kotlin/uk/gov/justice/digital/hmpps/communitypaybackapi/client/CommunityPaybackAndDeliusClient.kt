@@ -245,9 +245,21 @@ data class UserAccess(val access: List<CaseAccess>)
 data class Supervisor(
   val code: String,
   val isUnpaidWorkTeamMember: Boolean,
+  val unpaidWorkTeams: List<SupervisorTeam>,
 ) {
   companion object
 }
+
+data class SupervisorTeam(
+  val code: String,
+  val description: String,
+  val provider: CodeDescription,
+)
+
+data class CodeDescription(
+  val code: String,
+  val description: String,
+)
 
 data class SupervisorSummaries(
   val supervisors: List<SupervisorSummary>,
