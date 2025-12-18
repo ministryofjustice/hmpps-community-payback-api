@@ -3,8 +3,8 @@ import java.net.Socket
 
 plugins {
   id("uk.gov.justice.hmpps.gradle-spring-boot") version "9.2.0"
-  kotlin("plugin.spring") version "2.2.21"
-  kotlin("plugin.jpa") version "2.2.21"
+  kotlin("plugin.spring") version "2.3.0"
+  kotlin("plugin.jpa") version "2.3.0"
   id("io.gitlab.arturbosch.detekt") version "1.23.8"
   jacoco
   id("io.sentry.jvm.gradle") version "5.12.2"
@@ -42,11 +42,11 @@ dependencies {
 
   testImplementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter-test:1.8.2")
   testImplementation("org.wiremock:wiremock-standalone:3.13.2")
-  testImplementation("io.swagger.parser.v3:swagger-parser:2.1.36") {
+  testImplementation("io.swagger.parser.v3:swagger-parser:2.1.37") {
     exclude(group = "io.swagger.core.v3")
   }
-  testImplementation("org.testcontainers:testcontainers-localstack:2.0.2")
-  testImplementation("org.testcontainers:testcontainers-postgresql:2.0.2")
+  testImplementation("org.testcontainers:testcontainers-localstack:2.0.3")
+  testImplementation("org.testcontainers:testcontainers-postgresql:2.0.3")
   testImplementation("org.awaitility:awaitility-kotlin:4.3.0")
   testImplementation("org.wiremock.integrations:wiremock-spring-boot:4.0.8")
   testImplementation("io.mockk:mockk:1.14.7")
