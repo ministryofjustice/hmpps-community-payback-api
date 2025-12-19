@@ -7,15 +7,11 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.AppointmentSummary
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CaseAccess
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CaseSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Project
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Session
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.SessionSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.SessionSummary
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.UserAccess
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.OffenderDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionSummariesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionSummaryDto
@@ -105,65 +101,6 @@ class SupervisorSessionsIT : IntegrationTestBase() {
       assertThat(sessionSearchResults.projectCode).isEqualTo("N123456789")
       assertThat(sessionSearchResults.date).isEqualTo(LocalDate.of(2025, 1, 9))
       assertThat(sessionSearchResults.appointmentSummaries).hasSize(2)
-    }
-
-    @Test
-    fun `Correctly handles limited offenders`() {
-      CommunityPaybackAndDeliusMockServer.getProjectSession(
-        username = "USER1",
-        date = LocalDate.of(2025, 1, 9),
-        session =
-        Session.valid().copy(
-          project = Project.valid().copy(
-            code = "N123456789",
-          ),
-          appointmentSummaries = listOf(
-            AppointmentSummary.valid().copy(
-              id = 1L,
-              case = CaseSummary.valid().copy(
-                crn = "CRN1",
-                currentExclusion = true,
-              ),
-              outcome = null,
-            ),
-            AppointmentSummary.valid().copy(
-              id = 2L,
-              case = CaseSummary.valid().copy(
-                crn = "CRN2",
-                currentExclusion = true,
-              ),
-              outcome = null,
-            ),
-          ),
-        ),
-      )
-
-      CommunityPaybackAndDeliusMockServer.usersAccess(
-        username = "USER1",
-        crns = listOf("CRN1", "CRN2"),
-        response = UserAccess(
-          listOf(
-            CaseAccess(crn = "CRN1", userExcluded = false, userRestricted = false),
-            CaseAccess(crn = "CRN2", userExcluded = true, userRestricted = false),
-          ),
-        ),
-      )
-
-      val session = webTestClient.get()
-        .uri("/supervisor/projects/N123456789/sessions/2025-01-09?startTime=09:00&endTime=17:00")
-        .addSupervisorUiAuthHeader(username = "USER1")
-        .exchange()
-        .expectStatus()
-        .isOk
-        .bodyAsObject<SessionDto>()
-
-      assertThat(session.appointmentSummaries).hasSize(2)
-
-      assertThat(session.appointmentSummaries[0].offender.crn).isEqualTo("CRN1")
-      assertThat(session.appointmentSummaries[0].offender).isInstanceOf(OffenderDto.OffenderFullDto::class.java)
-
-      assertThat(session.appointmentSummaries[1].offender.crn).isEqualTo("CRN2")
-      assertThat(session.appointmentSummaries[1].offender).isInstanceOf(OffenderDto.OffenderLimitedDto::class.java)
     }
   }
 

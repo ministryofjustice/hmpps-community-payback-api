@@ -39,8 +39,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EnforcementAction
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.WorkQuality
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.OffenderInfoResult
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.OffenderService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.AppointmentMappers
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.fromDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDomainEventDetail
@@ -52,9 +50,6 @@ import java.util.UUID
 
 @ExtendWith(MockKExtension::class)
 class AppointmentMappersTest {
-
-  @MockK(relaxed = true)
-  private lateinit var offenderService: OffenderService
 
   @MockK(relaxed = true)
   private lateinit var contactOutcomeEntityRepository: ContactOutcomeEntityRepository
@@ -215,7 +210,10 @@ class AppointmentMappersTest {
       val behaviour = AppointmentBehaviour.SATISFACTORY
       val notes = "This is a test note"
 
-      val caseSummary = CaseSummary.valid().copy(crn = crn)
+      val caseSummary = CaseSummary.valid().copy(
+        crn = crn,
+        currentExclusion = true,
+      )
 
       val appointment = Appointment(
         id = id,
@@ -271,7 +269,6 @@ class AppointmentMappersTest {
         alertActive = true,
       )
 
-      every { offenderService.toOffenderInfo(caseSummary) } returns OffenderInfoResult.Limited(crn = crn)
       every { contactOutcomeEntityRepository.findByCode("OUTCOME1") } returns ContactOutcomeEntity.valid().copy(code = contactOutcomeCode, attended = true)
       every { enforcementActionEntityRepository.findByCode("ENFORCE1") } returns EnforcementActionEntity.valid().copy(id = enforcementActionId)
 
@@ -321,7 +318,6 @@ class AppointmentMappersTest {
         enforcementAction = EnforcementAction.valid().copy(code = "ENFORCE1"),
       )
 
-      every { offenderService.toOffenderInfo(projectAppointment.case) } returns OffenderInfoResult.Limited(crn = projectAppointment.case.crn)
       every { contactOutcomeEntityRepository.findByCode("OUTCOME1") } returns ContactOutcomeEntity.valid().copy(attended = true)
       every { enforcementActionEntityRepository.findByCode("ENFORCE1") } returns EnforcementActionEntity.valid()
 
@@ -337,7 +333,6 @@ class AppointmentMappersTest {
         enforcementAction = EnforcementAction.valid().copy(code = "ENFORCE1"),
       )
 
-      every { offenderService.toOffenderInfo(projectAppointment.case) } returns OffenderInfoResult.Limited(crn = projectAppointment.case.crn)
       every { contactOutcomeEntityRepository.findByCode("OUTCOME1") } returns ContactOutcomeEntity.valid().copy(attended = false)
       every { enforcementActionEntityRepository.findByCode("ENFORCE1") } returns EnforcementActionEntity.valid()
 
@@ -354,7 +349,7 @@ class AppointmentMappersTest {
     fun success() {
       every { contactOutcomeEntityRepository.findByCode("OUTCOME1") } returns ContactOutcomeEntity.valid().copy(name = "The outcome")
 
-      val result = service.toDto(
+      val result = service.toSummaryDto(
         appointmentSummary = AppointmentSummary(
           id = 1L,
           case = CaseSummary.Companion.valid().copy(crn = "CRN1"),
@@ -365,7 +360,6 @@ class AppointmentMappersTest {
             completedMinutes = 30,
           ),
         ),
-        offenderInfoResult = OffenderInfoResult.Limited(crn = "CRN1"),
       )
 
       assertThat(result.id).isEqualTo(1L)

@@ -16,7 +16,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.BadRequestException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.SessionSupervisorEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ContextService
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.OffenderService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.SessionService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.SessionMappers
 import java.time.LocalDate
@@ -26,9 +25,6 @@ class SessionServiceTest {
 
   @RelaxedMockK
   lateinit var communityPaybackAndDeliusClient: CommunityPaybackAndDeliusClient
-
-  @RelaxedMockK
-  lateinit var offenderService: OffenderService
 
   @RelaxedMockK
   lateinit var sessionMappers: SessionMappers

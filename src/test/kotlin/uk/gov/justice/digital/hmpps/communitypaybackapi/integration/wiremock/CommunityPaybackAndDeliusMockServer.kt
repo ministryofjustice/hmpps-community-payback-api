@@ -6,9 +6,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
-import com.github.tomakehurst.wiremock.client.WireMock.equalToJson
 import com.github.tomakehurst.wiremock.client.WireMock.get
-import com.github.tomakehurst.wiremock.client.WireMock.post
 import com.github.tomakehurst.wiremock.client.WireMock.put
 import com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor
 import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
@@ -19,7 +17,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Session
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.SessionSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Supervisor
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.SupervisorSummaries
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.UserAccess
 import uk.gov.justice.digital.hmpps.communitypaybackapi.config.JacksonCustomConfig
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -171,22 +168,6 @@ object CommunityPaybackAndDeliusMockServer {
           aResponse()
             .withHeader("Content-Type", "application/json")
             .withBody(objectMapper.writeValueAsString(session)),
-        ),
-    )
-  }
-
-  fun usersAccess(
-    username: String,
-    crns: List<String>,
-    response: UserAccess,
-  ) {
-    WireMock.stubFor(
-      post("/community-payback-and-delius/users/access?username=$username")
-        .withRequestBody(equalToJson(objectMapper.writeValueAsString(crns)))
-        .willReturn(
-          aResponse()
-            .withHeader("Content-Type", "application/json")
-            .withBody(objectMapper.writeValueAsString(response)),
         ),
     )
   }

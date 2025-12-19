@@ -6,7 +6,6 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.service.annotation.GetExchange
-import org.springframework.web.service.annotation.PostExchange
 import org.springframework.web.service.annotation.PutExchange
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.HourMinuteDuration
 import java.time.LocalDate
@@ -55,12 +54,6 @@ interface CommunityPaybackAndDeliusClient {
     @PathVariable appointmentId: Long,
     @RequestBody updateAppointment: UpdateAppointment,
   )
-
-  @PostExchange("/users/access")
-  fun getUsersAccess(
-    @RequestParam username: String,
-    @RequestBody crns: Set<String>,
-  ): UserAccess
 
   @GetExchange("/providers/{providerCode}/teams/{teamCode}/supervisors")
   fun teamSupervisors(
@@ -220,8 +213,8 @@ data class CaseSummary(
   val crn: String,
   val name: Name,
   val dateOfBirth: LocalDate,
-  val currentExclusion: Boolean = false,
-  val currentRestriction: Boolean = false,
+  val currentExclusion: Boolean,
+  val currentRestriction: Boolean,
 ) {
   companion object
 }
@@ -233,14 +226,6 @@ data class Name(
 ) {
   companion object
 }
-
-data class CaseAccess(
-  val crn: String,
-  val userExcluded: Boolean,
-  val userRestricted: Boolean,
-)
-
-data class UserAccess(val access: List<CaseAccess>)
 
 data class Supervisor(
   val code: String,

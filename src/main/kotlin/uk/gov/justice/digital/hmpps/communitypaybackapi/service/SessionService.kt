@@ -20,7 +20,6 @@ import java.time.temporal.ChronoUnit
 @Service
 class SessionService(
   val communityPaybackAndDeliusClient: CommunityPaybackAndDeliusClient,
-  val offenderService: OffenderService,
   val sessionMappers: SessionMappers,
   val sessionSupervisorEntityRepository: SessionSupervisorEntityRepository,
   val contextService: ContextService,
@@ -52,11 +51,9 @@ class SessionService(
       date = date,
       username = contextService.getUserName(),
     )
-    val caseSummaries = projectSession.appointmentSummaries.map { it.case }.toList()
     return sessionMappers.toDto(
       date = date,
       session = projectSession,
-      offenderInfoResults = offenderService.toOffenderInfos(caseSummaries),
     )
   }
 

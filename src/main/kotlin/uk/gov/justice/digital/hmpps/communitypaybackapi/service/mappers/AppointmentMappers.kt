@@ -21,12 +21,9 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.Behaviour
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EnforcementActionEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.WorkQuality
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.OffenderInfoResult
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.OffenderService
 
 @Service
 class AppointmentMappers(
-  private val offenderService: OffenderService,
   private val contactOutcomeEntityRepository: ContactOutcomeEntityRepository,
   private val enforcementActionEntityRepository: EnforcementActionEntityRepository,
 ) {
@@ -38,8 +35,6 @@ class AppointmentMappers(
       contactOutcomeEntityRepository.findByCode(it) ?: error("Can't find outcome for code $it")
     }
 
-    val offenderInfoResult = offenderService.toOffenderInfo(appointment.case)
-
     return AppointmentDto(
       id = appointment.id,
       version = appointment.version,
@@ -47,7 +42,7 @@ class AppointmentMappers(
       projectCode = appointment.project.code,
       projectTypeName = appointment.projectType.name,
       projectTypeCode = appointment.projectType.code,
-      offender = offenderInfoResult.toDto(),
+      offender = appointment.case.toDto(),
       supervisingTeam = appointment.team.name,
       supervisingTeamCode = appointment.team.code,
       providerCode = appointment.provider.code,
@@ -80,9 +75,8 @@ class AppointmentMappers(
     )
   }
 
-  fun toDto(
+  fun toSummaryDto(
     appointmentSummary: AppointmentSummary,
-    offenderInfoResult: OffenderInfoResult,
   ) = AppointmentSummaryDto(
     id = appointmentSummary.id,
     contactOutcome = appointmentSummary.outcome?.code?.let {
@@ -91,7 +85,7 @@ class AppointmentMappers(
     requirementMinutes = appointmentSummary.requirementProgress.requiredMinutes,
     adjustmentMinutes = appointmentSummary.requirementProgress.adjustments,
     completedMinutes = appointmentSummary.requirementProgress.completedMinutes,
-    offender = offenderInfoResult.toDto(),
+    offender = appointmentSummary.case.toDto(),
   )
 }
 
