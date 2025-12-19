@@ -23,7 +23,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEnt
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.OffenderInfoResult
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.AppointmentMappers
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.SessionMappers
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
@@ -134,13 +133,10 @@ class SessionMappersTest {
       val appointmentSummary1 = AppointmentSummary.valid().copy(case = CaseSummary.valid().copy(crn = "CRN1"))
       val appointmentSummary2 = AppointmentSummary.valid().copy(case = CaseSummary.valid().copy(crn = "CRN2"))
 
-      val offenderInfoResult1 = OffenderInfoResult.Limited("CRN1")
-      val offenderInfoResult2 = OffenderInfoResult.Limited("CRN2")
-
       val appointmentSummaryDto1 = AppointmentSummaryDto.valid()
       val appointmentSummaryDto2 = AppointmentSummaryDto.valid()
-      every { appointmentMappers.toDto(appointmentSummary1, offenderInfoResult1) } returns appointmentSummaryDto1
-      every { appointmentMappers.toDto(appointmentSummary2, offenderInfoResult2) } returns appointmentSummaryDto2
+      every { appointmentMappers.toSummaryDto(appointmentSummary1) } returns appointmentSummaryDto1
+      every { appointmentMappers.toSummaryDto(appointmentSummary2) } returns appointmentSummaryDto2
 
       val session = Session(
         project = Project(
@@ -161,10 +157,6 @@ class SessionMappersTest {
       val result = service.toDto(
         date = LocalDate.of(2025, 9, 8),
         session = session,
-        offenderInfoResults = listOf(
-          offenderInfoResult1,
-          offenderInfoResult2,
-        ),
       )
 
       assertThat(result.projectName).isEqualTo("Park Cleanup")

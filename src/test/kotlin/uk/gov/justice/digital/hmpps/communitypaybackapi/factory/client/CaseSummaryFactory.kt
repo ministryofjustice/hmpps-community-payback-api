@@ -9,4 +9,6 @@ fun CaseSummary.Companion.valid() = CaseSummary(
   crn = String.Companion.random(8),
   name = Name.valid(),
   dateOfBirth = LocalDate.now().minusDays(Long.random(365 * 18, (365 * 18) * (365 * 80))),
+  currentRestriction = false,
+  currentExclusion = false,
 )
