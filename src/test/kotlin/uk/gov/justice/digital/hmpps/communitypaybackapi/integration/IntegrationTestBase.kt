@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 import org.springframework.boot.test.web.server.LocalServerPort
+import org.springframework.boot.webtestclient.autoconfigure.AutoConfigureWebTestClient
 import org.springframework.context.ApplicationContext
 import org.springframework.http.HttpHeaders
 import org.springframework.test.context.ActiveProfiles
@@ -21,6 +22,7 @@ import uk.gov.justice.hmpps.test.kotlin.auth.JwtAuthorisationHelper
 
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @ActiveProfiles("integrationtest")
+@AutoConfigureWebTestClient
 @EnableWireMock
 abstract class IntegrationTestBase {
 
@@ -30,6 +32,7 @@ abstract class IntegrationTestBase {
   @Autowired
   protected lateinit var ctx: ApplicationContext
 
+  @Autowired
   protected lateinit var webTestClient: WebTestClient
 
   @Autowired
@@ -37,10 +40,6 @@ abstract class IntegrationTestBase {
 
   @BeforeEach
   fun before() {
-    webTestClient = WebTestClient.bindToServer()
-      .baseUrl("http://localhost:$port")
-      .defaultHeader(HttpHeaders.CONTENT_TYPE, "application/json")
-      .build()
     // this provides an oauth token for any calls to upstream APIs
     HmppsAuthMockServer.stubGrantToken()
   }
