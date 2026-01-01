@@ -6,13 +6,11 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.HourMinuteDuration
-import uk.gov.justice.digital.hmpps.communitypaybackapi.config.JacksonCustomConfig
 import java.time.Duration
 
 class HourMinuteDurationSerializeDeserializeTest {
 
   val objectMapper: ObjectMapper = jacksonObjectMapper()
-    .registerModule(JacksonCustomConfig().customModule())
 
   data class TimeDurationContainer(
     val myDuration: HourMinuteDuration?,

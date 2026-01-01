@@ -17,7 +17,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Session
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.SessionSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Supervisor
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.SupervisorSummaries
-import uk.gov.justice.digital.hmpps.communitypaybackapi.config.JacksonCustomConfig
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
@@ -25,7 +24,6 @@ object CommunityPaybackAndDeliusMockServer {
 
   val objectMapper: ObjectMapper = jacksonObjectMapper()
     .registerModule(JavaTimeModule())
-    .registerModule(JacksonCustomConfig().customModule())
     .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
 
   fun providers(
