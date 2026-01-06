@@ -18,7 +18,7 @@ import org.springframework.context.annotation.Configuration
 
 @Configuration
 class OpenApiConfiguration(buildProperties: BuildProperties) {
-  private val version: String = buildProperties.version
+  private val version: String = buildProperties.version!!
 
   companion object {
     const val SECURITY_SCHEME_ANY_UI = "any-ui"
