@@ -34,6 +34,7 @@ data class AppointmentOutcomeEntity(
   val hiVisWorn: Boolean?,
   val workedIntensively: Boolean?,
   val penaltyMinutes: Long?,
+  val minutesCredited: Long?,
 
   @Enumerated(EnumType.STRING)
   val workQuality: WorkQuality?,
