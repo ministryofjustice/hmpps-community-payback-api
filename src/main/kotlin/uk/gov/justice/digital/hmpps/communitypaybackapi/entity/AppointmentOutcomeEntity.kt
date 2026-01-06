@@ -34,6 +34,7 @@ data class AppointmentOutcomeEntity(
   val hiVisWorn: Boolean?,
   val workedIntensively: Boolean?,
   val penaltyMinutes: Long?,
+  val minutesCredited: Long?,
 
   @Enumerated(EnumType.STRING)
   val workQuality: WorkQuality?,
@@ -64,20 +65,22 @@ data class AppointmentOutcomeEntity(
    * Used when determining if an update has already been applied
    *
    * This function should be updated if a new JPA relationship is added to this entity,
-   * adding an explicit comparison and excluding it from the call to [reflectionCompare]
+   * adding an explicit comparison and excluding it from the call to [reflectionCompare].
+   * For an example see contactOutcome
    */
   fun isLogicallyIdentical(other: AppointmentOutcomeEntity): Boolean {
     if (this.contactOutcome?.id != other.contactOutcome?.id) return false
 
+    val excludeFields = listOf(
+      "id",
+      "createdAt",
+      "contactOutcome",
+    )
+
     return reflectionCompare(
       this,
       other,
-      listOf(
-        "id",
-        "createdAt",
-        "contactOutcome",
-        "enforcementAction",
-      ),
+      excludeFields,
     ) == 0
   }
 

@@ -283,6 +283,7 @@ data class UpdateAppointment(
   val hiVisWorn: Boolean? = null,
   val workedIntensively: Boolean? = null,
   val penaltyMinutes: Long? = null,
+  val minutesCredited: Long? = null,
   val workQuality: AppointmentWorkQuality? = null,
   val behaviour: AppointmentBehaviour? = null,
   val sensitive: Boolean? = null,

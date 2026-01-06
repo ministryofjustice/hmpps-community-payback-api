@@ -77,6 +77,7 @@ class AppointmentMappersTest {
         hiVisWorn = true,
         workedIntensively = false,
         penaltyMinutes = 105,
+        minutesCredited = 35,
         workQuality = WorkQuality.NOT_APPLICABLE,
         behaviour = Behaviour.UNSATISFACTORY,
         alertActive = false,
@@ -94,6 +95,7 @@ class AppointmentMappersTest {
       assertThat(result.hiVisWorn).isTrue
       assertThat(result.workedIntensively).isFalse
       assertThat(result.penaltyMinutes).isEqualTo(105)
+      assertThat(result.minutesCredited).isEqualTo(35)
       assertThat(result.workQuality).isEqualTo(AppointmentWorkQuality.NOT_APPLICABLE)
       assertThat(result.behaviour).isEqualTo(AppointmentBehaviour.UNSATISFACTORY)
       assertThat(result.alertActive).isFalse
@@ -114,6 +116,7 @@ class AppointmentMappersTest {
         hiVisWorn = null,
         workedIntensively = null,
         penaltyMinutes = null,
+        minutesCredited = null,
         workQuality = null,
         behaviour = null,
         alertActive = null,
@@ -131,6 +134,7 @@ class AppointmentMappersTest {
       assertThat(result.hiVisWorn).isNull()
       assertThat(result.workedIntensively).isNull()
       assertThat(result.penaltyMinutes).isNull()
+      assertThat(result.minutesCredited).isNull()
       assertThat(result.workQuality).isNull()
       assertThat(result.behaviour).isNull()
       assertThat(result.alertActive).isNull()

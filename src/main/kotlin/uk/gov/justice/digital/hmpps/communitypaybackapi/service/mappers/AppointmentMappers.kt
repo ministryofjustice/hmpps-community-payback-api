@@ -114,6 +114,7 @@ fun AppointmentOutcomeEntity.toUpdateAppointment() = UpdateAppointment(
   hiVisWorn = this.hiVisWorn,
   workedIntensively = workedIntensively,
   penaltyMinutes = this.penaltyMinutes,
+  minutesCredited = this.minutesCredited,
   workQuality = this.workQuality?.upstreamType,
   behaviour = this.behaviour?.upstreamType,
   sensitive = this.sensitive,

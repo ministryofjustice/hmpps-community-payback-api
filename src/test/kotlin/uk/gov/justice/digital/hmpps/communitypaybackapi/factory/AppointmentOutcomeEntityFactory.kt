@@ -20,6 +20,7 @@ fun AppointmentOutcomeEntity.Companion.valid(
   hiVisWorn = Boolean.random(),
   workedIntensively = Boolean.random(),
   penaltyMinutes = Long.random(),
+  minutesCredited = Long.random(),
   workQuality = WorkQuality.entries.toTypedArray().random(),
   behaviour = Behaviour.entries.toTypedArray().random(),
   alertActive = Boolean.random(),
