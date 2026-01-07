@@ -49,7 +49,7 @@ class DomainEventServiceTest {
   }
 
   @Nested
-  inner class Publish {
+  inner class PublishOnTransactionCommit {
 
     @Test
     fun `enqueues a spring application event containing a fully populated HmppsDomainEvent`() {
@@ -60,7 +60,7 @@ class DomainEventServiceTest {
         "appointment_outcome" to UrlTemplate("http://somepath/#id"),
       )
 
-      service.publish(
+      service.publishOnTransactionCommit(
         id = id,
         type = DomainEventType.APPOINTMENT_OUTCOME,
         additionalInformation = mapOf(AdditionalInformationType.APPOINTMENT_ID to "the appointment id"),
@@ -88,7 +88,7 @@ class DomainEventServiceTest {
         "appointment_outcome" to UrlTemplate("http://somepath/#id"),
       )
 
-      service.publish(
+      service.publishOnTransactionCommit(
         id = id,
         type = DomainEventType.APPOINTMENT_OUTCOME,
         additionalInformation = emptyMap(),
@@ -107,7 +107,7 @@ class DomainEventServiceTest {
         "appointment_outcome" to UrlTemplate("http://somepath/#id"),
       )
 
-      service.publish(
+      service.publishOnTransactionCommit(
         id = id,
         type = DomainEventType.APPOINTMENT_OUTCOME,
         personReferences = emptyMap(),
