@@ -233,7 +233,7 @@ class AdminAppointmentIT : IntegrationTestBase() {
         appointmentId = 1234L,
       )
 
-      domainEventListener.assertEventCount("community-payback.appointment.outcome", 1)
+      domainEventListener.assertEventCount("community-payback.appointment.updated", 1)
 
       assertThat(formCacheEntityRepository.count()).isEqualTo(0)
     }

@@ -57,20 +57,20 @@ class DomainEventServiceTest {
       every { applicationEventPublisher.publishEvent(capture(commandEventCaptor)) } just Runs
 
       every { domainEventUrlConfig.domainEventDetail } returns mapOf(
-        "appointment_outcome" to UrlTemplate("http://somepath/#id"),
+        "appointment_updated" to UrlTemplate("http://somepath/#id"),
       )
 
       service.publishOnTransactionCommit(
         id = id,
-        type = DomainEventType.APPOINTMENT_OUTCOME,
+        type = DomainEventType.APPOINTMENT_UPDATED,
         additionalInformation = mapOf(AdditionalInformationType.APPOINTMENT_ID to "the appointment id"),
         personReferences = mapOf(PersonReferenceType.CRN to "CRN1"),
       )
 
       val publishDomainEventCommand = commandEventCaptor.captured
-      assertThat(publishDomainEventCommand.domainEvent.eventType).isEqualTo("community-payback.appointment.outcome")
+      assertThat(publishDomainEventCommand.domainEvent.eventType).isEqualTo("community-payback.appointment.updated")
       assertThat(publishDomainEventCommand.domainEvent.detailUrl).isEqualTo("http://somepath/$id")
-      assertThat(publishDomainEventCommand.domainEvent.description).isEqualTo("A community payback appointment has been updated with an outcome")
+      assertThat(publishDomainEventCommand.domainEvent.description).isEqualTo("A community payback appointment has been updated")
       assertThat(publishDomainEventCommand.domainEvent.version).isEqualTo(1)
       assertThat(publishDomainEventCommand.domainEvent.occurredAt).isCloseTo(OffsetDateTime.now(), within(1, ChronoUnit.MINUTES))
       assertThat(publishDomainEventCommand.domainEvent.additionalInformation!!.map).containsExactly(entry("APPOINTMENT_ID", "the appointment id"))
@@ -85,12 +85,12 @@ class DomainEventServiceTest {
       every { applicationEventPublisher.publishEvent(capture(commandEventCaptor)) } just Runs
 
       every { domainEventUrlConfig.domainEventDetail } returns mapOf(
-        "appointment_outcome" to UrlTemplate("http://somepath/#id"),
+        "appointment_updated" to UrlTemplate("http://somepath/#id"),
       )
 
       service.publishOnTransactionCommit(
         id = id,
-        type = DomainEventType.APPOINTMENT_OUTCOME,
+        type = DomainEventType.APPOINTMENT_UPDATED,
         additionalInformation = emptyMap(),
       )
 
@@ -104,12 +104,12 @@ class DomainEventServiceTest {
       every { applicationEventPublisher.publishEvent(capture(commandEventCaptor)) } just Runs
 
       every { domainEventUrlConfig.domainEventDetail } returns mapOf(
-        "appointment_outcome" to UrlTemplate("http://somepath/#id"),
+        "appointment_updated" to UrlTemplate("http://somepath/#id"),
       )
 
       service.publishOnTransactionCommit(
         id = id,
-        type = DomainEventType.APPOINTMENT_OUTCOME,
+        type = DomainEventType.APPOINTMENT_UPDATED,
         personReferences = emptyMap(),
       )
 

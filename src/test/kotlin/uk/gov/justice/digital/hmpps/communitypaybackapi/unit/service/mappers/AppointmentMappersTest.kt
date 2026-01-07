@@ -41,7 +41,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.AppointmentMappers
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.fromDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDomainEventDetail
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toAppointmentUpdateDomainEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toUpdateAppointment
 import java.time.Duration
 import java.time.LocalDate
@@ -162,7 +162,7 @@ class AppointmentMappersTest {
         behaviour = Behaviour.UNSATISFACTORY,
       )
 
-      val result = appointmentOutcomeEntity.toDomainEventDetail()
+      val result = appointmentOutcomeEntity.toAppointmentUpdateDomainEvent()
 
       assertThat(result.id).isEqualTo(appointmentOutcomeEntity.id)
       assertThat(result.appointmentDeliusId).isEqualTo(101L)
