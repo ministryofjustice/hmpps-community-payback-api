@@ -73,9 +73,9 @@ enum class DomainEventType(
   val eventType: String,
   val description: String,
 ) {
-  APPOINTMENT_OUTCOME(
-    eventType = "community-payback.appointment.outcome",
-    description = "A community payback appointment has been updated with an outcome",
+  APPOINTMENT_UPDATED(
+    eventType = "community-payback.appointment.updated",
+    description = "A community payback appointment has been updated",
   ),
 }
 

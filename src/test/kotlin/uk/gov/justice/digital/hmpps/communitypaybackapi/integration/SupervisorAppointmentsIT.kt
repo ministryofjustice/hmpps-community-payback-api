@@ -230,7 +230,7 @@ class SupervisorAppointmentsIT : IntegrationTestBase() {
         appointmentId = 1234L,
       )
 
-      domainEventListener.assertEventCount("community-payback.appointment.outcome", 1)
+      domainEventListener.assertEventCount("community-payback.appointment.updated", 1)
 
       assertThat(formCacheEntityRepository.count()).isEqualTo(0)
     }
@@ -328,7 +328,7 @@ class SupervisorAppointmentsIT : IntegrationTestBase() {
       CommunityPaybackAndDeliusMockServer.putAppointmentVerify("PC01", 1234L)
       CommunityPaybackAndDeliusMockServer.putAppointmentVerify("PC01", 5678L)
 
-      domainEventListener.assertEventCount("community-payback.appointment.outcome", 2)
+      domainEventListener.assertEventCount("community-payback.appointment.updated", 2)
     }
   }
 }

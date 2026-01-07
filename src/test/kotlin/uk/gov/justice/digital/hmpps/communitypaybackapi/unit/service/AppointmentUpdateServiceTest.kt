@@ -119,7 +119,7 @@ class AppointmentUpdateServiceTest {
         appointmentOutcomeEntityRepository.save(entityReturnedByFactory)
         domainEventService.publishOnTransactionCommit(
           id = entityReturnedByFactory.id,
-          type = DomainEventType.APPOINTMENT_OUTCOME,
+          type = DomainEventType.APPOINTMENT_UPDATED,
           additionalInformation = mapOf(AdditionalInformationType.APPOINTMENT_ID to updateRequest.deliusId),
           personReferences = mapOf(PersonReferenceType.CRN to existingAppointment.offender.crn),
         )
