@@ -22,7 +22,7 @@ open class DomainEventService(
   private val domainEventPublisher: DomainEventPublisher,
 ) {
 
-  fun publish(
+  fun publishOnTransactionCommit(
     id: UUID,
     type: DomainEventType,
     additionalInformation: Map<AdditionalInformationType, Any> = emptyMap(),

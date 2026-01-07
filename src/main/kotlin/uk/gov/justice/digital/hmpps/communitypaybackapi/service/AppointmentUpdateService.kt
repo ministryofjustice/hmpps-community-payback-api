@@ -14,6 +14,8 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDomain
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toUpdateAppointment
 import java.util.UUID
 
+// This is an orchestration service so the number of dependencies is acceptable
+@SuppressWarnings("LongParameterList")
 @Service
 class AppointmentUpdateService(
   private val appointmentRetrievalService: AppointmentRetrievalService,
@@ -22,6 +24,7 @@ class AppointmentUpdateService(
   private val formService: FormService,
   private val appointmentOutcomeValidationService: AppointmentOutcomeValidationService,
   private val appointmentOutcomeEntityFactory: AppointmentOutcomeEntityFactory,
+  private val domainEventService: DomainEventService,
 ) {
   private companion object {
     private val log = LoggerFactory.getLogger(this::class.java)
@@ -46,6 +49,13 @@ class AppointmentUpdateService(
     }
 
     val persistedEntity = appointmentOutcomeEntityRepository.save(proposedEntity)
+
+    domainEventService.publishOnTransactionCommit(
+      id = persistedEntity.id,
+      type = DomainEventType.APPOINTMENT_OUTCOME,
+      additionalInformation = mapOf(AdditionalInformationType.APPOINTMENT_ID to update.deliusId),
+      personReferences = mapOf(PersonReferenceType.CRN to existingAppointment.offender.crn),
+    )
 
     updateDelius(projectCode, persistedEntity)
 
