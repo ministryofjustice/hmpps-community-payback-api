@@ -103,7 +103,7 @@ class SupervisorAppointmentsController(
     }
 
     appointmentUpdateService.updateAppointmentOutcome(
-      outcome = outcome,
+      update = outcome,
       projectCode = projectCode,
     )
   }

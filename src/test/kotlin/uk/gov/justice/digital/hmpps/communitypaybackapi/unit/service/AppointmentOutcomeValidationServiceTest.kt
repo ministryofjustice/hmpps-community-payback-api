@@ -53,7 +53,7 @@ class AppointmentOutcomeValidationServiceTest {
       assertThatThrownBy {
         service.validateContactOutcome(
           appointment = AppointmentDto.valid(),
-          outcome = outcome(contactOutcomeCode = code),
+          update = outcome(contactOutcomeCode = code),
         )
       }.isInstanceOf(BadRequestException::class.java)
         .hasMessage("Contact outcome not found for code $code")
@@ -71,7 +71,7 @@ class AppointmentOutcomeValidationServiceTest {
       assertThatThrownBy {
         service.validateContactOutcome(
           appointment = AppointmentDto.valid().copy(date = LocalDate.now().plusDays(1)),
-          outcome = UpdateAppointmentOutcomeDto.valid().copy(contactOutcomeCode = outcome.code),
+          update = UpdateAppointmentOutcomeDto.valid().copy(contactOutcomeCode = outcome.code),
         )
       }.isInstanceOf(BadRequestException::class.java)
         .hasMessage("If the appointment is in the future, only acceptable absences are permitted to be recorded")
@@ -85,7 +85,7 @@ class AppointmentOutcomeValidationServiceTest {
       assertThatThrownBy {
         service.validateContactOutcome(
           appointment = AppointmentDto.valid().copy(date = LocalDate.now().plusDays(1)),
-          outcome = UpdateAppointmentOutcomeDto.valid().copy(contactOutcomeCode = outcome.code),
+          update = UpdateAppointmentOutcomeDto.valid().copy(contactOutcomeCode = outcome.code),
         )
       }.isInstanceOf(BadRequestException::class.java)
         .hasMessage("If the appointment is in the future, only acceptable absences are permitted to be recorded")
@@ -98,7 +98,7 @@ class AppointmentOutcomeValidationServiceTest {
 
       service.validateContactOutcome(
         appointment = AppointmentDto.valid().copy(date = LocalDate.now().plusDays(1)),
-        outcome = UpdateAppointmentOutcomeDto.valid().copy(contactOutcomeCode = outcome.code),
+        update = UpdateAppointmentOutcomeDto.valid().copy(contactOutcomeCode = outcome.code),
       )
     }
   }
@@ -113,7 +113,7 @@ class AppointmentOutcomeValidationServiceTest {
 
       service.validateContactOutcome(
         appointment = AppointmentDto.valid().copy(date = LocalDate.now()),
-        outcome = UpdateAppointmentOutcomeDto.valid().copy(contactOutcomeCode = outcome.code),
+        update = UpdateAppointmentOutcomeDto.valid().copy(contactOutcomeCode = outcome.code),
       )
     }
 
@@ -125,7 +125,7 @@ class AppointmentOutcomeValidationServiceTest {
       assertThatThrownBy {
         service.validateContactOutcome(
           appointment = AppointmentDto.valid().copy(date = LocalDate.now()),
-          outcome = UpdateAppointmentOutcomeDto.valid().copy(
+          update = UpdateAppointmentOutcomeDto.valid().copy(
             contactOutcomeCode = outcome.code,
             attendanceData = null,
           ),
@@ -141,7 +141,7 @@ class AppointmentOutcomeValidationServiceTest {
 
       service.validateContactOutcome(
         appointment = AppointmentDto.valid().copy(date = LocalDate.now()),
-        outcome = UpdateAppointmentOutcomeDto.valid().copy(
+        update = UpdateAppointmentOutcomeDto.valid().copy(
           contactOutcomeCode = outcome.code,
           attendanceData = AttendanceDataDto.valid(),
         ),

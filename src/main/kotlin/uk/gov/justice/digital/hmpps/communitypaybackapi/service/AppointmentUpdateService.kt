@@ -8,6 +8,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackA
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ConflictException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.NotFoundException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDomainEventDetail
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toUpdateAppointment
@@ -31,40 +32,47 @@ class AppointmentUpdateService(
   @Transactional
   fun updateAppointmentOutcome(
     projectCode: String,
-    outcome: UpdateAppointmentOutcomeDto,
+    update: UpdateAppointmentOutcomeDto,
   ) {
-    val deliusId = outcome.deliusId
+    val existingAppointment = appointmentRetrievalService.getAppointment(projectCode, update.deliusId)
 
-    appointmentOutcomeValidationService.validate(
-      appointment = appointmentRetrievalService.getAppointment(projectCode, outcome.deliusId),
-      outcome = outcome,
-    )
+    appointmentOutcomeValidationService.ensureUpdateIsValid(existingAppointment, update)
 
-    val proposedEntity = appointmentOutcomeEntityFactory.toEntity(outcome)
+    val proposedEntity = appointmentOutcomeEntityFactory.toEntity(update)
 
-    appointmentOutcomeEntityRepository.findTopByAppointmentDeliusIdOrderByCreatedAtDesc(deliusId)?.let {
-      if (it.isLogicallyIdentical(proposedEntity)) {
-        log.debug("Not applying update for appointment $deliusId because the most recent update is logically identical")
-        return
-      }
+    if (hasUpdateAlreadyBeenSent(proposedEntity)) {
+      log.debug("Not applying update for appointment ${update.deliusId} because the most recent update is logically identical")
+      return
     }
 
     val persistedEntity = appointmentOutcomeEntityRepository.save(proposedEntity)
 
+    updateDelius(projectCode, persistedEntity)
+
+    update.formKeyToDelete?.let {
+      formService.deleteIfExists(it)
+    }
+  }
+
+  private fun hasUpdateAlreadyBeenSent(proposedEntity: AppointmentOutcomeEntity) = appointmentOutcomeEntityRepository
+    .findTopByAppointmentDeliusIdOrderByCreatedAtDesc(proposedEntity.appointmentDeliusId)
+    ?.isLogicallyIdentical(proposedEntity)
+    ?: false
+
+  private fun updateDelius(
+    projectCode: String,
+    outcomeEntity: AppointmentOutcomeEntity,
+  ) {
     try {
       communityPaybackAndDeliusClient.updateAppointment(
         projectCode = projectCode,
-        appointmentId = deliusId,
-        updateAppointment = persistedEntity.toUpdateAppointment(),
+        appointmentId = outcomeEntity.appointmentDeliusId,
+        updateAppointment = outcomeEntity.toUpdateAppointment(),
       )
     } catch (_: WebClientResponseException.NotFound) {
-      throw NotFoundException("Appointment", deliusId.toString())
+      throw NotFoundException("Appointment", outcomeEntity.appointmentDeliusId.toString())
     } catch (_: WebClientResponseException.Conflict) {
-      throw ConflictException("A newer version of the appointment exists. Stale version is '${outcome.deliusVersionToUpdate}'")
-    }
-
-    outcome.formKeyToDelete?.let {
-      formService.deleteIfExists(it)
+      throw ConflictException("A newer version of the appointment exists. Stale version is '${outcomeEntity.deliusVersionToUpdate}'")
     }
   }
 }
