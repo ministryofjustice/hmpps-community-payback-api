@@ -165,6 +165,7 @@ class AppointmentMappersTest {
         hiVisWorn = true,
         workedIntensively = false,
         penaltyMinutes = 105,
+        minutesCredited = 55,
         workQuality = WorkQuality.NOT_APPLICABLE,
         behaviour = Behaviour.UNSATISFACTORY,
       )
@@ -183,6 +184,7 @@ class AppointmentMappersTest {
       assertThat(result.hiVisWorn).isTrue
       assertThat(result.workedIntensively).isFalse
       assertThat(result.penaltyMinutes).isEqualTo(105)
+      assertThat(result.minutesCredited).isEqualTo(55)
       assertThat(result.workQuality).isEqualTo(AppointmentWorkQualityDto.NOT_APPLICABLE)
       assertThat(result.behaviour).isEqualTo(AppointmentBehaviourDto.UNSATISFACTORY)
     }

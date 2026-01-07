@@ -19,6 +19,7 @@ data class AppointmentUpdateDomainEventDetailDto(
   val hiVisWorn: Boolean? = null,
   val workedIntensively: Boolean? = null,
   val penaltyMinutes: Long? = null,
+  val minutesCredited: Long? = null,
   val workQuality: AppointmentWorkQualityDto? = null,
   val behaviour: AppointmentBehaviourDto? = null,
 )

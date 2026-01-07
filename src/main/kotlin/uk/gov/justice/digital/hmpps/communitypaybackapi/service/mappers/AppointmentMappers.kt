@@ -103,6 +103,7 @@ fun AppointmentOutcomeEntity.toAppointmentUpdateDomainEvent() = AppointmentUpdat
   hiVisWorn = this.hiVisWorn,
   workedIntensively = workedIntensively,
   penaltyMinutes = this.penaltyMinutes,
+  minutesCredited = this.minutesCredited,
   workQuality = this.workQuality?.dtoType,
   behaviour = this.behaviour?.dtoType,
 )
