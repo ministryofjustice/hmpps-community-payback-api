@@ -102,7 +102,7 @@ class AdminAppointmentController(
 
     appointmentUpdateService.updateAppointmentOutcome(
       projectCode = projectCode,
-      outcome = outcome,
+      update = outcome,
     )
   }
 }

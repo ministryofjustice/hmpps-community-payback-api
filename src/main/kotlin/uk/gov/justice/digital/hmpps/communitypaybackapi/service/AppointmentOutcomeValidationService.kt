@@ -14,21 +14,21 @@ class AppointmentOutcomeValidationService(
   private val contactOutcomeEntityRepository: ContactOutcomeEntityRepository,
 ) {
 
-  fun validate(
+  fun ensureUpdateIsValid(
     appointment: AppointmentDto,
-    outcome: UpdateAppointmentOutcomeDto,
+    update: UpdateAppointmentOutcomeDto,
   ) {
-    validateContactOutcome(appointment, outcome)
-    validateDuration(outcome)
-    validatePenaltyTime(outcome)
-    validateNotes(outcome)
+    validateContactOutcome(appointment, update)
+    validateDuration(update)
+    validatePenaltyTime(update)
+    validateNotes(update)
   }
 
   fun validateContactOutcome(
     appointment: AppointmentDto,
-    outcome: UpdateAppointmentOutcomeDto,
+    update: UpdateAppointmentOutcomeDto,
   ) {
-    val code = outcome.contactOutcomeCode ?: return
+    val code = update.contactOutcomeCode ?: return
 
     val contactOutcome = contactOutcomeEntityRepository.findByCode(code)
       ?: throw BadRequestException("Contact outcome not found for code $code")
@@ -40,21 +40,21 @@ class AppointmentOutcomeValidationService(
     }
 
     if (contactOutcome.attended) {
-      validateNotNull(outcome.attendanceData) {
+      validateNotNull(update.attendanceData) {
         "Attendance data is required for 'attended' contact outcomes"
       }
     }
   }
 
-  fun validateDuration(outcome: UpdateAppointmentOutcomeDto) {
-    if (outcome.endTime <= outcome.startTime) {
-      throw BadRequestException("End Time '${outcome.endTime}' must be after Start Time '${outcome.startTime}'")
+  fun validateDuration(update: UpdateAppointmentOutcomeDto) {
+    if (update.endTime <= update.startTime) {
+      throw BadRequestException("End Time '${update.endTime}' must be after Start Time '${update.startTime}'")
     }
   }
 
-  fun validatePenaltyTime(outcome: UpdateAppointmentOutcomeDto) {
-    outcome.attendanceData?.penaltyTime?.duration?.let { penaltyDuration ->
-      val appointmentDuration = Duration.between(outcome.startTime, outcome.endTime)
+  fun validatePenaltyTime(update: UpdateAppointmentOutcomeDto) {
+    update.attendanceData?.penaltyTime?.duration?.let { penaltyDuration ->
+      val appointmentDuration = Duration.between(update.startTime, update.endTime)
       if (penaltyDuration > appointmentDuration) {
         throw BadRequestException("Penalty duration '$penaltyDuration' is greater than appointment duration '$appointmentDuration'")
       }
@@ -62,8 +62,8 @@ class AppointmentOutcomeValidationService(
   }
 
   @SuppressWarnings("MagicNumber")
-  fun validateNotes(outcome: UpdateAppointmentOutcomeDto) {
-    validateLengthLessThan(outcome.notes, 4000) { _, _ ->
+  fun validateNotes(update: UpdateAppointmentOutcomeDto) {
+    validateLengthLessThan(update.notes, 4000) { _, _ ->
       "Outcome notes must be fewer than 4000 characters"
     }
   }
