@@ -5,6 +5,7 @@ services:
     image: ghcr.io/ministryofjustice/hmpps-community-payback-api:latest
     #build: ../../
     container_name: cp-stack-api
+    # if you want to run a locally built docker image, comment out the line below
     pull_policy: always
     depends_on:
       - wiremock
