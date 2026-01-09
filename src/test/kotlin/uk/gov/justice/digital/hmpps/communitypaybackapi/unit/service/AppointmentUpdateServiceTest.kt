@@ -10,19 +10,23 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ConflictException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.FormKeyDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.NotFoundException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentOutcomeEntityRepository
-import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdditionalInformationType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentOutcomeEntityFactory
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentOutcomeValidationService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentRetrievalService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentUpdateService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.DomainEventService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.DomainEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.FormService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.PersonReferenceType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.unit.util.WebClientResponseExceptionFactory
 
 @SuppressWarnings("UnusedPrivateProperty")
@@ -47,12 +51,14 @@ class AppointmentUpdateServiceTest {
   @RelaxedMockK
   private lateinit var appointmentOutcomeEntityFactory: AppointmentOutcomeEntityFactory
 
+  @RelaxedMockK
+  private lateinit var domainEventService: DomainEventService
+
   @InjectMockKs
   private lateinit var service: AppointmentUpdateService
 
   private companion object {
     const val PROJECT_CODE = "PROJ123"
-    const val USERNAME = "mr-user"
     const val APPOINTMENT_ID = 101L
   }
 
@@ -93,7 +99,10 @@ class AppointmentUpdateServiceTest {
     }
 
     @Test
-    fun `if there's no existing entries for the delius appointment ids, persist new entry and invoke update endpoint`() {
+    fun `if there's no existing entries for the delius appointment ids, persist new entry, raise domain event and invoke update endpoint`() {
+      val existingAppointment = AppointmentDto.valid()
+      every { appointmentRetrievalService.getAppointment(PROJECT_CODE, APPOINTMENT_ID) } returns existingAppointment
+
       every { appointmentOutcomeEntityRepository.findTopByAppointmentDeliusIdOrderByCreatedAtDesc(APPOINTMENT_ID) } returns null
 
       val entityReturnedByFactory = AppointmentOutcomeEntity.fromUpdateRequest(updateRequest)
@@ -107,7 +116,17 @@ class AppointmentUpdateServiceTest {
 
       verify {
         appointmentOutcomeEntityRepository.save(entityReturnedByFactory)
-        communityPaybackAndDeliusClient.updateAppointment(PROJECT_CODE, APPOINTMENT_ID, any())
+        domainEventService.publishOnTransactionCommit(
+          id = entityReturnedByFactory.id,
+          type = DomainEventType.APPOINTMENT_UPDATED,
+          additionalInformation = mapOf(AdditionalInformationType.APPOINTMENT_ID to updateRequest.deliusId),
+          personReferences = mapOf(PersonReferenceType.CRN to existingAppointment.offender.crn),
+        )
+        communityPaybackAndDeliusClient.updateAppointment(
+          projectCode = PROJECT_CODE,
+          appointmentId = APPOINTMENT_ID,
+          updateAppointment = any(),
+        )
       }
     }
 

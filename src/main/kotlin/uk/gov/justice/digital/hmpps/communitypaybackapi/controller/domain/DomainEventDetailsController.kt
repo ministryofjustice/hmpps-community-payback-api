@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.communitypaybackapi.config.OpenApiConfiguration
 import uk.gov.justice.digital.hmpps.communitypaybackapi.config.SecurityConfiguration
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentOutcomeDomainEventDetailDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentUpdatedDomainEventDetailDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentUpdateService
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 import java.util.UUID
@@ -32,18 +32,18 @@ class DomainEventDetailsController(
   val appointmentUpdateService: AppointmentUpdateService,
 ) {
   @GetMapping(
-    path = ["/appointment-outcome/{eventId}"],
+    path = ["/appointment-updated/{eventId}"],
     produces = [MediaType.APPLICATION_JSON_VALUE],
   )
   @Operation(
     responses = [
       ApiResponse(
         responseCode = "200",
-        description = "domain event details for a domain event of type 'community-payback.appointment.outcome'",
+        description = "domain event details for a domain event of type 'community-payback.appointment.updated'",
       ),
       ApiResponse(
         responseCode = "404",
-        description = "Appointment outcome details are not available for the given ID",
+        description = "Appointment update details are not available for the given ID",
         content = [
           Content(
             schema = Schema(implementation = ErrorResponse::class),
@@ -52,7 +52,7 @@ class DomainEventDetailsController(
       ),
     ],
   )
-  fun appointmentOutcome(@PathVariable eventId: UUID): ResponseEntity<AppointmentOutcomeDomainEventDetailDto> = appointmentUpdateService.getOutcomeDomainEventDetails(eventId)?.let {
+  fun appointmentUpdated(@PathVariable eventId: UUID): ResponseEntity<AppointmentUpdatedDomainEventDetailDto> = appointmentUpdateService.getAppointmentUpdatedDomainEventDetails(eventId)?.let {
     ResponseEntity.ok(it)
   } ?: ResponseEntity.notFound().build()
 }
