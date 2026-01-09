@@ -19,7 +19,7 @@ All upstream services are provided by the [Cloud Platform's](https://user-guide.
 ## Pre-reqs
 
 * [brew](https://brew.sh/)
-* docker (for docker compose)
+* docker desktop (for docker compose)
 * kubectl installed and configured to use the [cloud platform](https://user-guide.cloud-platform.service.justice.gov.uk/documentation/getting-started/kubectl-config.html#connecting-to-the-cloud-platform-39-s-kubernetes-cluster)
 
 Other pre-reqs will be installed automatically via brew

@@ -6,23 +6,30 @@
 
 HMPPS Community Payback API is a Kotlin/Spring Boot service that exposes APIs to support Community Payback UIs. It follows HMPPS platform conventions for security, observability, CI/CD, and deployment to the MoJ Cloud Platform via Helm.
 
-- Language/Runtime: Kotlin 2 (Java 21), Spring Boot
+- Language/Runtime: Kotlin 2 (Java 25), Spring Boot
 - Build: Gradle (Wrapper included)
 - Packaging: Docker
 - Docs: OpenAPI/Swagger UI
 - Security: OAuth2 Resource Server (JWTs from HMPPS Auth)
 - Observability: Application Insights, Sentry
 
-## Getting started (local development)
+## Pre-Requisites
+
+* [brew](https://brew.sh/)
+* docker desktop (for docker compose)
+* JDK 25
+
+To install Java you can use [sdkman](https://sdkman.io/):
+
+1. Uninstall/unconfigure any other tool used to manage JDKs (e.g. `jenv`)
+2. Install sdkman using the [instructions on the website](https://sdkman.io/install/)
+3. Add `source "$HOME/.sdkman/bin/sdkman-init.sh` into `.zshrc` to ensure it's available in all terminals
+4. In the project root run `sdk env install` to install the correct version of java
+5. It's advised to set the project java version as system-wide default, allowing cp-stack to be run from anywhere e.g. `sdk default java <installed-version-here>`
+
+## Running Locally
 
 cp-stack is used to run the stack locally, either using the latest docker images or running spring boot directly via gradle. For more information see the [cp-stack README](tools/cp-stack/README.md)
-
-If you want to run spring boot directly you will need:
-
-- JDK 21
-- curl (optional, for health checks)
-
-Once the API is started you can run a test scenario against it using the [Intellij http-client test scripts](tools/http-client/README.md).
 
 ### Configuration
 
