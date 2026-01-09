@@ -10,7 +10,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.NotFoundException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentOutcomeEntityRepository
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toAppointmentUpdateDomainEvent
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toAppointmentUpdatedDomainEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toUpdateAppointment
 import java.util.UUID
 
@@ -30,7 +30,7 @@ class AppointmentUpdateService(
     private val log = LoggerFactory.getLogger(this::class.java)
   }
 
-  fun getOutcomeDomainEventDetails(id: UUID) = appointmentOutcomeEntityRepository.findByIdOrNullForDomainEventDetails(id)?.toAppointmentUpdateDomainEvent()
+  fun getAppointmentUpdatedDomainEventDetails(id: UUID) = appointmentOutcomeEntityRepository.findByIdOrNullForDomainEventDetails(id)?.toAppointmentUpdatedDomainEvent()
 
   @Transactional
   fun updateAppointmentOutcome(
