@@ -53,7 +53,7 @@ class AppointmentOutcomeValidationService(
   }
 
   fun validatePenaltyTime(update: UpdateAppointmentOutcomeDto) {
-    update.attendanceData?.penaltyTime?.duration?.let { penaltyDuration ->
+    update.attendanceData?.derivePenaltyMinutesDuration()?.let { penaltyDuration ->
       val appointmentDuration = Duration.between(update.startTime, update.endTime)
       if (penaltyDuration > appointmentDuration) {
         throw BadRequestException("Penalty duration '$penaltyDuration' is greater than appointment duration '$appointmentDuration'")
