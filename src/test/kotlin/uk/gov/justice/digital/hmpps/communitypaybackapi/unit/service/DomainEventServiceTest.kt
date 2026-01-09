@@ -49,7 +49,7 @@ class DomainEventServiceTest {
   }
 
   @Nested
-  inner class Publish {
+  inner class PublishOnTransactionCommit {
 
     @Test
     fun `enqueues a spring application event containing a fully populated HmppsDomainEvent`() {
@@ -57,45 +57,29 @@ class DomainEventServiceTest {
       every { applicationEventPublisher.publishEvent(capture(commandEventCaptor)) } just Runs
 
       every { domainEventUrlConfig.domainEventDetail } returns mapOf(
-        "appointment_outcome" to UrlTemplate("http://somepath/#id"),
+        "appointment_updated" to UrlTemplate("http://somepath/#id"),
       )
 
-      service.publish(
+      service.publishOnTransactionCommit(
         id = id,
-        type = DomainEventType.APPOINTMENT_OUTCOME,
+        type = DomainEventType.APPOINTMENT_UPDATED,
         additionalInformation = mapOf(AdditionalInformationType.APPOINTMENT_ID to "the appointment id"),
         personReferences = mapOf(PersonReferenceType.CRN to "CRN1"),
       )
 
       val publishDomainEventCommand = commandEventCaptor.captured
-      assertThat(publishDomainEventCommand.domainEvent.eventType).isEqualTo("community-payback.appointment.outcome")
+      assertThat(publishDomainEventCommand.domainEvent.eventType).isEqualTo("community-payback.appointment.updated")
       assertThat(publishDomainEventCommand.domainEvent.detailUrl).isEqualTo("http://somepath/$id")
-      assertThat(publishDomainEventCommand.domainEvent.description).isEqualTo("A community payback appointment has been updated with an outcome")
+      assertThat(publishDomainEventCommand.domainEvent.description).isEqualTo("A community payback appointment has been updated")
       assertThat(publishDomainEventCommand.domainEvent.version).isEqualTo(1)
       assertThat(publishDomainEventCommand.domainEvent.occurredAt).isCloseTo(OffsetDateTime.now(), within(1, ChronoUnit.MINUTES))
-      assertThat(publishDomainEventCommand.domainEvent.additionalInformation!!.map).containsExactly(entry("APPOINTMENT_ID", "the appointment id"))
+      assertThat(publishDomainEventCommand.domainEvent.additionalInformation!!.map).containsExactly(
+        entry("EVENT_ID", id),
+        entry("APPOINTMENT_ID", "the appointment id"),
+      )
       assertThat(publishDomainEventCommand.domainEvent.personReference!!.identifiers).containsExactly(
         HmmpsEventPersonReference("CRN", "CRN1"),
       )
-    }
-
-    @Test
-    fun `dont populate additional information if no values`() {
-      val commandEventCaptor = slot<PublishDomainEventCommand>()
-      every { applicationEventPublisher.publishEvent(capture(commandEventCaptor)) } just Runs
-
-      every { domainEventUrlConfig.domainEventDetail } returns mapOf(
-        "appointment_outcome" to UrlTemplate("http://somepath/#id"),
-      )
-
-      service.publish(
-        id = id,
-        type = DomainEventType.APPOINTMENT_OUTCOME,
-        additionalInformation = emptyMap(),
-      )
-
-      val publishDomainEventCommand = commandEventCaptor.captured
-      assertThat(publishDomainEventCommand.domainEvent.additionalInformation).isNull()
     }
 
     @Test
@@ -104,12 +88,12 @@ class DomainEventServiceTest {
       every { applicationEventPublisher.publishEvent(capture(commandEventCaptor)) } just Runs
 
       every { domainEventUrlConfig.domainEventDetail } returns mapOf(
-        "appointment_outcome" to UrlTemplate("http://somepath/#id"),
+        "appointment_updated" to UrlTemplate("http://somepath/#id"),
       )
 
-      service.publish(
+      service.publishOnTransactionCommit(
         id = id,
-        type = DomainEventType.APPOINTMENT_OUTCOME,
+        type = DomainEventType.APPOINTMENT_UPDATED,
         personReferences = emptyMap(),
       )
 
