@@ -17,6 +17,11 @@
     <appender-ref ref="consoleAppender"/>
   </logger>
 
+  <!-- We use WARN level here because INFO level logs out database connection info/schema name -->
+  <logger name="org.hibernate.orm.connections.pooling" additivity="false" level="WARN">
+    <appender-ref ref="consoleAppender"/>
+  </logger>
+
   <logger name="uk.gov.justice.digital.hmpps.communitypaybackapi.CommunityPaybackApiKt" additivity="false" level="DEBUG">
     <appender-ref ref="consoleAppender"/>
   </logger>
