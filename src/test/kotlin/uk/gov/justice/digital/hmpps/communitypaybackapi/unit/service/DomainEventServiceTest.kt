@@ -71,27 +71,13 @@ class DomainEventServiceTest {
       assertThat(publishDomainEventCommand.domainEvent.description).isEqualTo("A community payback appointment has been updated")
       assertThat(publishDomainEventCommand.domainEvent.version).isEqualTo(1)
       assertThat(publishDomainEventCommand.domainEvent.occurredAt).isCloseTo(OffsetDateTime.now(), within(1, ChronoUnit.MINUTES))
-      assertThat(publishDomainEventCommand.domainEvent.additionalInformation!!.map).containsExactly(entry("APPOINTMENT_ID", "the appointment id"))
+      assertThat(publishDomainEventCommand.domainEvent.additionalInformation!!.map).containsExactly(
+        entry("EVENT_ID", id),
+        entry("APPOINTMENT_ID", "the appointment id"),
+      )
       assertThat(publishDomainEventCommand.domainEvent.personReference!!.identifiers).containsExactly(
         HmmpsEventPersonReference("CRN", "CRN1"),
       )
-    }
-
-    @Test
-    fun `dont populate additional information if no values`() {
-      val commandEventCaptor = slot<PublishDomainEventCommand>()
-      every { applicationEventPublisher.publishEvent(capture(commandEventCaptor)) } just Runs
-
-      every { domainEventUrlConfig.appointmentUpdated } returns UrlTemplate("http://somepath/#id")
-
-      service.publishOnTransactionCommit(
-        id = id,
-        type = DomainEventType.APPOINTMENT_UPDATED,
-        additionalInformation = emptyMap(),
-      )
-
-      val publishDomainEventCommand = commandEventCaptor.captured
-      assertThat(publishDomainEventCommand.domainEvent.additionalInformation).isNull()
     }
 
     @Test
