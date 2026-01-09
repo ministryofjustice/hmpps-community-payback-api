@@ -50,3 +50,25 @@ To get a token for local calls, use `tools/scripts/fetch_token.sh`
 - Static code analysis/lint (ktlint & Detekt): `./gradlew ktlintFormat && ./gradlew detekt`
 - Code coverage (JaCoCo): generated after tests (`build/reports/jacoco/test/html/index.html`)
   - Coverage gate: 80% lines (see `build.gradle.kts`)
+
+### Building & running using docker locally
+
+This is helpful when checking new docker images/configuration
+
+```
+./gradlew clean assemble
+cp build/libs/*.jar .
+docker build --build-arg BUILD_NUMBER=$(date '+%Y-%m-%d') .
+```
+
+Then update cp-tools/compose.yml to use the locally built docker image by using the image's sha256 ID and comment out the pull_policy e.g.
+
+```
+api:
+  image: sha256:fd2c4f4fa2e448347339c3869ad7b8241535ecad4b6c86e0593405c7cee0b498
+  container_name: cp-stack-api
+  # if you want to run a locally built docker image, comment out the line below
+  #pull_policy: always
+```
+
+Then start cp-stack, being sure to NOT include `--local-api` (i.e. use docker api image)
