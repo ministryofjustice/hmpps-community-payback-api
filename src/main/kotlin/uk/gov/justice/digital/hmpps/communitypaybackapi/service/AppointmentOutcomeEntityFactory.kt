@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.service
 
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AttendanceDataDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.Behaviour
@@ -22,7 +23,7 @@ class AppointmentOutcomeEntityFactory(
   ): AppointmentOutcomeEntity {
     val startTime = outcome.startTime
     val endTime = outcome.endTime
-    val penaltyMinutes = outcome.attendanceData?.penaltyTime?.duration?.toMinutes()
+    val penaltyMinutes = outcome.attendanceData?.derivePenaltyMinutesDuration()?.toMinutes()
     val contactOutcome = outcome.contactOutcomeCode?.let {
       contactOutcomeEntityRepository.findByCode(it) ?: error("ContactOutcome not found for code: $it")
     }
@@ -64,3 +65,5 @@ class AppointmentOutcomeEntityFactory(
     return minutesCredited.takeIf { it != 0L }
   }
 }
+
+fun AttendanceDataDto.derivePenaltyMinutesDuration() = penaltyMinutes?.let { Duration.ofMinutes(it) } ?: penaltyTime?.duration
