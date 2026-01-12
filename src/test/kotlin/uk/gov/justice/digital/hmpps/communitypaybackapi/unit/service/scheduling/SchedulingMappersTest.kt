@@ -62,7 +62,7 @@ class SchedulingMappersTest {
         startTime = LocalTime.of(1, 2),
         endTime = LocalTime.of(4, 5),
         outcome = NDCodeDescription("OUTCOME1", "Description"),
-        timeCredited = Duration.ofMinutes(65),
+        minutesCredited = Duration.ofMinutes(65),
         allocation = NDSchedulingAllocation.valid(),
       ).toSchedulingExistingAppointment()
 
@@ -86,7 +86,7 @@ class SchedulingMappersTest {
         startTime = LocalTime.of(1, 2),
         endTime = LocalTime.of(4, 5),
         outcome = null,
-        timeCredited = null,
+        minutesCredited = null,
         allocation = null,
       ).toSchedulingExistingAppointment()
 

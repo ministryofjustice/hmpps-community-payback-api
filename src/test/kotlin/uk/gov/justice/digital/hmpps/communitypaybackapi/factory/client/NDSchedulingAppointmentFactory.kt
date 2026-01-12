@@ -22,7 +22,7 @@ fun NDSchedulingAppointment.Companion.valid(): NDSchedulingAppointment {
     startTime = startTime,
     endTime = endTime,
     outcome = NDCodeDescription(String.random(), String.random()),
-    timeCredited = Duration.ofMinutes(ChronoUnit.MINUTES.between(startTime, endTime)),
+    minutesCredited = Duration.ofMinutes(ChronoUnit.MINUTES.between(startTime, endTime)),
     allocation = NDSchedulingAllocation.valid(),
   )
 }
@@ -31,5 +31,5 @@ fun NDSchedulingAppointment.Companion.validWithOutcome() = valid()
 
 fun NDSchedulingAppointment.Companion.validWithoutOutcome() = valid().copy(
   outcome = null,
-  timeCredited = null,
+  minutesCredited = null,
 )

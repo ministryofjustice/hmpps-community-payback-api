@@ -403,7 +403,7 @@ data class NDSchedulingAppointment(
   val startTime: LocalTime,
   val endTime: LocalTime,
   val outcome: NDCodeDescription?,
-  val timeCredited: Duration?,
+  val minutesCredited: Duration?,
   val allocation: NDSchedulingAllocation?,
 ) {
   companion object

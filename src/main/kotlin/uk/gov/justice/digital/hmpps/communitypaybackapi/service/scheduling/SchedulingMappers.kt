@@ -60,7 +60,7 @@ fun NDSchedulingAppointment.toSchedulingExistingAppointment() = SchedulingExisti
   startTime = startTime,
   endTime = endTime,
   hasOutcome = outcome != null,
-  timeCredited = timeCredited,
+  timeCredited = minutesCredited,
   allocation = allocation?.toSchedulingAllocation(),
 )
 
