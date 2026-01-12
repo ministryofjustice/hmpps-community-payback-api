@@ -97,7 +97,7 @@ private fun determineFrequency(
 
 private fun NDSchedulingProject.toSchedulingProject() = SchedulingProject(
   code = code.code,
-  projectTypeCode = projectTypeCode.code,
-  providerCode = providerCode.code,
-  teamCode = teamCode.code,
+  projectTypeCode = type.code,
+  providerCode = provider.code,
+  teamCode = team.code,
 )
