@@ -265,10 +265,10 @@ data class Supervisor(
 data class SupervisorTeam(
   val code: String,
   val description: String,
-  val provider: CodeDescription,
+  val provider: NDCodeDescription,
 )
 
-data class CodeDescription(
+data class NDCodeDescription(
   val code: String,
   val description: String,
 )
@@ -402,7 +402,7 @@ data class NDSchedulingAppointment(
   val date: LocalDate,
   val startTime: LocalTime,
   val endTime: LocalTime,
-  val outcome: Code?,
+  val outcome: NDCodeDescription?,
   val timeCredited: Duration?,
   val allocation: NDSchedulingAllocation?,
 ) {
