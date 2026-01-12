@@ -154,6 +154,7 @@ data class Appointment(
   val project: Project,
   val projectType: ProjectType,
   val case: CaseSummary,
+  val event: NDEvent,
   val team: Team,
   val provider: Provider,
   val pickUpData: PickUpData?,
@@ -242,6 +243,12 @@ data class CaseSummary(
   val dateOfBirth: LocalDate,
   val currentExclusion: Boolean,
   val currentRestriction: Boolean,
+) {
+  companion object
+}
+
+data class NDEvent(
+  val number: Int,
 ) {
   companion object
 }

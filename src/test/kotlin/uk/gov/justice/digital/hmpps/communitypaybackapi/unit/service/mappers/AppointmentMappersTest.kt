@@ -19,6 +19,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.AppointmentWorkQu
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CaseSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ContactOutcome
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.EnforcementAction
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Name
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.PickUpData
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Project
@@ -69,6 +70,8 @@ class AppointmentMappersTest {
         id = UUID.randomUUID(),
         appointmentDeliusId = 101L,
         deliusVersionToUpdate = UUID.randomUUID(),
+        crn = "CRN123",
+        deliusEventNumber = 5,
         startTime = LocalTime.of(3, 2, 1),
         endTime = LocalTime.of(12, 11, 10),
         contactOutcome = ContactOutcomeEntity.valid().copy(code = "COE1"),
@@ -108,6 +111,8 @@ class AppointmentMappersTest {
         id = UUID.randomUUID(),
         appointmentDeliusId = 101L,
         deliusVersionToUpdate = UUID.randomUUID(),
+        crn = "CRN123",
+        deliusEventNumber = 5,
         startTime = LocalTime.of(3, 2, 1),
         endTime = LocalTime.of(12, 11, 10),
         contactOutcome = null,
@@ -150,6 +155,8 @@ class AppointmentMappersTest {
       val appointmentOutcomeEntity = AppointmentOutcomeEntity.valid().copy(
         id = UUID.randomUUID(),
         appointmentDeliusId = 101L,
+        crn = "CRN123",
+        deliusEventNumber = 52,
         startTime = LocalTime.of(3, 2, 1),
         endTime = LocalTime.of(12, 11, 10),
         contactOutcome = ContactOutcomeEntity.valid().copy(code = "COE1"),
@@ -165,6 +172,8 @@ class AppointmentMappersTest {
       val result = appointmentOutcomeEntity.toDomainEventDetail()
 
       assertThat(result.id).isEqualTo(appointmentOutcomeEntity.id)
+      assertThat(result.crn).isEqualTo("CRN123")
+      assertThat(result.deliusEventNumber).isEqualTo(52)
       assertThat(result.appointmentDeliusId).isEqualTo(101L)
       assertThat(result.startTime).isEqualTo(LocalTime.of(3, 2, 1))
       assertThat(result.endTime).isEqualTo(LocalTime.of(12, 11, 10))
@@ -190,6 +199,7 @@ class AppointmentMappersTest {
       val projectTypeName = "MAINTENANCE"
       val projectTypeCode = "MAINT"
       val crn = "CRN1"
+      val eventNumber = 98
       val contactOutcomeCode = "OUTCOME1"
       val enforcementActionId = UUID.fromString("123e4567-e89b-12d3-a456-426614174001")
       val supervisingTeam = "Team Lincoln"
@@ -214,11 +224,6 @@ class AppointmentMappersTest {
       val behaviour = AppointmentBehaviour.SATISFACTORY
       val notes = "This is a test note"
 
-      val caseSummary = CaseSummary.valid().copy(
-        crn = crn,
-        currentExclusion = true,
-      )
-
       val appointment = Appointment(
         id = id,
         version = version,
@@ -231,7 +236,13 @@ class AppointmentMappersTest {
           name = projectTypeName,
           code = projectTypeCode,
         ),
-        case = caseSummary,
+        case = CaseSummary.valid().copy(
+          crn = crn,
+          currentExclusion = true,
+        ),
+        event = NDEvent.valid().copy(
+          number = eventNumber,
+        ),
         team = Team(
           name = supervisingTeam,
           code = supervisingTeamCode,
@@ -310,6 +321,8 @@ class AppointmentMappersTest {
 
       assertThat(result.offender.crn).isEqualTo(crn)
       assertThat(result.offender).isInstanceOf(OffenderDto.OffenderLimitedDto::class.java)
+
+      assertThat(result.deliusEventNumber).isEqualTo(98)
 
       assertThat(result.sensitive).isFalse
       assertThat(result.alertActive).isTrue

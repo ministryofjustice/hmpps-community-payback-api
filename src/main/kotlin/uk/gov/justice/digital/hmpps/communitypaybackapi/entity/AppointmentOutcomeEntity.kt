@@ -22,6 +22,8 @@ data class AppointmentOutcomeEntity(
   val id: UUID,
   val appointmentDeliusId: Long,
   val deliusVersionToUpdate: UUID,
+  val crn: String,
+  val deliusEventNumber: Int,
   val startTime: LocalTime,
   val endTime: LocalTime,
 

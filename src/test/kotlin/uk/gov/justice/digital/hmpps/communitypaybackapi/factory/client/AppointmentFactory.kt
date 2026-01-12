@@ -7,6 +7,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.AppointmentWorkQu
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CaseSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ContactOutcome
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.EnforcementAction
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.PickUpData
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Project
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectType
@@ -34,6 +35,7 @@ fun Appointment.Companion.valid() = Appointment(
   project = Project.Companion.valid(),
   projectType = ProjectType.valid(),
   case = CaseSummary.valid(),
+  event = NDEvent.valid(),
   team = Team.valid(),
   provider = Provider.valid(),
   pickUpData = PickUpData.valid(),

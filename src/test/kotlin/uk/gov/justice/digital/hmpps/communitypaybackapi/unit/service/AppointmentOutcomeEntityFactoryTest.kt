@@ -12,9 +12,11 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.HourMinuteDuration
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentBehaviourDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentWorkQualityDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AttendanceDataDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EnforcementDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.OffenderDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.Behaviour
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
@@ -56,7 +58,7 @@ class AppointmentOutcomeEntityFactoryTest {
       every { contactOutcomeEntityRepository.findByCode(CONTACT_OUTCOME_CODE) } returns contactOutcomeEntity
 
       val result = service.toEntity(
-        UpdateAppointmentOutcomeDto(
+        outcome = UpdateAppointmentOutcomeDto(
           deliusId = 101L,
           deliusVersionToUpdate = deliusVersion,
           startTime = LocalTime.of(10, 1),
@@ -80,10 +82,16 @@ class AppointmentOutcomeEntityFactoryTest {
           alertActive = false,
           sensitive = true,
         ),
+        existingAppointment = AppointmentDto.valid().copy(
+          offender = OffenderDto.OffenderLimitedDto(crn = "X12345"),
+          deliusEventNumber = 48,
+        ),
       )
 
       assertThat(result.id).isNotNull
       assertThat(result.deliusVersionToUpdate).isEqualTo(deliusVersion)
+      assertThat(result.crn).isEqualTo("X12345")
+      assertThat(result.deliusEventNumber).isEqualTo(48)
       assertThat(result.appointmentDeliusId).isEqualTo(101L)
       assertThat(result.startTime).isEqualTo(LocalTime.of(10, 1))
       assertThat(result.endTime).isEqualTo(LocalTime.of(16, 3))
@@ -105,7 +113,7 @@ class AppointmentOutcomeEntityFactoryTest {
       val deliusVersion = UUID.randomUUID()
 
       val result = service.toEntity(
-        UpdateAppointmentOutcomeDto(
+        outcome = UpdateAppointmentOutcomeDto(
           deliusId = 101L,
           deliusVersionToUpdate = deliusVersion,
           startTime = LocalTime.of(10, 1, 2),
@@ -119,10 +127,16 @@ class AppointmentOutcomeEntityFactoryTest {
           alertActive = null,
           sensitive = null,
         ),
+        existingAppointment = AppointmentDto.valid().copy(
+          offender = OffenderDto.OffenderLimitedDto(crn = "X12345"),
+          deliusEventNumber = 48,
+        ),
       )
 
       assertThat(result.id).isNotNull
       assertThat(result.deliusVersionToUpdate).isEqualTo(deliusVersion)
+      assertThat(result.crn).isEqualTo("X12345")
+      assertThat(result.deliusEventNumber).isEqualTo(48)
       assertThat(result.appointmentDeliusId).isEqualTo(101L)
       assertThat(result.startTime).isEqualTo(LocalTime.of(10, 1, 2))
       assertThat(result.endTime).isEqualTo(LocalTime.of(16, 3, 4))
@@ -142,9 +156,10 @@ class AppointmentOutcomeEntityFactoryTest {
     @Test
     fun `minutes credited is null if no outcome`() {
       val result = service.toEntity(
-        UpdateAppointmentOutcomeDto.valid().copy(
+        outcome = UpdateAppointmentOutcomeDto.valid().copy(
           contactOutcomeCode = null,
         ),
+        existingAppointment = AppointmentDto.valid(),
       )
 
       assertThat(result.minutesCredited).isNull()
@@ -155,12 +170,13 @@ class AppointmentOutcomeEntityFactoryTest {
       every { contactOutcomeEntityRepository.findByCode(CONTACT_OUTCOME_CODE) } returns ContactOutcomeEntity.valid().copy(attended = false)
 
       val result = service.toEntity(
-        UpdateAppointmentOutcomeDto.valid().copy(
+        outcome = UpdateAppointmentOutcomeDto.valid().copy(
           contactOutcomeCode = null,
           startTime = LocalTime.of(10, 0),
           endTime = LocalTime.of(12, 0),
           attendanceData = AttendanceDataDto.valid().copy(penaltyTime = null),
         ),
+        existingAppointment = AppointmentDto.valid(),
       )
 
       assertThat(result.minutesCredited).isNull()
@@ -192,7 +208,7 @@ class AppointmentOutcomeEntityFactoryTest {
       every { contactOutcomeEntityRepository.findByCode(CONTACT_OUTCOME_CODE) } returns ContactOutcomeEntity.valid().copy(attended = true)
 
       val result = service.toEntity(
-        UpdateAppointmentOutcomeDto.valid().copy(
+        outcome = UpdateAppointmentOutcomeDto.valid().copy(
           contactOutcomeCode = CONTACT_OUTCOME_CODE,
           startTime = startTime,
           endTime = endTime,
@@ -201,6 +217,7 @@ class AppointmentOutcomeEntityFactoryTest {
             penaltyTime = penaltyTime?.let { HourMinuteDuration(it) },
           ),
         ),
+        existingAppointment = AppointmentDto.valid(),
       )
 
       assertThat(result.minutesCredited).isEqualTo(expectedTimeCredited)
@@ -211,13 +228,14 @@ class AppointmentOutcomeEntityFactoryTest {
       every { contactOutcomeEntityRepository.findByCode(CONTACT_OUTCOME_CODE) } returns ContactOutcomeEntity.valid()
 
       val result = service.toEntity(
-        UpdateAppointmentOutcomeDto.valid().copy(
+        outcome = UpdateAppointmentOutcomeDto.valid().copy(
           contactOutcomeCode = null,
           attendanceData = AttendanceDataDto.valid().copy(
             penaltyMinutes = 150,
             penaltyTime = HourMinuteDuration(Duration.ofMinutes(300)),
           ),
         ),
+        existingAppointment = AppointmentDto.valid(),
       )
 
       assertThat(result.penaltyMinutes).isEqualTo(150L)
@@ -226,13 +244,14 @@ class AppointmentOutcomeEntityFactoryTest {
     @Test
     fun `use legacy penaltyTime if penaltyMinutes not defined`() {
       val result = service.toEntity(
-        UpdateAppointmentOutcomeDto.valid().copy(
+        outcome = UpdateAppointmentOutcomeDto.valid().copy(
           contactOutcomeCode = null,
           attendanceData = AttendanceDataDto.valid().copy(
             penaltyMinutes = null,
             penaltyTime = HourMinuteDuration(Duration.ofMinutes(300)),
           ),
         ),
+        existingAppointment = AppointmentDto.valid(),
       )
 
       assertThat(result.penaltyMinutes).isEqualTo(300L)

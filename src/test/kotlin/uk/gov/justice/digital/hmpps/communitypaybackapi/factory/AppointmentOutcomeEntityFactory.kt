@@ -12,6 +12,8 @@ fun AppointmentOutcomeEntity.Companion.valid(
   id = UUID.randomUUID(),
   appointmentDeliusId = Long.random(),
   deliusVersionToUpdate = UUID.randomUUID(),
+  crn = String.random(5),
+  deliusEventNumber = Int.random(0, 50),
   startTime = randomLocalTime(),
   endTime = randomLocalTime(),
   contactOutcome = contactOutcomeEntity,
