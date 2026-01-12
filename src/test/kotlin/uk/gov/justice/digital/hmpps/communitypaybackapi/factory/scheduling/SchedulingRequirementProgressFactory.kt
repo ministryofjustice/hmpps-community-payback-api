@@ -1,6 +1,6 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.factory.scheduling
 
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingRequirementProgress
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingRequirement
 import java.time.Duration
 
-fun SchedulingRequirementProgress.Companion.valid() = SchedulingRequirementProgress(lengthMinutes = Duration.ZERO)
+fun SchedulingRequirement.Companion.valid() = SchedulingRequirement(requirementLengthMinutes = Duration.ZERO)

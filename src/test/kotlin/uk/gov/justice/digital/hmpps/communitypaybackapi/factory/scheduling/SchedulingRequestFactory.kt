@@ -6,13 +6,13 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.Sched
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingExistingAppointments
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingNonWorkingDates
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingRequest
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingRequirementProgress
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingRequirement
 import java.time.Duration
 
 fun SchedulingRequest.Companion.empty() = SchedulingRequest(
   today = randomLocalDate(),
   trigger = String.random(10),
-  requirement = SchedulingRequirementProgress(lengthMinutes = Duration.ZERO),
+  requirement = SchedulingRequirement(requirementLengthMinutes = Duration.ZERO),
   allocations = SchedulingAllocations(emptyList()),
   existingAppointments = SchedulingExistingAppointments(emptyList()),
   nonWorkingDates = SchedulingNonWorkingDates(emptyList()),

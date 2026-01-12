@@ -9,10 +9,9 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.Sched
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingNonWorkingDates
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingProject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingRequest
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingRequirementProgress
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingRequirement
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.Scheduler
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.Scheduler.SchedulerOutcome
-import uk.gov.justice.digital.hmpps.communitypaybackapi.unit.service.scheduling.scenarios.SchedulingScenarioParsers
 import java.time.DayOfWeek
 import java.time.Duration
 import java.time.LocalDate
@@ -83,7 +82,7 @@ class SchedulingScenarioAsserter(
     return SchedulingRequest.empty().copy(
       today = day,
       trigger = "Unit Test '${testInfo?.displayName}'",
-      requirement = SchedulingRequirementProgress(requirementLength),
+      requirement = SchedulingRequirement(requirementLength),
       allocations = SchedulingAllocations(allocations),
       existingAppointments = SchedulingExistingAppointments(existingAppointments),
       nonWorkingDates = SchedulingNonWorkingDates(nonWorkingDates),
