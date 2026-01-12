@@ -30,7 +30,7 @@ object SchedulingRenderer {
       appendLine()
       appendLine("* Date: $today (${today.dayOfWeek})")
       appendLine("* Trigger: ${request.trigger}")
-      appendLine("* Requirement: ${request.requirement.lengthMinutes}")
+      appendLine("* Requirement: ${request.requirement.requirementLengthMinutes}")
       appendLine("* Remaining Minutes as of today: $remainingMinutesAsOfToday")
 
       val allocations = request.allocations.allocations

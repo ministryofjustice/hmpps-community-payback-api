@@ -11,8 +11,8 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.RequirementProgre
 import java.time.DayOfWeek
 import java.time.Duration
 
-fun RequirementProgress.toSchedulingRequirementProgress() = SchedulingRequirementProgress(
-  lengthMinutes = Duration.ofMinutes((this.requiredMinutes - this.completedMinutes + this.adjustments).toLong()),
+fun RequirementProgress.toSchedulingRequirementProgress() = SchedulingRequirement(
+  requirementLengthMinutes = Duration.ofMinutes((this.requiredMinutes + this.adjustments).toLong()),
 )
 
 fun List<NDSchedulingAllocation>.toSchedulingAllocations() = SchedulingAllocations(

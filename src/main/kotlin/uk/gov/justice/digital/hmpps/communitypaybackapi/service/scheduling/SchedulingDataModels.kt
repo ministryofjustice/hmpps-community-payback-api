@@ -8,7 +8,7 @@ import java.time.LocalTime
 data class SchedulingRequest(
   val today: LocalDate,
   val trigger: String,
-  val requirement: SchedulingRequirementProgress,
+  val requirement: SchedulingRequirement,
   val allocations: SchedulingAllocations,
   val existingAppointments: SchedulingExistingAppointments,
   val nonWorkingDates: SchedulingNonWorkingDates,
@@ -17,12 +17,12 @@ data class SchedulingRequest(
 }
 
 @JvmInline
-value class SchedulingRequirementProgress(
+value class SchedulingRequirement(
   /**
    * The corresponding community payback requirement length, before any
    * time is credited from attended appointments. This will include adjustments
    */
-  val lengthMinutes: Duration,
+  val requirementLengthMinutes: Duration,
 ) {
   companion object
 }

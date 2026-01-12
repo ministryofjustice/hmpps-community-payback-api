@@ -2,7 +2,7 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.inte
 
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.minutesBetween
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingExistingAppointments
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingRequirementProgress
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingRequirement
 import java.time.Duration
 import java.time.LocalDate
 
@@ -10,10 +10,10 @@ object RequirementRemainingMinutesCalculator {
 
   fun calculateRemainingMinutesAsOfToday(
     today: LocalDate,
-    requirement: SchedulingRequirementProgress,
+    requirement: SchedulingRequirement,
     existingAppointments: SchedulingExistingAppointments,
   ): Duration {
-    val lengthMinutes = requirement.lengthMinutes.toMinutes()
+    val lengthMinutes = requirement.requirementLengthMinutes.toMinutes()
 
     val pastMinutesOffered =
       existingAppointments.appointments.filter { it.date.isBefore(today) }

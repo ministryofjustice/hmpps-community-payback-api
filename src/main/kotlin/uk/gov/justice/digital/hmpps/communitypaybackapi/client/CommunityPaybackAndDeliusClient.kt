@@ -131,8 +131,18 @@ data class AppointmentSummary(
 }
 
 data class RequirementProgress(
+  /**
+   * requirement minutes. does not include adjustments
+   */
   val requiredMinutes: Int,
+  /**
+   * minutes credited from completed appointments
+   */
   val completedMinutes: Int,
+  /**
+   * adjustments to the requirement, in minutes. A positive
+   * number means 'add more time to the requirement'
+   */
   val adjustments: Int,
 ) {
   companion object

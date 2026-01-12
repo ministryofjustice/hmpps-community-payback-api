@@ -43,7 +43,7 @@ class SchedulingMappersTest {
         adjustments = -10,
       ).toSchedulingRequirementProgress()
 
-      assertThat(result.lengthMinutes).isEqualTo(Duration.ofMinutes(65))
+      assertThat(result.requirementLengthMinutes).isEqualTo(Duration.ofMinutes(90))
     }
   }
 
