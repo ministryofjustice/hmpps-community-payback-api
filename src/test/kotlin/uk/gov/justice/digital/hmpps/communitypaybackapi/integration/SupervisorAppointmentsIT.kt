@@ -24,7 +24,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.FormCacheEntityRe
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.validNoOutcome
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
-import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.DomainEventListener
+import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.DomainEventAsserter
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.bodyAsObject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.CommunityPaybackAndDeliusMockServer
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
@@ -39,7 +39,7 @@ class SupervisorAppointmentsIT : IntegrationTestBase() {
   lateinit var formCacheEntityRepository: FormCacheEntityRepository
 
   @Autowired
-  lateinit var domainEventListener: DomainEventListener
+  lateinit var domainEventAsserter: DomainEventAsserter
 
   @Nested
   @DisplayName("GET /supervisor/projects/{projectCode}/appointments/{appointmentId}")
@@ -230,7 +230,7 @@ class SupervisorAppointmentsIT : IntegrationTestBase() {
         appointmentId = 1234L,
       )
 
-      domainEventListener.assertEventCount("community-payback.appointment.updated", 1)
+      domainEventAsserter.assertEventCount("community-payback.appointment.updated", 1)
 
       assertThat(formCacheEntityRepository.count()).isEqualTo(0)
     }
@@ -328,7 +328,7 @@ class SupervisorAppointmentsIT : IntegrationTestBase() {
       CommunityPaybackAndDeliusMockServer.putAppointmentVerify("PC01", 1234L)
       CommunityPaybackAndDeliusMockServer.putAppointmentVerify("PC01", 5678L)
 
-      domainEventListener.assertEventCount("community-payback.appointment.updated", 2)
+      domainEventAsserter.assertEventCount("community-payback.appointment.updated", 2)
     }
   }
 }

@@ -65,7 +65,6 @@ class SchedulingScenarioParsers {
     val endDatePart = groups[7]
 
     return SchedulingAllocation(
-      // DA: Fix id/alias
       id = Long.Companion.random(),
       alias = aliasPart,
       project = projects.findByCode(projectCodePart),

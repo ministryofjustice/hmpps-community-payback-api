@@ -12,12 +12,12 @@ import kotlin.collections.first
 import kotlin.jvm.java
 
 @Service
-class DomainEventListener(private val objectMapper: ObjectMapper) {
+class DomainEventAsserter(private val objectMapper: ObjectMapper) {
   private val log = LoggerFactory.getLogger(this::class.java)
 
   private val messages = mutableListOf<HmppsDomainEvent>()
 
-  @SqsListener(queueNames = ["hmppsdomaineventsqueue"], factory = "hmppsQueueContainerFactoryProxy", pollTimeoutSeconds = "1")
+  @SqsListener(queueNames = ["hmppsdomaineventsasserterqueue"], factory = "hmppsQueueContainerFactoryProxy", pollTimeoutSeconds = "1")
   fun processMessage(rawMessage: String?) {
     val sqsMessage = objectMapper.readValue(rawMessage, SqsMessage::class.java)
     val event = objectMapper.readValue(sqsMessage.Message, HmppsDomainEvent::class.java)
