@@ -47,6 +47,8 @@ data class AppointmentOutcomeEntity(
   val alertActive: Boolean?,
   val sensitive: Boolean?,
 
+  val schedulingRanAt: OffsetDateTime? = null,
+
   @CreationTimestamp
   val createdAt: OffsetDateTime = OffsetDateTime.now(),
 ) {
