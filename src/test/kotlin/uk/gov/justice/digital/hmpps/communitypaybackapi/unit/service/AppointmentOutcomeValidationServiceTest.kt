@@ -190,13 +190,14 @@ class AppointmentOutcomeValidationServiceTest {
   }
 
   @Nested
-  inner class PenaltyTimeDuration {
+  inner class PenaltyMinutesDuration {
 
     @Test
-    fun `if no penalty time, do nothing`() {
+    fun `if no penalty minutes, do nothing`() {
       service.validatePenaltyTime(
         UpdateAppointmentOutcomeDto.valid().copy(
           attendanceData = AttendanceDataDto.valid().copy(
+            penaltyMinutes = null,
             penaltyTime = null,
           ),
         ),
@@ -210,7 +211,22 @@ class AppointmentOutcomeValidationServiceTest {
           startTime = LocalTime.of(10, 0),
           endTime = LocalTime.of(16, 35),
           attendanceData = AttendanceDataDto.valid().copy(
+            penaltyMinutes = null,
             penaltyTime = HourMinuteDuration(Duration.ofHours(6).plusMinutes(30)),
+          ),
+        ),
+      )
+    }
+
+    @Test
+    fun `if penalty minutes is less than duration, do nothing`() {
+      service.validatePenaltyTime(
+        UpdateAppointmentOutcomeDto.valid().copy(
+          startTime = LocalTime.of(10, 0),
+          endTime = LocalTime.of(16, 35),
+          attendanceData = AttendanceDataDto.valid().copy(
+            penaltyMinutes = 390,
+            penaltyTime = null,
           ),
         ),
       )
@@ -223,6 +239,21 @@ class AppointmentOutcomeValidationServiceTest {
           startTime = LocalTime.of(10, 0),
           endTime = LocalTime.of(16, 35),
           attendanceData = AttendanceDataDto.valid().copy(
+            penaltyMinutes = null,
+            penaltyTime = HourMinuteDuration(Duration.ofHours(6).plusMinutes(35)),
+          ),
+        ),
+      )
+    }
+
+    @Test
+    fun `if penalty minutes is same as duration, do nothing`() {
+      service.validatePenaltyTime(
+        UpdateAppointmentOutcomeDto.valid().copy(
+          startTime = LocalTime.of(10, 0),
+          endTime = LocalTime.of(16, 35),
+          attendanceData = AttendanceDataDto.valid().copy(
+            penaltyMinutes = 395,
             penaltyTime = HourMinuteDuration(Duration.ofHours(6).plusMinutes(35)),
           ),
         ),
@@ -237,7 +268,25 @@ class AppointmentOutcomeValidationServiceTest {
             startTime = LocalTime.of(10, 0),
             endTime = LocalTime.of(16, 35),
             attendanceData = AttendanceDataDto.valid().copy(
+              penaltyMinutes = null,
               penaltyTime = HourMinuteDuration(Duration.ofHours(6).plusMinutes(36)),
+            ),
+          ),
+        )
+      }.isInstanceOf(BadRequestException::class.java)
+        .hasMessage("Penalty duration 'PT6H36M' is greater than appointment duration 'PT6H35M'")
+    }
+
+    @Test
+    fun `if penalty minutes is greater than as duration, throw exception`() {
+      assertThatThrownBy {
+        service.validatePenaltyTime(
+          UpdateAppointmentOutcomeDto.valid().copy(
+            startTime = LocalTime.of(10, 0),
+            endTime = LocalTime.of(16, 35),
+            attendanceData = AttendanceDataDto.valid().copy(
+              penaltyMinutes = 396,
+              penaltyTime = HourMinuteDuration(Duration.ofMinutes(5)),
             ),
           ),
         )

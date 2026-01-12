@@ -67,7 +67,8 @@ class AppointmentOutcomeEntityFactoryTest {
           attendanceData = AttendanceDataDto(
             hiVisWorn = false,
             workedIntensively = true,
-            penaltyTime = HourMinuteDuration(Duration.ofMinutes(300)),
+            penaltyMinutes = 300,
+            penaltyTime = HourMinuteDuration(Duration.ofMinutes(400)),
             workQuality = AppointmentWorkQualityDto.SATISFACTORY,
             behaviour = AppointmentBehaviourDto.UNSATISFACTORY,
           ),
@@ -169,18 +170,23 @@ class AppointmentOutcomeEntityFactoryTest {
     @CsvSource(
       nullValues = ["null"],
       value = [
-        "00:00,00:01,null,1",
-        "00:00,23:59,null,1439",
-        "00:00,23:59,PT23H55M,4",
-        "10:00,11:00,null,60",
-        "10:00,11:00,PT59M,1",
-        "10:00,11:00,PT60M,null",
+        "00:00,00:01,null,null,1",
+        "00:00,23:59,null,null,1439",
+        "00:00,23:59,PT23H55M,null,4",
+        "00:00,23:59,null,PT23H55M,4",
+        "00:00,23:59,PT1H,PT23H55M,4",
+        "10:00,11:00,null,null,60",
+        "10:00,11:00,PT59M,null,1",
+        "10:00,11:00,null,PT59M,1",
+        "10:00,11:00,PT60M,null,null",
+        "10:00,11:00,null,PT60M,null",
       ],
     )
     fun `minutes credited is added if outcome indicates attendance`(
       startTime: LocalTime,
       endTime: LocalTime,
       penaltyTime: Duration?,
+      penaltyMinutes: Duration?,
       expectedTimeCredited: Long?,
     ) {
       every { contactOutcomeEntityRepository.findByCode(CONTACT_OUTCOME_CODE) } returns ContactOutcomeEntity.valid().copy(attended = true)
@@ -190,11 +196,46 @@ class AppointmentOutcomeEntityFactoryTest {
           contactOutcomeCode = CONTACT_OUTCOME_CODE,
           startTime = startTime,
           endTime = endTime,
-          attendanceData = AttendanceDataDto.valid().copy(penaltyTime = penaltyTime?.let { HourMinuteDuration(it) }),
+          attendanceData = AttendanceDataDto.valid().copy(
+            penaltyMinutes = penaltyMinutes?.toMinutes(),
+            penaltyTime = penaltyTime?.let { HourMinuteDuration(it) },
+          ),
         ),
       )
 
       assertThat(result.minutesCredited).isEqualTo(expectedTimeCredited)
+    }
+
+    @Test
+    fun `use penaltyMinutes instead of penaltyTime if defined`() {
+      every { contactOutcomeEntityRepository.findByCode(CONTACT_OUTCOME_CODE) } returns ContactOutcomeEntity.valid()
+
+      val result = service.toEntity(
+        UpdateAppointmentOutcomeDto.valid().copy(
+          contactOutcomeCode = null,
+          attendanceData = AttendanceDataDto.valid().copy(
+            penaltyMinutes = 150,
+            penaltyTime = HourMinuteDuration(Duration.ofMinutes(300)),
+          ),
+        ),
+      )
+
+      assertThat(result.penaltyMinutes).isEqualTo(150L)
+    }
+
+    @Test
+    fun `use legacy penaltyTime if penaltyMinutes not defined`() {
+      val result = service.toEntity(
+        UpdateAppointmentOutcomeDto.valid().copy(
+          contactOutcomeCode = null,
+          attendanceData = AttendanceDataDto.valid().copy(
+            penaltyMinutes = null,
+            penaltyTime = HourMinuteDuration(Duration.ofMinutes(300)),
+          ),
+        ),
+      )
+
+      assertThat(result.penaltyMinutes).isEqualTo(300L)
     }
   }
 }
