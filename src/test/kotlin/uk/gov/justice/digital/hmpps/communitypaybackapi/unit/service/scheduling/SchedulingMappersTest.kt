@@ -72,7 +72,7 @@ class SchedulingMappersTest {
       assertThat(result.startTime).isEqualTo(LocalTime.of(1, 2))
       assertThat(result.endTime).isEqualTo(LocalTime.of(4, 5))
       assertThat(result.hasOutcome).isTrue
-      assertThat(result.timeCredited).isEqualTo(Duration.ofMinutes(65))
+      assertThat(result.minutesCredited).isEqualTo(Duration.ofMinutes(65))
       assertThat(result.allocationId).isEqualTo(12L)
     }
 
@@ -96,7 +96,7 @@ class SchedulingMappersTest {
       assertThat(result.startTime).isEqualTo(LocalTime.of(1, 2))
       assertThat(result.endTime).isEqualTo(LocalTime.of(4, 5))
       assertThat(result.hasOutcome).isFalse
-      assertThat(result.timeCredited).isNull()
+      assertThat(result.minutesCredited).isNull()
       assertThat(result.allocationId).isNull()
     }
   }

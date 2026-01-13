@@ -22,7 +22,7 @@ object RequirementRemainingMinutesCalculator {
 
     val allMinutesCredited = existingAppointments.appointments
       .filter { it.hasOutcome }
-      .sumOf { it.timeCredited?.toMinutes() ?: 0 }
+      .sumOf { it.minutesCredited?.toMinutes() ?: 0 }
 
     return Duration.ofMinutes(lengthMinutes - pastMinutesOffered - allMinutesCredited)
   }

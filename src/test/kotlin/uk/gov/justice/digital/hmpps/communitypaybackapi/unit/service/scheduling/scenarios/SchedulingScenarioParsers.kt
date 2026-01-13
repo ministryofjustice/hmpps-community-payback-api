@@ -136,7 +136,7 @@ class SchedulingScenarioParsers {
         ?: error("Couldn't find an allocation with alias '$allocationAlias'")
     }
 
-    val timeCredited = if (status.startsWith("Credited")) {
+    val minutesCredited = if (status.startsWith("Credited")) {
       Duration.parse(status.substring("Credited ".length))
     } else {
       null
@@ -152,7 +152,7 @@ class SchedulingScenarioParsers {
         "Pending" -> false
         else -> true
       },
-      timeCredited = timeCredited,
+      minutesCredited = minutesCredited,
       allocationId = allocation?.id,
     )
   }

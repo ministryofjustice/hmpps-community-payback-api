@@ -98,7 +98,7 @@ data class SchedulingExistingAppointment(
   val startTime: LocalTime,
   val endTime: LocalTime,
   val hasOutcome: Boolean,
-  val timeCredited: Duration?,
+  val minutesCredited: Duration?,
   val allocationId: Long?,
 ) {
   companion object

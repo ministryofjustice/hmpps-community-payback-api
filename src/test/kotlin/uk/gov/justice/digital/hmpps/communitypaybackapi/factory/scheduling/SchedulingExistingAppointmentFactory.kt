@@ -14,6 +14,6 @@ fun SchedulingExistingAppointment.Companion.valid() = SchedulingExistingAppointm
   startTime = randomLocalTime(),
   endTime = randomLocalTime(),
   hasOutcome = Boolean.random(),
-  timeCredited = randomDuration(),
+  minutesCredited = randomDuration(),
   allocationId = Long.random(),
 )

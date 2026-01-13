@@ -160,7 +160,7 @@ object SchedulingRenderer {
       append("Pending")
     } else {
       append("Complete ")
-      append(timeCredited ?: Duration.ZERO)
+      append(minutesCredited ?: Duration.ZERO)
     }
   }
 
