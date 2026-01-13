@@ -232,11 +232,11 @@ object CommunityPaybackAndDeliusMockServer {
     )
   }
 
-  fun getNonWorkingDates(
+  fun getNonWorkingDays(
     nonWorkingDates: List<LocalDate>,
   ) {
     WireMock.stubFor(
-      get("/community-payback-and-delius/nonWorkingDates")
+      get("/community-payback-and-delius/reference-data/non-working-days")
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")

@@ -75,8 +75,8 @@ interface CommunityPaybackAndDeliusClient {
     @PathVariable eventNumber: Int,
   ): NDUnpaidWorkRequirement
 
-  @GetExchange("/nonWorkingDates")
-  fun getNonWorkingDates(): List<LocalDate>
+  @GetExchange("/reference-data/non-working-days")
+  fun getNonWorkingDays(): List<LocalDate>
 }
 
 data class ProviderSummaries(

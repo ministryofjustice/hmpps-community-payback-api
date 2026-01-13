@@ -50,7 +50,7 @@ class SchedulingIT : IntegrationTestBase() {
       val schedulingDate = LocalDate.now().findNextOrSameDateForDayOfWeek(DayOfWeek.WEDNESDAY)
       clock.setNow(schedulingDate.atTime(12, 0))
 
-      CommunityPaybackAndDeliusMockServer.getNonWorkingDates(listOf(schedulingDate.plusDays(7)))
+      CommunityPaybackAndDeliusMockServer.getNonWorkingDays(listOf(schedulingDate.plusDays(7)))
 
       val allocation1 = NDSchedulingAllocation.valid().copy(
         id = 1L,
