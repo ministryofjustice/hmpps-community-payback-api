@@ -2,7 +2,6 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client
 
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCodeDescription
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDNameCode
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingAllocation
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingExistingAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.random
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.randomLocalDate
@@ -23,7 +22,7 @@ fun NDSchedulingExistingAppointment.Companion.valid(): NDSchedulingExistingAppoi
     endTime = endTime,
     outcome = NDCodeDescription(String.random(), String.random()),
     minutesCredited = Duration.ofMinutes(ChronoUnit.MINUTES.between(startTime, endTime)),
-    allocation = NDSchedulingAllocation.valid(),
+    allocationId = Long.random(),
   )
 }
 

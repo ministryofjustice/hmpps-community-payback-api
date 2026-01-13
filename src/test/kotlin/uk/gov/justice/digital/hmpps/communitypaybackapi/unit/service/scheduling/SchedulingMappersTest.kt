@@ -64,7 +64,7 @@ class SchedulingMappersTest {
         endTime = LocalTime.of(4, 5),
         outcome = NDCodeDescription("OUTCOME1", "Description"),
         minutesCredited = Duration.ofMinutes(65),
-        allocation = NDSchedulingAllocation.valid(),
+        allocationId = 12L,
       ).toSchedulingExistingAppointment()
 
       assertThat(result.projectCode).isEqualTo("PROJ1")
@@ -73,7 +73,7 @@ class SchedulingMappersTest {
       assertThat(result.endTime).isEqualTo(LocalTime.of(4, 5))
       assertThat(result.hasOutcome).isTrue
       assertThat(result.timeCredited).isEqualTo(Duration.ofMinutes(65))
-      assertThat(result.allocation).isNotNull
+      assertThat(result.allocationId).isEqualTo(12L)
     }
 
     @Test
@@ -88,7 +88,7 @@ class SchedulingMappersTest {
         endTime = LocalTime.of(4, 5),
         outcome = null,
         minutesCredited = null,
-        allocation = null,
+        allocationId = null,
       ).toSchedulingExistingAppointment()
 
       assertThat(result.projectCode).isEqualTo("PROJ1")
@@ -97,7 +97,7 @@ class SchedulingMappersTest {
       assertThat(result.endTime).isEqualTo(LocalTime.of(4, 5))
       assertThat(result.hasOutcome).isFalse
       assertThat(result.timeCredited).isNull()
-      assertThat(result.allocation).isNull()
+      assertThat(result.allocationId).isNull()
     }
   }
 

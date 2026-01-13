@@ -153,7 +153,7 @@ class SchedulingScenarioParsers {
         else -> true
       },
       timeCredited = timeCredited,
-      allocation = allocation,
+      allocationId = allocation?.id,
     )
   }
 

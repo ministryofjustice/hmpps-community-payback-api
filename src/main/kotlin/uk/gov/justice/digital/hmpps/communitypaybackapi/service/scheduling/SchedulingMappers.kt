@@ -61,7 +61,7 @@ fun NDSchedulingExistingAppointment.toSchedulingExistingAppointment() = Scheduli
   endTime = endTime,
   hasOutcome = outcome != null,
   timeCredited = minutesCredited,
-  allocation = allocation?.toSchedulingAllocation(),
+  allocationId = allocationId,
 )
 
 fun SchedulingRequiredAppointment.toNDCreateAppointment() = NDCreateAppointment(
@@ -72,7 +72,7 @@ fun SchedulingRequiredAppointment.toNDCreateAppointment() = NDCreateAppointment(
   teamCode = Code(this.project.teamCode),
   projectCode = Code(this.project.code),
   projectTypeCode = Code(this.project.projectTypeCode),
-  allocationId = this.allocation?.id,
+  allocationId = this.allocation.id,
 )
 
 private fun NDSchedulingAllocation.determineEndDateInclusive() = this.endDateInclusive ?: listOfNotNull(

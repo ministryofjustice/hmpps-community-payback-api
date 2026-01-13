@@ -150,7 +150,7 @@ object SchedulingRenderer {
   ) = buildString {
     append(dayAsDelta(today, date))
     append(", ")
-    append(allocation?.alias ?: "MANUAL")
+    append(allocationId ?: "No Allocation")
     append(", ")
     append(startTime)
     append("-")

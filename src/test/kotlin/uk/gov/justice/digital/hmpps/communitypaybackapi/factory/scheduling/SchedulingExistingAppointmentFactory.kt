@@ -4,7 +4,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.random
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.randomDuration
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.randomLocalDate
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.randomLocalTime
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingAllocation
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingExistingAppointment
 import java.util.UUID
 
@@ -16,5 +15,5 @@ fun SchedulingExistingAppointment.Companion.valid() = SchedulingExistingAppointm
   endTime = randomLocalTime(),
   hasOutcome = Boolean.random(),
   timeCredited = randomDuration(),
-  allocation = SchedulingAllocation.valid(),
+  allocationId = Long.random(),
 )
