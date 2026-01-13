@@ -51,7 +51,7 @@ class SchedulingService(
       requirement = requirement.requirementProgress.toSchedulingRequirementProgress(),
       allocations = requirement.allocations.toSchedulingAllocations(),
       existingAppointments = requirement.appointments.toSchedulingExistingAppointments(),
-      nonWorkingDates = SchedulingNonWorkingDates(communityPaybackAndDeliusClient.getNonWorkingDates()),
+      nonWorkingDates = SchedulingNonWorkingDates(communityPaybackAndDeliusClient.getNonWorkingDays()),
     )
 
     when (val schedulingOutcome = Scheduler.producePlan(schedulingRequest)) {
