@@ -3,7 +3,7 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.unit.service
 import io.mockk.Runs
 import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
-import io.mockk.impl.annotations.MockK
+import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.just
 import io.mockk.slot
@@ -32,13 +32,13 @@ import java.util.UUID
 @ExtendWith(MockKExtension::class)
 class DomainEventServiceTest {
 
-  @MockK
+  @RelaxedMockK
   lateinit var applicationEventPublisher: ApplicationEventPublisher
 
-  @MockK
+  @RelaxedMockK
   lateinit var domainEventUrlConfig: DomainEventUrlConfig
 
-  @MockK
+  @RelaxedMockK
   lateinit var domainEventPublisher: DomainEventPublisher
 
   @InjectMockKs
@@ -56,9 +56,7 @@ class DomainEventServiceTest {
       val commandEventCaptor = slot<PublishDomainEventCommand>()
       every { applicationEventPublisher.publishEvent(capture(commandEventCaptor)) } just Runs
 
-      every { domainEventUrlConfig.domainEventDetail } returns mapOf(
-        "appointment_updated" to UrlTemplate("http://somepath/#id"),
-      )
+      every { domainEventUrlConfig.appointmentUpdated } returns UrlTemplate("http://somepath/#id")
 
       service.publishOnTransactionCommit(
         id = id,
@@ -84,9 +82,7 @@ class DomainEventServiceTest {
       val commandEventCaptor = slot<PublishDomainEventCommand>()
       every { applicationEventPublisher.publishEvent(capture(commandEventCaptor)) } just Runs
 
-      every { domainEventUrlConfig.domainEventDetail } returns mapOf(
-        "appointment_updated" to UrlTemplate("http://somepath/#id"),
-      )
+      every { domainEventUrlConfig.appointmentUpdated } returns UrlTemplate("http://somepath/#id")
 
       service.publishOnTransactionCommit(
         id = id,
@@ -103,9 +99,7 @@ class DomainEventServiceTest {
       val commandEventCaptor = slot<PublishDomainEventCommand>()
       every { applicationEventPublisher.publishEvent(capture(commandEventCaptor)) } just Runs
 
-      every { domainEventUrlConfig.domainEventDetail } returns mapOf(
-        "appointment_updated" to UrlTemplate("http://somepath/#id"),
-      )
+      every { domainEventUrlConfig.appointmentUpdated } returns UrlTemplate("http://somepath/#id")
 
       service.publishOnTransactionCommit(
         id = id,

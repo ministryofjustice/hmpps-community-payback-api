@@ -14,7 +14,7 @@ generic-service:
     SENTRY_ENVIRONMENT: dev
     SPRING_PROFILES_ACTIVE: dev
 
-    COMMUNITY_PAYBACK_URL_TEMPLATES_DOMAIN_EVENT_DETAIL_APPOINTMENT_UPDATED: https://community-payback-api-dev.hmpps.service.justice.gov.uk/domain-event-details/appointment-updated
+    COMMUNITY_PAYBACK_DOMAIN_EVENTS_URLS_APPOINTMENT_UPDATED: https://community-payback-api-dev.hmpps.service.justice.gov.uk/domain-event-details/appointment-updated
     COMMUNITY_PAYBACK_AUTO_SEED_ENABLED: true
 
     CLIENT_ARNS_URL: https://assess-risks-and-needs-dev.hmpps.service.justice.gov.uk

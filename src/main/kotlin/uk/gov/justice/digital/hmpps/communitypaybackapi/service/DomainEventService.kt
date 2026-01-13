@@ -22,6 +22,16 @@ open class DomainEventService(
   private val domainEventPublisher: DomainEventPublisher,
 ) {
 
+  init {
+    ensureUrlConfigExists()
+  }
+
+  private fun ensureUrlConfigExists() {
+    DomainEventType.entries.forEach {
+      resolveUrl(UUID.randomUUID(), it)
+    }
+  }
+
   fun publishOnTransactionCommit(
     id: UUID,
     type: DomainEventType,
@@ -49,8 +59,9 @@ open class DomainEventService(
   }
 
   private fun resolveUrl(id: UUID, type: DomainEventType): String {
-    val key = type.name.lowercase()
-    val urlTemplate = domainEventUrlConfig.domainEventDetail[key] ?: error("Could not find domain event url with key '$key'")
+    val urlTemplate = when (type) {
+      DomainEventType.APPOINTMENT_UPDATED -> domainEventUrlConfig.appointmentUpdated
+    }
     return urlTemplate.resolve(mapOf("id" to id.toString()))
   }
 
@@ -88,7 +99,7 @@ enum class PersonReferenceType {
 }
 
 @Configuration
-@ConfigurationProperties(prefix = "community-payback.url-templates")
+@ConfigurationProperties(prefix = "community-payback.domain-events.urls")
 class DomainEventUrlConfig {
-  lateinit var domainEventDetail: Map<String, UrlTemplate>
+  lateinit var appointmentUpdated: UrlTemplate
 }
