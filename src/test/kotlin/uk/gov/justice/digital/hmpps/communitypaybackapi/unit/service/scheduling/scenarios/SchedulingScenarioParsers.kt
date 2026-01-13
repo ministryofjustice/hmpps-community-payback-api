@@ -106,7 +106,6 @@ class SchedulingScenarioParsers {
   fun parseExistingAppointmentDescription(
     today: LocalDate,
     allocations: List<SchedulingAllocation>,
-    projects: List<SchedulingProject>,
     description: String,
   ): SchedulingExistingAppointment {
     val matcher = EXISTING_APPOINTMENT_PATTERN.matcher(description)
@@ -145,7 +144,7 @@ class SchedulingScenarioParsers {
 
     return SchedulingExistingAppointment(
       id = UUID.randomUUID(),
-      project = projects.findByCode(projectCode),
+      projectCode = projectCode,
       date = date,
       startTime = LocalTime.parse(startTime),
       endTime = LocalTime.parse(endTime),

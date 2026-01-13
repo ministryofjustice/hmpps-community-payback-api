@@ -7,10 +7,11 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Code
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCodeDescription
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDNameCode
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingAllocation
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingAvailability
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingDayOfWeek
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingExistingAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingFrequency
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingProject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.RequirementProgress
@@ -49,14 +50,14 @@ class SchedulingMappersTest {
   }
 
   @Nested
-  inner class NDSchedulingAppointmentToSchedulingExistingAppointment {
+  inner class NDSchedulingExistingAppointmentToSchedulingExistingAppointment {
 
     @Test
     fun `all fields populated`() {
-      val result = NDSchedulingAppointment(
+      val result = NDSchedulingExistingAppointment(
         id = UUID.randomUUID(),
-        project = NDSchedulingProject.valid().copy(
-          code = Code("PROJ1"),
+        project = NDNameCode.valid().copy(
+          code = "PROJ1",
         ),
         date = LocalDate.of(2025, 2, 3),
         startTime = LocalTime.of(1, 2),
@@ -66,7 +67,7 @@ class SchedulingMappersTest {
         allocation = NDSchedulingAllocation.valid(),
       ).toSchedulingExistingAppointment()
 
-      assertThat(result.project.code).isEqualTo("PROJ1")
+      assertThat(result.projectCode).isEqualTo("PROJ1")
       assertThat(result.date).isEqualTo(LocalDate.of(2025, 2, 3))
       assertThat(result.startTime).isEqualTo(LocalTime.of(1, 2))
       assertThat(result.endTime).isEqualTo(LocalTime.of(4, 5))
@@ -77,10 +78,10 @@ class SchedulingMappersTest {
 
     @Test
     fun `only mandatory fields populated`() {
-      val result = NDSchedulingAppointment(
+      val result = NDSchedulingExistingAppointment(
         id = UUID.randomUUID(),
-        project = NDSchedulingProject.valid().copy(
-          code = Code("PROJ1"),
+        project = NDNameCode.valid().copy(
+          code = "PROJ1",
         ),
         date = LocalDate.of(2025, 2, 3),
         startTime = LocalTime.of(1, 2),
@@ -90,7 +91,7 @@ class SchedulingMappersTest {
         allocation = null,
       ).toSchedulingExistingAppointment()
 
-      assertThat(result.project.code).isEqualTo("PROJ1")
+      assertThat(result.projectCode).isEqualTo("PROJ1")
       assertThat(result.date).isEqualTo(LocalDate.of(2025, 2, 3))
       assertThat(result.startTime).isEqualTo(LocalTime.of(1, 2))
       assertThat(result.endTime).isEqualTo(LocalTime.of(4, 5))

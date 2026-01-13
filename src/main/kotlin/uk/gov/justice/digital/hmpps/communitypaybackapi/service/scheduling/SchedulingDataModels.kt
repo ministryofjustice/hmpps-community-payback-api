@@ -93,7 +93,7 @@ data class SchedulingExistingAppointments(
 
 data class SchedulingExistingAppointment(
   val id: UUID,
-  val project: SchedulingProject,
+  val projectCode: String,
   val date: LocalDate,
   val startTime: LocalTime,
   val endTime: LocalTime,

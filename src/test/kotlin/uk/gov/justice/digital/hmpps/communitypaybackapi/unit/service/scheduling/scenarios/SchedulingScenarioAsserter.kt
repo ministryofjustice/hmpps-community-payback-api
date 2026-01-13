@@ -72,7 +72,6 @@ class SchedulingScenarioAsserter(
       testDataParsers.parseExistingAppointmentDescription(
         today = day,
         allocations = allocations,
-        projects = projects,
         description = it,
       )
     }
