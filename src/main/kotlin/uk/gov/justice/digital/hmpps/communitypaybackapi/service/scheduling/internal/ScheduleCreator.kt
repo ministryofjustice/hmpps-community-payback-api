@@ -47,7 +47,7 @@ object ScheduleCreator {
     while (
       ctx.moreAppointmentsRequired() &&
       ctx.getAllocations().anyPotentialAppointmentsOnOrAfter(
-        scheduledAppointments = ctx.getScheduledAppointments(),
+        alreadyScheduledAppointments = ctx.getScheduledAppointments(),
         onOrAfter = dayBeingConsidered,
       )
     ) {

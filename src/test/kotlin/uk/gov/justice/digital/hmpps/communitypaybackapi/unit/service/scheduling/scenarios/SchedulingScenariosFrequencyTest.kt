@@ -91,6 +91,64 @@ class SchedulingScenariosFrequencyTest : SchedulingScenariosUnitTest() {
         ),
       )
     }
+
+    @Test
+    fun `FREQ-ONCE-05 'Once' allocation already scheduled last week will result in multiple appointments if end date allows`() {
+      assertExistingAppointmentsInsufficient(
+        input = SchedulingScenarioAsserter.SchedulingAsserterInput(
+          dayOfWeek = MONDAY,
+          requirementLength = Duration.ofHours(40),
+          allocations = listOf(
+            "ALLOC1-PROJ1-ONCE-MON-10:00-20:00, Starting Today-7, Ending Today+1",
+          ),
+          existingAppointments = listOf(
+            "Today-7, PROJ1, ALLOC1, 10:00-20:00, Credited PT8H",
+          ),
+        ),
+        expectedShortfall = Duration.ofHours(22),
+        expectedActions = listOf(
+          "Create, Today, PROJ1, ALLOC1, 10:00-20:00",
+        ),
+      )
+    }
+
+    @Test
+    fun `FREQ-ONCE-06 'Once' allocation already scheduled months ago will result in multiple appointments if end date allows`() {
+      assertExistingAppointmentsInsufficient(
+        input = SchedulingScenarioAsserter.SchedulingAsserterInput(
+          dayOfWeek = MONDAY,
+          requirementLength = Duration.ofHours(40),
+          allocations = listOf(
+            "ALLOC1-PROJ1-ONCE-MON-10:00-20:00, Starting Today-365, Ending Today+1",
+          ),
+          existingAppointments = listOf(
+            "Today-365, PROJ1, ALLOC1, 10:00-20:00, Credited PT8H",
+          ),
+        ),
+        expectedShortfall = Duration.ofHours(22),
+        expectedActions = listOf(
+          "Create, Today, PROJ1, ALLOC1, 10:00-20:00",
+        ),
+      )
+    }
+
+    @Test
+    fun `FREQ-ONCE-07 'Once' allocation with suitable end date will not result in multiple appointments`() {
+      assertExistingAppointmentsInsufficient(
+        input = SchedulingScenarioAsserter.SchedulingAsserterInput(
+          dayOfWeek = MONDAY,
+          requirementLength = Duration.ofHours(40),
+          allocations = listOf(
+            "ALLOC1-PROJ1-ONCE-MON-10:00-20:00, Starting Today-7, Ending Today-1",
+          ),
+          existingAppointments = listOf(
+            "Today-7, PROJ1, ALLOC1, 10:00-20:00, Credited PT8H",
+          ),
+        ),
+        expectedShortfall = Duration.ofHours(32),
+        expectedActions = emptyList(),
+      )
+    }
   }
 
   @Nested

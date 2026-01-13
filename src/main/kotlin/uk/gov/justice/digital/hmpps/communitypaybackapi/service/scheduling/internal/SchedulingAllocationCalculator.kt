@@ -7,7 +7,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.Sched
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingAllocations
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingFrequency
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingRequiredAppointment
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.earliestPotentialAppointmentDateOnOrAfter
 import java.time.LocalDate
 
 /**
@@ -15,10 +14,10 @@ import java.time.LocalDate
  */
 fun SchedulingAllocation.nextPotentialAppointmentDateOnOrAfter(
   onOrAfter: LocalDate,
-  scheduledAppointments: List<SchedulingRequiredAppointment>,
+  alreadyScheduledAppointments: List<SchedulingRequiredAppointment>,
 ): LocalDate? {
   val nextDate = when (frequency) {
-    SchedulingFrequency.ONCE -> calculateOnceFrequency(onOrAfter, scheduledAppointments)
+    SchedulingFrequency.ONCE -> calculateOnceFrequency(onOrAfter, alreadyScheduledAppointments)
     SchedulingFrequency.WEEKLY -> calculateWeeklyFrequency(onOrAfter)
     SchedulingFrequency.FORTNIGHTLY -> calculateFortnightlyFrequency(onOrAfter)
   }
@@ -30,27 +29,20 @@ private fun SchedulingAllocation.isWithinAllocationPeriod(date: LocalDate?) = da
 
 fun SchedulingAllocations.anyPotentialAppointmentsOnOrAfter(
   onOrAfter: LocalDate,
-  scheduledAppointments: List<SchedulingRequiredAppointment>,
-) = allocations.any { it.nextPotentialAppointmentDateOnOrAfter(onOrAfter, scheduledAppointments) != null }
+  alreadyScheduledAppointments: List<SchedulingRequiredAppointment>,
+) = allocations.any { it.nextPotentialAppointmentDateOnOrAfter(onOrAfter, alreadyScheduledAppointments) != null }
 
 fun SchedulingAllocations.anyPotentialAppointmentsOn(
   on: LocalDate,
-  scheduledAppointments: List<SchedulingRequiredAppointment>,
-) = allocations.any { it.nextPotentialAppointmentDateOnOrAfter(on, scheduledAppointments) == on }
+  alreadyScheduledAppointments: List<SchedulingRequiredAppointment>,
+) = allocations.any { it.nextPotentialAppointmentDateOnOrAfter(on, alreadyScheduledAppointments) == on }
 
 private fun SchedulingAllocation.calculateOnceFrequency(
   onOrAfter: LocalDate,
-  scheduledAppointments: List<SchedulingRequiredAppointment>,
-) = if (scheduledAppointments.any { it.allocation == this }) {
+  alreadyScheduledAppointments: List<SchedulingRequiredAppointment>,
+) = if (alreadyScheduledAppointments.any { it.allocation == this }) {
   null
 } else {
-    /*
-     This emulates a bug in NDelius which 'resets' the once allocation to apply from whenever
-     the scheduling is ran, regardless of whether the allocation has already been scheduling
-     in the past. It should be possible to instead calculate when the first (and only) 'once'
-     appointment would have been scheduled and use that to decide if one should be scheduled
-     on or after the given date
-     */
   earliestPotentialAppointmentDateOnOrAfter(onOrAfter).findNextOrSameDateForDayOfWeek(dayOfWeek)
 }
 
