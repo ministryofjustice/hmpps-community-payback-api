@@ -15,7 +15,7 @@ generic-service:
     SENTRY_ENVIRONMENT: test
     SPRING_PROFILES_ACTIVE: test
 
-    COMMUNITY_PAYBACK_URL_TEMPLATES_DOMAIN_EVENT_DETAIL_APPOINTMENT_UPDATED: https://community-payback-api-test.hmpps.service.justice.gov.uk/domain-event-details/appointment-updated
+    COMMUNITY_PAYBACK_DOMAIN_EVENTS_URLS_APPOINTMENT_UPDATED: https://community-payback-api-test.hmpps.service.justice.gov.uk/domain-event-details/appointment-updated
     COMMUNITY_PAYBACK_AUTO_SEED_ENABLED: true
 
     CLIENT_COMMUNITY_PAYBACK_AND_DELIUS_URL: https://community-payback-and-delius-dev.hmpps.service.justice.gov.uk

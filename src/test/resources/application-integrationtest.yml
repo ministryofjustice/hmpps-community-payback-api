@@ -22,8 +22,8 @@ community-payback:
   community-campus-integration:
     enabled: true
   request-logging-enabled: true
-  url-templates:
-    domain-event-detail:
+  domain-events:
+    urls:
       appointment_updated: http://localhost:8080/domain-event-details/appointment-outcome/#id
 
 hmpps-auth:
