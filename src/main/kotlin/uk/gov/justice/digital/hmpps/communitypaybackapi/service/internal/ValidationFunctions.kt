@@ -1,6 +1,6 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal
 
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.BadRequestException
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.BadRequestException
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 
