@@ -55,8 +55,12 @@ dependencies {
   testImplementation("com.lemonappdev:konsist:0.17.3")
 }
 
-kotlin {
-  jvmToolchain(21)
+java {
+  toolchain {
+    languageVersion = JavaLanguageVersion.of(25)
+  }
+//  sourceCompatibility = JavaVersion.VERSION_25
+//  targetCompatibility = JavaVersion.VERSION_25
 }
 
 detekt {
@@ -74,7 +78,7 @@ detekt {
 
 tasks {
   withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-    compilerOptions.jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21
+    compilerOptions.jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_25
   }
 
   named<Test>("test") {
