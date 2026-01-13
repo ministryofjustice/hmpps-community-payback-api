@@ -38,8 +38,23 @@ data class SchedulingProject(
 }
 
 enum class SchedulingFrequency {
+  /**
+   * Only 1 appointment of the selected allocation will be added, for the next available date on or after the start date specified.
+   * This allocation is applied every-time scheduling is ran and disregards any past appointments linked to the allocation,
+   * meaning there can be multiple appointments linked to this allocation
+   */
   ONCE,
+
+  /**
+   * 1 appointment per week will be added for as many appointments as are available, starting from the next available date on or
+   * after the start date specified.
+   */
   WEEKLY,
+
+  /**
+   * 1 appointment per fortnight will be added for as many appointments as are available, starting from the next available date on or
+   * after the start date specified.
+   */
   FORTNIGHTLY,
 }
 

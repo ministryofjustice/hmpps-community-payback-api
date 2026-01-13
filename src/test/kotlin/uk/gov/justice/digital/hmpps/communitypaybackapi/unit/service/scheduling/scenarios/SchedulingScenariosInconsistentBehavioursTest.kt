@@ -2,8 +2,6 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.unit.service.scheduling
 
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.scheduling.valid
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingProject
 import java.time.DayOfWeek.MONDAY
 import java.time.Duration
 
@@ -12,77 +10,6 @@ import java.time.Duration
  * from the NDelius implementation
  */
 class SchedulingScenariosInconsistentBehavioursTest : SchedulingScenariosUnitTest() {
-
-  val schedulingAsserter = SchedulingScenarioAsserter(
-    listOf(
-      SchedulingProject.valid().copy(code = "PROJ1"),
-      SchedulingProject.valid().copy(code = "PROJ2"),
-      SchedulingProject.valid().copy(code = "PROJ3"),
-      SchedulingProject.valid().copy(code = "PROJ4"),
-    ),
-  )
-
-  @Nested
-  inner class OnceCanBeAllocatedManyTimes {
-
-    @Test
-    fun `INC-ONCE-01 'Once' allocation already scheduled last week will result in multiple appointments if end date allows`() {
-      assertExistingAppointmentsInsufficient(
-        input = SchedulingScenarioAsserter.SchedulingAsserterInput(
-          dayOfWeek = MONDAY,
-          requirementLength = Duration.ofHours(40),
-          allocations = listOf(
-            "ALLOC1-PROJ1-ONCE-MON-10:00-20:00, Starting Today-7, Ending Today+1",
-          ),
-          existingAppointments = listOf(
-            "Today-7, PROJ1, ALLOC1, 10:00-20:00, Credited PT8H",
-          ),
-        ),
-        expectedShortfall = Duration.ofHours(22),
-        expectedActions = listOf(
-          "Create, Today, PROJ1, ALLOC1, 10:00-20:00",
-        ),
-      )
-    }
-
-    @Test
-    fun `INC-ONCE-02 'Once' allocation already scheduled months ago will result in multiple appointments if end date allows`() {
-      assertExistingAppointmentsInsufficient(
-        input = SchedulingScenarioAsserter.SchedulingAsserterInput(
-          dayOfWeek = MONDAY,
-          requirementLength = Duration.ofHours(40),
-          allocations = listOf(
-            "ALLOC1-PROJ1-ONCE-MON-10:00-20:00, Starting Today-365, Ending Today+1",
-          ),
-          existingAppointments = listOf(
-            "Today-365, PROJ1, ALLOC1, 10:00-20:00, Credited PT8H",
-          ),
-        ),
-        expectedShortfall = Duration.ofHours(22),
-        expectedActions = listOf(
-          "Create, Today, PROJ1, ALLOC1, 10:00-20:00",
-        ),
-      )
-    }
-
-    @Test
-    fun `INC-ONCE-03 'Once' allocation with suitable end date will not result in multiple appointments`() {
-      assertExistingAppointmentsInsufficient(
-        input = SchedulingScenarioAsserter.SchedulingAsserterInput(
-          dayOfWeek = MONDAY,
-          requirementLength = Duration.ofHours(40),
-          allocations = listOf(
-            "ALLOC1-PROJ1-ONCE-MON-10:00-20:00, Starting Today-7, Ending Today-1",
-          ),
-          existingAppointments = listOf(
-            "Today-7, PROJ1, ALLOC1, 10:00-20:00, Credited PT8H",
-          ),
-        ),
-        expectedShortfall = Duration.ofHours(32),
-        expectedActions = emptyList(),
-      )
-    }
-  }
 
   @Nested
   inner class AllocationClashesDoubleBookings {
