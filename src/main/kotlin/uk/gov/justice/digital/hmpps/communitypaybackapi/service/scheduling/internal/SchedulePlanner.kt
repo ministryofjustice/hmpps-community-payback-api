@@ -25,15 +25,19 @@ object SchedulePlanner {
       .mapNotNull { requiredAppointment -> existingAppointments.firstOrNull { it.matches(requiredAppointment) } }
       .map { SchedulingAction.RetainAppointment(it, "Required by Schedule") }
 
+    val toRetainBecauseForced = schedule.forcedRetentions
+      .map { SchedulingAction.RetainAppointment(it, "Forced Retention") }
+
     val toRetainSurplus = existingAppointments
       .asSequence()
       .filter { !it.hasOutcome }
       .filter { it.date.onOrAfter(today) }
       .filter { existingAppointment -> schedule.requiredAppointmentsAsOfToday.none { it.matches(existingAppointment) } }
+      .filter { existingAppointment -> schedule.forcedRetentions.none { it.id == existingAppointment.id } }
       .map { SchedulingAction.RetainAppointment(it, "Surplus (scheduling doesn't currently remove appointments)") }
 
     return SchedulePlan(
-      actions = toCreate + toRetainBecauseRequired + toRetainSurplus,
+      actions = toCreate + toRetainBecauseRequired + toRetainBecauseForced + toRetainSurplus,
       shortfall = schedule.shortfall,
     )
   }

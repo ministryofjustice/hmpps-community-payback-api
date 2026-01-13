@@ -11,6 +11,7 @@ import java.time.DayOfWeek
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
+import java.util.UUID
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 
@@ -143,6 +144,7 @@ class SchedulingScenarioParsers {
     }
 
     return SchedulingExistingAppointment(
+      id = UUID.randomUUID(),
       project = projects.findByCode(projectCode),
       date = date,
       startTime = LocalTime.parse(startTime),
