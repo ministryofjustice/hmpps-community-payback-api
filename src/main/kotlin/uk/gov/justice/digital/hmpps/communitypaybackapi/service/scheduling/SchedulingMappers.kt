@@ -54,6 +54,7 @@ fun List<NDSchedulingAppointment>.toSchedulingExistingAppointments() = Schedulin
 )
 
 fun NDSchedulingAppointment.toSchedulingExistingAppointment() = SchedulingExistingAppointment(
+  id = id,
   project = project.toSchedulingProject(),
   date = date,
   startTime = startTime,

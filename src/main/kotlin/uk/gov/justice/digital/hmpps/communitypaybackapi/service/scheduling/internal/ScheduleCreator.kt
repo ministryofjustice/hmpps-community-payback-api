@@ -6,6 +6,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.common.shortestOf
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.Schedule
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingAllocation
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingAllocations
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingExistingAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingExistingAppointments
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingNonWorkingDates
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingRequest
@@ -87,15 +88,7 @@ object ScheduleCreator {
     val existingAppointmentsToday = ctx.getExistingAppointments().filter { it.date == day }
     if (existingAppointmentsToday.isNotEmpty()) {
       existingAppointmentsToday.filter { !it.hasOutcome }.forEach {
-        ctx.addAppointmentToSchedule(
-          SchedulingRequiredAppointment(
-            date = it.date,
-            startTime = it.startTime,
-            endTime = it.endTime,
-            project = it.project,
-            allocation = it.allocation,
-          ),
-        )
+        ctx.addForcedRetentionAppointment(it)
       }
     } else {
       val allocationsEarliestTimeFirst = ctx.getAllocations().allocations.sortedBy { it.startTime }
@@ -136,6 +129,7 @@ object ScheduleCreator {
     private val allocations: SchedulingAllocations,
     private var remainingMinutesToBeScheduled: Duration,
     private val schedule: MutableList<SchedulingRequiredAppointment> = mutableListOf(),
+    private val forcedRetentions: MutableList<SchedulingExistingAppointment> = mutableListOf(),
   ) {
     fun getExistingAppointments() = existingAppointments.appointments.toList()
 
@@ -151,10 +145,17 @@ object ScheduleCreator {
       remainingMinutesToBeScheduled -= minutesBetween(appointment.startTime, appointment.endTime)
     }
 
+    fun addForcedRetentionAppointment(appointment: SchedulingExistingAppointment) {
+      forcedRetentions.add(appointment)
+
+      remainingMinutesToBeScheduled -= minutesBetween(appointment.startTime, appointment.endTime)
+    }
+
     fun getScheduledAppointments() = schedule.toList()
 
     fun toSchedule() = Schedule(
       requiredAppointmentsAsOfToday = getScheduledAppointments(),
+      forcedRetentions = forcedRetentions,
       shortfall = remainingMinutesToBeScheduled,
     )
   }

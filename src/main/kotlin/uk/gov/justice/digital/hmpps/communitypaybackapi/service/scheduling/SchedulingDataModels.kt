@@ -4,6 +4,7 @@ import java.time.DayOfWeek
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
+import java.util.UUID
 
 data class SchedulingRequest(
   val today: LocalDate,
@@ -76,6 +77,7 @@ data class SchedulingExistingAppointments(
 )
 
 data class SchedulingExistingAppointment(
+  val id: UUID,
   val project: SchedulingProject,
   val date: LocalDate,
   val startTime: LocalTime,
@@ -97,6 +99,15 @@ data class SchedulingRequiredAppointment(
   companion object
 }
 
+data class SchedulingForcedRetentionAppointment(
+  val id: UUID,
+  val date: LocalDate,
+  val startTime: LocalTime,
+  val endTime: LocalTime,
+  val projectCode: String,
+  val allocation: SchedulingAllocation?,
+)
+
 data class SchedulingNonWorkingDates(
   val dates: List<LocalDate>,
 )
@@ -107,6 +118,7 @@ data class SchedulingNonWorkingDates(
  */
 data class Schedule(
   val requiredAppointmentsAsOfToday: List<SchedulingRequiredAppointment>,
+  val forcedRetentions: List<SchedulingExistingAppointment>,
   /**
    * The remaining minutes we were unable to schedule due
    * to insufficient applicable allocations
