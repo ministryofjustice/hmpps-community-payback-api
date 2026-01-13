@@ -11,10 +11,12 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.InternalS
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.NotFoundException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentOutcomeEntityRepository
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDomainEventDetail
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toAppointmentUpdatedDomainEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toUpdateAppointment
 import java.util.UUID
 
+// This is an orchestration service so the number of dependencies is acceptable
+@SuppressWarnings("LongParameterList")
 @Service
 class AppointmentUpdateService(
   private val appointmentRetrievalService: AppointmentRetrievalService,
@@ -23,12 +25,13 @@ class AppointmentUpdateService(
   private val formService: FormService,
   private val appointmentOutcomeValidationService: AppointmentOutcomeValidationService,
   private val appointmentOutcomeEntityFactory: AppointmentOutcomeEntityFactory,
+  private val domainEventService: DomainEventService,
 ) {
   private companion object {
     private val log = LoggerFactory.getLogger(this::class.java)
   }
 
-  fun getOutcomeDomainEventDetails(id: UUID) = appointmentOutcomeEntityRepository.findByIdOrNullForDomainEventDetails(id)?.toDomainEventDetail()
+  fun getAppointmentUpdatedDomainEventDetails(id: UUID) = appointmentOutcomeEntityRepository.findByIdOrNullForDomainEventDetails(id)?.toAppointmentUpdatedDomainEvent()
 
   @Transactional
   fun updateAppointmentOutcome(
@@ -47,6 +50,13 @@ class AppointmentUpdateService(
     }
 
     val persistedEntity = appointmentOutcomeEntityRepository.save(proposedEntity)
+
+    domainEventService.publishOnTransactionCommit(
+      id = persistedEntity.id,
+      type = DomainEventType.APPOINTMENT_UPDATED,
+      additionalInformation = mapOf(AdditionalInformationType.APPOINTMENT_ID to update.deliusId),
+      personReferences = mapOf(PersonReferenceType.CRN to existingAppointment.offender.crn),
+    )
 
     updateDelius(projectCode, persistedEntity)
 

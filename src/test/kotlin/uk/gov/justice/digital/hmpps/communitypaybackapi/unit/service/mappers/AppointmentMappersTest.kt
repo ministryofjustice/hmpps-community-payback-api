@@ -42,7 +42,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.AppointmentMappers
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.fromDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDomainEventDetail
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toAppointmentUpdatedDomainEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toUpdateAppointment
 import java.time.Duration
 import java.time.LocalDate
@@ -165,11 +165,12 @@ class AppointmentMappersTest {
         hiVisWorn = true,
         workedIntensively = false,
         penaltyMinutes = 105,
+        minutesCredited = 55,
         workQuality = WorkQuality.NOT_APPLICABLE,
         behaviour = Behaviour.UNSATISFACTORY,
       )
 
-      val result = appointmentOutcomeEntity.toDomainEventDetail()
+      val result = appointmentOutcomeEntity.toAppointmentUpdatedDomainEvent()
 
       assertThat(result.id).isEqualTo(appointmentOutcomeEntity.id)
       assertThat(result.crn).isEqualTo("CRN123")
@@ -183,6 +184,7 @@ class AppointmentMappersTest {
       assertThat(result.hiVisWorn).isTrue
       assertThat(result.workedIntensively).isFalse
       assertThat(result.penaltyMinutes).isEqualTo(105)
+      assertThat(result.minutesCredited).isEqualTo(55)
       assertThat(result.workQuality).isEqualTo(AppointmentWorkQualityDto.NOT_APPLICABLE)
       assertThat(result.behaviour).isEqualTo(AppointmentBehaviourDto.UNSATISFACTORY)
     }

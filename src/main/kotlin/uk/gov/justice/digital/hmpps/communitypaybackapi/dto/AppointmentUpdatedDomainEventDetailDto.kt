@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalTime
 import java.util.UUID
 
-data class AppointmentOutcomeDomainEventDetailDto(
+data class AppointmentUpdatedDomainEventDetailDto(
   val id: UUID,
   val appointmentDeliusId: Long,
   val crn: String,
@@ -19,6 +19,7 @@ data class AppointmentOutcomeDomainEventDetailDto(
   val hiVisWorn: Boolean? = null,
   val workedIntensively: Boolean? = null,
   val penaltyMinutes: Long? = null,
+  val minutesCredited: Long? = null,
   val workQuality: AppointmentWorkQualityDto? = null,
   val behaviour: AppointmentBehaviourDto? = null,
 )

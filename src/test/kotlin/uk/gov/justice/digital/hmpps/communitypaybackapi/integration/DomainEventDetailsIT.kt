@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.config.SecurityConfiguration
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentOutcomeDomainEventDetailDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentUpdatedDomainEventDetailDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
@@ -25,8 +25,8 @@ class DomainEventDetailsIT : IntegrationTestBase() {
   lateinit var contactOutcomeEntityRepository: ContactOutcomeEntityRepository
 
   @Nested
-  @DisplayName("GET /domain-event-details/appointment-outcome/{eventId}")
-  inner class GetAppointmentOutcomeDetails {
+  @DisplayName("GET /domain-event-details/appointment-updated/{eventId}")
+  inner class GetAppointmentUpdatedDetails {
 
     val id: UUID = UUID.randomUUID()
 
@@ -38,7 +38,7 @@ class DomainEventDetailsIT : IntegrationTestBase() {
     @Test
     fun `should return unauthorized if no token`() {
       webTestClient.get()
-        .uri("/domain-event-details/appointment-outcome/$id")
+        .uri("/domain-event-details/appointment-updated/$id")
         .exchange()
         .expectStatus()
         .isUnauthorized
@@ -47,7 +47,7 @@ class DomainEventDetailsIT : IntegrationTestBase() {
     @Test
     fun `should return forbidden if no role`() {
       webTestClient.get()
-        .uri("/domain-event-details/appointment-outcome/$id")
+        .uri("/domain-event-details/appointment-updated/$id")
         .headers(setAuthorisation())
         .exchange()
         .expectStatus()
@@ -57,7 +57,7 @@ class DomainEventDetailsIT : IntegrationTestBase() {
     @Test
     fun `should return forbidden if wrong role`() {
       webTestClient.get()
-        .uri("/domain-event-details/appointment-outcome/$id")
+        .uri("/domain-event-details/appointment-updated/$id")
         .addAdminUiAuthHeader()
         .exchange()
         .expectStatus()
@@ -67,7 +67,7 @@ class DomainEventDetailsIT : IntegrationTestBase() {
     @Test
     fun `should return 404 if no entry exists for the ID`() {
       webTestClient.get()
-        .uri("/domain-event-details/appointment-outcome/${UUID.randomUUID()}")
+        .uri("/domain-event-details/appointment-updated/${UUID.randomUUID()}")
         .addDomainEventAuthHeader()
         .exchange()
         .expectStatus()
@@ -83,12 +83,12 @@ class DomainEventDetailsIT : IntegrationTestBase() {
       )
 
       val result = webTestClient.get()
-        .uri("/domain-event-details/appointment-outcome/${entity.id}")
+        .uri("/domain-event-details/appointment-updated/${entity.id}")
         .addDomainEventAuthHeader()
         .exchange()
         .expectStatus()
         .isOk
-        .bodyAsObject<AppointmentOutcomeDomainEventDetailDto>()
+        .bodyAsObject<AppointmentUpdatedDomainEventDetailDto>()
 
       assertThat(result.id).isEqualTo(entity.id)
     }

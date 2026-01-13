@@ -21,6 +21,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.FormCacheEntityRe
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.validNoOutcome
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
+import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.DomainEventListener
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.bodyAsObject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.CommunityPaybackAndDeliusMockServer
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
@@ -33,6 +34,9 @@ class AdminAppointmentIT : IntegrationTestBase() {
 
   @Autowired
   lateinit var formCacheEntityRepository: FormCacheEntityRepository
+
+  @Autowired
+  lateinit var domainEventListener: DomainEventListener
 
   @Nested
   @DisplayName("GET /admin/projects/{projectCode}/appointments/{appointmentId}")
@@ -184,7 +188,7 @@ class AdminAppointmentIT : IntegrationTestBase() {
     }
 
     @Test
-    fun `Should send update upstream and delete corresponding form data`() {
+    fun `Should send update upstream, raise domain event and delete corresponding form data`() {
       CommunityPaybackAndDeliusMockServer.getAppointment(
         appointment = Appointment.validNoOutcome().copy(
           id = 1234L,
@@ -228,6 +232,8 @@ class AdminAppointmentIT : IntegrationTestBase() {
         projectCode = "proj123",
         appointmentId = 1234L,
       )
+
+      domainEventListener.assertEventCount("community-payback.appointment.updated", 1)
 
       assertThat(formCacheEntityRepository.count()).isEqualTo(0)
     }

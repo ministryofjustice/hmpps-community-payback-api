@@ -10,8 +10,8 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.PickUpData
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.UpdateAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentBehaviourDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentOutcomeDomainEventDetailDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentSummaryDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentUpdatedDomainEventDetailDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentWorkQualityDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AttendanceDataDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EnforcementDto
@@ -90,7 +90,7 @@ class AppointmentMappers(
   )
 }
 
-fun AppointmentOutcomeEntity.toDomainEventDetail() = AppointmentOutcomeDomainEventDetailDto(
+fun AppointmentOutcomeEntity.toAppointmentUpdatedDomainEvent() = AppointmentUpdatedDomainEventDetailDto(
   id = this.id,
   appointmentDeliusId = this.appointmentDeliusId,
   crn = this.crn,
@@ -103,6 +103,7 @@ fun AppointmentOutcomeEntity.toDomainEventDetail() = AppointmentOutcomeDomainEve
   hiVisWorn = this.hiVisWorn,
   workedIntensively = workedIntensively,
   penaltyMinutes = this.penaltyMinutes,
+  minutesCredited = this.minutesCredited,
   workQuality = this.workQuality?.dtoType,
   behaviour = this.behaviour?.dtoType,
 )
