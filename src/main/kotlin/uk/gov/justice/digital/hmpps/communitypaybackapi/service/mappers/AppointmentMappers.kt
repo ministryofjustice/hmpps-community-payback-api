@@ -38,6 +38,7 @@ class AppointmentMappers(
     return AppointmentDto(
       id = appointment.id,
       version = appointment.version,
+      deliusEventNumber = appointment.event.number,
       projectName = appointment.project.name,
       projectCode = appointment.project.code,
       projectTypeName = appointment.projectType.name,
@@ -92,6 +93,8 @@ class AppointmentMappers(
 fun AppointmentOutcomeEntity.toDomainEventDetail() = AppointmentOutcomeDomainEventDetailDto(
   id = this.id,
   appointmentDeliusId = this.appointmentDeliusId,
+  crn = this.crn,
+  deliusEventNumber = this.deliusEventNumber,
   startTime = this.startTime,
   endTime = this.endTime,
   contactOutcomeCode = this.contactOutcome?.code,

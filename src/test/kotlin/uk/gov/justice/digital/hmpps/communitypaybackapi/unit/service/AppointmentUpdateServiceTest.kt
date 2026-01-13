@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.FormKeyDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.ConflictException
@@ -52,13 +53,13 @@ class AppointmentUpdateServiceTest {
 
   private companion object {
     const val PROJECT_CODE = "PROJ123"
-    const val USERNAME = "mr-user"
     const val APPOINTMENT_ID = 101L
   }
 
   @Nested
   inner class UpdateAppointmentOutcome {
 
+    val existingAppointment = AppointmentDto.valid()
     val updateRequest = UpdateAppointmentOutcomeDto.valid().copy(deliusId = APPOINTMENT_ID)
 
     @Test
@@ -76,8 +77,9 @@ class AppointmentUpdateServiceTest {
 
     @Test
     fun `if appointment not found on update, throw not found exception`() {
+      every { appointmentRetrievalService.getAppointment(PROJECT_CODE, APPOINTMENT_ID) } returns existingAppointment
       every { appointmentOutcomeEntityRepository.findTopByAppointmentDeliusIdOrderByCreatedAtDesc(APPOINTMENT_ID) } returns null
-      every { appointmentOutcomeEntityFactory.toEntity(any()) } returns AppointmentOutcomeEntity.fromUpdateRequest(updateRequest)
+      every { appointmentOutcomeEntityFactory.toEntity(any(), any()) } returns AppointmentOutcomeEntity.fromUpdateRequest(updateRequest)
       every { appointmentOutcomeEntityRepository.save(any()) } returnsArgument 0
 
       every {
@@ -94,10 +96,11 @@ class AppointmentUpdateServiceTest {
 
     @Test
     fun `if there's no existing entries for the delius appointment ids, persist new entry and invoke update endpoint`() {
+      every { appointmentRetrievalService.getAppointment(PROJECT_CODE, APPOINTMENT_ID) } returns existingAppointment
       every { appointmentOutcomeEntityRepository.findTopByAppointmentDeliusIdOrderByCreatedAtDesc(APPOINTMENT_ID) } returns null
 
       val entityReturnedByFactory = AppointmentOutcomeEntity.fromUpdateRequest(updateRequest)
-      every { appointmentOutcomeEntityFactory.toEntity(updateRequest) } returns entityReturnedByFactory
+      every { appointmentOutcomeEntityFactory.toEntity(updateRequest, existingAppointment) } returns entityReturnedByFactory
       every { appointmentOutcomeEntityRepository.save(any()) } returnsArgument 0
 
       service.updateAppointmentOutcome(
@@ -115,8 +118,9 @@ class AppointmentUpdateServiceTest {
     fun `if there's an existing entry for the delius appointment id and it's logically identical, do send an update`() {
       val existingIdenticalEntity = AppointmentOutcomeEntity.fromUpdateRequest(updateRequest)
 
+      every { appointmentRetrievalService.getAppointment(PROJECT_CODE, APPOINTMENT_ID) } returns existingAppointment
       every { appointmentOutcomeEntityRepository.findTopByAppointmentDeliusIdOrderByCreatedAtDesc(APPOINTMENT_ID) } returns existingIdenticalEntity
-      every { appointmentOutcomeEntityFactory.toEntity(updateRequest) } returns existingIdenticalEntity
+      every { appointmentOutcomeEntityFactory.toEntity(updateRequest, existingAppointment) } returns existingIdenticalEntity
 
       service.updateAppointmentOutcome(
         projectCode = PROJECT_CODE,
@@ -133,8 +137,9 @@ class AppointmentUpdateServiceTest {
     fun `if there's an existing entry for the delius appointment id but it's not logically identical, persist new entry send an update`() {
       val existingOutcomeEntity = AppointmentOutcomeEntity.fromUpdateRequest(updateRequest)
 
+      every { appointmentRetrievalService.getAppointment(PROJECT_CODE, APPOINTMENT_ID) } returns existingAppointment
       every { appointmentOutcomeEntityRepository.findTopByAppointmentDeliusIdOrderByCreatedAtDesc(APPOINTMENT_ID) } returns existingOutcomeEntity
-      every { appointmentOutcomeEntityFactory.toEntity(updateRequest) } returns AppointmentOutcomeEntity.fromUpdateRequest(updateRequest).copy(appointmentDeliusId = APPOINTMENT_ID)
+      every { appointmentOutcomeEntityFactory.toEntity(updateRequest, existingAppointment) } returns AppointmentOutcomeEntity.fromUpdateRequest(updateRequest).copy(appointmentDeliusId = APPOINTMENT_ID)
       every { appointmentOutcomeEntityRepository.save(any()) } returnsArgument 0
 
       service.updateAppointmentOutcome(
@@ -148,8 +153,9 @@ class AppointmentUpdateServiceTest {
 
     @Test
     fun `if appointment has newer version on update, throw conflict exception`() {
+      every { appointmentRetrievalService.getAppointment(PROJECT_CODE, APPOINTMENT_ID) } returns existingAppointment
       every { appointmentOutcomeEntityRepository.findTopByAppointmentDeliusIdOrderByCreatedAtDesc(APPOINTMENT_ID) } returns null
-      every { appointmentOutcomeEntityFactory.toEntity(any()) } returns AppointmentOutcomeEntity.fromUpdateRequest(updateRequest)
+      every { appointmentOutcomeEntityFactory.toEntity(any(), any()) } returns AppointmentOutcomeEntity.fromUpdateRequest(updateRequest)
       every { appointmentOutcomeEntityRepository.save(any()) } returnsArgument 0
 
       every {
@@ -167,7 +173,7 @@ class AppointmentUpdateServiceTest {
     @Test
     fun `if bad request returned throw internal server error`() {
       every { appointmentOutcomeEntityRepository.findTopByAppointmentDeliusIdOrderByCreatedAtDesc(APPOINTMENT_ID) } returns null
-      every { appointmentOutcomeEntityFactory.toEntity(any()) } returns AppointmentOutcomeEntity.fromUpdateRequest(updateRequest)
+      every { appointmentOutcomeEntityFactory.toEntity(any(), any()) } returns AppointmentOutcomeEntity.fromUpdateRequest(updateRequest)
       every { appointmentOutcomeEntityRepository.save(any()) } returnsArgument 0
 
       every {

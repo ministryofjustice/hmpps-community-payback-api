@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.service
 
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AttendanceDataDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentOutcomeEntity
@@ -20,6 +21,7 @@ class AppointmentOutcomeEntityFactory(
 
   fun toEntity(
     outcome: UpdateAppointmentOutcomeDto,
+    existingAppointment: AppointmentDto,
   ): AppointmentOutcomeEntity {
     val startTime = outcome.startTime
     val endTime = outcome.endTime
@@ -30,8 +32,10 @@ class AppointmentOutcomeEntityFactory(
 
     return AppointmentOutcomeEntity(
       id = UUID.randomUUID(),
+      crn = existingAppointment.offender.crn,
       appointmentDeliusId = outcome.deliusId,
       deliusVersionToUpdate = outcome.deliusVersionToUpdate,
+      deliusEventNumber = existingAppointment.deliusEventNumber,
       startTime = startTime,
       endTime = endTime,
       contactOutcome = contactOutcome,
