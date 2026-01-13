@@ -13,10 +13,10 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackA
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.FormKeyDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.ConflictException
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.InternalServerErrorException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.NotFoundException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentOutcomeEntityRepository
-import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentOutcomeEntityFactory
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentOutcomeValidationService
@@ -162,6 +162,24 @@ class AppointmentUpdateServiceTest {
           update = updateRequest,
         )
       }.isInstanceOf(ConflictException::class.java).hasMessage("A newer version of the appointment exists. Stale version is '${updateRequest.deliusVersionToUpdate}'")
+    }
+
+    @Test
+    fun `if bad request returned throw internal server error`() {
+      every { appointmentOutcomeEntityRepository.findTopByAppointmentDeliusIdOrderByCreatedAtDesc(APPOINTMENT_ID) } returns null
+      every { appointmentOutcomeEntityFactory.toEntity(any()) } returns AppointmentOutcomeEntity.fromUpdateRequest(updateRequest)
+      every { appointmentOutcomeEntityRepository.save(any()) } returnsArgument 0
+
+      every {
+        communityPaybackAndDeliusClient.updateAppointment(any(), any(), any())
+      } throws WebClientResponseExceptionFactory.badRequest("didn't look good")
+
+      assertThatThrownBy {
+        service.updateAppointmentOutcome(
+          projectCode = PROJECT_CODE,
+          update = updateRequest,
+        )
+      }.isInstanceOf(InternalServerErrorException::class.java).hasMessage("Bad request returned updating an appointment. Upstream response is 'didn't look good'")
     }
 
     @Test

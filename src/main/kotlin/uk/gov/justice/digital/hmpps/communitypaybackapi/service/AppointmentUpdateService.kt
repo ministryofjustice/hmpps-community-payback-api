@@ -7,6 +7,7 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.ConflictException
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.InternalServerErrorException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.NotFoundException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentOutcomeEntityRepository
@@ -59,6 +60,7 @@ class AppointmentUpdateService(
     ?.isLogicallyIdentical(proposedEntity)
     ?: false
 
+  @SuppressWarnings("SwallowedException", "ThrowsCount")
   private fun updateDelius(
     projectCode: String,
     outcomeEntity: AppointmentOutcomeEntity,
@@ -73,6 +75,8 @@ class AppointmentUpdateService(
       throw NotFoundException("Appointment", outcomeEntity.appointmentDeliusId.toString())
     } catch (_: WebClientResponseException.Conflict) {
       throw ConflictException("A newer version of the appointment exists. Stale version is '${outcomeEntity.deliusVersionToUpdate}'")
+    } catch (badRequest: WebClientResponseException.BadRequest) {
+      throw InternalServerErrorException("Bad request returned updating an appointment. Upstream response is '${badRequest.responseBodyAsString}'")
     }
   }
 }
