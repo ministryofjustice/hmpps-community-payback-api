@@ -265,13 +265,20 @@ data class Supervisor(
 data class SupervisorTeam(
   val code: String,
   val description: String,
-  val provider: CodeDescription,
+  val provider: NDCodeDescription,
 )
 
-data class CodeDescription(
+data class NDCodeDescription(
   val code: String,
   val description: String,
 )
+
+data class NDNameCode(
+  val name: String,
+  val code: String,
+) {
+  companion object
+}
 
 data class SupervisorSummaries(
   val supervisors: List<SupervisorSummary>,
@@ -363,12 +370,13 @@ data class NDSchedulingAllocation(
 }
 
 data class NDSchedulingProject(
+  val name: String,
   val code: Code,
-  val projectTypeCode: Code,
-  val providerCode: Code,
-  val teamCode: Code,
   val expectedEndDateExclusive: LocalDate?,
   val actualEndDateExclusive: LocalDate?,
+  val type: NDNameCode,
+  val provider: NDNameCode,
+  val team: NDNameCode,
 ) {
   companion object
 }
@@ -402,8 +410,8 @@ data class NDSchedulingAppointment(
   val date: LocalDate,
   val startTime: LocalTime,
   val endTime: LocalTime,
-  val outcome: Code?,
-  val timeCredited: Duration?,
+  val outcome: NDCodeDescription?,
+  val minutesCredited: Duration?,
   val allocation: NDSchedulingAllocation?,
 ) {
   companion object

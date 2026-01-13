@@ -3,7 +3,7 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.unit.service.mappers
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CodeDescription
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCodeDescription
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Supervisor
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.SupervisorTeam
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProviderSummaryDto
@@ -24,12 +24,12 @@ class SupervisorMappersTest {
           SupervisorTeam(
             code = "ST1",
             description = "Team 1",
-            provider = CodeDescription("provider1", "description1"),
+            provider = NDCodeDescription("provider1", "description1"),
           ),
           SupervisorTeam(
             code = "ST2",
             description = "Team 2",
-            provider = CodeDescription("provider2", "description2"),
+            provider = NDCodeDescription("provider2", "description2"),
           ),
         ),
       ).toDto()

@@ -60,7 +60,7 @@ fun NDSchedulingAppointment.toSchedulingExistingAppointment() = SchedulingExisti
   startTime = startTime,
   endTime = endTime,
   hasOutcome = outcome != null,
-  timeCredited = timeCredited,
+  timeCredited = minutesCredited,
   allocation = allocation?.toSchedulingAllocation(),
 )
 
@@ -97,7 +97,7 @@ private fun determineFrequency(
 
 private fun NDSchedulingProject.toSchedulingProject() = SchedulingProject(
   code = code.code,
-  projectTypeCode = projectTypeCode.code,
-  providerCode = providerCode.code,
-  teamCode = teamCode.code,
+  projectTypeCode = type.code,
+  providerCode = provider.code,
+  teamCode = team.code,
 )

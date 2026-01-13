@@ -1,6 +1,6 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client
 
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Code
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCodeDescription
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingAllocation
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingProject
@@ -21,8 +21,8 @@ fun NDSchedulingAppointment.Companion.valid(): NDSchedulingAppointment {
     date = randomLocalDate(),
     startTime = startTime,
     endTime = endTime,
-    outcome = Code(String.random()),
-    timeCredited = Duration.ofMinutes(ChronoUnit.MINUTES.between(startTime, endTime)),
+    outcome = NDCodeDescription(String.random(), String.random()),
+    minutesCredited = Duration.ofMinutes(ChronoUnit.MINUTES.between(startTime, endTime)),
     allocation = NDSchedulingAllocation.valid(),
   )
 }
@@ -31,5 +31,5 @@ fun NDSchedulingAppointment.Companion.validWithOutcome() = valid()
 
 fun NDSchedulingAppointment.Companion.validWithoutOutcome() = valid().copy(
   outcome = null,
-  timeCredited = null,
+  minutesCredited = null,
 )

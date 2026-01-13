@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Code
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCodeDescription
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingAllocation
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingAvailability
@@ -60,8 +61,8 @@ class SchedulingMappersTest {
         date = LocalDate.of(2025, 2, 3),
         startTime = LocalTime.of(1, 2),
         endTime = LocalTime.of(4, 5),
-        outcome = Code("OUTCOME1"),
-        timeCredited = Duration.ofMinutes(65),
+        outcome = NDCodeDescription("OUTCOME1", "Description"),
+        minutesCredited = Duration.ofMinutes(65),
         allocation = NDSchedulingAllocation.valid(),
       ).toSchedulingExistingAppointment()
 
@@ -85,7 +86,7 @@ class SchedulingMappersTest {
         startTime = LocalTime.of(1, 2),
         endTime = LocalTime.of(4, 5),
         outcome = null,
-        timeCredited = null,
+        minutesCredited = null,
         allocation = null,
       ).toSchedulingExistingAppointment()
 
