@@ -14,7 +14,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ArnsClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.OverallRiskLevel
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.RiskRoshSummary
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.NotFoundException
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.NotFoundException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.OffenderService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.unit.util.WebClientResponseExceptionFactory
 

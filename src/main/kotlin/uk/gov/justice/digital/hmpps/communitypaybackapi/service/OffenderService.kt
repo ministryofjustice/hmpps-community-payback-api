@@ -5,7 +5,7 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ArnsClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CaseSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.NotFoundException
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.NotFoundException
 
 @Service
 class OffenderService(
