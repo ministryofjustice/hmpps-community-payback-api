@@ -1,86 +1,182 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.unit.service.scheduling.scenarios
 
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
-import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.scheduling.valid
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingProject
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingFrequency.WEEKLY
 import java.time.DayOfWeek.MONDAY
+import java.time.DayOfWeek.WEDNESDAY
 import java.time.Duration
 
-class SchedulingScenariosMiscTest : SchedulingScenariosUnitTest() {
-
-  val schedulingAsserter = SchedulingScenarioAsserter(
-    listOf(
-      SchedulingProject.valid().copy(code = "PROJ1"),
-      SchedulingProject.valid().copy(code = "PROJ2"),
-    ),
-  )
+class SchedulingScenariosMiscTest {
 
   @Test
   fun `MISC-01 Insufficient Allocations to meet requirements`() {
-    assertExistingAppointmentsInsufficient(
-      input = SchedulingScenarioAsserter.SchedulingAsserterInput(
-        dayOfWeek = MONDAY,
-        requirementLength = Duration.ofHours(160),
-        allocations = listOf(
-          "ALLOC1-PROJ1-WK-MON-10:00-18:00, Ending Today+29",
-          "ALLOC2-PROJ2-WK-WED-11:00-15:00, Ending Today+17",
-        ),
-        existingAppointments = emptyList(),
-      ),
-      expectedShortfall = Duration.ofHours(108),
-      expectedActions = listOf(
-        "Create, Today, PROJ1, ALLOC1, 10:00-18:00",
-        "Create, Today+2, PROJ2, ALLOC2, 11:00-15:00",
-        "Create, Today+7, PROJ1, ALLOC1, 10:00-18:00",
-        "Create, Today+9, PROJ2, ALLOC2, 11:00-15:00",
-        "Create, Today+14, PROJ1, ALLOC1, 10:00-18:00",
-        "Create, Today+16, PROJ2, ALLOC2, 11:00-15:00",
-        "Create, Today+21, PROJ1, ALLOC1, 10:00-18:00",
-        "Create, Today+28, PROJ1, ALLOC1, 10:00-18:00",
-      ),
-    )
-  }
+    schedulingScenario {
+      scenarioId("MISC-01")
+      given {
+        requirementIsHours(160)
+        todayIs(MONDAY)
+        projectExistsWithCode("PROJ1")
+        projectExistsWithCode("PROJ2")
 
-  @Disabled
-  fun `MISC-02 Ignore Allocations if start time == end time`() {
-    // This scenario is implicitly tested by the [SchedulingMappersTest] which
-    // ensures allocations where startTime == endTime are discarded when
-    // mapping them to the internal model
+        allocation {
+          alias("ALLOC1")
+          projectCode("PROJ1")
+          frequency(WEEKLY)
+          onWeekDay(MONDAY)
+          from("10:00")
+          until("18:00")
+          endingInDays(29)
+        }
+
+        allocation {
+          alias("ALLOC2")
+          projectCode("PROJ2")
+          frequency(WEEKLY)
+          onWeekDay(WEDNESDAY)
+          from("11:00")
+          until("15:00")
+          endingInDays(17)
+        }
+      }
+
+      then {
+        shouldCreateAppointments(toAddressShortfall = Duration.ofHours(108)) {
+          appointment {
+            projectCode("PROJ1")
+            allocation("ALLOC1")
+            todayWithOffsetDays()
+            from("10:00")
+            until("18:00")
+          }
+          appointment {
+            projectCode("PROJ2")
+            allocation("ALLOC2")
+            todayWithOffsetDays(2)
+            from("11:00")
+            until("15:00")
+          }
+          appointment {
+            projectCode("PROJ1")
+            allocation("ALLOC1")
+            todayWithOffsetDays(7)
+            from("10:00")
+            until("18:00")
+          }
+          appointment {
+            projectCode("PROJ2")
+            allocation("ALLOC2")
+            todayWithOffsetDays(9)
+            from("11:00")
+            until("15:00")
+          }
+          appointment {
+            projectCode("PROJ1")
+            allocation("ALLOC1")
+            todayWithOffsetDays(14)
+            from("10:00")
+            until("18:00")
+          }
+          appointment {
+            projectCode("PROJ2")
+            allocation("ALLOC2")
+            todayWithOffsetDays(16)
+            from("11:00")
+            until("15:00")
+          }
+          appointment {
+            projectCode("PROJ1")
+            allocation("ALLOC1")
+            todayWithOffsetDays(21)
+            from("10:00")
+            until("18:00")
+          }
+          appointment {
+            projectCode("PROJ1")
+            allocation("ALLOC1")
+            todayWithOffsetDays(28)
+            from("10:00")
+            until("18:00")
+          }
+        }
+      }
+    }
   }
 
   @Test
   fun `MISC-03 Maximum Requirement Length`() {
-    assertExistingAppointmentsInsufficient(
-      input = SchedulingScenarioAsserter.SchedulingAsserterInput(
-        dayOfWeek = MONDAY,
-        requirementLength = Duration.ofHours(300),
-        allocations = listOf(
-          "ALLOC1-PROJ1-WK-MON-10:00-14:00",
-        ),
-        existingAppointments = emptyList(),
-      ),
-      expectedActions = 0.rangeTo(74).map {
-        "Create, Today+${it * 7}, PROJ1, ALLOC1, 10:00-14:00"
-      },
-    )
+    schedulingScenario {
+      scenarioId("MISC-03")
+      given {
+        requirementIsHours(300)
+        todayIs(MONDAY)
+        projectExistsWithCode("PROJ1")
+
+        allocation {
+          alias("ALLOC1")
+          projectCode("PROJ1")
+          frequency(WEEKLY)
+          onWeekDay(MONDAY)
+          from("10:00")
+          until("14:00")
+        }
+      }
+
+      then {
+        shouldCreateAppointments {
+          (0..74).forEach { week ->
+            appointment {
+              projectCode("PROJ1")
+              allocation("ALLOC1")
+              todayWithOffsetDays(week * 7)
+              from("10:00")
+              until("14:00")
+            }
+          }
+        }
+      }
+    }
   }
 
   @Test
   fun `MISC-04 If multiple allocations on same day, schedule earliest start time first`() {
-    assertExistingAppointmentsInsufficient(
-      input = SchedulingScenarioAsserter.SchedulingAsserterInput(
-        dayOfWeek = MONDAY,
-        requirementLength = Duration.ofHours(8),
-        allocations = listOf(
-          "ALLOC1-PROJ1-WK-WED-10:00-18:00",
-          "ALLOC2-PROJ2-WK-WED-08:00-16:00",
-        ),
-        existingAppointments = emptyList(),
-      ),
-      expectedActions = listOf(
-        "Create, Today+2, PROJ2, ALLOC2, 08:00-16:00",
-      ),
-    )
+    schedulingScenario {
+      scenarioId("MISC-04")
+      given {
+        requirementIsHours(8)
+        todayIs(MONDAY)
+        projectExistsWithCode("PROJ1")
+        projectExistsWithCode("PROJ2")
+
+        allocation {
+          alias("ALLOC1")
+          projectCode("PROJ1")
+          frequency(WEEKLY)
+          onWeekDay(WEDNESDAY)
+          from("10:00")
+          until("18:00")
+        }
+
+        allocation {
+          alias("ALLOC2")
+          projectCode("PROJ2")
+          frequency(WEEKLY)
+          onWeekDay(WEDNESDAY)
+          from("08:00")
+          until("16:00")
+        }
+      }
+
+      then {
+        shouldCreateAppointments {
+          appointment {
+            projectCode("PROJ2")
+            allocation("ALLOC2")
+            todayWithOffsetDays(2)
+            from("08:00")
+            until("16:00")
+          }
+        }
+      }
+    }
   }
 }

@@ -5,6 +5,10 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingFrequency.FORTNIGHTLY
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingFrequency.ONCE
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingFrequency.WEEKLY
+import java.time.DayOfWeek
 import java.time.DayOfWeek.FRIDAY
 import java.time.DayOfWeek.MONDAY
 import java.time.DayOfWeek.SATURDAY
@@ -15,7 +19,7 @@ import java.time.Duration
 /**
  * These Scenarios test the Allocation Frequencies are correctly applied
  */
-class SchedulingScenariosFrequencyTest : SchedulingScenariosUnitTest() {
+class SchedulingScenariosFrequencyTest {
 
   /**
    * Once has some surprising/inconsistent behaviour. These are modelled by the ‘inconsistent behaviour’ scenarios
@@ -25,129 +29,261 @@ class SchedulingScenariosFrequencyTest : SchedulingScenariosUnitTest() {
 
     @Test
     fun `FREQ-ONCE-01 Schedule 'Once' Allocation for today`() {
-      assertExistingAppointmentsInsufficient(
-        input = SchedulingScenarioAsserter.SchedulingAsserterInput(
-          dayOfWeek = MONDAY,
-          requirementLength = Duration.ofHours(8),
-          allocations = listOf(
-            "ALLOC1-PROJ1-ONCE-MON-12:00-20:00, Starting Today",
-          ),
-          existingAppointments = emptyList(),
-        ),
-        expectedActions = listOf(
-          "Create, Today, PROJ1, ALLOC1, 12:00-20:00",
-        ),
-      )
+      schedulingScenario {
+        scenarioId("FREQ-ONCE-01")
+        given {
+          requirementIsHours(8)
+          todayIs(MONDAY)
+          projectExistsWithCode("PROJ1")
+
+          allocation {
+            alias("ALLOC1")
+            projectCode("PROJ1")
+            frequency(ONCE)
+            onWeekDay(MONDAY)
+            from("12:00")
+            until("20:00")
+            startingToday()
+          }
+        }
+
+        then {
+          shouldCreateAppointments {
+            appointment {
+              projectCode("PROJ1")
+              allocation("ALLOC1")
+              todayWithOffsetDays()
+              from("12:00")
+              until("20:00")
+            }
+          }
+        }
+      }
     }
 
     @Test
     fun `FREQ-ONCE-02 Schedule 'Once' Allocation tomorrow`() {
-      assertExistingAppointmentsInsufficient(
-        input = SchedulingScenarioAsserter.SchedulingAsserterInput(
-          dayOfWeek = MONDAY,
-          requirementLength = Duration.ofHours(8),
-          allocations = listOf(
-            "ALLOC1-PROJ1-ONCE-TUE-12:00-20:00, Starting Today",
-          ),
-          existingAppointments = emptyList(),
-        ),
-        expectedActions = listOf(
-          "Create, Today+1, PROJ1, ALLOC1, 12:00-20:00",
-        ),
-      )
+      schedulingScenario {
+        scenarioId("FREQ-ONCE-02")
+        given {
+          requirementIsHours(8)
+          todayIs(MONDAY)
+          projectExistsWithCode("PROJ1")
+
+          allocation {
+            alias("ALLOC1")
+            projectCode("PROJ1")
+            frequency(ONCE)
+            onWeekDay(TUESDAY)
+            from("12:00")
+            until("20:00")
+            startingToday()
+          }
+        }
+
+        then {
+          shouldCreateAppointments {
+            appointment {
+              projectCode("PROJ1")
+              allocation("ALLOC1")
+              todayWithOffsetDays(1)
+              from("12:00")
+              until("20:00")
+            }
+          }
+        }
+      }
     }
 
     @Test
     fun `FREQ-ONCE-03 Schedule 'Once' Allocation in far future`() {
-      assertExistingAppointmentsInsufficient(
-        input = SchedulingScenarioAsserter.SchedulingAsserterInput(
-          dayOfWeek = MONDAY,
-          requirementLength = Duration.ofHours(8),
-          allocations = listOf(
-            "ALLOC1-PROJ1-ONCE-MON-12:00-20:00, Starting Today+700",
-          ),
-          existingAppointments = emptyList(),
-        ),
-        expectedActions = listOf(
-          "Create, Today+700, PROJ1, ALLOC1, 12:00-20:00",
-        ),
-      )
+      schedulingScenario {
+        scenarioId("FREQ-ONCE-03")
+        given {
+          requirementIsHours(8)
+          todayIs(MONDAY)
+          projectExistsWithCode("PROJ1")
+
+          allocation {
+            alias("ALLOC1")
+            projectCode("PROJ1")
+            frequency(ONCE)
+            onWeekDay(MONDAY)
+            from("12:00")
+            until("20:00")
+            startingInDays(700)
+          }
+        }
+
+        then {
+          shouldCreateAppointments {
+            appointment {
+              projectCode("PROJ1")
+              allocation("ALLOC1")
+              todayWithOffsetDays(700)
+              from("12:00")
+              until("20:00")
+            }
+          }
+        }
+      }
     }
 
     @Test
     fun `FREQ-ONCE-04 Schedule 'Once' Allocation once`() {
-      assertExistingAppointmentsInsufficient(
-        input = SchedulingScenarioAsserter.SchedulingAsserterInput(
-          dayOfWeek = THURSDAY,
-          requirementLength = Duration.ofHours(16),
-          allocations = listOf(
-            "ALLOC1-PROJ1-ONCE-FRI-12:00-20:00, Starting Today+1",
-          ),
-          existingAppointments = emptyList(),
-        ),
-        expectedShortfall = Duration.ofHours(8),
-        expectedActions = listOf(
-          "Create, Today+1, PROJ1, ALLOC1, 12:00-20:00",
-        ),
-      )
+      schedulingScenario {
+        scenarioId("FREQ-ONCE-04")
+        given {
+          requirementIsHours(16)
+          todayIs(THURSDAY)
+          projectExistsWithCode("PROJ1")
+
+          allocation {
+            alias("ALLOC1")
+            projectCode("PROJ1")
+            frequency(ONCE)
+            onWeekDay(FRIDAY)
+            from("12:00")
+            until("20:00")
+            startingInDays(1)
+          }
+        }
+
+        then {
+          shouldCreateAppointments(toAddressShortfall = Duration.ofHours(8)) {
+            appointment {
+              projectCode("PROJ1")
+              allocation("ALLOC1")
+              todayWithOffsetDays(1)
+              from("12:00")
+              until("20:00")
+            }
+          }
+        }
+      }
     }
 
     @Test
     fun `FREQ-ONCE-05 'Once' allocation already scheduled last week will result in multiple appointments if end date allows`() {
-      assertExistingAppointmentsInsufficient(
-        input = SchedulingScenarioAsserter.SchedulingAsserterInput(
-          dayOfWeek = MONDAY,
-          requirementLength = Duration.ofHours(40),
-          allocations = listOf(
-            "ALLOC1-PROJ1-ONCE-MON-10:00-20:00, Starting Today-7, Ending Today+1",
-          ),
-          existingAppointments = listOf(
-            "Today-7, PROJ1, ALLOC1, 10:00-20:00, Credited PT8H",
-          ),
-        ),
-        expectedShortfall = Duration.ofHours(22),
-        expectedActions = listOf(
-          "Create, Today, PROJ1, ALLOC1, 10:00-20:00",
-        ),
-      )
+      schedulingScenario {
+        scenarioId("FREQ-ONCE-05")
+        given {
+          requirementIsHours(40)
+          todayIs(MONDAY)
+          projectExistsWithCode("PROJ1")
+
+          allocation {
+            alias("ALLOC1")
+            projectCode("PROJ1")
+            frequency(ONCE)
+            onWeekDay(MONDAY)
+            from("10:00")
+            until("20:00")
+            startingInDays(-7)
+            endingInDays(1)
+          }
+
+          appointment {
+            projectCode("PROJ1")
+            allocation("ALLOC1")
+            today(-7)
+            from("10:00")
+            until("20:00")
+            credited(Duration.ofHours(8))
+          }
+        }
+
+        then {
+          shouldCreateAppointments(toAddressShortfall = Duration.ofHours(22)) {
+            appointment {
+              projectCode("PROJ1")
+              allocation("ALLOC1")
+              todayWithOffsetDays()
+              from("10:00")
+              until("20:00")
+            }
+          }
+        }
+      }
     }
 
     @Test
     fun `FREQ-ONCE-06 'Once' allocation already scheduled months ago will result in multiple appointments if end date allows`() {
-      assertExistingAppointmentsInsufficient(
-        input = SchedulingScenarioAsserter.SchedulingAsserterInput(
-          dayOfWeek = MONDAY,
-          requirementLength = Duration.ofHours(40),
-          allocations = listOf(
-            "ALLOC1-PROJ1-ONCE-MON-10:00-20:00, Starting Today-365, Ending Today+1",
-          ),
-          existingAppointments = listOf(
-            "Today-365, PROJ1, ALLOC1, 10:00-20:00, Credited PT8H",
-          ),
-        ),
-        expectedShortfall = Duration.ofHours(22),
-        expectedActions = listOf(
-          "Create, Today, PROJ1, ALLOC1, 10:00-20:00",
-        ),
-      )
+      schedulingScenario {
+        scenarioId("FREQ-ONCE-06")
+        given {
+          requirementIsHours(40)
+          todayIs(MONDAY)
+          projectExistsWithCode("PROJ1")
+
+          allocation {
+            alias("ALLOC1")
+            projectCode("PROJ1")
+            frequency(ONCE)
+            onWeekDay(MONDAY)
+            from("10:00")
+            until("20:00")
+            startingInDays(-365)
+            endingInDays(1)
+          }
+
+          appointment {
+            projectCode("PROJ1")
+            allocation("ALLOC1")
+            today(-365)
+            from("10:00")
+            until("20:00")
+            credited(Duration.parse("PT8H"))
+          }
+        }
+
+        then {
+          shouldCreateAppointments(toAddressShortfall = Duration.ofHours(22)) {
+            appointment {
+              projectCode("PROJ1")
+              allocation("ALLOC1")
+              todayWithOffsetDays()
+              from("10:00")
+              until("20:00")
+            }
+          }
+        }
+      }
     }
 
     @Test
     fun `FREQ-ONCE-07 'Once' allocation with suitable end date will not result in multiple appointments`() {
-      assertExistingAppointmentsInsufficient(
-        input = SchedulingScenarioAsserter.SchedulingAsserterInput(
-          dayOfWeek = MONDAY,
-          requirementLength = Duration.ofHours(40),
-          allocations = listOf(
-            "ALLOC1-PROJ1-ONCE-MON-10:00-20:00, Starting Today-7, Ending Today-1",
-          ),
-          existingAppointments = listOf(
-            "Today-7, PROJ1, ALLOC1, 10:00-20:00, Credited PT8H",
-          ),
-        ),
-        expectedShortfall = Duration.ofHours(32),
-        expectedActions = emptyList(),
-      )
+      schedulingScenario {
+        given {
+          requirementIsHours(40)
+          todayIs(MONDAY)
+          projectExistsWithCode("PROJ1")
+
+          allocation {
+            alias("ALLOC1")
+            projectCode("PROJ1")
+            frequency(ONCE)
+            onWeekDay(MONDAY)
+            from("10:00")
+            until("20:00")
+            startingInDays(-7)
+            endingInDays(-1)
+          }
+
+          appointment {
+            projectCode("PROJ1")
+            allocation("ALLOC1")
+            today(-7)
+            from("10:00")
+            until("20:00")
+            credited(Duration.parse("PT8H"))
+          }
+        }
+
+        then {
+          noActionsExpected(toAddressShortfall = Duration.ofHours(32))
+        }
+      }
     }
   }
 
@@ -155,91 +291,150 @@ class SchedulingScenariosFrequencyTest : SchedulingScenariosUnitTest() {
   inner class Weekly {
 
     @CsvSource(
-      value = [
-        "'ALLOC1-PROJ1-WK-MON-10:00-14:00','Create, Today, PROJ1, ALLOC1, 10:00-14:00'",
-        "'ALLOC1-PROJ1-WK-TUE-10:00-14:00','Create, Today+1, PROJ1, ALLOC1, 10:00-14:00'",
-        "'ALLOC1-PROJ1-WK-WED-10:00-14:00','Create, Today+2, PROJ1, ALLOC1, 10:00-14:00'",
-        "'ALLOC1-PROJ1-WK-THU-10:00-14:00','Create, Today+3, PROJ1, ALLOC1, 10:00-14:00'",
-        "'ALLOC1-PROJ1-WK-FRI-10:00-14:00','Create, Today+4, PROJ1, ALLOC1, 10:00-14:00'",
-        "'ALLOC1-PROJ1-WK-SAT-10:00-14:00','Create, Today+5, PROJ1, ALLOC1, 10:00-14:00'",
-        "'ALLOC1-PROJ1-WK-SUN-10:00-14:00','Create, Today+6, PROJ1, ALLOC1, 10:00-14:00'",
-      ],
+      "MONDAY,0",
+      "TUESDAY,1",
+      "WEDNESDAY,2",
+      "THURSDAY,3",
+      "FRIDAY,4",
+      "SATURDAY,5",
+      "SUNDAY,6",
     )
     @ParameterizedTest
-    fun `FREQ-WK-01 Schedule Weekly Allocation on the Correct Day`(
-      allocation: String,
-      expectedAppointment: String,
-    ) {
-      assertExistingAppointmentsInsufficient(
-        input = SchedulingScenarioAsserter.SchedulingAsserterInput(
-          dayOfWeek = MONDAY,
-          requirementLength = Duration.ofHours(4),
-          allocations = listOf(allocation),
-          existingAppointments = emptyList(),
-        ),
-        expectedActions = listOf(expectedAppointment),
-      )
+    fun `FREQ-WK-01 Schedule Weekly Allocation on the Correct Day`(day: DayOfWeek, offset: Int) {
+      schedulingScenario {
+        scenarioId("FREQ-WK-01")
+        given {
+          requirementIsHours(4)
+          todayIs(MONDAY)
+          projectExistsWithCode("PROJ1")
+
+          allocation {
+            alias("ALLOC1")
+            projectCode("PROJ1")
+            frequency(WEEKLY)
+            onWeekDay(day)
+            from("10:00")
+            until("14:00")
+          }
+        }
+
+        then {
+          shouldCreateAppointments {
+            appointment {
+              projectCode("PROJ1")
+              allocation("ALLOC1")
+              todayWithOffsetDays(offset)
+              from("10:00")
+              until("14:00")
+            }
+          }
+        }
+      }
     }
 
     @Test
     fun `FREQ-WK-02 Schedule Weekly Allocation until requirement met, Allocation starting yesterday`() {
-      assertExistingAppointmentsInsufficient(
-        input = SchedulingScenarioAsserter.SchedulingAsserterInput(
-          dayOfWeek = TUESDAY,
-          requirementLength = Duration.ofHours(27),
-          allocations = listOf("ALLOC1-PROJ1-WK-MON-12:00-16:30"),
-          existingAppointments = emptyList(),
-        ),
-        expectedActions = listOf(
-          "Create, Today+6, PROJ1, ALLOC1, 12:00-16:30",
-          "Create, Today+13, PROJ1, ALLOC1, 12:00-16:30",
-          "Create, Today+20, PROJ1, ALLOC1, 12:00-16:30",
-          "Create, Today+27, PROJ1, ALLOC1, 12:00-16:30",
-          "Create, Today+34, PROJ1, ALLOC1, 12:00-16:30",
-          "Create, Today+41, PROJ1, ALLOC1, 12:00-16:30",
-        ),
-      )
+      schedulingScenario {
+        scenarioId("FREQ-WK-02")
+        given {
+          requirementIsHours(27)
+          todayIs(TUESDAY)
+          projectExistsWithCode("PROJ1")
+
+          allocation {
+            alias("ALLOC1")
+            projectCode("PROJ1")
+            frequency(WEEKLY)
+            onWeekDay(MONDAY)
+            from("12:00")
+            until("16:30")
+          }
+        }
+
+        then {
+          shouldCreateAppointments {
+            listOf(6, 13, 20, 27, 34, 41).forEach { offset ->
+              appointment {
+                projectCode("PROJ1")
+                allocation("ALLOC1")
+                todayWithOffsetDays(offset)
+                from("12:00")
+                until("16:30")
+              }
+            }
+          }
+        }
+      }
     }
 
     @Test
     fun `FREQ-WK-03 Schedule Weekly Allocation until requirement met, Allocation starting today`() {
-      assertExistingAppointmentsInsufficient(
-        input = SchedulingScenarioAsserter.SchedulingAsserterInput(
-          dayOfWeek = TUESDAY,
-          requirementLength = Duration.ofHours(50),
-          allocations = listOf("ALLOC1-PROJ1-WK-TUE-12:00-22:00"),
-          existingAppointments = emptyList(),
-        ),
-        expectedActions = listOf(
-          "Create, Today, PROJ1, ALLOC1, 12:00-22:00",
-          "Create, Today+7, PROJ1, ALLOC1, 12:00-22:00",
-          "Create, Today+14, PROJ1, ALLOC1, 12:00-22:00",
-          "Create, Today+21, PROJ1, ALLOC1, 12:00-22:00",
-          "Create, Today+28, PROJ1, ALLOC1, 12:00-22:00",
-        ),
-      )
+      schedulingScenario {
+        scenarioId("FREQ-WK-03")
+        given {
+          requirementIsHours(50)
+          todayIs(TUESDAY)
+          projectExistsWithCode("PROJ1")
+
+          allocation {
+            alias("ALLOC1")
+            projectCode("PROJ1")
+            frequency(WEEKLY)
+            onWeekDay(TUESDAY)
+            from("12:00")
+            until("22:00")
+          }
+        }
+
+        then {
+          shouldCreateAppointments {
+            listOf(0, 7, 14, 21, 28).forEach { offset ->
+              appointment {
+                projectCode("PROJ1")
+                allocation("ALLOC1")
+                todayWithOffsetDays(offset)
+                from("12:00")
+                until("22:00")
+              }
+            }
+          }
+        }
+      }
     }
 
     @Test
     fun `FREQ-WK-04 Schedule Weekly Allocation until requirement met, Allocation starting tomorrow`() {
-      assertExistingAppointmentsInsufficient(
-        input = SchedulingScenarioAsserter.SchedulingAsserterInput(
-          dayOfWeek = MONDAY,
-          requirementLength = Duration.ofHours(80),
-          allocations = listOf("ALLOC1-PROJ1-WK-TUE-00:00-10:00"),
-          existingAppointments = emptyList(),
-        ),
-        expectedActions = listOf(
-          "Create, Today+1, PROJ1, ALLOC1, 00:00-10:00",
-          "Create, Today+8, PROJ1, ALLOC1, 00:00-10:00",
-          "Create, Today+15, PROJ1, ALLOC1, 00:00-10:00",
-          "Create, Today+22, PROJ1, ALLOC1, 00:00-10:00",
-          "Create, Today+29, PROJ1, ALLOC1, 00:00-10:00",
-          "Create, Today+36, PROJ1, ALLOC1, 00:00-10:00",
-          "Create, Today+43, PROJ1, ALLOC1, 00:00-10:00",
-          "Create, Today+50, PROJ1, ALLOC1, 00:00-10:00",
-        ),
-      )
+      schedulingScenario {
+        scenarioId("FREQ-WK-04")
+        given {
+          requirementIsHours(80)
+          todayIs(MONDAY)
+          projectExistsWithCode("PROJ1")
+
+          allocation {
+            alias("ALLOC1")
+            projectCode("PROJ1")
+            frequency(WEEKLY)
+            onWeekDay(TUESDAY)
+            from("00:00")
+            until("10:00")
+          }
+        }
+
+        then {
+          shouldCreateAppointments {
+            listOf(1, 8, 15, 22, 29, 36, 43, 50).forEach { offset ->
+              appointment {
+                projectCode("PROJ1")
+                allocation("ALLOC1")
+                todayWithOffsetDays(offset)
+                from("00:00")
+                until("10:00")
+              }
+            }
+          }
+        }
+      }
     }
   }
 
@@ -247,154 +442,305 @@ class SchedulingScenariosFrequencyTest : SchedulingScenariosUnitTest() {
   inner class Fortnightly {
 
     @CsvSource(
-      value = [
-        "'ALLOC1-PROJ1-FN-MON-10:00-14:00, Starting Today','Create, Today, PROJ1, ALLOC1, 10:00-14:00','Create, Today+14, PROJ1, ALLOC1, 10:00-14:00'",
-        "'ALLOC1-PROJ1-FN-TUE-10:00-14:00, Starting Today','Create, Today+1, PROJ1, ALLOC1, 10:00-14:00','Create, Today+15, PROJ1, ALLOC1, 10:00-14:00'",
-        "'ALLOC1-PROJ1-FN-WED-10:00-14:00, Starting Today','Create, Today+2, PROJ1, ALLOC1, 10:00-14:00','Create, Today+16, PROJ1, ALLOC1, 10:00-14:00'",
-        "'ALLOC1-PROJ1-FN-THU-10:00-14:00, Starting Today','Create, Today+3, PROJ1, ALLOC1, 10:00-14:00','Create, Today+17, PROJ1, ALLOC1, 10:00-14:00'",
-        "'ALLOC1-PROJ1-FN-FRI-10:00-14:00, Starting Today','Create, Today+4, PROJ1, ALLOC1, 10:00-14:00','Create, Today+18, PROJ1, ALLOC1, 10:00-14:00'",
-        "'ALLOC1-PROJ1-FN-SAT-10:00-14:00, Starting Today','Create, Today+5, PROJ1, ALLOC1, 10:00-14:00','Create, Today+19, PROJ1, ALLOC1, 10:00-14:00'",
-        "'ALLOC1-PROJ1-FN-SUN-10:00-14:00, Starting Today','Create, Today+6, PROJ1, ALLOC1, 10:00-14:00','Create, Today+20, PROJ1, ALLOC1, 10:00-14:00'",
-      ],
+      "MONDAY,0,14",
+      "TUESDAY,1,15",
+      "WEDNESDAY,2,16",
+      "THURSDAY,3,17",
+      "FRIDAY,4,18",
+      "SATURDAY,5,19",
+      "SUNDAY,6,20",
     )
     @ParameterizedTest
-    fun `FREQ-FN-01 Schedule Weekly Allocation on the Correct Day`(
-      allocation: String,
-      expectedAppointment1: String,
-      expectedAppointment2: String,
-    ) {
-      assertExistingAppointmentsInsufficient(
-        input = SchedulingScenarioAsserter.SchedulingAsserterInput(
-          dayOfWeek = MONDAY,
-          requirementLength = Duration.ofHours(8),
-          allocations = listOf(allocation),
-          existingAppointments = emptyList(),
-        ),
-        expectedActions = listOf(expectedAppointment1, expectedAppointment2),
-      )
+    fun `FREQ-FN-01 Schedule Fortnightly Allocation on the Correct Day`(day: DayOfWeek, offset1: Int, offset2: Int) {
+      schedulingScenario {
+        scenarioId("FREQ-FN-01")
+        given {
+          requirementIsHours(8)
+          todayIs(MONDAY)
+          projectExistsWithCode("PROJ1")
+
+          allocation {
+            alias("ALLOC1")
+            projectCode("PROJ1")
+            frequency(FORTNIGHTLY)
+            onWeekDay(day)
+            from("10:00")
+            until("14:00")
+            startingToday()
+          }
+        }
+
+        then {
+          shouldCreateAppointments {
+            appointment {
+              projectCode("PROJ1")
+              allocation("ALLOC1")
+              todayWithOffsetDays(offset1)
+              from("10:00")
+              until("14:00")
+            }
+            appointment {
+              projectCode("PROJ1")
+              allocation("ALLOC1")
+              todayWithOffsetDays(offset2)
+              from("10:00")
+              until("14:00")
+            }
+          }
+        }
+      }
     }
 
     @Test
     fun `FREQ-FN-02 Schedule Fortnightly Allocation until requirement met, iterating from Allocation start date`() {
-      assertExistingAppointmentsInsufficient(
-        input = SchedulingScenarioAsserter.SchedulingAsserterInput(
-          dayOfWeek = MONDAY,
-          requirementLength = Duration.ofHours(8),
-          allocations = listOf("ALLOC1-PROJ1-FN-SUN-02:00-04:00, Starting Today-705"),
-          existingAppointments = emptyList(),
-        ),
-        expectedActions = listOf(
-          "Create, Today+13, PROJ1, ALLOC1, 02:00-04:00",
-          "Create, Today+27, PROJ1, ALLOC1, 02:00-04:00",
-          "Create, Today+41, PROJ1, ALLOC1, 02:00-04:00",
-          "Create, Today+55, PROJ1, ALLOC1, 02:00-04:00",
-        ),
-      )
+      schedulingScenario {
+        scenarioId("FREQ-FN-02")
+        given {
+          requirementIsHours(8)
+          todayIs(MONDAY)
+          projectExistsWithCode("PROJ1")
+
+          allocation {
+            alias("ALLOC1")
+            projectCode("PROJ1")
+            frequency(FORTNIGHTLY)
+            onWeekDay(DayOfWeek.SUNDAY)
+            from("02:00")
+            until("04:00")
+            startingInDays(-705)
+          }
+        }
+
+        then {
+          shouldCreateAppointments {
+            listOf(13, 27, 41, 55).forEach { offset ->
+              appointment {
+                projectCode("PROJ1")
+                allocation("ALLOC1")
+                todayWithOffsetDays(offset)
+                from("02:00")
+                until("04:00")
+              }
+            }
+          }
+        }
+      }
     }
 
     @Test
     fun `FREQ-FN-03 Schedule Fortnightly Allocation until requirement met, starting 14 days ago`() {
-      assertExistingAppointmentsInsufficient(
-        input = SchedulingScenarioAsserter.SchedulingAsserterInput(
-          dayOfWeek = FRIDAY,
-          requirementLength = Duration.ofHours(8),
-          allocations = listOf("ALLOC1-PROJ1-FN-FRI-20:30-22:30, Starting Today-14"),
-          existingAppointments = emptyList(),
-        ),
-        expectedActions = listOf(
-          "Create, Today, PROJ1, ALLOC1, 20:30-22:30",
-          "Create, Today+14, PROJ1, ALLOC1, 20:30-22:30",
-          "Create, Today+28, PROJ1, ALLOC1, 20:30-22:30",
-          "Create, Today+42, PROJ1, ALLOC1, 20:30-22:30",
-        ),
-      )
+      schedulingScenario {
+        scenarioId("FREQ-FN-03")
+        given {
+          requirementIsHours(8)
+          todayIs(FRIDAY)
+          projectExistsWithCode("PROJ1")
+
+          allocation {
+            alias("ALLOC1")
+            projectCode("PROJ1")
+            frequency(FORTNIGHTLY)
+            onWeekDay(FRIDAY)
+            from("20:30")
+            until("22:30")
+            startingInDays(-14)
+          }
+        }
+
+        then {
+          shouldCreateAppointments {
+            listOf(0, 14, 28, 42).forEach { offset ->
+              appointment {
+                projectCode("PROJ1")
+                allocation("ALLOC1")
+                todayWithOffsetDays(offset)
+                from("20:30")
+                until("22:30")
+              }
+            }
+          }
+        }
+      }
     }
 
     @Test
     fun `FREQ-FN-04 Schedule Fortnightly Allocation until requirement met, starting 8 days ago`() {
-      assertExistingAppointmentsInsufficient(
-        input = SchedulingScenarioAsserter.SchedulingAsserterInput(
-          dayOfWeek = SATURDAY,
-          requirementLength = Duration.ofHours(8),
-          allocations = listOf("ALLOC1-PROJ1-FN-FRI-00:00-02:00, Starting Today-8"),
-          existingAppointments = emptyList(),
-        ),
-        expectedActions = listOf(
-          "Create, Today+6, PROJ1, ALLOC1, 00:00-02:00",
-          "Create, Today+20, PROJ1, ALLOC1, 00:00-02:00",
-          "Create, Today+34, PROJ1, ALLOC1, 00:00-02:00",
-          "Create, Today+48, PROJ1, ALLOC1, 00:00-02:00",
-        ),
-      )
+      schedulingScenario {
+        scenarioId("FREQ-FN-04")
+        given {
+          requirementIsHours(8)
+          todayIs(SATURDAY)
+          projectExistsWithCode("PROJ1")
+
+          allocation {
+            alias("ALLOC1")
+            projectCode("PROJ1")
+            frequency(FORTNIGHTLY)
+            onWeekDay(FRIDAY)
+            from("00:00")
+            until("02:00")
+            startingInDays(-8)
+          }
+        }
+
+        then {
+          shouldCreateAppointments {
+            listOf(6, 20, 34, 48).forEach { offset ->
+              appointment {
+                projectCode("PROJ1")
+                allocation("ALLOC1")
+                todayWithOffsetDays(offset)
+                from("00:00")
+                until("02:00")
+              }
+            }
+          }
+        }
+      }
     }
 
     @Test
     fun `FREQ-FN-05 Schedule Fortnightly Allocation until requirement met, starting yesterday`() {
-      assertExistingAppointmentsInsufficient(
-        input = SchedulingScenarioAsserter.SchedulingAsserterInput(
-          dayOfWeek = FRIDAY,
-          requirementLength = Duration.ofHours(8),
-          allocations = listOf("ALLOC1-PROJ1-FN-THU-11:00-13:00, Starting Today-1"),
-          existingAppointments = emptyList(),
-        ),
-        expectedActions = listOf(
-          "Create, Today+13, PROJ1, ALLOC1, 11:00-13:00",
-          "Create, Today+27, PROJ1, ALLOC1, 11:00-13:00",
-          "Create, Today+41, PROJ1, ALLOC1, 11:00-13:00",
-          "Create, Today+55, PROJ1, ALLOC1, 11:00-13:00",
-        ),
-      )
+      schedulingScenario {
+        scenarioId("FREQ-FN-05")
+        given {
+          requirementIsHours(8)
+          todayIs(FRIDAY)
+          projectExistsWithCode("PROJ1")
+
+          allocation {
+            alias("ALLOC1")
+            projectCode("PROJ1")
+            frequency(FORTNIGHTLY)
+            onWeekDay(THURSDAY)
+            from("11:00")
+            until("13:00")
+            startingInDays(-1)
+          }
+        }
+
+        then {
+          shouldCreateAppointments {
+            listOf(13, 27, 41, 55).forEach { offset ->
+              appointment {
+                projectCode("PROJ1")
+                allocation("ALLOC1")
+                todayWithOffsetDays(offset)
+                from("11:00")
+                until("13:00")
+              }
+            }
+          }
+        }
+      }
     }
 
     @Test
     fun `FREQ-FN-06 Schedule Fortnightly Allocation until requirement met, starting today`() {
-      assertExistingAppointmentsInsufficient(
-        input = SchedulingScenarioAsserter.SchedulingAsserterInput(
-          dayOfWeek = FRIDAY,
-          requirementLength = Duration.ofHours(8),
-          allocations = listOf("ALLOC1-PROJ1-FN-FRI-12:00-14:00, Starting Today"),
-          existingAppointments = emptyList(),
-        ),
-        expectedActions = listOf(
-          "Create, Today, PROJ1, ALLOC1, 12:00-14:00",
-          "Create, Today+14, PROJ1, ALLOC1, 12:00-14:00",
-          "Create, Today+28, PROJ1, ALLOC1, 12:00-14:00",
-          "Create, Today+42, PROJ1, ALLOC1, 12:00-14:00",
-        ),
-      )
+      schedulingScenario {
+        scenarioId("FREQ-FN-06")
+        given {
+          requirementIsHours(8)
+          todayIs(FRIDAY)
+          projectExistsWithCode("PROJ1")
+
+          allocation {
+            alias("ALLOC1")
+            projectCode("PROJ1")
+            frequency(FORTNIGHTLY)
+            onWeekDay(FRIDAY)
+            from("12:00")
+            until("14:00")
+            startingToday()
+          }
+        }
+
+        then {
+          shouldCreateAppointments {
+            listOf(0, 14, 28, 42).forEach { offset ->
+              appointment {
+                projectCode("PROJ1")
+                allocation("ALLOC1")
+                todayWithOffsetDays(offset)
+                from("12:00")
+                until("14:00")
+              }
+            }
+          }
+        }
+      }
     }
 
     @Test
     fun `FREQ-FN-07 Schedule Fortnightly Allocation until requirement met, starting tomorrow`() {
-      assertExistingAppointmentsInsufficient(
-        input = SchedulingScenarioAsserter.SchedulingAsserterInput(
-          dayOfWeek = SATURDAY,
-          requirementLength = Duration.ofHours(8),
-          allocations = listOf("ALLOC1-PROJ1-FN-SUN-13:00-15:00, Starting Today+1"),
-          existingAppointments = emptyList(),
-        ),
-        expectedActions = listOf(
-          "Create, Today+1, PROJ1, ALLOC1, 13:00-15:00",
-          "Create, Today+15, PROJ1, ALLOC1, 13:00-15:00",
-          "Create, Today+29, PROJ1, ALLOC1, 13:00-15:00",
-          "Create, Today+43, PROJ1, ALLOC1, 13:00-15:00",
-        ),
-      )
+      schedulingScenario {
+        scenarioId("FREQ-FN-07")
+        given {
+          requirementIsHours(8)
+          todayIs(SATURDAY)
+          projectExistsWithCode("PROJ1")
+
+          allocation {
+            alias("ALLOC1")
+            projectCode("PROJ1")
+            frequency(FORTNIGHTLY)
+            onWeekDay(DayOfWeek.SUNDAY)
+            from("13:00")
+            until("15:00")
+            startingInDays(1)
+          }
+        }
+
+        then {
+          shouldCreateAppointments {
+            listOf(1, 15, 29, 43).forEach { offset ->
+              appointment {
+                projectCode("PROJ1")
+                allocation("ALLOC1")
+                todayWithOffsetDays(offset)
+                from("13:00")
+                until("15:00")
+              }
+            }
+          }
+        }
+      }
     }
 
     @Test
     fun `FREQ-FN-08 Schedule Fortnightly Allocation until requirement met, over a year`() {
-      assertExistingAppointmentsInsufficient(
-        input = SchedulingScenarioAsserter.SchedulingAsserterInput(
-          dayOfWeek = FRIDAY,
-          requirementLength = Duration.ofHours(52),
-          allocations = listOf("ALLOC1-PROJ1-FN-FRI-14:00-15:00, Starting Today"),
-          existingAppointments = emptyList(),
-        ),
-        expectedActions = listOf(
-          "Create, Today, PROJ1, ALLOC1, 14:00-15:00",
-        ) + 1.rangeTo(51).map { "Create, Today+${it * 14}, PROJ1, ALLOC1, 14:00-15:00" },
-      )
+      schedulingScenario {
+        scenarioId("FREQ-FN-08")
+        given {
+          requirementIsHours(52)
+          todayIs(FRIDAY)
+          projectExistsWithCode("PROJ1")
+
+          allocation {
+            alias("ALLOC1")
+            projectCode("PROJ1")
+            frequency(FORTNIGHTLY)
+            onWeekDay(FRIDAY)
+            from("14:00")
+            until("15:00")
+            startingToday()
+          }
+        }
+
+        then {
+          shouldCreateAppointments {
+            (0..51).forEach { weeks ->
+              appointment {
+                projectCode("PROJ1")
+                allocation("ALLOC1")
+                todayWithOffsetDays(weeks * 14)
+                from("14:00")
+                until("15:00")
+              }
+            }
+          }
+        }
+      }
     }
   }
 
@@ -403,34 +749,161 @@ class SchedulingScenariosFrequencyTest : SchedulingScenariosUnitTest() {
 
     @Test
     fun `FREQ-MIXED-01 Multiple Allocations of different Frequencies`() {
-      assertExistingAppointmentsInsufficient(
-        input = SchedulingScenarioAsserter.SchedulingAsserterInput(
-          dayOfWeek = FRIDAY,
-          requirementLength = Duration.ofHours(37),
-          allocations = listOf(
-            "ALLOC1-PROJ1-WK-FRI-10:00-12:00, Starting Today",
-            "ALLOC2-PROJ2-FN-SAT-10:00-13:00, Starting Today",
-            "ALLOC3-PROJ3-WK-SUN-10:00-14:00, Starting Today",
-            "ALLOC4-PROJ4-ONCE-MON-10:00-15:00, Starting Today+3",
-            "ALLOC5-PROJ5-ONCE-THU-10:00-16:00, Starting Today+13",
-            "ALLOC6-PROJ6-ONCE-WED-10:00-17:00, Starting Today+22",
-          ),
-          existingAppointments = emptyList(),
-        ),
-        expectedActions = listOf(
-          "Create, Today, PROJ1, ALLOC1, 10:00-12:00",
-          "Create, Today+1, PROJ2, ALLOC2, 10:00-13:00",
-          "Create, Today+2, PROJ3, ALLOC3, 10:00-14:00",
-          "Create, Today+3, PROJ4, ALLOC4, 10:00-15:00",
-          "Create, Today+7, PROJ1, ALLOC1, 10:00-12:00",
-          "Create, Today+9, PROJ3, ALLOC3, 10:00-14:00",
-          "Create, Today+13, PROJ5, ALLOC5, 10:00-16:00",
-          "Create, Today+14, PROJ1, ALLOC1, 10:00-12:00",
-          "Create, Today+15, PROJ2, ALLOC2, 10:00-13:00",
-          "Create, Today+16, PROJ3, ALLOC3, 10:00-14:00",
-          "Create, Today+21, PROJ1, ALLOC1, 10:00-12:00",
-        ),
-      )
+      schedulingScenario {
+        scenarioId("FREQ-MIXED-01")
+        given {
+          requirementIsHours(37)
+          todayIs(FRIDAY)
+          projectExistsWithCode("PROJ1")
+          projectExistsWithCode("PROJ2")
+          projectExistsWithCode("PROJ3")
+          projectExistsWithCode("PROJ4")
+          projectExistsWithCode("PROJ5")
+          projectExistsWithCode("PROJ6")
+
+          allocation {
+            alias("ALLOC1")
+            projectCode("PROJ1")
+            frequency(WEEKLY)
+            onWeekDay(FRIDAY)
+            from("10:00")
+            until("12:00")
+            startingToday()
+          }
+
+          allocation {
+            alias("ALLOC2")
+            projectCode("PROJ2")
+            frequency(FORTNIGHTLY)
+            onWeekDay(SATURDAY)
+            from("10:00")
+            until("13:00")
+            startingToday()
+          }
+
+          allocation {
+            alias("ALLOC3")
+            projectCode("PROJ3")
+            frequency(WEEKLY)
+            onWeekDay(DayOfWeek.SUNDAY)
+            from("10:00")
+            until("14:00")
+            startingToday()
+          }
+
+          allocation {
+            alias("ALLOC4")
+            projectCode("PROJ4")
+            frequency(ONCE)
+            onWeekDay(MONDAY)
+            from("10:00")
+            until("15:00")
+            startingInDays(3)
+          }
+
+          allocation {
+            alias("ALLOC5")
+            projectCode("PROJ5")
+            frequency(FORTNIGHTLY)
+            onWeekDay(THURSDAY)
+            from("10:00")
+            until("16:00")
+            startingInDays(13)
+          }
+
+          allocation {
+            alias("ALLOC6")
+            projectCode("PROJ6")
+            frequency(ONCE)
+            onWeekDay(DayOfWeek.WEDNESDAY)
+            from("10:00")
+            until("17:00")
+            startingInDays(22)
+          }
+        }
+
+        then {
+          shouldCreateAppointments {
+            appointment {
+              projectCode("PROJ1")
+              allocation("ALLOC1")
+              todayWithOffsetDays()
+              from("10:00")
+              until("12:00")
+            }
+            appointment {
+              projectCode("PROJ2")
+              allocation("ALLOC2")
+              todayWithOffsetDays(1)
+              from("10:00")
+              until("13:00")
+            }
+            appointment {
+              projectCode("PROJ3")
+              allocation("ALLOC3")
+              todayWithOffsetDays(2)
+              from("10:00")
+              until("14:00")
+            }
+            appointment {
+              projectCode("PROJ4")
+              allocation("ALLOC4")
+              todayWithOffsetDays(3)
+              from("10:00")
+              until("15:00")
+            }
+            appointment {
+              projectCode("PROJ1")
+              allocation("ALLOC1")
+              todayWithOffsetDays(7)
+              from("10:00")
+              until("12:00")
+            }
+            appointment {
+              projectCode("PROJ3")
+              allocation("ALLOC3")
+              todayWithOffsetDays(9)
+              from("10:00")
+              until("14:00")
+            }
+            appointment {
+              projectCode("PROJ5")
+              allocation("ALLOC5")
+              todayWithOffsetDays(13)
+              from("10:00")
+              until("16:00")
+            }
+            appointment {
+              projectCode("PROJ1")
+              allocation("ALLOC1")
+              todayWithOffsetDays(14)
+              from("10:00")
+              until("12:00")
+            }
+            appointment {
+              projectCode("PROJ2")
+              allocation("ALLOC2")
+              todayWithOffsetDays(15)
+              from("10:00")
+              until("13:00")
+            }
+            appointment {
+              projectCode("PROJ3")
+              allocation("ALLOC3")
+              todayWithOffsetDays(16)
+              from("10:00")
+              until("14:00")
+            }
+            appointment {
+              projectCode("PROJ1")
+              allocation("ALLOC1")
+              todayWithOffsetDays(21)
+              from("10:00")
+              until("12:00")
+            }
+          }
+        }
+      }
     }
 
     @Disabled

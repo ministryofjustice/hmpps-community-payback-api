@@ -2,6 +2,9 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.unit.service.scheduling
 
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingFrequency.FORTNIGHTLY
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingFrequency.ONCE
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingFrequency.WEEKLY
 import java.time.DayOfWeek.MONDAY
 import java.time.Duration
 
@@ -9,84 +12,293 @@ import java.time.Duration
  * These scenarios highlight inconsistent behaviour that we've emulated
  * from the NDelius implementation
  */
-class SchedulingScenariosInconsistentBehavioursTest : SchedulingScenariosUnitTest() {
+class SchedulingScenariosInconsistentBehavioursTest {
 
   @Nested
   inner class AllocationClashesDoubleBookings {
 
     @Test
     fun `INC-CLASH-01 Double Bookings are made if double booked allocations exist and there are no existing appointments on that date`() {
-      assertExistingAppointmentsInsufficient(
-        input = SchedulingScenarioAsserter.SchedulingAsserterInput(
-          dayOfWeek = MONDAY,
-          requirementLength = Duration.ofHours(44),
-          allocations = listOf(
-            "ALLOC1-PROJ1-ONCE-MON-10:00-14:00, Starting Today+7, Ending Today+7",
-            "ALLOC2-PROJ2-WK-MON-12:00-20:00",
-            "ALLOC3-PROJ3-WK-MON-10:00-18:00",
-            "ALLOC4-PROJ4-FN-MON-06:00-14:00, Starting Today-7",
-          ),
-          existingAppointments = emptyList(),
-        ),
-        expectedActions = listOf(
-          "Create, Today, PROJ2, ALLOC2, 12:00-20:00",
-          "Create, Today, PROJ3, ALLOC3, 10:00-18:00",
-          "Create, Today+7, PROJ1, ALLOC1, 10:00-14:00",
-          "Create, Today+7, PROJ2, ALLOC2, 12:00-20:00",
-          "Create, Today+7, PROJ3, ALLOC3, 10:00-18:00",
-          "Create, Today+7, PROJ4, ALLOC4, 06:00-14:00",
-        ),
-      )
+      schedulingScenario {
+        scenarioId("INC-CLASH-01")
+        given {
+          requirementIsHours(44)
+          todayIs(MONDAY)
+          projectExistsWithCode("PROJ1")
+          projectExistsWithCode("PROJ2")
+          projectExistsWithCode("PROJ3")
+          projectExistsWithCode("PROJ4")
+
+          allocation {
+            alias("ALLOC1")
+            projectCode("PROJ1")
+            frequency(ONCE)
+            onWeekDay(MONDAY)
+            from("10:00")
+            until("14:00")
+            startingInDays(7)
+            endingInDays(7)
+          }
+
+          allocation {
+            alias("ALLOC2")
+            projectCode("PROJ2")
+            frequency(WEEKLY)
+            onWeekDay(MONDAY)
+            from("12:00")
+            until("20:00")
+          }
+
+          allocation {
+            alias("ALLOC3")
+            projectCode("PROJ3")
+            frequency(WEEKLY)
+            onWeekDay(MONDAY)
+            from("10:00")
+            until("18:00")
+          }
+
+          allocation {
+            alias("ALLOC4")
+            projectCode("PROJ4")
+            frequency(FORTNIGHTLY)
+            onWeekDay(MONDAY)
+            from("06:00")
+            until("14:00")
+            startingInDays(-7)
+          }
+        }
+
+        then {
+          shouldCreateAppointments {
+            appointment {
+              projectCode("PROJ2")
+              allocation("ALLOC2")
+              todayWithOffsetDays()
+              from("12:00")
+              until("20:00")
+            }
+            appointment {
+              projectCode("PROJ3")
+              allocation("ALLOC3")
+              todayWithOffsetDays()
+              from("10:00")
+              until("18:00")
+            }
+            appointment {
+              projectCode("PROJ1")
+              allocation("ALLOC1")
+              todayWithOffsetDays(7)
+              from("10:00")
+              until("14:00")
+            }
+            appointment {
+              projectCode("PROJ2")
+              allocation("ALLOC2")
+              todayWithOffsetDays(7)
+              from("12:00")
+              until("20:00")
+            }
+            appointment {
+              projectCode("PROJ3")
+              allocation("ALLOC3")
+              todayWithOffsetDays(7)
+              from("10:00")
+              until("18:00")
+            }
+            appointment {
+              projectCode("PROJ4")
+              allocation("ALLOC4")
+              todayWithOffsetDays(7)
+              from("06:00")
+              until("14:00")
+            }
+          }
+        }
+      }
     }
 
     @Test
     fun `INC-CLASH-02 Double Bookings are not made if double booked allocations exist and there is at least one appointment on the date already, has outcome`() {
-      assertExistingAppointmentsInsufficient(
-        input = SchedulingScenarioAsserter.SchedulingAsserterInput(
-          dayOfWeek = MONDAY,
-          requirementLength = Duration.ofHours(58),
-          allocations = listOf(
-            "ALLOC1-PROJ1-ONCE-MON-10:00-14:00, Starting Today+7, Ending Today+7",
-            "ALLOC2-PROJ2-WK-MON-12:00-20:00",
-            "ALLOC3-PROJ3-WK-MON-10:00-18:00",
-          ),
-          existingAppointments = listOf(
-            "Today, PROJ4, MANUAL, 12:00-20:00, Credited PT6H",
-          ),
-        ),
-        expectedActions = listOf(
-          "Create, Today+7, PROJ1, ALLOC1, 10:00-14:00",
-          "Create, Today+7, PROJ2, ALLOC2, 12:00-20:00",
-          "Create, Today+7, PROJ3, ALLOC3, 10:00-18:00",
-          "Create, Today+14, PROJ2, ALLOC2, 12:00-20:00",
-          "Create, Today+14, PROJ3, ALLOC3, 10:00-18:00",
-          "Create, Today+21, PROJ2, ALLOC2, 12:00-20:00",
-          "Create, Today+21, PROJ3, ALLOC3, 10:00-18:00",
-        ),
-      )
+      schedulingScenario {
+        scenarioId("INC-CLASH-02")
+        given {
+          requirementIsHours(58)
+          todayIs(MONDAY)
+          projectExistsWithCode("PROJ1")
+          projectExistsWithCode("PROJ2")
+          projectExistsWithCode("PROJ3")
+          projectExistsWithCode("PROJ4")
+
+          allocation {
+            alias("ALLOC1")
+            projectCode("PROJ1")
+            frequency(ONCE)
+            onWeekDay(MONDAY)
+            from("10:00")
+            until("14:00")
+            startingInDays(7)
+            endingInDays(7)
+          }
+
+          allocation {
+            alias("ALLOC2")
+            projectCode("PROJ2")
+            frequency(WEEKLY)
+            onWeekDay(MONDAY)
+            from("12:00")
+            until("20:00")
+          }
+
+          allocation {
+            alias("ALLOC3")
+            projectCode("PROJ3")
+            frequency(WEEKLY)
+            onWeekDay(MONDAY)
+            from("10:00")
+            until("18:00")
+          }
+
+          appointment {
+            projectCode("PROJ4")
+            manual()
+            today()
+            from("12:00")
+            until("20:00")
+            credited(Duration.parse("PT6H"))
+          }
+        }
+
+        then {
+          shouldCreateAppointments {
+            appointment {
+              projectCode("PROJ1")
+              allocation("ALLOC1")
+              todayWithOffsetDays(7)
+              from("10:00")
+              until("14:00")
+            }
+            appointment {
+              projectCode("PROJ2")
+              allocation("ALLOC2")
+              todayWithOffsetDays(7)
+              from("12:00")
+              until("20:00")
+            }
+            appointment {
+              projectCode("PROJ3")
+              allocation("ALLOC3")
+              todayWithOffsetDays(7)
+              from("10:00")
+              until("18:00")
+            }
+            appointment {
+              projectCode("PROJ2")
+              allocation("ALLOC2")
+              todayWithOffsetDays(14)
+              from("12:00")
+              until("20:00")
+            }
+            appointment {
+              projectCode("PROJ3")
+              allocation("ALLOC3")
+              todayWithOffsetDays(14)
+              from("10:00")
+              until("18:00")
+            }
+            appointment {
+              projectCode("PROJ2")
+              allocation("ALLOC2")
+              todayWithOffsetDays(21)
+              from("12:00")
+              until("20:00")
+            }
+            appointment {
+              projectCode("PROJ3")
+              allocation("ALLOC3")
+              todayWithOffsetDays(21)
+              from("10:00")
+              until("18:00")
+            }
+          }
+        }
+      }
     }
 
     @Test
     fun `INC-CLASH-03 Double Bookings are not made if double booked allocations exist and there is at least one appointment on the date already, pending`() {
-      assertExistingAppointmentsInsufficient(
-        input = SchedulingScenarioAsserter.SchedulingAsserterInput(
-          dayOfWeek = MONDAY,
-          requirementLength = Duration.ofHours(30),
-          allocations = listOf(
-            "ALLOC1-PROJ1-ONCE-MON-10:00-14:00, Starting Today+7, Ending Today+7",
-            "ALLOC2-PROJ2-WK-MON-12:00-20:00",
-          ),
-          existingAppointments = listOf(
-            "Today, PROJ4, MANUAL, 12:00-20:00, Pending",
-          ),
-        ),
-        expectedActions = listOf(
-          "Create, Today+7, PROJ1, ALLOC1, 10:00-14:00",
-          "Create, Today+7, PROJ2, ALLOC2, 12:00-20:00",
-          "Create, Today+14, PROJ2, ALLOC2, 12:00-20:00",
-          "Create, Today+21, PROJ2, ALLOC2, 12:00-14:00",
-        ),
-      )
+      schedulingScenario {
+        scenarioId("INC-CLASH-03")
+        given {
+          requirementIsHours(30)
+          todayIs(MONDAY)
+          projectExistsWithCode("PROJ1")
+          projectExistsWithCode("PROJ2")
+          projectExistsWithCode("PROJ4")
+
+          allocation {
+            alias("ALLOC1")
+            projectCode("PROJ1")
+            frequency(ONCE)
+            onWeekDay(MONDAY)
+            from("10:00")
+            until("14:00")
+            startingInDays(7)
+            endingInDays(7)
+          }
+
+          allocation {
+            alias("ALLOC2")
+            projectCode("PROJ2")
+            frequency(WEEKLY)
+            onWeekDay(MONDAY)
+            from("12:00")
+            until("20:00")
+          }
+
+          appointment {
+            projectCode("PROJ4")
+            manual()
+            today()
+            from("12:00")
+            until("20:00")
+            pending()
+          }
+        }
+
+        then {
+          shouldCreateAppointments {
+            appointment {
+              projectCode("PROJ1")
+              allocation("ALLOC1")
+              todayWithOffsetDays(7)
+              from("10:00")
+              until("14:00")
+            }
+            appointment {
+              projectCode("PROJ2")
+              allocation("ALLOC2")
+              todayWithOffsetDays(7)
+              from("12:00")
+              until("20:00")
+            }
+            appointment {
+              projectCode("PROJ2")
+              allocation("ALLOC2")
+              todayWithOffsetDays(14)
+              from("12:00")
+              until("20:00")
+            }
+            appointment {
+              projectCode("PROJ2")
+              allocation("ALLOC2")
+              todayWithOffsetDays(21)
+              from("12:00")
+              until("14:00")
+            }
+          }
+        }
+      }
     }
   }
 
@@ -95,43 +307,111 @@ class SchedulingScenariosInconsistentBehavioursTest : SchedulingScenariosUnitTes
 
     @Test
     fun `INC-MANUAL-01 Manually created appointments in the future without an outcome are retained by the scheduler if attempting to allocate to same day`() {
-      assertExistingAppointmentsInsufficient(
-        input = SchedulingScenarioAsserter.SchedulingAsserterInput(
-          dayOfWeek = MONDAY,
-          requirementLength = Duration.ofHours(24),
-          allocations = listOf(
-            "ALLOC1-PROJ1-WK-MON-12:00-20:00",
-          ),
-          existingAppointments = listOf(
-            "Today, PROJ1, MANUAL, 12:00-20:00, Credited PT8H",
-            "Today+7, PROJ1, MANUAL, 12:00-13:00, Pending",
-          ),
-        ),
-        expectedActions = listOf(
-          "Create, Today+14, PROJ1, ALLOC1, 12:00-20:00",
-          "Create, Today+21, PROJ1, ALLOC1, 12:00-19:00",
-        ),
-      )
+      schedulingScenario {
+        scenarioId("INC-MANUAL-01")
+        given {
+          requirementIsHours(24)
+          todayIs(MONDAY)
+          projectExistsWithCode("PROJ1")
+
+          allocation {
+            alias("ALLOC1")
+            projectCode("PROJ1")
+            frequency(WEEKLY)
+            onWeekDay(MONDAY)
+            from("12:00")
+            until("20:00")
+          }
+
+          appointment {
+            projectCode("PROJ1")
+            manual()
+            today()
+            from("12:00")
+            until("20:00")
+            credited(Duration.parse("PT8H"))
+          }
+
+          appointment {
+            projectCode("PROJ1")
+            manual()
+            today(7)
+            from("12:00")
+            until("13:00")
+            pending()
+          }
+        }
+
+        then {
+          shouldCreateAppointments {
+            appointment {
+              projectCode("PROJ1")
+              allocation("ALLOC1")
+              todayWithOffsetDays(14)
+              from("12:00")
+              until("20:00")
+            }
+            appointment {
+              projectCode("PROJ1")
+              allocation("ALLOC1")
+              todayWithOffsetDays(21)
+              from("12:00")
+              until("19:00")
+            }
+          }
+        }
+      }
     }
 
     @Test
     fun `INC-MANUAL-02 Appointments in the future are retained but potential time credited ignored if not attempting to allocate to same day`() {
-      assertExistingAppointmentsInsufficient(
-        input = SchedulingScenarioAsserter.SchedulingAsserterInput(
-          dayOfWeek = MONDAY,
-          requirementLength = Duration.ofHours(16),
-          allocations = listOf(
-            "ALLOC1-PROJ1-WK-MON-12:00-20:00",
-          ),
-          existingAppointments = listOf(
-            "Today, PROJ1, MANUAL, 12:00-20:00, Credited PT8H",
-            "Today+1, PROJ1, MANUAL, 00:00-23:00, Pending",
-          ),
-        ),
-        expectedActions = listOf(
-          "Create, Today+7, PROJ1, ALLOC1, 12:00-20:00",
-        ),
-      )
+      schedulingScenario {
+        scenarioId("INC-MANUAL-02")
+        given {
+          requirementIsHours(16)
+          todayIs(MONDAY)
+          projectExistsWithCode("PROJ1")
+
+          allocation {
+            alias("ALLOC1")
+            projectCode("PROJ1")
+            frequency(WEEKLY)
+            onWeekDay(MONDAY)
+            from("12:00")
+            until("20:00")
+          }
+
+          appointment {
+            projectCode("PROJ1")
+            manual()
+            today()
+            from("12:00")
+            until("20:00")
+            credited(Duration.parse("PT8H"))
+          }
+
+          appointment {
+            projectCode("PROJ1")
+            manual()
+            today(1)
+            from("00:00")
+            until("23:00")
+            pending()
+          }
+        }
+
+        then {
+          shouldCreateAppointments {
+            appointment {
+              projectCode("PROJ1")
+              allocation("ALLOC1")
+              todayWithOffsetDays(7)
+              from("12:00")
+              until("20:00")
+            }
+          }
+        }
+      }
     }
   }
 }

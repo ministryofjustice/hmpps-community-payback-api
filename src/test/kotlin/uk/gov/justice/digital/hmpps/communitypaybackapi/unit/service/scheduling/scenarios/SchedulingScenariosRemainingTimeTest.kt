@@ -1,9 +1,9 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.unit.service.scheduling.scenarios
 
 import org.junit.jupiter.api.Test
-import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.scheduling.valid
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingProject
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingFrequency.WEEKLY
 import java.time.DayOfWeek.MONDAY
+import java.time.DayOfWeek.TUESDAY
 import java.time.Duration
 
 /**
@@ -13,191 +13,501 @@ import java.time.Duration
  * They will also ensure that the final appointment end time is truncated where necessary to ensure
  * no more minutes than required are scheduled
  */
-class SchedulingScenariosRemainingTimeTest : SchedulingScenariosUnitTest() {
-
-  val schedulingAsserter = SchedulingScenarioAsserter(
-    listOf(
-      SchedulingProject.valid().copy(code = "PROJ1"),
-      SchedulingProject.valid().copy(code = "PROJ2"),
-    ),
-  )
+class SchedulingScenariosRemainingTimeTest {
 
   @Test
   fun `REMAINING-TIME-01 0 Requirement`() {
-    assertRequirementAlreadySatisfied(
-      SchedulingScenarioAsserter.SchedulingAsserterInput(
-        dayOfWeek = MONDAY,
-        requirementLength = Duration.ZERO,
-        allocations = listOf(
-          "ALLOC1-PROJ1-WK-MON-10:00-18:00",
-        ),
-        existingAppointments = emptyList(),
-      ),
-    )
+    schedulingScenario {
+      scenarioId("REMAINING-TIME-01")
+      given {
+        requirementIs(Duration.ZERO)
+        todayIs(MONDAY)
+        projectExistsWithCode("PROJ1")
+
+        allocation {
+          alias("ALLOC1")
+          projectCode("PROJ1")
+          frequency(WEEKLY)
+          onWeekDay(MONDAY)
+          from("10:00")
+          until("18:00")
+        }
+      }
+
+      then {
+        requirementAlreadySatisfied()
+      }
+    }
   }
 
   @Test
   fun `REMAINING-TIME-02 No Scheduled Appointments, Create 1 non-truncated Appointment Today`() {
-    assertExistingAppointmentsInsufficient(
-      input = SchedulingScenarioAsserter.SchedulingAsserterInput(
-        dayOfWeek = MONDAY,
-        requirementLength = Duration.ofHours(8),
-        allocations = listOf(
-          "ALLOC1-PROJ1-WK-MON-10:00-18:00",
-          "ALLOC2-PROJ2-WK-TUE-16:00-20:00",
-        ),
-        existingAppointments = emptyList(),
-      ),
-      expectedActions = listOf(
-        "Create, Today, PROJ1, ALLOC1, 10:00-18:00",
-      ),
-    )
+    schedulingScenario {
+      scenarioId("REMAINING-TIME-02")
+      given {
+        requirementIsHours(8)
+        todayIs(MONDAY)
+        projectExistsWithCode("PROJ1")
+        projectExistsWithCode("PROJ2")
+
+        allocation {
+          alias("ALLOC1")
+          projectCode("PROJ1")
+          frequency(WEEKLY)
+          onWeekDay(MONDAY)
+          from("10:00")
+          until("18:00")
+        }
+
+        allocation {
+          alias("ALLOC2")
+          projectCode("PROJ2")
+          frequency(WEEKLY)
+          onWeekDay(TUESDAY)
+          from("16:00")
+          until("20:00")
+        }
+      }
+
+      then {
+        shouldCreateAppointments {
+          appointment {
+            projectCode("PROJ1")
+            allocation("ALLOC1")
+            todayWithOffsetDays()
+            from("10:00")
+            until("18:00")
+          }
+        }
+      }
+    }
   }
 
   @Test
   fun `REMAINING-TIME-03 No Scheduled Appointments, Create 1 truncated Appointment Today`() {
-    assertExistingAppointmentsInsufficient(
-      input = SchedulingScenarioAsserter.SchedulingAsserterInput(
-        dayOfWeek = MONDAY,
-        requirementLength = Duration.ofHours(4),
-        allocations = listOf(
-          "ALLOC1-PROJ1-WK-MON-10:00-18:00",
-          "ALLOC2-PROJ2-WK-TUE-16:00-20:00",
-        ),
-        existingAppointments = emptyList(),
-      ),
-      expectedActions = listOf(
-        "Create, Today, PROJ1, ALLOC1, 10:00-14:00",
-      ),
-    )
+    schedulingScenario {
+      scenarioId("REMAINING-TIME-03")
+      given {
+        requirementIsHours(4)
+        todayIs(MONDAY)
+        projectExistsWithCode("PROJ1")
+        projectExistsWithCode("PROJ2")
+
+        allocation {
+          alias("ALLOC1")
+          projectCode("PROJ1")
+          frequency(WEEKLY)
+          onWeekDay(MONDAY)
+          from("10:00")
+          until("18:00")
+        }
+
+        allocation {
+          alias("ALLOC2")
+          projectCode("PROJ2")
+          frequency(WEEKLY)
+          onWeekDay(TUESDAY)
+          from("16:00")
+          until("20:00")
+        }
+      }
+
+      then {
+        shouldCreateAppointments {
+          appointment {
+            projectCode("PROJ1")
+            allocation("ALLOC1")
+            todayWithOffsetDays()
+            from("10:00")
+            until("14:00")
+          }
+        }
+      }
+    }
   }
 
   @Test
   fun `REMAINING-TIME-04 Pending Past Appointment Insufficient, Create 1 non-truncated Appointment Today`() {
-    assertExistingAppointmentsInsufficient(
-      input = SchedulingScenarioAsserter.SchedulingAsserterInput(
-        dayOfWeek = MONDAY,
-        requirementLength = Duration.ofHours(12),
-        allocations = listOf(
-          "ALLOC1-PROJ1-WK-MON-10:00-18:00",
-          "ALLOC2-PROJ2-WK-TUE-16:00-20:00",
-        ),
-        existingAppointments = listOf(
-          "Today-6, PROJ2, ALLOC2, 16:00-20:00, Pending",
-        ),
-      ),
-      expectedActions = listOf(
-        "Create, Today, PROJ1, ALLOC1, 10:00-18:00",
-      ),
-    )
+    schedulingScenario {
+      scenarioId("REMAINING-TIME-04")
+      given {
+        requirementIsHours(12)
+        todayIs(MONDAY)
+        projectExistsWithCode("PROJ1")
+        projectExistsWithCode("PROJ2")
+
+        allocation {
+          alias("ALLOC1")
+          projectCode("PROJ1")
+          frequency(WEEKLY)
+          onWeekDay(MONDAY)
+          from("10:00")
+          until("18:00")
+        }
+
+        allocation {
+          alias("ALLOC2")
+          projectCode("PROJ2")
+          frequency(WEEKLY)
+          onWeekDay(TUESDAY)
+          from("16:00")
+          until("20:00")
+        }
+
+        appointment {
+          projectCode("PROJ2")
+          allocation("ALLOC2")
+          today(-6)
+          from("16:00")
+          until("20:00")
+          pending()
+        }
+      }
+
+      then {
+        shouldCreateAppointments {
+          appointment {
+            projectCode("PROJ1")
+            allocation("ALLOC1")
+            todayWithOffsetDays()
+            from("10:00")
+            until("18:00")
+          }
+        }
+      }
+    }
   }
 
   @Test
   fun `REMAINING-TIME-05 Credited Past Appointment Insufficient, Create 1 non-truncated Appointment Today`() {
-    assertExistingAppointmentsInsufficient(
-      input = SchedulingScenarioAsserter.SchedulingAsserterInput(
-        dayOfWeek = MONDAY,
-        requirementLength = Duration.ofHours(12),
-        allocations = listOf(
-          "ALLOC1-PROJ1-WK-MON-10:00-18:00",
-          "ALLOC2-PROJ2-WK-TUE-16:00-20:00",
-        ),
-        existingAppointments = listOf(
-          "Today-6, PROJ2, ALLOC2, 16:00-20:00, Credited PT4H",
-        ),
-      ),
-      expectedActions = listOf(
-        "Create, Today, PROJ1, ALLOC1, 10:00-18:00",
-      ),
-    )
+    schedulingScenario {
+      scenarioId("REMAINING-TIME-05")
+      given {
+        requirementIsHours(12)
+        todayIs(MONDAY)
+        projectExistsWithCode("PROJ1")
+        projectExistsWithCode("PROJ2")
+
+        allocation {
+          alias("ALLOC1")
+          projectCode("PROJ1")
+          frequency(WEEKLY)
+          onWeekDay(MONDAY)
+          from("10:00")
+          until("18:00")
+        }
+
+        allocation {
+          alias("ALLOC2")
+          projectCode("PROJ2")
+          frequency(WEEKLY)
+          onWeekDay(TUESDAY)
+          from("16:00")
+          until("20:00")
+        }
+
+        appointment {
+          projectCode("PROJ2")
+          allocation("ALLOC2")
+          today(-6)
+          from("16:00")
+          until("20:00")
+          credited(Duration.ofHours(4))
+        }
+      }
+
+      then {
+        shouldCreateAppointments {
+          appointment {
+            projectCode("PROJ1")
+            allocation("ALLOC1")
+            todayWithOffsetDays()
+            from("10:00")
+            until("18:00")
+          }
+        }
+      }
+    }
   }
 
   @Test
   fun `REMAINING-TIME-06 Non Attended Past Appointment Insufficient, Create 1 non-truncated Appointment Today`() {
-    assertExistingAppointmentsInsufficient(
-      input = SchedulingScenarioAsserter.SchedulingAsserterInput(
-        dayOfWeek = MONDAY,
-        requirementLength = Duration.ofHours(8),
-        allocations = listOf(
-          "ALLOC1-PROJ1-WK-MON-10:00-18:00",
-          "ALLOC2-PROJ2-WK-TUE-16:00-20:00",
-        ),
-        existingAppointments = listOf(
-          "Today-6, PROJ2, ALLOC2, 16:00-20:00, Non-attended",
-        ),
-      ),
-      expectedActions = listOf(
-        "Create, Today, PROJ1, ALLOC1, 10:00-18:00",
-      ),
-    )
+    schedulingScenario {
+      scenarioId("REMAINING-TIME-06")
+      given {
+        requirementIsHours(8)
+        todayIs(MONDAY)
+        projectExistsWithCode("PROJ1")
+        projectExistsWithCode("PROJ2")
+
+        allocation {
+          alias("ALLOC1")
+          projectCode("PROJ1")
+          frequency(WEEKLY)
+          onWeekDay(MONDAY)
+          from("10:00")
+          until("18:00")
+        }
+
+        allocation {
+          alias("ALLOC2")
+          projectCode("PROJ2")
+          frequency(WEEKLY)
+          onWeekDay(TUESDAY)
+          from("16:00")
+          until("20:00")
+        }
+
+        appointment {
+          projectCode("PROJ2")
+          allocation("ALLOC2")
+          today(-6)
+          from("16:00")
+          until("20:00")
+          nonAttended()
+        }
+      }
+
+      then {
+        shouldCreateAppointments {
+          appointment {
+            projectCode("PROJ1")
+            allocation("ALLOC1")
+            todayWithOffsetDays()
+            from("10:00")
+            until("18:00")
+          }
+        }
+      }
+    }
   }
 
   @Test
   fun `REMAINING-TIME-07 Pending Past Appointment Insufficient, Create 1 truncated Appointment`() {
-    assertExistingAppointmentsInsufficient(
-      input = SchedulingScenarioAsserter.SchedulingAsserterInput(
-        dayOfWeek = MONDAY,
-        requirementLength = Duration.parse("PT10H30M"),
-        allocations = listOf(
-          "ALLOC1-PROJ1-WK-MON-10:00-18:00",
-          "ALLOC2-PROJ2-WK-TUE-16:00-20:00",
-        ),
-        existingAppointments = listOf(
-          "Today-6, PROJ2, ALLOC2, 10:00-14:00, Pending",
-        ),
-      ),
-      expectedActions = listOf(
-        "Create, Today, PROJ1, ALLOC1, 10:00-16:30",
-      ),
-    )
+    schedulingScenario {
+      scenarioId("REMAINING-TIME-07")
+      given {
+        requirementIs(Duration.parse("PT10H30M"))
+        todayIs(MONDAY)
+        projectExistsWithCode("PROJ1")
+        projectExistsWithCode("PROJ2")
+
+        allocation {
+          alias("ALLOC1")
+          projectCode("PROJ1")
+          frequency(WEEKLY)
+          onWeekDay(MONDAY)
+          from("10:00")
+          until("18:00")
+        }
+
+        allocation {
+          alias("ALLOC2")
+          projectCode("PROJ2")
+          frequency(WEEKLY)
+          onWeekDay(TUESDAY)
+          from("16:00")
+          until("20:00")
+        }
+
+        appointment {
+          projectCode("PROJ2")
+          allocation("ALLOC2")
+          today(-6)
+          from("10:00")
+          until("14:00")
+          pending()
+        }
+      }
+
+      then {
+        shouldCreateAppointments {
+          appointment {
+            projectCode("PROJ1")
+            allocation("ALLOC1")
+            todayWithOffsetDays()
+            from("10:00")
+            until("16:30")
+          }
+        }
+      }
+    }
   }
 
   @Test
   fun `REMAINING-TIME-08 Credited Past Appointment Insufficient, Create 1 truncated Appointment`() {
-    assertExistingAppointmentsInsufficient(
-      input = SchedulingScenarioAsserter.SchedulingAsserterInput(
-        dayOfWeek = MONDAY,
-        requirementLength = Duration.parse("PT11H"),
-        allocations = listOf(
-          "ALLOC1-PROJ1-WK-MON-10:00-18:00",
-          "ALLOC2-PROJ2-WK-TUE-16:00-20:00",
-        ),
-        existingAppointments = listOf(
-          "Today-6, PROJ2, ALLOC2, 10:00-14:00, Credited PT4H",
-        ),
-      ),
-      expectedActions = listOf(
-        "Create, Today, PROJ1, ALLOC1, 10:00-17:00",
-      ),
-    )
+    schedulingScenario {
+      scenarioId("REMAINING-TIME-08")
+      given {
+        requirementIs(Duration.ofHours(11))
+        todayIs(MONDAY)
+        projectExistsWithCode("PROJ1")
+        projectExistsWithCode("PROJ2")
+
+        allocation {
+          alias("ALLOC1")
+          projectCode("PROJ1")
+          frequency(WEEKLY)
+          onWeekDay(MONDAY)
+          from("10:00")
+          until("18:00")
+        }
+
+        allocation {
+          alias("ALLOC2")
+          projectCode("PROJ2")
+          frequency(WEEKLY)
+          onWeekDay(TUESDAY)
+          from("16:00")
+          until("20:00")
+        }
+
+        appointment {
+          projectCode("PROJ2")
+          allocation("ALLOC2")
+          today(-6)
+          from("10:00")
+          until("14:00")
+          credited(Duration.ofHours(4))
+        }
+      }
+
+      then {
+        shouldCreateAppointments {
+          appointment {
+            projectCode("PROJ1")
+            allocation("ALLOC1")
+            todayWithOffsetDays()
+            from("10:00")
+            until("17:00")
+          }
+        }
+      }
+    }
   }
 
   @Test
   fun `REMAINING-TIME-09 Credited Past Appointments Insufficient, Create multiple Appointments including truncated final Appointment`() {
-    assertExistingAppointmentsInsufficient(
-      input = SchedulingScenarioAsserter.SchedulingAsserterInput(
-        dayOfWeek = MONDAY,
-        requirementLength = Duration.parse("PT44H"),
-        allocations = listOf(
-          "ALLOC1-PROJ1-WK-MON-10:00-18:00",
-          "ALLOC2-PROJ2-WK-TUE-16:00-20:00",
-        ),
-        existingAppointments = listOf(
-          "Today-14, PROJ1, ALLOC1, 10:00-18:00, Credited PT3H30M",
-          "Today-13, PROJ2, ALLOC2, 10:00-14:00, Non-attended",
-          "Today-7, PROJ1, ALLOC1, 10:00-18:00, Non-attended",
-          "Today-6, PROJ2, ALLOC2, 10:00-14:00, Credited PT4H",
-          "Today, PROJ1, ALLOC1, 10:00-18:00, Pending",
-          "Today+1, PROJ2, ALLOC2, 16:00-20:00, Pending",
-        ),
-      ),
-      expectedActions = listOf(
-        "Create, Today+7, PROJ1, ALLOC1, 10:00-18:00",
-        "Create, Today+8, PROJ2, ALLOC2, 16:00-20:00",
-        "Create, Today+14, PROJ1, ALLOC1, 10:00-18:00",
-        "Create, Today+15, PROJ2, ALLOC2, 16:00-20:00",
-        "Create, Today+21, PROJ1, ALLOC1, 10:00-10:30",
-      ),
-    )
+    schedulingScenario {
+      scenarioId("REMAINING-TIME-09")
+      given {
+        requirementIs(Duration.parse("PT44H"))
+        todayIs(MONDAY)
+        projectExistsWithCode("PROJ1")
+        projectExistsWithCode("PROJ2")
+
+        allocation {
+          alias("ALLOC1")
+          projectCode("PROJ1")
+          frequency(WEEKLY)
+          onWeekDay(MONDAY)
+          from("10:00")
+          until("18:00")
+        }
+
+        allocation {
+          alias("ALLOC2")
+          projectCode("PROJ2")
+          frequency(WEEKLY)
+          onWeekDay(TUESDAY)
+          from("16:00")
+          until("20:00")
+        }
+
+        appointment {
+          projectCode("PROJ1")
+          allocation("ALLOC1")
+          today(-14)
+          from("10:00")
+          until("18:00")
+          credited(Duration.parse("PT3H30M"))
+        }
+
+        appointment {
+          projectCode("PROJ2")
+          allocation("ALLOC2")
+          today(-13)
+          from("10:00")
+          until("14:00")
+          nonAttended()
+        }
+
+        appointment {
+          projectCode("PROJ1")
+          allocation("ALLOC1")
+          today(-7)
+          from("10:00")
+          until("18:00")
+          nonAttended()
+        }
+
+        appointment {
+          projectCode("PROJ2")
+          allocation("ALLOC2")
+          today(-6)
+          from("10:00")
+          until("14:00")
+          credited(Duration.parse("PT4H"))
+        }
+
+        appointment {
+          projectCode("PROJ1")
+          allocation("ALLOC1")
+          today()
+          from("10:00")
+          until("18:00")
+          pending()
+        }
+
+        appointment {
+          projectCode("PROJ2")
+          allocation("ALLOC2")
+          today(1)
+          from("16:00")
+          until("20:00")
+          pending()
+        }
+      }
+
+      then {
+        shouldCreateAppointments {
+          appointment {
+            projectCode("PROJ1")
+            allocation("ALLOC1")
+            todayWithOffsetDays(7)
+            from("10:00")
+            until("18:00")
+          }
+          appointment {
+            projectCode("PROJ2")
+            allocation("ALLOC2")
+            todayWithOffsetDays(8)
+            from("16:00")
+            until("20:00")
+          }
+          appointment {
+            projectCode("PROJ1")
+            allocation("ALLOC1")
+            todayWithOffsetDays(14)
+            from("10:00")
+            until("18:00")
+          }
+          appointment {
+            projectCode("PROJ2")
+            allocation("ALLOC2")
+            todayWithOffsetDays(15)
+            from("16:00")
+            until("20:00")
+          }
+          appointment {
+            projectCode("PROJ1")
+            allocation("ALLOC1")
+            todayWithOffsetDays(21)
+            from("10:00")
+            until("10:30")
+          }
+        }
+      }
+    }
   }
 }
