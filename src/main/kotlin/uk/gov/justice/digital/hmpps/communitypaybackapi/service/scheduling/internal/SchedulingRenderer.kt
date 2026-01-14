@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal
 
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.onOrAfter
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.Schedule
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulePlan
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingAction
@@ -55,8 +56,12 @@ object SchedulingRenderer {
         appendLine("* Existing Appointments (0)")
       }
 
-      append("* Non Working Dates: ")
-      appendLine(request.nonWorkingDates.dates)
+      append("* Non Working Dates as of Scheduling Date: ")
+      appendLine(
+        request.nonWorkingDates.dates
+          .filter { it.onOrAfter(request.today) }
+          .sorted(),
+      )
     }
   }
 
