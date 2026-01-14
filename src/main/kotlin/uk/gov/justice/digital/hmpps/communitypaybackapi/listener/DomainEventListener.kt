@@ -5,6 +5,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import io.awspring.cloud.sqs.annotation.SqsListener
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdditionalInformationType
@@ -24,6 +25,8 @@ class DomainEventListener(
   private val objectMapper: ObjectMapper,
   private val scheduleService: SchedulingService,
   private val appointmentUpdateService: AppointmentUpdateService,
+  @param:Value("\${community-payback.scheduling.dryRun:false}")
+  private val schedulingDryRun: Boolean,
 ) {
   private companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)
@@ -51,6 +54,7 @@ class DomainEventListener(
       crn = domainEventDetails.crn,
       eventNumber = domainEventDetails.deliusEventNumber,
       trigger = "Appointment Updated",
+      dryRun = schedulingDryRun,
     )
 
     appointmentUpdateService.recordSchedulingRan(eventId)

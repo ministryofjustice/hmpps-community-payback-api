@@ -361,7 +361,9 @@ data class NDUnpaidWorkRequirement(
   val requirementProgress: NDRequirementProgress,
   val allocations: List<NDSchedulingAllocation>,
   val appointments: List<NDSchedulingExistingAppointment>,
-)
+) {
+  companion object
+}
 
 data class NDSchedulingAllocation(
   val id: Long,

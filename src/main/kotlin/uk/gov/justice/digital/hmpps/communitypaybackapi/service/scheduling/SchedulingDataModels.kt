@@ -13,6 +13,7 @@ data class SchedulingRequest(
   val allocations: SchedulingAllocations,
   val existingAppointments: SchedulingExistingAppointments,
   val nonWorkingDates: SchedulingNonWorkingDates,
+  val dryRun: Boolean,
 ) {
   companion object
 }
