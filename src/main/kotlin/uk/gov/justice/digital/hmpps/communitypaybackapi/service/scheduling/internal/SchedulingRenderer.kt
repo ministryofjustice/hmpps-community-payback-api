@@ -150,7 +150,7 @@ object SchedulingRenderer {
   ) = buildString {
     append(dayAsDelta(today, date))
     append(", ")
-    append(allocation?.alias ?: "MANUAL")
+    append(allocationId ?: "No Allocation")
     append(", ")
     append(startTime)
     append("-")
@@ -160,7 +160,7 @@ object SchedulingRenderer {
       append("Pending")
     } else {
       append("Complete ")
-      append(timeCredited ?: Duration.ZERO)
+      append(minutesCredited ?: Duration.ZERO)
     }
   }
 

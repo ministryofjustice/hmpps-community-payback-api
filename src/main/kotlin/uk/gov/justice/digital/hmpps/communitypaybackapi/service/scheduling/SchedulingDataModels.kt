@@ -93,13 +93,13 @@ data class SchedulingExistingAppointments(
 
 data class SchedulingExistingAppointment(
   val id: UUID,
-  val project: SchedulingProject,
+  val projectCode: String,
   val date: LocalDate,
   val startTime: LocalTime,
   val endTime: LocalTime,
   val hasOutcome: Boolean,
-  val timeCredited: Duration?,
-  val allocation: SchedulingAllocation?,
+  val minutesCredited: Duration?,
+  val allocationId: Long?,
 ) {
   companion object
 }
@@ -109,7 +109,7 @@ data class SchedulingRequiredAppointment(
   val startTime: LocalTime,
   val endTime: LocalTime,
   val project: SchedulingProject,
-  val allocation: SchedulingAllocation?,
+  val allocation: SchedulingAllocation,
 ) {
   companion object
 }

@@ -45,12 +45,12 @@ object SchedulePlanner {
   private fun SchedulingExistingAppointment.matches(requiredAppointment: SchedulingRequiredAppointment) = date == requiredAppointment.date &&
     startTime == requiredAppointment.startTime &&
     endTime == requiredAppointment.endTime &&
-    project == requiredAppointment.project &&
-    allocation == requiredAppointment.allocation
+    projectCode == requiredAppointment.project.code &&
+    allocationId == requiredAppointment.allocation.id
 
   private fun SchedulingRequiredAppointment.matches(existingAppointment: SchedulingExistingAppointment) = date == existingAppointment.date &&
     startTime == existingAppointment.startTime &&
     endTime == existingAppointment.endTime &&
-    project == existingAppointment.project &&
-    allocation == existingAppointment.allocation
+    project.code == existingAppointment.projectCode &&
+    allocation.id == existingAppointment.allocationId
 }

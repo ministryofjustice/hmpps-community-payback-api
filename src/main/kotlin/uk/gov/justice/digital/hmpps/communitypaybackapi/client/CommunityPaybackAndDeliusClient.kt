@@ -359,7 +359,7 @@ data class Code(
 data class NDUnpaidWorkRequirement(
   val requirementProgress: RequirementProgress,
   val allocations: List<NDSchedulingAllocation>,
-  val appointments: List<NDSchedulingAppointment>,
+  val appointments: List<NDSchedulingExistingAppointment>,
 )
 
 data class NDSchedulingAllocation(
@@ -411,15 +411,15 @@ enum class NDSchedulingDayOfWeek {
   SUNDAY,
 }
 
-data class NDSchedulingAppointment(
+data class NDSchedulingExistingAppointment(
   val id: UUID,
-  val project: NDSchedulingProject,
+  val project: NDNameCode,
   val date: LocalDate,
   val startTime: LocalTime,
   val endTime: LocalTime,
   val outcome: NDCodeDescription?,
   val minutesCredited: Duration?,
-  val allocation: NDSchedulingAllocation?,
+  val allocationId: Long?,
 ) {
   companion object
 }

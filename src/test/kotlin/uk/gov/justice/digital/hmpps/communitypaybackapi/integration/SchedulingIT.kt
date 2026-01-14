@@ -5,8 +5,8 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Code
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingAllocation
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingDayOfWeek
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingExistingAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingFrequency
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingProject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDUnpaidWorkRequirement
@@ -75,79 +75,79 @@ class SchedulingIT : IntegrationTestBase() {
           ),
           allocations = listOf(allocation1),
           appointments = listOf(
-            NDSchedulingAppointment.validWithOutcome().copy(
+            NDSchedulingExistingAppointment.validWithOutcome().copy(
               date = schedulingDate.minusDays(101),
-              allocation = null,
+              allocationId = null,
               startTime = LocalTime.of(14, 0),
               endTime = LocalTime.of(18, 0),
               minutesCredited = Duration.ofHours(4),
             ),
-            NDSchedulingAppointment.validWithOutcome().copy(
+            NDSchedulingExistingAppointment.validWithOutcome().copy(
               date = schedulingDate.minusDays(100),
-              allocation = null,
+              allocationId = null,
               startTime = LocalTime.of(12, 0),
               endTime = LocalTime.of(16, 0),
               minutesCredited = Duration.ofHours(4),
             ),
-            NDSchedulingAppointment.validWithOutcome().copy(
+            NDSchedulingExistingAppointment.validWithOutcome().copy(
               date = schedulingDate.minusDays(56),
-              allocation = allocation1,
+              allocationId = allocation1.id,
               startTime = LocalTime.of(10, 0),
               endTime = LocalTime.of(18, 0),
               minutesCredited = Duration.ofHours(8),
             ),
-            NDSchedulingAppointment.validWithOutcome().copy(
+            NDSchedulingExistingAppointment.validWithOutcome().copy(
               date = schedulingDate.minusDays(49),
-              allocation = allocation1,
+              allocationId = allocation1.id,
               startTime = LocalTime.of(10, 0),
               endTime = LocalTime.of(18, 0),
               minutesCredited = Duration.ofHours(8),
             ),
-            NDSchedulingAppointment.validWithOutcome().copy(
+            NDSchedulingExistingAppointment.validWithOutcome().copy(
               date = schedulingDate.minusDays(42),
-              allocation = allocation1,
+              allocationId = allocation1.id,
               startTime = LocalTime.of(10, 0),
               endTime = LocalTime.of(18, 0),
               minutesCredited = Duration.ofHours(8),
             ),
-            NDSchedulingAppointment.validWithOutcome().copy(
+            NDSchedulingExistingAppointment.validWithOutcome().copy(
               date = schedulingDate.minusDays(35),
-              allocation = allocation1,
+              allocationId = allocation1.id,
               startTime = LocalTime.of(10, 0),
               endTime = LocalTime.of(18, 0),
               minutesCredited = Duration.ofHours(8),
             ),
-            NDSchedulingAppointment.validWithOutcome().copy(
+            NDSchedulingExistingAppointment.validWithOutcome().copy(
               date = schedulingDate.minusDays(28),
-              allocation = allocation1,
+              allocationId = allocation1.id,
               startTime = LocalTime.of(10, 0),
               endTime = LocalTime.of(18, 0),
               minutesCredited = Duration.ofHours(8),
             ),
-            NDSchedulingAppointment.validWithOutcome().copy(
+            NDSchedulingExistingAppointment.validWithOutcome().copy(
               date = schedulingDate.minusDays(21),
-              allocation = allocation1,
+              allocationId = allocation1.id,
               startTime = LocalTime.of(10, 0),
               endTime = LocalTime.of(18, 0),
               minutesCredited = Duration.ofHours(8),
             ),
-            NDSchedulingAppointment.validWithOutcome().copy(
+            NDSchedulingExistingAppointment.validWithOutcome().copy(
               date = schedulingDate.minusDays(14),
-              allocation = allocation1,
+              allocationId = allocation1.id,
               startTime = LocalTime.of(10, 0),
               endTime = LocalTime.of(18, 0),
               minutesCredited = Duration.ofHours(8),
             ),
-            NDSchedulingAppointment.validWithOutcome().copy(
+            NDSchedulingExistingAppointment.validWithOutcome().copy(
               date = schedulingDate.minusDays(7),
-              allocation = allocation1,
+              allocationId = allocation1.id,
               startTime = LocalTime.of(10, 0),
               endTime = LocalTime.of(18, 0),
               minutesCredited = Duration.ofHours(8),
             ),
-            NDSchedulingAppointment.validWithOutcome().copy(
+            NDSchedulingExistingAppointment.validWithOutcome().copy(
               date = schedulingDate,
-              allocation = allocation1,
+              allocationId = allocation1.id,
               startTime = LocalTime.of(13, 0),
               endTime = LocalTime.of(20, 0),
               minutesCredited = Duration.ofHours(7),

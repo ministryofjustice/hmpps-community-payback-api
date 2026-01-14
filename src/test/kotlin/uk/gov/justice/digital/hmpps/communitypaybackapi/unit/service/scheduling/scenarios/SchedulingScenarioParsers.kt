@@ -106,7 +106,6 @@ class SchedulingScenarioParsers {
   fun parseExistingAppointmentDescription(
     today: LocalDate,
     allocations: List<SchedulingAllocation>,
-    projects: List<SchedulingProject>,
     description: String,
   ): SchedulingExistingAppointment {
     val matcher = EXISTING_APPOINTMENT_PATTERN.matcher(description)
@@ -137,7 +136,7 @@ class SchedulingScenarioParsers {
         ?: error("Couldn't find an allocation with alias '$allocationAlias'")
     }
 
-    val timeCredited = if (status.startsWith("Credited")) {
+    val minutesCredited = if (status.startsWith("Credited")) {
       Duration.parse(status.substring("Credited ".length))
     } else {
       null
@@ -145,7 +144,7 @@ class SchedulingScenarioParsers {
 
     return SchedulingExistingAppointment(
       id = UUID.randomUUID(),
-      project = projects.findByCode(projectCode),
+      projectCode = projectCode,
       date = date,
       startTime = LocalTime.parse(startTime),
       endTime = LocalTime.parse(endTime),
@@ -153,8 +152,8 @@ class SchedulingScenarioParsers {
         "Pending" -> false
         else -> true
       },
-      timeCredited = timeCredited,
-      allocation = allocation,
+      minutesCredited = minutesCredited,
+      allocationId = allocation?.id,
     )
   }
 
