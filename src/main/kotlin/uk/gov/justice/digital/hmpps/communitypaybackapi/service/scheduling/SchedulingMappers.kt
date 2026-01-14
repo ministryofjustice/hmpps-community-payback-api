@@ -2,16 +2,21 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling
 
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Code
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCreateAppointment
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDRequirementProgress
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingAllocation
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingDayOfWeek
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingExistingAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingFrequency
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingProject
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.RequirementProgress
 import java.time.DayOfWeek
 import java.time.Duration
 
-fun RequirementProgress.toSchedulingRequirementProgress() = SchedulingRequirement(
+fun NDRequirementProgress.toSchedulingRequirement(
+  crn: String,
+  eventNumber: Int,
+) = SchedulingRequirement(
+  crn = crn,
+  deliusEventNumber = eventNumber,
   requirementLengthMinutes = Duration.ofMinutes((this.requiredMinutes + this.adjustments).toLong()),
 )
 

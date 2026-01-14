@@ -48,7 +48,7 @@ class SchedulingService(
     val schedulingRequest = SchedulingRequest(
       today = LocalDate.now(clock),
       trigger = trigger,
-      requirement = requirement.requirementProgress.toSchedulingRequirementProgress(),
+      requirement = requirement.requirementProgress.toSchedulingRequirement(crn, eventNumber),
       allocations = requirement.allocations.toSchedulingAllocations(),
       existingAppointments = requirement.appointments.toSchedulingExistingAppointments(),
       nonWorkingDates = SchedulingNonWorkingDates(communityPaybackAndDeliusClient.getNonWorkingDays()),

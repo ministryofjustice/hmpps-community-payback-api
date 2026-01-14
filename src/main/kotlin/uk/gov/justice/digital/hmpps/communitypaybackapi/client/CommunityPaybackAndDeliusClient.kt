@@ -57,9 +57,10 @@ interface CommunityPaybackAndDeliusClient {
     @RequestBody updateAppointment: UpdateAppointment,
   )
 
-  @PostExchange("/projects/{projectCode}/appointments")
+  @PostExchange("/case/{crn}/event/{eventNumber}/appointments")
   fun createAppointment(
-    @PathVariable projectCode: String,
+    @PathVariable crn: String,
+    @PathVariable eventNumber: Int,
     @RequestBody createAppointment: NDCreateAppointment,
   )
 
@@ -69,7 +70,7 @@ interface CommunityPaybackAndDeliusClient {
     @PathVariable teamCode: String,
   ): SupervisorSummaries
 
-  @GetExchange("/offenders/{crn}/events/{eventNumber}/unpaidWorkRequirement")
+  @GetExchange("/case/{crn}/event/{eventNumber}/appointments/schedule")
   fun getUnpaidWorkRequirement(
     @PathVariable crn: String,
     @PathVariable eventNumber: Int,
@@ -123,14 +124,14 @@ data class AppointmentSummary(
   val id: Long,
   val case: CaseSummary,
   val outcome: ContactOutcome?,
-  val requirementProgress: RequirementProgress,
+  val requirementProgress: NDRequirementProgress,
 ) {
   fun hasOutcome() = outcome != null
 
   companion object
 }
 
-data class RequirementProgress(
+data class NDRequirementProgress(
   /**
    * requirement minutes. does not include adjustments
    */
@@ -357,7 +358,7 @@ data class Code(
 )
 
 data class NDUnpaidWorkRequirement(
-  val requirementProgress: RequirementProgress,
+  val requirementProgress: NDRequirementProgress,
   val allocations: List<NDSchedulingAllocation>,
   val appointments: List<NDSchedulingExistingAppointment>,
 )

@@ -20,12 +20,12 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CaseSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ContactOutcome
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.EnforcementAction
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDEvent
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDRequirementProgress
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Name
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.PickUpData
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Project
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Provider
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.RequirementProgress
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Team
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.HourMinuteDuration
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentBehaviourDto
@@ -374,7 +374,7 @@ class AppointmentMappersTest {
           id = 1L,
           case = CaseSummary.Companion.valid().copy(crn = "CRN1"),
           outcome = ContactOutcome.valid().copy(code = "OUTCOME1"),
-          requirementProgress = RequirementProgress(
+          requirementProgress = NDRequirementProgress(
             requiredMinutes = 520,
             adjustments = 40,
             completedMinutes = 30,

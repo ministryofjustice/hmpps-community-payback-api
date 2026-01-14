@@ -81,7 +81,11 @@ class SchedulingScenarioAsserter(
     return SchedulingRequest.empty().copy(
       today = day,
       trigger = "Unit Test '${testInfo?.displayName}'",
-      requirement = SchedulingRequirement(requirementLength),
+      requirement = SchedulingRequirement(
+        crn = "CRN1",
+        deliusEventNumber = 5,
+        requirementLengthMinutes = requirementLength,
+      ),
       allocations = SchedulingAllocations(allocations),
       existingAppointments = SchedulingExistingAppointments(existingAppointments),
       nonWorkingDates = SchedulingNonWorkingDates(nonWorkingDates),

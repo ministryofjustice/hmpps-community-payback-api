@@ -17,8 +17,9 @@ data class SchedulingRequest(
   companion object
 }
 
-@JvmInline
-value class SchedulingRequirement(
+data class SchedulingRequirement(
+  val crn: String,
+  val deliusEventNumber: Int,
   /**
    * The corresponding community payback requirement length, before any
    * time is credited from attended appointments. This will include adjustments
@@ -114,15 +115,6 @@ data class SchedulingRequiredAppointment(
   companion object
 }
 
-data class SchedulingForcedRetentionAppointment(
-  val id: UUID,
-  val date: LocalDate,
-  val startTime: LocalTime,
-  val endTime: LocalTime,
-  val projectCode: String,
-  val allocation: SchedulingAllocation?,
-)
-
 data class SchedulingNonWorkingDates(
   val dates: List<LocalDate>,
 )
@@ -142,6 +134,8 @@ data class Schedule(
 )
 
 data class SchedulePlan(
+  val crn: String,
+  val eventNumber: Int,
   val actions: List<SchedulingAction>,
   val shortfall: Duration,
 )

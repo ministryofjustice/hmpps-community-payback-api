@@ -4,13 +4,13 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Code
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDRequirementProgress
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingAllocation
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingDayOfWeek
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingExistingAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingFrequency
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingProject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDUnpaidWorkRequirement
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.RequirementProgress
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.findNextOrSameDateForDayOfWeek
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.validNoEndDate
@@ -68,7 +68,7 @@ class SchedulingIT : IntegrationTestBase() {
         crn = CRN,
         eventNumber = EVENT_NUMBER,
         NDUnpaidWorkRequirement(
-          requirementProgress = RequirementProgress(
+          requirementProgress = NDRequirementProgress(
             requiredMinutes = Duration.ofHours(80).toMinutes().toInt(),
             completedMinutes = 0,
             adjustments = Duration.ofHours(2).toMinutes().toInt(),
@@ -156,12 +156,13 @@ class SchedulingIT : IntegrationTestBase() {
         ),
       )
 
-      CommunityPaybackAndDeliusMockServer.postAppointment("PROJ1")
+      CommunityPaybackAndDeliusMockServer.postAppointment(CRN, EVENT_NUMBER)
 
       schedulingService.scheduleAppointments(CRN, EVENT_NUMBER, trigger = "UPDATE-01 IT")
 
       CommunityPaybackAndDeliusMockServer.postAppointmentVerify(
-        projectCode = "PROJ1",
+        crn = CRN,
+        eventNumber = EVENT_NUMBER,
         date = schedulingDate.plusDays(14),
         startTime = LocalTime.of(10, 0),
         endTime = LocalTime.of(13, 0),

@@ -8,13 +8,13 @@ import org.junit.jupiter.params.provider.CsvSource
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Code
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCodeDescription
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDNameCode
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDRequirementProgress
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingAllocation
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingAvailability
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingDayOfWeek
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingExistingAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingFrequency
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingProject
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.RequirementProgress
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.scheduling.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingAllocation
@@ -25,7 +25,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.toNDC
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.toSchedulingAllocation
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.toSchedulingAllocations
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.toSchedulingExistingAppointment
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.toSchedulingRequirementProgress
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.toSchedulingRequirement
 import java.time.DayOfWeek
 import java.time.Duration
 import java.time.LocalDate
@@ -35,17 +35,22 @@ import java.util.UUID
 class SchedulingMappersTest {
 
   @Nested
-  inner class RequirementProgressToSchedulingRequirement {
+  inner class BuildSchedulingRequirement {
 
     @Test
     fun success() {
-      val result = RequirementProgress(
+      val result = NDRequirementProgress(
         requiredMinutes = 100,
         completedMinutes = 25,
         adjustments = -10,
-      ).toSchedulingRequirementProgress()
+      ).toSchedulingRequirement(
+        crn = "CRN1",
+        eventNumber = 2,
+      )
 
       assertThat(result.requirementLengthMinutes).isEqualTo(Duration.ofMinutes(90))
+      assertThat(result.crn).isEqualTo("CRN1")
+      assertThat(result.deliusEventNumber).isEqualTo(2)
     }
   }
 
