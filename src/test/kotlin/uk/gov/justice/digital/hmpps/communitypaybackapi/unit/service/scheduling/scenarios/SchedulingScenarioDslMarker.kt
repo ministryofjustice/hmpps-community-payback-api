@@ -163,7 +163,6 @@ class ProjectBuilder(private val code: String) {
 }
 
 class AllocationBuilder {
-  private var id: String? = null
   private var projectCode: String? = null
   private var frequency: SchedulingFrequency = SchedulingFrequency.WEEKLY
   private var dayOfWeek: DayOfWeek = DayOfWeek.MONDAY
@@ -173,8 +172,8 @@ class AllocationBuilder {
   private var endDate: Int? = null
   private var alias: String? = null
 
-  fun id(value: String) {
-    id = value
+  fun alias(alias: String) {
+    this.alias = alias
   }
   fun projectCode(code: String) {
     projectCode = code
@@ -204,15 +203,15 @@ class AllocationBuilder {
   fun build(today: LocalDate, projects: Map<String, SchedulingProject>): SchedulingAllocation {
     val project = projects[projectCode] ?: error("Project $projectCode not found")
     return SchedulingAllocation(
-      id = id.hashCode().toLong(),
+      id = alias.hashCode().toLong(),
       alias = alias,
       project = project,
       frequency = frequency,
       dayOfWeek = dayOfWeek,
       startDateInclusive = startDate?.let { today.plusDays(it.toLong()) } ?: today,
       endDateInclusive = endDate?.let { today.plusDays(it.toLong()) },
-      startTime = startTime ?: error("Start time must be specified for allocation $id"),
-      endTime = endTime ?: error("End time must be specified for allocation $id"),
+      startTime = startTime ?: error("Start time must be specified for allocation $alias"),
+      endTime = endTime ?: error("End time must be specified for allocation $alias"),
     )
   }
 }

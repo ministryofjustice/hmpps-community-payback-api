@@ -30,7 +30,7 @@ class SchedulingScenariosInconsistentBehavioursTest {
           projectExistsWithCode("PROJ4")
 
           allocation {
-            id("ALLOC1")
+            alias("ALLOC1")
             projectCode("PROJ1")
             frequency(ONCE)
             onWeekDay(MONDAY)
@@ -41,7 +41,7 @@ class SchedulingScenariosInconsistentBehavioursTest {
           }
 
           allocation {
-            id("ALLOC2")
+            alias("ALLOC2")
             projectCode("PROJ2")
             frequency(WEEKLY)
             onWeekDay(MONDAY)
@@ -50,7 +50,7 @@ class SchedulingScenariosInconsistentBehavioursTest {
           }
 
           allocation {
-            id("ALLOC3")
+            alias("ALLOC3")
             projectCode("PROJ3")
             frequency(WEEKLY)
             onWeekDay(MONDAY)
@@ -59,7 +59,7 @@ class SchedulingScenariosInconsistentBehavioursTest {
           }
 
           allocation {
-            id("ALLOC4")
+            alias("ALLOC4")
             projectCode("PROJ4")
             frequency(FORTNIGHTLY)
             onWeekDay(MONDAY)
@@ -131,7 +131,7 @@ class SchedulingScenariosInconsistentBehavioursTest {
           projectExistsWithCode("PROJ4")
 
           allocation {
-            id("ALLOC1")
+            alias("ALLOC1")
             projectCode("PROJ1")
             frequency(ONCE)
             onWeekDay(MONDAY)
@@ -142,7 +142,7 @@ class SchedulingScenariosInconsistentBehavioursTest {
           }
 
           allocation {
-            id("ALLOC2")
+            alias("ALLOC2")
             projectCode("PROJ2")
             frequency(WEEKLY)
             onWeekDay(MONDAY)
@@ -151,7 +151,7 @@ class SchedulingScenariosInconsistentBehavioursTest {
           }
 
           allocation {
-            id("ALLOC3")
+            alias("ALLOC3")
             projectCode("PROJ3")
             frequency(WEEKLY)
             onWeekDay(MONDAY)
@@ -237,7 +237,7 @@ class SchedulingScenariosInconsistentBehavioursTest {
           projectExistsWithCode("PROJ4")
 
           allocation {
-            id("ALLOC1")
+            alias("ALLOC1")
             projectCode("PROJ1")
             frequency(ONCE)
             onWeekDay(MONDAY)
@@ -248,7 +248,7 @@ class SchedulingScenariosInconsistentBehavioursTest {
           }
 
           allocation {
-            id("ALLOC2")
+            alias("ALLOC2")
             projectCode("PROJ2")
             frequency(WEEKLY)
             onWeekDay(MONDAY)
@@ -315,7 +315,7 @@ class SchedulingScenariosInconsistentBehavioursTest {
           projectExistsWithCode("PROJ1")
 
           allocation {
-            id("ALLOC1")
+            alias("ALLOC1")
             projectCode("PROJ1")
             frequency(WEEKLY)
             onWeekDay(MONDAY)
@@ -373,7 +373,7 @@ class SchedulingScenariosInconsistentBehavioursTest {
           projectExistsWithCode("PROJ1")
 
           allocation {
-            id("ALLOC1")
+            alias("ALLOC1")
             projectCode("PROJ1")
             frequency(WEEKLY)
             onWeekDay(MONDAY)

@@ -24,7 +24,7 @@ class SchedulingScenariosNoOpTest {
         projectExistsWithCode("PROJ1")
 
         allocation {
-          id("ALLOC1")
+          alias("ALLOC1")
           projectCode("PROJ1")
           frequency(WEEKLY)
           onWeekDay(MONDAY)
@@ -58,7 +58,7 @@ class SchedulingScenariosNoOpTest {
         projectExistsWithCode("PROJ1")
 
         allocation {
-          id("ALLOC1")
+          alias("ALLOC1")
           projectCode("PROJ1")
           frequency(WEEKLY)
           onWeekDay(MONDAY)
@@ -92,7 +92,7 @@ class SchedulingScenariosNoOpTest {
         projectExistsWithCode("PROJ1")
 
         allocation {
-          id("ALLOC1")
+          alias("ALLOC1")
           projectCode("PROJ1")
           frequency(WEEKLY)
           onWeekDay(MONDAY)
@@ -126,7 +126,7 @@ class SchedulingScenariosNoOpTest {
         projectExistsWithCode("PROJ1")
 
         allocation {
-          id("ALLOC1")
+          alias("ALLOC1")
           projectCode("PROJ1")
           frequency(WEEKLY)
           onWeekDay(MONDAY)
@@ -160,7 +160,7 @@ class SchedulingScenariosNoOpTest {
         projectExistsWithCode("PROJ1")
 
         allocation {
-          id("ALLOC1")
+          alias("ALLOC1")
           projectCode("PROJ1")
           frequency(WEEKLY)
           onWeekDay(MONDAY)
@@ -194,7 +194,7 @@ class SchedulingScenariosNoOpTest {
         projectExistsWithCode("PROJ1")
 
         allocation {
-          id("ALLOC1")
+          alias("ALLOC1")
           projectCode("PROJ1")
           frequency(WEEKLY)
           onWeekDay(MONDAY)
@@ -228,7 +228,7 @@ class SchedulingScenariosNoOpTest {
         projectExistsWithCode("PROJ1")
 
         allocation {
-          id("ALLOC1")
+          alias("ALLOC1")
           projectCode("PROJ1")
           frequency(WEEKLY)
           onWeekDay(MONDAY)
@@ -264,7 +264,7 @@ class SchedulingScenariosNoOpTest {
         projectExistsWithCode("PROJ1")
 
         allocation {
-          id("ALLOC1")
+          alias("ALLOC1")
           projectCode("PROJ1")
           frequency(WEEKLY)
           onWeekDay(TUESDAY)
@@ -307,7 +307,7 @@ class SchedulingScenariosNoOpTest {
         projectExistsWithCode("PROJ1")
 
         allocation {
-          id("ALLOC1")
+          alias("ALLOC1")
           projectCode("PROJ1")
           frequency(WEEKLY)
           onWeekDay(TUESDAY)
@@ -351,7 +351,7 @@ class SchedulingScenariosNoOpTest {
         projectExistsWithCode("PROJ2")
 
         allocation {
-          id("ALLOC1")
+          alias("ALLOC1")
           projectCode("PROJ1")
           frequency(WEEKLY)
           onWeekDay(MONDAY)
@@ -360,7 +360,7 @@ class SchedulingScenariosNoOpTest {
         }
 
         allocation {
-          id("ALLOC2")
+          alias("ALLOC2")
           projectCode("PROJ2")
           frequency(WEEKLY)
           onWeekDay(TUESDAY)
@@ -435,7 +435,7 @@ class SchedulingScenariosNoOpTest {
         projectExistsWithCode("PROJ2")
 
         allocation {
-          id("ALLOC1")
+          alias("ALLOC1")
           projectCode("PROJ1")
           frequency(WEEKLY)
           onWeekDay(MONDAY)
@@ -444,7 +444,7 @@ class SchedulingScenariosNoOpTest {
         }
 
         allocation {
-          id("ALLOC2")
+          alias("ALLOC2")
           projectCode("PROJ2")
           frequency(WEEKLY)
           onWeekDay(TUESDAY)

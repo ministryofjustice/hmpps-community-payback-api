@@ -20,7 +20,7 @@ class SchedulingScenariosNonWorkingDatesTest {
         projectExistsWithCode("PROJ1")
 
         allocation {
-          id("ALLOC1")
+          alias("ALLOC1")
           projectCode("PROJ1")
           frequency(ONCE)
           onWeekDay(SATURDAY)
@@ -49,7 +49,7 @@ class SchedulingScenariosNonWorkingDatesTest {
         projectExistsWithCode("PROJ1")
 
         allocation {
-          id("ALLOC1")
+          alias("ALLOC1")
           projectCode("PROJ1")
           frequency(WEEKLY)
           onWeekDay(MONDAY)
@@ -106,7 +106,7 @@ class SchedulingScenariosNonWorkingDatesTest {
         projectExistsWithCode("PROJ1")
 
         allocation {
-          id("ALLOC1")
+          alias("ALLOC1")
           projectCode("PROJ1")
           frequency(FORTNIGHTLY)
           onWeekDay(MONDAY)
@@ -163,7 +163,7 @@ class SchedulingScenariosNonWorkingDatesTest {
         projectExistsWithCode("PROJ1")
 
         allocation {
-          id("ALLOC1")
+          alias("ALLOC1")
           projectCode("PROJ1")
           frequency(WEEKLY)
           onWeekDay(MONDAY)

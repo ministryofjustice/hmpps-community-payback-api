@@ -25,7 +25,7 @@ class SchedulingScenariosRemainingTimeTest {
         projectExistsWithCode("PROJ1")
 
         allocation {
-          id("ALLOC1")
+          alias("ALLOC1")
           projectCode("PROJ1")
           frequency(WEEKLY)
           onWeekDay(MONDAY)
@@ -51,7 +51,7 @@ class SchedulingScenariosRemainingTimeTest {
         projectExistsWithCode("PROJ2")
 
         allocation {
-          id("ALLOC1")
+          alias("ALLOC1")
           projectCode("PROJ1")
           frequency(WEEKLY)
           onWeekDay(MONDAY)
@@ -60,7 +60,7 @@ class SchedulingScenariosRemainingTimeTest {
         }
 
         allocation {
-          id("ALLOC2")
+          alias("ALLOC2")
           projectCode("PROJ2")
           frequency(WEEKLY)
           onWeekDay(TUESDAY)
@@ -94,7 +94,7 @@ class SchedulingScenariosRemainingTimeTest {
         projectExistsWithCode("PROJ2")
 
         allocation {
-          id("ALLOC1")
+          alias("ALLOC1")
           projectCode("PROJ1")
           frequency(WEEKLY)
           onWeekDay(MONDAY)
@@ -103,7 +103,7 @@ class SchedulingScenariosRemainingTimeTest {
         }
 
         allocation {
-          id("ALLOC2")
+          alias("ALLOC2")
           projectCode("PROJ2")
           frequency(WEEKLY)
           onWeekDay(TUESDAY)
@@ -137,7 +137,7 @@ class SchedulingScenariosRemainingTimeTest {
         projectExistsWithCode("PROJ2")
 
         allocation {
-          id("ALLOC1")
+          alias("ALLOC1")
           projectCode("PROJ1")
           frequency(WEEKLY)
           onWeekDay(MONDAY)
@@ -146,7 +146,7 @@ class SchedulingScenariosRemainingTimeTest {
         }
 
         allocation {
-          id("ALLOC2")
+          alias("ALLOC2")
           projectCode("PROJ2")
           frequency(WEEKLY)
           onWeekDay(TUESDAY)
@@ -189,7 +189,7 @@ class SchedulingScenariosRemainingTimeTest {
         projectExistsWithCode("PROJ2")
 
         allocation {
-          id("ALLOC1")
+          alias("ALLOC1")
           projectCode("PROJ1")
           frequency(WEEKLY)
           onWeekDay(MONDAY)
@@ -198,7 +198,7 @@ class SchedulingScenariosRemainingTimeTest {
         }
 
         allocation {
-          id("ALLOC2")
+          alias("ALLOC2")
           projectCode("PROJ2")
           frequency(WEEKLY)
           onWeekDay(TUESDAY)
@@ -241,7 +241,7 @@ class SchedulingScenariosRemainingTimeTest {
         projectExistsWithCode("PROJ2")
 
         allocation {
-          id("ALLOC1")
+          alias("ALLOC1")
           projectCode("PROJ1")
           frequency(WEEKLY)
           onWeekDay(MONDAY)
@@ -250,7 +250,7 @@ class SchedulingScenariosRemainingTimeTest {
         }
 
         allocation {
-          id("ALLOC2")
+          alias("ALLOC2")
           projectCode("PROJ2")
           frequency(WEEKLY)
           onWeekDay(TUESDAY)
@@ -293,7 +293,7 @@ class SchedulingScenariosRemainingTimeTest {
         projectExistsWithCode("PROJ2")
 
         allocation {
-          id("ALLOC1")
+          alias("ALLOC1")
           projectCode("PROJ1")
           frequency(WEEKLY)
           onWeekDay(MONDAY)
@@ -302,7 +302,7 @@ class SchedulingScenariosRemainingTimeTest {
         }
 
         allocation {
-          id("ALLOC2")
+          alias("ALLOC2")
           projectCode("PROJ2")
           frequency(WEEKLY)
           onWeekDay(TUESDAY)
@@ -345,7 +345,7 @@ class SchedulingScenariosRemainingTimeTest {
         projectExistsWithCode("PROJ2")
 
         allocation {
-          id("ALLOC1")
+          alias("ALLOC1")
           projectCode("PROJ1")
           frequency(WEEKLY)
           onWeekDay(MONDAY)
@@ -354,7 +354,7 @@ class SchedulingScenariosRemainingTimeTest {
         }
 
         allocation {
-          id("ALLOC2")
+          alias("ALLOC2")
           projectCode("PROJ2")
           frequency(WEEKLY)
           onWeekDay(TUESDAY)
@@ -397,7 +397,7 @@ class SchedulingScenariosRemainingTimeTest {
         projectExistsWithCode("PROJ2")
 
         allocation {
-          id("ALLOC1")
+          alias("ALLOC1")
           projectCode("PROJ1")
           frequency(WEEKLY)
           onWeekDay(MONDAY)
@@ -406,7 +406,7 @@ class SchedulingScenariosRemainingTimeTest {
         }
 
         allocation {
-          id("ALLOC2")
+          alias("ALLOC2")
           projectCode("PROJ2")
           frequency(WEEKLY)
           onWeekDay(TUESDAY)

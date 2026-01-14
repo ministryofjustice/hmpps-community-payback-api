@@ -24,7 +24,7 @@ class SchedulingScenariosStartEndDatesTest {
           projectExistsWithCode("PROJ1")
 
           allocation {
-            id("ALLOC1")
+            alias("ALLOC1")
             projectCode("PROJ1")
             frequency(WEEKLY)
             onWeekDay(TUESDAY)
@@ -65,7 +65,7 @@ class SchedulingScenariosStartEndDatesTest {
           projectExistsWithCode("PROJ1")
 
           allocation {
-            id("ALLOC1")
+            alias("ALLOC1")
             projectCode("PROJ1")
             frequency(WEEKLY)
             onWeekDay(TUESDAY)
@@ -106,7 +106,7 @@ class SchedulingScenariosStartEndDatesTest {
           projectExistsWithCode("PROJ1")
 
           allocation {
-            id("ALLOC1")
+            alias("ALLOC1")
             projectCode("PROJ1")
             frequency(WEEKLY)
             onWeekDay(TUESDAY)
@@ -151,7 +151,7 @@ class SchedulingScenariosStartEndDatesTest {
 
           allocation {
             requirementIsHours(80)
-            id("ALLOC1")
+            alias("ALLOC1")
             projectCode("PROJ1")
             frequency(FORTNIGHTLY)
             onWeekDay(MONDAY)
@@ -193,7 +193,7 @@ class SchedulingScenariosStartEndDatesTest {
           projectExistsWithCode("PROJ1")
 
           allocation {
-            id("ALLOC1")
+            alias("ALLOC1")
             projectCode("PROJ1")
             frequency(FORTNIGHTLY)
             onWeekDay(MONDAY)
@@ -234,7 +234,7 @@ class SchedulingScenariosStartEndDatesTest {
           projectExistsWithCode("PROJ1")
 
           allocation {
-            id("ALLOC1")
+            alias("ALLOC1")
             projectCode("PROJ1")
             frequency(FORTNIGHTLY)
             onWeekDay(MONDAY)
@@ -261,7 +261,7 @@ class SchedulingScenariosStartEndDatesTest {
           projectExistsWithCode("PROJ1")
 
           allocation {
-            id("ALLOC1")
+            alias("ALLOC1")
             projectCode("PROJ1")
             frequency(FORTNIGHTLY)
             onWeekDay(MONDAY)
