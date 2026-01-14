@@ -88,7 +88,6 @@ class SchedulingScenarioBuilder {
       this@SchedulingScenarioBuilder.existingAppointments.add(
         builder.build(
           this@SchedulingScenarioBuilder.today,
-          this@SchedulingScenarioBuilder.projects,
           this@SchedulingScenarioBuilder.allocations,
         ),
       )
@@ -257,21 +256,20 @@ class AppointmentBuilder {
     creditedTime = null
   }
 
-  fun build(today: LocalDate, projects: Map<String, SchedulingProject>, allocations: List<SchedulingAllocation>): SchedulingExistingAppointment {
-    val project = projects[projectCode] ?: error("Project $projectCode not found")
+  fun build(today: LocalDate, allocations: List<SchedulingAllocation>): SchedulingExistingAppointment {
     val allocation = allocationId?.let { id ->
       allocations.find { it.id == id.hashCode().toLong() }
     }
 
     return SchedulingExistingAppointment(
       id = UUID.randomUUID(),
-      project = project,
+      projectCode = projectCode,
       date = today.plusDays(date.toLong()),
       startTime = startTime,
       endTime = endTime,
       hasOutcome = hasOutcome,
-      timeCredited = creditedTime,
-      allocation = allocation,
+      minutesCredited = creditedTime,
+      allocationId = allocation?.id,
     )
   }
 }
