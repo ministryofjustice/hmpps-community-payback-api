@@ -16,7 +16,7 @@ import java.time.OffsetDateTime
 import java.util.UUID
 
 @Service
-open class DomainEventService(
+class DomainEventService(
   private val applicationEventPublisher: ApplicationEventPublisher,
   private val domainEventUrlConfig: DomainEventUrlConfig,
   private val domainEventPublisher: DomainEventPublisher,
@@ -46,7 +46,7 @@ open class DomainEventService(
           description = type.description,
           detailUrl = resolveUrl(id, type),
           occurredAt = OffsetDateTime.now(),
-          additionalInformation = additionalInformation.toHmppsAdditionalInformation(),
+          additionalInformation = buildAdditionalInformation(id, additionalInformation),
           personReference = personReferences.toHmppsPersonReference(),
         ),
       ),
@@ -65,11 +65,12 @@ open class DomainEventService(
     return urlTemplate.resolve(mapOf("id" to id.toString()))
   }
 
-  private fun Map<AdditionalInformationType, Any>.toHmppsAdditionalInformation() = if (this.isEmpty()) {
-    null
-  } else {
-    HmppsAdditionalInformation(mapKeys { it.key.name })
-  }
+  private fun buildAdditionalInformation(
+    id: UUID,
+    additionalInformation: Map<AdditionalInformationType, Any>,
+  ): HmppsAdditionalInformation = HmppsAdditionalInformation(
+    map = mapOf(AdditionalInformationType.EVENT_ID.name to id).plus(additionalInformation.mapKeys { it.key.name }),
+  )
 
   private fun Map<PersonReferenceType, String>.toHmppsPersonReference() = if (this.isEmpty()) {
     null
@@ -92,6 +93,7 @@ enum class DomainEventType(
 
 enum class AdditionalInformationType {
   APPOINTMENT_ID,
+  EVENT_ID,
 }
 
 enum class PersonReferenceType {

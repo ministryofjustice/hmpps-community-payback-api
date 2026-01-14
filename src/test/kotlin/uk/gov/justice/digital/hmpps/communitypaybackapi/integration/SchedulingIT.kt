@@ -1,8 +1,11 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.integration
 
+import org.awaitility.Awaitility.await
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.ApplicationContext
+import org.springframework.data.repository.findByIdOrNull
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Code
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDRequirementProgress
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingAllocation
@@ -12,26 +15,38 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingFrequ
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingProject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDUnpaidWorkRequirement
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.findNextOrSameDateForDayOfWeek
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentOutcomeEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.validNoEndDate
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.validWithOutcome
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.CommunityPaybackAndDeliusMockServer
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdditionalInformationType
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.DomainEventType
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.DomainEventPublisher
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.HmmpsEventPersonReferences
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.HmppsAdditionalInformation
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.HmppsDomainEvent
 import java.time.DayOfWeek
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
+import java.time.OffsetDateTime
+import java.util.UUID
+import java.util.concurrent.TimeUnit
 import kotlin.Int
 
-/*
-Currently these tests invoke scheduling directly. once the scheduling logic
-is integrated into appointment change logic these tests should instead invoke
-scheduling via appointment changes
- */
 class SchedulingIT : IntegrationTestBase() {
 
   @Autowired
-  lateinit var schedulingService: SchedulingService
+  lateinit var applicationContext: ApplicationContext
+
+  @Autowired
+  lateinit var domainEventPublisher: DomainEventPublisher
+
+  @Autowired
+  lateinit var appointmentOutcomeEntityRepository: AppointmentOutcomeEntityRepository
 
   companion object {
     const val CRN: String = "CRN01"
@@ -39,27 +54,23 @@ class SchedulingIT : IntegrationTestBase() {
   }
 
   @Nested
-  inner class AppointmentUpdate {
+  inner class SchedulingOnAppointmentUpdate {
 
     @Test
-    fun `UPDATE-01 New Truncated Appointment created after start time amended and outcome recorded`() {
-      // DA: Once we have integrated with appointment update amend this scenario
-      // to update today's appointment's start time and outcome via the API instead
-      // of 'hardcoding' the outcome in the appointment definition
+    fun `Schedule already sufficient, do nothing`() {
+      val schedulingDate = setClockToDayOfWeek(DayOfWeek.MONDAY)
 
-      val schedulingDate = LocalDate.now().findNextOrSameDateForDayOfWeek(DayOfWeek.WEDNESDAY)
-      clock.setNow(schedulingDate.atTime(12, 0))
+      CommunityPaybackAndDeliusMockServer.getNonWorkingDays(emptyList())
 
-      CommunityPaybackAndDeliusMockServer.getNonWorkingDays(listOf(schedulingDate.plusDays(7)))
-
+      // ALLOC1-PROJ1-WK-MON-10:00-20:00
       val allocation1 = NDSchedulingAllocation.valid().copy(
         id = 1L,
         projectAvailability = null,
         project = NDSchedulingProject.validNoEndDate().copy(code = Code("PROJ1")),
-        startDateInclusive = LocalDate.now().minusDays(200),
+        startDateInclusive = schedulingDate.minusDays(200),
         endDateInclusive = null,
         frequency = NDSchedulingFrequency.WEEKLY,
-        dayOfWeek = NDSchedulingDayOfWeek.WEDNESDAY,
+        dayOfWeek = NDSchedulingDayOfWeek.MONDAY,
         startTime = LocalTime.of(10, 0),
         endTime = LocalTime.of(18, 0),
       )
@@ -69,68 +80,13 @@ class SchedulingIT : IntegrationTestBase() {
         eventNumber = EVENT_NUMBER,
         NDUnpaidWorkRequirement(
           requirementProgress = NDRequirementProgress(
-            requiredMinutes = Duration.ofHours(80).toMinutes().toInt(),
+            requiredMinutes = Duration.ofHours(22).toMinutes().toInt(),
             completedMinutes = 0,
-            adjustments = Duration.ofHours(2).toMinutes().toInt(),
+            adjustments = -Duration.ofHours(2).toMinutes().toInt(),
           ),
           allocations = listOf(allocation1),
           appointments = listOf(
-            NDSchedulingExistingAppointment.validWithOutcome().copy(
-              date = schedulingDate.minusDays(101),
-              allocationId = null,
-              startTime = LocalTime.of(14, 0),
-              endTime = LocalTime.of(18, 0),
-              minutesCredited = Duration.ofHours(4),
-            ),
-            NDSchedulingExistingAppointment.validWithOutcome().copy(
-              date = schedulingDate.minusDays(100),
-              allocationId = null,
-              startTime = LocalTime.of(12, 0),
-              endTime = LocalTime.of(16, 0),
-              minutesCredited = Duration.ofHours(4),
-            ),
-            NDSchedulingExistingAppointment.validWithOutcome().copy(
-              date = schedulingDate.minusDays(56),
-              allocationId = allocation1.id,
-              startTime = LocalTime.of(10, 0),
-              endTime = LocalTime.of(18, 0),
-              minutesCredited = Duration.ofHours(8),
-            ),
-            NDSchedulingExistingAppointment.validWithOutcome().copy(
-              date = schedulingDate.minusDays(49),
-              allocationId = allocation1.id,
-              startTime = LocalTime.of(10, 0),
-              endTime = LocalTime.of(18, 0),
-              minutesCredited = Duration.ofHours(8),
-            ),
-            NDSchedulingExistingAppointment.validWithOutcome().copy(
-              date = schedulingDate.minusDays(42),
-              allocationId = allocation1.id,
-              startTime = LocalTime.of(10, 0),
-              endTime = LocalTime.of(18, 0),
-              minutesCredited = Duration.ofHours(8),
-            ),
-            NDSchedulingExistingAppointment.validWithOutcome().copy(
-              date = schedulingDate.minusDays(35),
-              allocationId = allocation1.id,
-              startTime = LocalTime.of(10, 0),
-              endTime = LocalTime.of(18, 0),
-              minutesCredited = Duration.ofHours(8),
-            ),
-            NDSchedulingExistingAppointment.validWithOutcome().copy(
-              date = schedulingDate.minusDays(28),
-              allocationId = allocation1.id,
-              startTime = LocalTime.of(10, 0),
-              endTime = LocalTime.of(18, 0),
-              minutesCredited = Duration.ofHours(8),
-            ),
-            NDSchedulingExistingAppointment.validWithOutcome().copy(
-              date = schedulingDate.minusDays(21),
-              allocationId = allocation1.id,
-              startTime = LocalTime.of(10, 0),
-              endTime = LocalTime.of(18, 0),
-              minutesCredited = Duration.ofHours(8),
-            ),
+            // Today-14, ALLOC1, 10:00-18:00, 08:00 Credited
             NDSchedulingExistingAppointment.validWithOutcome().copy(
               date = schedulingDate.minusDays(14),
               allocationId = allocation1.id,
@@ -138,6 +94,7 @@ class SchedulingIT : IntegrationTestBase() {
               endTime = LocalTime.of(18, 0),
               minutesCredited = Duration.ofHours(8),
             ),
+            // Today-7, ALLOC1, 10:00-18:00, 08:00 Credited
             NDSchedulingExistingAppointment.validWithOutcome().copy(
               date = schedulingDate.minusDays(7),
               allocationId = allocation1.id,
@@ -145,12 +102,163 @@ class SchedulingIT : IntegrationTestBase() {
               endTime = LocalTime.of(18, 0),
               minutesCredited = Duration.ofHours(8),
             ),
+            // Today, ALLOC1, 10:00-18:00, 04:00 Credited
             NDSchedulingExistingAppointment.validWithOutcome().copy(
               date = schedulingDate,
               allocationId = allocation1.id,
               startTime = LocalTime.of(13, 0),
               endTime = LocalTime.of(20, 0),
-              minutesCredited = Duration.ofHours(7),
+              minutesCredited = Duration.ofHours(4),
+            ),
+          ),
+        ),
+      )
+
+      val outcomeRecordId = appointmentOutcomeEntityRepository.save(
+        AppointmentOutcomeEntity.valid(applicationContext).copy(
+          crn = CRN,
+          deliusEventNumber = EVENT_NUMBER,
+        ),
+      ).id
+
+      publishAppointmentUpdateDomainEvent(outcomeRecordId)
+      waitForSchedulingToRun(outcomeRecordId)
+
+      CommunityPaybackAndDeliusMockServer.postAppointmentVerifyZeroCalls()
+    }
+
+    @Test
+    fun `New appointments required after shortfall created by non attendance`() {
+      val schedulingDate = setClockToDayOfWeek(DayOfWeek.WEDNESDAY)
+
+      // This will block ALLOC1 on this specific date
+      CommunityPaybackAndDeliusMockServer.getNonWorkingDays(listOf(schedulingDate.plusDays(17)))
+
+      // ALLOC1-PROJ1-FN-SAT-10:00-16:00, Started Today-365
+      val allocation1 = NDSchedulingAllocation.valid().copy(
+        id = 1L,
+        projectAvailability = null,
+        project = NDSchedulingProject.validNoEndDate().copy(code = Code("PROJ1")),
+        startDateInclusive = schedulingDate.minusDays(365),
+        endDateInclusive = null,
+        frequency = NDSchedulingFrequency.FORTNIGHTLY,
+        dayOfWeek = NDSchedulingDayOfWeek.SATURDAY,
+        startTime = LocalTime.of(10, 0),
+        endTime = LocalTime.of(14, 0),
+      )
+
+      // ALLOC2-PROJ1-FN-SUN-12:00-18:00, Started Today-365
+      val allocation2 = NDSchedulingAllocation.valid().copy(
+        id = 2L,
+        projectAvailability = null,
+        project = NDSchedulingProject.validNoEndDate().copy(code = Code("PROJ2")),
+        startDateInclusive = schedulingDate.minusDays(365),
+        endDateInclusive = null,
+        frequency = NDSchedulingFrequency.FORTNIGHTLY,
+        dayOfWeek = NDSchedulingDayOfWeek.SUNDAY,
+        startTime = LocalTime.of(12, 0),
+        endTime = LocalTime.of(18, 0),
+      )
+
+      CommunityPaybackAndDeliusMockServer.getUnpaidWorkRequirement(
+        crn = CRN,
+        eventNumber = EVENT_NUMBER,
+        NDUnpaidWorkRequirement(
+          requirementProgress = NDRequirementProgress.valid().copy(
+            requiredMinutes = Duration.ofHours(52).toMinutes().toInt(),
+            completedMinutes = 0,
+            adjustments = 0,
+          ),
+          allocations = listOf(allocation1, allocation2),
+          appointments = listOf(
+            // Today-32, ALLOC1, 10:00-16:00, 4 Hours Credited
+            NDSchedulingExistingAppointment.validWithOutcome().copy(
+              date = schedulingDate.minusDays(32),
+              allocationId = allocation1.id,
+              startTime = LocalTime.of(10, 0),
+              endTime = LocalTime.of(14, 0),
+              minutesCredited = Duration.ofHours(4),
+            ),
+            // Today-31, ALLOC2, 12:00-18:00, 4 Hours Credited
+            NDSchedulingExistingAppointment.validWithOutcome().copy(
+              date = schedulingDate.minusDays(31),
+              allocationId = allocation2.id,
+              startTime = LocalTime.of(12, 0),
+              endTime = LocalTime.of(18, 0),
+              minutesCredited = Duration.ofHours(4),
+            ),
+            // Today-25, ALLOC1, 10:00-16:00, 4 Hours Credited
+            NDSchedulingExistingAppointment.validWithOutcome().copy(
+              date = schedulingDate.minusDays(25),
+              allocationId = allocation1.id,
+              startTime = LocalTime.of(10, 0),
+              endTime = LocalTime.of(14, 0),
+              minutesCredited = Duration.ofHours(4),
+            ),
+            // Today-24, ALLOC2, 12:00-18:00, 4 Hours Credited
+            NDSchedulingExistingAppointment.validWithOutcome().copy(
+              date = schedulingDate.minusDays(24),
+              allocationId = allocation2.id,
+              startTime = LocalTime.of(12, 0),
+              endTime = LocalTime.of(18, 0),
+              minutesCredited = Duration.ofHours(4),
+            ),
+            // Today-18, ALLOC1, 10:00-16:00, 4 Hours Credited
+            NDSchedulingExistingAppointment.validWithOutcome().copy(
+              date = schedulingDate.minusDays(18),
+              allocationId = allocation1.id,
+              startTime = LocalTime.of(10, 0),
+              endTime = LocalTime.of(14, 0),
+              minutesCredited = Duration.ofHours(4),
+            ),
+            // Today-17, ALLOC2, 12:00-18:00, 4 Hours Credited
+            NDSchedulingExistingAppointment.validWithOutcome().copy(
+              date = schedulingDate.minusDays(17),
+              allocationId = allocation2.id,
+              startTime = LocalTime.of(12, 0),
+              endTime = LocalTime.of(18, 0),
+              minutesCredited = Duration.ofHours(4),
+            ),
+            // Today-11, ALLOC1, 10:00-16:00, 4 Hours Credited
+            NDSchedulingExistingAppointment.validWithOutcome().copy(
+              date = schedulingDate.minusDays(11),
+              allocationId = allocation1.id,
+              startTime = LocalTime.of(10, 0),
+              endTime = LocalTime.of(14, 0),
+              minutesCredited = Duration.ofHours(4),
+            ),
+            // Today-10, ALLOC2, 12:00-18:00, 4 Hours Credited
+            NDSchedulingExistingAppointment.validWithOutcome().copy(
+              date = schedulingDate.minusDays(10),
+              allocationId = allocation2.id,
+              startTime = LocalTime.of(12, 0),
+              endTime = LocalTime.of(18, 0),
+              minutesCredited = Duration.ofHours(4),
+            ),
+            // Today-4, ALLOC1, 10:00-16:00, 4 Hours Credited
+            NDSchedulingExistingAppointment.validWithOutcome().copy(
+              date = schedulingDate.minusDays(4),
+              allocationId = allocation1.id,
+              startTime = LocalTime.of(10, 0),
+              endTime = LocalTime.of(14, 0),
+              minutesCredited = Duration.ofHours(4),
+            ),
+            // Today-3, ALLOC2, 12:00-18:00, 4 Hours Credited
+            NDSchedulingExistingAppointment.validWithOutcome().copy(
+              date = schedulingDate.minusDays(3),
+              allocationId = allocation2.id,
+              startTime = LocalTime.of(12, 0),
+              endTime = LocalTime.of(18, 0),
+              minutesCredited = Duration.ofHours(4),
+            ),
+            // Today-1, MANUAL, 12:00-22:00, Outcome pending
+            // updated to be non outcome
+            NDSchedulingExistingAppointment.validWithOutcome().copy(
+              date = schedulingDate.minusDays(3),
+              allocationId = null,
+              startTime = LocalTime.of(10, 0),
+              endTime = LocalTime.of(22, 0),
+              minutesCredited = null,
             ),
           ),
         ),
@@ -158,36 +266,75 @@ class SchedulingIT : IntegrationTestBase() {
 
       CommunityPaybackAndDeliusMockServer.postAppointment(CRN, EVENT_NUMBER)
 
-      schedulingService.scheduleAppointments(CRN, EVENT_NUMBER, trigger = "UPDATE-01 IT")
+      val outcomeRecordId = appointmentOutcomeEntityRepository.save(
+        AppointmentOutcomeEntity.valid(applicationContext).copy(
+          crn = CRN,
+          deliusEventNumber = EVENT_NUMBER,
+        ),
+      ).id
 
+      publishAppointmentUpdateDomainEvent(outcomeRecordId)
+      waitForSchedulingToRun(outcomeRecordId)
+
+      /*
+      Today+3 - ALLOC1, 10:00-16:00
+      Today+4 - ALLOC2, 12:00-18:00
+      Today+18 - ALLOC1, 12:00-14:00
+       */
       CommunityPaybackAndDeliusMockServer.postAppointmentVerify(
         crn = CRN,
         eventNumber = EVENT_NUMBER,
-        date = schedulingDate.plusDays(14),
+        projectCode = "PROJ1",
+        date = schedulingDate.plusDays(3),
         startTime = LocalTime.of(10, 0),
-        endTime = LocalTime.of(13, 0),
+        endTime = LocalTime.of(14, 0),
+      )
+      CommunityPaybackAndDeliusMockServer.postAppointmentVerify(
+        crn = CRN,
+        eventNumber = EVENT_NUMBER,
+        projectCode = "PROJ2",
+        date = schedulingDate.plusDays(4),
+        startTime = LocalTime.of(12, 0),
+        endTime = LocalTime.of(18, 0),
+      )
+      CommunityPaybackAndDeliusMockServer.postAppointmentVerify(
+        crn = CRN,
+        eventNumber = EVENT_NUMBER,
+        projectCode = "PROJ2",
+        date = schedulingDate.plusDays(18),
+        startTime = LocalTime.of(12, 0),
+        endTime = LocalTime.of(14, 0),
       )
     }
 
-    @Test
-    fun `UPDATE-02 Requirement Complete after Appointment Outcome Recorded`() {
-      // DA: To do
-      // DA: Need to determine what will update the requirement status - community payback or probation-integration?
+    private fun setClockToDayOfWeek(dayOfWeek: DayOfWeek): LocalDate {
+      val schedulingDate = LocalDate.now().findNextOrSameDateForDayOfWeek(dayOfWeek)
+      clock.setNow(schedulingDate.atTime(12, 0))
+      return schedulingDate
     }
 
-    @Test
-    fun `UPDATE-03 New Truncated Appointment created after Non-Attendance Outcome Recorded`() {
-      // DA: To do
+    private fun waitForSchedulingToRun(outcomeRecordId: UUID) {
+      await()
+        .atMost(2, TimeUnit.SECONDS)
+        .until { appointmentOutcomeEntityRepository.findByIdOrNull(outcomeRecordId)!!.schedulingRanAt != null }
     }
 
-    @Test
-    fun `UPDATE-04 New Appointments created after Non-Attendance Outcome Recorded`() {
-      // DA: To do
-    }
-
-    @Test
-    fun `UPDATE-05 Non-triggering changes made to Requirement before Appointment Update`() {
-      // DA: To do
+    private fun publishAppointmentUpdateDomainEvent(
+      eventId: UUID,
+    ) {
+      domainEventPublisher.publish(
+        HmppsDomainEvent(
+          eventType = DomainEventType.APPOINTMENT_UPDATED.eventType,
+          version = 1,
+          description = DomainEventType.APPOINTMENT_UPDATED.description,
+          detailUrl = "doesnt matter",
+          occurredAt = OffsetDateTime.now(),
+          additionalInformation = HmppsAdditionalInformation(
+            mapOf(AdditionalInformationType.EVENT_ID.name to eventId),
+          ),
+          personReference = HmmpsEventPersonReferences(emptyList()),
+        ),
+      )
     }
   }
 }

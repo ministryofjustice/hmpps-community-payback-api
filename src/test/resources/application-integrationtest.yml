@@ -21,6 +21,8 @@ spring:
 community-payback:
   community-campus-integration:
     enabled: true
+  scheduling:
+    enabled: true
   request-logging-enabled: true
   domain-events:
     urls:
@@ -37,8 +39,16 @@ hmpps.sqs:
       queueName: ${random.uuid}
       dlqMaxReceiveCount: 1
       errorVisibilityTimeout: 0
-    # this queue listens to the domain event topics so we can retrieve produced events
+    # this queue subscribes to the domain events topic and is used
+    # by the `DomainEventListener.kt`. When deployed this is provided
+    # automatically by AWS configuration
     hmppsdomaineventsqueue:
+      queueName: ${random.uuid}
+      dlqName: ${random.uuid}
+      subscribeTopicId: hmppseventtopic
+    # this queue subscribes to the domain events topic and is used
+    # by the `DomainEventAsserter.kt` integration test class
+    hmppsdomaineventsasserterqueue:
       queueName: ${random.uuid}
       dlqName: ${random.uuid}
       subscribeTopicId: hmppseventtopic

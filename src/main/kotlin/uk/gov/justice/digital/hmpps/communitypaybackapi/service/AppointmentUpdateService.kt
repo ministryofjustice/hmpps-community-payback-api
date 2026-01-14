@@ -13,6 +13,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentOutcom
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toAppointmentUpdatedDomainEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toUpdateAppointment
+import java.time.OffsetDateTime
 import java.util.UUID
 
 // This is an orchestration service so the number of dependencies is acceptable
@@ -32,6 +33,9 @@ class AppointmentUpdateService(
   }
 
   fun getAppointmentUpdatedDomainEventDetails(id: UUID) = appointmentOutcomeEntityRepository.findByIdOrNullForDomainEventDetails(id)?.toAppointmentUpdatedDomainEvent()
+
+  @Transactional
+  fun recordSchedulingRan(updateId: UUID) = appointmentOutcomeEntityRepository.setSchedulingRanAt(updateId, OffsetDateTime.now())
 
   @Transactional
   fun updateAppointmentOutcome(

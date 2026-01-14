@@ -140,15 +140,18 @@ object CommunityPaybackAndDeliusMockServer {
     )
   }
 
+  @SuppressWarnings("LongParameterList")
   fun postAppointmentVerify(
     crn: String,
     eventNumber: Int,
+    projectCode: String,
     date: LocalDate,
     startTime: LocalTime,
     endTime: LocalTime,
   ) {
     WireMock.verify(
       postRequestedFor(urlEqualTo("/community-payback-and-delius/case/$crn/event/$eventNumber/appointments"))
+        .withRequestBody(matchingJsonPath("$.projectCode.code", equalTo(projectCode)))
         .withRequestBody(matchingJsonPath("$.date", equalTo(date.toIsoDateString())))
         .withRequestBody(matchingJsonPath("$.startTime", equalTo(startTime.format(DateTimeFormatter.ISO_TIME))))
         .withRequestBody(matchingJsonPath("$.endTime", equalTo(endTime.format(DateTimeFormatter.ISO_TIME)))),
