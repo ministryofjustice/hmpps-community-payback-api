@@ -217,7 +217,7 @@ class AppointmentMappersTest {
       val date = LocalDate.of(2025, 9, 1)
       val startTime = LocalTime.of(9, 0)
       val endTime = LocalTime.of(17, 0)
-      val penaltyTime = HourMinuteDuration(Duration.ofMinutes(0))
+      val penaltyTime = HourMinuteDuration(Duration.ofMinutes(92))
       val supervisorOfficerCode = "CRN1"
       val respondBy = LocalDate.of(2025, 10, 1)
       val hiVisWorn = true
@@ -311,7 +311,8 @@ class AppointmentMappersTest {
 
       assertThat(result.contactOutcomeCode).isEqualTo(contactOutcomeCode)
 
-      assertThat(result.attendanceData?.penaltyTime).isEqualTo(penaltyTime)
+      assertThat(result.attendanceData?.penaltyTime).isEqualTo(HourMinuteDuration(Duration.ofMinutes(92)))
+      assertThat(result.attendanceData?.penaltyMinutes).isEqualTo(92)
       assertThat(result.attendanceData?.behaviour).isEqualTo(AppointmentBehaviourDto.SATISFACTORY)
       assertThat(result.attendanceData?.workQuality).isEqualTo(AppointmentWorkQualityDto.SATISFACTORY)
       assertThat(result.attendanceData?.hiVisWorn).isEqualTo(hiVisWorn)
