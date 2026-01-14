@@ -11,97 +11,93 @@ class SchedulingScenariosMiscTest {
   @Test
   fun `MISC-01 Insufficient Allocations to meet requirements`() {
     schedulingScenario {
-      test("MISC-01")
+      scenarioId("MISC-01")
       given {
-        today(MONDAY)
-        project("PROJ1")
-        project("PROJ2")
+        requirementIsHours(160)
+        todayIs(MONDAY)
+        projectExistsWithCode("PROJ1")
+        projectExistsWithCode("PROJ2")
 
         allocation {
           id("ALLOC1")
-          project("PROJ1")
+          projectCode("PROJ1")
           frequency(WEEKLY)
-          on(MONDAY)
+          onWeekDay(MONDAY)
           from("10:00")
           until("18:00")
-          endingIn(29)
+          endingInDays(29)
         }
 
         allocation {
           id("ALLOC2")
-          project("PROJ2")
+          projectCode("PROJ2")
           frequency(WEEKLY)
-          on(WEDNESDAY)
+          onWeekDay(WEDNESDAY)
           from("11:00")
           until("15:00")
-          endingIn(17)
+          endingInDays(17)
         }
-      }
-
-      whenScheduling {
-        requirementIsHours(160)
       }
 
       then {
-        shouldCreateAppointments {
+        shouldCreateAppointments(toAddressShortfall = Duration.ofHours(108)) {
           appointment {
-            project("PROJ1")
+            projectCode("PROJ1")
             allocation("ALLOC1")
-            today()
+            todayWithOffsetDays()
             from("10:00")
             until("18:00")
           }
           appointment {
-            project("PROJ2")
+            projectCode("PROJ2")
             allocation("ALLOC2")
-            today(2)
+            todayWithOffsetDays(2)
             from("11:00")
             until("15:00")
           }
           appointment {
-            project("PROJ1")
+            projectCode("PROJ1")
             allocation("ALLOC1")
-            today(7)
+            todayWithOffsetDays(7)
             from("10:00")
             until("18:00")
           }
           appointment {
-            project("PROJ2")
+            projectCode("PROJ2")
             allocation("ALLOC2")
-            today(9)
+            todayWithOffsetDays(9)
             from("11:00")
             until("15:00")
           }
           appointment {
-            project("PROJ1")
+            projectCode("PROJ1")
             allocation("ALLOC1")
-            today(14)
+            todayWithOffsetDays(14)
             from("10:00")
             until("18:00")
           }
           appointment {
-            project("PROJ2")
+            projectCode("PROJ2")
             allocation("ALLOC2")
-            today(16)
+            todayWithOffsetDays(16)
             from("11:00")
             until("15:00")
           }
           appointment {
-            project("PROJ1")
+            projectCode("PROJ1")
             allocation("ALLOC1")
-            today(21)
+            todayWithOffsetDays(21)
             from("10:00")
             until("18:00")
           }
           appointment {
-            project("PROJ1")
+            projectCode("PROJ1")
             allocation("ALLOC1")
-            today(28)
+            todayWithOffsetDays(28)
             from("10:00")
             until("18:00")
           }
         }
-        withShortfall(Duration.ofHours(108))
       }
     }
   }
@@ -109,32 +105,29 @@ class SchedulingScenariosMiscTest {
   @Test
   fun `MISC-03 Maximum Requirement Length`() {
     schedulingScenario {
-      test("MISC-03")
+      scenarioId("MISC-03")
       given {
-        today(MONDAY)
-        project("PROJ1")
+        requirementIsHours(300)
+        todayIs(MONDAY)
+        projectExistsWithCode("PROJ1")
 
         allocation {
           id("ALLOC1")
-          project("PROJ1")
+          projectCode("PROJ1")
           frequency(WEEKLY)
-          on(MONDAY)
+          onWeekDay(MONDAY)
           from("10:00")
           until("14:00")
         }
-      }
-
-      whenScheduling {
-        requirementIsHours(300)
       }
 
       then {
         shouldCreateAppointments {
           (0..74).forEach { week ->
             appointment {
-              project("PROJ1")
+              projectCode("PROJ1")
               allocation("ALLOC1")
-              today(week * 7)
+              todayWithOffsetDays(week * 7)
               from("10:00")
               until("14:00")
             }
@@ -147,41 +140,38 @@ class SchedulingScenariosMiscTest {
   @Test
   fun `MISC-04 If multiple allocations on same day, schedule earliest start time first`() {
     schedulingScenario {
-      test("MISC-04")
+      scenarioId("MISC-04")
       given {
-        today(MONDAY)
-        project("PROJ1")
-        project("PROJ2")
+        requirementIsHours(8)
+        todayIs(MONDAY)
+        projectExistsWithCode("PROJ1")
+        projectExistsWithCode("PROJ2")
 
         allocation {
           id("ALLOC1")
-          project("PROJ1")
+          projectCode("PROJ1")
           frequency(WEEKLY)
-          on(WEDNESDAY)
+          onWeekDay(WEDNESDAY)
           from("10:00")
           until("18:00")
         }
 
         allocation {
           id("ALLOC2")
-          project("PROJ2")
+          projectCode("PROJ2")
           frequency(WEEKLY)
-          on(WEDNESDAY)
+          onWeekDay(WEDNESDAY)
           from("08:00")
           until("16:00")
         }
       }
 
-      whenScheduling {
-        requirementIsHours(8)
-      }
-
       then {
         shouldCreateAppointments {
           appointment {
-            project("PROJ2")
+            projectCode("PROJ2")
             allocation("ALLOC2")
-            today(2)
+            todayWithOffsetDays(2)
             from("08:00")
             until("16:00")
           }

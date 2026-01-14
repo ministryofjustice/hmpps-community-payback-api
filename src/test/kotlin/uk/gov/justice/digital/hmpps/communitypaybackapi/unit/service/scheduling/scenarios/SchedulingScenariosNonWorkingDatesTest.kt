@@ -13,32 +13,28 @@ class SchedulingScenariosNonWorkingDatesTest {
   @Test
   fun `DATES-NWD-01 Once Frequency Ignored if Non Working Day`() {
     schedulingScenario {
-      test("DATES-NWD-01")
+      scenarioId("DATES-NWD-01")
       given {
-        today(MONDAY)
-        project("PROJ1")
+        requirementIsHours(8)
+        todayIs(MONDAY)
+        projectExistsWithCode("PROJ1")
 
         allocation {
           id("ALLOC1")
-          project("PROJ1")
+          projectCode("PROJ1")
           frequency(ONCE)
-          on(SATURDAY)
+          onWeekDay(SATURDAY)
           from("10:00")
           until("18:00")
           startingToday()
-          endingIn(7)
+          endingInDays(7)
         }
 
         nonWorkingDate(5)
       }
 
-      whenScheduling {
-        requirementIsHours(8)
-      }
-
       then {
-        shouldCreateAppointments { }
-        withShortfall(Duration.ofHours(8))
+        noActionsExpected(toAddressShortfall = Duration.ofHours(8))
       }
     }
   }
@@ -46,16 +42,17 @@ class SchedulingScenariosNonWorkingDatesTest {
   @Test
   fun `DATES-NWD-02 Week Frequency Skips Non Working Days`() {
     schedulingScenario {
-      test("DATES-NWD-02")
+      scenarioId("DATES-NWD-02")
       given {
-        today(MONDAY)
-        project("PROJ1")
+        requirementIsHours(32)
+        todayIs(MONDAY)
+        projectExistsWithCode("PROJ1")
 
         allocation {
           id("ALLOC1")
-          project("PROJ1")
+          projectCode("PROJ1")
           frequency(WEEKLY)
-          on(MONDAY)
+          onWeekDay(MONDAY)
           from("10:00")
           until("18:00")
         }
@@ -64,37 +61,33 @@ class SchedulingScenariosNonWorkingDatesTest {
         nonWorkingDate(14)
       }
 
-      whenScheduling {
-        requirementIsHours(32)
-      }
-
       then {
         shouldCreateAppointments {
           appointment {
-            project("PROJ1")
+            projectCode("PROJ1")
             allocation("ALLOC1")
-            today()
+            todayWithOffsetDays()
             from("10:00")
             until("18:00")
           }
           appointment {
-            project("PROJ1")
+            projectCode("PROJ1")
             allocation("ALLOC1")
-            today(21)
+            todayWithOffsetDays(21)
             from("10:00")
             until("18:00")
           }
           appointment {
-            project("PROJ1")
+            projectCode("PROJ1")
             allocation("ALLOC1")
-            today(28)
+            todayWithOffsetDays(28)
             from("10:00")
             until("18:00")
           }
           appointment {
-            project("PROJ1")
+            projectCode("PROJ1")
             allocation("ALLOC1")
-            today(35)
+            todayWithOffsetDays(35)
             from("10:00")
             until("18:00")
           }
@@ -106,16 +99,17 @@ class SchedulingScenariosNonWorkingDatesTest {
   @Test
   fun `DATES-NWD-03 Fortnightly frequency skips non working day`() {
     schedulingScenario {
-      test("DATES-NWD-03")
+      scenarioId("DATES-NWD-03")
       given {
-        today(MONDAY)
-        project("PROJ1")
+        requirementIsHours(32)
+        todayIs(MONDAY)
+        projectExistsWithCode("PROJ1")
 
         allocation {
           id("ALLOC1")
-          project("PROJ1")
+          projectCode("PROJ1")
           frequency(FORTNIGHTLY)
-          on(MONDAY)
+          onWeekDay(MONDAY)
           from("10:00")
           until("18:00")
           startingToday()
@@ -124,37 +118,33 @@ class SchedulingScenariosNonWorkingDatesTest {
         nonWorkingDate(14)
       }
 
-      whenScheduling {
-        requirementIsHours(32)
-      }
-
       then {
         shouldCreateAppointments {
           appointment {
-            project("PROJ1")
+            projectCode("PROJ1")
             allocation("ALLOC1")
-            today()
+            todayWithOffsetDays()
             from("10:00")
             until("18:00")
           }
           appointment {
-            project("PROJ1")
+            projectCode("PROJ1")
             allocation("ALLOC1")
-            today(28)
+            todayWithOffsetDays(28)
             from("10:00")
             until("18:00")
           }
           appointment {
-            project("PROJ1")
+            projectCode("PROJ1")
             allocation("ALLOC1")
-            today(42)
+            todayWithOffsetDays(42)
             from("10:00")
             until("18:00")
           }
           appointment {
-            project("PROJ1")
+            projectCode("PROJ1")
             allocation("ALLOC1")
-            today(56)
+            todayWithOffsetDays(56)
             from("10:00")
             until("18:00")
           }
@@ -166,16 +156,17 @@ class SchedulingScenariosNonWorkingDatesTest {
   @Test
   fun `DATES-NWD-04 Ignore Non Working Day if it is Today`() {
     schedulingScenario {
-      test("DATES-NWD-04")
+      scenarioId("DATES-NWD-04")
       given {
-        today(MONDAY)
-        project("PROJ1")
+        requirementIsHours(32)
+        todayIs(MONDAY)
+        projectExistsWithCode("PROJ1")
 
         allocation {
           id("ALLOC1")
-          project("PROJ1")
+          projectCode("PROJ1")
           frequency(WEEKLY)
-          on(MONDAY)
+          onWeekDay(MONDAY)
           from("10:00")
           until("18:00")
         }
@@ -183,37 +174,33 @@ class SchedulingScenariosNonWorkingDatesTest {
         nonWorkingDate(0)
       }
 
-      whenScheduling {
-        requirementIsHours(32)
-      }
-
       then {
         shouldCreateAppointments {
           appointment {
-            project("PROJ1")
+            projectCode("PROJ1")
             allocation("ALLOC1")
-            today(7)
+            todayWithOffsetDays(7)
             from("10:00")
             until("18:00")
           }
           appointment {
-            project("PROJ1")
+            projectCode("PROJ1")
             allocation("ALLOC1")
-            today(14)
+            todayWithOffsetDays(14)
             from("10:00")
             until("18:00")
           }
           appointment {
-            project("PROJ1")
+            projectCode("PROJ1")
             allocation("ALLOC1")
-            today(21)
+            todayWithOffsetDays(21)
             from("10:00")
             until("18:00")
           }
           appointment {
-            project("PROJ1")
+            projectCode("PROJ1")
             allocation("ALLOC1")
-            today(28)
+            todayWithOffsetDays(28)
             from("10:00")
             until("18:00")
           }

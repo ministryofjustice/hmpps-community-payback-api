@@ -17,39 +17,36 @@ class SchedulingScenariosStartEndDatesTest {
     @Test
     fun `DATES-START-01 Allocation Start Date is tomorrow`() {
       schedulingScenario {
-        test("DATES-START-01")
+        scenarioId("DATES-START-01")
         given {
-          today(MONDAY)
-          project("PROJ1")
+          requirementIsHours(16)
+          todayIs(MONDAY)
+          projectExistsWithCode("PROJ1")
 
           allocation {
             id("ALLOC1")
-            project("PROJ1")
+            projectCode("PROJ1")
             frequency(WEEKLY)
-            on(TUESDAY)
+            onWeekDay(TUESDAY)
             from("10:00")
             until("18:00")
-            startingIn(1)
+            startingInDays(1)
           }
-        }
-
-        whenScheduling {
-          requirementIsHours(16)
         }
 
         then {
           shouldCreateAppointments {
             appointment {
-              project("PROJ1")
+              projectCode("PROJ1")
               allocation("ALLOC1")
-              today(1)
+              todayWithOffsetDays(1)
               from("10:00")
               until("18:00")
             }
             appointment {
-              project("PROJ1")
+              projectCode("PROJ1")
               allocation("ALLOC1")
-              today(8)
+              todayWithOffsetDays(8)
               from("10:00")
               until("18:00")
             }
@@ -61,39 +58,36 @@ class SchedulingScenariosStartEndDatesTest {
     @Test
     fun `DATES-START-02 Allocation Start Date is today`() {
       schedulingScenario {
-        test("DATES-START-02")
+        scenarioId("DATES-START-02")
         given {
-          today(TUESDAY)
-          project("PROJ1")
+          requirementIsHours(16)
+          todayIs(TUESDAY)
+          projectExistsWithCode("PROJ1")
 
           allocation {
             id("ALLOC1")
-            project("PROJ1")
+            projectCode("PROJ1")
             frequency(WEEKLY)
-            on(TUESDAY)
+            onWeekDay(TUESDAY)
             from("10:00")
             until("18:00")
             startingToday()
           }
         }
 
-        whenScheduling {
-          requirementIsHours(16)
-        }
-
         then {
           shouldCreateAppointments {
             appointment {
-              project("PROJ1")
+              projectCode("PROJ1")
               allocation("ALLOC1")
-              today()
+              todayWithOffsetDays()
               from("10:00")
               until("18:00")
             }
             appointment {
-              project("PROJ1")
+              projectCode("PROJ1")
               allocation("ALLOC1")
-              today(7)
+              todayWithOffsetDays(7)
               from("10:00")
               until("18:00")
             }
@@ -105,39 +99,36 @@ class SchedulingScenariosStartEndDatesTest {
     @Test
     fun `DATES-START-03 Allocation Start Date is in far future`() {
       schedulingScenario {
-        test("DATES-START-03")
+        scenarioId("DATES-START-03")
         given {
-          today(TUESDAY)
-          project("PROJ1")
+          requirementIsHours(16)
+          todayIs(TUESDAY)
+          projectExistsWithCode("PROJ1")
 
           allocation {
             id("ALLOC1")
-            project("PROJ1")
+            projectCode("PROJ1")
             frequency(WEEKLY)
-            on(TUESDAY)
+            onWeekDay(TUESDAY)
             from("10:00")
             until("18:00")
-            startingIn(700)
+            startingInDays(700)
           }
-        }
-
-        whenScheduling {
-          requirementIsHours(16)
         }
 
         then {
           shouldCreateAppointments {
             appointment {
-              project("PROJ1")
+              projectCode("PROJ1")
               allocation("ALLOC1")
-              today(700)
+              todayWithOffsetDays(700)
               from("10:00")
               until("18:00")
             }
             appointment {
-              project("PROJ1")
+              projectCode("PROJ1")
               allocation("ALLOC1")
-              today(707)
+              todayWithOffsetDays(707)
               from("10:00")
               until("18:00")
             }
@@ -153,45 +144,41 @@ class SchedulingScenariosStartEndDatesTest {
     @Test
     fun `DATES-END-01 Allocation End Date is day of next iteration`() {
       schedulingScenario {
-        test("DATES-END-01")
+        scenarioId("DATES-END-01")
         given {
-          today(MONDAY)
-          project("PROJ1")
+          todayIs(MONDAY)
+          projectExistsWithCode("PROJ1")
 
           allocation {
+            requirementIsHours(80)
             id("ALLOC1")
-            project("PROJ1")
+            projectCode("PROJ1")
             frequency(FORTNIGHTLY)
-            on(MONDAY)
+            onWeekDay(MONDAY)
             from("10:00")
             until("18:00")
             startingToday()
-            endingIn(14)
+            endingInDays(14)
           }
-        }
-
-        whenScheduling {
-          requirementIsHours(80)
         }
 
         then {
-          shouldCreateAppointments {
+          shouldCreateAppointments(toAddressShortfall = Duration.ofHours(64)) {
             appointment {
-              project("PROJ1")
+              projectCode("PROJ1")
               allocation("ALLOC1")
-              today()
+              todayWithOffsetDays()
               from("10:00")
               until("18:00")
             }
             appointment {
-              project("PROJ1")
+              projectCode("PROJ1")
               allocation("ALLOC1")
-              today(14)
+              todayWithOffsetDays(14)
               from("10:00")
               until("18:00")
             }
           }
-          withShortfall(Duration.ofHours(64))
         }
       }
     }
@@ -199,38 +186,34 @@ class SchedulingScenariosStartEndDatesTest {
     @Test
     fun `DATES-END-02 Allocation End Date is day before next iteration`() {
       schedulingScenario {
-        test("DATES-END-02")
+        scenarioId("DATES-END-02")
         given {
-          today(MONDAY)
-          project("PROJ1")
+          requirementIsHours(80)
+          todayIs(MONDAY)
+          projectExistsWithCode("PROJ1")
 
           allocation {
             id("ALLOC1")
-            project("PROJ1")
+            projectCode("PROJ1")
             frequency(FORTNIGHTLY)
-            on(MONDAY)
+            onWeekDay(MONDAY)
             from("10:00")
             until("18:00")
             startingToday()
-            endingIn(13)
+            endingInDays(13)
           }
         }
 
-        whenScheduling {
-          requirementIsHours(80)
-        }
-
         then {
-          shouldCreateAppointments {
+          shouldCreateAppointments(toAddressShortfall = Duration.ofHours(72)) {
             appointment {
-              project("PROJ1")
+              projectCode("PROJ1")
               allocation("ALLOC1")
-              today()
+              todayWithOffsetDays()
               from("10:00")
               until("18:00")
             }
           }
-          withShortfall(Duration.ofHours(72))
         }
       }
     }
@@ -244,30 +227,26 @@ class SchedulingScenariosStartEndDatesTest {
     @Test
     fun `DATES-END-04 Allocation End Date is so close to Start Date it prohibits Appointments being created`() {
       schedulingScenario {
-        test("DATES-END-04")
+        scenarioId("DATES-END-04")
         given {
-          today(TUESDAY)
-          project("PROJ1")
+          requirementIsHours(80)
+          todayIs(TUESDAY)
+          projectExistsWithCode("PROJ1")
 
           allocation {
             id("ALLOC1")
-            project("PROJ1")
+            projectCode("PROJ1")
             frequency(FORTNIGHTLY)
-            on(MONDAY)
+            onWeekDay(MONDAY)
             from("10:00")
             until("18:00")
-            startingIn(-1)
-            endingIn(12)
+            startingInDays(-1)
+            endingInDays(12)
           }
         }
 
-        whenScheduling {
-          requirementIsHours(80)
-        }
-
         then {
-          shouldCreateAppointments { }
-          withShortfall(Duration.ofHours(80))
+          noActionsExpected(toAddressShortfall = Duration.ofHours(80))
         }
       }
     }
@@ -275,30 +254,26 @@ class SchedulingScenariosStartEndDatesTest {
     @Test
     fun `DATES-END-05 Allocation ends in the past`() {
       schedulingScenario {
-        test("DATES-END-05")
+        scenarioId("DATES-END-05")
         given {
-          today(MONDAY)
-          project("PROJ1")
+          requirementIsHours(80)
+          todayIs(MONDAY)
+          projectExistsWithCode("PROJ1")
 
           allocation {
             id("ALLOC1")
-            project("PROJ1")
+            projectCode("PROJ1")
             frequency(FORTNIGHTLY)
-            on(MONDAY)
+            onWeekDay(MONDAY)
             from("10:00")
             until("18:00")
-            startingIn(-365)
-            endingIn(-1)
+            startingInDays(-365)
+            endingInDays(-1)
           }
         }
 
-        whenScheduling {
-          requirementIsHours(80)
-        }
-
         then {
-          shouldCreateAppointments { }
-          withShortfall(Duration.ofHours(80))
+          noActionsExpected(toAddressShortfall = Duration.ofHours(80))
         }
       }
     }
