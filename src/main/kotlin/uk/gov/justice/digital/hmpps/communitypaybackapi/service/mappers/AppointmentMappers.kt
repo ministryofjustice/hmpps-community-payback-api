@@ -57,6 +57,7 @@ class AppointmentMappers(
           hiVisWorn = appointment.hiVisWorn!!,
           workedIntensively = appointment.workedIntensively!!,
           penaltyTime = appointment.penaltyHours,
+          penaltyMinutes = appointment.penaltyHours?.duration?.toMinutes(),
           workQuality = appointment.workQuality!!.toDto(),
           behaviour = appointment.behaviour!!.toDto(),
         )
