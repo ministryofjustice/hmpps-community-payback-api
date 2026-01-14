@@ -1,5 +1,7 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.SchedulePlanExecutor
@@ -34,14 +36,20 @@ import java.time.LocalDate
 @Service
 class SchedulingService(
   val communityPaybackAndDeliusClient: CommunityPaybackAndDeliusClient,
+  val scheduler: Scheduler,
   val schedulePlanExecutor: SchedulePlanExecutor,
   val clock: Clock,
 ) {
+
+  private companion object {
+    val log: Logger = LoggerFactory.getLogger(this::class.java)
+  }
 
   fun scheduleAppointments(
     crn: String,
     eventNumber: Int,
     trigger: String,
+    dryRun: Boolean,
   ) {
     val requirement = communityPaybackAndDeliusClient.getUnpaidWorkRequirement(crn, eventNumber)
 
@@ -52,9 +60,17 @@ class SchedulingService(
       allocations = requirement.allocations.toSchedulingAllocations(),
       existingAppointments = requirement.appointments.toSchedulingExistingAppointments(),
       nonWorkingDates = SchedulingNonWorkingDates(communityPaybackAndDeliusClient.getNonWorkingDays()),
+      dryRun = dryRun,
     )
 
-    when (val schedulingOutcome = Scheduler.producePlan(schedulingRequest)) {
+    val schedulingOutcome = scheduler.producePlan(schedulingRequest)
+
+    if (dryRun) {
+      log.warn("Not applying schedule for $crn because dry run was requested")
+      return
+    }
+
+    when (schedulingOutcome) {
       is ExistingAppointmentsInsufficient -> schedulePlanExecutor.executePlan(schedulingOutcome.plan)
       is ExistingAppointmentsSufficient, RequirementAlreadySatisfied -> Unit // deliberately do nothing
     }

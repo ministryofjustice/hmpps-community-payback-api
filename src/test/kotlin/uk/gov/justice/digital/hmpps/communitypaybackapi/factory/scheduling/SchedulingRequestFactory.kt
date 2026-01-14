@@ -15,4 +15,5 @@ fun SchedulingRequest.Companion.empty() = SchedulingRequest(
   allocations = SchedulingAllocations(emptyList()),
   existingAppointments = SchedulingExistingAppointments(emptyList()),
   nonWorkingDates = SchedulingNonWorkingDates(emptyList()),
+  dryRun = false,
 )

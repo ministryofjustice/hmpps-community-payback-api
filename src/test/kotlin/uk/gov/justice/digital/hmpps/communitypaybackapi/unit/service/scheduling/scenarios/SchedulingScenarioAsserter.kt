@@ -22,11 +22,12 @@ class SchedulingScenarioAsserter(
   val testInfo: TestInfo? = null,
 ) {
   val testDataParsers = SchedulingScenarioParsers()
+  val scheduler = Scheduler()
 
   fun assertRequirementAlreadySatisfied(
     input: SchedulingAsserterInput,
   ) {
-    val result = Scheduler.producePlan(input.toSchedulingRequest())
+    val result = scheduler.producePlan(input.toSchedulingRequest())
 
     assertThat(result).isInstanceOf(SchedulerOutcome.RequirementAlreadySatisfied::class.java)
   }
@@ -46,7 +47,7 @@ class SchedulingScenarioAsserter(
       )
     }
 
-    val result = Scheduler.producePlan(schedulingRequest)
+    val result = scheduler.producePlan(schedulingRequest)
 
     assertThat(result).isInstanceOf(SchedulerOutcome.ExistingAppointmentsInsufficient::class.java)
     result as SchedulerOutcome.ExistingAppointmentsInsufficient
@@ -58,7 +59,7 @@ class SchedulingScenarioAsserter(
   fun assertExistingAppointmentsSufficient(
     input: SchedulingAsserterInput,
   ) {
-    val result = Scheduler.producePlan(input.toSchedulingRequest())
+    val result = scheduler.producePlan(input.toSchedulingRequest())
 
     assertThat(result).isInstanceOf(SchedulerOutcome.ExistingAppointmentsSufficient::class.java)
   }

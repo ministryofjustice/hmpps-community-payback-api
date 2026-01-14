@@ -1,14 +1,19 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal
 
+import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.stereotype.Component
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulePlan
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingAction
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingRequest
 import java.time.Duration
 
-object Scheduler {
+@Component
+class Scheduler {
 
-  private val log = LoggerFactory.getLogger(this::class.java)
+  private companion object {
+    val log: Logger = LoggerFactory.getLogger(this::class.java)
+  }
 
   /**
    * The scheduler will produce a plan to ensure that there are sufficient future Appointments for a given requirement to satisfy the
