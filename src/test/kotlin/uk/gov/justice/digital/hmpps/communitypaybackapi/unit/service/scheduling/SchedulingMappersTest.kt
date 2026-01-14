@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Code
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCodeDescription
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDNameCode
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDRequirementProgress
@@ -16,6 +15,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingExist
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingFrequency
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingProject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.random
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.scheduling.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingAllocation
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingFrequency
@@ -30,7 +30,6 @@ import java.time.DayOfWeek
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
-import java.util.UUID
 
 class SchedulingMappersTest {
 
@@ -60,7 +59,7 @@ class SchedulingMappersTest {
     @Test
     fun `all fields populated`() {
       val result = NDSchedulingExistingAppointment(
-        id = UUID.randomUUID(),
+        id = Long.random(),
         project = NDNameCode.valid().copy(
           code = "PROJ1",
         ),
@@ -68,7 +67,7 @@ class SchedulingMappersTest {
         startTime = LocalTime.of(1, 2),
         endTime = LocalTime.of(4, 5),
         outcome = NDCodeDescription("OUTCOME1", "Description"),
-        minutesCredited = Duration.ofMinutes(65),
+        minutesCredited = 65,
         allocationId = 12L,
       ).toSchedulingExistingAppointment()
 
@@ -84,7 +83,7 @@ class SchedulingMappersTest {
     @Test
     fun `only mandatory fields populated`() {
       val result = NDSchedulingExistingAppointment(
-        id = UUID.randomUUID(),
+        id = Long.random(),
         project = NDNameCode.valid().copy(
           code = "PROJ1",
         ),
@@ -164,13 +163,13 @@ class SchedulingMappersTest {
       val result = NDSchedulingAllocation.valid().copy(
         id = 1234L,
         project = NDSchedulingProject.valid().copy(
-          code = Code("PROJ1"),
+          code = "PROJ1",
         ),
         projectAvailability = NDSchedulingAvailability.valid().copy(
           frequency = null,
         ),
-        frequency = NDSchedulingFrequency.ONCE,
-        dayOfWeek = NDSchedulingDayOfWeek.MONDAY,
+        frequency = NDSchedulingFrequency.Once,
+        dayOfWeek = NDSchedulingDayOfWeek.Monday,
         startDateInclusive = LocalDate.of(2021, 2, 3),
         endDateInclusive = LocalDate.of(2022, 4, 5),
         startTime = LocalTime.of(1, 2),
@@ -193,13 +192,13 @@ class SchedulingMappersTest {
       val result = NDSchedulingAllocation.valid().copy(
         id = 1234L,
         project = NDSchedulingProject.valid().copy(
-          code = Code("PROJ1"),
+          code = "PROJ1",
           expectedEndDateExclusive = null,
           actualEndDateExclusive = null,
         ),
         projectAvailability = null,
         frequency = null,
-        dayOfWeek = NDSchedulingDayOfWeek.TUESDAY,
+        dayOfWeek = NDSchedulingDayOfWeek.Tuesday,
         startDateInclusive = LocalDate.of(2021, 2, 3),
         endDateInclusive = null,
         startTime = LocalTime.of(1, 2),
@@ -222,17 +221,17 @@ class SchedulingMappersTest {
       nullValues = ["null"],
       value = [
         "null,null,WEEKLY",
-        "ONCE,ONCE,ONCE",
-        "ONCE,null,ONCE",
-        "null,ONCE,ONCE",
-        "WEEKLY,WEEKLY,WEEKLY",
-        "null,WEEKLY,WEEKLY",
-        "WEEKLY,null,WEEKLY",
-        "FORTNIGHTLY,FORTNIGHTLY,FORTNIGHTLY",
-        "FORTNIGHTLY,null,FORTNIGHTLY",
-        "null,FORTNIGHTLY,FORTNIGHTLY",
-        "FORTNIGHTLY,WEEKLY,FORTNIGHTLY",
-        "WEEKLY,FORTNIGHTLY,FORTNIGHTLY",
+        "Once,Once,ONCE",
+        "Once,null,ONCE",
+        "null,Once,ONCE",
+        "Weekly,Weekly,WEEKLY",
+        "null,Weekly,WEEKLY",
+        "Weekly,null,WEEKLY",
+        "Fortnightly,Fortnightly,FORTNIGHTLY",
+        "Fortnightly,null,FORTNIGHTLY",
+        "null,Fortnightly,FORTNIGHTLY",
+        "Fortnightly,Weekly,FORTNIGHTLY",
+        "Weekly,Fortnightly,FORTNIGHTLY",
       ],
     )
     fun `frequency correctly derived`(

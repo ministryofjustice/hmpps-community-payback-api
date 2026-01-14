@@ -145,14 +145,14 @@ object SchedulingRenderer {
     }
   }
 
-  // "Today-6, ALLOC2, 16:00-20:00, Pending"
-  // "Today-6, ALLOC2, 16:00-20:00, Credited PT5H30M"
+  // "Today-6, Alloc ALLOC2, 16:00-20:00, Pending"
+  // "Today-6, Alloc ALLOC2, 16:00-20:00, Credited PT5H30M"
   private fun SchedulingExistingAppointment.render(
     today: LocalDate,
   ) = buildString {
     append(dayAsDelta(today, date))
     append(", ")
-    append(allocationId ?: "No Allocation")
+    append(allocationId?.let { "Alloc $it" } ?: "No Allocation")
     append(", ")
     append(startTime)
     append("-")
@@ -172,12 +172,12 @@ object SchedulingRenderer {
     append(", ")
     append(project.code)
     append(", ")
-    append(allocation?.alias)
+    append(allocation.alias)
     append(", ")
     append(startTime)
     append("-")
     append(endTime)
-    if (allocation != null && allocation.endTime != endTime) {
+    if (allocation.endTime != endTime) {
       append(" (Truncated from allocation end time ${allocation.endTime})")
     }
   }
