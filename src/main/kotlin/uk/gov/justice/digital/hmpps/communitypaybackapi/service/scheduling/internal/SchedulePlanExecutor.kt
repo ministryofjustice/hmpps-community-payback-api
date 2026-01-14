@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulePlan
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingAction
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingRequiredAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.toNDCreateAppointment
 
 @Service
@@ -21,19 +22,26 @@ class SchedulePlanExecutor(
   ) {
     plan.actions.forEach {
       when (it) {
-        is SchedulingAction.CreateAppointment -> createAppointment(it)
+        is SchedulingAction.CreateAppointment -> createAppointment(
+          crn = plan.crn,
+          eventNumber = plan.eventNumber,
+          toCreate = it.toCreate,
+        )
         is SchedulingAction.RetainAppointment -> Unit // deliberately do nothing
       }
     }
   }
 
-  private fun createAppointment(action: SchedulingAction.CreateAppointment) {
-    val toCreate = action.toCreate
-
-    log.info("Creating appointment for allocation ${toCreate.allocation?.alias} on ${toCreate.date}")
+  private fun createAppointment(
+    crn: String,
+    eventNumber: Int,
+    toCreate: SchedulingRequiredAppointment,
+  ) {
+    log.info("Creating appointment for allocation ${toCreate.allocation.alias} on ${toCreate.date}")
 
     deliusClient.createAppointment(
-      projectCode = toCreate.project.code,
+      crn = crn,
+      eventNumber = eventNumber,
       createAppointment = toCreate.toNDCreateAppointment(),
     )
   }

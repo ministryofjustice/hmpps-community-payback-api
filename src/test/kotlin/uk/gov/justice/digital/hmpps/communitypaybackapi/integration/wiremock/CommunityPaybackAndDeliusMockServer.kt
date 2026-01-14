@@ -129,10 +129,11 @@ object CommunityPaybackAndDeliusMockServer {
   }
 
   fun postAppointment(
-    projectCode: String,
+    crn: String,
+    eventNumber: Int,
   ) {
     WireMock.stubFor(
-      post("/community-payback-and-delius/projects/$projectCode/appointments")
+      post("/community-payback-and-delius/case/$crn/event/$eventNumber/appointments")
         .willReturn(
           aResponse().withStatus(200),
         ),
@@ -140,13 +141,14 @@ object CommunityPaybackAndDeliusMockServer {
   }
 
   fun postAppointmentVerify(
-    projectCode: String,
+    crn: String,
+    eventNumber: Int,
     date: LocalDate,
     startTime: LocalTime,
     endTime: LocalTime,
   ) {
     WireMock.verify(
-      postRequestedFor(urlEqualTo("/community-payback-and-delius/projects/$projectCode/appointments"))
+      postRequestedFor(urlEqualTo("/community-payback-and-delius/case/$crn/event/$eventNumber/appointments"))
         .withRequestBody(matchingJsonPath("$.date", equalTo(date.toIsoDateString())))
         .withRequestBody(matchingJsonPath("$.startTime", equalTo(startTime.format(DateTimeFormatter.ISO_TIME))))
         .withRequestBody(matchingJsonPath("$.endTime", equalTo(endTime.format(DateTimeFormatter.ISO_TIME)))),
@@ -154,7 +156,7 @@ object CommunityPaybackAndDeliusMockServer {
   }
 
   fun postAppointmentVerifyZeroCalls() {
-    WireMock.verify(0, postRequestedFor(urlMatching("/community-payback-and-delius/projects/.*/appointments")))
+    WireMock.verify(0, postRequestedFor(urlMatching("/community-payback-and-delius/case/.*/appointments")))
   }
 
   fun putAppointment(
@@ -223,7 +225,7 @@ object CommunityPaybackAndDeliusMockServer {
     requirement: NDUnpaidWorkRequirement,
   ) {
     WireMock.stubFor(
-      get("/community-payback-and-delius/offenders/$crn/events/$eventNumber/unpaidWorkRequirement")
+      get("/community-payback-and-delius/case/$crn/event/$eventNumber/appointments/schedule")
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")

@@ -30,7 +30,9 @@ object SchedulingRenderer {
       appendLine()
       appendLine("* Date: $today (${today.dayOfWeek})")
       appendLine("* Trigger: ${request.trigger}")
-      appendLine("* Requirement: ${request.requirement.requirementLengthMinutes}")
+      appendLine("* CRN: ${request.requirement.crn}")
+      appendLine("* Delius Event No: ${request.requirement.deliusEventNumber}")
+      appendLine("* Requirement Length (includes adjustments): ${request.requirement.requirementLengthMinutes}")
       appendLine("* Remaining Minutes as of today: $remainingMinutesAsOfToday")
 
       val allocations = request.allocations.allocations
