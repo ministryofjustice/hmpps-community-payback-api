@@ -11,8 +11,10 @@ import org.junit.jupiter.api.extension.ExtendWith
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDUnpaidWorkRequirement
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.scheduling.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulePlan
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingTrigger
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.SchedulePlanExecutor
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.Scheduler
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.Scheduler.SchedulerOutcome
@@ -48,7 +50,7 @@ class SchedulingServiceTest {
     every { communityPaybackAndDeliusClient.getUnpaidWorkRequirement(CRN, EVENT_NO) } returns NDUnpaidWorkRequirement.valid()
     every { scheduler.producePlan(any()) } returns SchedulerOutcome.ExistingAppointmentsSufficient
 
-    schedulingService.scheduleAppointments(CRN, EVENT_NO, TRIGGER_DESCRIPTION, dryRun = false)
+    schedulingService.scheduleAppointments(CRN, EVENT_NO, SchedulingTrigger.valid(), dryRun = false)
 
     verify { schedulePlanExecutor wasNot Called }
   }
@@ -58,7 +60,7 @@ class SchedulingServiceTest {
     every { communityPaybackAndDeliusClient.getUnpaidWorkRequirement(CRN, EVENT_NO) } returns NDUnpaidWorkRequirement.valid()
     every { scheduler.producePlan(any()) } returns SchedulerOutcome.RequirementAlreadySatisfied
 
-    schedulingService.scheduleAppointments(CRN, EVENT_NO, TRIGGER_DESCRIPTION, dryRun = false)
+    schedulingService.scheduleAppointments(CRN, EVENT_NO, SchedulingTrigger.valid(), dryRun = false)
 
     verify { schedulePlanExecutor wasNot Called }
   }
@@ -75,7 +77,7 @@ class SchedulingServiceTest {
     )
     every { scheduler.producePlan(any()) } returns SchedulerOutcome.ExistingAppointmentsInsufficient(plan)
 
-    schedulingService.scheduleAppointments(CRN, EVENT_NO, TRIGGER_DESCRIPTION, dryRun = false)
+    schedulingService.scheduleAppointments(CRN, EVENT_NO, SchedulingTrigger.valid(), dryRun = false)
 
     verify { schedulePlanExecutor.executePlan(plan) }
   }
@@ -92,7 +94,7 @@ class SchedulingServiceTest {
     )
     every { scheduler.producePlan(any()) } returns SchedulerOutcome.ExistingAppointmentsInsufficient(plan)
 
-    schedulingService.scheduleAppointments(CRN, EVENT_NO, TRIGGER_DESCRIPTION, dryRun = true)
+    schedulingService.scheduleAppointments(CRN, EVENT_NO, SchedulingTrigger.valid(), dryRun = true)
 
     verify { schedulePlanExecutor wasNot Called }
   }

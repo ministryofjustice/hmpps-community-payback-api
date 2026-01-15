@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.unit.service.scheduling.scenarios
 
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
@@ -19,7 +18,7 @@ import java.time.Duration
 /**
  * These Scenarios test the Allocation Frequencies are correctly applied
  */
-class SchedulingScenariosFrequencyTest {
+class SchedulingFrequencyTest {
 
   /**
    * Once has some surprising/inconsistent behaviour. These are modelled by the ‘inconsistent behaviour’ scenarios
@@ -906,10 +905,9 @@ class SchedulingScenariosFrequencyTest {
       }
     }
 
-    @Disabled
+    @NDeliusDataModelsRequired
     fun `FREQ-MIXED-02 Use largest frequency defined between Allocation and linked Availability`() {
-      // This scenario is implicitly tested by the [SchedulingMappersTest] which ensures the
-      // largest frequency is used when building the internal allocation models
+      // see documentation on @NDeliusDataModelsRequired
     }
   }
 }

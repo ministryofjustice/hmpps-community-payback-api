@@ -33,7 +33,7 @@ fun List<NDSchedulingAllocation>.toSchedulingAllocations() = SchedulingAllocatio
 
 fun NDSchedulingAllocation.toSchedulingAllocation() = SchedulingAllocation(
   id = this.id,
-  alias = "ALLOC${this.id}",
+  alias = "ALLOC ${this.id}",
   project = this.project.toSchedulingProject(),
   frequency = determineFrequency(
     allocationFrequency = this.frequency,

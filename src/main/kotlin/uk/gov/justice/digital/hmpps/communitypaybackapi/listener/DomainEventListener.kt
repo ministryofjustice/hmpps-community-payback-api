@@ -13,6 +13,8 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentUpdat
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.DomainEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.HmppsDomainEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingTrigger
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingTriggerType
 import java.util.UUID
 
 /**
@@ -53,7 +55,10 @@ class DomainEventListener(
     scheduleService.scheduleAppointments(
       crn = domainEventDetails.crn,
       eventNumber = domainEventDetails.deliusEventNumber,
-      trigger = "Appointment Updated",
+      trigger = SchedulingTrigger(
+        type = SchedulingTriggerType.AppointmentChange,
+        description = "Appointment Updated",
+      ),
       dryRun = schedulingDryRun,
     )
 

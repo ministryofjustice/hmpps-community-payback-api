@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.unit.service.scheduling.scenarios
 
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingFrequency.FORTNIGHTLY
@@ -9,7 +8,7 @@ import java.time.DayOfWeek.MONDAY
 import java.time.DayOfWeek.TUESDAY
 import java.time.Duration
 
-class SchedulingScenariosStartEndDatesTest {
+class SchedulingStartEndDatesTest {
 
   @Nested
   inner class StartDate {
@@ -218,10 +217,9 @@ class SchedulingScenariosStartEndDatesTest {
       }
     }
 
-    @Disabled
+    @NDeliusDataModelsRequired
     fun `DATES-END-03 Allocation Start Date is same as End Date`() {
-      // This scenario is implicitly tested by the [SchedulingMappersTest] which will ensure
-      // these allocations are filtered out when mapping the data models
+      // see documentation on @NDeliusDataModelsRequired
     }
 
     @Test
@@ -278,22 +276,19 @@ class SchedulingScenariosStartEndDatesTest {
       }
     }
 
-    @Disabled
+    @NDeliusDataModelsRequired
     fun `DATES-END-06 Allocation end date not defined and project's expected end date is earliest`() {
-      // This scenario is implicitly tested by the [SchedulingMappersTest] which will ensure
-      // the correct end date is used when building the allocation data model
+      // see documentation on @NDeliusDataModelsRequired
     }
 
-    @Disabled
+    @NDeliusDataModelsRequired
     fun `DATES-END-07 Allocation end date not defined and project's actual end date is earliest`() {
-      // This scenario is implicitly tested by the [SchedulingMappersTest] which will ensure
-      // the correct end date is used when building the allocation data model
+      // see documentation on @NDeliusDataModelsRequired
     }
 
-    @Disabled
+    @NDeliusDataModelsRequired
     fun `DATES-END-08 Allocation end date not defined and availability's end date is earliest`() {
-      // This scenario is implicitly tested by the [SchedulingMappersTest] which will ensure
-      // the correct end date is used when building the allocation data model
+      // see documentation on @NDeliusDataModelsRequired
     }
   }
 }

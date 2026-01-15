@@ -13,7 +13,7 @@ import java.time.Duration
  * They will also ensure that the final appointment end time is truncated where necessary to ensure
  * no more minutes than required are scheduled
  */
-class SchedulingScenariosRemainingTimeTest {
+class SchedulingRemainingTimeTest {
 
   @Test
   fun `REMAINING-TIME-01 0 Requirement`() {

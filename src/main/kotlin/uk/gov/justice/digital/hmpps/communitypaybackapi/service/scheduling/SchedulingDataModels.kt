@@ -7,7 +7,7 @@ import java.time.LocalTime
 
 data class SchedulingRequest(
   val today: LocalDate,
-  val trigger: String,
+  val trigger: SchedulingTrigger,
   val requirement: SchedulingRequirement,
   val allocations: SchedulingAllocations,
   val existingAppointments: SchedulingExistingAppointments,
@@ -15,6 +15,17 @@ data class SchedulingRequest(
   val dryRun: Boolean,
 ) {
   companion object
+}
+
+data class SchedulingTrigger(
+  val type: SchedulingTriggerType,
+  val description: String,
+) {
+  companion object
+}
+
+enum class SchedulingTriggerType {
+  AppointmentChange,
 }
 
 data class SchedulingRequirement(

@@ -15,6 +15,8 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.Sched
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingRequest
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingRequiredAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingRequirement
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingTrigger
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.Scheduler
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.Scheduler.SchedulerOutcome
 import java.time.DayOfWeek
@@ -47,7 +49,10 @@ class SchedulingScenarioBuilder {
   fun then(init: ThenContext.() -> Unit) {
     val request = SchedulingRequest.empty().copy(
       today = today,
-      trigger = "Unit Test: $scenarioId",
+      trigger = SchedulingTrigger(
+        type = SchedulingTriggerType.AppointmentChange,
+        description = "Unit Test: $scenarioId",
+      ),
       requirement = SchedulingRequirement(crn = "CRN1", deliusEventNumber = 5, requirementLengthMinutes = requireNotNull(requirementLength)),
       allocations = SchedulingAllocations(allocations),
       existingAppointments = SchedulingExistingAppointments(existingAppointments),

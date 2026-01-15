@@ -17,4 +17,4 @@ import org.junit.jupiter.api.Test
 @Retention(AnnotationRetention.RUNTIME)
 @Disabled
 @Test
-internal annotation class SchedulingScenarioNDeliusDataModelsRequired
+internal annotation class NDeliusDataModelsRequired
