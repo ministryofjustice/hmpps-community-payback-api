@@ -7,6 +7,8 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
+import org.springframework.messaging.MessageHeaders
+import org.springframework.messaging.handler.annotation.Headers
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdditionalInformationType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentUpdateService
@@ -29,13 +31,23 @@ class DomainEventListener(
   private val appointmentUpdateService: AppointmentUpdateService,
   @param:Value("\${community-payback.scheduling.dryRun:false}")
   private val schedulingDryRun: Boolean,
+  private val sqsListenerErrorHandler: SqsListenerErrorHandler,
 ) {
   private companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)
   }
 
   @SqsListener("hmppsdomaineventsqueue", factory = "hmppsQueueContainerFactoryProxy")
-  fun domainEvent(messageString: String) {
+  fun domainEvent(
+    messageString: String,
+    @Headers headers: MessageHeaders,
+  ) {
+    sqsListenerErrorHandler.withErrorHandler(headers) {
+      handleDomainEvent(messageString)
+    }
+  }
+
+  private fun handleDomainEvent(messageString: String) {
     log.debug("Have received domain event message '$messageString'")
 
     val sqsMessage = objectMapper.readValue<SqsMessage>(messageString)
@@ -43,14 +55,14 @@ class DomainEventListener(
 
     when (event.eventType) {
       DomainEventType.APPOINTMENT_UPDATED.eventType -> handleAppointmentUpdated(event)
-      else -> log.warn("Unexpected event type ${event.eventType}")
+      else -> log.warn("Unexpected event type '${event.eventType}'")
     }
   }
 
   private fun handleAppointmentUpdated(event: HmppsDomainEvent) {
     val eventId = UUID.fromString(event.additionalInformation!!.map[AdditionalInformationType.EVENT_ID.name]!!.toString())
     val domainEventDetails = appointmentUpdateService.getAppointmentUpdatedDomainEventDetails(eventId)
-      ?: error("Can't find appointment updated record for event id $eventId")
+      ?: error("Can't find appointment updated record for event id '$eventId'")
 
     scheduleService.scheduleAppointments(
       crn = domainEventDetails.crn,

@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.integration
 
+import org.assertj.core.api.Assertions.assertThat
 import org.awaitility.Awaitility.await
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -20,7 +21,9 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.validNoEndDate
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.validWithOutcome
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
+import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.MockSentryService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.CommunityPaybackAndDeliusMockServer
+import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.SqsListenerException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdditionalInformationType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.DomainEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.DomainEventPublisher
@@ -35,6 +38,7 @@ import java.time.OffsetDateTime
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 import kotlin.Int
+import kotlin.collections.get
 
 class SchedulingIT : IntegrationTestBase() {
 
@@ -47,6 +51,9 @@ class SchedulingIT : IntegrationTestBase() {
   @Autowired
   lateinit var appointmentOutcomeEntityRepository: AppointmentOutcomeEntityRepository
 
+  @Autowired
+  lateinit var mockSentryService: MockSentryService
+
   companion object {
     const val CRN: String = "CRN01"
     const val EVENT_NUMBER: Int = 10
@@ -54,6 +61,17 @@ class SchedulingIT : IntegrationTestBase() {
 
   @Nested
   inner class SchedulingOnAppointmentUpdate {
+
+    @Test
+    fun `Can't find update record, raise alert`() {
+      val updateId = UUID.randomUUID()
+
+      publishAppointmentUpdateDomainEvent(updateId)
+
+      assertThat(mockSentryService.getRaisedException())
+        .isInstanceOf(SqsListenerException::class.java)
+        .hasMessageMatching("Error occurred handling message with ID '.*' - Can't find appointment updated record for event id '$updateId'")
+    }
 
     @Test
     fun `Schedule already sufficient, do nothing`() {
