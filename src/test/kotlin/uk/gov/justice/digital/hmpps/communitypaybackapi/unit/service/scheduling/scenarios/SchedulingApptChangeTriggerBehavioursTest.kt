@@ -9,18 +9,17 @@ import java.time.DayOfWeek.MONDAY
 import java.time.Duration
 
 /**
- * These scenarios highlight inconsistent behaviour that we've emulated
- * from the NDelius implementation
+ * These scenarios highlight behaviours that are specific to scheduling triggered by appointment changes
  */
-class SchedulingInconsistentBehavioursTest {
+class SchedulingApptChangeTriggerBehavioursTest {
 
   @Nested
   inner class AllocationClashesDoubleBookings {
 
     @Test
-    fun `INC-CLASH-01 Double Bookings are made if double booked allocations exist and there are no existing appointments on that date`() {
+    fun `APP-CHANGE-TRIGGER-CLASH-01 Double Bookings are made if double booked allocations exist and there are no existing appointments on that date`() {
       schedulingScenario {
-        scenarioId("INC-CLASH-01")
+        scenarioId("APP-CHANGE-TRIGGER-CLASH-01")
         given {
           requirementIsHours(44)
           todayIs(MONDAY)
@@ -119,9 +118,9 @@ class SchedulingInconsistentBehavioursTest {
     }
 
     @Test
-    fun `INC-CLASH-02 Double Bookings are not made if double booked allocations exist and there is at least one appointment on the date already, has outcome`() {
+    fun `APP-CHANGE-TRIGGER-CLASH-02 Double Bookings are not made if double booked allocations exist and there is at least one appointment on the date already, has outcome`() {
       schedulingScenario {
-        scenarioId("INC-CLASH-02")
+        scenarioId("APP-CHANGE-TRIGGER-CLASH-02")
         given {
           requirementIsHours(58)
           todayIs(MONDAY)
@@ -226,9 +225,9 @@ class SchedulingInconsistentBehavioursTest {
     }
 
     @Test
-    fun `INC-CLASH-03 Double Bookings are not made if double booked allocations exist and there is at least one appointment on the date already, pending`() {
+    fun `APP-CHANGE-TRIGGER-CLASH-03 Double Bookings are not made if double booked allocations exist and there is at least one appointment on the date already, pending`() {
       schedulingScenario {
-        scenarioId("INC-CLASH-03")
+        scenarioId("APP-CHANGE-TRIGGER-CLASH-03")
         given {
           requirementIsHours(30)
           todayIs(MONDAY)
@@ -306,9 +305,9 @@ class SchedulingInconsistentBehavioursTest {
   inner class ManualAppointmentsAndScheduling {
 
     @Test
-    fun `INC-MANUAL-01 Manually created appointments in the future without an outcome are retained by the scheduler if attempting to allocate to same day`() {
+    fun `APP-CHANGE-TRIGGER-MANUAL-01 Manually created appointments in the future without an outcome are retained by the scheduler if attempting to allocate to same day`() {
       schedulingScenario {
-        scenarioId("INC-MANUAL-01")
+        scenarioId("APP-CHANGE-TRIGGER-MANUAL-01")
         given {
           requirementIsHours(24)
           todayIs(MONDAY)
@@ -364,9 +363,9 @@ class SchedulingInconsistentBehavioursTest {
     }
 
     @Test
-    fun `INC-MANUAL-02 Appointments in the future are retained but potential time credited ignored if not attempting to allocate to same day`() {
+    fun `APP-CHANGE-TRIGGER-MANUAL-02 Appointments in the future are retained but potential time credited ignored if not attempting to allocate to same day`() {
       schedulingScenario {
-        scenarioId("INC-MANUAL-02")
+        scenarioId("APP-CHANGE-TRIGGER-MANUAL-02")
         given {
           requirementIsHours(16)
           todayIs(MONDAY)
