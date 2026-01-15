@@ -48,7 +48,7 @@ class SchedulingService(
   fun scheduleAppointments(
     crn: String,
     eventNumber: Int,
-    trigger: String,
+    trigger: SchedulingTrigger,
     dryRun: Boolean,
   ) {
     val requirement = communityPaybackAndDeliusClient.getUnpaidWorkRequirement(crn, eventNumber)

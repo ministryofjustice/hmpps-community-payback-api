@@ -23,6 +23,7 @@ object SchedulingRenderer {
     remainingMinutesAsOfToday: Duration,
   ): String {
     val today = request.today
+    val trigger = request.trigger
 
     return buildString {
       appendLine()
@@ -30,7 +31,7 @@ object SchedulingRenderer {
       appendLine("# $title")
       appendLine()
       appendLine("* Date: $today (${today.dayOfWeek})")
-      appendLine("* Trigger: ${request.trigger}")
+      appendLine("* Trigger: ${trigger.type} : ${trigger.description}")
       appendLine("* CRN: ${request.requirement.crn}")
       appendLine("* Delius Event No: ${request.requirement.deliusEventNumber}")
       appendLine("* Requirement Length (includes adjustments): ${request.requirement.requirementLengthMinutes}")
