@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.unit.service.scheduling.scenarios
 
 import org.assertj.core.api.Assertions.assertThat
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.random
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.scheduling.empty
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.scheduling.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingAction
@@ -21,7 +22,6 @@ import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.temporal.TemporalAdjusters
-import java.util.UUID
 
 @DslMarker
 annotation class SchedulingScenarioDslMarker
@@ -54,7 +54,7 @@ class SchedulingScenarioBuilder {
       nonWorkingDates = SchedulingNonWorkingDates(nonWorkingDates),
     )
 
-    val result = Scheduler.producePlan(request)
+    val result = Scheduler().producePlan(request)
     ThenContext(result, request).apply(init)
   }
 
@@ -265,7 +265,7 @@ class AppointmentBuilder {
     }
 
     return SchedulingExistingAppointment(
-      id = UUID.randomUUID(),
+      id = Long.random(),
       projectCode = projectCode ?: error("Project code must be specified for appointment"),
       date = today.plusDays(date.toLong()),
       startTime = startTime ?: error("Start time must be specified for appointment"),

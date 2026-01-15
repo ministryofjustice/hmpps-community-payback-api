@@ -5,10 +5,9 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.randomDuration
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.randomLocalDate
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.randomLocalTime
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingExistingAppointment
-import java.util.UUID
 
 fun SchedulingExistingAppointment.Companion.valid() = SchedulingExistingAppointment(
-  id = UUID.randomUUID(),
+  id = Long.random(),
   projectCode = String.random(5),
   date = randomLocalDate(),
   startTime = randomLocalTime(),

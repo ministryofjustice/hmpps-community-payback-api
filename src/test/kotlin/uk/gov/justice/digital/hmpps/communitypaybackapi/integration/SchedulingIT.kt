@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.ApplicationContext
 import org.springframework.data.repository.findByIdOrNull
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Code
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDRequirementProgress
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingAllocation
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingDayOfWeek
@@ -66,11 +65,11 @@ class SchedulingIT : IntegrationTestBase() {
       val allocation1 = NDSchedulingAllocation.valid().copy(
         id = 1L,
         projectAvailability = null,
-        project = NDSchedulingProject.validNoEndDate().copy(code = Code("PROJ1")),
+        project = NDSchedulingProject.validNoEndDate().copy("PROJ1"),
         startDateInclusive = schedulingDate.minusDays(200),
         endDateInclusive = null,
-        frequency = NDSchedulingFrequency.WEEKLY,
-        dayOfWeek = NDSchedulingDayOfWeek.MONDAY,
+        frequency = NDSchedulingFrequency.Weekly,
+        dayOfWeek = NDSchedulingDayOfWeek.Monday,
         startTime = LocalTime.of(10, 0),
         endTime = LocalTime.of(18, 0),
       )
@@ -92,7 +91,7 @@ class SchedulingIT : IntegrationTestBase() {
               allocationId = allocation1.id,
               startTime = LocalTime.of(10, 0),
               endTime = LocalTime.of(18, 0),
-              minutesCredited = Duration.ofHours(8),
+              minutesCredited = Duration.ofHours(8).toMinutes(),
             ),
             // Today-7, ALLOC1, 10:00-18:00, 08:00 Credited
             NDSchedulingExistingAppointment.validWithOutcome().copy(
@@ -100,7 +99,7 @@ class SchedulingIT : IntegrationTestBase() {
               allocationId = allocation1.id,
               startTime = LocalTime.of(10, 0),
               endTime = LocalTime.of(18, 0),
-              minutesCredited = Duration.ofHours(8),
+              minutesCredited = Duration.ofHours(8).toMinutes(),
             ),
             // Today, ALLOC1, 10:00-18:00, 04:00 Credited
             NDSchedulingExistingAppointment.validWithOutcome().copy(
@@ -108,7 +107,7 @@ class SchedulingIT : IntegrationTestBase() {
               allocationId = allocation1.id,
               startTime = LocalTime.of(13, 0),
               endTime = LocalTime.of(20, 0),
-              minutesCredited = Duration.ofHours(4),
+              minutesCredited = Duration.ofHours(4).toMinutes(),
             ),
           ),
         ),
@@ -138,11 +137,11 @@ class SchedulingIT : IntegrationTestBase() {
       val allocation1 = NDSchedulingAllocation.valid().copy(
         id = 1L,
         projectAvailability = null,
-        project = NDSchedulingProject.validNoEndDate().copy(code = Code("PROJ1")),
+        project = NDSchedulingProject.validNoEndDate().copy(code = "PROJ1"),
         startDateInclusive = schedulingDate.minusDays(365),
         endDateInclusive = null,
-        frequency = NDSchedulingFrequency.FORTNIGHTLY,
-        dayOfWeek = NDSchedulingDayOfWeek.SATURDAY,
+        frequency = NDSchedulingFrequency.Fortnightly,
+        dayOfWeek = NDSchedulingDayOfWeek.Saturday,
         startTime = LocalTime.of(10, 0),
         endTime = LocalTime.of(14, 0),
       )
@@ -151,11 +150,11 @@ class SchedulingIT : IntegrationTestBase() {
       val allocation2 = NDSchedulingAllocation.valid().copy(
         id = 2L,
         projectAvailability = null,
-        project = NDSchedulingProject.validNoEndDate().copy(code = Code("PROJ2")),
+        project = NDSchedulingProject.validNoEndDate().copy(code = "PROJ2"),
         startDateInclusive = schedulingDate.minusDays(365),
         endDateInclusive = null,
-        frequency = NDSchedulingFrequency.FORTNIGHTLY,
-        dayOfWeek = NDSchedulingDayOfWeek.SUNDAY,
+        frequency = NDSchedulingFrequency.Fortnightly,
+        dayOfWeek = NDSchedulingDayOfWeek.Sunday,
         startTime = LocalTime.of(12, 0),
         endTime = LocalTime.of(18, 0),
       )
@@ -177,7 +176,7 @@ class SchedulingIT : IntegrationTestBase() {
               allocationId = allocation1.id,
               startTime = LocalTime.of(10, 0),
               endTime = LocalTime.of(14, 0),
-              minutesCredited = Duration.ofHours(4),
+              minutesCredited = Duration.ofHours(4).toMinutes(),
             ),
             // Today-31, ALLOC2, 12:00-18:00, 4 Hours Credited
             NDSchedulingExistingAppointment.validWithOutcome().copy(
@@ -185,7 +184,7 @@ class SchedulingIT : IntegrationTestBase() {
               allocationId = allocation2.id,
               startTime = LocalTime.of(12, 0),
               endTime = LocalTime.of(18, 0),
-              minutesCredited = Duration.ofHours(4),
+              minutesCredited = Duration.ofHours(4).toMinutes(),
             ),
             // Today-25, ALLOC1, 10:00-16:00, 4 Hours Credited
             NDSchedulingExistingAppointment.validWithOutcome().copy(
@@ -193,7 +192,7 @@ class SchedulingIT : IntegrationTestBase() {
               allocationId = allocation1.id,
               startTime = LocalTime.of(10, 0),
               endTime = LocalTime.of(14, 0),
-              minutesCredited = Duration.ofHours(4),
+              minutesCredited = Duration.ofHours(4).toMinutes(),
             ),
             // Today-24, ALLOC2, 12:00-18:00, 4 Hours Credited
             NDSchedulingExistingAppointment.validWithOutcome().copy(
@@ -201,7 +200,7 @@ class SchedulingIT : IntegrationTestBase() {
               allocationId = allocation2.id,
               startTime = LocalTime.of(12, 0),
               endTime = LocalTime.of(18, 0),
-              minutesCredited = Duration.ofHours(4),
+              minutesCredited = Duration.ofHours(4).toMinutes(),
             ),
             // Today-18, ALLOC1, 10:00-16:00, 4 Hours Credited
             NDSchedulingExistingAppointment.validWithOutcome().copy(
@@ -209,7 +208,7 @@ class SchedulingIT : IntegrationTestBase() {
               allocationId = allocation1.id,
               startTime = LocalTime.of(10, 0),
               endTime = LocalTime.of(14, 0),
-              minutesCredited = Duration.ofHours(4),
+              minutesCredited = Duration.ofHours(4).toMinutes(),
             ),
             // Today-17, ALLOC2, 12:00-18:00, 4 Hours Credited
             NDSchedulingExistingAppointment.validWithOutcome().copy(
@@ -217,7 +216,7 @@ class SchedulingIT : IntegrationTestBase() {
               allocationId = allocation2.id,
               startTime = LocalTime.of(12, 0),
               endTime = LocalTime.of(18, 0),
-              minutesCredited = Duration.ofHours(4),
+              minutesCredited = Duration.ofHours(4).toMinutes(),
             ),
             // Today-11, ALLOC1, 10:00-16:00, 4 Hours Credited
             NDSchedulingExistingAppointment.validWithOutcome().copy(
@@ -225,7 +224,7 @@ class SchedulingIT : IntegrationTestBase() {
               allocationId = allocation1.id,
               startTime = LocalTime.of(10, 0),
               endTime = LocalTime.of(14, 0),
-              minutesCredited = Duration.ofHours(4),
+              minutesCredited = Duration.ofHours(4).toMinutes(),
             ),
             // Today-10, ALLOC2, 12:00-18:00, 4 Hours Credited
             NDSchedulingExistingAppointment.validWithOutcome().copy(
@@ -233,7 +232,7 @@ class SchedulingIT : IntegrationTestBase() {
               allocationId = allocation2.id,
               startTime = LocalTime.of(12, 0),
               endTime = LocalTime.of(18, 0),
-              minutesCredited = Duration.ofHours(4),
+              minutesCredited = Duration.ofHours(4).toMinutes(),
             ),
             // Today-4, ALLOC1, 10:00-16:00, 4 Hours Credited
             NDSchedulingExistingAppointment.validWithOutcome().copy(
@@ -241,7 +240,7 @@ class SchedulingIT : IntegrationTestBase() {
               allocationId = allocation1.id,
               startTime = LocalTime.of(10, 0),
               endTime = LocalTime.of(14, 0),
-              minutesCredited = Duration.ofHours(4),
+              minutesCredited = Duration.ofHours(4).toMinutes(),
             ),
             // Today-3, ALLOC2, 12:00-18:00, 4 Hours Credited
             NDSchedulingExistingAppointment.validWithOutcome().copy(
@@ -249,7 +248,7 @@ class SchedulingIT : IntegrationTestBase() {
               allocationId = allocation2.id,
               startTime = LocalTime.of(12, 0),
               endTime = LocalTime.of(18, 0),
-              minutesCredited = Duration.ofHours(4),
+              minutesCredited = Duration.ofHours(4).toMinutes(),
             ),
             // Today-1, MANUAL, 12:00-22:00, Outcome pending
             // updated to be non outcome

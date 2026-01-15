@@ -40,13 +40,13 @@ fun NDSchedulingAllocation.toSchedulingAllocation() = SchedulingAllocation(
     availabilityFrequency = this.projectAvailability?.frequency,
   ),
   dayOfWeek = when (this.dayOfWeek) {
-    NDSchedulingDayOfWeek.MONDAY -> DayOfWeek.MONDAY
-    NDSchedulingDayOfWeek.TUESDAY -> DayOfWeek.TUESDAY
-    NDSchedulingDayOfWeek.WEDNESDAY -> DayOfWeek.WEDNESDAY
-    NDSchedulingDayOfWeek.THURSDAY -> DayOfWeek.THURSDAY
-    NDSchedulingDayOfWeek.FRIDAY -> DayOfWeek.FRIDAY
-    NDSchedulingDayOfWeek.SATURDAY -> DayOfWeek.SATURDAY
-    NDSchedulingDayOfWeek.SUNDAY -> DayOfWeek.SUNDAY
+    NDSchedulingDayOfWeek.Monday -> DayOfWeek.MONDAY
+    NDSchedulingDayOfWeek.Tuesday -> DayOfWeek.TUESDAY
+    NDSchedulingDayOfWeek.Wednesday -> DayOfWeek.WEDNESDAY
+    NDSchedulingDayOfWeek.Thursday -> DayOfWeek.THURSDAY
+    NDSchedulingDayOfWeek.Friday -> DayOfWeek.FRIDAY
+    NDSchedulingDayOfWeek.Saturday -> DayOfWeek.SATURDAY
+    NDSchedulingDayOfWeek.Sunday -> DayOfWeek.SUNDAY
   },
   startDateInclusive = this.startDateInclusive,
   endDateInclusive = this.determineEndDateInclusive(),
@@ -65,7 +65,7 @@ fun NDSchedulingExistingAppointment.toSchedulingExistingAppointment() = Scheduli
   startTime = startTime,
   endTime = endTime,
   hasOutcome = outcome != null,
-  minutesCredited = minutesCredited,
+  minutesCredited = minutesCredited?.let { Duration.ofMinutes(it) },
   allocationId = allocationId,
 )
 
@@ -94,14 +94,14 @@ private fun determineFrequency(
 
   return when {
     frequencies.isEmpty() -> SchedulingFrequency.WEEKLY
-    NDSchedulingFrequency.FORTNIGHTLY in frequencies -> SchedulingFrequency.FORTNIGHTLY
-    NDSchedulingFrequency.WEEKLY in frequencies -> SchedulingFrequency.WEEKLY
+    NDSchedulingFrequency.Fortnightly in frequencies -> SchedulingFrequency.FORTNIGHTLY
+    NDSchedulingFrequency.Weekly in frequencies -> SchedulingFrequency.WEEKLY
     else -> SchedulingFrequency.ONCE
   }
 }
 
 private fun NDSchedulingProject.toSchedulingProject() = SchedulingProject(
-  code = code.code,
+  code = code,
   projectTypeCode = type.code,
   providerCode = provider.code,
   teamCode = team.code,

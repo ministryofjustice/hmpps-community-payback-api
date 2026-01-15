@@ -9,7 +9,6 @@ import org.springframework.web.service.annotation.GetExchange
 import org.springframework.web.service.annotation.PostExchange
 import org.springframework.web.service.annotation.PutExchange
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.HourMinuteDuration
-import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
@@ -361,7 +360,9 @@ data class NDUnpaidWorkRequirement(
   val requirementProgress: NDRequirementProgress,
   val allocations: List<NDSchedulingAllocation>,
   val appointments: List<NDSchedulingExistingAppointment>,
-)
+) {
+  companion object
+}
 
 data class NDSchedulingAllocation(
   val id: Long,
@@ -379,7 +380,7 @@ data class NDSchedulingAllocation(
 
 data class NDSchedulingProject(
   val name: String,
-  val code: Code,
+  val code: String,
   val expectedEndDateExclusive: LocalDate?,
   val actualEndDateExclusive: LocalDate?,
   val type: NDNameCode,
@@ -397,29 +398,29 @@ data class NDSchedulingAvailability(
 }
 
 enum class NDSchedulingFrequency {
-  ONCE,
-  WEEKLY,
-  FORTNIGHTLY,
+  Once,
+  Weekly,
+  Fortnightly,
 }
 
 enum class NDSchedulingDayOfWeek {
-  MONDAY,
-  TUESDAY,
-  WEDNESDAY,
-  THURSDAY,
-  FRIDAY,
-  SATURDAY,
-  SUNDAY,
+  Monday,
+  Tuesday,
+  Wednesday,
+  Thursday,
+  Friday,
+  Saturday,
+  Sunday,
 }
 
 data class NDSchedulingExistingAppointment(
-  val id: UUID,
+  val id: Long,
   val project: NDNameCode,
   val date: LocalDate,
   val startTime: LocalTime,
   val endTime: LocalTime,
   val outcome: NDCodeDescription?,
-  val minutesCredited: Duration?,
+  val minutesCredited: Long?,
   val allocationId: Long?,
 ) {
   companion object

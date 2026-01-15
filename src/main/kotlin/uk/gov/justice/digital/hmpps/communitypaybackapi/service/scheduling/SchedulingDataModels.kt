@@ -4,7 +4,6 @@ import java.time.DayOfWeek
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
-import java.util.UUID
 
 data class SchedulingRequest(
   val today: LocalDate,
@@ -13,6 +12,7 @@ data class SchedulingRequest(
   val allocations: SchedulingAllocations,
   val existingAppointments: SchedulingExistingAppointments,
   val nonWorkingDates: SchedulingNonWorkingDates,
+  val dryRun: Boolean,
 ) {
   companion object
 }
@@ -93,7 +93,7 @@ data class SchedulingExistingAppointments(
 )
 
 data class SchedulingExistingAppointment(
-  val id: UUID,
+  val id: Long,
   val projectCode: String,
   val date: LocalDate,
   val startTime: LocalTime,
