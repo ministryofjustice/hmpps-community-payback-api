@@ -119,8 +119,6 @@ object SchedulingRenderer {
       } else {
         appendLine("* Plan to achieve schedule (0)")
       }
-
-      appendLine("")
     }
   }
 
@@ -165,10 +163,10 @@ object SchedulingRenderer {
     append(endTime)
     append(", ")
     if (!hasOutcome) {
-      append("Pending")
+      append("No Outcome")
     } else {
-      append("Complete ")
-      append(minutesCredited ?: Duration.ZERO)
+      append("Mins Credited ")
+      append(minutesCredited)
     }
   }
 

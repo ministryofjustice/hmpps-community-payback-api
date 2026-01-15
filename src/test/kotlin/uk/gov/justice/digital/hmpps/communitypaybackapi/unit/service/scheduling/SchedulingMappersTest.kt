@@ -177,7 +177,7 @@ class SchedulingMappersTest {
       ).toSchedulingAllocation()
 
       assertThat(result.id).isEqualTo(1234)
-      assertThat(result.alias).isEqualTo("ALLOC1234")
+      assertThat(result.alias).isEqualTo("ALLOC 1234")
       assertThat(result.project.code).isEqualTo("PROJ1")
       assertThat(result.frequency).isEqualTo(SchedulingFrequency.ONCE)
       assertThat(result.dayOfWeek).isEqualTo(DayOfWeek.MONDAY)
@@ -206,7 +206,7 @@ class SchedulingMappersTest {
       ).toSchedulingAllocation()
 
       assertThat(result.id).isEqualTo(1234)
-      assertThat(result.alias).isEqualTo("ALLOC1234")
+      assertThat(result.alias).isEqualTo("ALLOC 1234")
       assertThat(result.project.code).isEqualTo("PROJ1")
       assertThat(result.frequency).isEqualTo(SchedulingFrequency.WEEKLY)
       assertThat(result.dayOfWeek).isEqualTo(DayOfWeek.TUESDAY)
