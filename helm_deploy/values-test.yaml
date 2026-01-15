@@ -19,6 +19,9 @@ generic-service:
     COMMUNITY_PAYBACK_DOMAIN_EVENTS_URLS_APPOINTMENT_UPDATED: https://community-payback-api-test.hmpps.service.justice.gov.uk/domain-event-details/appointment-updated
     COMMUNITY_PAYBACK_AUTO_SEED_ENABLED: true
 
+    COMMUNITY_PAYBACK_SCHEDULING_ENABLED: true
+    COMMUNITY_PAYBACK_SCHEDULING_DRYRUN: true
+
     CLIENT_COMMUNITY_PAYBACK_AND_DELIUS_URL: https://community-payback-and-delius-dev.hmpps.service.justice.gov.uk
     CLIENT_ARNS_URL: https://assess-risks-and-needs-dev.hmpps.service.justice.gov.uk
 
