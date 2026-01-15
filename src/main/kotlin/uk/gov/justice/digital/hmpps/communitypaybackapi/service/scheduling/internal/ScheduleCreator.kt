@@ -5,12 +5,11 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.common.minutesBetween
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.shortestOf
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.Schedule
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingAllocation
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingAllocations
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingExistingAppointment
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingExistingAppointments
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingNonWorkingDates
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingRequest
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingRequiredAppointment
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingTriggerType
 import java.time.Duration
 import java.time.LocalDate
 
@@ -37,8 +36,7 @@ object ScheduleCreator {
     val nonWorkingDates = schedulingRequest.nonWorkingDates
 
     val ctx = SchedulingContext(
-      existingAppointments = schedulingRequest.existingAppointments,
-      allocations = schedulingRequest.allocations,
+      schedulingRequest = schedulingRequest,
       remainingMinutesToBeScheduled = remainingMinutesToBeScheduled,
     )
 
@@ -63,11 +61,6 @@ object ScheduleCreator {
     return ctx.toSchedule()
   }
 
-  private tailrec fun SchedulingNonWorkingDates.nextWorkingDayAsOf(asOf: LocalDate): LocalDate {
-    val candidate = asOf.plusDays(1)
-    return if (candidate !in dates) candidate else nextWorkingDayAsOf(candidate)
-  }
-
   private fun scheduleDay(
     ctx: SchedulingContext,
     day: LocalDate,
@@ -78,15 +71,17 @@ object ScheduleCreator {
       return
     }
 
-    /*
-     This is emulating unexpected behaviour in the ND scheduler related to what happens
-     if an appointment exists already when trying to allocate to a given day. In this case:
-
-     1. Do not schedule an appointment
-     2. If the existing appointment doesn't have an outcome, add it to the schedule
-     */
     val existingAppointmentsToday = ctx.getExistingAppointments().filter { it.date == day }
-    if (existingAppointmentsToday.isNotEmpty()) {
+    /*
+     If scheduling is triggered by an appointment change and appointment(s) already exists
+     on a day we want to schedule an appointment on, we retain those existing appointments
+     in the schedule. This broadly matches NDelius behaviour with some exceptions, which
+     can lead to different scheduling outcomes when compared to NDelius. Most notably,
+     when calculating the remaining minutes to schedule, our implementation considers _all_
+     existing appointments, where as NDelius only considers one of the existing appointments
+     (indeterminately).
+     */
+    if (ctx.getTriggerType() == SchedulingTriggerType.AppointmentChange && existingAppointmentsToday.isNotEmpty()) {
       existingAppointmentsToday.filter { !it.hasOutcome }.forEach {
         ctx.addForcedRetentionAppointment(it)
       }
@@ -124,16 +119,22 @@ object ScheduleCreator {
     )
   }
 
+  private tailrec fun SchedulingNonWorkingDates.nextWorkingDayAsOf(asOf: LocalDate): LocalDate {
+    val candidate = asOf.plusDays(1)
+    return if (candidate !in dates) candidate else nextWorkingDayAsOf(candidate)
+  }
+
   class SchedulingContext(
-    private val existingAppointments: SchedulingExistingAppointments,
-    private val allocations: SchedulingAllocations,
+    private val schedulingRequest: SchedulingRequest,
     private var remainingMinutesToBeScheduled: Duration,
     private val schedule: MutableList<SchedulingRequiredAppointment> = mutableListOf(),
     private val forcedRetentions: MutableList<SchedulingExistingAppointment> = mutableListOf(),
   ) {
-    fun getExistingAppointments() = existingAppointments.appointments.toList()
+    fun getExistingAppointments() = schedulingRequest.existingAppointments.appointments.toList()
 
-    fun getAllocations() = allocations
+    fun getAllocations() = schedulingRequest.allocations
+
+    fun getTriggerType() = schedulingRequest.trigger.type
 
     fun moreAppointmentsRequired() = remainingMinutesToBeScheduled.toMinutes() > 0
 
