@@ -8,6 +8,23 @@ permissions:
   packages: write
 
 jobs:
+  app_version:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.app_version.outputs.version }}
+    steps:
+      - id: app_version
+        name: Application version creators
+        uses: ministryofjustice/hmpps-github-actions/.github/actions/build-test-and-deploy/create_app_version@v2 # WORKFLOW_VERSION
+  gradle_build:
+    name: Validate the kotlin
+    uses: ministryofjustice/hmpps-github-actions/.github/workflows/gradle_verify.yml@v2 # WORKFLOW_VERSION
+    secrets: inherit
+    with:
+      gradle-command: 'BUILD_NUMBER=${{ needs.app_version.outputs.version}} ./gradlew assemble'
+      upload-build-artifacts: true
+    needs:
+      - app_version
   docker_build:
     name: Build docker image from hmpps-github-actions
     uses: ministryofjustice/hmpps-github-actions/.github/workflows/docker_build.yml@v2
@@ -17,7 +34,9 @@ jobs:
       push: true
       docker_multiplatform: false
       tag_latest: false
-
+      download_build_artifacts: true
+    needs:
+      - gradle_build
   helm_lint:
     name: helm lint
     uses: ministryofjustice/hmpps-github-actions/.github/workflows/test_helm_lint.yml@v2 # WORKFLOW_VERSION
