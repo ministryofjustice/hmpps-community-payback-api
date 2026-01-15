@@ -9,7 +9,7 @@ import java.time.DayOfWeek.MONDAY
 import java.time.DayOfWeek.TUESDAY
 import java.time.Duration
 
-class SchedulingScenariosStartEndDatesTest {
+class SchedulingStartEndDatesTest {
 
   @Nested
   inner class StartDate {

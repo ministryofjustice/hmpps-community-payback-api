@@ -8,7 +8,7 @@ import java.time.DayOfWeek.MONDAY
 import java.time.DayOfWeek.SATURDAY
 import java.time.Duration
 
-class SchedulingScenariosNonWorkingDatesTest {
+class SchedulingNonWorkingDatesTest {
 
   @Test
   fun `DATES-NWD-01 Once Frequency Ignored if Non Working Day`() {

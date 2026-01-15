@@ -12,7 +12,7 @@ import java.time.Duration
  * These scenarios highlight inconsistent behaviour that we've emulated
  * from the NDelius implementation
  */
-class SchedulingScenariosInconsistentBehavioursTest {
+class SchedulingInconsistentBehavioursTest {
 
   @Nested
   inner class AllocationClashesDoubleBookings {

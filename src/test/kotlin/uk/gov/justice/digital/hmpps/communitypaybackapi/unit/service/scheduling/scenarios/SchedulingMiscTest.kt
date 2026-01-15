@@ -6,7 +6,7 @@ import java.time.DayOfWeek.MONDAY
 import java.time.DayOfWeek.WEDNESDAY
 import java.time.Duration
 
-class SchedulingScenariosMiscTest {
+class SchedulingMiscTest {
 
   @Test
   fun `MISC-01 Insufficient Allocations to meet requirements`() {

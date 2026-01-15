@@ -12,7 +12,7 @@ import java.time.Duration
  *
  * Once deleting appointments is in scope, scenarios with a surplus should lead to appointments being deleted
  */
-class SchedulingScenariosNoOpTest {
+class SchedulingNoOpTest {
 
   @Test
   fun `NOOP-01 Today's Pending Appointment Satisfies Requirement`() {

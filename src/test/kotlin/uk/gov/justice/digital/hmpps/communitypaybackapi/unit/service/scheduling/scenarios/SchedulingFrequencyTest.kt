@@ -19,7 +19,7 @@ import java.time.Duration
 /**
  * These Scenarios test the Allocation Frequencies are correctly applied
  */
-class SchedulingScenariosFrequencyTest {
+class SchedulingFrequencyTest {
 
   /**
    * Once has some surprising/inconsistent behaviour. These are modelled by the ‘inconsistent behaviour’ scenarios
