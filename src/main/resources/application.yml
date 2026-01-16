@@ -79,3 +79,9 @@ clients:
     url: override-me
   community-payback-and-delius:
     url: override-me
+
+hmpps:
+  sqs:
+    # this sets a backoff for retries on when errors occur consuming messages
+    # see https://github.com/ministryofjustice/hmpps-spring-boot-sqs
+    defaultErrorVisibilityTimeout: 1, 10, 60, 600
