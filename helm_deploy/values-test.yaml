@@ -15,6 +15,7 @@ generic-service:
     SENTRY_ENVIRONMENT: test
     SPRING_PROFILES_ACTIVE: test
 
+    COMMUNITY_PAYBACK_DOMAIN_EVENTS_ENVIRONMENT: test
     COMMUNITY_PAYBACK_DOMAIN_EVENTS_URLS_APPOINTMENT_UPDATED: https://community-payback-api-test.hmpps.service.justice.gov.uk/domain-event-details/appointment-updated
     COMMUNITY_PAYBACK_AUTO_SEED_ENABLED: true
 
