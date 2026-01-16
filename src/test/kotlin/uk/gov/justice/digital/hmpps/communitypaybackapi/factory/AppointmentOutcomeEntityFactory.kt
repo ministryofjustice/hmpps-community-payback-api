@@ -9,7 +9,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.WorkQuality
 import java.util.UUID
 
 fun AppointmentOutcomeEntity.Companion.valid(
-  contactOutcomeEntity: ContactOutcomeEntity = ContactOutcomeEntity.valid(),
+  contactOutcomeEntity: ContactOutcomeEntity? = ContactOutcomeEntity.valid(),
 ) = AppointmentOutcomeEntity(
   id = UUID.randomUUID(),
   appointmentDeliusId = Long.random(),
