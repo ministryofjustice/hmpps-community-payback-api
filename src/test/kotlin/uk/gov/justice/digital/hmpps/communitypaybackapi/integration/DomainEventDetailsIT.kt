@@ -92,6 +92,25 @@ class DomainEventDetailsIT : IntegrationTestBase() {
 
       assertThat(result.id).isEqualTo(entity.id)
     }
+
+    @Test
+    fun `return domain event detail without outcome`() {
+      val entity = appointmentOutcomeEntityRepository.save(
+        AppointmentOutcomeEntity.valid(
+          contactOutcomeEntity = null,
+        ),
+      )
+
+      val result = webTestClient.get()
+        .uri("/domain-event-details/appointment-updated/${entity.id}")
+        .addDomainEventAuthHeader()
+        .exchange()
+        .expectStatus()
+        .isOk
+        .bodyAsObject<AppointmentUpdatedDomainEventDetailDto>()
+
+      assertThat(result.id).isEqualTo(entity.id)
+    }
   }
 
   fun <S : WebTestClient.RequestHeadersSpec<S>> S.addDomainEventAuthHeader() = this.headers(
