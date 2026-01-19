@@ -34,5 +34,10 @@ generic-prometheus-alerts:
   # API pool users = 20 per pod
   # Max expected connections for 2 x pods = 40 + additional 10 (buffer for direct connections)
   rdsAlertsConnectionThreshold: 50
+  sqsAlertsQueueNames:
+    - "hmpps-community-payback-devs-test-hmpps_cp_domain_events_dlq"
+    - "hmpps-community-payback-devs-test-hmpps_cp_domain_events_queue"
+  sqsAlertsOldestThreshold: 30
+  sqsAlertsTotalMessagesThreshold: 10
 
 deploy_stubs: true
