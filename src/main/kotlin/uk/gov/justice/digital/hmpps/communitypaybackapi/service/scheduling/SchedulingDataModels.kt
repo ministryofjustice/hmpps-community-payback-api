@@ -149,7 +149,9 @@ data class SchedulePlan(
   val eventNumber: Int,
   val actions: List<SchedulingAction>,
   val shortfall: Duration,
-)
+) {
+  companion object
+}
 
 sealed interface SchedulingAction {
   data class CreateAppointment(
