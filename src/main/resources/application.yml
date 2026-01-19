@@ -4,7 +4,7 @@ info.app:
 
 spring:
   jpa:
-    open-in-view: true
+    open-in-view: false
   flyway:
     enabled: true
     out-of-order: true
