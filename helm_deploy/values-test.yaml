@@ -29,5 +29,10 @@ generic-service:
 # See https://user-guide.cloud-platform.service.justice.gov.uk/documentation/monitoring-an-app/how-to-create-alarms.html#creating-your-own-custom-alerts
 generic-prometheus-alerts:
   alertSeverity: hmpps-community-payback-nonprod
+  rdsAlertsDatabases:
+    cloud-platform-2e80c5ae0324b485: "community payback"
+  # API pool users = 20 per pod
+  # Max expected connections for 2 x pods = 40 + additional 10 (buffer for direct connections)
+  rdsAlertsConnectionThreshold: 50
 
 deploy_stubs: true
