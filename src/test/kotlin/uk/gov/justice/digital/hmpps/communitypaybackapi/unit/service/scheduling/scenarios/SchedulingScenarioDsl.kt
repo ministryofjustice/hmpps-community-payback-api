@@ -2,7 +2,6 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.unit.service.scheduling
 
 import org.assertj.core.api.Assertions.assertThat
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.random
-import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.scheduling.empty
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.scheduling.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingAction
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingAllocation
@@ -47,7 +46,7 @@ class SchedulingScenarioBuilder {
   }
 
   fun then(init: ThenContext.() -> Unit) {
-    val request = SchedulingRequest.empty().copy(
+    val request = SchedulingRequest.valid().copy(
       today = today,
       trigger = SchedulingTrigger(
         type = SchedulingTriggerType.AppointmentChange,

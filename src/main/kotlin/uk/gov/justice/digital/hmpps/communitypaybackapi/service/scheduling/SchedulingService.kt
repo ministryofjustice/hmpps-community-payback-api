@@ -9,6 +9,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.inter
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.Scheduler.SchedulerOutcome.ExistingAppointmentsInsufficient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.Scheduler.SchedulerOutcome.ExistingAppointmentsSufficient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.Scheduler.SchedulerOutcome.RequirementAlreadySatisfied
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.SchedulingTelemetryPublisher
 import java.time.Clock
 import java.time.LocalDate
 
@@ -38,6 +39,7 @@ class SchedulingService(
   val communityPaybackAndDeliusClient: CommunityPaybackAndDeliusClient,
   val scheduler: Scheduler,
   val schedulePlanExecutor: SchedulePlanExecutor,
+  val scheduleTelemetryPublisher: SchedulingTelemetryPublisher,
   val clock: Clock,
 ) {
 
@@ -66,13 +68,14 @@ class SchedulingService(
     val schedulingOutcome = scheduler.producePlan(schedulingRequest)
 
     if (dryRun) {
-      log.warn("Not applying schedule for $crn because dry run was requested")
-      return
+      log.warn("Not applying schedule for CRN '$crn' because dry run was requested")
+    } else {
+      when (schedulingOutcome) {
+        is ExistingAppointmentsInsufficient -> schedulePlanExecutor.executePlan(schedulingOutcome.plan)
+        is ExistingAppointmentsSufficient, RequirementAlreadySatisfied -> Unit // deliberately do nothing
+      }
     }
 
-    when (schedulingOutcome) {
-      is ExistingAppointmentsInsufficient -> schedulePlanExecutor.executePlan(schedulingOutcome.plan)
-      is ExistingAppointmentsSufficient, RequirementAlreadySatisfied -> Unit // deliberately do nothing
-    }
+    scheduleTelemetryPublisher.publish(schedulingRequest, schedulingOutcome)
   }
 }

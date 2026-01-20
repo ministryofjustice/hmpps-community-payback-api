@@ -8,7 +8,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.Sched
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingRequirement
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingTrigger
 
-fun SchedulingRequest.Companion.empty() = SchedulingRequest(
+fun SchedulingRequest.Companion.valid() = SchedulingRequest(
   today = randomLocalDate(),
   trigger = SchedulingTrigger.valid(),
   requirement = SchedulingRequirement.valid(),

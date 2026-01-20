@@ -18,6 +18,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.Sched
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.SchedulePlanExecutor
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.Scheduler
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.Scheduler.SchedulerOutcome
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.SchedulingTelemetryPublisher
 import java.time.Clock
 import java.time.Duration
 
@@ -34,6 +35,9 @@ class SchedulingServiceTest {
   lateinit var schedulePlanExecutor: SchedulePlanExecutor
 
   @RelaxedMockK
+  lateinit var scheduleTelemetryPublisher: SchedulingTelemetryPublisher
+
+  @RelaxedMockK
   lateinit var clock: Clock
 
   @InjectMockKs
@@ -42,7 +46,6 @@ class SchedulingServiceTest {
   companion object {
     const val CRN: String = "CRN01"
     const val EVENT_NO: Int = 5
-    const val TRIGGER_DESCRIPTION: String = "The trigger cause"
   }
 
   @Test
@@ -53,6 +56,7 @@ class SchedulingServiceTest {
     schedulingService.scheduleAppointments(CRN, EVENT_NO, SchedulingTrigger.valid(), dryRun = false)
 
     verify { schedulePlanExecutor wasNot Called }
+    verify { scheduleTelemetryPublisher.publish(any(), SchedulerOutcome.ExistingAppointmentsSufficient) }
   }
 
   @Test
@@ -63,6 +67,7 @@ class SchedulingServiceTest {
     schedulingService.scheduleAppointments(CRN, EVENT_NO, SchedulingTrigger.valid(), dryRun = false)
 
     verify { schedulePlanExecutor wasNot Called }
+    verify { scheduleTelemetryPublisher.publish(any(), SchedulerOutcome.RequirementAlreadySatisfied) }
   }
 
   @Test
@@ -75,11 +80,13 @@ class SchedulingServiceTest {
       actions = emptyList(),
       shortfall = Duration.ofMinutes(5),
     )
-    every { scheduler.producePlan(any()) } returns SchedulerOutcome.ExistingAppointmentsInsufficient(plan)
+    val outcome = SchedulerOutcome.ExistingAppointmentsInsufficient(plan)
+    every { scheduler.producePlan(any()) } returns outcome
 
     schedulingService.scheduleAppointments(CRN, EVENT_NO, SchedulingTrigger.valid(), dryRun = false)
 
     verify { schedulePlanExecutor.executePlan(plan) }
+    verify { scheduleTelemetryPublisher.publish(any(), outcome) }
   }
 
   @Test
@@ -92,10 +99,12 @@ class SchedulingServiceTest {
       actions = emptyList(),
       shortfall = Duration.ofMinutes(5),
     )
-    every { scheduler.producePlan(any()) } returns SchedulerOutcome.ExistingAppointmentsInsufficient(plan)
+    val outcome = SchedulerOutcome.ExistingAppointmentsInsufficient(plan)
+    every { scheduler.producePlan(any()) } returns outcome
 
     schedulingService.scheduleAppointments(CRN, EVENT_NO, SchedulingTrigger.valid(), dryRun = true)
 
     verify { schedulePlanExecutor wasNot Called }
+    verify { scheduleTelemetryPublisher.publish(any(), outcome) }
   }
 }
