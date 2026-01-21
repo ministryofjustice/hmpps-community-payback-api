@@ -9,7 +9,7 @@ import jakarta.persistence.Table
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.UpdateTimestamp
 import org.hibernate.proxy.HibernateProxy
-import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.CommunityCampusCourseCompletionStatus
+import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseCompletionStatus
 import java.time.OffsetDateTime
 import java.util.UUID
 
@@ -60,13 +60,13 @@ data class EteCourseEventEntity(
 }
 
 enum class EteCourseEventStatus(
-  val messageType: CommunityCampusCourseCompletionStatus,
+  val messageType: EducationCourseCompletionStatus,
 ) {
-  COMPLETED(CommunityCampusCourseCompletionStatus.Completed),
-  FAILED(CommunityCampusCourseCompletionStatus.Failed),
+  COMPLETED(EducationCourseCompletionStatus.Completed),
+  FAILED(EducationCourseCompletionStatus.Failed),
   ;
 
   companion object {
-    fun fromMessage(messageType: CommunityCampusCourseCompletionStatus) = entries.first { it.messageType == messageType }
+    fun fromMessage(messageType: EducationCourseCompletionStatus) = entries.first { it.messageType == messageType }
   }
 }

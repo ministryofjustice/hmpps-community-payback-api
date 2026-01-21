@@ -9,8 +9,8 @@ import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.EteService
 
 @Service
-@ConditionalOnProperty(name = ["community-payback.community-campus-integration.enabled"], havingValue = "true")
-class CommunityCampusListener(
+@ConditionalOnProperty(name = ["community-payback.education-course-integration.enabled"], havingValue = "true")
+class EducationCourseListener(
   private val objectMapper: ObjectMapper,
   private val eteService: EteService,
 ) {
@@ -18,12 +18,12 @@ class CommunityCampusListener(
     val log: Logger = LoggerFactory.getLogger(this::class.java)
   }
 
-  @SqsListener("communitycampuscoursecompletionqueue", factory = "hmppsQueueContainerFactoryProxy")
+  @SqsListener("educationcoursecompletionqueue", factory = "hmppsQueueContainerFactoryProxy")
   fun courseCompletion(messageString: String) {
-    log.debug("Have received community campus course completion message '$messageString'")
+    log.debug("Have received education course course completion message '$messageString'")
 
-    val message = objectMapper.readValue(messageString, CommunityCampusCourseCompletionMessage::class.java)
+    val message = objectMapper.readValue(messageString, EducationCourseCompletionMessage::class.java)
 
-    eteService.handleCommunityCampusMessage(message)
+    eteService.handleEducationCourseMessage(message)
   }
 }

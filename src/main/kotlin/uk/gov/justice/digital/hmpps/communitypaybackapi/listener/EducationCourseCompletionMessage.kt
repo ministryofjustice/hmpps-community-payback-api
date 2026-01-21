@@ -4,15 +4,15 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.common.HourMinuteDuratio
 import java.time.LocalDate
 import java.time.LocalDateTime
 
-data class CommunityCampusCourseCompletionMessage(
-  val communityCampusId: String,
-  val person: CommunityCampusPerson,
-  val course: CommunityCampusCourse,
+data class EducationCourseCompletionMessage(
+  val externalId: String,
+  val person: EducationCoursePerson,
+  val course: EducationCourseCourse,
 ) {
   companion object
 }
 
-data class CommunityCampusPerson(
+data class EducationCoursePerson(
   val crn: String,
   val firstName: String,
   val lastName: String,
@@ -24,12 +24,12 @@ data class CommunityCampusPerson(
   companion object
 }
 
-data class CommunityCampusCourse(
+data class EducationCourseCourse(
   val courseName: String,
   val source: String,
   val enrollmentDateTime: LocalDateTime,
   val completionDateTime: LocalDateTime,
-  val status: CommunityCampusCourseCompletionStatus,
+  val status: EducationCourseCompletionStatus,
   val totalTime: HourMinuteDuration,
   val attempts: Int,
   val expectedMinutes: Int,
@@ -38,7 +38,7 @@ data class CommunityCampusCourse(
   companion object
 }
 
-enum class CommunityCampusCourseCompletionStatus {
+enum class EducationCourseCompletionStatus {
   Completed,
   Failed,
 }

@@ -5,7 +5,7 @@ import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseEventStatus
-import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.CommunityCampusCourseCompletionMessage
+import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseCompletionMessage
 import java.util.UUID
 
 @Service
@@ -14,7 +14,7 @@ class EteService(
 ) {
 
   @Transactional
-  fun handleCommunityCampusMessage(message: CommunityCampusCourseCompletionMessage) {
+  fun handleEducationCourseMessage(message: EducationCourseCompletionMessage) {
     eteCourseEventEntityRepository.save(
       EteCourseEventEntity(
         id = UUID.randomUUID(),
