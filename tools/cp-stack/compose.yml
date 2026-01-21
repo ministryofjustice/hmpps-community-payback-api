@@ -10,6 +10,7 @@ services:
     depends_on:
       - wiremock
       - postgres
+      - redis
     # using raw format disables interpolation, which causes errors when values include '$'
     # note that intellij doesn't think this is valid but is i
     # https://youtrack.jetbrains.com/issue/IJPL-68738/Docker-Compose.-Editor.-Path-property-of-envfile-attribute-is-not-recognized
@@ -92,6 +93,15 @@ services:
       - "5431:5432"
     healthcheck:
       test: pg_isready -U community_payback -d community_payback
+
+  redis:
+    # version is aligned with AWS version
+    image: "redis:7.0.4"
+    container_name: cp-stack-redis
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+    ports:
+      - "6379:6379"
 
 volumes:
   cp-stack-postgres-data-api:
