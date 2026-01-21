@@ -33,6 +33,8 @@ generic-service:
     SENTRY_TRACES-SAMPLE-RATE: 0.01
     APPLICATIONINSIGHTS_CONFIGURATION_FILE: applicationinsights.json
     SPRING_DATASOURCE_URL: "jdbc:postgresql://${DB_HOST}/${DB_NAME}"
+    SPRING_DATA_REDIS_PORT: 6379
+    SPRING_DATA_REDIS_SSL_ENABLED: true
 
     COMMUNITY_PAYBACK_EDUCATION_INTEGRATION_ENABLED: false
 
@@ -49,6 +51,9 @@ generic-service:
     hmpps-community-payback-api-client-creds:
       SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_API-CLIENT_CLIENT-ID: "API_CLIENT_ID"
       SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_API-CLIENT_CLIENT-SECRET: "API_CLIENT_SECRET"
+    hmpps-community-payback-api-elasticache-redis:
+      SPRING_DATA_REDIS_HOST: "primary_endpoint_address"
+      SPRING_DATA_REDIS_PASSWORD: "auth_token"
     hmpps-community-payback-api-sentry:
       SENTRY_DSN: "SENTRY_DSN"
     hmpps-domain-events-topic:

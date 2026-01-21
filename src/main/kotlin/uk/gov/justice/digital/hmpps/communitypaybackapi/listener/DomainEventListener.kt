@@ -17,6 +17,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.HmppsDo
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingTrigger
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingTriggerType
+import java.time.Duration
 import java.util.UUID
 
 /**
@@ -32,12 +33,32 @@ class DomainEventListener(
   @param:Value("\${community-payback.scheduling.dryRun:false}")
   private val schedulingDryRun: Boolean,
   private val sqsListenerErrorHandler: SqsListenerErrorHandler,
+  private val lockService: LockService,
 ) {
   private companion object {
+    /**
+     * Message visibility should be set according to the longest possible processing
+     * time for a domain event.
+     *
+     * For appointment changes, the slowest possible processing time is determined
+     * by the timeouts of upstream calls, as internal processing should be fast:
+     *
+     * 1. get non-working days via cp-and-delius (5 seconds timeout)
+     * 2. get unpaid work requirement via cp-and-delius (5 seconds timeout)
+     * 3. bulk create appointments via cp-and-delius (5 seconds timeout)
+     *
+     * 30 seconds should be more than enough time for this
+     */
+    const val MESSAGE_VISIBILITY_TIMEOUT: Long = 30L
+
     val log: Logger = LoggerFactory.getLogger(this::class.java)
   }
 
-  @SqsListener("hmppsdomaineventsqueue", factory = "hmppsQueueContainerFactoryProxy")
+  @SqsListener(
+    value = ["hmppsdomaineventsqueue"],
+    factory = "hmppsQueueContainerFactoryProxy",
+    messageVisibilitySeconds = MESSAGE_VISIBILITY_TIMEOUT.toString(),
+  )
   fun domainEvent(
     messageString: String,
     @Headers headers: MessageHeaders,
@@ -60,19 +81,27 @@ class DomainEventListener(
   }
 
   private fun handleAppointmentUpdated(event: HmppsDomainEvent) {
-    val eventId = UUID.fromString(event.additionalInformation!!.map[AdditionalInformationType.EVENT_ID.name]!!.toString())
+    val eventId = event.additionalInformation?.map[AdditionalInformationType.EVENT_ID.name]?.toString()?.let {
+      UUID.fromString(it)
+    } ?: error("Can't find event id")
+
     val domainEventDetails = appointmentUpdateService.getAppointmentUpdatedDomainEventDetails(eventId)
       ?: error("Can't find appointment updated record for event id '$eventId'")
 
-    scheduleService.scheduleAppointments(
-      crn = domainEventDetails.crn,
-      eventNumber = domainEventDetails.deliusEventNumber,
-      trigger = SchedulingTrigger(
-        type = SchedulingTriggerType.AppointmentChange,
-        description = "Appointment Updated",
-      ),
-      dryRun = schedulingDryRun,
-    )
+    lockService.withDistributedLock(
+      key = domainEventDetails.crn,
+      leaseTime = Duration.ofSeconds(MESSAGE_VISIBILITY_TIMEOUT),
+    ) {
+      scheduleService.scheduleAppointments(
+        crn = domainEventDetails.crn,
+        eventNumber = domainEventDetails.deliusEventNumber,
+        trigger = SchedulingTrigger(
+          type = SchedulingTriggerType.AppointmentChange,
+          description = "Appointment Updated",
+        ),
+        dryRun = schedulingDryRun,
+      )
+    }
 
     appointmentUpdateService.recordSchedulingRan(eventId)
   }

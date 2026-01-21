@@ -9,6 +9,9 @@ The tool manages local instances of the following:
 * Community Payback API - Either via docker or gradle
 * Community Payback UI - Either via docker or node (to run local code)
 * Community Payback Supervisor UI - Either via docker or node (to run local code)
+* Postgres
+* Redis
+* Localstack
 * Wiremock - Proxies all requests to upstream services, allowing us to selectively intercept and mock responses
 
 All upstream services are provided by the [Cloud Platform's](https://user-guide.cloud-platform.service.justice.gov.uk/) 'Dev' environment, proxied via Wiremock (excluding hmpps-auth, which is not proxied)
