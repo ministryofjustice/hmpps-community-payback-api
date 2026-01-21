@@ -19,7 +19,7 @@ spring:
     password: community_payback
 
 community-payback:
-  community-campus-integration:
+  education-course-integration:
     enabled: true
   scheduling:
     enabled: true
@@ -34,7 +34,7 @@ hmpps-auth:
 hmpps.sqs:
   provider: localstack
   queues:
-    communitycampuscoursecompletionqueue:
+    educationcoursecompletionqueue:
       dlqName: ${random.uuid}
       queueName: ${random.uuid}
       dlqMaxReceiveCount: 1

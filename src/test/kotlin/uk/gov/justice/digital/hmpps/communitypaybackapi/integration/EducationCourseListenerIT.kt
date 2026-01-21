@@ -10,12 +10,12 @@ import org.springframework.beans.factory.annotation.Autowired
 import software.amazon.awssdk.services.sqs.model.SendMessageRequest
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
-import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.CommunityCampusCourseCompletionMessage
+import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseCompletionMessage
 import uk.gov.justice.hmpps.sqs.HmppsQueueService
 import uk.gov.justice.hmpps.sqs.MissingQueueException
 import java.util.concurrent.TimeUnit
 
-class CommunityCampusListenerIT : IntegrationTestBase() {
+class EducationCourseListenerIT : IntegrationTestBase() {
 
   @Autowired
   lateinit var hmppsQueueService: HmppsQueueService
@@ -27,7 +27,7 @@ class CommunityCampusListenerIT : IntegrationTestBase() {
   lateinit var eteCourseEventEntityRepository: EteCourseEventEntityRepository
 
   companion object {
-    const val QUEUE_NAME = "communitycampuscoursecompletionqueue"
+    const val QUEUE_NAME = "educationcoursecompletionqueue"
   }
 
   @Nested
@@ -40,7 +40,7 @@ class CommunityCampusListenerIT : IntegrationTestBase() {
 
     @Test
     fun `Message is received`() {
-      val message = objectMapper.writeValueAsString(CommunityCampusCourseCompletionMessage.valid())
+      val message = objectMapper.writeValueAsString(EducationCourseCompletionMessage.valid())
 
       val queue = hmppsQueueService.findByQueueId(QUEUE_NAME)
         ?: throw MissingQueueException("HmppsQueue $QUEUE_NAME not found")

@@ -14,10 +14,10 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseEventEnt
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseEventStatus
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
-import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.CommunityCampusCourse
-import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.CommunityCampusCourseCompletionMessage
-import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.CommunityCampusCourseCompletionStatus
-import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.CommunityCampusPerson
+import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseCompletionMessage
+import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseCompletionStatus
+import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseCourse
+import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCoursePerson
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.EteService
 import java.time.Duration
 
@@ -31,23 +31,23 @@ class EteServiceTest {
   private lateinit var service: EteService
 
   @Nested
-  inner class HandleCommunityCampusMessage {
+  inner class HandleEducationCourseMessage {
 
     @Test
     fun `create ete course event entry`() {
       val entityCaptor = slot<EteCourseEventEntity>()
       every { eteCourseEventEntityRepository.save(capture(entityCaptor)) } returnsArgument 0
 
-      service.handleCommunityCampusMessage(
-        CommunityCampusCourseCompletionMessage.valid().copy(
-          person = CommunityCampusPerson.valid().copy(
+      service.handleEducationCourseMessage(
+        EducationCourseCompletionMessage.valid().copy(
+          person = EducationCoursePerson.valid().copy(
             crn = "CRN01",
           ),
-          course = CommunityCampusCourse.valid().copy(
+          course = EducationCourseCourse.valid().copy(
             courseName = "The course name",
             totalTime = HourMinuteDuration(duration = Duration.ofMinutes(70)),
             attempts = 55,
-            status = CommunityCampusCourseCompletionStatus.Failed,
+            status = EducationCourseCompletionStatus.Failed,
           ),
         ),
       )
