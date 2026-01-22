@@ -1,4 +1,4 @@
-name: Deploy to environment
+name: Deploy version to environment
 
 on:
   workflow_dispatch:
