@@ -11,7 +11,7 @@
     request.variables.set("todayIso", toIsoDate(new Date()))
     request.variables.set("todayPlus7DaysIso", toIsoDate(addDays(new Date(), 7)))
 %}
-GET {{base-url}}/admin/projects/session-search?startDate={{todayIso}}&endDate={{todayPlus7DaysIso}}&teamCode=N56DTX
+GET {{base-url}}/admin/providers/1000/teams/N56DTX/sessions?startDate={{todayIso}}&endDate={{todayPlus7DaysIso}}
 Authorization: Bearer {{$auth.token("hmpps-auth-ui-client")}}
 
 > {%
@@ -68,13 +68,13 @@ Authorization: Bearer {{$auth.token("hmpps-auth-ui-client")}}
     });
 
     let nonEnforceableOutcomes = jsonPath(response.body, "$.contactOutcomes[?(@.enforceable == false)]")
-    client.global.set("contact_outcome_id", nonEnforceableOutcomes[0].id.toString());
-    client.log("Using contact outcome id " + client.global.get("contact_outcome_id"))
+    client.global.set("contact_outcome_code", nonEnforceableOutcomes[0].code.toString());
+    client.log("Using contact outcome code '" + client.global.get("contact_outcome_code") + "'")
 %}
 
 ### update appointment outcome
 
-POST {{base-url}}/admin/appointments/{{appointment_id}}/outcome
+POST {{base-url}}/admin/projects/{{allocation_project_code}}/appointments/{{appointment_id}}/outcome
 Authorization: Bearer {{$auth.token("hmpps-auth-ui-client")}}
 Content-Type: application/json
 
@@ -83,7 +83,7 @@ Content-Type: application/json
   "deliusVersionToUpdate": "{{appointment.version}}",
   "startTime": "{{appointment.startTime}}",
   "endTime": "{{appointment.endTime}}",
-  "contactOutcomeId": "{{contact_outcome_id}}",
+  "contactOutcomeCode": "{{contact_outcome_code}}",
   "attendanceData":  {
     "hiVisWorn": true,
     "workedIntensively": true,
