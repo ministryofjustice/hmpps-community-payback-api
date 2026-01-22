@@ -6,11 +6,15 @@ import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.SupervisorService
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 
 @SupervisorUiController
+@RequestMapping(
+  produces = [MediaType.APPLICATION_JSON_VALUE],
+)
 class SupervisorInfoController(
   val supervisorService: SupervisorService,
 ) {
