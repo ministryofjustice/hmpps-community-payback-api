@@ -141,7 +141,7 @@ class SchedulingIT : IntegrationTestBase() {
       publishAppointmentUpdateDomainEvent(outcomeRecordId)
       waitForSchedulingToRun(outcomeRecordId)
 
-      CommunityPaybackAndDeliusMockServer.postAppointmentVerifyZeroCalls()
+      CommunityPaybackAndDeliusMockServer.postAppointmentsVerifyZeroCalls()
     }
 
     @Test
@@ -281,7 +281,8 @@ class SchedulingIT : IntegrationTestBase() {
         ),
       )
 
-      CommunityPaybackAndDeliusMockServer.postAppointment(CRN, EVENT_NUMBER)
+      CommunityPaybackAndDeliusMockServer.postAppointments("PROJ1")
+      CommunityPaybackAndDeliusMockServer.postAppointments("PROJ2")
 
       val outcomeRecordId = appointmentOutcomeEntityRepository.save(
         AppointmentOutcomeEntity.valid(applicationContext).copy(
@@ -296,31 +297,39 @@ class SchedulingIT : IntegrationTestBase() {
       /*
       Today+3 - ALLOC1, 10:00-16:00
       Today+4 - ALLOC2, 12:00-18:00
-      Today+18 - ALLOC1, 12:00-14:00
+      Today+18 - ALLOC2, 12:00-14:00
        */
       CommunityPaybackAndDeliusMockServer.postAppointmentVerify(
-        crn = CRN,
-        eventNumber = EVENT_NUMBER,
         projectCode = "PROJ1",
-        date = schedulingDate.plusDays(3),
-        startTime = LocalTime.of(10, 0),
-        endTime = LocalTime.of(14, 0),
+        expectedAppointments = listOf(
+          CommunityPaybackAndDeliusMockServer.ExpectedAppointmentCreate(
+            crn = CRN,
+            eventNumber = EVENT_NUMBER,
+            date = schedulingDate.plusDays(3),
+            startTime = LocalTime.of(10, 0),
+            endTime = LocalTime.of(14, 0),
+          ),
+        ),
       )
       CommunityPaybackAndDeliusMockServer.postAppointmentVerify(
-        crn = CRN,
-        eventNumber = EVENT_NUMBER,
         projectCode = "PROJ2",
-        date = schedulingDate.plusDays(4),
-        startTime = LocalTime.of(12, 0),
-        endTime = LocalTime.of(18, 0),
-      )
-      CommunityPaybackAndDeliusMockServer.postAppointmentVerify(
-        crn = CRN,
-        eventNumber = EVENT_NUMBER,
-        projectCode = "PROJ2",
-        date = schedulingDate.plusDays(18),
-        startTime = LocalTime.of(12, 0),
-        endTime = LocalTime.of(14, 0),
+        expectedAppointments = listOf(
+          CommunityPaybackAndDeliusMockServer.ExpectedAppointmentCreate(
+            crn = CRN,
+            eventNumber = EVENT_NUMBER,
+            date = schedulingDate.plusDays(4),
+            startTime = LocalTime.of(12, 0),
+            endTime = LocalTime.of(18, 0),
+          ),
+          CommunityPaybackAndDeliusMockServer.ExpectedAppointmentCreate(
+            crn = CRN,
+            eventNumber = EVENT_NUMBER,
+            date = schedulingDate.plusDays(18),
+            startTime = LocalTime.of(12, 0),
+            endTime = LocalTime.of(14, 0),
+          ),
+        ),
+
       )
     }
 

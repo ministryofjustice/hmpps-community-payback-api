@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.inte
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCreateAppointments
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulePlan
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingAction
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingRequiredAppointment
@@ -20,29 +21,37 @@ class SchedulePlanExecutor(
   fun executePlan(
     plan: SchedulePlan,
   ) {
-    plan.actions.forEach {
-      when (it) {
-        is SchedulingAction.CreateAppointment -> createAppointment(
+    plan.actions
+      .filterIsInstance<SchedulingAction.CreateAppointment>()
+      .groupBy { it.toCreate.project.code }
+      .forEach { (projectCode, appointmentsToCreate) ->
+        createAppointment(
           crn = plan.crn,
           eventNumber = plan.eventNumber,
-          toCreate = it.toCreate,
+          projectCode = projectCode,
+          toCreate = appointmentsToCreate.map { it.toCreate },
         )
-        is SchedulingAction.RetainAppointment -> Unit // deliberately do nothing
       }
-    }
   }
 
   private fun createAppointment(
     crn: String,
     eventNumber: Int,
-    toCreate: SchedulingRequiredAppointment,
+    projectCode: String,
+    toCreate: List<SchedulingRequiredAppointment>,
   ) {
-    log.info("Creating appointment for allocation ${toCreate.allocation.alias} on ${toCreate.date}")
+    log.info("Creating ${toCreate.size} appointments for project $projectCode")
 
-    deliusClient.createAppointment(
-      crn = crn,
-      eventNumber = eventNumber,
-      createAppointment = toCreate.toNDCreateAppointment(),
+    deliusClient.createAppointments(
+      projectCode = projectCode,
+      appointments = NDCreateAppointments(
+        toCreate.map {
+          it.toNDCreateAppointment(
+            crn = crn,
+            eventNumber = eventNumber,
+          )
+        },
+      ),
     )
   }
 }

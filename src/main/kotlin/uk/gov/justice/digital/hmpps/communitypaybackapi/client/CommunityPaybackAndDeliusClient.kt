@@ -56,11 +56,10 @@ interface CommunityPaybackAndDeliusClient {
     @RequestBody updateAppointment: UpdateAppointment,
   )
 
-  @PostExchange("/case/{crn}/event/{eventNumber}/appointments")
-  fun createAppointment(
-    @PathVariable crn: String,
-    @PathVariable eventNumber: Int,
-    @RequestBody createAppointment: NDCreateAppointment,
+  @PostExchange("/projects/{projectCode}/appointments")
+  fun createAppointments(
+    @PathVariable projectCode: String,
+    @RequestBody appointments: NDCreateAppointments,
   )
 
   @GetExchange("/providers/{providerCode}/teams/{teamCode}/supervisors")
@@ -312,7 +311,13 @@ data class SupervisorName(
   companion object
 }
 
+data class NDCreateAppointments(
+  val appointments: List<NDCreateAppointment>,
+)
+
 data class NDCreateAppointment(
+  val crn: String,
+  val eventNumber: Int,
   val date: LocalDate,
   val startTime: LocalTime,
   val endTime: LocalTime,

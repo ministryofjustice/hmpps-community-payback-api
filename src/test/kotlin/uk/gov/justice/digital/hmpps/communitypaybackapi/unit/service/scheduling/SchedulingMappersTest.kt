@@ -301,8 +301,13 @@ class SchedulingMappersTest {
         allocation = SchedulingAllocation.valid().copy(
           id = 55L,
         ),
-      ).toNDCreateAppointment()
+      ).toNDCreateAppointment(
+        crn = "CRN1",
+        eventNumber = 25,
+      )
 
+      assertThat(result.crn).isEqualTo("CRN1")
+      assertThat(result.eventNumber).isEqualTo(25)
       assertThat(result.date).isEqualTo(LocalDate.of(2021, 9, 8))
       assertThat(result.startTime).isEqualTo(LocalTime.of(1, 2))
       assertThat(result.endTime).isEqualTo(LocalTime.of(11, 12))
