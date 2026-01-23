@@ -294,9 +294,6 @@ class SchedulingMappersTest {
         endTime = LocalTime.of(11, 12),
         project = SchedulingProject.valid().copy(
           code = "P1",
-          providerCode = "PC1",
-          teamCode = "TC1",
-          projectTypeCode = "PT1",
         ),
         allocation = SchedulingAllocation.valid().copy(
           id = 55L,
@@ -311,10 +308,6 @@ class SchedulingMappersTest {
       assertThat(result.date).isEqualTo(LocalDate.of(2021, 9, 8))
       assertThat(result.startTime).isEqualTo(LocalTime.of(1, 2))
       assertThat(result.endTime).isEqualTo(LocalTime.of(11, 12))
-      assertThat(result.providerCode.code).isEqualTo("PC1")
-      assertThat(result.teamCode.code).isEqualTo("TC1")
-      assertThat(result.projectCode.code).isEqualTo("P1")
-      assertThat(result.projectTypeCode.code).isEqualTo("PT1")
       assertThat(result.allocationId).isEqualTo(55)
       assertThat(result.outcome).isNull()
       assertThat(result.supervisor).isNull()

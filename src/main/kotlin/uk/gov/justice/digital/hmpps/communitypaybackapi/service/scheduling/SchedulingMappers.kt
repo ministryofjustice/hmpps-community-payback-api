@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling
 
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Code
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCreateAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDRequirementProgress
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingAllocation
@@ -78,10 +77,6 @@ fun SchedulingRequiredAppointment.toNDCreateAppointment(
   date = this.date,
   startTime = this.startTime,
   endTime = this.endTime,
-  providerCode = Code(this.project.providerCode),
-  teamCode = Code(this.project.teamCode),
-  projectCode = Code(this.project.code),
-  projectTypeCode = Code(this.project.projectTypeCode),
   allocationId = this.allocation.id,
 )
 
