@@ -78,6 +78,7 @@ fun SchedulingRequiredAppointment.toNDCreateAppointment(
   startTime = this.startTime,
   endTime = this.endTime,
   allocationId = this.allocation.id,
+  notes = "[System scheduled appointment]",
 )
 
 private fun NDSchedulingAllocation.determineEndDateInclusive() = this.endDateInclusive ?: listOfNotNull(

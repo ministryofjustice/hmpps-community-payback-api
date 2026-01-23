@@ -311,7 +311,7 @@ class SchedulingMappersTest {
       assertThat(result.allocationId).isEqualTo(55)
       assertThat(result.outcome).isNull()
       assertThat(result.supervisor).isNull()
-      assertThat(result.notes).isNull()
+      assertThat(result.notes).isEqualTo("[System scheduled appointment]")
       assertThat(result.hiVisWorn).isNull()
       assertThat(result.workedIntensively).isNull()
       assertThat(result.penaltyMinutes).isNull()
