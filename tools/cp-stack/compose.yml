@@ -96,7 +96,7 @@ services:
 
   redis:
     # version is aligned with AWS version
-    image: "redis:7.0.4"
+    image: "redis:7.4.7"
     container_name: cp-stack-redis
     environment:
       - ALLOW_EMPTY_PASSWORD=yes
