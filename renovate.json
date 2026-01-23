@@ -14,5 +14,5 @@
       "fileMatch": ["^\\.github/workflows/.*\\.yml$"]
     }
   ],
-  "ignoreDeps": ["postgres"]
+  "ignoreDeps": ["postgres", "redis"]
 }
