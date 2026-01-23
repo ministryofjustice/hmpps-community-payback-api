@@ -69,7 +69,12 @@ fun NDSchedulingExistingAppointment.toSchedulingExistingAppointment() = Scheduli
   allocationId = allocationId,
 )
 
-fun SchedulingRequiredAppointment.toNDCreateAppointment() = NDCreateAppointment(
+fun SchedulingRequiredAppointment.toNDCreateAppointment(
+  crn: String,
+  eventNumber: Int,
+) = NDCreateAppointment(
+  crn = crn,
+  eventNumber = eventNumber,
   date = this.date,
   startTime = this.startTime,
   endTime = this.endTime,

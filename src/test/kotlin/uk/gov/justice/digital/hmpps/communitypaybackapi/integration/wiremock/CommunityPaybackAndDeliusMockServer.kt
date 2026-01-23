@@ -128,12 +128,11 @@ object CommunityPaybackAndDeliusMockServer {
     )
   }
 
-  fun postAppointment(
-    crn: String,
-    eventNumber: Int,
+  fun postAppointments(
+    projectCode: String,
   ) {
     WireMock.stubFor(
-      post("/community-payback-and-delius/case/$crn/event/$eventNumber/appointments")
+      post("/community-payback-and-delius/projects/$projectCode/appointments")
         .willReturn(
           aResponse().withStatus(200),
         ),
@@ -142,24 +141,33 @@ object CommunityPaybackAndDeliusMockServer {
 
   @SuppressWarnings("LongParameterList")
   fun postAppointmentVerify(
-    crn: String,
-    eventNumber: Int,
     projectCode: String,
-    date: LocalDate,
-    startTime: LocalTime,
-    endTime: LocalTime,
+    expectedAppointments: List<ExpectedAppointmentCreate>,
   ) {
-    WireMock.verify(
-      postRequestedFor(urlEqualTo("/community-payback-and-delius/case/$crn/event/$eventNumber/appointments"))
-        .withRequestBody(matchingJsonPath("$.projectCode.code", equalTo(projectCode)))
-        .withRequestBody(matchingJsonPath("$.date", equalTo(date.toIsoDateString())))
-        .withRequestBody(matchingJsonPath("$.startTime", equalTo(startTime.format(DateTimeFormatter.ISO_TIME))))
-        .withRequestBody(matchingJsonPath("$.endTime", equalTo(endTime.format(DateTimeFormatter.ISO_TIME)))),
-    )
+    var assertion = postRequestedFor(urlEqualTo("/community-payback-and-delius/projects/$projectCode/appointments"))
+
+    expectedAppointments.forEachIndexed { index, expectedAppointment ->
+      assertion = assertion
+        .withRequestBody(matchingJsonPath("$.appointments[$index].crn", equalTo(expectedAppointment.crn)))
+        .withRequestBody(matchingJsonPath("$.appointments[$index].eventNumber", equalTo(expectedAppointment.eventNumber.toString())))
+        .withRequestBody(matchingJsonPath("$.appointments[$index].date", equalTo(expectedAppointment.date.toIsoDateString())))
+        .withRequestBody(matchingJsonPath("$.appointments[$index].startTime", equalTo(expectedAppointment.startTime.format(DateTimeFormatter.ISO_TIME))))
+        .withRequestBody(matchingJsonPath("$.appointments[$index].endTime", equalTo(expectedAppointment.endTime.format(DateTimeFormatter.ISO_TIME))))
+    }
+
+    WireMock.verify(assertion)
   }
 
-  fun postAppointmentVerifyZeroCalls() {
-    WireMock.verify(0, postRequestedFor(urlMatching("/community-payback-and-delius/case/.*/appointments")))
+  data class ExpectedAppointmentCreate(
+    val crn: String,
+    val eventNumber: Int,
+    val date: LocalDate,
+    val startTime: LocalTime,
+    val endTime: LocalTime,
+  )
+
+  fun postAppointmentsVerifyZeroCalls() {
+    WireMock.verify(0, postRequestedFor(urlMatching("/community-payback-and-delius/.*/appointments")))
   }
 
   fun putAppointment(
