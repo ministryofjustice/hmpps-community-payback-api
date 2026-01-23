@@ -4,60 +4,41 @@ This is a subproject inside the Community Payback API. Attempts to fold this int
 
 ## How to use this tool
 
-You can either let Gatling automatically fetch a JWT using client credentials, let Gradle fetch client creds from Kubernetes for you, or provide a token yourself.
+This tool is designed to run in github CI via an [action](https://github.com/ministryofjustice/hmpps-community-payback-api/actions/workflows/gatling_run.yml). The action can be manually triggered via workflow dispatch. The following settings are available for the workflow:
 
-### One-step Gradle task (kubectl + Gatling)
+ * Which API should this run against
+ * Optional fully-qualified simulation class to run. Use a class name here, e.g. uk.gov.justice.digital.hmpps.communitypayback.simulations.api.HealthSimulation. If omitted, all simulations will be run.
+ * How long to wait before starting the onslaught
+ * Number of initial concurrent users
+ * How many users to increase to over time
+ * Number of seconds over which to increase the user count
+ * The number of concurrent users to keep active per second
+ * The time period in seconds over which peak load should be applied
 
-If you have kubectl access to the cluster and jq installed, you can let Gradle fetch CLIENT_ID/CLIENT_SECRET from the hmpps-community-payback-<env> namespace and then run Gatling:
+## Running locally
 
-#### Target a single 
+There is a help script in the tools folder. [run_loadtest.sh](../tools/run_loadtest.sh). It needs kubectl and jq to be unstalled and configured to point at the target cluster. Run this from the root of the project.
 
-```bash
-./gradlew gatlingRunWithK8sCreds -Penv=test -PsimulationFqn=uk.gov.justice.digital.hmpps.communitypayback.simulations.api.HealthSimulation
-```
-
-#### Target a story
-
-```shell
-./gradlew gatlingRunWithK8sCreds -PsimulationFqn=uk.gov.justice.digital.hmpps.communitypayback.simulations.ui.E2E
-```
-
-#### Target all simulations
+Run it with `-h` to see the options:
 
 ```shell
-./gradlew gatlingRunWithK8sCreds
+$ ./tools/scripts/run_loadtest.sh -h
 ```
 
-Notes:
-- Requires kubectl and jq on your PATH.
-- Uses namespace hmpps-community-payback-<env> and secret hmpps-community-payback-ui-client-creds.
-
-## Runtime configuration
-
-At run time we can pass a number of parameters to control the load test. These are passed as Gradle properties.
-
-e.g. 
+An example run command is:
 
 ```shell
-./gradlew gatlingRunWithK8sCreds -PnothingFor=5 -PatOnceUsers=20 -PrampUsers=50 -PrampUsersDuring=60 -PconstantUsersPerSec=20 -PconstantUsersPerSecDuring=30
+./tools/scripts/run_loadtest.sh \
+    --env dev \
+    --nothing-for 5 \
+    --at-once-users 1 \
+    --ramp-users 0 \
+    --ramp-users-during 0 \
+    --constant-users-per-sec 0 \
+    --constant-users-per-sec-during 0
 ```
 
- * `envName` - Which API should this run against. Defaults to dev. **TODO** when we have function test, switch this to default to test
- * `simulationFqn` - Optional fully-qualified simulation class to run. If omitted, all simulations will be run.
- * `nothingFor` - How long to wait before starting the onslaught
- * `atOnceUsers` - Number of initial concurrent users
- * `rampUsers` - How many users to increase to over time
- * `rampUsersDuring` - Number of seconds over which to increase the user count
- * `constantUsersPerSec` - The number of concurrent users to keep active per second
- * `constantUsersPerSecDuring` - The time period in seconds over which peak load should be applied
-
-### CLI parameters NOT TO BE USED
-
-So the system can run in CI, we need to be able to pass in the following parameters: CLIENT_ID and CLIENT_SECRET. These should never be used on your CLI, if you have the urge to use them, then please go and review your sec-ops training.
-
-## CI (Github action)
-
-There is a workflow dispatch that will run the gatlingRunCi task. It has a number of option that match those outlined above.
+Run againast the dev environment, starting with 5 users, increasing by 20 users over 50 seconds, then maintaining 60 users for 20 seconds, with a 30 second ramp down.
 
 ## Recreate an E2E test
 
@@ -66,4 +47,4 @@ There is a workflow dispatch that will run the gatlingRunCi task. It has a numbe
 * run e2e tests in th ui package
 * grab the logs in to a file (e2e.log)
 * `grep "CommunityPaybackRequestLoggingFilter : Request data" e2e.log > e2e-request-data.log` > e2e-requests.log
-* Ask a
+* Use that new log to create a gatling feeder or modify an existing one.
