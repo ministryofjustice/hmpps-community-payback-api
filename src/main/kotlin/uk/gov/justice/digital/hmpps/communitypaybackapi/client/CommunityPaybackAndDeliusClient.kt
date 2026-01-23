@@ -316,21 +316,19 @@ data class NDCreateAppointments(
 )
 
 data class NDCreateAppointment(
+  val reference: UUID,
   val crn: String,
   val eventNumber: Int,
   val date: LocalDate,
   val startTime: LocalTime,
   val endTime: LocalTime,
-  val providerCode: Code,
-  val teamCode: Code,
-  val projectCode: Code,
-  val projectTypeCode: Code,
   val outcome: Code? = null,
   val supervisor: Code? = null,
   val notes: String? = null,
   val hiVisWorn: Boolean? = null,
   val workedIntensively: Boolean? = null,
   val penaltyMinutes: Long? = null,
+  val minutesCredited: Long? = null,
   val workQuality: AppointmentWorkQuality? = null,
   val behaviour: AppointmentBehaviour? = null,
   val sensitive: Boolean? = null,

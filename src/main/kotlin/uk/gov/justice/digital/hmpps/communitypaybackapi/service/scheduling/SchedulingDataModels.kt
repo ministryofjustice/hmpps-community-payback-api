@@ -4,6 +4,7 @@ import java.time.DayOfWeek
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
+import java.util.UUID
 
 data class SchedulingRequest(
   val today: LocalDate,
@@ -117,6 +118,7 @@ data class SchedulingExistingAppointment(
 }
 
 data class SchedulingRequiredAppointment(
+  val reference: UUID = UUID.randomUUID(),
   val date: LocalDate,
   val startTime: LocalTime,
   val endTime: LocalTime,

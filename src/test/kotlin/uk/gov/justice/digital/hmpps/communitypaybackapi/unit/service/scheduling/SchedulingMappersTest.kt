@@ -30,6 +30,7 @@ import java.time.DayOfWeek
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
+import java.util.UUID
 
 class SchedulingMappersTest {
 
@@ -289,14 +290,12 @@ class SchedulingMappersTest {
     @Test
     fun `map all fields`() {
       val result = SchedulingRequiredAppointment(
+        reference = UUID.randomUUID(),
         date = LocalDate.of(2021, 9, 8),
         startTime = LocalTime.of(1, 2),
         endTime = LocalTime.of(11, 12),
         project = SchedulingProject.valid().copy(
           code = "P1",
-          providerCode = "PC1",
-          teamCode = "TC1",
-          projectTypeCode = "PT1",
         ),
         allocation = SchedulingAllocation.valid().copy(
           id = 55L,
@@ -308,20 +307,18 @@ class SchedulingMappersTest {
 
       assertThat(result.crn).isEqualTo("CRN1")
       assertThat(result.eventNumber).isEqualTo(25)
+      assertThat(result.reference).isEqualTo(result.reference)
       assertThat(result.date).isEqualTo(LocalDate.of(2021, 9, 8))
       assertThat(result.startTime).isEqualTo(LocalTime.of(1, 2))
       assertThat(result.endTime).isEqualTo(LocalTime.of(11, 12))
-      assertThat(result.providerCode.code).isEqualTo("PC1")
-      assertThat(result.teamCode.code).isEqualTo("TC1")
-      assertThat(result.projectCode.code).isEqualTo("P1")
-      assertThat(result.projectTypeCode.code).isEqualTo("PT1")
       assertThat(result.allocationId).isEqualTo(55)
       assertThat(result.outcome).isNull()
       assertThat(result.supervisor).isNull()
-      assertThat(result.notes).isNull()
+      assertThat(result.notes).isEqualTo("[System scheduled appointment]")
       assertThat(result.hiVisWorn).isNull()
       assertThat(result.workedIntensively).isNull()
       assertThat(result.penaltyMinutes).isNull()
+      assertThat(result.minutesCredited).isNull()
       assertThat(result.workQuality).isNull()
       assertThat(result.behaviour).isNull()
       assertThat(result.sensitive).isNull()
