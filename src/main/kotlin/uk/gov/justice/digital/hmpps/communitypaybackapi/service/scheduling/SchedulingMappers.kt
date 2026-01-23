@@ -74,6 +74,7 @@ fun SchedulingRequiredAppointment.toNDCreateAppointment(
 ) = NDCreateAppointment(
   crn = crn,
   eventNumber = eventNumber,
+  reference = this.reference,
   date = this.date,
   startTime = this.startTime,
   endTime = this.endTime,

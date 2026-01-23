@@ -316,6 +316,7 @@ data class NDCreateAppointments(
 )
 
 data class NDCreateAppointment(
+  val reference: UUID,
   val crn: String,
   val eventNumber: Int,
   val date: LocalDate,

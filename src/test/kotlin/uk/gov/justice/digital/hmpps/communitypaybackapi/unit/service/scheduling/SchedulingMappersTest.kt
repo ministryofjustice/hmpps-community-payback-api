@@ -30,6 +30,7 @@ import java.time.DayOfWeek
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
+import java.util.UUID
 
 class SchedulingMappersTest {
 
@@ -289,6 +290,7 @@ class SchedulingMappersTest {
     @Test
     fun `map all fields`() {
       val result = SchedulingRequiredAppointment(
+        reference = UUID.randomUUID(),
         date = LocalDate.of(2021, 9, 8),
         startTime = LocalTime.of(1, 2),
         endTime = LocalTime.of(11, 12),
@@ -305,6 +307,7 @@ class SchedulingMappersTest {
 
       assertThat(result.crn).isEqualTo("CRN1")
       assertThat(result.eventNumber).isEqualTo(25)
+      assertThat(result.reference).isEqualTo(result.reference)
       assertThat(result.date).isEqualTo(LocalDate.of(2021, 9, 8))
       assertThat(result.startTime).isEqualTo(LocalTime.of(1, 2))
       assertThat(result.endTime).isEqualTo(LocalTime.of(11, 12))
