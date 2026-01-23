@@ -18,6 +18,8 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.container.Lo
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.container.LocalStackContainer.setLocalStackProperties
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.container.PostgresContainer
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.container.PostgresContainer.setPostgresProperties
+import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.container.RedisContainer
+import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.container.RedisContainer.setRedisProperties
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.HmppsAuthMockServer
 import uk.gov.justice.hmpps.test.kotlin.auth.JwtAuthorisationHelper
 
@@ -51,17 +53,16 @@ abstract class IntegrationTestBase {
   companion object {
     private val localStackContainer = LocalStackContainer.instance
     private val postgresContainer = PostgresContainer.instance
+    private val redisContainer = RedisContainer.instance
 
     @JvmStatic
     @DynamicPropertySource
     fun properties(registry: DynamicPropertyRegistry) {
       System.setProperty("aws.region", "eu-west-2")
 
-      // Set LocalStack properties if managed by testcontainers
       localStackContainer?.also { setLocalStackProperties(it, registry) }
-
-      // Set Postgres datasource properties
       postgresContainer?.also { setPostgresProperties(it, registry) }
+      redisContainer?.also { setRedisProperties(it, registry) }
     }
   }
 

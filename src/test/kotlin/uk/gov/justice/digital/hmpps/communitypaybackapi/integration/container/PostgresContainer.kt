@@ -15,7 +15,6 @@ object PostgresContainer {
     PostgreSQLContainer("postgres:16.8").apply {
       log.info("Starting postgres via test containers")
       withEnv("HOSTNAME_EXTERNAL", "localhost")
-      withExposedPorts(5432)
       withDatabaseName("community_payback")
       withUsername("community_payback")
       withPassword("community_payback")

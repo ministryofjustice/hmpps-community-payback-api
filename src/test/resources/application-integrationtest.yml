@@ -13,10 +13,16 @@ spring:
       #format_sql: true
       #generate_statistics: true
 
+  # default to cp-stack instance. if cp-stack isn't running `PostgresContainer` will set test containers config
   datasource:
     url: 'jdbc:postgresql://localhost:5432/community_payback'
     username: community_payback
     password: community_payback
+
+  # default to cp-stack instance values. if cp-stack isn't running `RedisContainer` will set test containers config
+  data:
+    redis:
+      host: localhost
 
 community-payback:
   education-course-integration:

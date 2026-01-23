@@ -39,6 +39,9 @@ dependencies {
 
   implementation("org.springframework.boot:spring-boot-starter-flyway")
   implementation("org.postgresql:postgresql")
+
+  implementation("org.redisson:redisson-spring-boot-starter:4.1.0")
+
   runtimeOnly("org.flywaydb:flyway-database-postgresql")
 
   testImplementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter-test:2.0.0")
@@ -49,6 +52,7 @@ dependencies {
   }
   testImplementation("org.testcontainers:testcontainers-localstack:2.0.3")
   testImplementation("org.testcontainers:testcontainers-postgresql:2.0.3")
+  testImplementation("com.redis:testcontainers-redis:2.2.2")
   testImplementation("org.awaitility:awaitility-kotlin:4.3.0")
   testImplementation("org.wiremock.integrations:wiremock-spring-boot:4.0.9")
   testImplementation("io.mockk:mockk:1.14.7")

@@ -66,7 +66,7 @@ class SchedulingIT : IntegrationTestBase() {
     fun `Can't find update record, raise alert`() {
       val updateId = UUID.randomUUID()
 
-      publishAppointmentUpdateDomainEvent(updateId)
+      publishAppointmentUpdateDomainEvent(eventId = updateId)
 
       assertThat(mockSentryService.getRaisedException())
         .isInstanceOf(SqsListenerException::class.java)
@@ -83,7 +83,7 @@ class SchedulingIT : IntegrationTestBase() {
       val allocation1 = NDSchedulingAllocation.valid().copy(
         id = 1L,
         projectAvailability = null,
-        project = NDSchedulingProject.validNoEndDate().copy("PROJ1"),
+        project = NDSchedulingProject.validNoEndDate().copy(code = "PROJ1"),
         startDateInclusive = schedulingDate.minusDays(200),
         endDateInclusive = null,
         frequency = NDSchedulingFrequency.Weekly,
@@ -291,7 +291,7 @@ class SchedulingIT : IntegrationTestBase() {
         ),
       ).id
 
-      publishAppointmentUpdateDomainEvent(outcomeRecordId)
+      publishAppointmentUpdateDomainEvent(eventId = outcomeRecordId)
       waitForSchedulingToRun(outcomeRecordId)
 
       /*

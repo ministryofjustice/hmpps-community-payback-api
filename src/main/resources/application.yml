@@ -35,12 +35,15 @@ spring:
         provider:
           hmpps-auth:
             token-uri: ${hmpps-auth.url}/oauth/token
+  data:
+    redis:
+      repositories:
+        enabled: false
 
 springdoc:
   swagger-ui:
     operations-sorter: alpha
     tags-sorter: alpha
-
 
 server:
   port: 8080
@@ -73,12 +76,6 @@ management:
     info:
       cache:
         time-to-live: 2000ms
-
-clients:
-  arns:
-    url: override-me
-  community-payback-and-delius:
-    url: override-me
 
 hmpps:
   sqs:

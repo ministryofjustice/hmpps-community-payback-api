@@ -10,6 +10,7 @@ import org.springframework.web.reactive.function.client.support.WebClientAdapter
 import org.springframework.web.service.invoker.HttpServiceProxyFactory
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ArnsClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
+import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.DomainEventListener
 import uk.gov.justice.hmpps.kotlin.auth.authorisedWebClient
 import uk.gov.justice.hmpps.kotlin.auth.healthWebClient
 import java.time.Duration
@@ -20,6 +21,9 @@ class WebClientConfiguration(
   @param:Value("\${hmpps-auth.health-timeout:2s}") val healthTimeout: Duration,
 
   @param:Value("\${client.community-payback-and-delius.url}") val communityPaybackAndDeliusUrl: String,
+  /**
+   * Before changing timeouts consider the impact on [DomainEventListener.MESSAGE_VISIBILITY_TIMEOUT]
+   */
   @param:Value("\${client.community-payback-and-delius.timeout:5s}") val communityPaybackAndDeliusTimeout: Duration,
 
   @param:Value("\${client.arns.url}") val arnsUrl: String,

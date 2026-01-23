@@ -1,9 +1,11 @@
 docker_compose("./compose.yml")
 
+# default resource list
 resources = [
     "localstack",
     "wiremock",
     "postgres",
+    "redis",
 ]
 
 config.define_bool("local-api")
@@ -22,7 +24,7 @@ if local_api:
         # Note! These checks only wait for containers to start, ideally we'd wait for them to be ready
         # see https://docs.tilt.dev/resource_dependencies.html
         # "For dc_resource: the container is started (NB: Tilt doesn’t currently observe docker-compose health checks)"
-        resource_deps=["wiremock"],
+        resource_deps=["wiremock", "postgres", "redis"],
         serve_dir=os.getenv("LOCAL_CP_API_PATH"),
         readiness_probe=probe(
             initial_delay_secs=10,
