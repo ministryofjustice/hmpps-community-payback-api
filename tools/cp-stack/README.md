@@ -82,7 +82,21 @@ Then update compose.yml to refer to this image instead
 
 ## Wiremock
 
-All requests to upstream services are proxied by wiremock. Mocks can be configured for specific requests. For more information see the [wiremock README](./wiremock/README.md)
+All upstream requests (excluding auth) are proxied via wiremock.
+
+We can selectively mock a request by adding a mapping to the `mappings/overrides` folder with a priority < 100
+
+### Viewing Requests & Responses
+
+Wiremock provides an API to view requests:
+
+```curl http://localhost:9004/__admin/requests```
+
+Combine with jq to make it more usable:
+
+```curl http://localhost:9004/__admin/requests | jq '.requests[].request.url'```
+
+Note that newest requests are shown at the top of the list
 
 ## Localstack
 
