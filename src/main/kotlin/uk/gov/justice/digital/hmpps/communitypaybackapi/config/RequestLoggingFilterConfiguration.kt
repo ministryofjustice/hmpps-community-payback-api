@@ -12,7 +12,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.EnvironmentServi
 @ConditionalOnProperty(name = ["community-payback.request-logging-enabled"], havingValue = "true")
 class RequestLoggingFilterConfiguration(
   val environmentService: EnvironmentService,
-  @Value("\${logging.request.include-headers:true}") private val includeHeaders: Boolean,
+  @param:Value("\${logging.request.include-headers:true}") private val includeHeaders: Boolean,
 ) {
   @Bean
   @SuppressWarnings("MagicNumber")
