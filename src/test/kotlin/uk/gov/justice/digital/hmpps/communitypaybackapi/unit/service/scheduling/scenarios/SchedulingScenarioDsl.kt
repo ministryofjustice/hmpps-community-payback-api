@@ -223,7 +223,7 @@ class AllocationBuilder {
 
   fun build(today: LocalDate, projects: Map<String, SchedulingProject>): SchedulingAllocation {
     val project = projects[projectCode] ?: error("Project $projectCode not found")
-    return SchedulingAllocation(
+    return SchedulingAllocation.valid().copy(
       id = alias.hashCode().toLong(),
       alias = alias,
       project = project,

@@ -96,6 +96,8 @@ data class SchedulingAllocation(
   val endDateInclusive: LocalDate?,
   val startTime: LocalTime,
   val endTime: LocalTime,
+  val pickUpTime: LocalTime?,
+  val pickUpLocationCode: String?,
 ) {
   companion object
 }

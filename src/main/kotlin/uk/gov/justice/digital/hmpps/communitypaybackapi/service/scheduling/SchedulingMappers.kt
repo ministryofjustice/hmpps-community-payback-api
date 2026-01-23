@@ -1,6 +1,8 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling
 
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Code
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCreateAppointment
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDPickUp
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDRequirementProgress
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingAllocation
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingDayOfWeek
@@ -51,6 +53,8 @@ fun NDSchedulingAllocation.toSchedulingAllocation() = SchedulingAllocation(
   endDateInclusive = this.determineEndDateInclusive(),
   startTime = this.startTime,
   endTime = this.endTime,
+  pickUpTime = this.pickUp?.time,
+  pickUpLocationCode = this.pickUp?.location?.code,
 )
 
 fun List<NDSchedulingExistingAppointment>.toSchedulingExistingAppointments() = SchedulingExistingAppointments(
@@ -80,6 +84,10 @@ fun SchedulingRequiredAppointment.toNDCreateAppointment(
   endTime = this.endTime,
   allocationId = this.allocation.id,
   notes = "[System scheduled appointment]",
+  pickUp = NDPickUp(
+    time = this.allocation.pickUpTime,
+    location = this.allocation.pickUpLocationCode?.let { Code(it) },
+  ),
 )
 
 private fun NDSchedulingAllocation.determineEndDateInclusive() = this.endDateInclusive ?: listOfNotNull(

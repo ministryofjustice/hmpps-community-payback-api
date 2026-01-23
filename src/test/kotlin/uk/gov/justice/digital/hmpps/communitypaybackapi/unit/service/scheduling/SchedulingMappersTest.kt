@@ -5,8 +5,10 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Code
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCodeDescription
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDNameCode
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDPickUp
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDRequirementProgress
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingAllocation
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingAvailability
@@ -175,6 +177,10 @@ class SchedulingMappersTest {
         endDateInclusive = LocalDate.of(2022, 4, 5),
         startTime = LocalTime.of(1, 2),
         endTime = LocalTime.of(3, 4),
+        pickUp = NDPickUp(
+          time = LocalTime.of(5, 6),
+          location = Code("pickUpCode"),
+        ),
       ).toSchedulingAllocation()
 
       assertThat(result.id).isEqualTo(1234)
@@ -186,6 +192,8 @@ class SchedulingMappersTest {
       assertThat(result.endDateInclusive).isEqualTo(LocalDate.of(2022, 4, 5))
       assertThat(result.startTime).isEqualTo(LocalTime.of(1, 2))
       assertThat(result.endTime).isEqualTo(LocalTime.of(3, 4))
+      assertThat(result.pickUpTime).isEqualTo(LocalTime.of(5, 6))
+      assertThat(result.pickUpLocationCode).isEqualTo("pickUpCode")
     }
 
     @Test
@@ -204,6 +212,7 @@ class SchedulingMappersTest {
         endDateInclusive = null,
         startTime = LocalTime.of(1, 2),
         endTime = LocalTime.of(3, 4),
+        pickUp = null,
       ).toSchedulingAllocation()
 
       assertThat(result.id).isEqualTo(1234)
@@ -215,6 +224,8 @@ class SchedulingMappersTest {
       assertThat(result.endDateInclusive).isNull()
       assertThat(result.startTime).isEqualTo(LocalTime.of(1, 2))
       assertThat(result.endTime).isEqualTo(LocalTime.of(3, 4))
+      assertThat(result.pickUpTime).isNull()
+      assertThat(result.pickUpLocationCode).isNull()
     }
 
     @ParameterizedTest
@@ -299,6 +310,8 @@ class SchedulingMappersTest {
         ),
         allocation = SchedulingAllocation.valid().copy(
           id = 55L,
+          pickUpTime = LocalTime.of(13, 14),
+          pickUpLocationCode = "pickUpLocCode",
         ),
       ).toNDCreateAppointment(
         crn = "CRN1",
@@ -323,6 +336,8 @@ class SchedulingMappersTest {
       assertThat(result.behaviour).isNull()
       assertThat(result.sensitive).isNull()
       assertThat(result.alertActive).isNull()
+      assertThat(result.pickUp?.time).isEqualTo(LocalTime.of(13, 14))
+      assertThat(result.pickUp?.location?.code).isEqualTo("pickUpLocCode")
     }
   }
 }
