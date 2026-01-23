@@ -318,6 +318,7 @@ class SchedulingMappersTest {
       assertThat(result.hiVisWorn).isNull()
       assertThat(result.workedIntensively).isNull()
       assertThat(result.penaltyMinutes).isNull()
+      assertThat(result.minutesCredited).isNull()
       assertThat(result.workQuality).isNull()
       assertThat(result.behaviour).isNull()
       assertThat(result.sensitive).isNull()
