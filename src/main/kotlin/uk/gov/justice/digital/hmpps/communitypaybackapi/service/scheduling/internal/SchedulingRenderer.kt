@@ -30,6 +30,7 @@ object SchedulingRenderer {
       appendLine()
       appendLine("# $title")
       appendLine()
+      appendLine("* ID: ${request.id}")
       appendLine("* Date: $today (${today.dayOfWeek})")
       appendLine("* Trigger: ${trigger.type} : ${trigger.description}")
       appendLine("* CRN: ${request.requirement.crn}")

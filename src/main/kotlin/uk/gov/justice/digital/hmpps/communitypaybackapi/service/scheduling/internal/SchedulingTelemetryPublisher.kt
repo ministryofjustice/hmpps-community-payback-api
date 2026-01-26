@@ -18,6 +18,7 @@ class SchedulingTelemetryPublisher(
     telemetryService.trackEvent(
       "SchedulingComplete",
       properties = mapOf(
+        "id" to request.id.toString(),
         "crn" to request.requirement.crn,
         "triggerType" to request.trigger.type.name,
         "outcome" to outcome::class.simpleName,
