@@ -23,20 +23,20 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEnt
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.WorkQuality
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentOutcomeEntityFactory
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventEntityFactory
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
 
 @ExtendWith(MockKExtension::class)
-class AppointmentOutcomeEntityFactoryTest {
+class AppointmentEventEntityFactoryTest {
 
   @MockK
   lateinit var contactOutcomeEntityRepository: ContactOutcomeEntityRepository
 
   @InjectMockKs
-  lateinit var service: AppointmentOutcomeEntityFactory
+  lateinit var service: AppointmentEventEntityFactory
 
   companion object {
     const val CONTACT_OUTCOME_CODE: String = "CONTACT-1"
