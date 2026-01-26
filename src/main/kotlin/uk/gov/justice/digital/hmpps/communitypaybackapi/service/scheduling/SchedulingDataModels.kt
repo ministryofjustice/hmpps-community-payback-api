@@ -7,6 +7,7 @@ import java.time.LocalTime
 import java.util.UUID
 
 data class SchedulingRequest(
+  val id: UUID = UUID.randomUUID(),
   val today: LocalDate,
   val trigger: SchedulingTrigger,
   val requirement: SchedulingRequirement,

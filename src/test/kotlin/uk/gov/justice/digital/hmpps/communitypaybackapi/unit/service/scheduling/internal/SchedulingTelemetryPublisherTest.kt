@@ -19,6 +19,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.Sched
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.Scheduler.SchedulerOutcome
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.SchedulingTelemetryPublisher
+import java.util.UUID
 
 @ExtendWith(MockKExtension::class)
 class SchedulingTelemetryPublisherTest {
@@ -29,10 +30,15 @@ class SchedulingTelemetryPublisherTest {
   @InjectMockKs
   lateinit var publisher: SchedulingTelemetryPublisher
 
+  private companion object {
+    val ID: UUID = UUID.randomUUID()
+  }
+
   @Test
   fun `existing appointments sufficient`() {
     publisher.publish(
       request = SchedulingRequest.valid().copy(
+        id = ID,
         requirement = SchedulingRequirement.valid().copy(crn = "CRN123"),
         trigger = SchedulingTrigger.valid().copy(type = SchedulingTriggerType.AppointmentChange),
       ),
@@ -43,6 +49,7 @@ class SchedulingTelemetryPublisherTest {
       telemetryService.trackEvent(
         name = "SchedulingComplete",
         properties = mapOf(
+          "id" to ID.toString(),
           "crn" to "CRN123",
           "triggerType" to "AppointmentChange",
           "outcome" to "ExistingAppointmentsSufficient",
@@ -56,6 +63,7 @@ class SchedulingTelemetryPublisherTest {
   fun `requirement already satisfied`() {
     publisher.publish(
       request = SchedulingRequest.valid().copy(
+        id = ID,
         requirement = SchedulingRequirement.valid().copy(crn = "CRN456"),
         trigger = SchedulingTrigger.valid().copy(type = SchedulingTriggerType.AppointmentChange),
       ),
@@ -66,6 +74,7 @@ class SchedulingTelemetryPublisherTest {
       telemetryService.trackEvent(
         name = "SchedulingComplete",
         properties = mapOf(
+          "id" to ID.toString(),
           "crn" to "CRN456",
           "triggerType" to "AppointmentChange",
           "outcome" to "RequirementAlreadySatisfied",
@@ -79,6 +88,7 @@ class SchedulingTelemetryPublisherTest {
   fun `existing appointments insufficient`() {
     publisher.publish(
       request = SchedulingRequest.valid().copy(
+        id = ID,
         requirement = SchedulingRequirement.valid().copy(crn = "CRN789"),
         trigger = SchedulingTrigger.valid().copy(type = SchedulingTriggerType.AppointmentChange),
       ),
@@ -98,6 +108,7 @@ class SchedulingTelemetryPublisherTest {
       telemetryService.trackEvent(
         name = "SchedulingComplete",
         properties = mapOf(
+          "id" to ID.toString(),
           "crn" to "CRN789",
           "triggerType" to "AppointmentChange",
           "outcome" to "ExistingAppointmentsInsufficient",
