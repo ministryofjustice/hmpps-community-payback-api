@@ -55,7 +55,7 @@ dependencies {
   testImplementation("com.redis:testcontainers-redis:2.2.4")
   testImplementation("org.awaitility:awaitility-kotlin:4.3.0")
   testImplementation("org.wiremock.integrations:wiremock-spring-boot:4.0.9")
-  testImplementation("io.mockk:mockk:1.14.7")
+  testImplementation("io.mockk:mockk:1.14.9")
   testImplementation("com.lemonappdev:konsist:0.17.3")
 }
 
