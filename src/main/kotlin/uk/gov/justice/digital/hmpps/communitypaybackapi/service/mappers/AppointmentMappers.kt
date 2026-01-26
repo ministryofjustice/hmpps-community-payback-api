@@ -6,6 +6,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.AppointmentBehavi
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.AppointmentSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.AppointmentWorkQuality
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Code
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCreateAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.PickUpData
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.UpdateAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentBehaviourDto
@@ -17,6 +18,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AttendanceDataDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EnforcementDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.PickUpDataDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.Behaviour
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EnforcementActionEntityRepository
@@ -109,22 +111,48 @@ fun AppointmentEventEntity.toAppointmentUpdatedDomainEvent() = AppointmentUpdate
   behaviour = this.behaviour?.dtoType,
 )
 
-fun AppointmentEventEntity.toUpdateAppointment() = UpdateAppointment(
-  version = this.deliusVersionToUpdate!!,
-  startTime = this.startTime,
-  endTime = this.endTime,
-  outcome = this.contactOutcome?.let { Code(it.code) },
-  supervisor = Code(this.supervisorOfficerCode!!),
-  notes = this.notes,
-  hiVisWorn = this.hiVisWorn,
-  workedIntensively = workedIntensively,
-  penaltyMinutes = this.penaltyMinutes,
-  minutesCredited = this.minutesCredited,
-  workQuality = this.workQuality?.upstreamType,
-  behaviour = this.behaviour?.upstreamType,
-  sensitive = this.sensitive,
-  alertActive = this.alertActive,
-)
+fun AppointmentEventEntity.toUpdateAppointment(): UpdateAppointment {
+  require(this.eventType == AppointmentEventType.UPDATE)
+  return UpdateAppointment(
+    version = this.deliusVersionToUpdate!!,
+    startTime = this.startTime,
+    endTime = this.endTime,
+    outcome = this.contactOutcome?.let { Code(it.code) },
+    supervisor = Code(this.supervisorOfficerCode!!),
+    notes = this.notes,
+    hiVisWorn = this.hiVisWorn,
+    workedIntensively = workedIntensively,
+    penaltyMinutes = this.penaltyMinutes,
+    minutesCredited = this.minutesCredited,
+    workQuality = this.workQuality?.upstreamType,
+    behaviour = this.behaviour?.upstreamType,
+    sensitive = this.sensitive,
+    alertActive = this.alertActive,
+  )
+}
+
+fun AppointmentEventEntity.toNDCreateAppointment(): NDCreateAppointment {
+  require(this.eventType == AppointmentEventType.CREATE)
+  return NDCreateAppointment(
+    reference = this.id,
+    crn = this.crn,
+    eventNumber = this.deliusEventNumber,
+    date = this.date,
+    startTime = this.startTime,
+    endTime = this.endTime,
+    outcome = this.contactOutcome?.let { Code(it.code) },
+    supervisor = this.supervisorOfficerCode?.let { Code(it) },
+    notes = this.notes,
+    hiVisWorn = this.hiVisWorn,
+    workedIntensively = workedIntensively,
+    penaltyMinutes = this.penaltyMinutes,
+    minutesCredited = this.minutesCredited,
+    workQuality = this.workQuality?.upstreamType,
+    behaviour = this.behaviour?.upstreamType,
+    sensitive = this.sensitive,
+    alertActive = this.alertActive,
+  )
+}
 
 fun WorkQuality.Companion.fromDto(dto: AppointmentWorkQualityDto) = WorkQuality.entries.first { it.dtoType == dto }
 fun Behaviour.Companion.fromDto(dto: AppointmentBehaviourDto) = Behaviour.entries.first { it.dtoType == dto }

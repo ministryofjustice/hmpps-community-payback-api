@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.service
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AttendanceDataDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventType
@@ -20,16 +21,57 @@ class AppointmentEventEntityFactory(
   private val contactOutcomeEntityRepository: ContactOutcomeEntityRepository,
 ) {
 
-  fun toEntity(
+  fun buildCreatedEvent(
+    projectCode: String,
+    deliusId: Long,
+    triggeredBySchedulingId: UUID?,
+    createAppointmentDto: CreateAppointmentDto,
+  ): AppointmentEventEntity {
+    val startTime = createAppointmentDto.startTime
+    val endTime = createAppointmentDto.endTime
+    val penaltyMinutes = createAppointmentDto.attendanceData?.derivePenaltyMinutesDuration()?.toMinutes()
+    val contactOutcome = loadOutcome(createAppointmentDto.contactOutcomeCode)
+
+    return AppointmentEventEntity(
+      id = UUID.randomUUID(),
+      eventType = AppointmentEventType.CREATE,
+      crn = createAppointmentDto.crn,
+      appointmentDeliusId = deliusId,
+      deliusVersionToUpdate = null,
+      deliusEventNumber = createAppointmentDto.deliusEventNumber,
+      projectCode = projectCode,
+      date = createAppointmentDto.date,
+      startTime = startTime,
+      endTime = endTime,
+      contactOutcome = contactOutcome,
+      supervisorOfficerCode = createAppointmentDto.supervisorOfficerCode,
+      notes = createAppointmentDto.notes,
+      hiVisWorn = createAppointmentDto.attendanceData?.hiVisWorn,
+      workedIntensively = createAppointmentDto.attendanceData?.workedIntensively,
+      penaltyMinutes = penaltyMinutes,
+      minutesCredited = calculateMinutesCredited(
+        startTime = startTime,
+        endTime = endTime,
+        penaltyMinutes = penaltyMinutes,
+        contactOutcome = contactOutcome,
+      ),
+      workQuality = createAppointmentDto.attendanceData?.workQuality?.let { WorkQuality.fromDto(it) },
+      behaviour = createAppointmentDto.attendanceData?.behaviour?.let { Behaviour.fromDto(it) },
+      alertActive = createAppointmentDto.alertActive,
+      sensitive = createAppointmentDto.sensitive,
+      allocationId = createAppointmentDto.allocationId,
+      triggeredBySchedulingId = triggeredBySchedulingId,
+    )
+  }
+
+  fun buildUpdatedEvent(
     outcome: UpdateAppointmentOutcomeDto,
     existingAppointment: AppointmentDto,
   ): AppointmentEventEntity {
     val startTime = outcome.startTime
     val endTime = outcome.endTime
     val penaltyMinutes = outcome.attendanceData?.derivePenaltyMinutesDuration()?.toMinutes()
-    val contactOutcome = outcome.contactOutcomeCode?.let {
-      contactOutcomeEntityRepository.findByCode(it) ?: error("ContactOutcome not found for code: $it")
-    }
+    val contactOutcome = loadOutcome(outcome.contactOutcomeCode)
 
     return AppointmentEventEntity(
       id = UUID.randomUUID(),
@@ -61,6 +103,10 @@ class AppointmentEventEntityFactory(
       allocationId = null,
       triggeredBySchedulingId = null,
     )
+  }
+
+  private fun loadOutcome(code: String?) = code?.let {
+    contactOutcomeEntityRepository.findByCode(it) ?: error("ContactOutcome not found for code: $it")
   }
 
   private fun calculateMinutesCredited(
