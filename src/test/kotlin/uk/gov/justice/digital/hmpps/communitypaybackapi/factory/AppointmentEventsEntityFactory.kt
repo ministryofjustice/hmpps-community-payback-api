@@ -1,21 +1,27 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.factory
 
+import org.springframework.beans.factory.getBean
 import org.springframework.context.ApplicationContext
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentOutcomeEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.Behaviour
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.WorkQuality
 import java.util.UUID
+import kotlin.collections.random
 
-fun AppointmentOutcomeEntity.Companion.valid(
+fun AppointmentEventEntity.Companion.valid(
   contactOutcomeEntity: ContactOutcomeEntity? = ContactOutcomeEntity.valid(),
-) = AppointmentOutcomeEntity(
+) = AppointmentEventEntity(
   id = UUID.randomUUID(),
+  eventType = AppointmentEventType.entries.toTypedArray().random(),
   appointmentDeliusId = Long.random(),
   deliusVersionToUpdate = UUID.randomUUID(),
   crn = String.random(5),
   deliusEventNumber = Int.random(0, 50),
+  projectCode = String.random(5),
+  date = randomLocalDate(),
   startTime = randomLocalTime(),
   endTime = randomLocalTime(),
   contactOutcome = contactOutcomeEntity,
@@ -31,6 +37,6 @@ fun AppointmentOutcomeEntity.Companion.valid(
   sensitive = Boolean.random(),
 )
 
-fun AppointmentOutcomeEntity.Companion.valid(ctx: ApplicationContext) = AppointmentOutcomeEntity.valid().copy(
-  contactOutcome = ctx.getBean(ContactOutcomeEntityRepository::class.java).findAll().first(),
+fun AppointmentEventEntity.Companion.valid(ctx: ApplicationContext) = AppointmentEventEntity.valid().copy(
+  contactOutcome = ctx.getBean<ContactOutcomeEntityRepository>().findAll().first(),
 )

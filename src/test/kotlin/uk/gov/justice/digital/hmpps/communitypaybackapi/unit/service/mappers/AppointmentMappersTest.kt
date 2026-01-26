@@ -31,7 +31,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.common.HourMinuteDuratio
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentBehaviourDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentWorkQualityDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.OffenderDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentOutcomeEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.Behaviour
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
@@ -62,11 +62,11 @@ class AppointmentMappersTest {
   private lateinit var service: AppointmentMappers
 
   @Nested
-  inner class AppointmentOutcomeEntityToUpdateAppointment {
+  inner class AppointmentEventEntityToUpdateAppointment {
 
     @Test
     fun success() {
-      val appointmentOutcomeEntity = AppointmentOutcomeEntity(
+      val appointmentEvent = AppointmentEventEntity.valid().copy(
         id = UUID.randomUUID(),
         appointmentDeliusId = 101L,
         deliusVersionToUpdate = UUID.randomUUID(),
@@ -87,9 +87,9 @@ class AppointmentMappersTest {
         sensitive = true,
       )
 
-      val result = appointmentOutcomeEntity.toUpdateAppointment()
+      val result = appointmentEvent.toUpdateAppointment()
 
-      assertThat(result.version).isEqualTo(appointmentOutcomeEntity.deliusVersionToUpdate)
+      assertThat(result.version).isEqualTo(appointmentEvent.deliusVersionToUpdate)
       assertThat(result.startTime).isEqualTo(LocalTime.of(3, 2, 1))
       assertThat(result.endTime).isEqualTo(LocalTime.of(12, 11, 10))
       assertThat(result.outcome!!.code).isEqualTo("COE1")
@@ -107,7 +107,7 @@ class AppointmentMappersTest {
 
     @Test
     fun `success with only mandatory fields`() {
-      val appointmentOutcomeEntity = AppointmentOutcomeEntity(
+      val event = AppointmentEventEntity.valid().copy(
         id = UUID.randomUUID(),
         appointmentDeliusId = 101L,
         deliusVersionToUpdate = UUID.randomUUID(),
@@ -128,9 +128,9 @@ class AppointmentMappersTest {
         sensitive = null,
       )
 
-      val result = appointmentOutcomeEntity.toUpdateAppointment()
+      val result = event.toUpdateAppointment()
 
-      assertThat(result.version).isEqualTo(appointmentOutcomeEntity.deliusVersionToUpdate)
+      assertThat(result.version).isEqualTo(event.deliusVersionToUpdate)
       assertThat(result.startTime).isEqualTo(LocalTime.of(3, 2, 1))
       assertThat(result.endTime).isEqualTo(LocalTime.of(12, 11, 10))
       assertThat(result.outcome).isNull()
@@ -148,11 +148,11 @@ class AppointmentMappersTest {
   }
 
   @Nested
-  inner class AppointmentOutcomeEntityToDomainEventDetail {
+  inner class AppointmentEventEntityToUpdateDomainEventDetail {
 
     @Test
     fun success() {
-      val appointmentOutcomeEntity = AppointmentOutcomeEntity.valid().copy(
+      val appointmentEvent = AppointmentEventEntity.valid().copy(
         id = UUID.randomUUID(),
         appointmentDeliusId = 101L,
         crn = "CRN123",
@@ -170,9 +170,9 @@ class AppointmentMappersTest {
         behaviour = Behaviour.UNSATISFACTORY,
       )
 
-      val result = appointmentOutcomeEntity.toAppointmentUpdatedDomainEvent()
+      val result = appointmentEvent.toAppointmentUpdatedDomainEvent()
 
-      assertThat(result.id).isEqualTo(appointmentOutcomeEntity.id)
+      assertThat(result.id).isEqualTo(appointmentEvent.id)
       assertThat(result.crn).isEqualTo("CRN123")
       assertThat(result.deliusEventNumber).isEqualTo(52)
       assertThat(result.appointmentDeliusId).isEqualTo(101L)

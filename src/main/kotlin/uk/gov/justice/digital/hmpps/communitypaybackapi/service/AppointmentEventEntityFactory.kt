@@ -4,7 +4,8 @@ import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AttendanceDataDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentOutcomeEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.Behaviour
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
@@ -15,14 +16,14 @@ import java.time.LocalTime
 import java.util.UUID
 
 @Service
-class AppointmentOutcomeEntityFactory(
+class AppointmentEventEntityFactory(
   private val contactOutcomeEntityRepository: ContactOutcomeEntityRepository,
 ) {
 
   fun toEntity(
     outcome: UpdateAppointmentOutcomeDto,
     existingAppointment: AppointmentDto,
-  ): AppointmentOutcomeEntity {
+  ): AppointmentEventEntity {
     val startTime = outcome.startTime
     val endTime = outcome.endTime
     val penaltyMinutes = outcome.attendanceData?.derivePenaltyMinutesDuration()?.toMinutes()
@@ -30,12 +31,15 @@ class AppointmentOutcomeEntityFactory(
       contactOutcomeEntityRepository.findByCode(it) ?: error("ContactOutcome not found for code: $it")
     }
 
-    return AppointmentOutcomeEntity(
+    return AppointmentEventEntity(
       id = UUID.randomUUID(),
+      eventType = AppointmentEventType.UPDATE,
       crn = existingAppointment.offender.crn,
       appointmentDeliusId = outcome.deliusId,
       deliusVersionToUpdate = outcome.deliusVersionToUpdate,
       deliusEventNumber = existingAppointment.deliusEventNumber,
+      projectCode = existingAppointment.projectCode,
+      date = existingAppointment.date,
       startTime = startTime,
       endTime = endTime,
       contactOutcome = contactOutcome,
