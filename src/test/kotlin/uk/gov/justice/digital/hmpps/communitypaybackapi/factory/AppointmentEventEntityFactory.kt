@@ -35,6 +35,8 @@ fun AppointmentEventEntity.Companion.valid(
   behaviour = Behaviour.entries.toTypedArray().random(),
   alertActive = Boolean.random(),
   sensitive = Boolean.random(),
+  allocationId = null,
+  triggeredBySchedulingId = null,
 )
 
 fun AppointmentEventEntity.Companion.valid(ctx: ApplicationContext) = AppointmentEventEntity.valid().copy(

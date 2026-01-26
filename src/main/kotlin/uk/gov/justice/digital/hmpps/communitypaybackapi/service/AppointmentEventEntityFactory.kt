@@ -58,6 +58,8 @@ class AppointmentEventEntityFactory(
       behaviour = outcome.attendanceData?.behaviour?.let { Behaviour.fromDto(it) },
       alertActive = outcome.alertActive,
       sensitive = outcome.sensitive,
+      allocationId = null,
+      triggeredBySchedulingId = null,
     )
   }
 

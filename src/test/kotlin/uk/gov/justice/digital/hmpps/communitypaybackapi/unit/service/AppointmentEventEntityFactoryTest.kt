@@ -112,6 +112,8 @@ class AppointmentEventEntityFactoryTest {
       assertThat(result.behaviour).isEqualTo(Behaviour.UNSATISFACTORY)
       assertThat(result.alertActive).isEqualTo(false)
       assertThat(result.sensitive).isEqualTo(true)
+      assertThat(result.allocationId).isNull()
+      assertThat(result.triggeredBySchedulingId).isNull()
     }
 
     @Test
@@ -162,6 +164,8 @@ class AppointmentEventEntityFactoryTest {
       assertThat(result.behaviour).isNull()
       assertThat(result.alertActive).isNull()
       assertThat(result.sensitive).isNull()
+      assertThat(result.allocationId).isNull()
+      assertThat(result.triggeredBySchedulingId).isNull()
     }
 
     @Test

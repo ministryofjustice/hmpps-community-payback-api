@@ -110,11 +110,11 @@ fun AppointmentEventEntity.toAppointmentUpdatedDomainEvent() = AppointmentUpdate
 )
 
 fun AppointmentEventEntity.toUpdateAppointment() = UpdateAppointment(
-  version = this.deliusVersionToUpdate,
+  version = this.deliusVersionToUpdate!!,
   startTime = this.startTime,
   endTime = this.endTime,
   outcome = this.contactOutcome?.let { Code(it.code) },
-  supervisor = Code(this.supervisorOfficerCode),
+  supervisor = Code(this.supervisorOfficerCode!!),
   notes = this.notes,
   hiVisWorn = this.hiVisWorn,
   workedIntensively = workedIntensively,
