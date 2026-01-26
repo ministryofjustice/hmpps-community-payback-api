@@ -66,7 +66,7 @@ class AppointmentMappersTest {
 
     @Test
     fun success() {
-      val appointmentEvent = AppointmentEventEntity(
+      val appointmentEvent = AppointmentEventEntity.valid().copy(
         id = UUID.randomUUID(),
         appointmentDeliusId = 101L,
         deliusVersionToUpdate = UUID.randomUUID(),
@@ -107,7 +107,7 @@ class AppointmentMappersTest {
 
     @Test
     fun `success with only mandatory fields`() {
-      val event = AppointmentEventEntity(
+      val event = AppointmentEventEntity.valid().copy(
         id = UUID.randomUUID(),
         appointmentDeliusId = 101L,
         deliusVersionToUpdate = UUID.randomUUID(),

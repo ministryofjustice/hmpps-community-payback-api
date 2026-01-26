@@ -5,6 +5,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AttendanceDataDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.Behaviour
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
@@ -32,10 +33,13 @@ class AppointmentEventEntityFactory(
 
     return AppointmentEventEntity(
       id = UUID.randomUUID(),
+      eventType = AppointmentEventType.UPDATE,
       crn = existingAppointment.offender.crn,
       appointmentDeliusId = outcome.deliusId,
       deliusVersionToUpdate = outcome.deliusVersionToUpdate,
       deliusEventNumber = existingAppointment.deliusEventNumber,
+      projectCode = existingAppointment.projectCode,
+      date = existingAppointment.date,
       startTime = startTime,
       endTime = endTime,
       contactOutcome = contactOutcome,

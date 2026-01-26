@@ -18,6 +18,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AttendanceDataDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EnforcementDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.OffenderDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.Behaviour
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
@@ -85,14 +86,19 @@ class AppointmentEventEntityFactoryTest {
         existingAppointment = AppointmentDto.valid().copy(
           offender = OffenderDto.OffenderLimitedDto(crn = "X12345"),
           deliusEventNumber = 48,
+          projectCode = "PC01",
+          date = LocalDate.of(2014, 6, 7),
         ),
       )
 
       assertThat(result.id).isNotNull
+      assertThat(result.eventType).isEqualTo(AppointmentEventType.UPDATE)
       assertThat(result.deliusVersionToUpdate).isEqualTo(deliusVersion)
       assertThat(result.crn).isEqualTo("X12345")
       assertThat(result.deliusEventNumber).isEqualTo(48)
+      assertThat(result.projectCode).isEqualTo("PC01")
       assertThat(result.appointmentDeliusId).isEqualTo(101L)
+      assertThat(result.date).isEqualTo(LocalDate.of(2014, 6, 7))
       assertThat(result.startTime).isEqualTo(LocalTime.of(10, 1))
       assertThat(result.endTime).isEqualTo(LocalTime.of(16, 3))
       assertThat(result.contactOutcome).isEqualTo(contactOutcomeEntity)
@@ -130,14 +136,19 @@ class AppointmentEventEntityFactoryTest {
         existingAppointment = AppointmentDto.valid().copy(
           offender = OffenderDto.OffenderLimitedDto(crn = "X12345"),
           deliusEventNumber = 48,
+          projectCode = "PC01",
+          date = LocalDate.of(2014, 6, 7),
         ),
       )
 
       assertThat(result.id).isNotNull
+      assertThat(result.eventType).isEqualTo(AppointmentEventType.UPDATE)
       assertThat(result.deliusVersionToUpdate).isEqualTo(deliusVersion)
       assertThat(result.crn).isEqualTo("X12345")
       assertThat(result.deliusEventNumber).isEqualTo(48)
+      assertThat(result.projectCode).isEqualTo("PC01")
       assertThat(result.appointmentDeliusId).isEqualTo(101L)
+      assertThat(result.date).isEqualTo(LocalDate.of(2014, 6, 7))
       assertThat(result.startTime).isEqualTo(LocalTime.of(10, 1, 2))
       assertThat(result.endTime).isEqualTo(LocalTime.of(16, 3, 4))
       assertThat(result.contactOutcome).isNull()

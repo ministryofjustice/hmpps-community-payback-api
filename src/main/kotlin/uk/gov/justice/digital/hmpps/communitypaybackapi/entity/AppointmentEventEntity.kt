@@ -11,6 +11,7 @@ import jakarta.persistence.PreUpdate
 import jakarta.persistence.Table
 import org.apache.commons.lang3.builder.CompareToBuilder.reflectionCompare
 import org.hibernate.annotations.CreationTimestamp
+import java.time.LocalDate
 import java.time.LocalTime
 import java.time.OffsetDateTime
 import java.util.UUID
@@ -20,10 +21,14 @@ import java.util.UUID
 data class AppointmentEventEntity(
   @Id
   val id: UUID,
+  @Enumerated(EnumType.STRING)
+  val eventType: AppointmentEventType,
   val appointmentDeliusId: Long,
   val deliusVersionToUpdate: UUID,
   val crn: String,
   val deliusEventNumber: Int,
+  val projectCode: String,
+  val date: LocalDate,
   val startTime: LocalTime,
   val endTime: LocalTime,
 
@@ -89,4 +94,8 @@ data class AppointmentEventEntity(
   }
 
   companion object
+}
+
+enum class AppointmentEventType {
+  UPDATE,
 }
