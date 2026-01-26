@@ -148,6 +148,7 @@ data class Schedule(
 )
 
 data class SchedulePlan(
+  val schedulingId: UUID,
   val crn: String,
   val eventNumber: Int,
   val actions: List<SchedulingAction>,

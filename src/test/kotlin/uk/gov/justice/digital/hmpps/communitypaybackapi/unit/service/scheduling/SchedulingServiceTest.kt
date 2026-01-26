@@ -74,7 +74,7 @@ class SchedulingServiceTest {
   fun `if existing appointments insufficient, execute plan`() {
     every { communityPaybackAndDeliusClient.getUnpaidWorkRequirement(CRN, EVENT_NO) } returns NDUnpaidWorkRequirement.valid()
 
-    val plan = SchedulePlan(
+    val plan = SchedulePlan.valid().copy(
       crn = CRN,
       eventNumber = EVENT_NO,
       actions = emptyList(),
@@ -93,7 +93,7 @@ class SchedulingServiceTest {
   fun `if existing appointments insufficient but dry run is enabled, dont execute plan`() {
     every { communityPaybackAndDeliusClient.getUnpaidWorkRequirement(CRN, EVENT_NO) } returns NDUnpaidWorkRequirement.valid()
 
-    val plan = SchedulePlan(
+    val plan = SchedulePlan.valid().copy(
       crn = CRN,
       eventNumber = EVENT_NO,
       actions = emptyList(),
