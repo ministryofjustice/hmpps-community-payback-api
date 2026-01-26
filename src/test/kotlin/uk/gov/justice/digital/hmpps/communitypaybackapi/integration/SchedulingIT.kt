@@ -15,8 +15,8 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingFrequ
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingProject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDUnpaidWorkRequirement
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.findNextOrSameDateForDayOfWeek
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentOutcomeEntity
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentOutcomeEntityRepository
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.validNoEndDate
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.validWithOutcome
@@ -38,7 +38,6 @@ import java.time.OffsetDateTime
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 import kotlin.Int
-import kotlin.collections.get
 
 class SchedulingIT : IntegrationTestBase() {
 
@@ -49,7 +48,7 @@ class SchedulingIT : IntegrationTestBase() {
   lateinit var domainEventPublisher: DomainEventPublisher
 
   @Autowired
-  lateinit var appointmentOutcomeEntityRepository: AppointmentOutcomeEntityRepository
+  lateinit var appointmentEventEntityRepository: AppointmentEventEntityRepository
 
   @Autowired
   lateinit var mockSentryService: MockSentryService
@@ -131,8 +130,8 @@ class SchedulingIT : IntegrationTestBase() {
         ),
       )
 
-      val outcomeRecordId = appointmentOutcomeEntityRepository.save(
-        AppointmentOutcomeEntity.valid(applicationContext).copy(
+      val outcomeRecordId = appointmentEventEntityRepository.save(
+        AppointmentEventEntity.valid(applicationContext).copy(
           crn = CRN,
           deliusEventNumber = EVENT_NUMBER,
         ),
@@ -284,8 +283,8 @@ class SchedulingIT : IntegrationTestBase() {
       CommunityPaybackAndDeliusMockServer.postAppointments("PROJ1")
       CommunityPaybackAndDeliusMockServer.postAppointments("PROJ2")
 
-      val outcomeRecordId = appointmentOutcomeEntityRepository.save(
-        AppointmentOutcomeEntity.valid(applicationContext).copy(
+      val outcomeRecordId = appointmentEventEntityRepository.save(
+        AppointmentEventEntity.valid(applicationContext).copy(
           crn = CRN,
           deliusEventNumber = EVENT_NUMBER,
         ),
@@ -342,7 +341,7 @@ class SchedulingIT : IntegrationTestBase() {
     private fun waitForSchedulingToRun(outcomeRecordId: UUID) {
       await()
         .atMost(2, TimeUnit.SECONDS)
-        .until { appointmentOutcomeEntityRepository.findByIdOrNull(outcomeRecordId)!!.schedulingRanAt != null }
+        .until { appointmentEventEntityRepository.findByIdOrNull(outcomeRecordId)!!.schedulingRanAt != null }
     }
 
     private fun publishAppointmentUpdateDomainEvent(

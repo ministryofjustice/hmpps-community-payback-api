@@ -16,8 +16,8 @@ import java.time.OffsetDateTime
 import java.util.UUID
 
 @Entity
-@Table(name = "appointment_outcomes")
-data class AppointmentOutcomeEntity(
+@Table(name = "appointment_events")
+data class AppointmentEventEntity(
   @Id
   val id: UUID,
   val appointmentDeliusId: Long,
@@ -57,7 +57,7 @@ data class AppointmentOutcomeEntity(
 
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
-    if (other !is AppointmentOutcomeEntity) return false
+    if (other !is AppointmentEventEntity) return false
     return id == other.id
   }
 
@@ -72,7 +72,7 @@ data class AppointmentOutcomeEntity(
    * adding an explicit comparison and excluding it from the call to [reflectionCompare].
    * For an example see contactOutcome
    */
-  fun isLogicallyIdentical(other: AppointmentOutcomeEntity): Boolean {
+  fun isLogicallyIdentical(other: AppointmentEventEntity): Boolean {
     if (this.contactOutcome?.id != other.contactOutcome?.id) return false
 
     val excludeFields = listOf(

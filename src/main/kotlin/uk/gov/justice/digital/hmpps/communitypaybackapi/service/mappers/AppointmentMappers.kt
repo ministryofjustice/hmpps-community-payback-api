@@ -16,7 +16,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentWorkQuali
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AttendanceDataDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EnforcementDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.PickUpDataDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentOutcomeEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.Behaviour
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EnforcementActionEntityRepository
@@ -91,7 +91,7 @@ class AppointmentMappers(
   )
 }
 
-fun AppointmentOutcomeEntity.toAppointmentUpdatedDomainEvent() = AppointmentUpdatedDomainEventDetailDto(
+fun AppointmentEventEntity.toAppointmentUpdatedDomainEvent() = AppointmentUpdatedDomainEventDetailDto(
   id = this.id,
   appointmentDeliusId = this.appointmentDeliusId,
   crn = this.crn,
@@ -109,7 +109,7 @@ fun AppointmentOutcomeEntity.toAppointmentUpdatedDomainEvent() = AppointmentUpda
   behaviour = this.behaviour?.dtoType,
 )
 
-fun AppointmentOutcomeEntity.toUpdateAppointment() = UpdateAppointment(
+fun AppointmentEventEntity.toUpdateAppointment() = UpdateAppointment(
   version = this.deliusVersionToUpdate,
   startTime = this.startTime,
   endTime = this.endTime,

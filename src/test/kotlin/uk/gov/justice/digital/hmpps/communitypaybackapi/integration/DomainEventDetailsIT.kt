@@ -9,8 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.config.SecurityConfiguration
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentUpdatedDomainEventDetailDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentOutcomeEntity
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentOutcomeEntityRepository
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.bodyAsObject
@@ -19,7 +19,7 @@ import java.util.UUID
 class DomainEventDetailsIT : IntegrationTestBase() {
 
   @Autowired
-  lateinit var appointmentOutcomeEntityRepository: AppointmentOutcomeEntityRepository
+  lateinit var appointmentOutcomeEntityRepository: AppointmentEventEntityRepository
 
   @Autowired
   lateinit var contactOutcomeEntityRepository: ContactOutcomeEntityRepository
@@ -77,7 +77,7 @@ class DomainEventDetailsIT : IntegrationTestBase() {
     @Test
     fun `return domain event detail if entry exists`() {
       val entity = appointmentOutcomeEntityRepository.save(
-        AppointmentOutcomeEntity.valid(
+        AppointmentEventEntity.valid(
           contactOutcomeEntity = contactOutcomeEntityRepository.findAll().first(),
         ),
       )
@@ -96,7 +96,7 @@ class DomainEventDetailsIT : IntegrationTestBase() {
     @Test
     fun `return domain event detail without outcome`() {
       val entity = appointmentOutcomeEntityRepository.save(
-        AppointmentOutcomeEntity.valid(
+        AppointmentEventEntity.valid(
           contactOutcomeEntity = null,
         ),
       )

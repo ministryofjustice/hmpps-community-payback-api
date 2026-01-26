@@ -9,8 +9,8 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOut
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.ConflictException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.InternalServerErrorException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.NotFoundException
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentOutcomeEntity
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentOutcomeEntityRepository
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toAppointmentUpdatedDomainEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toUpdateAppointment
 import java.time.OffsetDateTime
@@ -21,21 +21,21 @@ import java.util.UUID
 @Service
 class AppointmentUpdateService(
   private val appointmentRetrievalService: AppointmentRetrievalService,
-  private val appointmentOutcomeEntityRepository: AppointmentOutcomeEntityRepository,
+  private val appointmentEventEntityRepository: AppointmentEventEntityRepository,
   private val communityPaybackAndDeliusClient: CommunityPaybackAndDeliusClient,
   private val formService: FormService,
   private val appointmentOutcomeValidationService: AppointmentOutcomeValidationService,
-  private val appointmentOutcomeEntityFactory: AppointmentOutcomeEntityFactory,
+  private val appointmentEventEntityFactory: AppointmentEventEntityFactory,
   private val domainEventService: DomainEventService,
 ) {
   private companion object {
     private val log = LoggerFactory.getLogger(this::class.java)
   }
 
-  fun getAppointmentUpdatedDomainEventDetails(id: UUID) = appointmentOutcomeEntityRepository.findByIdOrNullForDomainEventDetails(id)?.toAppointmentUpdatedDomainEvent()
+  fun getAppointmentUpdatedDomainEventDetails(id: UUID) = appointmentEventEntityRepository.findByIdOrNullForDomainEventDetails(id)?.toAppointmentUpdatedDomainEvent()
 
   @Transactional
-  fun recordSchedulingRan(updateId: UUID) = appointmentOutcomeEntityRepository.setSchedulingRanAt(updateId, OffsetDateTime.now())
+  fun recordSchedulingRan(updateId: UUID) = appointmentEventEntityRepository.setSchedulingRanAt(updateId, OffsetDateTime.now())
 
   @Transactional
   fun updateAppointmentOutcome(
@@ -46,14 +46,14 @@ class AppointmentUpdateService(
 
     appointmentOutcomeValidationService.ensureUpdateIsValid(existingAppointment, update)
 
-    val proposedEntity = appointmentOutcomeEntityFactory.toEntity(update, existingAppointment)
+    val proposedEntity = appointmentEventEntityFactory.toEntity(update, existingAppointment)
 
     if (hasUpdateAlreadyBeenSent(proposedEntity)) {
       log.debug("Not applying update for appointment ${update.deliusId} because the most recent update is logically identical")
       return
     }
 
-    val persistedEntity = appointmentOutcomeEntityRepository.save(proposedEntity)
+    val persistedEntity = appointmentEventEntityRepository.save(proposedEntity)
 
     domainEventService.publishOnTransactionCommit(
       id = persistedEntity.id,
@@ -69,7 +69,7 @@ class AppointmentUpdateService(
     }
   }
 
-  private fun hasUpdateAlreadyBeenSent(proposedEntity: AppointmentOutcomeEntity) = appointmentOutcomeEntityRepository
+  private fun hasUpdateAlreadyBeenSent(proposedEntity: AppointmentEventEntity) = appointmentEventEntityRepository
     .findTopByAppointmentDeliusIdOrderByCreatedAtDesc(proposedEntity.appointmentDeliusId)
     ?.isLogicallyIdentical(proposedEntity)
     ?: false
@@ -77,18 +77,18 @@ class AppointmentUpdateService(
   @SuppressWarnings("SwallowedException", "ThrowsCount")
   private fun updateDelius(
     projectCode: String,
-    outcomeEntity: AppointmentOutcomeEntity,
+    appointmentEvent: AppointmentEventEntity,
   ) {
     try {
       communityPaybackAndDeliusClient.updateAppointment(
         projectCode = projectCode,
-        appointmentId = outcomeEntity.appointmentDeliusId,
-        updateAppointment = outcomeEntity.toUpdateAppointment(),
+        appointmentId = appointmentEvent.appointmentDeliusId,
+        updateAppointment = appointmentEvent.toUpdateAppointment(),
       )
     } catch (_: WebClientResponseException.NotFound) {
-      throw NotFoundException("Appointment", outcomeEntity.appointmentDeliusId.toString())
+      throw NotFoundException("Appointment", appointmentEvent.appointmentDeliusId.toString())
     } catch (_: WebClientResponseException.Conflict) {
-      throw ConflictException("A newer version of the appointment exists. Stale version is '${outcomeEntity.deliusVersionToUpdate}'")
+      throw ConflictException("A newer version of the appointment exists. Stale version is '${appointmentEvent.deliusVersionToUpdate}'")
     } catch (badRequest: WebClientResponseException.BadRequest) {
       throw InternalServerErrorException("Bad request returned updating an appointment. Upstream response is '${badRequest.responseBodyAsString}'")
     }

@@ -18,7 +18,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOut
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeResultType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentsOutcomesResultDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentOutcomeEntityRepository
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.FormCacheEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.FormCacheEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
@@ -33,7 +33,7 @@ import java.time.LocalDate
 class SupervisorAppointmentsIT : IntegrationTestBase() {
 
   @Autowired
-  lateinit var appointmentOutcomeEntityRepository: AppointmentOutcomeEntityRepository
+  lateinit var appointmentOutcomeEntityRepository: AppointmentEventEntityRepository
 
   @Autowired
   lateinit var formCacheEntityRepository: FormCacheEntityRepository
