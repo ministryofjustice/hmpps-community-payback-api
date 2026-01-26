@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.ApplicationContext
 import org.springframework.data.repository.findByIdOrNull
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCreatedAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDRequirementProgress
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingAllocation
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingDayOfWeek
@@ -280,8 +281,19 @@ class SchedulingIT : IntegrationTestBase() {
         ),
       )
 
-      CommunityPaybackAndDeliusMockServer.postAppointments("PROJ1")
-      CommunityPaybackAndDeliusMockServer.postAppointments("PROJ2")
+      CommunityPaybackAndDeliusMockServer.postAppointments(
+        projectCode = "PROJ1",
+        response = listOf(
+          NDCreatedAppointment(id = 1L),
+        ),
+      )
+      CommunityPaybackAndDeliusMockServer.postAppointments(
+        projectCode = "PROJ2",
+        response = listOf(
+          NDCreatedAppointment(id = 2L),
+          NDCreatedAppointment(id = 3L),
+        ),
+      )
 
       val outcomeRecordId = appointmentEventEntityRepository.save(
         AppointmentEventEntity.valid(applicationContext).copy(
