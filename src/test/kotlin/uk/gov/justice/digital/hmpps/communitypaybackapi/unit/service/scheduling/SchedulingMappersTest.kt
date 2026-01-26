@@ -21,7 +21,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.Sched
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingFrequency
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingProject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingRequiredAppointment
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.toNDCreateAppointment
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.toCreateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.toSchedulingAllocation
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.toSchedulingAllocations
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.toSchedulingExistingAppointment
@@ -285,7 +285,7 @@ class SchedulingMappersTest {
   }
 
   @Nested
-  inner class SchedulingRequiredAppointmentToNDCreateAppointment {
+  inner class SchedulingRequiredAppointmentToCreateAppointmentDto {
 
     @Test
     fun `map all fields`() {
@@ -300,27 +300,21 @@ class SchedulingMappersTest {
         allocation = SchedulingAllocation.valid().copy(
           id = 55L,
         ),
-      ).toNDCreateAppointment(
+      ).toCreateAppointmentDto(
         crn = "CRN1",
         eventNumber = 25,
       )
 
       assertThat(result.crn).isEqualTo("CRN1")
-      assertThat(result.eventNumber).isEqualTo(25)
-      assertThat(result.reference).isEqualTo(result.reference)
+      assertThat(result.deliusEventNumber).isEqualTo(25)
+      assertThat(result.allocationId).isEqualTo(55)
       assertThat(result.date).isEqualTo(LocalDate.of(2021, 9, 8))
       assertThat(result.startTime).isEqualTo(LocalTime.of(1, 2))
       assertThat(result.endTime).isEqualTo(LocalTime.of(11, 12))
-      assertThat(result.allocationId).isEqualTo(55)
-      assertThat(result.outcome).isNull()
-      assertThat(result.supervisor).isNull()
+      assertThat(result.contactOutcomeCode).isNull()
+      assertThat(result.attendanceData).isNull()
+      assertThat(result.supervisorOfficerCode).isNull()
       assertThat(result.notes).isEqualTo("[System scheduled appointment]")
-      assertThat(result.hiVisWorn).isNull()
-      assertThat(result.workedIntensively).isNull()
-      assertThat(result.penaltyMinutes).isNull()
-      assertThat(result.minutesCredited).isNull()
-      assertThat(result.workQuality).isNull()
-      assertThat(result.behaviour).isNull()
       assertThat(result.sensitive).isNull()
       assertThat(result.alertActive).isNull()
     }

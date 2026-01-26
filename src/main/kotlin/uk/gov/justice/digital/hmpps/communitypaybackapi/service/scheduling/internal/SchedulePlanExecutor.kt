@@ -2,16 +2,16 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.inte
 
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCreateAppointments
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentsDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentCreationService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulePlan
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingAction
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingRequiredAppointment
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.toNDCreateAppointment
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.toCreateAppointmentDto
 
 @Service
 class SchedulePlanExecutor(
-  val deliusClient: CommunityPaybackAndDeliusClient,
+  val appointmentCreationService: AppointmentCreationService,
 ) {
 
   companion object {
@@ -26,8 +26,7 @@ class SchedulePlanExecutor(
       .groupBy { it.toCreate.project.code }
       .forEach { (projectCode, appointmentsToCreate) ->
         createAppointment(
-          crn = plan.crn,
-          eventNumber = plan.eventNumber,
+          plan = plan,
           projectCode = projectCode,
           toCreate = appointmentsToCreate.map { it.toCreate },
         )
@@ -35,23 +34,23 @@ class SchedulePlanExecutor(
   }
 
   private fun createAppointment(
-    crn: String,
-    eventNumber: Int,
+    plan: SchedulePlan,
     projectCode: String,
     toCreate: List<SchedulingRequiredAppointment>,
   ) {
     log.info("Creating ${toCreate.size} appointments for project $projectCode")
 
-    deliusClient.createAppointments(
-      projectCode = projectCode,
-      appointments = NDCreateAppointments(
-        toCreate.map {
-          it.toNDCreateAppointment(
-            crn = crn,
-            eventNumber = eventNumber,
+    appointmentCreationService.createAppointments(
+      CreateAppointmentsDto(
+        projectCode = projectCode,
+        appointments = toCreate.map {
+          it.toCreateAppointmentDto(
+            crn = plan.crn,
+            eventNumber = plan.eventNumber,
           )
         },
       ),
+      triggeredBySchedulingId = plan.schedulingId,
     )
   }
 }
