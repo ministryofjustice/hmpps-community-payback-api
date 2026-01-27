@@ -6,9 +6,9 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.AppointmentBehavi
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.AppointmentSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.AppointmentWorkQuality
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Code
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointmentPickUp
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCreateAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDPickUp
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.PickUpData
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.UpdateAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentBehaviourDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
@@ -162,8 +162,9 @@ fun AppointmentEventEntity.toNDCreateAppointment(): NDCreateAppointment {
 fun WorkQuality.Companion.fromDto(dto: AppointmentWorkQualityDto) = WorkQuality.entries.first { it.dtoType == dto }
 fun Behaviour.Companion.fromDto(dto: AppointmentBehaviourDto) = Behaviour.entries.first { it.dtoType == dto }
 
-fun PickUpData.toDto() = PickUpDataDto(
-  location = pickUpLocation?.toDto(),
+fun NDAppointmentPickUp.toDto() = PickUpDataDto(
+  location = location?.toDto(),
+  locationCode = locationCode?.code,
   time = time,
 )
 

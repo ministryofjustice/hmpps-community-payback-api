@@ -7,8 +7,8 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.AppointmentWorkQu
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CaseSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ContactOutcome
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.EnforcementAction
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointmentPickUp
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDEvent
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.PickUpData
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Project
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Provider
@@ -30,15 +30,15 @@ fun Appointment.Companion.validNoOutcome() = Appointment.valid().copy(
 )
 
 fun Appointment.Companion.valid() = Appointment(
-  id = Long.Companion.random(),
+  id = Long.random(),
   version = UUID.randomUUID(),
-  project = Project.Companion.valid(),
+  project = Project.valid(),
   projectType = ProjectType.valid(),
   case = CaseSummary.valid(),
   event = NDEvent.valid(),
   team = Team.valid(),
   provider = Provider.valid(),
-  pickUpData = PickUpData.valid(),
+  pickUpData = NDAppointmentPickUp.valid(),
   date = randomLocalDate(),
   startTime = randomLocalTime(),
   endTime = randomLocalTime(),

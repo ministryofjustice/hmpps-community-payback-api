@@ -156,7 +156,7 @@ data class Appointment(
   val event: NDEvent,
   val team: Team,
   val provider: Provider,
-  val pickUpData: PickUpData?,
+  val pickUpData: NDAppointmentPickUp?,
   val date: LocalDate,
   val startTime: LocalTime,
   val endTime: LocalTime,
@@ -200,8 +200,9 @@ data class Provider(val name: String, val code: String) {
   companion object
 }
 
-data class PickUpData(
-  val pickUpLocation: Address?,
+data class NDAppointmentPickUp(
+  val location: Address?,
+  val locationCode: Code?,
   val time: LocalTime?,
 ) {
   companion object
