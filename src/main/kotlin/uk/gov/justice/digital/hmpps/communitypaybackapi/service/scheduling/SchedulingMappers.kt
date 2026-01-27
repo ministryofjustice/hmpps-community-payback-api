@@ -51,6 +51,8 @@ fun NDSchedulingAllocation.toSchedulingAllocation() = SchedulingAllocation(
   endDateInclusive = this.determineEndDateInclusive(),
   startTime = this.startTime,
   endTime = this.endTime,
+  pickUpLocationCode = this.pickUp?.location?.code,
+  pickUpTime = this.pickUp?.time,
 )
 
 fun List<NDSchedulingExistingAppointment>.toSchedulingExistingAppointments() = SchedulingExistingAppointments(
@@ -79,6 +81,8 @@ fun SchedulingRequiredAppointment.toCreateAppointmentDto(
   date = this.date,
   startTime = this.startTime,
   endTime = this.endTime,
+  pickUpLocationCode = this.allocation.pickUpLocationCode,
+  pickUpTime = this.allocation.pickUpTime,
   notes = "[System scheduled appointment]",
 )
 

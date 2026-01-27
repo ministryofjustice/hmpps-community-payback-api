@@ -334,6 +334,7 @@ data class NDCreateAppointment(
   val sensitive: Boolean? = null,
   val alertActive: Boolean? = null,
   val allocationId: Long? = null,
+  val pickUp: NDPickUp?,
 )
 
 data class NDCreatedAppointment(
@@ -381,9 +382,12 @@ data class NDSchedulingAllocation(
   val endDateInclusive: LocalDate?,
   val startTime: LocalTime,
   val endTime: LocalTime,
+  val pickUp: NDPickUp?,
 ) {
   companion object
 }
+
+data class NDPickUp(val time: LocalTime?, val location: Code?)
 
 data class NDSchedulingProject(
   val name: String,

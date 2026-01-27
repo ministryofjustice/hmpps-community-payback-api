@@ -81,6 +81,8 @@ class AppointmentMappersTest {
         date = LocalDate.of(2028, 7, 6),
         startTime = LocalTime.of(3, 2, 1),
         endTime = LocalTime.of(12, 11, 10),
+        pickupLocationCode = "PICKUP10",
+        pickupTime = LocalTime.of(13, 14, 15),
         contactOutcome = ContactOutcomeEntity.valid().copy(code = "COE1"),
         supervisorOfficerCode = "WO3736",
         notes = "The notes",
@@ -113,6 +115,8 @@ class AppointmentMappersTest {
       assertThat(result.behaviour).isEqualTo(AppointmentBehaviour.UNSATISFACTORY)
       assertThat(result.alertActive).isFalse
       assertThat(result.sensitive).isTrue
+      assertThat(result.pickUp?.location?.code).isEqualTo("PICKUP10")
+      assertThat(result.pickUp?.time).isEqualTo(LocalTime.of(13, 14, 15))
     }
 
     @Test
@@ -130,6 +134,8 @@ class AppointmentMappersTest {
         date = LocalDate.of(2028, 7, 6),
         startTime = LocalTime.of(3, 2, 1),
         endTime = LocalTime.of(12, 11, 10),
+        pickupTime = null,
+        pickupLocationCode = null,
         contactOutcome = null,
         supervisorOfficerCode = null,
         notes = null,
@@ -162,6 +168,8 @@ class AppointmentMappersTest {
       assertThat(result.behaviour).isNull()
       assertThat(result.alertActive).isNull()
       assertThat(result.sensitive).isNull()
+      assertThat(result.pickUp?.location).isNull()
+      assertThat(result.pickUp?.time).isNull()
     }
   }
 

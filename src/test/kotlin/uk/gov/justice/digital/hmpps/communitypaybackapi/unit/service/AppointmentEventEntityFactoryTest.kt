@@ -71,6 +71,8 @@ class AppointmentEventEntityFactoryTest {
           date = LocalDate.of(2014, 6, 7),
           startTime = LocalTime.of(10, 1),
           endTime = LocalTime.of(16, 3),
+          pickUpLocationCode = "PICKUPLOC1",
+          pickUpTime = LocalTime.of(20, 5),
           contactOutcomeCode = CONTACT_OUTCOME_CODE,
           supervisorOfficerCode = "N45",
           notes = "some notes",
@@ -98,6 +100,8 @@ class AppointmentEventEntityFactoryTest {
       assertThat(result.date).isEqualTo(LocalDate.of(2014, 6, 7))
       assertThat(result.startTime).isEqualTo(LocalTime.of(10, 1))
       assertThat(result.endTime).isEqualTo(LocalTime.of(16, 3))
+      assertThat(result.pickupLocationCode).isEqualTo("PICKUPLOC1")
+      assertThat(result.pickupTime).isEqualTo(LocalTime.of(20, 5))
       assertThat(result.contactOutcome).isEqualTo(contactOutcomeEntity)
       assertThat(result.supervisorOfficerCode).isEqualTo("N45")
       assertThat(result.notes).isEqualTo("some notes")
@@ -127,8 +131,10 @@ class AppointmentEventEntityFactoryTest {
           date = LocalDate.of(2014, 6, 7),
           startTime = LocalTime.of(10, 1),
           endTime = LocalTime.of(16, 3),
+          pickUpLocationCode = null,
+          pickUpTime = null,
           contactOutcomeCode = null,
-          supervisorOfficerCode = "N45",
+          supervisorOfficerCode = null,
           notes = null,
           attendanceData = null,
           alertActive = null,
@@ -147,8 +153,10 @@ class AppointmentEventEntityFactoryTest {
       assertThat(result.date).isEqualTo(LocalDate.of(2014, 6, 7))
       assertThat(result.startTime).isEqualTo(LocalTime.of(10, 1))
       assertThat(result.endTime).isEqualTo(LocalTime.of(16, 3))
+      assertThat(result.pickupLocationCode).isNull()
+      assertThat(result.pickupTime).isNull()
       assertThat(result.contactOutcome).isNull()
-      assertThat(result.supervisorOfficerCode).isEqualTo("N45")
+      assertThat(result.supervisorOfficerCode).isNull()
       assertThat(result.notes).isNull()
       assertThat(result.hiVisWorn).isNull()
       assertThat(result.workedIntensively).isNull()

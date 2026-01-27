@@ -33,6 +33,9 @@ data class AppointmentEventEntity(
   val startTime: LocalTime,
   val endTime: LocalTime,
 
+  val pickupLocationCode: String?,
+  val pickupTime: LocalTime?,
+
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "contact_outcome_id", referencedColumnName = "id")
   val contactOutcome: ContactOutcomeEntity?,

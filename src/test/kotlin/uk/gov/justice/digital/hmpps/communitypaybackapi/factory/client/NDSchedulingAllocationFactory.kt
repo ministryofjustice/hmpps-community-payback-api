@@ -1,5 +1,7 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client
 
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Code
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDPickUp
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingAllocation
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingAvailability
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingDayOfWeek
@@ -7,6 +9,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingFrequ
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingProject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.random
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.randomLocalDate
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.randomLocalTime
 import java.time.LocalTime
 import kotlin.Long
 
@@ -26,5 +29,9 @@ fun NDSchedulingAllocation.Companion.valid(): NDSchedulingAllocation {
     endDateInclusive = endDateInclusive,
     startTime = startTime,
     endTime = endTime,
+    pickUp = NDPickUp(
+      location = Code(String.random(5)),
+      time = randomLocalTime(),
+    ),
   )
 }

@@ -18,4 +18,6 @@ fun SchedulingAllocation.Companion.valid() = SchedulingAllocation(
   endDateInclusive = randomLocalDate(),
   startTime = randomLocalTime(),
   endTime = randomLocalTime(),
+  pickUpLocationCode = String.random(5),
+  pickUpTime = randomLocalTime(),
 )
