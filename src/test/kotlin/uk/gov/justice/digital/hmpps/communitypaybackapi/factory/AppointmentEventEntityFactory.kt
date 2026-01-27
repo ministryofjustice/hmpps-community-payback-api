@@ -15,6 +15,7 @@ fun AppointmentEventEntity.Companion.valid(
   contactOutcomeEntity: ContactOutcomeEntity? = ContactOutcomeEntity.valid(),
 ) = AppointmentEventEntity(
   id = UUID.randomUUID(),
+  communityPaybackAppointmentId = UUID.randomUUID(),
   eventType = AppointmentEventType.entries.toTypedArray().random(),
   appointmentDeliusId = Long.random(),
   deliusVersionToUpdate = UUID.randomUUID(),

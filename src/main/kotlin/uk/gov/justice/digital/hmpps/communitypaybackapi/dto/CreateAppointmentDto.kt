@@ -3,8 +3,10 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.dto
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate
 import java.time.LocalTime
+import java.util.UUID
 
 data class CreateAppointmentDto(
+  val id: UUID,
   val crn: String,
   val deliusEventNumber: Int,
   val allocationId: Long?,

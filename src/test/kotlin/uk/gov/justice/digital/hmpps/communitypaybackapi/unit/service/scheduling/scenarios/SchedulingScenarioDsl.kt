@@ -158,7 +158,7 @@ class SchedulingScenarioBuilder {
      */
     private fun List<SchedulingAction.CreateAppointment>.allWithSameReference(reference: UUID) = map {
       SchedulingAction.CreateAppointment(
-        toCreate = it.toCreate.copy(reference = reference),
+        toCreate = it.toCreate.copy(id = reference),
       )
     }
 

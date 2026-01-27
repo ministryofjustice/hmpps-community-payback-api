@@ -23,6 +23,7 @@ data class AppointmentEventEntity(
   val id: UUID,
   @Enumerated(EnumType.STRING)
   val eventType: AppointmentEventType,
+  val communityPaybackAppointmentId: UUID?,
   val appointmentDeliusId: Long,
   val deliusVersionToUpdate: UUID?,
   val crn: String,
