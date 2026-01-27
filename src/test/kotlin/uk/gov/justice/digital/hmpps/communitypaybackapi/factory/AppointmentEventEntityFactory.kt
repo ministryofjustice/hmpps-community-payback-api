@@ -25,6 +25,8 @@ fun AppointmentEventEntity.Companion.valid(
   date = randomLocalDate(),
   startTime = randomLocalTime(),
   endTime = randomLocalTime(),
+  pickupLocationCode = null,
+  pickupTime = null,
   contactOutcome = contactOutcomeEntity,
   supervisorOfficerCode = String.random(length = 3),
   notes = String.random(),
