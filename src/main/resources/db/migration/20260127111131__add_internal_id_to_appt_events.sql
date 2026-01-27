@@ -1,0 +1,1 @@
+ALTER TABLE appointment_events ADD community_payback_appointment_id uuid NULL;

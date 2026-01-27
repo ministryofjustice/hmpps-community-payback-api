@@ -119,7 +119,7 @@ data class SchedulingExistingAppointment(
 }
 
 data class SchedulingRequiredAppointment(
-  val reference: UUID = UUID.randomUUID(),
+  val id: UUID = UUID.randomUUID(),
   val date: LocalDate,
   val startTime: LocalTime,
   val endTime: LocalTime,

@@ -72,6 +72,7 @@ fun SchedulingRequiredAppointment.toCreateAppointmentDto(
   crn: String,
   eventNumber: Int,
 ) = CreateAppointmentDto(
+  id = id,
   crn = crn,
   deliusEventNumber = eventNumber,
   allocationId = allocation.id,

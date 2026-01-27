@@ -44,6 +44,7 @@ class AppointmentEventEntityFactoryTest {
     const val CONTACT_OUTCOME_CODE: String = "CONTACT-1"
     val ENFORCEMENT_ACTION_ID: UUID = UUID.randomUUID()
     val SCHEDULING_ID: UUID = UUID.randomUUID()
+    val ID: UUID = UUID.randomUUID()
   }
 
   @Nested
@@ -63,6 +64,7 @@ class AppointmentEventEntityFactoryTest {
         deliusId = 101L,
         triggeredBySchedulingId = SCHEDULING_ID,
         createAppointmentDto = CreateAppointmentDto(
+          id = ID,
           crn = "X12345",
           deliusEventNumber = 48,
           allocationId = 22,
@@ -86,6 +88,7 @@ class AppointmentEventEntityFactoryTest {
       )
 
       assertThat(result.id).isNotNull
+      assertThat(result.communityPaybackAppointmentId).isEqualTo(ID)
       assertThat(result.eventType).isEqualTo(AppointmentEventType.CREATE)
       assertThat(result.deliusVersionToUpdate).isNull()
       assertThat(result.crn).isEqualTo("X12345")
@@ -117,6 +120,7 @@ class AppointmentEventEntityFactoryTest {
         deliusId = 101L,
         triggeredBySchedulingId = null,
         createAppointmentDto = CreateAppointmentDto(
+          id = ID,
           crn = "X12345",
           deliusEventNumber = 48,
           allocationId = null,
@@ -133,6 +137,7 @@ class AppointmentEventEntityFactoryTest {
       )
 
       assertThat(result.id).isNotNull
+      assertThat(result.communityPaybackAppointmentId).isEqualTo(ID)
       assertThat(result.eventType).isEqualTo(AppointmentEventType.CREATE)
       assertThat(result.deliusVersionToUpdate).isNull()
       assertThat(result.crn).isEqualTo("X12345")
@@ -303,6 +308,7 @@ class AppointmentEventEntityFactoryTest {
 
       assertThat(result.id).isNotNull
       assertThat(result.eventType).isEqualTo(AppointmentEventType.UPDATE)
+      assertThat(result.communityPaybackAppointmentId).isNull()
       assertThat(result.deliusVersionToUpdate).isEqualTo(deliusVersion)
       assertThat(result.crn).isEqualTo("X12345")
       assertThat(result.deliusEventNumber).isEqualTo(48)
@@ -355,6 +361,7 @@ class AppointmentEventEntityFactoryTest {
 
       assertThat(result.id).isNotNull
       assertThat(result.eventType).isEqualTo(AppointmentEventType.UPDATE)
+      assertThat(result.communityPaybackAppointmentId).isNull()
       assertThat(result.deliusVersionToUpdate).isEqualTo(deliusVersion)
       assertThat(result.crn).isEqualTo("X12345")
       assertThat(result.deliusEventNumber).isEqualTo(48)

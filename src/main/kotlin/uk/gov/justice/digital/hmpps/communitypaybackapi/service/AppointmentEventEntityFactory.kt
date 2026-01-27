@@ -34,6 +34,7 @@ class AppointmentEventEntityFactory(
 
     return AppointmentEventEntity(
       id = UUID.randomUUID(),
+      communityPaybackAppointmentId = createAppointmentDto.id,
       eventType = AppointmentEventType.CREATE,
       crn = createAppointmentDto.crn,
       appointmentDeliusId = deliusId,
@@ -75,6 +76,7 @@ class AppointmentEventEntityFactory(
 
     return AppointmentEventEntity(
       id = UUID.randomUUID(),
+      communityPaybackAppointmentId = null,
       eventType = AppointmentEventType.UPDATE,
       crn = existingAppointment.offender.crn,
       appointmentDeliusId = outcome.deliusId,

@@ -290,7 +290,7 @@ class SchedulingMappersTest {
     @Test
     fun `map all fields`() {
       val result = SchedulingRequiredAppointment(
-        reference = UUID.randomUUID(),
+        id = UUID.randomUUID(),
         date = LocalDate.of(2021, 9, 8),
         startTime = LocalTime.of(1, 2),
         endTime = LocalTime.of(11, 12),

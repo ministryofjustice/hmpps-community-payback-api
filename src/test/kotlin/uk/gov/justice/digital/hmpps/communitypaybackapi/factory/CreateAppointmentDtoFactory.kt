@@ -3,8 +3,10 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.factory
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AttendanceDataDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
 import java.time.LocalTime
+import java.util.UUID
 
 fun CreateAppointmentDto.Companion.valid() = CreateAppointmentDto(
+  id = UUID.randomUUID(),
   crn = String.random(5),
   deliusEventNumber = Int.random(50),
   allocationId = Long.random(),

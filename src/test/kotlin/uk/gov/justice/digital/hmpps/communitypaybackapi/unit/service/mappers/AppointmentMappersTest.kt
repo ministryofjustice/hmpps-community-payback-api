@@ -68,10 +68,11 @@ class AppointmentMappersTest {
 
     @Test
     fun success() {
-      val eventId = UUID.randomUUID()
+      val appointmentId = UUID.randomUUID()
 
       val event = AppointmentEventEntity.valid().copy(
-        id = eventId,
+        id = UUID.randomUUID(),
+        communityPaybackAppointmentId = appointmentId,
         eventType = AppointmentEventType.CREATE,
         appointmentDeliusId = 101L,
         deliusVersionToUpdate = UUID.randomUUID(),
@@ -95,7 +96,7 @@ class AppointmentMappersTest {
 
       val result = event.toNDCreateAppointment()
 
-      assertThat(result.reference).isEqualTo(eventId)
+      assertThat(result.reference).isEqualTo(appointmentId)
       assertThat(result.crn).isEqualTo("CRN123")
       assertThat(result.eventNumber).isEqualTo(5)
       assertThat(result.date).isEqualTo(LocalDate.of(2028, 7, 6))
@@ -116,10 +117,11 @@ class AppointmentMappersTest {
 
     @Test
     fun `success with only mandatory fields`() {
-      val eventId = UUID.randomUUID()
+      val appointmentId = UUID.randomUUID()
 
       val event = AppointmentEventEntity.valid().copy(
-        id = eventId,
+        id = UUID.randomUUID(),
+        communityPaybackAppointmentId = appointmentId,
         eventType = AppointmentEventType.CREATE,
         appointmentDeliusId = 101L,
         deliusVersionToUpdate = UUID.randomUUID(),
@@ -143,7 +145,7 @@ class AppointmentMappersTest {
 
       val result = event.toNDCreateAppointment()
 
-      assertThat(result.reference).isEqualTo(eventId)
+      assertThat(result.reference).isEqualTo(appointmentId)
       assertThat(result.crn).isEqualTo("CRN123")
       assertThat(result.eventNumber).isEqualTo(5)
       assertThat(result.date).isEqualTo(LocalDate.of(2028, 7, 6))

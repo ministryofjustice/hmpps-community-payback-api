@@ -134,7 +134,7 @@ fun AppointmentEventEntity.toUpdateAppointment(): UpdateAppointment {
 fun AppointmentEventEntity.toNDCreateAppointment(): NDCreateAppointment {
   require(this.eventType == AppointmentEventType.CREATE)
   return NDCreateAppointment(
-    reference = this.id,
+    reference = this.communityPaybackAppointmentId!!,
     crn = this.crn,
     eventNumber = this.deliusEventNumber,
     date = this.date,
