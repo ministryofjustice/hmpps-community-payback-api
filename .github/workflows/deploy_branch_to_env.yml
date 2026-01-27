@@ -9,7 +9,7 @@ on:
         required: true
         options:
           - dev
-          - prod
+          - test
 
 permissions:
   contents: read

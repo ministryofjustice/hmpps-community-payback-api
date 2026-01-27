@@ -9,8 +9,7 @@ on:
         required: true
         options:
           - dev
-          - preprod
-          - prod
+          - test
         default: 'dev'
       version:
         description: version to be deployed to the environment - must already exist.
