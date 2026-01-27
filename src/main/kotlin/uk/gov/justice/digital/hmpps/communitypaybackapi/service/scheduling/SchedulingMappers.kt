@@ -1,12 +1,12 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling
 
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCreateAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDRequirementProgress
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingAllocation
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingDayOfWeek
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingExistingAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingFrequency
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingProject
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
 import java.time.DayOfWeek
 import java.time.Duration
 
@@ -68,17 +68,16 @@ fun NDSchedulingExistingAppointment.toSchedulingExistingAppointment() = Scheduli
   allocationId = allocationId,
 )
 
-fun SchedulingRequiredAppointment.toNDCreateAppointment(
+fun SchedulingRequiredAppointment.toCreateAppointmentDto(
   crn: String,
   eventNumber: Int,
-) = NDCreateAppointment(
+) = CreateAppointmentDto(
   crn = crn,
-  eventNumber = eventNumber,
-  reference = this.reference,
+  deliusEventNumber = eventNumber,
+  allocationId = allocation.id,
   date = this.date,
   startTime = this.startTime,
   endTime = this.endTime,
-  allocationId = this.allocation.id,
   notes = "[System scheduled appointment]",
 )
 

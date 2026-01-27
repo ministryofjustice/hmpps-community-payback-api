@@ -24,7 +24,7 @@ data class AppointmentEventEntity(
   @Enumerated(EnumType.STRING)
   val eventType: AppointmentEventType,
   val appointmentDeliusId: Long,
-  val deliusVersionToUpdate: UUID,
+  val deliusVersionToUpdate: UUID?,
   val crn: String,
   val deliusEventNumber: Int,
   val projectCode: String,
@@ -36,7 +36,7 @@ data class AppointmentEventEntity(
   @JoinColumn(name = "contact_outcome_id", referencedColumnName = "id")
   val contactOutcome: ContactOutcomeEntity?,
 
-  val supervisorOfficerCode: String,
+  val supervisorOfficerCode: String?,
   val notes: String?,
   val hiVisWorn: Boolean?,
   val workedIntensively: Boolean?,
@@ -53,6 +53,9 @@ data class AppointmentEventEntity(
   val sensitive: Boolean?,
 
   val schedulingRanAt: OffsetDateTime? = null,
+
+  val allocationId: Long?,
+  val triggeredBySchedulingId: UUID?,
 
   @CreationTimestamp
   val createdAt: OffsetDateTime = OffsetDateTime.now(),
@@ -98,4 +101,5 @@ data class AppointmentEventEntity(
 
 enum class AppointmentEventType {
   UPDATE,
+  CREATE,
 }

@@ -32,6 +32,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentBehaviour
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentWorkQualityDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.OffenderDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.Behaviour
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
@@ -43,6 +44,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.AppointmentMappers
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.fromDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toAppointmentUpdatedDomainEvent
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toNDCreateAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toUpdateAppointment
 import java.time.Duration
 import java.time.LocalDate
@@ -62,12 +64,113 @@ class AppointmentMappersTest {
   private lateinit var service: AppointmentMappers
 
   @Nested
+  inner class AppointmentEventEntityToNDCreateAppointment {
+
+    @Test
+    fun success() {
+      val eventId = UUID.randomUUID()
+
+      val event = AppointmentEventEntity.valid().copy(
+        id = eventId,
+        eventType = AppointmentEventType.CREATE,
+        appointmentDeliusId = 101L,
+        deliusVersionToUpdate = UUID.randomUUID(),
+        crn = "CRN123",
+        deliusEventNumber = 5,
+        date = LocalDate.of(2028, 7, 6),
+        startTime = LocalTime.of(3, 2, 1),
+        endTime = LocalTime.of(12, 11, 10),
+        contactOutcome = ContactOutcomeEntity.valid().copy(code = "COE1"),
+        supervisorOfficerCode = "WO3736",
+        notes = "The notes",
+        hiVisWorn = true,
+        workedIntensively = false,
+        penaltyMinutes = 105,
+        minutesCredited = 35,
+        workQuality = WorkQuality.NOT_APPLICABLE,
+        behaviour = Behaviour.UNSATISFACTORY,
+        alertActive = false,
+        sensitive = true,
+      )
+
+      val result = event.toNDCreateAppointment()
+
+      assertThat(result.reference).isEqualTo(eventId)
+      assertThat(result.crn).isEqualTo("CRN123")
+      assertThat(result.eventNumber).isEqualTo(5)
+      assertThat(result.date).isEqualTo(LocalDate.of(2028, 7, 6))
+      assertThat(result.startTime).isEqualTo(LocalTime.of(3, 2, 1))
+      assertThat(result.endTime).isEqualTo(LocalTime.of(12, 11, 10))
+      assertThat(result.outcome?.code).isEqualTo("COE1")
+      assertThat(result.supervisor?.code).isEqualTo("WO3736")
+      assertThat(result.notes).isEqualTo("The notes")
+      assertThat(result.hiVisWorn).isTrue
+      assertThat(result.workedIntensively).isFalse
+      assertThat(result.penaltyMinutes).isEqualTo(105)
+      assertThat(result.minutesCredited).isEqualTo(35)
+      assertThat(result.workQuality).isEqualTo(AppointmentWorkQuality.NOT_APPLICABLE)
+      assertThat(result.behaviour).isEqualTo(AppointmentBehaviour.UNSATISFACTORY)
+      assertThat(result.alertActive).isFalse
+      assertThat(result.sensitive).isTrue
+    }
+
+    @Test
+    fun `success with only mandatory fields`() {
+      val eventId = UUID.randomUUID()
+
+      val event = AppointmentEventEntity.valid().copy(
+        id = eventId,
+        eventType = AppointmentEventType.CREATE,
+        appointmentDeliusId = 101L,
+        deliusVersionToUpdate = UUID.randomUUID(),
+        crn = "CRN123",
+        deliusEventNumber = 5,
+        date = LocalDate.of(2028, 7, 6),
+        startTime = LocalTime.of(3, 2, 1),
+        endTime = LocalTime.of(12, 11, 10),
+        contactOutcome = null,
+        supervisorOfficerCode = null,
+        notes = null,
+        hiVisWorn = null,
+        workedIntensively = null,
+        penaltyMinutes = null,
+        minutesCredited = null,
+        workQuality = null,
+        behaviour = null,
+        alertActive = null,
+        sensitive = null,
+      )
+
+      val result = event.toNDCreateAppointment()
+
+      assertThat(result.reference).isEqualTo(eventId)
+      assertThat(result.crn).isEqualTo("CRN123")
+      assertThat(result.eventNumber).isEqualTo(5)
+      assertThat(result.date).isEqualTo(LocalDate.of(2028, 7, 6))
+      assertThat(result.startTime).isEqualTo(LocalTime.of(3, 2, 1))
+      assertThat(result.endTime).isEqualTo(LocalTime.of(12, 11, 10))
+      assertThat(result.outcome).isNull()
+      assertThat(result.supervisor).isNull()
+      assertThat(result.notes).isNull()
+      assertThat(result.hiVisWorn).isNull()
+      assertThat(result.workedIntensively).isNull()
+      assertThat(result.penaltyMinutes).isNull()
+      assertThat(result.minutesCredited).isNull()
+      assertThat(result.workQuality).isNull()
+      assertThat(result.behaviour).isNull()
+      assertThat(result.alertActive).isNull()
+      assertThat(result.sensitive).isNull()
+    }
+  }
+
+  @Nested
   inner class AppointmentEventEntityToUpdateAppointment {
 
     @Test
     fun success() {
       val appointmentEvent = AppointmentEventEntity.valid().copy(
         id = UUID.randomUUID(),
+        eventType = AppointmentEventType.UPDATE,
         appointmentDeliusId = 101L,
         deliusVersionToUpdate = UUID.randomUUID(),
         crn = "CRN123",
@@ -109,6 +212,7 @@ class AppointmentMappersTest {
     fun `success with only mandatory fields`() {
       val event = AppointmentEventEntity.valid().copy(
         id = UUID.randomUUID(),
+        eventType = AppointmentEventType.UPDATE,
         appointmentDeliusId = 101L,
         deliusVersionToUpdate = UUID.randomUUID(),
         crn = "CRN123",

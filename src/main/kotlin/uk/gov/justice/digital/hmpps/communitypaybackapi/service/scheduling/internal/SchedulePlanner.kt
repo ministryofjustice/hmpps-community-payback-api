@@ -37,6 +37,7 @@ object SchedulePlanner {
       .map { SchedulingAction.RetainAppointment(it, "Surplus (scheduling doesn't currently remove appointments)") }
 
     return SchedulePlan(
+      schedulingId = schedulingRequest.id,
       crn = schedulingRequest.requirement.crn,
       eventNumber = schedulingRequest.requirement.deliusEventNumber,
       actions = toCreate + toRetainBecauseRequired + toRetainBecauseForced + toRetainSurplus,

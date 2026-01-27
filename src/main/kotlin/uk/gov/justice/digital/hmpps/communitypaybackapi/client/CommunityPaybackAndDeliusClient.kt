@@ -60,7 +60,7 @@ interface CommunityPaybackAndDeliusClient {
   fun createAppointments(
     @PathVariable projectCode: String,
     @RequestBody appointments: NDCreateAppointments,
-  )
+  ): List<NDCreatedAppointment>
 
   @GetExchange("/providers/{providerCode}/teams/{teamCode}/supervisors")
   fun teamSupervisors(
@@ -334,6 +334,10 @@ data class NDCreateAppointment(
   val sensitive: Boolean? = null,
   val alertActive: Boolean? = null,
   val allocationId: Long? = null,
+)
+
+data class NDCreatedAppointment(
+  val id: Long,
 )
 
 data class UpdateAppointment(
