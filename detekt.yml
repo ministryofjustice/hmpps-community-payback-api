@@ -29,9 +29,9 @@ style:
 
 complexity:
   LongMethod:
-    threshold: 200
+    allowedLines: 200
   LargeClass:
-    threshold: 1000
+    allowedLines: 1000
   TooManyFunctions:
-    thresholdInInterfaces: 20
-    thresholdInClasses: 20
+    allowedFunctionsPerInterface: 20
+    allowedFunctionsPerClass: 20

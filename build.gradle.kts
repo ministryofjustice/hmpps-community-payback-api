@@ -5,7 +5,7 @@ plugins {
   id("uk.gov.justice.hmpps.gradle-spring-boot") version "10.0.2"
   kotlin("plugin.spring") version "2.3.0"
   kotlin("plugin.jpa") version "2.3.0"
-  id("io.gitlab.arturbosch.detekt") version "1.23.8"
+  id("dev.detekt") version "2.0.0-alpha.2"
   jacoco
   id("io.sentry.jvm.gradle") version "5.12.2"
 }
@@ -15,14 +15,6 @@ configurations {
     exclude(group = "org.junit.vintage")
     exclude(group = "org.mockito")
     exclude(group = "org.mockito.kotlin")
-  }
-}
-
-configurations.matching { it.name == "detekt" }.all {
-  resolutionStrategy.eachDependency {
-    if (requested.group == "org.jetbrains.kotlin") {
-      useVersion(io.gitlab.arturbosch.detekt.getSupportedKotlinVersion())
-    }
   }
 }
 
@@ -60,7 +52,7 @@ dependencies {
 }
 
 kotlin {
-  jvmToolchain(21)
+  jvmToolchain(25)
 }
 
 detekt {
@@ -68,17 +60,11 @@ detekt {
   allRules = false
   ignoreFailures = false
   config.setFrom(files("$rootDir/detekt.yml"))
-
-  reports {
-    html.required.set(true)
-    xml.required.set(true)
-    txt.required.set(false)
-  }
 }
 
 tasks {
   withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-    compilerOptions.jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21
+    compilerOptions.jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_25
   }
 
   named<Test>("test") {
@@ -98,12 +84,6 @@ tasks {
         fileTree(file) { exclude(excludedFromCodeCoverage) }
       },
     )
-
-    reports {
-      xml.required.set(true)
-      csv.required.set(false)
-      html.required.set(true)
-    }
   }
 
   named<JacocoCoverageVerification>("jacocoTestCoverageVerification") {
