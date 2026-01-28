@@ -19,10 +19,18 @@ class EteService(
       EteCourseEventEntity(
         id = UUID.randomUUID(),
         crn = message.person.crn,
+        firstName = message.person.firstName,
+        lastName = message.person.lastName,
+        dateOfBirth = message.person.dateOfBirth,
+        region = message.person.region,
+        email = message.person.email,
         courseName = message.course.courseName,
-        totalTimeMinutes = message.course.totalTime.duration.toMinutes(),
-        attempts = message.course.attempts,
-        status = EteCourseEventStatus.Companion.fromMessage(message.course.status),
+        courseType = message.course.courseType,
+        provider = message.course.provider,
+        status = EteCourseEventStatus.fromMessage(message.course.status),
+        totalTime = message.course.totalTime,
+        expectedMinutes = message.course.expectedMinutes,
+        externalId = message.externalId,
       ),
     )
   }
