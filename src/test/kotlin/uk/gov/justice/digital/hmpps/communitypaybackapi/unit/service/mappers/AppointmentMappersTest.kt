@@ -75,8 +75,8 @@ class AppointmentMappersTest {
         id = UUID.randomUUID(),
         communityPaybackAppointmentId = appointmentId,
         eventType = AppointmentEventType.CREATE,
-        appointmentDeliusId = 101L,
-        deliusVersionToUpdate = UUID.randomUUID(),
+        deliusAppointmentId = 101L,
+        priorDeliusVersion = UUID.randomUUID(),
         crn = "CRN123",
         deliusEventNumber = 5,
         date = LocalDate.of(2028, 7, 6),
@@ -128,8 +128,8 @@ class AppointmentMappersTest {
         id = UUID.randomUUID(),
         communityPaybackAppointmentId = appointmentId,
         eventType = AppointmentEventType.CREATE,
-        appointmentDeliusId = 101L,
-        deliusVersionToUpdate = UUID.randomUUID(),
+        deliusAppointmentId = 101L,
+        priorDeliusVersion = UUID.randomUUID(),
         crn = "CRN123",
         deliusEventNumber = 5,
         date = LocalDate.of(2028, 7, 6),
@@ -182,8 +182,8 @@ class AppointmentMappersTest {
       val appointmentEvent = AppointmentEventEntity.valid().copy(
         id = UUID.randomUUID(),
         eventType = AppointmentEventType.UPDATE,
-        appointmentDeliusId = 101L,
-        deliusVersionToUpdate = UUID.randomUUID(),
+        deliusAppointmentId = 101L,
+        priorDeliusVersion = UUID.randomUUID(),
         crn = "CRN123",
         deliusEventNumber = 5,
         startTime = LocalTime.of(3, 2, 1),
@@ -203,7 +203,7 @@ class AppointmentMappersTest {
 
       val result = appointmentEvent.toUpdateAppointment()
 
-      assertThat(result.version).isEqualTo(appointmentEvent.deliusVersionToUpdate)
+      assertThat(result.version).isEqualTo(appointmentEvent.priorDeliusVersion)
       assertThat(result.startTime).isEqualTo(LocalTime.of(3, 2, 1))
       assertThat(result.endTime).isEqualTo(LocalTime.of(12, 11, 10))
       assertThat(result.outcome!!.code).isEqualTo("COE1")
@@ -224,8 +224,8 @@ class AppointmentMappersTest {
       val event = AppointmentEventEntity.valid().copy(
         id = UUID.randomUUID(),
         eventType = AppointmentEventType.UPDATE,
-        appointmentDeliusId = 101L,
-        deliusVersionToUpdate = UUID.randomUUID(),
+        deliusAppointmentId = 101L,
+        priorDeliusVersion = UUID.randomUUID(),
         crn = "CRN123",
         deliusEventNumber = 5,
         startTime = LocalTime.of(3, 2, 1),
@@ -245,7 +245,7 @@ class AppointmentMappersTest {
 
       val result = event.toUpdateAppointment()
 
-      assertThat(result.version).isEqualTo(event.deliusVersionToUpdate)
+      assertThat(result.version).isEqualTo(event.priorDeliusVersion)
       assertThat(result.startTime).isEqualTo(LocalTime.of(3, 2, 1))
       assertThat(result.endTime).isEqualTo(LocalTime.of(12, 11, 10))
       assertThat(result.outcome).isNull()
@@ -269,7 +269,7 @@ class AppointmentMappersTest {
     fun success() {
       val appointmentEvent = AppointmentEventEntity.valid().copy(
         id = UUID.randomUUID(),
-        appointmentDeliusId = 101L,
+        deliusAppointmentId = 101L,
         crn = "CRN123",
         deliusEventNumber = 52,
         startTime = LocalTime.of(3, 2, 1),

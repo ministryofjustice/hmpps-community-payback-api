@@ -35,18 +35,26 @@ class AppointmentUpdateService(
   fun getAppointmentUpdatedDomainEventDetails(id: UUID) = appointmentEventEntityRepository.findByIdOrNullForDomainEventDetails(id)?.toAppointmentUpdatedDomainEvent()
 
   @Transactional
-  fun recordSchedulingRan(updateId: UUID) = appointmentEventEntityRepository.setSchedulingRanAt(updateId, OffsetDateTime.now())
+  fun recordSchedulingRan(
+    forEventId: UUID,
+    schedulingId: UUID,
+  ) = appointmentEventEntityRepository.setSchedulingRanAt(
+    eventId = forEventId,
+    schedulingId = schedulingId,
+    now = OffsetDateTime.now(),
+  )
 
   @Transactional
   fun updateAppointmentOutcome(
     projectCode: String,
     update: UpdateAppointmentOutcomeDto,
+    trigger: AppointmentEventTrigger,
   ) {
     val existingAppointment = appointmentRetrievalService.getAppointment(projectCode, update.deliusId)
 
     appointmentOutcomeValidationService.ensureUpdateIsValid(existingAppointment, update)
 
-    val proposedEntity = appointmentEventEntityFactory.buildUpdatedEvent(update, existingAppointment)
+    val proposedEntity = appointmentEventEntityFactory.buildUpdatedEvent(update, existingAppointment, trigger)
 
     if (hasUpdateAlreadyBeenSent(proposedEntity)) {
       log.debug("Not applying update for appointment ${update.deliusId} because the most recent update is logically identical")
@@ -70,7 +78,7 @@ class AppointmentUpdateService(
   }
 
   private fun hasUpdateAlreadyBeenSent(proposedEntity: AppointmentEventEntity) = appointmentEventEntityRepository
-    .findTopByAppointmentDeliusIdOrderByCreatedAtDesc(proposedEntity.appointmentDeliusId)
+    .findTopByDeliusAppointmentIdOrderByCreatedAtDesc(proposedEntity.deliusAppointmentId)
     ?.isLogicallyIdentical(proposedEntity)
     ?: false
 
@@ -82,13 +90,13 @@ class AppointmentUpdateService(
     try {
       communityPaybackAndDeliusClient.updateAppointment(
         projectCode = projectCode,
-        appointmentId = appointmentEvent.appointmentDeliusId,
+        appointmentId = appointmentEvent.deliusAppointmentId,
         updateAppointment = appointmentEvent.toUpdateAppointment(),
       )
     } catch (_: WebClientResponseException.NotFound) {
-      throw NotFoundException("Appointment", appointmentEvent.appointmentDeliusId.toString())
+      throw NotFoundException("Appointment", appointmentEvent.deliusAppointmentId.toString())
     } catch (_: WebClientResponseException.Conflict) {
-      throw ConflictException("A newer version of the appointment exists. Stale version is '${appointmentEvent.deliusVersionToUpdate}'")
+      throw ConflictException("A newer version of the appointment exists. Stale version is '${appointmentEvent.priorDeliusVersion}'")
     } catch (badRequest: WebClientResponseException.BadRequest) {
       throw InternalServerErrorException("Bad request returned updating an appointment. Upstream response is '${badRequest.responseBodyAsString}'")
     }

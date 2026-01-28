@@ -3,7 +3,9 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.inte
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentsDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentCreationService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventTrigger
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulePlan
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingAction
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingRequiredAppointment
@@ -50,7 +52,10 @@ class SchedulePlanExecutor(
           )
         },
       ),
-      triggeredBySchedulingId = plan.schedulingId,
+      trigger = AppointmentEventTrigger(
+        triggerType = AppointmentEventTriggerType.SCHEDULING,
+        triggeredBy = plan.schedulingId.toString(),
+      ),
     )
   }
 }

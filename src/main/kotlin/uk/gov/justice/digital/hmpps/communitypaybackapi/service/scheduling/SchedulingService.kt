@@ -12,6 +12,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.inter
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.SchedulingTelemetryPublisher
 import java.time.Clock
 import java.time.LocalDate
+import java.util.UUID
 
 /**
  * In NDelius scheduling is triggered when a user makes a change to a person's
@@ -52,7 +53,7 @@ class SchedulingService(
     eventNumber: Int,
     trigger: SchedulingTrigger,
     dryRun: Boolean,
-  ) {
+  ): UUID {
     val requirement = communityPaybackAndDeliusClient.getUnpaidWorkRequirement(crn, eventNumber)
 
     val schedulingRequest = SchedulingRequest(
@@ -77,5 +78,7 @@ class SchedulingService(
     }
 
     scheduleTelemetryPublisher.publish(schedulingRequest, schedulingOutcome)
+
+    return schedulingRequest.id
   }
 }

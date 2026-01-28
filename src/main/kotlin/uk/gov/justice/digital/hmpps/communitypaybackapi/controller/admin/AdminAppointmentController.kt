@@ -12,8 +12,11 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.BadRequestException
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventTriggerType
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventTrigger
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentRetrievalService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentUpdateService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ContextService
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 
 @AdminUiController
@@ -24,6 +27,7 @@ import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 class AdminAppointmentController(
   private val appointmentRetrievalService: AppointmentRetrievalService,
   private val appointmentUpdateService: AppointmentUpdateService,
+  private val contextService: ContextService,
 ) {
 
   @GetMapping(
@@ -103,6 +107,10 @@ class AdminAppointmentController(
     appointmentUpdateService.updateAppointmentOutcome(
       projectCode = projectCode,
       update = outcome,
+      trigger = AppointmentEventTrigger(
+        triggerType = AppointmentEventTriggerType.USER,
+        triggeredBy = contextService.getUserName(),
+      ),
     )
   }
 }

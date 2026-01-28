@@ -19,8 +19,10 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOut
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.BadRequestException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.ConflictException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.NotFoundException
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentBulkUpdateService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventTrigger
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentOutcomeValidationService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentRetrievalService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentUpdateService
@@ -46,6 +48,7 @@ class AppointmentBulkUpdateServiceTest {
 
   private companion object {
     const val PROJECT_CODE = "PROJ123"
+    val TRIGGER: AppointmentEventTrigger = AppointmentEventTrigger(AppointmentEventTriggerType.USER, "user1")
   }
 
   @Nested
@@ -68,10 +71,11 @@ class AppointmentBulkUpdateServiceTest {
         service.updateAppointmentOutcomes(
           projectCode = PROJECT_CODE,
           request = UpdateAppointmentOutcomesDto(listOf(update1, update2)),
+          trigger = TRIGGER,
         )
       }.isInstanceOf(BadRequestException::class.java)
 
-      verify(exactly = 0) { appointmentUpdateService.updateAppointmentOutcome(any(), any()) }
+      verify(exactly = 0) { appointmentUpdateService.updateAppointmentOutcome(any(), any(), any()) }
     }
 
     @Test
@@ -81,12 +85,12 @@ class AppointmentBulkUpdateServiceTest {
 
       every { appointmentRetrievalService.getAppointment(PROJECT_CODE, update1.deliusId) } returns appointment1Dto
       every { appointmentOutcomeValidationService.ensureUpdateIsValid(appointment1Dto, update1) } just Runs
-      every { appointmentUpdateService.updateAppointmentOutcome(PROJECT_CODE, update1) } throws NotFoundException("appointment", "1")
+      every { appointmentUpdateService.updateAppointmentOutcome(PROJECT_CODE, update1, TRIGGER) } throws NotFoundException("appointment", "1")
 
       val result = service.updateAppointmentOutcomes(
         projectCode = PROJECT_CODE,
-        request =
-        UpdateAppointmentOutcomesDto(listOf(update1)),
+        request = UpdateAppointmentOutcomesDto(listOf(update1)),
+        trigger = TRIGGER,
       )
 
       assertThat(result.results).hasSize(1)
@@ -101,11 +105,12 @@ class AppointmentBulkUpdateServiceTest {
 
       every { appointmentRetrievalService.getAppointment(PROJECT_CODE, update1.deliusId) } returns appointment1Dto
       every { appointmentOutcomeValidationService.ensureUpdateIsValid(appointment1Dto, update1) } just Runs
-      every { appointmentUpdateService.updateAppointmentOutcome(PROJECT_CODE, update1) } throws ConflictException("oh no")
+      every { appointmentUpdateService.updateAppointmentOutcome(PROJECT_CODE, update1, TRIGGER) } throws ConflictException("oh no")
 
       val result = service.updateAppointmentOutcomes(
         projectCode = PROJECT_CODE,
         request = UpdateAppointmentOutcomesDto(listOf(update1)),
+        trigger = TRIGGER,
       )
 
       assertThat(result.results).hasSize(1)
@@ -122,11 +127,12 @@ class AppointmentBulkUpdateServiceTest {
       every { appointmentOutcomeValidationService.ensureUpdateIsValid(appointment1Dto, update1) } just Runs
 
       val exceptionReturned = IllegalStateException("oh no")
-      every { appointmentUpdateService.updateAppointmentOutcome(PROJECT_CODE, update1) } throws exceptionReturned
+      every { appointmentUpdateService.updateAppointmentOutcome(PROJECT_CODE, update1, TRIGGER) } throws exceptionReturned
 
       val result = service.updateAppointmentOutcomes(
         projectCode = PROJECT_CODE,
         request = UpdateAppointmentOutcomesDto(listOf(update1)),
+        trigger = TRIGGER,
       )
 
       assertThat(result.results).hasSize(1)
@@ -147,13 +153,14 @@ class AppointmentBulkUpdateServiceTest {
       val result = service.updateAppointmentOutcomes(
         projectCode = PROJECT_CODE,
         request = UpdateAppointmentOutcomesDto(listOf(update1)),
+        trigger = TRIGGER,
       )
 
       assertThat(result.results).hasSize(1)
       assertThat(result.results[0].deliusId).isEqualTo(1L)
       assertThat(result.results[0].result).isEqualTo(UpdateAppointmentOutcomeResultType.SUCCESS)
 
-      verify { appointmentUpdateService.updateAppointmentOutcome(PROJECT_CODE, update1) }
+      verify { appointmentUpdateService.updateAppointmentOutcome(PROJECT_CODE, update1, TRIGGER) }
     }
 
     @Test
@@ -165,13 +172,14 @@ class AppointmentBulkUpdateServiceTest {
 
       every { appointmentOutcomeValidationService.ensureUpdateIsValid(any(), any()) } just Runs
 
-      every { appointmentUpdateService.updateAppointmentOutcome(PROJECT_CODE, update1) } throws NotFoundException("appointment", "1")
-      every { appointmentUpdateService.updateAppointmentOutcome(PROJECT_CODE, update2) } throws ConflictException("oh no")
-      every { appointmentUpdateService.updateAppointmentOutcome(PROJECT_CODE, update3) } throws IllegalStateException("oh no")
+      every { appointmentUpdateService.updateAppointmentOutcome(PROJECT_CODE, update1, TRIGGER) } throws NotFoundException("appointment", "1")
+      every { appointmentUpdateService.updateAppointmentOutcome(PROJECT_CODE, update2, TRIGGER) } throws ConflictException("oh no")
+      every { appointmentUpdateService.updateAppointmentOutcome(PROJECT_CODE, update3, TRIGGER) } throws IllegalStateException("oh no")
 
       val result = service.updateAppointmentOutcomes(
         projectCode = PROJECT_CODE,
         request = UpdateAppointmentOutcomesDto(listOf(update1, update2, update3, update4)),
+        trigger = TRIGGER,
       )
 
       assertThat(result.results).hasSize(4)

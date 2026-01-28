@@ -6,6 +6,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AttendanceDataDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.Behaviour
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
@@ -24,7 +25,7 @@ class AppointmentEventEntityFactory(
   fun buildCreatedEvent(
     projectCode: String,
     deliusId: Long,
-    triggeredBySchedulingId: UUID?,
+    trigger: AppointmentEventTrigger,
     createAppointmentDto: CreateAppointmentDto,
   ): AppointmentEventEntity {
     val startTime = createAppointmentDto.startTime
@@ -37,8 +38,8 @@ class AppointmentEventEntityFactory(
       communityPaybackAppointmentId = createAppointmentDto.id,
       eventType = AppointmentEventType.CREATE,
       crn = createAppointmentDto.crn,
-      appointmentDeliusId = deliusId,
-      deliusVersionToUpdate = null,
+      deliusAppointmentId = deliusId,
+      priorDeliusVersion = null,
       deliusEventNumber = createAppointmentDto.deliusEventNumber,
       projectCode = projectCode,
       date = createAppointmentDto.date,
@@ -62,14 +63,16 @@ class AppointmentEventEntityFactory(
       behaviour = createAppointmentDto.attendanceData?.behaviour?.let { Behaviour.fromDto(it) },
       alertActive = createAppointmentDto.alertActive,
       sensitive = createAppointmentDto.sensitive,
-      allocationId = createAppointmentDto.allocationId,
-      triggeredBySchedulingId = triggeredBySchedulingId,
+      deliusAllocationId = createAppointmentDto.allocationId,
+      triggerType = trigger.triggerType,
+      triggeredBy = trigger.triggeredBy,
     )
   }
 
   fun buildUpdatedEvent(
     outcome: UpdateAppointmentOutcomeDto,
     existingAppointment: AppointmentDto,
+    trigger: AppointmentEventTrigger,
   ): AppointmentEventEntity {
     val startTime = outcome.startTime
     val endTime = outcome.endTime
@@ -81,8 +84,8 @@ class AppointmentEventEntityFactory(
       communityPaybackAppointmentId = null,
       eventType = AppointmentEventType.UPDATE,
       crn = existingAppointment.offender.crn,
-      appointmentDeliusId = outcome.deliusId,
-      deliusVersionToUpdate = outcome.deliusVersionToUpdate,
+      deliusAppointmentId = outcome.deliusId,
+      priorDeliusVersion = outcome.deliusVersionToUpdate,
       deliusEventNumber = existingAppointment.deliusEventNumber,
       projectCode = existingAppointment.projectCode,
       date = existingAppointment.date,
@@ -106,8 +109,9 @@ class AppointmentEventEntityFactory(
       behaviour = outcome.attendanceData?.behaviour?.let { Behaviour.fromDto(it) },
       alertActive = outcome.alertActive,
       sensitive = outcome.sensitive,
-      allocationId = null,
-      triggeredBySchedulingId = null,
+      deliusAllocationId = null,
+      triggerType = trigger.triggerType,
+      triggeredBy = trigger.triggeredBy,
     )
   }
 
@@ -129,3 +133,8 @@ class AppointmentEventEntityFactory(
 }
 
 fun AttendanceDataDto.derivePenaltyMinutesDuration() = penaltyMinutes?.let { Duration.ofMinutes(it) } ?: penaltyTime?.duration
+
+data class AppointmentEventTrigger(
+  val triggerType: AppointmentEventTriggerType,
+  val triggeredBy: String,
+)

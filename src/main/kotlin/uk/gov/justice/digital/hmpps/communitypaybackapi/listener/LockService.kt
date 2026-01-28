@@ -16,17 +16,17 @@ class LockService(
   }
 
   @Suppress("MagicNumber")
-  fun withDistributedLock(
+  fun <T> withDistributedLock(
     key: String,
     waitTime: Duration = Duration.ofSeconds(5),
     leaseTime: Duration,
-    exec: () -> Unit,
-  ) {
+    exec: () -> T,
+  ): T {
     val lock = redissonClient.getLock(key)
     if (lock.tryLock(waitTime.seconds, leaseTime.seconds, TimeUnit.SECONDS)) {
       try {
         log.trace("Have acquired lock '{}' with lease '{}'", key, leaseTime)
-        exec.invoke()
+        return exec.invoke()
       } finally {
         lock.unlock()
         log.trace("Have unlocked '{}'", key)

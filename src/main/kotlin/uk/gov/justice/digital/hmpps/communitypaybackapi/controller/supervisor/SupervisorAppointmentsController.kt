@@ -13,9 +13,12 @@ import org.springframework.web.bind.annotation.RequestMapping
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.BadRequestException
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentBulkUpdateService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventTrigger
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentRetrievalService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentUpdateService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ContextService
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 
 @SupervisorUiController
@@ -27,6 +30,7 @@ class SupervisorAppointmentsController(
   private val appointmentRetrievalService: AppointmentRetrievalService,
   private val appointmentUpdateService: AppointmentUpdateService,
   private val appointmentBulkUpdateService: AppointmentBulkUpdateService,
+  private val contextService: ContextService,
 ) {
 
   @GetMapping(
@@ -105,6 +109,10 @@ class SupervisorAppointmentsController(
     appointmentUpdateService.updateAppointmentOutcome(
       update = outcome,
       projectCode = projectCode,
+      trigger = AppointmentEventTrigger(
+        triggerType = AppointmentEventTriggerType.USER,
+        triggeredBy = contextService.getUserName(),
+      ),
     )
   }
 
@@ -134,5 +142,12 @@ class SupervisorAppointmentsController(
   fun updateAppointmentOutcomes(
     @PathVariable projectCode: String,
     @RequestBody request: UpdateAppointmentOutcomesDto,
-  ) = appointmentBulkUpdateService.updateAppointmentOutcomes(projectCode, request)
+  ) = appointmentBulkUpdateService.updateAppointmentOutcomes(
+    projectCode = projectCode,
+    request = request,
+    trigger = AppointmentEventTrigger(
+      triggerType = AppointmentEventTriggerType.USER,
+      triggeredBy = contextService.getUserName(),
+    ),
+  )
 }
