@@ -17,8 +17,8 @@ fun AppointmentEventEntity.Companion.valid(
   id = UUID.randomUUID(),
   communityPaybackAppointmentId = UUID.randomUUID(),
   eventType = AppointmentEventType.entries.toTypedArray().random(),
-  appointmentDeliusId = Long.random(),
-  deliusVersionToUpdate = UUID.randomUUID(),
+  deliusAppointmentId = Long.random(),
+  priorDeliusVersion = UUID.randomUUID(),
   crn = String.random(5),
   deliusEventNumber = Int.random(0, 50),
   projectCode = String.random(5),
@@ -38,8 +38,8 @@ fun AppointmentEventEntity.Companion.valid(
   behaviour = Behaviour.entries.toTypedArray().random(),
   alertActive = Boolean.random(),
   sensitive = Boolean.random(),
-  allocationId = null,
-  triggeredBySchedulingId = null,
+  deliusAllocationId = null,
+  triggeredBy = null,
 )
 
 fun AppointmentEventEntity.Companion.valid(ctx: ApplicationContext) = AppointmentEventEntity.valid().copy(

@@ -23,46 +23,44 @@ data class AppointmentEventEntity(
   val id: UUID,
   @Enumerated(EnumType.STRING)
   val eventType: AppointmentEventType,
-  val communityPaybackAppointmentId: UUID?,
-  val appointmentDeliusId: Long,
-  val deliusVersionToUpdate: UUID?,
+  @CreationTimestamp
+  val createdAt: OffsetDateTime = OffsetDateTime.now(),
+  @Enumerated(EnumType.STRING)
+  val triggerType: AppointmentEventTriggerType? = null,
+  val triggeredBy: String? = null,
+
+  val triggeredSchedulingAt: OffsetDateTime? = null,
+  val triggeredSchedulingId: UUID? = null,
+
   val crn: String,
   val deliusEventNumber: Int,
+  val communityPaybackAppointmentId: UUID?,
+  val deliusAppointmentId: Long,
+  val priorDeliusVersion: UUID?,
+  val deliusAllocationId: Long?,
+
   val projectCode: String,
   val date: LocalDate,
   val startTime: LocalTime,
   val endTime: LocalTime,
-
   val pickupLocationCode: String?,
   val pickupTime: LocalTime?,
+  val supervisorOfficerCode: String?,
+  val notes: String?,
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "contact_outcome_id", referencedColumnName = "id")
   val contactOutcome: ContactOutcomeEntity?,
-
-  val supervisorOfficerCode: String?,
-  val notes: String?,
   val hiVisWorn: Boolean?,
   val workedIntensively: Boolean?,
   val penaltyMinutes: Long?,
   val minutesCredited: Long?,
-
   @Enumerated(EnumType.STRING)
   val workQuality: WorkQuality?,
-
   @Enumerated(EnumType.STRING)
   val behaviour: Behaviour?,
-
   val alertActive: Boolean?,
   val sensitive: Boolean?,
-
-  val schedulingRanAt: OffsetDateTime? = null,
-
-  val allocationId: Long?,
-  val triggeredBySchedulingId: UUID?,
-
-  @CreationTimestamp
-  val createdAt: OffsetDateTime = OffsetDateTime.now(),
 ) {
   @PreUpdate
   fun preUpdate(): Unit = throw UnsupportedOperationException("This entity can't be updated")
@@ -75,7 +73,7 @@ data class AppointmentEventEntity(
 
   override fun hashCode(): Int = id.hashCode()
 
-  override fun toString(): String = "AppointmentOutcomeEntity(id=$id, appointmentDeliusId='$appointmentDeliusId')"
+  override fun toString(): String = "AppointmentEventEntity(id=$id, eventType=$eventType, deliusAppointmentId='$deliusAppointmentId')"
 
   /**
    * Used when determining if an update has already been applied
@@ -101,6 +99,11 @@ data class AppointmentEventEntity(
   }
 
   companion object
+}
+
+enum class AppointmentEventTriggerType {
+  USER,
+  SCHEDULING,
 }
 
 enum class AppointmentEventType {

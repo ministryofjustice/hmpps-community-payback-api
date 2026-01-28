@@ -96,7 +96,7 @@ class AppointmentMappers(
 
 fun AppointmentEventEntity.toAppointmentUpdatedDomainEvent() = AppointmentUpdatedDomainEventDetailDto(
   id = this.id,
-  appointmentDeliusId = this.appointmentDeliusId,
+  appointmentDeliusId = this.deliusAppointmentId,
   crn = this.crn,
   deliusEventNumber = this.deliusEventNumber,
   startTime = this.startTime,
@@ -115,7 +115,7 @@ fun AppointmentEventEntity.toAppointmentUpdatedDomainEvent() = AppointmentUpdate
 fun AppointmentEventEntity.toUpdateAppointment(): UpdateAppointment {
   require(this.eventType == AppointmentEventType.UPDATE)
   return UpdateAppointment(
-    version = this.deliusVersionToUpdate!!,
+    version = this.priorDeliusVersion!!,
     startTime = this.startTime,
     endTime = this.endTime,
     outcome = this.contactOutcome?.let { Code(it.code) },

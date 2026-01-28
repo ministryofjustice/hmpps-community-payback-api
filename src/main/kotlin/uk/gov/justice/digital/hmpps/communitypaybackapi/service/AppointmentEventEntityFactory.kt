@@ -37,8 +37,8 @@ class AppointmentEventEntityFactory(
       communityPaybackAppointmentId = createAppointmentDto.id,
       eventType = AppointmentEventType.CREATE,
       crn = createAppointmentDto.crn,
-      appointmentDeliusId = deliusId,
-      deliusVersionToUpdate = null,
+      deliusAppointmentId = deliusId,
+      priorDeliusVersion = null,
       deliusEventNumber = createAppointmentDto.deliusEventNumber,
       projectCode = projectCode,
       date = createAppointmentDto.date,
@@ -62,8 +62,8 @@ class AppointmentEventEntityFactory(
       behaviour = createAppointmentDto.attendanceData?.behaviour?.let { Behaviour.fromDto(it) },
       alertActive = createAppointmentDto.alertActive,
       sensitive = createAppointmentDto.sensitive,
-      allocationId = createAppointmentDto.allocationId,
-      triggeredBySchedulingId = triggeredBySchedulingId,
+      deliusAllocationId = createAppointmentDto.allocationId,
+      triggeredBy = triggeredBySchedulingId?.toString(),
     )
   }
 
@@ -81,8 +81,8 @@ class AppointmentEventEntityFactory(
       communityPaybackAppointmentId = null,
       eventType = AppointmentEventType.UPDATE,
       crn = existingAppointment.offender.crn,
-      appointmentDeliusId = outcome.deliusId,
-      deliusVersionToUpdate = outcome.deliusVersionToUpdate,
+      deliusAppointmentId = outcome.deliusId,
+      priorDeliusVersion = outcome.deliusVersionToUpdate,
       deliusEventNumber = existingAppointment.deliusEventNumber,
       projectCode = existingAppointment.projectCode,
       date = existingAppointment.date,
@@ -106,8 +106,8 @@ class AppointmentEventEntityFactory(
       behaviour = outcome.attendanceData?.behaviour?.let { Behaviour.fromDto(it) },
       alertActive = outcome.alertActive,
       sensitive = outcome.sensitive,
-      allocationId = null,
-      triggeredBySchedulingId = null,
+      deliusAllocationId = null,
+      triggeredBy = null,
     )
   }
 

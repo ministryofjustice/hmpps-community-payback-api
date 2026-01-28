@@ -95,8 +95,8 @@ class AppointmentCreationServiceTest {
       verify {
         appointmentEventEntityRepository.saveAll(
           listOf(
-            creationEvent1.copy(appointmentDeliusId = 15L),
-            creationEvent2.copy(appointmentDeliusId = 153L),
+            creationEvent1.copy(deliusAppointmentId = 15L),
+            creationEvent2.copy(deliusAppointmentId = 153L),
           ),
         )
       }

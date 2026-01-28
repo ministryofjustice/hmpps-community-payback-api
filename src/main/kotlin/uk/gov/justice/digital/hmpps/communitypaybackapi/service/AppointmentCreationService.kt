@@ -48,7 +48,7 @@ class AppointmentCreationService(
     }
 
     val appointmentCreationEventsWithIds = appointmentCreationEvents.mapIndexed { index, event ->
-      event.copy(appointmentDeliusId = creationResponse[index].id)
+      event.copy(deliusAppointmentId = creationResponse[index].id)
     }
 
     appointmentEventEntityRepository.saveAll(appointmentCreationEventsWithIds)

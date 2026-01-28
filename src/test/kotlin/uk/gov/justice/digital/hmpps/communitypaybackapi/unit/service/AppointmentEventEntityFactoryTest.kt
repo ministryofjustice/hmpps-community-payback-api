@@ -93,11 +93,11 @@ class AppointmentEventEntityFactoryTest {
       assertThat(result.id).isNotNull
       assertThat(result.communityPaybackAppointmentId).isEqualTo(ID)
       assertThat(result.eventType).isEqualTo(AppointmentEventType.CREATE)
-      assertThat(result.deliusVersionToUpdate).isNull()
+      assertThat(result.priorDeliusVersion).isNull()
       assertThat(result.crn).isEqualTo("X12345")
       assertThat(result.deliusEventNumber).isEqualTo(48)
       assertThat(result.projectCode).isEqualTo("PC01")
-      assertThat(result.appointmentDeliusId).isEqualTo(101L)
+      assertThat(result.deliusAppointmentId).isEqualTo(101L)
       assertThat(result.date).isEqualTo(LocalDate.of(2014, 6, 7))
       assertThat(result.startTime).isEqualTo(LocalTime.of(10, 1))
       assertThat(result.endTime).isEqualTo(LocalTime.of(16, 3))
@@ -114,8 +114,8 @@ class AppointmentEventEntityFactoryTest {
       assertThat(result.behaviour).isEqualTo(Behaviour.UNSATISFACTORY)
       assertThat(result.alertActive).isEqualTo(false)
       assertThat(result.sensitive).isEqualTo(true)
-      assertThat(result.allocationId).isEqualTo(22)
-      assertThat(result.triggeredBySchedulingId).isEqualTo(SCHEDULING_ID)
+      assertThat(result.deliusAllocationId).isEqualTo(22)
+      assertThat(result.triggeredBy).isEqualTo(SCHEDULING_ID.toString())
     }
 
     @Test
@@ -146,11 +146,11 @@ class AppointmentEventEntityFactoryTest {
       assertThat(result.id).isNotNull
       assertThat(result.communityPaybackAppointmentId).isEqualTo(ID)
       assertThat(result.eventType).isEqualTo(AppointmentEventType.CREATE)
-      assertThat(result.deliusVersionToUpdate).isNull()
+      assertThat(result.priorDeliusVersion).isNull()
       assertThat(result.crn).isEqualTo("X12345")
       assertThat(result.deliusEventNumber).isEqualTo(48)
       assertThat(result.projectCode).isEqualTo("PC01")
-      assertThat(result.appointmentDeliusId).isEqualTo(101L)
+      assertThat(result.deliusAppointmentId).isEqualTo(101L)
       assertThat(result.date).isEqualTo(LocalDate.of(2014, 6, 7))
       assertThat(result.startTime).isEqualTo(LocalTime.of(10, 1))
       assertThat(result.endTime).isEqualTo(LocalTime.of(16, 3))
@@ -167,8 +167,8 @@ class AppointmentEventEntityFactoryTest {
       assertThat(result.behaviour).isNull()
       assertThat(result.alertActive).isNull()
       assertThat(result.sensitive).isNull()
-      assertThat(result.allocationId).isNull()
-      assertThat(result.triggeredBySchedulingId).isNull()
+      assertThat(result.deliusAllocationId).isNull()
+      assertThat(result.triggeredBy).isNull()
     }
 
     @Test
@@ -322,11 +322,11 @@ class AppointmentEventEntityFactoryTest {
       assertThat(result.id).isNotNull
       assertThat(result.eventType).isEqualTo(AppointmentEventType.UPDATE)
       assertThat(result.communityPaybackAppointmentId).isNull()
-      assertThat(result.deliusVersionToUpdate).isEqualTo(deliusVersion)
+      assertThat(result.priorDeliusVersion).isEqualTo(deliusVersion)
       assertThat(result.crn).isEqualTo("X12345")
       assertThat(result.deliusEventNumber).isEqualTo(48)
       assertThat(result.projectCode).isEqualTo("PC01")
-      assertThat(result.appointmentDeliusId).isEqualTo(101L)
+      assertThat(result.deliusAppointmentId).isEqualTo(101L)
       assertThat(result.date).isEqualTo(LocalDate.of(2014, 6, 7))
       assertThat(result.startTime).isEqualTo(LocalTime.of(10, 1))
       assertThat(result.endTime).isEqualTo(LocalTime.of(16, 3))
@@ -343,8 +343,8 @@ class AppointmentEventEntityFactoryTest {
       assertThat(result.behaviour).isEqualTo(Behaviour.UNSATISFACTORY)
       assertThat(result.alertActive).isEqualTo(false)
       assertThat(result.sensitive).isEqualTo(true)
-      assertThat(result.allocationId).isNull()
-      assertThat(result.triggeredBySchedulingId).isNull()
+      assertThat(result.deliusAllocationId).isNull()
+      assertThat(result.triggeredBy).isNull()
     }
 
     @Test
@@ -378,11 +378,11 @@ class AppointmentEventEntityFactoryTest {
       assertThat(result.id).isNotNull
       assertThat(result.eventType).isEqualTo(AppointmentEventType.UPDATE)
       assertThat(result.communityPaybackAppointmentId).isNull()
-      assertThat(result.deliusVersionToUpdate).isEqualTo(deliusVersion)
+      assertThat(result.priorDeliusVersion).isEqualTo(deliusVersion)
       assertThat(result.crn).isEqualTo("X12345")
       assertThat(result.deliusEventNumber).isEqualTo(48)
       assertThat(result.projectCode).isEqualTo("PC01")
-      assertThat(result.appointmentDeliusId).isEqualTo(101L)
+      assertThat(result.deliusAppointmentId).isEqualTo(101L)
       assertThat(result.date).isEqualTo(LocalDate.of(2014, 6, 7))
       assertThat(result.startTime).isEqualTo(LocalTime.of(10, 1, 2))
       assertThat(result.endTime).isEqualTo(LocalTime.of(16, 3, 4))
@@ -399,8 +399,8 @@ class AppointmentEventEntityFactoryTest {
       assertThat(result.behaviour).isNull()
       assertThat(result.alertActive).isNull()
       assertThat(result.sensitive).isNull()
-      assertThat(result.allocationId).isNull()
-      assertThat(result.triggeredBySchedulingId).isNull()
+      assertThat(result.deliusAllocationId).isNull()
+      assertThat(result.triggeredBy).isNull()
     }
 
     @Test

@@ -353,7 +353,7 @@ class SchedulingIT : IntegrationTestBase() {
     private fun waitForSchedulingToRun(outcomeRecordId: UUID) {
       await()
         .atMost(2, TimeUnit.SECONDS)
-        .until { appointmentEventEntityRepository.findByIdOrNull(outcomeRecordId)!!.schedulingRanAt != null }
+        .until { appointmentEventEntityRepository.findByIdOrNull(outcomeRecordId)!!.triggeredSchedulingAt != null }
     }
 
     private fun publishAppointmentUpdateDomainEvent(

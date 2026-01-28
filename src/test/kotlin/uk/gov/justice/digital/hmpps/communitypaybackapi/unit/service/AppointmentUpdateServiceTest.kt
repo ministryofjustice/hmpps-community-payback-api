@@ -86,7 +86,7 @@ class AppointmentUpdateServiceTest {
     @Test
     fun `if appointment not found on update, throw not found exception`() {
       every { appointmentRetrievalService.getAppointment(PROJECT_CODE, APPOINTMENT_ID) } returns existingAppointment
-      every { appointmentEventEntityRepository.findTopByAppointmentDeliusIdOrderByCreatedAtDesc(APPOINTMENT_ID) } returns null
+      every { appointmentEventEntityRepository.findTopByDeliusAppointmentIdOrderByCreatedAtDesc(APPOINTMENT_ID) } returns null
       every { appointmentEventEntityFactory.buildUpdatedEvent(any(), any()) } returns AppointmentEventEntity.fromUpdateRequest(updateRequest)
       every { appointmentEventEntityRepository.save(any()) } returnsArgument 0
 
@@ -105,7 +105,7 @@ class AppointmentUpdateServiceTest {
     @Test
     fun `if there's no existing entries for the delius appointment ids, persist new entry, raise domain event and invoke update endpoint`() {
       every { appointmentRetrievalService.getAppointment(PROJECT_CODE, APPOINTMENT_ID) } returns existingAppointment
-      every { appointmentEventEntityRepository.findTopByAppointmentDeliusIdOrderByCreatedAtDesc(APPOINTMENT_ID) } returns null
+      every { appointmentEventEntityRepository.findTopByDeliusAppointmentIdOrderByCreatedAtDesc(APPOINTMENT_ID) } returns null
 
       val entityReturnedByFactory = AppointmentEventEntity.fromUpdateRequest(updateRequest)
       every { appointmentEventEntityFactory.buildUpdatedEvent(updateRequest, existingAppointment) } returns entityReturnedByFactory
@@ -137,7 +137,7 @@ class AppointmentUpdateServiceTest {
       val existingIdenticalEntity = AppointmentEventEntity.fromUpdateRequest(updateRequest)
 
       every { appointmentRetrievalService.getAppointment(PROJECT_CODE, APPOINTMENT_ID) } returns existingAppointment
-      every { appointmentEventEntityRepository.findTopByAppointmentDeliusIdOrderByCreatedAtDesc(APPOINTMENT_ID) } returns existingIdenticalEntity
+      every { appointmentEventEntityRepository.findTopByDeliusAppointmentIdOrderByCreatedAtDesc(APPOINTMENT_ID) } returns existingIdenticalEntity
       every { appointmentEventEntityFactory.buildUpdatedEvent(updateRequest, existingAppointment) } returns existingIdenticalEntity
 
       service.updateAppointmentOutcome(
@@ -156,8 +156,8 @@ class AppointmentUpdateServiceTest {
       val existingOutcomeEntity = AppointmentEventEntity.fromUpdateRequest(updateRequest)
 
       every { appointmentRetrievalService.getAppointment(PROJECT_CODE, APPOINTMENT_ID) } returns existingAppointment
-      every { appointmentEventEntityRepository.findTopByAppointmentDeliusIdOrderByCreatedAtDesc(APPOINTMENT_ID) } returns existingOutcomeEntity
-      every { appointmentEventEntityFactory.buildUpdatedEvent(updateRequest, existingAppointment) } returns AppointmentEventEntity.fromUpdateRequest(updateRequest).copy(appointmentDeliusId = APPOINTMENT_ID)
+      every { appointmentEventEntityRepository.findTopByDeliusAppointmentIdOrderByCreatedAtDesc(APPOINTMENT_ID) } returns existingOutcomeEntity
+      every { appointmentEventEntityFactory.buildUpdatedEvent(updateRequest, existingAppointment) } returns AppointmentEventEntity.fromUpdateRequest(updateRequest).copy(deliusAppointmentId = APPOINTMENT_ID)
       every { appointmentEventEntityRepository.save(any()) } returnsArgument 0
 
       service.updateAppointmentOutcome(
@@ -172,7 +172,7 @@ class AppointmentUpdateServiceTest {
     @Test
     fun `if appointment has newer version on update, throw conflict exception`() {
       every { appointmentRetrievalService.getAppointment(PROJECT_CODE, APPOINTMENT_ID) } returns existingAppointment
-      every { appointmentEventEntityRepository.findTopByAppointmentDeliusIdOrderByCreatedAtDesc(APPOINTMENT_ID) } returns null
+      every { appointmentEventEntityRepository.findTopByDeliusAppointmentIdOrderByCreatedAtDesc(APPOINTMENT_ID) } returns null
       every { appointmentEventEntityFactory.buildUpdatedEvent(any(), any()) } returns AppointmentEventEntity.fromUpdateRequest(updateRequest)
       every { appointmentEventEntityRepository.save(any()) } returnsArgument 0
 
@@ -190,7 +190,7 @@ class AppointmentUpdateServiceTest {
 
     @Test
     fun `if bad request returned throw internal server error`() {
-      every { appointmentEventEntityRepository.findTopByAppointmentDeliusIdOrderByCreatedAtDesc(APPOINTMENT_ID) } returns null
+      every { appointmentEventEntityRepository.findTopByDeliusAppointmentIdOrderByCreatedAtDesc(APPOINTMENT_ID) } returns null
       every { appointmentEventEntityFactory.buildUpdatedEvent(any(), any()) } returns AppointmentEventEntity.fromUpdateRequest(updateRequest)
       every { appointmentEventEntityRepository.save(any()) } returnsArgument 0
 
@@ -230,7 +230,7 @@ class AppointmentUpdateServiceTest {
   fun AppointmentEventEntity.Companion.fromUpdateRequest(updateRequest: UpdateAppointmentOutcomeDto) = AppointmentEventEntity.valid()
     .copy(
       eventType = AppointmentEventType.UPDATE,
-      appointmentDeliusId = updateRequest.deliusId,
-      deliusVersionToUpdate = updateRequest.deliusVersionToUpdate,
+      deliusAppointmentId = updateRequest.deliusId,
+      priorDeliusVersion = updateRequest.deliusVersionToUpdate,
     )
 }

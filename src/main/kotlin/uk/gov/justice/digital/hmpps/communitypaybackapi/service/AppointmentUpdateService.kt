@@ -70,7 +70,7 @@ class AppointmentUpdateService(
   }
 
   private fun hasUpdateAlreadyBeenSent(proposedEntity: AppointmentEventEntity) = appointmentEventEntityRepository
-    .findTopByAppointmentDeliusIdOrderByCreatedAtDesc(proposedEntity.appointmentDeliusId)
+    .findTopByDeliusAppointmentIdOrderByCreatedAtDesc(proposedEntity.deliusAppointmentId)
     ?.isLogicallyIdentical(proposedEntity)
     ?: false
 
@@ -82,13 +82,13 @@ class AppointmentUpdateService(
     try {
       communityPaybackAndDeliusClient.updateAppointment(
         projectCode = projectCode,
-        appointmentId = appointmentEvent.appointmentDeliusId,
+        appointmentId = appointmentEvent.deliusAppointmentId,
         updateAppointment = appointmentEvent.toUpdateAppointment(),
       )
     } catch (_: WebClientResponseException.NotFound) {
-      throw NotFoundException("Appointment", appointmentEvent.appointmentDeliusId.toString())
+      throw NotFoundException("Appointment", appointmentEvent.deliusAppointmentId.toString())
     } catch (_: WebClientResponseException.Conflict) {
-      throw ConflictException("A newer version of the appointment exists. Stale version is '${appointmentEvent.deliusVersionToUpdate}'")
+      throw ConflictException("A newer version of the appointment exists. Stale version is '${appointmentEvent.priorDeliusVersion}'")
     } catch (badRequest: WebClientResponseException.BadRequest) {
       throw InternalServerErrorException("Bad request returned updating an appointment. Upstream response is '${badRequest.responseBodyAsString}'")
     }
