@@ -20,6 +20,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EnforcementDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.OffenderDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.PickUpDataDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.Behaviour
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
@@ -27,6 +28,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEnt
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.WorkQuality
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventEntityFactory
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventTrigger
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
@@ -44,7 +46,7 @@ class AppointmentEventEntityFactoryTest {
   companion object {
     const val CONTACT_OUTCOME_CODE: String = "CONTACT-1"
     val ENFORCEMENT_ACTION_ID: UUID = UUID.randomUUID()
-    val SCHEDULING_ID: UUID = UUID.randomUUID()
+    const val TRIGGERED_BY: String = "User1"
     val ID: UUID = UUID.randomUUID()
   }
 
@@ -63,7 +65,10 @@ class AppointmentEventEntityFactoryTest {
       val result = factory.buildCreatedEvent(
         projectCode = "PC01",
         deliusId = 101L,
-        triggeredBySchedulingId = SCHEDULING_ID,
+        trigger = AppointmentEventTrigger(
+          triggerType = AppointmentEventTriggerType.SCHEDULING,
+          triggeredBy = TRIGGERED_BY,
+        ),
         createAppointmentDto = CreateAppointmentDto(
           id = ID,
           crn = "X12345",
@@ -115,7 +120,8 @@ class AppointmentEventEntityFactoryTest {
       assertThat(result.alertActive).isEqualTo(false)
       assertThat(result.sensitive).isEqualTo(true)
       assertThat(result.deliusAllocationId).isEqualTo(22)
-      assertThat(result.triggeredBy).isEqualTo(SCHEDULING_ID.toString())
+      assertThat(result.triggerType).isEqualTo(AppointmentEventTriggerType.SCHEDULING)
+      assertThat(result.triggeredBy).isEqualTo(TRIGGERED_BY)
     }
 
     @Test
@@ -123,7 +129,10 @@ class AppointmentEventEntityFactoryTest {
       val result = factory.buildCreatedEvent(
         projectCode = "PC01",
         deliusId = 101L,
-        triggeredBySchedulingId = null,
+        trigger = AppointmentEventTrigger(
+          triggerType = AppointmentEventTriggerType.SCHEDULING,
+          triggeredBy = TRIGGERED_BY,
+        ),
         createAppointmentDto = CreateAppointmentDto(
           id = ID,
           crn = "X12345",
@@ -168,7 +177,8 @@ class AppointmentEventEntityFactoryTest {
       assertThat(result.alertActive).isNull()
       assertThat(result.sensitive).isNull()
       assertThat(result.deliusAllocationId).isNull()
-      assertThat(result.triggeredBy).isNull()
+      assertThat(result.triggerType).isEqualTo(AppointmentEventTriggerType.SCHEDULING)
+      assertThat(result.triggeredBy).isEqualTo(TRIGGERED_BY)
     }
 
     @Test
@@ -176,7 +186,10 @@ class AppointmentEventEntityFactoryTest {
       val result = factory.buildCreatedEvent(
         projectCode = "PC01",
         deliusId = 101L,
-        triggeredBySchedulingId = SCHEDULING_ID,
+        trigger = AppointmentEventTrigger(
+          triggerType = AppointmentEventTriggerType.SCHEDULING,
+          triggeredBy = TRIGGERED_BY,
+        ),
         createAppointmentDto = CreateAppointmentDto.valid().copy(
           contactOutcomeCode = null,
         ),
@@ -192,7 +205,10 @@ class AppointmentEventEntityFactoryTest {
       val result = factory.buildCreatedEvent(
         projectCode = "PC01",
         deliusId = 101L,
-        triggeredBySchedulingId = SCHEDULING_ID,
+        trigger = AppointmentEventTrigger(
+          triggerType = AppointmentEventTriggerType.SCHEDULING,
+          triggeredBy = TRIGGERED_BY,
+        ),
         createAppointmentDto = CreateAppointmentDto.valid().copy(
           contactOutcomeCode = null,
           startTime = LocalTime.of(10, 0),
@@ -232,7 +248,10 @@ class AppointmentEventEntityFactoryTest {
       val result = factory.buildCreatedEvent(
         projectCode = "PC01",
         deliusId = 101L,
-        triggeredBySchedulingId = SCHEDULING_ID,
+        trigger = AppointmentEventTrigger(
+          triggerType = AppointmentEventTriggerType.SCHEDULING,
+          triggeredBy = TRIGGERED_BY,
+        ),
         createAppointmentDto = CreateAppointmentDto.valid().copy(
           contactOutcomeCode = CONTACT_OUTCOME_CODE,
           startTime = startTime,
@@ -254,7 +273,10 @@ class AppointmentEventEntityFactoryTest {
       val result = factory.buildCreatedEvent(
         projectCode = "PC01",
         deliusId = 101L,
-        triggeredBySchedulingId = SCHEDULING_ID,
+        trigger = AppointmentEventTrigger(
+          triggerType = AppointmentEventTriggerType.SCHEDULING,
+          triggeredBy = TRIGGERED_BY,
+        ),
         createAppointmentDto = CreateAppointmentDto.valid().copy(
           contactOutcomeCode = null,
           attendanceData = AttendanceDataDto.valid().copy(

@@ -6,6 +6,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AttendanceDataDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.Behaviour
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
@@ -24,7 +25,7 @@ class AppointmentEventEntityFactory(
   fun buildCreatedEvent(
     projectCode: String,
     deliusId: Long,
-    triggeredBySchedulingId: UUID?,
+    trigger: AppointmentEventTrigger,
     createAppointmentDto: CreateAppointmentDto,
   ): AppointmentEventEntity {
     val startTime = createAppointmentDto.startTime
@@ -63,7 +64,8 @@ class AppointmentEventEntityFactory(
       alertActive = createAppointmentDto.alertActive,
       sensitive = createAppointmentDto.sensitive,
       deliusAllocationId = createAppointmentDto.allocationId,
-      triggeredBy = triggeredBySchedulingId?.toString(),
+      triggerType = trigger.triggerType,
+      triggeredBy = trigger.triggeredBy,
     )
   }
 
@@ -129,3 +131,8 @@ class AppointmentEventEntityFactory(
 }
 
 fun AttendanceDataDto.derivePenaltyMinutesDuration() = penaltyMinutes?.let { Duration.ofMinutes(it) } ?: penaltyTime?.duration
+
+data class AppointmentEventTrigger(
+  val triggerType: AppointmentEventTriggerType,
+  val triggeredBy: String,
+)

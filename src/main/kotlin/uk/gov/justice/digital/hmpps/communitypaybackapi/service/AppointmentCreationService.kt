@@ -7,7 +7,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCreateAppointme
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toNDCreateAppointment
-import java.util.UUID
 
 @Service
 class AppointmentCreationService(
@@ -19,7 +18,7 @@ class AppointmentCreationService(
   @Transactional
   fun createAppointments(
     createAppointments: CreateAppointmentsDto,
-    triggeredBySchedulingId: UUID? = null,
+    trigger: AppointmentEventTrigger,
   ) {
     val projectCode = createAppointments.projectCode
 
@@ -28,7 +27,7 @@ class AppointmentCreationService(
         projectCode = projectCode,
         // the ID will be provided by the upstream response and set on the event before persistence
         deliusId = 0L,
-        triggeredBySchedulingId = triggeredBySchedulingId,
+        trigger = trigger,
         createAppointmentDto = createAppointment,
       )
     }

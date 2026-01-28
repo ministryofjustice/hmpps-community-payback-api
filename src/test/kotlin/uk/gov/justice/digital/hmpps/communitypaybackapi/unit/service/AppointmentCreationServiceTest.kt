@@ -15,10 +15,12 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntityRepository
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentCreationService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventEntityFactory
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventTrigger
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toNDCreateAppointment
 import java.util.UUID
 
@@ -39,6 +41,7 @@ class AppointmentCreationServiceTest {
   private companion object {
     const val PROJECT_CODE: String = "PROJ25"
     val SCHEDULING_ID: UUID = UUID.randomUUID()
+    val TRIGGER: AppointmentEventTrigger = AppointmentEventTrigger(AppointmentEventTriggerType.USER, "theUserName")
   }
 
   @Nested
@@ -58,7 +61,7 @@ class AppointmentCreationServiceTest {
         appointmentEventEntityFactory.buildCreatedEvent(
           projectCode = PROJECT_CODE,
           deliusId = 0,
-          triggeredBySchedulingId = SCHEDULING_ID,
+          trigger = TRIGGER,
           createAppointmentDto = createAppointment1Dto,
         )
       } returns creationEvent1
@@ -68,7 +71,7 @@ class AppointmentCreationServiceTest {
         appointmentEventEntityFactory.buildCreatedEvent(
           projectCode = PROJECT_CODE,
           deliusId = 0,
-          triggeredBySchedulingId = SCHEDULING_ID,
+          trigger = TRIGGER,
           createAppointmentDto = createAppointment2Dto,
         )
       } returns creationEvent2
@@ -82,7 +85,7 @@ class AppointmentCreationServiceTest {
 
       service.createAppointments(
         createAppointments = createAppointmentsDto,
-        triggeredBySchedulingId = SCHEDULING_ID,
+        trigger = TRIGGER,
       )
 
       verify {
