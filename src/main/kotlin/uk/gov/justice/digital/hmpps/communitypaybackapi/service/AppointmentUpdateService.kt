@@ -35,7 +35,14 @@ class AppointmentUpdateService(
   fun getAppointmentUpdatedDomainEventDetails(id: UUID) = appointmentEventEntityRepository.findByIdOrNullForDomainEventDetails(id)?.toAppointmentUpdatedDomainEvent()
 
   @Transactional
-  fun recordSchedulingRan(updateId: UUID) = appointmentEventEntityRepository.setSchedulingRanAt(updateId, OffsetDateTime.now())
+  fun recordSchedulingRan(
+    forEventId: UUID,
+    schedulingId: UUID,
+  ) = appointmentEventEntityRepository.setSchedulingRanAt(
+    eventId = forEventId,
+    schedulingId = schedulingId,
+    now = OffsetDateTime.now(),
+  )
 
   @Transactional
   fun updateAppointmentOutcome(

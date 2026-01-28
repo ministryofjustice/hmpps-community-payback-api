@@ -80,6 +80,14 @@ class DomainEventListener(
     }
   }
 
+  /**
+   * Instead of having a database transaction around this entire call, we
+   * instead have transactions around the 'batch create appointment' calls.
+   *
+   * This is because if we create an appointment and scheduling then errors,
+   * these appointments still exist and will be considered and not recreated
+   * when scheduling is retried
+   */
   private fun handleAppointmentUpdated(event: HmppsDomainEvent) {
     val eventId = event.additionalInformation?.map[AdditionalInformationType.EVENT_ID.name]?.toString()?.let {
       UUID.fromString(it)
@@ -88,7 +96,7 @@ class DomainEventListener(
     val domainEventDetails = appointmentUpdateService.getAppointmentUpdatedDomainEventDetails(eventId)
       ?: error("Can't find appointment updated record for event id '$eventId'")
 
-    lockService.withDistributedLock(
+    val schedulingId = lockService.withDistributedLock(
       key = domainEventDetails.crn,
       leaseTime = Duration.ofSeconds(MESSAGE_VISIBILITY_TIMEOUT),
     ) {
@@ -103,6 +111,6 @@ class DomainEventListener(
       )
     }
 
-    appointmentUpdateService.recordSchedulingRan(eventId)
+    appointmentUpdateService.recordSchedulingRan(eventId, schedulingId)
   }
 }
