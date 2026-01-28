@@ -18,6 +18,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AttendanceDataDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EnforcementDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.OffenderDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.PickUpDataDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.Behaviour
@@ -311,6 +312,10 @@ class AppointmentEventEntityFactoryTest {
           deliusEventNumber = 48,
           projectCode = "PC01",
           date = LocalDate.of(2014, 6, 7),
+          pickUpData = PickUpDataDto.valid().copy(
+            locationCode = "PICKUP99",
+            time = LocalTime.of(5, 45),
+          ),
         ),
       )
 
@@ -325,6 +330,8 @@ class AppointmentEventEntityFactoryTest {
       assertThat(result.date).isEqualTo(LocalDate.of(2014, 6, 7))
       assertThat(result.startTime).isEqualTo(LocalTime.of(10, 1))
       assertThat(result.endTime).isEqualTo(LocalTime.of(16, 3))
+      assertThat(result.pickupLocationCode).isEqualTo("PICKUP99")
+      assertThat(result.pickupTime).isEqualTo(LocalTime.of(5, 45))
       assertThat(result.contactOutcome).isEqualTo(contactOutcomeEntity)
       assertThat(result.supervisorOfficerCode).isEqualTo("N45")
       assertThat(result.notes).isEqualTo("some notes")
@@ -364,6 +371,7 @@ class AppointmentEventEntityFactoryTest {
           deliusEventNumber = 48,
           projectCode = "PC01",
           date = LocalDate.of(2014, 6, 7),
+          pickUpData = null,
         ),
       )
 
@@ -378,6 +386,8 @@ class AppointmentEventEntityFactoryTest {
       assertThat(result.date).isEqualTo(LocalDate.of(2014, 6, 7))
       assertThat(result.startTime).isEqualTo(LocalTime.of(10, 1, 2))
       assertThat(result.endTime).isEqualTo(LocalTime.of(16, 3, 4))
+      assertThat(result.pickupLocationCode).isNull()
+      assertThat(result.pickupTime).isNull()
       assertThat(result.contactOutcome).isNull()
       assertThat(result.supervisorOfficerCode).isEqualTo("N45")
       assertThat(result.notes).isNull()

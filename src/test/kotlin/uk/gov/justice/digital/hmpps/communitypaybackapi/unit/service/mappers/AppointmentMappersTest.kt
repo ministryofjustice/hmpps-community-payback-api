@@ -17,12 +17,13 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.AppointmentSummar
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.AppointmentSupervisor
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.AppointmentWorkQuality
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CaseSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Code
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ContactOutcome
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.EnforcementAction
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointmentPickUp
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDRequirementProgress
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Name
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.PickUpData
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Project
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Provider
@@ -321,6 +322,7 @@ class AppointmentMappersTest {
       val supervisingTeam = "Team Lincoln"
       val supervisingTeamCode = "TL01"
       val providerCode = "PC01"
+      val pickUpLocationCode = "PICKUP01"
       val pickUpBuildingName = "Building 1"
       val pickUpBuildingNumber = "2"
       val pickUpStreetName = "Street 3"
@@ -367,8 +369,8 @@ class AppointmentMappersTest {
           name = "not mapped",
           code = providerCode,
         ),
-        pickUpData = PickUpData(
-          pickUpLocation = Address(
+        pickUpData = NDAppointmentPickUp(
+          location = Address(
             buildingName = pickUpBuildingName,
             addressNumber = pickUpBuildingNumber,
             streetName = pickUpStreetName,
@@ -376,6 +378,7 @@ class AppointmentMappersTest {
             county = pickUpCounty,
             postCode = pickUpPostCode,
           ),
+          locationCode = Code(pickUpLocationCode),
           time = pickUpTime,
         ),
         date = date,
@@ -421,6 +424,7 @@ class AppointmentMappersTest {
       assertThat(pickUpData.location.townCity).isEqualTo(pickUpTownCity)
       assertThat(pickUpData.location.county).isEqualTo(pickUpCounty)
       assertThat(pickUpData.location.postCode).isEqualTo(pickUpPostCode)
+      assertThat(pickUpData.locationCode).isEqualTo(pickUpLocationCode)
       assertThat(pickUpData.time).isEqualTo(pickUpTime)
 
       assertThat(result.contactOutcomeCode).isEqualTo(contactOutcomeCode)

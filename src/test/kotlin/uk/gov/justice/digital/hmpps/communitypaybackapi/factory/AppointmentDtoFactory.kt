@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.factory
 
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.LocationDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.OffenderDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.PickUpDataDto
 import java.util.UUID
@@ -20,17 +19,7 @@ fun AppointmentDto.Companion.valid() = AppointmentDto(
   supervisingTeam = String.random(),
   supervisingTeamCode = String.random(),
   providerCode = String.random(),
-  pickUpData = PickUpDataDto(
-    location = LocationDto(
-      buildingName = String.random(),
-      buildingNumber = String.random(),
-      streetName = String.random(),
-      townCity = String.random(),
-      county = String.random(),
-      postCode = String.random(),
-    ),
-    time = randomLocalTime(),
-  ),
+  pickUpData = PickUpDataDto.valid(),
   date = randomLocalDate(),
   startTime = randomLocalTime(),
   endTime = randomLocalTime(),
