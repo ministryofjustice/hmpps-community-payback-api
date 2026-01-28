@@ -339,6 +339,10 @@ class AppointmentEventEntityFactoryTest {
             time = LocalTime.of(5, 45),
           ),
         ),
+        trigger = AppointmentEventTrigger(
+          triggerType = AppointmentEventTriggerType.USER,
+          triggeredBy = TRIGGERED_BY,
+        ),
       )
 
       assertThat(result.id).isNotNull
@@ -366,7 +370,8 @@ class AppointmentEventEntityFactoryTest {
       assertThat(result.alertActive).isEqualTo(false)
       assertThat(result.sensitive).isEqualTo(true)
       assertThat(result.deliusAllocationId).isNull()
-      assertThat(result.triggeredBy).isNull()
+      assertThat(result.triggerType).isEqualTo(AppointmentEventTriggerType.USER)
+      assertThat(result.triggeredBy).isEqualTo(TRIGGERED_BY)
     }
 
     @Test
@@ -395,6 +400,10 @@ class AppointmentEventEntityFactoryTest {
           date = LocalDate.of(2014, 6, 7),
           pickUpData = null,
         ),
+        trigger = AppointmentEventTrigger(
+          triggerType = AppointmentEventTriggerType.USER,
+          triggeredBy = TRIGGERED_BY,
+        ),
       )
 
       assertThat(result.id).isNotNull
@@ -422,7 +431,8 @@ class AppointmentEventEntityFactoryTest {
       assertThat(result.alertActive).isNull()
       assertThat(result.sensitive).isNull()
       assertThat(result.deliusAllocationId).isNull()
-      assertThat(result.triggeredBy).isNull()
+      assertThat(result.triggerType).isEqualTo(AppointmentEventTriggerType.USER)
+      assertThat(result.triggeredBy).isEqualTo(TRIGGERED_BY)
     }
 
     @Test
@@ -432,6 +442,10 @@ class AppointmentEventEntityFactoryTest {
           contactOutcomeCode = null,
         ),
         existingAppointment = AppointmentDto.valid(),
+        trigger = AppointmentEventTrigger(
+          triggerType = AppointmentEventTriggerType.USER,
+          triggeredBy = TRIGGERED_BY,
+        ),
       )
 
       assertThat(result.minutesCredited).isNull()
@@ -449,6 +463,10 @@ class AppointmentEventEntityFactoryTest {
           attendanceData = AttendanceDataDto.valid().copy(penaltyTime = null),
         ),
         existingAppointment = AppointmentDto.valid(),
+        trigger = AppointmentEventTrigger(
+          triggerType = AppointmentEventTriggerType.USER,
+          triggeredBy = TRIGGERED_BY,
+        ),
       )
 
       assertThat(result.minutesCredited).isNull()
@@ -490,6 +508,10 @@ class AppointmentEventEntityFactoryTest {
           ),
         ),
         existingAppointment = AppointmentDto.valid(),
+        trigger = AppointmentEventTrigger(
+          triggerType = AppointmentEventTriggerType.USER,
+          triggeredBy = TRIGGERED_BY,
+        ),
       )
 
       assertThat(result.minutesCredited).isEqualTo(expectedTimeCredited)
@@ -508,6 +530,10 @@ class AppointmentEventEntityFactoryTest {
           ),
         ),
         existingAppointment = AppointmentDto.valid(),
+        trigger = AppointmentEventTrigger(
+          triggerType = AppointmentEventTriggerType.USER,
+          triggeredBy = TRIGGERED_BY,
+        ),
       )
 
       assertThat(result.penaltyMinutes).isEqualTo(150L)
@@ -524,6 +550,10 @@ class AppointmentEventEntityFactoryTest {
           ),
         ),
         existingAppointment = AppointmentDto.valid(),
+        trigger = AppointmentEventTrigger(
+          triggerType = AppointmentEventTriggerType.USER,
+          triggeredBy = TRIGGERED_BY,
+        ),
       )
 
       assertThat(result.penaltyMinutes).isEqualTo(300L)

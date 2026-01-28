@@ -72,6 +72,7 @@ class AppointmentEventEntityFactory(
   fun buildUpdatedEvent(
     outcome: UpdateAppointmentOutcomeDto,
     existingAppointment: AppointmentDto,
+    trigger: AppointmentEventTrigger,
   ): AppointmentEventEntity {
     val startTime = outcome.startTime
     val endTime = outcome.endTime
@@ -109,7 +110,8 @@ class AppointmentEventEntityFactory(
       alertActive = outcome.alertActive,
       sensitive = outcome.sensitive,
       deliusAllocationId = null,
-      triggeredBy = null,
+      triggerType = trigger.triggerType,
+      triggeredBy = trigger.triggeredBy,
     )
   }
 

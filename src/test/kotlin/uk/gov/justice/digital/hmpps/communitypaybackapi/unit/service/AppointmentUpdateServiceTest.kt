@@ -18,10 +18,12 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.InternalS
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.NotFoundException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntityRepository
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdditionalInformationType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventEntityFactory
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventTrigger
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentOutcomeValidationService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentRetrievalService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentUpdateService
@@ -62,6 +64,7 @@ class AppointmentUpdateServiceTest {
   private companion object {
     const val PROJECT_CODE = "PROJ123"
     const val APPOINTMENT_ID = 101L
+    val TRIGGER: AppointmentEventTrigger = AppointmentEventTrigger(AppointmentEventTriggerType.USER, "user1")
   }
 
   @Nested
@@ -79,6 +82,7 @@ class AppointmentUpdateServiceTest {
         service.updateAppointmentOutcome(
           projectCode = PROJECT_CODE,
           update = updateRequest,
+          trigger = TRIGGER,
         )
       }.isSameAs(upstreamException)
     }
@@ -87,7 +91,7 @@ class AppointmentUpdateServiceTest {
     fun `if appointment not found on update, throw not found exception`() {
       every { appointmentRetrievalService.getAppointment(PROJECT_CODE, APPOINTMENT_ID) } returns existingAppointment
       every { appointmentEventEntityRepository.findTopByDeliusAppointmentIdOrderByCreatedAtDesc(APPOINTMENT_ID) } returns null
-      every { appointmentEventEntityFactory.buildUpdatedEvent(any(), any()) } returns AppointmentEventEntity.fromUpdateRequest(updateRequest)
+      every { appointmentEventEntityFactory.buildUpdatedEvent(any(), any(), any()) } returns AppointmentEventEntity.fromUpdateRequest(updateRequest)
       every { appointmentEventEntityRepository.save(any()) } returnsArgument 0
 
       every {
@@ -98,6 +102,7 @@ class AppointmentUpdateServiceTest {
         service.updateAppointmentOutcome(
           projectCode = PROJECT_CODE,
           update = updateRequest,
+          trigger = TRIGGER,
         )
       }.isInstanceOf(NotFoundException::class.java).hasMessage("Appointment not found for ID '$APPOINTMENT_ID'")
     }
@@ -108,12 +113,13 @@ class AppointmentUpdateServiceTest {
       every { appointmentEventEntityRepository.findTopByDeliusAppointmentIdOrderByCreatedAtDesc(APPOINTMENT_ID) } returns null
 
       val entityReturnedByFactory = AppointmentEventEntity.fromUpdateRequest(updateRequest)
-      every { appointmentEventEntityFactory.buildUpdatedEvent(updateRequest, existingAppointment) } returns entityReturnedByFactory
+      every { appointmentEventEntityFactory.buildUpdatedEvent(updateRequest, existingAppointment, TRIGGER) } returns entityReturnedByFactory
       every { appointmentEventEntityRepository.save(any()) } returnsArgument 0
 
       service.updateAppointmentOutcome(
         projectCode = PROJECT_CODE,
         update = updateRequest,
+        trigger = TRIGGER,
       )
 
       verify {
@@ -138,11 +144,12 @@ class AppointmentUpdateServiceTest {
 
       every { appointmentRetrievalService.getAppointment(PROJECT_CODE, APPOINTMENT_ID) } returns existingAppointment
       every { appointmentEventEntityRepository.findTopByDeliusAppointmentIdOrderByCreatedAtDesc(APPOINTMENT_ID) } returns existingIdenticalEntity
-      every { appointmentEventEntityFactory.buildUpdatedEvent(updateRequest, existingAppointment) } returns existingIdenticalEntity
+      every { appointmentEventEntityFactory.buildUpdatedEvent(updateRequest, existingAppointment, TRIGGER) } returns existingIdenticalEntity
 
       service.updateAppointmentOutcome(
         projectCode = PROJECT_CODE,
         update = updateRequest,
+        trigger = TRIGGER,
       )
 
       verify(exactly = 0) {
@@ -157,12 +164,13 @@ class AppointmentUpdateServiceTest {
 
       every { appointmentRetrievalService.getAppointment(PROJECT_CODE, APPOINTMENT_ID) } returns existingAppointment
       every { appointmentEventEntityRepository.findTopByDeliusAppointmentIdOrderByCreatedAtDesc(APPOINTMENT_ID) } returns existingOutcomeEntity
-      every { appointmentEventEntityFactory.buildUpdatedEvent(updateRequest, existingAppointment) } returns AppointmentEventEntity.fromUpdateRequest(updateRequest).copy(deliusAppointmentId = APPOINTMENT_ID)
+      every { appointmentEventEntityFactory.buildUpdatedEvent(updateRequest, existingAppointment, TRIGGER) } returns AppointmentEventEntity.fromUpdateRequest(updateRequest).copy(deliusAppointmentId = APPOINTMENT_ID)
       every { appointmentEventEntityRepository.save(any()) } returnsArgument 0
 
       service.updateAppointmentOutcome(
         projectCode = PROJECT_CODE,
         update = updateRequest,
+        trigger = TRIGGER,
       )
 
       verify { appointmentEventEntityRepository.save(any()) }
@@ -173,7 +181,7 @@ class AppointmentUpdateServiceTest {
     fun `if appointment has newer version on update, throw conflict exception`() {
       every { appointmentRetrievalService.getAppointment(PROJECT_CODE, APPOINTMENT_ID) } returns existingAppointment
       every { appointmentEventEntityRepository.findTopByDeliusAppointmentIdOrderByCreatedAtDesc(APPOINTMENT_ID) } returns null
-      every { appointmentEventEntityFactory.buildUpdatedEvent(any(), any()) } returns AppointmentEventEntity.fromUpdateRequest(updateRequest)
+      every { appointmentEventEntityFactory.buildUpdatedEvent(any(), any(), any()) } returns AppointmentEventEntity.fromUpdateRequest(updateRequest)
       every { appointmentEventEntityRepository.save(any()) } returnsArgument 0
 
       every {
@@ -184,6 +192,7 @@ class AppointmentUpdateServiceTest {
         service.updateAppointmentOutcome(
           projectCode = PROJECT_CODE,
           update = updateRequest,
+          trigger = TRIGGER,
         )
       }.isInstanceOf(ConflictException::class.java).hasMessage("A newer version of the appointment exists. Stale version is '${updateRequest.deliusVersionToUpdate}'")
     }
@@ -191,7 +200,7 @@ class AppointmentUpdateServiceTest {
     @Test
     fun `if bad request returned throw internal server error`() {
       every { appointmentEventEntityRepository.findTopByDeliusAppointmentIdOrderByCreatedAtDesc(APPOINTMENT_ID) } returns null
-      every { appointmentEventEntityFactory.buildUpdatedEvent(any(), any()) } returns AppointmentEventEntity.fromUpdateRequest(updateRequest)
+      every { appointmentEventEntityFactory.buildUpdatedEvent(any(), any(), any()) } returns AppointmentEventEntity.fromUpdateRequest(updateRequest)
       every { appointmentEventEntityRepository.save(any()) } returnsArgument 0
 
       every {
@@ -202,6 +211,7 @@ class AppointmentUpdateServiceTest {
         service.updateAppointmentOutcome(
           projectCode = PROJECT_CODE,
           update = updateRequest,
+          trigger = TRIGGER,
         )
       }.isInstanceOf(InternalServerErrorException::class.java).hasMessage("Bad request returned updating an appointment. Upstream response is 'didn't look good'")
     }
@@ -216,11 +226,12 @@ class AppointmentUpdateServiceTest {
       val updateRequest = updateRequest.copy(formKeyToDelete = formKey)
 
       every { appointmentEventEntityRepository.save(any()) } returnsArgument 0
-      every { appointmentEventEntityFactory.buildUpdatedEvent(any(), any()) } returns AppointmentEventEntity.fromUpdateRequest(updateRequest)
+      every { appointmentEventEntityFactory.buildUpdatedEvent(any(), any(), any()) } returns AppointmentEventEntity.fromUpdateRequest(updateRequest)
 
       service.updateAppointmentOutcome(
         projectCode = PROJECT_CODE,
         update = updateRequest,
+        trigger = TRIGGER,
       )
 
       verify { formService.deleteIfExists(formKey) }

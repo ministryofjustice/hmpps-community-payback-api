@@ -41,12 +41,13 @@ class AppointmentUpdateService(
   fun updateAppointmentOutcome(
     projectCode: String,
     update: UpdateAppointmentOutcomeDto,
+    trigger: AppointmentEventTrigger,
   ) {
     val existingAppointment = appointmentRetrievalService.getAppointment(projectCode, update.deliusId)
 
     appointmentOutcomeValidationService.ensureUpdateIsValid(existingAppointment, update)
 
-    val proposedEntity = appointmentEventEntityFactory.buildUpdatedEvent(update, existingAppointment)
+    val proposedEntity = appointmentEventEntityFactory.buildUpdatedEvent(update, existingAppointment, trigger)
 
     if (hasUpdateAlreadyBeenSent(proposedEntity)) {
       log.debug("Not applying update for appointment ${update.deliusId} because the most recent update is logically identical")
