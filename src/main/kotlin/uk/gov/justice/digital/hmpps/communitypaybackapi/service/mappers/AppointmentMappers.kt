@@ -13,11 +13,11 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.UpdateAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentBehaviourDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentSummaryDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentUpdatedDomainEventDetailDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentWorkQualityDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AttendanceDataDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EnforcementDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.PickUpDataDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.domainevent.AppointmentUpdatedDomainEventDetailDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.Behaviour

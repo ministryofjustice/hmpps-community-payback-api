@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.communitypaybackapi.config.OpenApiConfiguration
 import uk.gov.justice.digital.hmpps.communitypaybackapi.config.SecurityConfiguration
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentUpdatedDomainEventDetailDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.domainevent.AppointmentUpdatedDomainEventDetailDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentUpdateService
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 import java.util.UUID

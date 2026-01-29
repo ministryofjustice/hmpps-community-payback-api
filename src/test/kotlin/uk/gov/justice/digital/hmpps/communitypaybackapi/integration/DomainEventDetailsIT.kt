@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.config.SecurityConfiguration
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentUpdatedDomainEventDetailDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.domainevent.AppointmentUpdatedDomainEventDetailDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
