@@ -98,12 +98,12 @@ class DomainEventListener(
       ?: error("Can't find appointment updated record for event id '$eventId'")
 
     val schedulingId = lockService.withDistributedLock(
-      key = domainEventDetails.crn,
+      key = domainEventDetails.appointment.crn,
       leaseTime = Duration.ofSeconds(MESSAGE_VISIBILITY_TIMEOUT),
     ) {
       scheduleService.scheduleAppointments(
-        crn = domainEventDetails.crn,
-        eventNumber = domainEventDetails.deliusEventNumber,
+        crn = domainEventDetails.appointment.crn,
+        eventNumber = domainEventDetails.appointment.deliusEventNumber,
         trigger = SchedulingTrigger(
           type = SchedulingTriggerType.AppointmentChange,
           description = "Appointment Updated",

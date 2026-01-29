@@ -90,7 +90,7 @@ class DomainEventDetailsIT : IntegrationTestBase() {
         .isOk
         .bodyAsObject<AppointmentUpdatedDomainEventDetailDto>()
 
-      assertThat(result.id).isEqualTo(entity.id)
+      assertThat(result.appointment.id).isEqualTo(entity.id)
     }
 
     @Test
@@ -109,7 +109,7 @@ class DomainEventDetailsIT : IntegrationTestBase() {
         .isOk
         .bodyAsObject<AppointmentUpdatedDomainEventDetailDto>()
 
-      assertThat(result.id).isEqualTo(entity.id)
+      assertThat(result.appointment.id).isEqualTo(entity.id)
     }
   }
 

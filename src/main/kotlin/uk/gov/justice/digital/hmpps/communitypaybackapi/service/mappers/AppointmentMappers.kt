@@ -17,6 +17,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentWorkQuali
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AttendanceDataDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EnforcementDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.PickUpDataDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.domainevent.AppointmentDomainEventDetailDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.domainevent.AppointmentUpdatedDomainEventDetailDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventType
@@ -95,6 +96,10 @@ class AppointmentMappers(
 }
 
 fun AppointmentEventEntity.toAppointmentUpdatedDomainEvent() = AppointmentUpdatedDomainEventDetailDto(
+  appointment = this.toAppointmentDomainEventDetail(),
+)
+
+private fun AppointmentEventEntity.toAppointmentDomainEventDetail() = AppointmentDomainEventDetailDto(
   id = this.id,
   appointmentDeliusId = this.deliusAppointmentId,
   crn = this.crn,
