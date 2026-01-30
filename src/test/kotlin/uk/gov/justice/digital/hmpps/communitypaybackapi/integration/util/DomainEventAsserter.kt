@@ -17,7 +17,11 @@ class DomainEventAsserter(private val objectMapper: ObjectMapper) {
 
   private val messages = mutableListOf<HmppsDomainEvent>()
 
-  @SqsListener(queueNames = ["hmppsdomaineventsasserterqueue"], factory = "hmppsQueueContainerFactoryProxy", pollTimeoutSeconds = "1")
+  @SqsListener(
+    queueNames = ["hmppsdomaineventsasserterqueue"],
+    factory = "hmppsQueueContainerFactoryProxy",
+    pollTimeoutSeconds = "1",
+  )
   fun processMessage(rawMessage: String?) {
     val sqsMessage = objectMapper.readValue(rawMessage, SqsMessage::class.java)
     val event = objectMapper.readValue(sqsMessage.Message, HmppsDomainEvent::class.java)

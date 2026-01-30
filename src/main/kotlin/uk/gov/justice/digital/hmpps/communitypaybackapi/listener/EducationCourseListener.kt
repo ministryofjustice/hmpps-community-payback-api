@@ -18,7 +18,11 @@ class EducationCourseListener(
     val log: Logger = LoggerFactory.getLogger(this::class.java)
   }
 
-  @SqsListener("educationcoursecompletionqueue", factory = "hmppsQueueContainerFactoryProxy")
+  @SqsListener(
+    value = ["educationcoursecompletionqueue"],
+    factory = "hmppsQueueContainerFactoryProxy",
+    pollTimeoutSeconds = "\${hmpps.sqs.pollTimeoutSeconds:}",
+  )
   fun courseCompletion(messageString: String) {
     log.debug("Have received education course course completion message '$messageString'")
 

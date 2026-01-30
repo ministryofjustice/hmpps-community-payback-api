@@ -58,6 +58,7 @@ class DomainEventListener(
     value = ["hmppsdomaineventsqueue"],
     factory = "hmppsQueueContainerFactoryProxy",
     messageVisibilitySeconds = MESSAGE_VISIBILITY_TIMEOUT.toString(),
+    pollTimeoutSeconds = "\${hmpps.sqs.pollTimeoutSeconds:}",
   )
   fun domainEvent(
     messageString: String,
