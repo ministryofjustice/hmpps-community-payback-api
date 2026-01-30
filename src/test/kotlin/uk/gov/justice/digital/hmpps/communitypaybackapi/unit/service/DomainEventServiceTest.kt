@@ -69,7 +69,7 @@ class DomainEventServiceTest {
 
       val publishDomainEventCommand = commandEventCaptor.captured
       assertThat(publishDomainEventCommand.domainEvent.eventType).isEqualTo("community-payback.appointment.updated")
-      assertThat(publishDomainEventCommand.domainEvent.detailUrl).isEqualTo("http://somepath/community-payback.appointment.updated/$id")
+      assertThat(publishDomainEventCommand.domainEvent.detailUrl).isEqualTo("http://somepath/appointment-updated/$id")
       assertThat(publishDomainEventCommand.domainEvent.description).isEqualTo("A community payback appointment has been updated")
       assertThat(publishDomainEventCommand.domainEvent.version).isEqualTo(1)
       assertThat(publishDomainEventCommand.domainEvent.occurredAt).isCloseTo(OffsetDateTime.now(), within(1, ChronoUnit.MINUTES))

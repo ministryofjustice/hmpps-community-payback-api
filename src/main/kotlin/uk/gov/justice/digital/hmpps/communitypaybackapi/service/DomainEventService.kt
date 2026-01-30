@@ -50,7 +50,7 @@ class DomainEventService(
 
   private fun resolveUrl(id: UUID, type: DomainEventType) = detailUrlPattern.resolve(
     mapOf(
-      "type" to type.eventType,
+      "type" to type.urlType,
       "id" to id.toString(),
     ),
   )
@@ -73,10 +73,17 @@ class DomainEventService(
 
 enum class DomainEventType(
   val eventType: String,
+  val urlType: String,
   val description: String,
 ) {
+  APPOINTMENT_CREATED(
+    eventType = "community-payback.appointment.created",
+    urlType = "appointment-created",
+    description = "A community payback appointment has been created",
+  ),
   APPOINTMENT_UPDATED(
     eventType = "community-payback.appointment.updated",
+    urlType = "appointment-updated",
     description = "A community payback appointment has been updated",
   ),
 }

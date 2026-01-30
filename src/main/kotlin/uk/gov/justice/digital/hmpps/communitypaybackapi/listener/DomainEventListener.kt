@@ -94,7 +94,7 @@ class DomainEventListener(
       UUID.fromString(it)
     } ?: error("Can't find event id")
 
-    val domainEventDetails = appointmentUpdateService.getAppointmentUpdatedDomainEventDetails(eventId)
+    val domainEventDetails = appointmentUpdateService.getDomainEventDetails(eventId)
       ?: error("Can't find appointment updated record for event id '$eventId'")
 
     val schedulingId = lockService.withDistributedLock(
