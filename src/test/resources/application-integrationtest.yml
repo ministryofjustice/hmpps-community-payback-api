@@ -39,6 +39,9 @@ hmpps-auth:
 
 hmpps.sqs:
   provider: localstack
+  # this is not supported by the hmpps sqs library, instead we
+  # explicitly add it to our listener with a default of ''
+  pollTimeoutSeconds: 1
   queues:
     educationcoursecompletionqueue:
       dlqName: ${random.uuid}
