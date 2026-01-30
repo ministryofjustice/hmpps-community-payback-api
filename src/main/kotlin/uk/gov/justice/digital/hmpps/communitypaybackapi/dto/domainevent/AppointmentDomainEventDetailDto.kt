@@ -1,10 +1,12 @@
-package uk.gov.justice.digital.hmpps.communitypaybackapi.dto
+package uk.gov.justice.digital.hmpps.communitypaybackapi.dto.domainevent
 
 import io.swagger.v3.oas.annotations.media.Schema
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentBehaviourDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentWorkQualityDto
 import java.time.LocalTime
 import java.util.UUID
 
-data class AppointmentUpdatedDomainEventDetailDto(
+data class AppointmentDomainEventDetailDto(
   val id: UUID,
   val appointmentDeliusId: Long,
   val crn: String,

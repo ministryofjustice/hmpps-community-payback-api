@@ -12,11 +12,11 @@ interface AppointmentEventEntityRepository : JpaRepository<AppointmentEventEntit
 
   @Query(
     """
-    select ao from AppointmentEventEntity ao
-    left join fetch ao.contactOutcome
-    where ao.id = :id""",
+    select event from AppointmentEventEntity event
+    left join fetch event.contactOutcome
+    where event.id = :id AND event.eventType = :eventType""",
   )
-  fun findByIdOrNullForDomainEventDetails(id: UUID): AppointmentEventEntity?
+  fun findByIdOrNullForDomainEventDetails(id: UUID, eventType: AppointmentEventType): AppointmentEventEntity?
 
   fun findTopByDeliusAppointmentIdOrderByCreatedAtDesc(deliusAppointmentId: Long): AppointmentEventEntity?
 

@@ -18,10 +18,12 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDUnpaidWorkRequi
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.findNextOrSameDateForDayOfWeek
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntityRepository
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.validNoEndDate
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.validWithOutcome
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
+import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.DomainEventAsserter
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.MockSentryService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.CommunityPaybackAndDeliusMockServer
 import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.SqsListenerException
@@ -53,6 +55,9 @@ class SchedulingIT : IntegrationTestBase() {
 
   @Autowired
   lateinit var mockSentryService: MockSentryService
+
+  @Autowired
+  lateinit var domainEventAsserter: DomainEventAsserter
 
   companion object {
     const val CRN: String = "CRN01"
@@ -135,6 +140,7 @@ class SchedulingIT : IntegrationTestBase() {
         AppointmentEventEntity.valid(applicationContext).copy(
           crn = CRN,
           deliusEventNumber = EVENT_NUMBER,
+          eventType = AppointmentEventType.UPDATE,
         ),
       ).id
 
@@ -299,6 +305,7 @@ class SchedulingIT : IntegrationTestBase() {
         AppointmentEventEntity.valid(applicationContext).copy(
           crn = CRN,
           deliusEventNumber = EVENT_NUMBER,
+          eventType = AppointmentEventType.UPDATE,
         ),
       ).id
 
@@ -340,8 +347,9 @@ class SchedulingIT : IntegrationTestBase() {
             endTime = LocalTime.of(14, 0),
           ),
         ),
-
       )
+
+      domainEventAsserter.assertEventCount(DomainEventType.APPOINTMENT_CREATED.eventType, 3)
     }
 
     private fun setClockToDayOfWeek(dayOfWeek: DayOfWeek): LocalDate {

@@ -18,11 +18,14 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventE
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdditionalInformationType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentCreationService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventEntityFactory
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventTrigger
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.DomainEventService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.DomainEventType
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.PersonReferenceType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toNDCreateAppointment
-import java.util.UUID
 
 @ExtendWith(MockKExtension::class)
 class AppointmentCreationServiceTest {
@@ -35,12 +38,14 @@ class AppointmentCreationServiceTest {
   @RelaxedMockK
   lateinit var appointmentEventEntityRepository: AppointmentEventEntityRepository
 
+  @RelaxedMockK
+  lateinit var domainEventService: DomainEventService
+
   @InjectMockKs
   private lateinit var service: AppointmentCreationService
 
   private companion object {
     const val PROJECT_CODE: String = "PROJ25"
-    val SCHEDULING_ID: UUID = UUID.randomUUID()
     val TRIGGER: AppointmentEventTrigger = AppointmentEventTrigger(AppointmentEventTriggerType.USER, "theUserName")
   }
 
@@ -48,7 +53,7 @@ class AppointmentCreationServiceTest {
   inner class CreateAppointment {
 
     @Test
-    fun `create appointments`() {
+    fun `create appointments sends to ND, persists events, raises a domain events`() {
       val createAppointment1Dto = CreateAppointmentDto.valid()
       val createAppointment2Dto = CreateAppointmentDto.valid()
       val createAppointmentsDto = CreateAppointmentsDto(
@@ -93,14 +98,25 @@ class AppointmentCreationServiceTest {
           projectCode = PROJECT_CODE,
           appointments = NDCreateAppointments(listOf(creationEvent1.toNDCreateAppointment(), creationEvent2.toNDCreateAppointment())),
         )
-      }
 
-      verify {
         appointmentEventEntityRepository.saveAll(
           listOf(
             creationEvent1.copy(deliusAppointmentId = 15L),
             creationEvent2.copy(deliusAppointmentId = 153L),
           ),
+        )
+
+        domainEventService.publishOnTransactionCommit(
+          id = creationEvent1.id,
+          type = DomainEventType.APPOINTMENT_CREATED,
+          additionalInformation = mapOf(AdditionalInformationType.APPOINTMENT_ID to 15L),
+          personReferences = mapOf(PersonReferenceType.CRN to creationEvent1.crn),
+        )
+        domainEventService.publishOnTransactionCommit(
+          id = creationEvent2.id,
+          type = DomainEventType.APPOINTMENT_CREATED,
+          additionalInformation = mapOf(AdditionalInformationType.APPOINTMENT_ID to 153L),
+          personReferences = mapOf(PersonReferenceType.CRN to creationEvent2.crn),
         )
       }
     }

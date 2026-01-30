@@ -2,7 +2,6 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.unit.service
 
 import io.mockk.Runs
 import io.mockk.every
-import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.just
@@ -10,6 +9,7 @@ import io.mockk.slot
 import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.within
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -18,7 +18,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdditionalInform
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.DomainEventService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.DomainEventService.PublishDomainEventCommand
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.DomainEventType
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.DomainEventUrlConfig
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.PersonReferenceType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.DomainEventPublisher
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.HmmpsEventPersonReference
@@ -36,16 +35,21 @@ class DomainEventServiceTest {
   lateinit var applicationEventPublisher: ApplicationEventPublisher
 
   @RelaxedMockK
-  lateinit var domainEventUrlConfig: DomainEventUrlConfig
-
-  @RelaxedMockK
   lateinit var domainEventPublisher: DomainEventPublisher
 
-  @InjectMockKs
   private lateinit var service: DomainEventService
 
   private companion object {
     val id: UUID = UUID.randomUUID()
+  }
+
+  @BeforeEach
+  fun setupService() {
+    service = DomainEventService(
+      applicationEventPublisher,
+      UrlTemplate("http://somepath/#type/#id"),
+      domainEventPublisher,
+    )
   }
 
   @Nested
@@ -56,8 +60,6 @@ class DomainEventServiceTest {
       val commandEventCaptor = slot<PublishDomainEventCommand>()
       every { applicationEventPublisher.publishEvent(capture(commandEventCaptor)) } just Runs
 
-      every { domainEventUrlConfig.appointmentUpdated } returns UrlTemplate("http://somepath/#id")
-
       service.publishOnTransactionCommit(
         id = id,
         type = DomainEventType.APPOINTMENT_UPDATED,
@@ -67,7 +69,7 @@ class DomainEventServiceTest {
 
       val publishDomainEventCommand = commandEventCaptor.captured
       assertThat(publishDomainEventCommand.domainEvent.eventType).isEqualTo("community-payback.appointment.updated")
-      assertThat(publishDomainEventCommand.domainEvent.detailUrl).isEqualTo("http://somepath/$id")
+      assertThat(publishDomainEventCommand.domainEvent.detailUrl).isEqualTo("http://somepath/appointment-updated/$id")
       assertThat(publishDomainEventCommand.domainEvent.description).isEqualTo("A community payback appointment has been updated")
       assertThat(publishDomainEventCommand.domainEvent.version).isEqualTo(1)
       assertThat(publishDomainEventCommand.domainEvent.occurredAt).isCloseTo(OffsetDateTime.now(), within(1, ChronoUnit.MINUTES))
@@ -84,8 +86,6 @@ class DomainEventServiceTest {
     fun `dont populate person reference if no values`() {
       val commandEventCaptor = slot<PublishDomainEventCommand>()
       every { applicationEventPublisher.publishEvent(capture(commandEventCaptor)) } just Runs
-
-      every { domainEventUrlConfig.appointmentUpdated } returns UrlTemplate("http://somepath/#id")
 
       service.publishOnTransactionCommit(
         id = id,

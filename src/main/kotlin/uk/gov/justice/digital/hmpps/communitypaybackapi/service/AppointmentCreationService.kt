@@ -6,13 +6,17 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackA
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCreateAppointments
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntityRepository
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventType
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toAppointmentCreatedDomainEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toNDCreateAppointment
+import java.util.UUID
 
 @Service
 class AppointmentCreationService(
-  val appointmentEventEntityFactory: AppointmentEventEntityFactory,
-  val communityPaybackAndDeliusClient: CommunityPaybackAndDeliusClient,
-  val appointmentEventEntityRepository: AppointmentEventEntityRepository,
+  private val appointmentEventEntityFactory: AppointmentEventEntityFactory,
+  private val communityPaybackAndDeliusClient: CommunityPaybackAndDeliusClient,
+  private val appointmentEventEntityRepository: AppointmentEventEntityRepository,
+  private val domainEventService: DomainEventService,
 ) {
 
   @Transactional
@@ -51,5 +55,16 @@ class AppointmentCreationService(
     }
 
     appointmentEventEntityRepository.saveAll(appointmentCreationEventsWithIds)
+
+    appointmentCreationEventsWithIds.forEach { event ->
+      domainEventService.publishOnTransactionCommit(
+        id = event.id,
+        type = DomainEventType.APPOINTMENT_CREATED,
+        additionalInformation = mapOf(AdditionalInformationType.APPOINTMENT_ID to event.deliusAppointmentId),
+        personReferences = mapOf(PersonReferenceType.CRN to event.crn),
+      )
+    }
   }
+
+  fun getDomainEventDetails(eventId: UUID) = appointmentEventEntityRepository.findByIdOrNullForDomainEventDetails(eventId, AppointmentEventType.CREATE)?.toAppointmentCreatedDomainEvent()
 }

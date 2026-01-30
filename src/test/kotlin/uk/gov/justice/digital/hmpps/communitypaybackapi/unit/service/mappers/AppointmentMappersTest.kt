@@ -287,21 +287,22 @@ class AppointmentMappersTest {
 
       val result = appointmentEvent.toAppointmentUpdatedDomainEvent()
 
-      assertThat(result.id).isEqualTo(appointmentEvent.id)
-      assertThat(result.crn).isEqualTo("CRN123")
-      assertThat(result.deliusEventNumber).isEqualTo(52)
-      assertThat(result.appointmentDeliusId).isEqualTo(101L)
-      assertThat(result.startTime).isEqualTo(LocalTime.of(3, 2, 1))
-      assertThat(result.endTime).isEqualTo(LocalTime.of(12, 11, 10))
-      assertThat(result.contactOutcomeCode).isEqualTo("COE1")
-      assertThat(result.supervisorOfficerCode).isEqualTo("WO3736")
-      assertThat(result.notes).isEqualTo("The notes")
-      assertThat(result.hiVisWorn).isTrue
-      assertThat(result.workedIntensively).isFalse
-      assertThat(result.penaltyMinutes).isEqualTo(105)
-      assertThat(result.minutesCredited).isEqualTo(55)
-      assertThat(result.workQuality).isEqualTo(AppointmentWorkQualityDto.NOT_APPLICABLE)
-      assertThat(result.behaviour).isEqualTo(AppointmentBehaviourDto.UNSATISFACTORY)
+      val detail = result.appointment
+      assertThat(detail.id).isEqualTo(appointmentEvent.id)
+      assertThat(detail.crn).isEqualTo("CRN123")
+      assertThat(detail.deliusEventNumber).isEqualTo(52)
+      assertThat(detail.appointmentDeliusId).isEqualTo(101L)
+      assertThat(detail.startTime).isEqualTo(LocalTime.of(3, 2, 1))
+      assertThat(detail.endTime).isEqualTo(LocalTime.of(12, 11, 10))
+      assertThat(detail.contactOutcomeCode).isEqualTo("COE1")
+      assertThat(detail.supervisorOfficerCode).isEqualTo("WO3736")
+      assertThat(detail.notes).isEqualTo("The notes")
+      assertThat(detail.hiVisWorn).isTrue
+      assertThat(detail.workedIntensively).isFalse
+      assertThat(detail.penaltyMinutes).isEqualTo(105)
+      assertThat(detail.minutesCredited).isEqualTo(55)
+      assertThat(detail.workQuality).isEqualTo(AppointmentWorkQualityDto.NOT_APPLICABLE)
+      assertThat(detail.behaviour).isEqualTo(AppointmentBehaviourDto.UNSATISFACTORY)
     }
   }
 
