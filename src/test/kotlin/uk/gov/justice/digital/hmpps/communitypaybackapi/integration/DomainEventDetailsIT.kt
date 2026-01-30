@@ -25,7 +25,7 @@ class DomainEventDetailsIT : IntegrationTestBase() {
   lateinit var contactOutcomeEntityRepository: ContactOutcomeEntityRepository
 
   @Nested
-  @DisplayName("GET /domain-event-details/appointment-updated/{eventId}")
+  @DisplayName("GET /domain-event-details/community-payback.appointment.updated/{eventId}")
   inner class GetAppointmentUpdatedDetails {
 
     val id: UUID = UUID.randomUUID()
@@ -38,7 +38,7 @@ class DomainEventDetailsIT : IntegrationTestBase() {
     @Test
     fun `should return unauthorized if no token`() {
       webTestClient.get()
-        .uri("/domain-event-details/appointment-updated/$id")
+        .uri("/domain-event-details/community-payback.appointment.updated/$id")
         .exchange()
         .expectStatus()
         .isUnauthorized
@@ -47,7 +47,7 @@ class DomainEventDetailsIT : IntegrationTestBase() {
     @Test
     fun `should return forbidden if no role`() {
       webTestClient.get()
-        .uri("/domain-event-details/appointment-updated/$id")
+        .uri("/domain-event-details/community-payback.appointment.updated/$id")
         .headers(setAuthorisation())
         .exchange()
         .expectStatus()
@@ -57,7 +57,7 @@ class DomainEventDetailsIT : IntegrationTestBase() {
     @Test
     fun `should return forbidden if wrong role`() {
       webTestClient.get()
-        .uri("/domain-event-details/appointment-updated/$id")
+        .uri("/domain-event-details/community-payback.appointment.updated/$id")
         .addAdminUiAuthHeader()
         .exchange()
         .expectStatus()
@@ -67,7 +67,7 @@ class DomainEventDetailsIT : IntegrationTestBase() {
     @Test
     fun `should return 404 if no entry exists for the ID`() {
       webTestClient.get()
-        .uri("/domain-event-details/appointment-updated/${UUID.randomUUID()}")
+        .uri("/domain-event-details/community-payback.appointment.updated/${UUID.randomUUID()}")
         .addDomainEventAuthHeader()
         .exchange()
         .expectStatus()
@@ -83,7 +83,7 @@ class DomainEventDetailsIT : IntegrationTestBase() {
       )
 
       val result = webTestClient.get()
-        .uri("/domain-event-details/appointment-updated/${entity.id}")
+        .uri("/domain-event-details/community-payback.appointment.updated/${entity.id}")
         .addDomainEventAuthHeader()
         .exchange()
         .expectStatus()
@@ -102,7 +102,7 @@ class DomainEventDetailsIT : IntegrationTestBase() {
       )
 
       val result = webTestClient.get()
-        .uri("/domain-event-details/appointment-updated/${entity.id}")
+        .uri("/domain-event-details/community-payback.appointment.updated/${entity.id}")
         .addDomainEventAuthHeader()
         .exchange()
         .expectStatus()

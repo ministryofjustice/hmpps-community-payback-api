@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.communitypaybackapi.controller.domain
+package uk.gov.justice.digital.hmpps.communitypaybackapi.controller.domainevent
 
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
@@ -26,20 +26,20 @@ import java.util.UUID
   produces = [MediaType.APPLICATION_JSON_VALUE],
 )
 @PreAuthorize("hasRole('" + SecurityConfiguration.ROLE_DOMAIN_EVENT_DETAILS + "')")
-@SecurityRequirement(name = OpenApiConfiguration.Companion.SECURITY_SCHEME_DOMAIN_EVENT_DETAILS)
+@SecurityRequirement(name = OpenApiConfiguration.SECURITY_SCHEME_DOMAIN_EVENT_DETAILS)
 @Tag(name = "domain-event-details")
 class DomainEventDetailsController(
   val appointmentUpdateService: AppointmentUpdateService,
 ) {
   @GetMapping(
-    path = ["/appointment-updated/{eventId}"],
+    path = ["/community-payback.appointment.updated/{eventId}"],
     produces = [MediaType.APPLICATION_JSON_VALUE],
   )
   @Operation(
     responses = [
       ApiResponse(
         responseCode = "200",
-        description = "domain event details for a domain event of type 'community-payback.appointment.updated'",
+        description = "domain event details",
       ),
       ApiResponse(
         responseCode = "404",

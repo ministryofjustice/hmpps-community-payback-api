@@ -1,9 +1,8 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.service
 
-import org.springframework.boot.context.properties.ConfigurationProperties
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.ApplicationEvent
 import org.springframework.context.ApplicationEventPublisher
-import org.springframework.context.annotation.Configuration
 import org.springframework.stereotype.Service
 import org.springframework.transaction.event.TransactionalEventListener
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.DomainEventPublisher
@@ -18,19 +17,10 @@ import java.util.UUID
 @Service
 class DomainEventService(
   private val applicationEventPublisher: ApplicationEventPublisher,
-  private val domainEventUrlConfig: DomainEventUrlConfig,
+  @param:Value("\${community-payback.domain-events.details-url-pattern}")
+  private val detailUrlPattern: UrlTemplate,
   private val domainEventPublisher: DomainEventPublisher,
 ) {
-
-  init {
-    ensureUrlConfigExists()
-  }
-
-  private fun ensureUrlConfigExists() {
-    DomainEventType.entries.forEach {
-      resolveUrl(UUID.randomUUID(), it)
-    }
-  }
 
   fun publishOnTransactionCommit(
     id: UUID,
@@ -58,12 +48,12 @@ class DomainEventService(
     domainEventPublisher.publish(command.domainEvent)
   }
 
-  private fun resolveUrl(id: UUID, type: DomainEventType): String {
-    val urlTemplate = when (type) {
-      DomainEventType.APPOINTMENT_UPDATED -> domainEventUrlConfig.appointmentUpdated
-    }
-    return urlTemplate.resolve(mapOf("id" to id.toString()))
-  }
+  private fun resolveUrl(id: UUID, type: DomainEventType) = detailUrlPattern.resolve(
+    mapOf(
+      "type" to type.eventType,
+      "id" to id.toString(),
+    ),
+  )
 
   private fun buildAdditionalInformation(
     id: UUID,
@@ -98,10 +88,4 @@ enum class AdditionalInformationType {
 
 enum class PersonReferenceType {
   CRN,
-}
-
-@Configuration
-@ConfigurationProperties(prefix = "community-payback.domain-events.urls")
-class DomainEventUrlConfig {
-  lateinit var appointmentUpdated: UrlTemplate
 }

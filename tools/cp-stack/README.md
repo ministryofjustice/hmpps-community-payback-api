@@ -125,7 +125,8 @@ AWS_DEFAULT_REGION=eu-west-2
 awslocal sns list-topics
 # list topic subscriber (if running integration tests there may be many)
 awslocal sqs list-queues 
-# show domain events sent to the cp-stack API instance
+# show domain events sent to the cp-stack API instance. Note! this will typically be empty because the API domain event listener
+# will have consumed the messages. Can disable that by setting `community-payback.scheduling.enabled` to false
 awslocal sqs receive-message --max-number-of-messages 10 --visibility-timeout 0 --queue-url http://sqs.eu-west-2.localhost.localstack.cloud:4566/000000000000/cp_stack_domain_event_subscriber
 ```
 
