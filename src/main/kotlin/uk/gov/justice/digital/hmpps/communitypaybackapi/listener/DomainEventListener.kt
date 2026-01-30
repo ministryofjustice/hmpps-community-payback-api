@@ -5,18 +5,14 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import io.awspring.cloud.sqs.annotation.SqsListener
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.messaging.MessageHeaders
 import org.springframework.messaging.handler.annotation.Headers
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdditionalInformationType
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.DomainEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.HmppsDomainEvent
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingService
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingTrigger
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingTriggerType
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingAppointmentDomainEventHandler
 import java.time.Duration
 import java.util.UUID
 
@@ -28,12 +24,8 @@ import java.util.UUID
 @ConditionalOnProperty(name = ["community-payback.scheduling.enabled"], havingValue = "true")
 class DomainEventListener(
   private val objectMapper: ObjectMapper,
-  private val scheduleService: SchedulingService,
-  @param:Value("\${community-payback.scheduling.dryRun:false}")
-  private val schedulingDryRun: Boolean,
   private val sqsListenerErrorHandler: SqsListenerErrorHandler,
-  private val lockService: LockService,
-  private val appointmentEventService: AppointmentEventService,
+  private val schedulingAppointmentEventHandler: SchedulingAppointmentDomainEventHandler,
 ) {
   private companion object {
     /**
@@ -76,42 +68,15 @@ class DomainEventListener(
     val event = objectMapper.readValue<HmppsDomainEvent>(sqsMessage.message)
 
     when (event.eventType) {
-      DomainEventType.APPOINTMENT_UPDATED.eventType -> handleAppointmentUpdated(event)
+      DomainEventType.APPOINTMENT_UPDATED.eventType -> schedulingAppointmentEventHandler.handleAppointmentEvent(
+        eventId = event.getEventId(),
+        maxProcessingTime = Duration.ofSeconds(MESSAGE_VISIBILITY_TIMEOUT),
+      )
       else -> log.warn("Unexpected event type '${event.eventType}'")
     }
   }
 
-  /**
-   * Instead of having a database transaction around this entire call, we
-   * instead have transactions around the 'batch create appointment' calls.
-   *
-   * This is because if we create an appointment and scheduling then errors,
-   * these appointments still exist and will be considered and not recreated
-   * when scheduling is retried
-   */
-  private fun handleAppointmentUpdated(event: HmppsDomainEvent) {
-    val eventId = event.additionalInformation?.map[AdditionalInformationType.EVENT_ID.name]?.toString()?.let {
-      UUID.fromString(it)
-    } ?: error("Can't find event id")
-
-    val domainEventDetails = appointmentEventService.getEvent(eventId)
-      ?: error("Can't find appointment updated record for event id '$eventId'")
-
-    val schedulingId = lockService.withDistributedLock(
-      key = domainEventDetails.crn,
-      leaseTime = Duration.ofSeconds(MESSAGE_VISIBILITY_TIMEOUT),
-    ) {
-      scheduleService.scheduleAppointments(
-        crn = domainEventDetails.crn,
-        eventNumber = domainEventDetails.deliusEventNumber,
-        trigger = SchedulingTrigger(
-          type = SchedulingTriggerType.AppointmentChange,
-          description = "Appointment Updated",
-        ),
-        dryRun = schedulingDryRun,
-      )
-    }
-
-    appointmentEventService.recordSchedulingRan(eventId, schedulingId)
-  }
+  private fun HmppsDomainEvent.getEventId() = additionalInformation?.map[AdditionalInformationType.EVENT_ID.name]?.toString()?.let {
+    UUID.fromString(it)
+  } ?: error("Can't find event id")
 }
