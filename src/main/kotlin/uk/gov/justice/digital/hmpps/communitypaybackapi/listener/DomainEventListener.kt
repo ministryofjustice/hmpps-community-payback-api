@@ -11,7 +11,7 @@ import org.springframework.messaging.MessageHeaders
 import org.springframework.messaging.handler.annotation.Headers
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdditionalInformationType
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentUpdateService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.DomainEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.HmppsDomainEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingService
@@ -29,11 +29,11 @@ import java.util.UUID
 class DomainEventListener(
   private val objectMapper: ObjectMapper,
   private val scheduleService: SchedulingService,
-  private val appointmentUpdateService: AppointmentUpdateService,
   @param:Value("\${community-payback.scheduling.dryRun:false}")
   private val schedulingDryRun: Boolean,
   private val sqsListenerErrorHandler: SqsListenerErrorHandler,
   private val lockService: LockService,
+  private val appointmentEventService: AppointmentEventService,
 ) {
   private companion object {
     /**
@@ -94,16 +94,16 @@ class DomainEventListener(
       UUID.fromString(it)
     } ?: error("Can't find event id")
 
-    val domainEventDetails = appointmentUpdateService.getDomainEventDetails(eventId)
+    val domainEventDetails = appointmentEventService.getEvent(eventId)
       ?: error("Can't find appointment updated record for event id '$eventId'")
 
     val schedulingId = lockService.withDistributedLock(
-      key = domainEventDetails.appointment.crn,
+      key = domainEventDetails.crn,
       leaseTime = Duration.ofSeconds(MESSAGE_VISIBILITY_TIMEOUT),
     ) {
       scheduleService.scheduleAppointments(
-        crn = domainEventDetails.appointment.crn,
-        eventNumber = domainEventDetails.appointment.deliusEventNumber,
+        crn = domainEventDetails.crn,
+        eventNumber = domainEventDetails.deliusEventNumber,
         trigger = SchedulingTrigger(
           type = SchedulingTriggerType.AppointmentChange,
           description = "Appointment Updated",
@@ -112,6 +112,6 @@ class DomainEventListener(
       )
     }
 
-    appointmentUpdateService.recordSchedulingRan(eventId, schedulingId)
+    appointmentEventService.recordSchedulingRan(eventId, schedulingId)
   }
 }

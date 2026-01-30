@@ -17,8 +17,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.config.OpenApiConfigurat
 import uk.gov.justice.digital.hmpps.communitypaybackapi.config.SecurityConfiguration
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.domainevent.AppointmentCreatedDomainEventDetailDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.domainevent.AppointmentUpdatedDomainEventDetailDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentCreationService
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentUpdateService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventService
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 import java.util.UUID
 
@@ -31,8 +30,7 @@ import java.util.UUID
 @SecurityRequirement(name = OpenApiConfiguration.SECURITY_SCHEME_DOMAIN_EVENT_DETAILS)
 @Tag(name = "domain-event-details")
 class DomainEventDetailsController(
-  val appointmentCreationService: AppointmentCreationService,
-  val appointmentUpdateService: AppointmentUpdateService,
+  val appointmentEventService: AppointmentEventService,
 ) {
   @GetMapping(
     path = ["/appointment-created/{eventId}"],
@@ -55,7 +53,7 @@ class DomainEventDetailsController(
       ),
     ],
   )
-  fun appointmentCreated(@PathVariable eventId: UUID): ResponseEntity<AppointmentCreatedDomainEventDetailDto> = appointmentCreationService.getDomainEventDetails(eventId)?.let {
+  fun appointmentCreated(@PathVariable eventId: UUID): ResponseEntity<AppointmentCreatedDomainEventDetailDto> = appointmentEventService.getCreatedDomainEventDetails(eventId)?.let {
     ResponseEntity.ok(it)
   } ?: ResponseEntity.notFound().build()
 
@@ -80,7 +78,7 @@ class DomainEventDetailsController(
       ),
     ],
   )
-  fun appointmentUpdated(@PathVariable eventId: UUID): ResponseEntity<AppointmentUpdatedDomainEventDetailDto> = appointmentUpdateService.getDomainEventDetails(eventId)?.let {
+  fun appointmentUpdated(@PathVariable eventId: UUID): ResponseEntity<AppointmentUpdatedDomainEventDetailDto> = appointmentEventService.getUpdateDomainEventDetails(eventId)?.let {
     ResponseEntity.ok(it)
   } ?: ResponseEntity.notFound().build()
 }

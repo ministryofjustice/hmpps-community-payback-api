@@ -6,10 +6,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackA
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCreateAppointments
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntityRepository
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventType
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toAppointmentCreatedDomainEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toNDCreateAppointment
-import java.util.UUID
 
 @Service
 class AppointmentCreationService(
@@ -65,6 +62,4 @@ class AppointmentCreationService(
       )
     }
   }
-
-  fun getDomainEventDetails(eventId: UUID) = appointmentEventEntityRepository.findByIdOrNullForDomainEventDetails(eventId, AppointmentEventType.CREATE)?.toAppointmentCreatedDomainEvent()
 }
