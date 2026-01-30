@@ -3,8 +3,8 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.unit.service.mappers
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CaseSummary
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Name
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDName
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.OffenderDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
@@ -17,9 +17,9 @@ class CaseSummaryMapperTest {
 
     @Test
     fun `If no limitations return OffenderFullDto`() {
-      val result = CaseSummary(
+      val result = NDCaseSummary(
         crn = "CRN123",
-        name = Name(
+        name = NDName(
           forename = "thefore",
           surname = "thesur",
           middleNames = listOf("themid"),
@@ -41,7 +41,7 @@ class CaseSummaryMapperTest {
 
     @Test
     fun `If exclusion return OffenderLimitedDto`() {
-      val result = CaseSummary.valid().copy(
+      val result = NDCaseSummary.valid().copy(
         crn = "CRN123",
         currentExclusion = true,
         currentRestriction = false,
@@ -53,7 +53,7 @@ class CaseSummaryMapperTest {
 
     @Test
     fun `If restriction return OffenderLimitedDto`() {
-      val result = CaseSummary.valid().copy(
+      val result = NDCaseSummary.valid().copy(
         crn = "CRN123",
         currentExclusion = false,
         currentRestriction = true,

@@ -1,15 +1,15 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers
 
 import org.springframework.stereotype.Service
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Appointment
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.AppointmentBehaviour
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.AppointmentSummary
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.AppointmentWorkQuality
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Code
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointment
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointmentBehaviour
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointmentPickUp
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointmentSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointmentWorkQuality
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCode
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCreateAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDPickUp
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.UpdateAppointment
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDUpdateAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentBehaviourDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentSummaryDto
@@ -34,7 +34,7 @@ class AppointmentMappers(
 ) {
 
   fun toDto(
-    appointment: Appointment,
+    appointment: NDAppointment,
   ): AppointmentDto {
     val contactOutcomeEntity = appointment.outcome?.code?.let {
       contactOutcomeEntityRepository.findByCode(it) ?: error("Can't find outcome for code $it")
@@ -83,7 +83,7 @@ class AppointmentMappers(
   }
 
   fun toSummaryDto(
-    appointmentSummary: AppointmentSummary,
+    appointmentSummary: NDAppointmentSummary,
   ) = AppointmentSummaryDto(
     id = appointmentSummary.id,
     contactOutcome = appointmentSummary.outcome?.code?.let {
@@ -122,14 +122,14 @@ private fun AppointmentEventEntity.toAppointmentDomainEventDetail() = Appointmen
   behaviour = this.behaviour?.dtoType,
 )
 
-fun AppointmentEventEntity.toUpdateAppointment(): UpdateAppointment {
+fun AppointmentEventEntity.toNDUpdateAppointment(): NDUpdateAppointment {
   require(this.eventType == AppointmentEventType.UPDATE)
-  return UpdateAppointment(
+  return NDUpdateAppointment(
     version = this.priorDeliusVersion!!,
     startTime = this.startTime,
     endTime = this.endTime,
-    outcome = this.contactOutcome?.let { Code(it.code) },
-    supervisor = Code(this.supervisorOfficerCode!!),
+    outcome = this.contactOutcome?.let { NDCode(it.code) },
+    supervisor = NDCode(this.supervisorOfficerCode!!),
     notes = this.notes,
     hiVisWorn = this.hiVisWorn,
     workedIntensively = workedIntensively,
@@ -151,8 +151,8 @@ fun AppointmentEventEntity.toNDCreateAppointment(): NDCreateAppointment {
     date = this.date,
     startTime = this.startTime,
     endTime = this.endTime,
-    outcome = this.contactOutcome?.let { Code(it.code) },
-    supervisor = this.supervisorOfficerCode?.let { Code(it) },
+    outcome = this.contactOutcome?.let { NDCode(it.code) },
+    supervisor = this.supervisorOfficerCode?.let { NDCode(it) },
     notes = this.notes,
     hiVisWorn = this.hiVisWorn,
     workedIntensively = workedIntensively,
@@ -163,7 +163,7 @@ fun AppointmentEventEntity.toNDCreateAppointment(): NDCreateAppointment {
     sensitive = this.sensitive,
     alertActive = this.alertActive,
     pickUp = NDPickUp(
-      location = this.pickupLocationCode?.let { Code(it) },
+      location = this.pickupLocationCode?.let { NDCode(it) },
       time = this.pickupTime,
     ),
   )
@@ -178,20 +178,20 @@ fun NDAppointmentPickUp.toDto() = PickUpDataDto(
   time = time,
 )
 
-fun AppointmentWorkQuality.toDto() = when (this) {
-  AppointmentWorkQuality.EXCELLENT -> AppointmentWorkQualityDto.EXCELLENT
-  AppointmentWorkQuality.GOOD -> AppointmentWorkQualityDto.GOOD
-  AppointmentWorkQuality.NOT_APPLICABLE -> AppointmentWorkQualityDto.NOT_APPLICABLE
-  AppointmentWorkQuality.POOR -> AppointmentWorkQualityDto.POOR
-  AppointmentWorkQuality.SATISFACTORY -> AppointmentWorkQualityDto.SATISFACTORY
-  AppointmentWorkQuality.UNSATISFACTORY -> AppointmentWorkQualityDto.UNSATISFACTORY
+fun NDAppointmentWorkQuality.toDto() = when (this) {
+  NDAppointmentWorkQuality.EXCELLENT -> AppointmentWorkQualityDto.EXCELLENT
+  NDAppointmentWorkQuality.GOOD -> AppointmentWorkQualityDto.GOOD
+  NDAppointmentWorkQuality.NOT_APPLICABLE -> AppointmentWorkQualityDto.NOT_APPLICABLE
+  NDAppointmentWorkQuality.POOR -> AppointmentWorkQualityDto.POOR
+  NDAppointmentWorkQuality.SATISFACTORY -> AppointmentWorkQualityDto.SATISFACTORY
+  NDAppointmentWorkQuality.UNSATISFACTORY -> AppointmentWorkQualityDto.UNSATISFACTORY
 }
 
-fun AppointmentBehaviour.toDto() = when (this) {
-  AppointmentBehaviour.EXCELLENT -> AppointmentBehaviourDto.EXCELLENT
-  AppointmentBehaviour.GOOD -> AppointmentBehaviourDto.GOOD
-  AppointmentBehaviour.NOT_APPLICABLE -> AppointmentBehaviourDto.NOT_APPLICABLE
-  AppointmentBehaviour.POOR -> AppointmentBehaviourDto.POOR
-  AppointmentBehaviour.SATISFACTORY -> AppointmentBehaviourDto.SATISFACTORY
-  AppointmentBehaviour.UNSATISFACTORY -> AppointmentBehaviourDto.UNSATISFACTORY
+fun NDAppointmentBehaviour.toDto() = when (this) {
+  NDAppointmentBehaviour.EXCELLENT -> AppointmentBehaviourDto.EXCELLENT
+  NDAppointmentBehaviour.GOOD -> AppointmentBehaviourDto.GOOD
+  NDAppointmentBehaviour.NOT_APPLICABLE -> AppointmentBehaviourDto.NOT_APPLICABLE
+  NDAppointmentBehaviour.POOR -> AppointmentBehaviourDto.POOR
+  NDAppointmentBehaviour.SATISFACTORY -> AppointmentBehaviourDto.SATISFACTORY
+  NDAppointmentBehaviour.UNSATISFACTORY -> AppointmentBehaviourDto.UNSATISFACTORY
 }

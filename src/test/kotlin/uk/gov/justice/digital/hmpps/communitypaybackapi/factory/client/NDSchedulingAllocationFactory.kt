@@ -1,6 +1,6 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client
 
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Code
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCode
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDPickUp
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingAllocation
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingAvailability
@@ -30,7 +30,7 @@ fun NDSchedulingAllocation.Companion.valid(): NDSchedulingAllocation {
     startTime = startTime,
     endTime = endTime,
     pickUp = NDPickUp(
-      location = Code(String.random(5)),
+      location = NDCode(String.random(5)),
       time = randomLocalTime(),
     ),
   )

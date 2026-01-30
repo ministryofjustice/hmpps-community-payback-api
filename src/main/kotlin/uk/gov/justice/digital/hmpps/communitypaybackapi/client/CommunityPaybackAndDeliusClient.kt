@@ -17,10 +17,10 @@ interface CommunityPaybackAndDeliusClient {
   @GetExchange("/providers")
   fun getProviders(
     @RequestParam username: String,
-  ): ProviderSummaries
+  ): NDProviderSummaries
 
   @GetExchange("/providers/{providerCode}/teams")
-  fun getProviderTeams(@PathVariable providerCode: String): ProviderTeamSummaries
+  fun getProviderTeams(@PathVariable providerCode: String): NDProviderTeamSummaries
 
   @GetExchange("/providers/{providerCode}/teams/{teamCode}/sessions")
   fun getSessions(
@@ -28,32 +28,32 @@ interface CommunityPaybackAndDeliusClient {
     @PathVariable teamCode: String,
     @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) startDate: LocalDate,
     @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) endDate: LocalDate,
-  ): SessionSummaries
+  ): NDSessionSummaries
 
   @GetExchange("/projects/{projectCode}/appointments")
   fun getSession(
     @PathVariable projectCode: String,
     @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate,
     @RequestParam username: String,
-  ): Session
+  ): NDSession
 
   @GetExchange("/supervisors")
   fun getSupervisor(
     @RequestParam username: String,
-  ): Supervisor
+  ): NDSupervisor
 
   @GetExchange("/projects/{projectCode}/appointments/{appointmentId}")
   fun getAppointment(
     @PathVariable projectCode: String,
     @PathVariable appointmentId: Long,
     @RequestParam username: String,
-  ): Appointment
+  ): NDAppointment
 
   @PutExchange("/projects/{projectCode}/appointments/{appointmentId}/outcome")
   fun updateAppointment(
     @PathVariable projectCode: String,
     @PathVariable appointmentId: Long,
-    @RequestBody updateAppointment: UpdateAppointment,
+    @RequestBody updateAppointment: NDUpdateAppointment,
   )
 
   @PostExchange("/projects/{projectCode}/appointments")
@@ -66,7 +66,7 @@ interface CommunityPaybackAndDeliusClient {
   fun teamSupervisors(
     @PathVariable providerCode: String,
     @PathVariable teamCode: String,
-  ): SupervisorSummaries
+  ): NDSupervisorSummaries
 
   @GetExchange("/case/{crn}/event/{eventNumber}/appointments/schedule")
   fun getUnpaidWorkRequirement(
@@ -78,32 +78,33 @@ interface CommunityPaybackAndDeliusClient {
   fun getNonWorkingDays(): List<LocalDate>
 }
 
-data class ProviderSummaries(
-  val providers: List<ProviderSummary>,
+data class NDProviderSummaries(
+  val providers: List<NDProviderSummary>,
 )
 
-data class ProviderSummary(
+data class NDProviderSummary(
   val code: String,
   val name: String,
 )
 
-data class ProviderTeamSummaries(
-  val teams: List<ProviderTeamSummary>,
+data class NDProviderTeamSummaries(
+  val teams: List<NDProviderTeamSummary>,
 )
 
-data class ProviderTeamSummary(
+data class NDProviderTeamSummary(
   val code: String,
   val description: String,
 )
-data class SessionSummaries(
-  val sessions: List<SessionSummary>,
+
+data class NDSessionSummaries(
+  val sessions: List<NDSessionSummary>,
 ) {
   companion object
 }
 
-data class SessionSummary(
+data class NDSessionSummary(
   val date: LocalDate,
-  val project: ProjectSummary,
+  val project: NDProjectSummary,
   val allocatedCount: Int,
   val outcomeCount: Int,
   val enforcementActionCount: Int,
@@ -111,17 +112,17 @@ data class SessionSummary(
   companion object
 }
 
-data class Session(
-  val project: Project,
-  val appointmentSummaries: List<AppointmentSummary>,
+data class NDSession(
+  val project: NDProject,
+  val appointmentSummaries: List<NDAppointmentSummary>,
 ) {
   companion object
 }
 
-data class AppointmentSummary(
+data class NDAppointmentSummary(
   val id: Long,
-  val case: CaseSummary,
-  val outcome: ContactOutcome?,
+  val case: NDCaseSummary,
+  val outcome: NDContactOutcome?,
   val requirementProgress: NDRequirementProgress,
 ) {
   fun hasOutcome() = outcome != null
@@ -147,27 +148,27 @@ data class NDRequirementProgress(
   companion object
 }
 
-data class Appointment(
+data class NDAppointment(
   val id: Long,
   val version: UUID,
-  val project: Project,
-  val projectType: ProjectType,
-  val case: CaseSummary,
+  val project: NDProject,
+  val projectType: NDProjectType,
+  val case: NDCaseSummary,
   val event: NDEvent,
-  val team: Team,
-  val provider: Provider,
+  val team: NDTeam,
+  val provider: NDProvider,
   val pickUpData: NDAppointmentPickUp?,
   val date: LocalDate,
   val startTime: LocalTime,
   val endTime: LocalTime,
   val penaltyHours: HourMinuteDuration?,
-  val supervisor: AppointmentSupervisor,
-  val outcome: ContactOutcome?,
-  val enforcementAction: EnforcementAction?,
+  val supervisor: NDAppointmentSupervisor,
+  val outcome: NDContactOutcome?,
+  val enforcementAction: NDEnforcementAction?,
   val hiVisWorn: Boolean?,
   val workedIntensively: Boolean?,
-  val workQuality: AppointmentWorkQuality?,
-  val behaviour: AppointmentBehaviour?,
+  val workQuality: NDAppointmentWorkQuality?,
+  val behaviour: NDAppointmentBehaviour?,
   val notes: String?,
   val sensitive: Boolean?,
   val alertActive: Boolean?,
@@ -175,40 +176,40 @@ data class Appointment(
   companion object
 }
 
-data class AppointmentSupervisor(val code: String, val name: Name) {
+data class NDAppointmentSupervisor(val code: String, val name: NDName) {
   companion object
 }
-data class ContactOutcome(val code: String, val description: String) {
+data class NDContactOutcome(val code: String, val description: String) {
   companion object
 }
-data class EnforcementAction(val code: String, val description: String, val respondBy: LocalDate?) {
+data class NDEnforcementAction(val code: String, val description: String, val respondBy: LocalDate?) {
   companion object
 }
-data class Project(val name: String, val code: String, val location: Address) {
+data class NDProject(val name: String, val code: String, val location: NDAddress) {
   companion object
 }
-data class ProjectSummary(val description: String, val code: String) {
+data class NDProjectSummary(val description: String, val code: String) {
   companion object
 }
-data class ProjectType(val name: String, val code: String) {
+data class NDProjectType(val name: String, val code: String) {
   companion object
 }
-data class Team(val name: String, val code: String) {
+data class NDTeam(val name: String, val code: String) {
   companion object
 }
-data class Provider(val name: String, val code: String) {
+data class NDProvider(val name: String, val code: String) {
   companion object
 }
 
 data class NDAppointmentPickUp(
-  val location: Address?,
-  val locationCode: Code?,
+  val location: NDAddress?,
+  val locationCode: NDCode?,
   val time: LocalTime?,
 ) {
   companion object
 }
 
-data class Address(
+data class NDAddress(
   val buildingName: String? = null,
   val addressNumber: String? = null,
   val streetName: String? = null,
@@ -219,7 +220,7 @@ data class Address(
   companion object
 }
 
-enum class AppointmentWorkQuality {
+enum class NDAppointmentWorkQuality {
   EXCELLENT,
   GOOD,
   NOT_APPLICABLE,
@@ -228,7 +229,7 @@ enum class AppointmentWorkQuality {
   UNSATISFACTORY,
 }
 
-enum class AppointmentBehaviour {
+enum class NDAppointmentBehaviour {
   EXCELLENT,
   GOOD,
   NOT_APPLICABLE,
@@ -237,9 +238,9 @@ enum class AppointmentBehaviour {
   UNSATISFACTORY,
 }
 
-data class CaseSummary(
+data class NDCaseSummary(
   val crn: String,
-  val name: Name,
+  val name: NDName,
   val dateOfBirth: LocalDate,
   val currentExclusion: Boolean,
   val currentRestriction: Boolean,
@@ -253,7 +254,7 @@ data class NDEvent(
   companion object
 }
 
-data class Name(
+data class NDName(
   val forename: String,
   val surname: String,
   val middleNames: List<String> = emptyList(),
@@ -261,15 +262,15 @@ data class Name(
   companion object
 }
 
-data class Supervisor(
+data class NDSupervisor(
   val code: String,
   val isUnpaidWorkTeamMember: Boolean,
-  val unpaidWorkTeams: List<SupervisorTeam>,
+  val unpaidWorkTeams: List<NDSupervisorTeam>,
 ) {
   companion object
 }
 
-data class SupervisorTeam(
+data class NDSupervisorTeam(
   val code: String,
   val description: String,
   val provider: NDCodeDescription,
@@ -287,24 +288,24 @@ data class NDNameCode(
   companion object
 }
 
-data class SupervisorSummaries(
-  val supervisors: List<SupervisorSummary>,
+data class NDSupervisorSummaries(
+  val supervisors: List<NDSupervisorSummary>,
 )
 
-data class SupervisorSummary(
-  val name: SupervisorName,
+data class NDSupervisorSummary(
+  val name: NDSupervisorName,
   val code: String,
-  val grade: Grade?,
+  val grade: NDGrade?,
 ) {
   companion object
 }
 
-data class Grade(
+data class NDGrade(
   val code: String,
   val description: String,
 )
 
-data class SupervisorName(
+data class NDSupervisorName(
   val forename: String,
   val surname: String,
   val middleName: String?,
@@ -323,15 +324,15 @@ data class NDCreateAppointment(
   val date: LocalDate,
   val startTime: LocalTime,
   val endTime: LocalTime,
-  val outcome: Code? = null,
-  val supervisor: Code? = null,
+  val outcome: NDCode? = null,
+  val supervisor: NDCode? = null,
   val notes: String? = null,
   val hiVisWorn: Boolean? = null,
   val workedIntensively: Boolean? = null,
   val penaltyMinutes: Long? = null,
   val minutesCredited: Long? = null,
-  val workQuality: AppointmentWorkQuality? = null,
-  val behaviour: AppointmentBehaviour? = null,
+  val workQuality: NDAppointmentWorkQuality? = null,
+  val behaviour: NDAppointmentBehaviour? = null,
   val sensitive: Boolean? = null,
   val alertActive: Boolean? = null,
   val allocationId: Long? = null,
@@ -342,26 +343,26 @@ data class NDCreatedAppointment(
   val id: Long,
 )
 
-data class UpdateAppointment(
+data class NDUpdateAppointment(
   val version: UUID,
   @param:Schema(example = "09:00", description = "The start local time of the appointment", pattern = "^([0-1][0-9]|2[0-3]):[0-5][0-9]$")
   val startTime: LocalTime,
   @param:Schema(example = "09:00", description = "The end local time of the appointment", pattern = "^([0-1][0-9]|2[0-3]):[0-5][0-9]$")
   val endTime: LocalTime,
-  val outcome: Code? = null,
-  val supervisor: Code,
+  val outcome: NDCode? = null,
+  val supervisor: NDCode,
   val notes: String? = null,
   val hiVisWorn: Boolean? = null,
   val workedIntensively: Boolean? = null,
   val penaltyMinutes: Long? = null,
   val minutesCredited: Long? = null,
-  val workQuality: AppointmentWorkQuality? = null,
-  val behaviour: AppointmentBehaviour? = null,
+  val workQuality: NDAppointmentWorkQuality? = null,
+  val behaviour: NDAppointmentBehaviour? = null,
   val sensitive: Boolean? = null,
   val alertActive: Boolean? = null,
 )
 
-data class Code(
+data class NDCode(
   val code: String,
 )
 
@@ -388,7 +389,7 @@ data class NDSchedulingAllocation(
   companion object
 }
 
-data class NDPickUp(val time: LocalTime?, val location: Code?)
+data class NDPickUp(val time: LocalTime?, val location: NDCode?)
 
 data class NDSchedulingProject(
   val name: String,

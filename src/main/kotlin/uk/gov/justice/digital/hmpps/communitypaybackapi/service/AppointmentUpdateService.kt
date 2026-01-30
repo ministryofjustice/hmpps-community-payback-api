@@ -13,7 +13,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventE
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toAppointmentUpdatedDomainEvent
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toUpdateAppointment
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toNDUpdateAppointment
 import java.time.OffsetDateTime
 import java.util.UUID
 
@@ -92,7 +92,7 @@ class AppointmentUpdateService(
       communityPaybackAndDeliusClient.updateAppointment(
         projectCode = projectCode,
         appointmentId = appointmentEvent.deliusAppointmentId,
-        updateAppointment = appointmentEvent.toUpdateAppointment(),
+        updateAppointment = appointmentEvent.toNDUpdateAppointment(),
       )
     } catch (_: WebClientResponseException.NotFound) {
       throw NotFoundException("Appointment", appointmentEvent.deliusAppointmentId.toString())

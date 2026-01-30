@@ -4,8 +4,8 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCodeDescription
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Supervisor
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.SupervisorTeam
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSupervisor
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSupervisorTeam
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProviderSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SupervisorTeamDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
@@ -17,16 +17,16 @@ class SupervisorMappersTest {
 
     @Test
     fun success() {
-      val result = Supervisor(
+      val result = NDSupervisor(
         code = "SC1",
         isUnpaidWorkTeamMember = true,
         unpaidWorkTeams = listOf(
-          SupervisorTeam(
+          NDSupervisorTeam(
             code = "ST1",
             description = "Team 1",
             provider = NDCodeDescription("provider1", "description1"),
           ),
-          SupervisorTeam(
+          NDSupervisorTeam(
             code = "ST2",
             description = "Team 2",
             provider = NDCodeDescription("provider2", "description2"),

@@ -3,8 +3,8 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.service
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ArnsClient
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CaseSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.NotFoundException
 
 @Service
@@ -22,7 +22,7 @@ class OffenderService(
 sealed interface OffenderInfoResult {
   val crn: String
 
-  data class Full(override val crn: String, val summary: CaseSummary) : OffenderInfoResult {
+  data class Full(override val crn: String, val summary: NDCaseSummary) : OffenderInfoResult {
     companion object
   }
   data class Limited(override val crn: String) : OffenderInfoResult

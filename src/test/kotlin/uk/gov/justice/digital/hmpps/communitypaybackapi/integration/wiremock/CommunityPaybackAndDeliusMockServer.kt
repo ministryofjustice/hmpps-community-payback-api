@@ -15,15 +15,15 @@ import com.github.tomakehurst.wiremock.client.WireMock.put
 import com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor
 import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
 import com.github.tomakehurst.wiremock.client.WireMock.urlMatching
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Appointment
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCreatedAppointment
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProviderSummaries
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProviderTeamSummaries
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSession
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSessionSummaries
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSupervisor
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSupervisorSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDUnpaidWorkRequirement
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProviderSummaries
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProviderTeamSummaries
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Session
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.SessionSummaries
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Supervisor
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.SupervisorSummaries
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
@@ -36,7 +36,7 @@ object CommunityPaybackAndDeliusMockServer {
 
   fun providers(
     username: String,
-    providers: ProviderSummaries,
+    providers: NDProviderSummaries,
   ) {
     WireMock.stubFor(
       get("/community-payback-and-delius/providers?username=$username").willReturn(
@@ -49,7 +49,7 @@ object CommunityPaybackAndDeliusMockServer {
 
   fun providerTeams(
     providerCode: String,
-    providerTeams: ProviderTeamSummaries,
+    providerTeams: NDProviderTeamSummaries,
   ) {
     WireMock.stubFor(
       get("/community-payback-and-delius/providers/$providerCode/teams").willReturn(
@@ -65,7 +65,7 @@ object CommunityPaybackAndDeliusMockServer {
     teamCode: String,
     startDate: LocalDate,
     endDate: LocalDate,
-    projectSessions: SessionSummaries,
+    projectSessions: NDSessionSummaries,
   ) {
     WireMock.stubFor(
       get("/community-payback-and-delius/providers/$providerCode/teams/$teamCode/sessions?startDate=${startDate.toIsoDateString()}&endDate=${endDate.toIsoDateString()}")
@@ -79,7 +79,7 @@ object CommunityPaybackAndDeliusMockServer {
 
   fun getSupervisor(
     username: String,
-    supervisor: Supervisor,
+    supervisor: NDSupervisor,
   ) {
     WireMock.stubFor(
       get("/community-payback-and-delius/supervisors?username=$username")
@@ -116,7 +116,7 @@ object CommunityPaybackAndDeliusMockServer {
   }
 
   fun getAppointment(
-    appointment: Appointment,
+    appointment: NDAppointment,
     username: String,
   ) {
     WireMock.stubFor(
@@ -208,7 +208,7 @@ object CommunityPaybackAndDeliusMockServer {
   fun getProjectSession(
     username: String,
     date: LocalDate,
-    session: Session,
+    session: NDSession,
   ) {
     WireMock.stubFor(
       get(
@@ -223,7 +223,7 @@ object CommunityPaybackAndDeliusMockServer {
     )
   }
 
-  fun teamSupervisors(supervisorSummaries: SupervisorSummaries) {
+  fun teamSupervisors(supervisorSummaries: NDSupervisorSummaries) {
     WireMock.stubFor(
       get("/community-payback-and-delius/providers/123/teams/99/supervisors")
         .willReturn(

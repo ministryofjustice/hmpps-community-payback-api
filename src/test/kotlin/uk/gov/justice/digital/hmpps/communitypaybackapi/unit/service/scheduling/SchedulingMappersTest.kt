@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Code
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCode
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCodeDescription
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDNameCode
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDPickUp
@@ -179,7 +179,7 @@ class SchedulingMappersTest {
         endTime = LocalTime.of(3, 4),
         pickUp = NDPickUp(
           time = LocalTime.of(5, 6),
-          location = Code("PICKUPLOC1"),
+          location = NDCode("PICKUPLOC1"),
         ),
       ).toSchedulingAllocation()
 

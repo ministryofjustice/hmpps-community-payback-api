@@ -5,9 +5,9 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.AppointmentSummary
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Project
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Session
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointmentSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProject
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSession
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AllocateSupervisorToSessionDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.SessionSupervisorEntity
@@ -60,14 +60,14 @@ class AdminSessionsIT : IntegrationTestBase() {
       CommunityPaybackAndDeliusMockServer.getProjectSession(
         username = "USER1",
         date = LocalDate.of(2025, 1, 9),
-        session = Session.valid().copy(
-          project = Project.valid().copy(
+        session = NDSession.valid().copy(
+          project = NDProject.valid().copy(
             name = "Community Garden Maintenance",
             code = "N123456789",
           ),
           appointmentSummaries = listOf(
-            AppointmentSummary.valid().copy(outcome = null),
-            AppointmentSummary.valid().copy(outcome = null),
+            NDAppointmentSummary.valid().copy(outcome = null),
+            NDAppointmentSummary.valid().copy(outcome = null),
           ),
         ),
       )

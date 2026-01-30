@@ -10,24 +10,24 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Address
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Appointment
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.AppointmentBehaviour
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.AppointmentSummary
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.AppointmentSupervisor
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.AppointmentWorkQuality
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CaseSummary
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Code
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ContactOutcome
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.EnforcementAction
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAddress
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointment
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointmentBehaviour
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointmentPickUp
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointmentSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointmentSupervisor
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointmentWorkQuality
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCode
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDContactOutcome
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDEnforcementAction
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDEvent
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDName
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProject
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectType
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProvider
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDRequirementProgress
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Name
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Project
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectType
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Provider
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Team
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDTeam
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.HourMinuteDuration
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentBehaviourDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentWorkQualityDto
@@ -46,7 +46,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.Appointm
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.fromDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toAppointmentUpdatedDomainEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toNDCreateAppointment
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toUpdateAppointment
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toNDUpdateAppointment
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
@@ -112,8 +112,8 @@ class AppointmentMappersTest {
       assertThat(result.workedIntensively).isFalse
       assertThat(result.penaltyMinutes).isEqualTo(105)
       assertThat(result.minutesCredited).isEqualTo(35)
-      assertThat(result.workQuality).isEqualTo(AppointmentWorkQuality.NOT_APPLICABLE)
-      assertThat(result.behaviour).isEqualTo(AppointmentBehaviour.UNSATISFACTORY)
+      assertThat(result.workQuality).isEqualTo(NDAppointmentWorkQuality.NOT_APPLICABLE)
+      assertThat(result.behaviour).isEqualTo(NDAppointmentBehaviour.UNSATISFACTORY)
       assertThat(result.alertActive).isFalse
       assertThat(result.sensitive).isTrue
       assertThat(result.pickUp?.location?.code).isEqualTo("PICKUP10")
@@ -201,7 +201,7 @@ class AppointmentMappersTest {
         sensitive = true,
       )
 
-      val result = appointmentEvent.toUpdateAppointment()
+      val result = appointmentEvent.toNDUpdateAppointment()
 
       assertThat(result.version).isEqualTo(appointmentEvent.priorDeliusVersion)
       assertThat(result.startTime).isEqualTo(LocalTime.of(3, 2, 1))
@@ -213,8 +213,8 @@ class AppointmentMappersTest {
       assertThat(result.workedIntensively).isFalse
       assertThat(result.penaltyMinutes).isEqualTo(105)
       assertThat(result.minutesCredited).isEqualTo(35)
-      assertThat(result.workQuality).isEqualTo(AppointmentWorkQuality.NOT_APPLICABLE)
-      assertThat(result.behaviour).isEqualTo(AppointmentBehaviour.UNSATISFACTORY)
+      assertThat(result.workQuality).isEqualTo(NDAppointmentWorkQuality.NOT_APPLICABLE)
+      assertThat(result.behaviour).isEqualTo(NDAppointmentBehaviour.UNSATISFACTORY)
       assertThat(result.alertActive).isFalse
       assertThat(result.sensitive).isTrue
     }
@@ -243,7 +243,7 @@ class AppointmentMappersTest {
         sensitive = null,
       )
 
-      val result = event.toUpdateAppointment()
+      val result = event.toNDUpdateAppointment()
 
       assertThat(result.version).isEqualTo(event.priorDeliusVersion)
       assertThat(result.startTime).isEqualTo(LocalTime.of(3, 2, 1))
@@ -339,39 +339,39 @@ class AppointmentMappersTest {
       val respondBy = LocalDate.of(2025, 10, 1)
       val hiVisWorn = true
       val workedIntensively = false
-      val workQuality = AppointmentWorkQuality.SATISFACTORY
-      val behaviour = AppointmentBehaviour.SATISFACTORY
+      val workQuality = NDAppointmentWorkQuality.SATISFACTORY
+      val behaviour = NDAppointmentBehaviour.SATISFACTORY
       val notes = "This is a test note"
 
-      val appointment = Appointment(
+      val appointment = NDAppointment(
         id = id,
         version = version,
-        project = Project(
+        project = NDProject(
           name = projectName,
           code = projectCode,
-          location = Address.valid(),
+          location = NDAddress.valid(),
         ),
-        projectType = ProjectType(
+        projectType = NDProjectType(
           name = projectTypeName,
           code = projectTypeCode,
         ),
-        case = CaseSummary.valid().copy(
+        case = NDCaseSummary.valid().copy(
           crn = crn,
           currentExclusion = true,
         ),
         event = NDEvent.valid().copy(
           number = eventNumber,
         ),
-        team = Team(
+        team = NDTeam(
           name = supervisingTeam,
           code = supervisingTeamCode,
         ),
-        provider = Provider(
+        provider = NDProvider(
           name = "not mapped",
           code = providerCode,
         ),
         pickUpData = NDAppointmentPickUp(
-          location = Address(
+          location = NDAddress(
             buildingName = pickUpBuildingName,
             addressNumber = pickUpBuildingNumber,
             streetName = pickUpStreetName,
@@ -379,19 +379,19 @@ class AppointmentMappersTest {
             county = pickUpCounty,
             postCode = pickUpPostCode,
           ),
-          locationCode = Code(pickUpLocationCode),
+          locationCode = NDCode(pickUpLocationCode),
           time = pickUpTime,
         ),
         date = date,
         startTime = startTime,
         endTime = endTime,
         penaltyHours = penaltyTime,
-        supervisor = AppointmentSupervisor(
+        supervisor = NDAppointmentSupervisor(
           code = supervisorOfficerCode,
-          name = Name.valid(),
+          name = NDName.valid(),
         ),
-        outcome = ContactOutcome.valid().copy(code = "OUTCOME1"),
-        enforcementAction = EnforcementAction.valid().copy(
+        outcome = NDContactOutcome.valid().copy(code = "OUTCOME1"),
+        enforcementAction = NDEnforcementAction.valid().copy(
           code = "ENFORCE1",
           respondBy = respondBy,
         ),
@@ -452,9 +452,9 @@ class AppointmentMappersTest {
 
     @Test
     fun `Populate attendance data if corresponding outcome is for attendance`() {
-      val projectAppointment = Appointment.valid().copy(
-        outcome = ContactOutcome.valid().copy(code = "OUTCOME1"),
-        enforcementAction = EnforcementAction.valid().copy(code = "ENFORCE1"),
+      val projectAppointment = NDAppointment.valid().copy(
+        outcome = NDContactOutcome.valid().copy(code = "OUTCOME1"),
+        enforcementAction = NDEnforcementAction.valid().copy(code = "ENFORCE1"),
       )
 
       every { contactOutcomeEntityRepository.findByCode("OUTCOME1") } returns ContactOutcomeEntity.valid().copy(attended = true)
@@ -467,9 +467,9 @@ class AppointmentMappersTest {
 
     @Test
     fun `Don't populate attendance data if corresponding outcome is not for attendance`() {
-      val projectAppointment = Appointment.valid().copy(
-        outcome = ContactOutcome.valid().copy(code = "OUTCOME1"),
-        enforcementAction = EnforcementAction.valid().copy(code = "ENFORCE1"),
+      val projectAppointment = NDAppointment.valid().copy(
+        outcome = NDContactOutcome.valid().copy(code = "OUTCOME1"),
+        enforcementAction = NDEnforcementAction.valid().copy(code = "ENFORCE1"),
       )
 
       every { contactOutcomeEntityRepository.findByCode("OUTCOME1") } returns ContactOutcomeEntity.valid().copy(attended = false)
@@ -489,10 +489,10 @@ class AppointmentMappersTest {
       every { contactOutcomeEntityRepository.findByCode("OUTCOME1") } returns ContactOutcomeEntity.valid().copy(name = "The outcome")
 
       val result = service.toSummaryDto(
-        appointmentSummary = AppointmentSummary(
+        appointmentSummary = NDAppointmentSummary(
           id = 1L,
-          case = CaseSummary.Companion.valid().copy(crn = "CRN1"),
-          outcome = ContactOutcome.valid().copy(code = "OUTCOME1"),
+          case = NDCaseSummary.Companion.valid().copy(crn = "CRN1"),
+          outcome = NDContactOutcome.valid().copy(code = "OUTCOME1"),
           requirementProgress = NDRequirementProgress(
             requiredMinutes = 520,
             adjustments = 40,
