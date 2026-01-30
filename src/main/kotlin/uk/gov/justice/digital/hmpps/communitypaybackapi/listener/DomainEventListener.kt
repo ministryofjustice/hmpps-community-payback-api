@@ -68,7 +68,9 @@ class DomainEventListener(
     val event = objectMapper.readValue<HmppsDomainEvent>(sqsMessage.message)
 
     when (event.eventType) {
-      DomainEventType.APPOINTMENT_UPDATED.eventType -> schedulingAppointmentEventHandler.handleAppointmentEvent(
+      DomainEventType.APPOINTMENT_UPDATED.eventType,
+      DomainEventType.APPOINTMENT_CREATED.eventType,
+      -> schedulingAppointmentEventHandler.handleAppointmentEvent(
         eventId = event.getEventId(),
         maxProcessingTime = Duration.ofSeconds(MESSAGE_VISIBILITY_TIMEOUT),
       )

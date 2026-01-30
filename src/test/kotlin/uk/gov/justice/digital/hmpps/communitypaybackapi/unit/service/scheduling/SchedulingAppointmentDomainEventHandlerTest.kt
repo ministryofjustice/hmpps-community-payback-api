@@ -7,7 +7,11 @@ import io.mockk.verify
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventTriggerType
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.LockService
@@ -44,13 +48,22 @@ class SchedulingAppointmentDomainEventHandlerTest {
     )
   }
 
-  @Test
-  fun `success`() {
+  @ParameterizedTest
+  @CsvSource(
+    "UPDATE,AppointmentChange",
+    "CREATE,AppointmentCreated",
+  )
+  fun `scheduling triggered`(
+    eventType: AppointmentEventType,
+    expectedScheduleTriggerType: SchedulingTriggerType,
+  ) {
     every {
       appointmentEventService.getEvent(EVENT_ID)
     } returns AppointmentEventEntity.valid().copy(
       crn = "CRN1",
       deliusEventNumber = 5,
+      eventType = eventType,
+      triggerType = AppointmentEventTriggerType.USER,
     )
 
     every {
@@ -67,13 +80,34 @@ class SchedulingAppointmentDomainEventHandlerTest {
         crn = "CRN1",
         eventNumber = 5,
         trigger = SchedulingTrigger(
-          type = SchedulingTriggerType.AppointmentChange,
-          description = "Appointment Updated",
+          type = expectedScheduleTriggerType,
+          description = "Domain Event $EVENT_ID",
         ),
         dryRun = false,
       )
 
       appointmentEventService.recordSchedulingRan(EVENT_ID, SCHEDULE_ID)
+    }
+  }
+
+  @Test
+  fun `do not trigger scheduling if the appointment event was triggered from scheduling`() {
+    every {
+      appointmentEventService.getEvent(EVENT_ID)
+    } returns AppointmentEventEntity.valid().copy(
+      crn = "CRN1",
+      deliusEventNumber = 5,
+      triggerType = AppointmentEventTriggerType.SCHEDULING,
+    )
+
+    service.handleAppointmentEvent(
+      eventId = EVENT_ID,
+      maxProcessingTime = Duration.ofSeconds(30),
+    )
+
+    verify(exactly = 0) {
+      scheduleService.scheduleAppointments(any(), any(), any(), any())
+      appointmentEventService.recordSchedulingRan(any(), any())
     }
   }
 

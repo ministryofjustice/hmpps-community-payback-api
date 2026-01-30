@@ -65,6 +65,63 @@ class SchedulingIT : IntegrationTestBase() {
   }
 
   @Nested
+  inner class SchedulingOnAppointmentCreation {
+
+    @Test
+    fun `Can't find update event, raise alert`() {
+      val eventId = UUID.randomUUID()
+
+      publishEvent(eventId)
+
+      assertThat(mockSentryService.getRaisedException())
+        .isInstanceOf(SqsListenerException::class.java)
+        .hasMessageMatching("Error occurred handling message with ID '.*' - Can't find event with id '$eventId'")
+    }
+
+    @Test
+    fun `Schedule already sufficient, do nothing`() {
+      testSchedulingAlreadySufficientDoNothing {
+        createEvent().also {
+          publishEvent(it.id)
+        }
+      }
+    }
+
+    @Test
+    fun `New appointments required after shortfall created by non attendance`() {
+      testNewAppointmentsRequiredAfterShortfall {
+        createEvent().also {
+          publishEvent(it.id)
+        }
+      }
+    }
+
+    private fun createEvent() = appointmentEventEntityRepository.save(
+      AppointmentEventEntity.valid(applicationContext).copy(
+        crn = CRN,
+        deliusEventNumber = EVENT_NUMBER,
+        eventType = AppointmentEventType.CREATE,
+      ),
+    )
+
+    private fun publishEvent(eventId: UUID) {
+      domainEventPublisher.publish(
+        HmppsDomainEvent(
+          eventType = DomainEventType.APPOINTMENT_CREATED.eventType,
+          version = 1,
+          description = DomainEventType.APPOINTMENT_CREATED.description,
+          detailUrl = "doesnt matter",
+          occurredAt = OffsetDateTime.now(),
+          additionalInformation = HmppsAdditionalInformation(
+            mapOf(AdditionalInformationType.EVENT_ID.name to eventId),
+          ),
+          personReference = HmmpsEventPersonReferences(emptyList()),
+        ),
+      )
+    }
+  }
+
+  @Nested
   inner class SchedulingOnAppointmentUpdate {
 
     @Test
@@ -75,7 +132,7 @@ class SchedulingIT : IntegrationTestBase() {
 
       assertThat(mockSentryService.getRaisedException())
         .isInstanceOf(SqsListenerException::class.java)
-        .hasMessageMatching("Error occurred handling message with ID '.*' - Can't find appointment updated record for event id '$eventId'")
+        .hasMessageMatching("Error occurred handling message with ID '.*' - Can't find event with id '$eventId'")
     }
 
     @Test
@@ -338,8 +395,8 @@ class SchedulingIT : IntegrationTestBase() {
       ),
     )
 
-    val eventId = publishTriggeringEvent().id
-    waitForSchedulingToRun(eventId)
+    val triggeringEvent = publishTriggeringEvent()
+    waitForSchedulingToRun(triggeringEvent.id)
 
     /*
     Today+3 - ALLOC1, 10:00-16:00
@@ -378,7 +435,9 @@ class SchedulingIT : IntegrationTestBase() {
       ),
     )
 
-    domainEventAsserter.assertEventCount(DomainEventType.APPOINTMENT_CREATED.eventType, 3)
+    val expectedAppointmentCreateDomainEvents = 3 + if (triggeringEvent.eventType == AppointmentEventType.CREATE) 1 else 0
+
+    domainEventAsserter.assertEventCount(DomainEventType.APPOINTMENT_CREATED.eventType, expectedAppointmentCreateDomainEvents)
   }
 
   private fun setClockToDayOfWeek(dayOfWeek: DayOfWeek): LocalDate {
