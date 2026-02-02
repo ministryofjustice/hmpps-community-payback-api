@@ -1,9 +1,9 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers
 
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CaseSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.OffenderDto
 
-fun CaseSummary.toDto() = if (isLimited()) {
+fun NDCaseSummary.toDto() = if (isLimited()) {
   OffenderDto.OffenderLimitedDto(
     crn = crn,
   )
@@ -17,4 +17,4 @@ fun CaseSummary.toDto() = if (isLimited()) {
   )
 }
 
-private fun CaseSummary.isLimited() = this.currentExclusion || this.currentRestriction
+private fun NDCaseSummary.isLimited() = this.currentExclusion || this.currentRestriction

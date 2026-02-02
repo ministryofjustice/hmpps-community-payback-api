@@ -6,12 +6,12 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.AppointmentSummary
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Project
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectSummary
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Session
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.SessionSummaries
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.SessionSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointmentSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProject
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSession
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSessionSummaries
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSessionSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionSummariesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionSummaryDto
@@ -77,14 +77,14 @@ class SupervisorSessionsIT : IntegrationTestBase() {
         username = "USER1",
         date = LocalDate.of(2025, 1, 9),
         session =
-        Session.valid().copy(
-          project = Project.valid().copy(
+        NDSession.valid().copy(
+          project = NDProject.valid().copy(
             name = "Community Garden Maintenance",
             code = "N123456789",
           ),
           appointmentSummaries = listOf(
-            AppointmentSummary.valid().copy(outcome = null),
-            AppointmentSummary.valid().copy(outcome = null),
+            NDAppointmentSummary.valid().copy(outcome = null),
+            NDAppointmentSummary.valid().copy(outcome = null),
           ),
         ),
       )
@@ -169,8 +169,8 @@ class SupervisorSessionsIT : IntegrationTestBase() {
       CommunityPaybackAndDeliusMockServer.getProjectSession(
         username = "USER1",
         date = today,
-        session = Session.valid(ctx).copy(
-          project = Project.valid().copy(code = "PROJ1"),
+        session = NDSession.valid(ctx).copy(
+          project = NDProject.valid().copy(code = "PROJ1"),
         ),
       )
 
@@ -231,10 +231,10 @@ class SupervisorSessionsIT : IntegrationTestBase() {
         teamCode = "T456",
         startDate = LocalDate.now(),
         endDate = LocalDate.now().plusDays(7),
-        projectSessions = SessionSummaries(
+        projectSessions = NDSessionSummaries(
           listOf(
-            SessionSummary.valid().copy(project = ProjectSummary.valid().copy(description = "Community Garden Maintenance")),
-            SessionSummary.valid().copy(project = ProjectSummary.valid().copy(description = "Park Cleanup")),
+            NDSessionSummary.valid().copy(project = NDProjectSummary.valid().copy(description = "Community Garden Maintenance")),
+            NDSessionSummary.valid().copy(project = NDProjectSummary.valid().copy(description = "Park Cleanup")),
           ),
         ),
       )

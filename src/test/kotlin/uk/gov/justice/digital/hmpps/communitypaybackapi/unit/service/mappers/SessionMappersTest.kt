@@ -8,15 +8,15 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Address
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.AppointmentSummary
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CaseSummary
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ContactOutcome
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Project
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectSummary
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Session
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.SessionSummaries
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.SessionSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAddress
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointmentSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDContactOutcome
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProject
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSession
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSessionSummaries
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSessionSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
@@ -47,10 +47,10 @@ class SessionMappersTest {
 
     @Test
     fun `should map ProjectAllocations to DTO correctly`() {
-      val projectSessions = SessionSummaries(
+      val projectSessions = NDSessionSummaries(
         listOf(
-          SessionSummary(
-            project = ProjectSummary(
+          NDSessionSummary(
+            project = NDProjectSummary(
               code = "cg",
               description = "Community Garden",
             ),
@@ -59,8 +59,8 @@ class SessionMappersTest {
             outcomeCount = 1,
             enforcementActionCount = 2,
           ),
-          SessionSummary(
-            project = ProjectSummary(
+          NDSessionSummary(
+            project = NDProjectSummary(
               code = "pc",
               description = "Park Cleanup",
             ),
@@ -100,8 +100,8 @@ class SessionMappersTest {
   inner class SessionSummaryToSessionSummaryDto {
     @Test
     fun `should map ProjectAllocation to DTO correctly`() {
-      val projectAllocation = SessionSummary(
-        project = ProjectSummary(
+      val projectAllocation = NDSessionSummary(
+        project = NDProjectSummary(
           code = "cg",
           description = "Community Garden",
         ),
@@ -130,19 +130,19 @@ class SessionMappersTest {
   inner class SessionToSessionDto {
     @Test
     fun `should map ProjectSession to DTO correctly`() {
-      val appointmentSummary1 = AppointmentSummary.valid().copy(case = CaseSummary.valid().copy(crn = "CRN1"))
-      val appointmentSummary2 = AppointmentSummary.valid().copy(case = CaseSummary.valid().copy(crn = "CRN2"))
+      val appointmentSummary1 = NDAppointmentSummary.valid().copy(case = NDCaseSummary.valid().copy(crn = "CRN1"))
+      val appointmentSummary2 = NDAppointmentSummary.valid().copy(case = NDCaseSummary.valid().copy(crn = "CRN2"))
 
       val appointmentSummaryDto1 = AppointmentSummaryDto.valid()
       val appointmentSummaryDto2 = AppointmentSummaryDto.valid()
       every { appointmentMappers.toSummaryDto(appointmentSummary1) } returns appointmentSummaryDto1
       every { appointmentMappers.toSummaryDto(appointmentSummary2) } returns appointmentSummaryDto2
 
-      val session = Session(
-        project = Project(
+      val session = NDSession(
+        project = NDProject(
           name = "Park Cleanup",
           code = "N987654321",
-          location = Address(
+          location = NDAddress(
             buildingName = "The Tower",
             addressNumber = "1a",
             streetName = "Somewhere Lane",
@@ -179,20 +179,20 @@ class SessionMappersTest {
 
     @Test
     fun `Should map correctly`() {
-      val session = Session(
-        project = Project(
+      val session = NDSession(
+        project = NDProject(
           name = "Park Cleanup",
           code = "N987654321",
-          location = Address.valid(),
+          location = NDAddress.valid(),
         ),
         appointmentSummaries = listOf(
-          AppointmentSummary.valid().copy(outcome = ContactOutcome.valid().copy(code = "ATTEND-1")),
-          AppointmentSummary.valid().copy(outcome = ContactOutcome.valid().copy(code = "ATTEND-1")),
-          AppointmentSummary.valid().copy(outcome = ContactOutcome.valid().copy(code = "ATTEND-2")),
-          AppointmentSummary.valid().copy(outcome = ContactOutcome.valid().copy(code = "ENFORCE-1")),
-          AppointmentSummary.valid().copy(outcome = ContactOutcome.valid().copy(code = "ENFORCE-2")),
-          AppointmentSummary.valid().copy(outcome = null),
-          AppointmentSummary.valid().copy(outcome = null),
+          NDAppointmentSummary.valid().copy(outcome = NDContactOutcome.valid().copy(code = "ATTEND-1")),
+          NDAppointmentSummary.valid().copy(outcome = NDContactOutcome.valid().copy(code = "ATTEND-1")),
+          NDAppointmentSummary.valid().copy(outcome = NDContactOutcome.valid().copy(code = "ATTEND-2")),
+          NDAppointmentSummary.valid().copy(outcome = NDContactOutcome.valid().copy(code = "ENFORCE-1")),
+          NDAppointmentSummary.valid().copy(outcome = NDContactOutcome.valid().copy(code = "ENFORCE-2")),
+          NDAppointmentSummary.valid().copy(outcome = null),
+          NDAppointmentSummary.valid().copy(outcome = null),
         ),
       )
 
@@ -221,7 +221,7 @@ class SessionMappersTest {
     @Test
     fun `empty location mapped to empty string`() {
       assertThat(
-        Address(
+        NDAddress(
           buildingName = null,
           addressNumber = null,
           streetName = null,
@@ -235,7 +235,7 @@ class SessionMappersTest {
     @Test
     fun `no address number`() {
       assertThat(
-        Address(
+        NDAddress(
           buildingName = "building",
           addressNumber = null,
           streetName = "street",
@@ -249,7 +249,7 @@ class SessionMappersTest {
     @Test
     fun `all fields provided`() {
       assertThat(
-        Address(
+        NDAddress(
           buildingName = "building",
           addressNumber = "address",
           streetName = "street",

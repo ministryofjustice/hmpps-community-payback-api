@@ -3,12 +3,12 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.unit.service.mappers
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Grade
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProviderSummaries
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProviderSummary
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.SupervisorName
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.SupervisorSummaries
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.SupervisorSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDGrade
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProviderSummaries
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProviderSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSupervisorName
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSupervisorSummaries
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSupervisorSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.GradeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.NameDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProviderSummaryDto
@@ -22,11 +22,11 @@ class ProviderMappersTest {
 
     @Test
     fun `should map using toDto() correctly`() {
-      val providersSummaries = ProviderSummaries(
+      val providersSummaries = NDProviderSummaries(
         listOf(
-          ProviderSummary(code = "ABC123", "East of England"),
-          ProviderSummary(code = "DEF123", "North East Region"),
-          ProviderSummary(code = "GHI123", "North West Region"),
+          NDProviderSummary(code = "ABC123", "East of England"),
+          NDProviderSummary(code = "DEF123", "North East Region"),
+          NDProviderSummary(code = "GHI123", "North West Region"),
         ),
       )
       val providerSummariesDto = providersSummaries.toDto()
@@ -41,7 +41,7 @@ class ProviderMappersTest {
   inner class ProviderSummariesMapper {
     @Test
     fun `should map using toDto() correctly`() {
-      val providerSummary = ProviderSummary(code = "GHI123", name = "East of England")
+      val providerSummary = NDProviderSummary(code = "GHI123", name = "East of England")
       assertThat(providerSummary.toDto())
         .isEqualTo(ProviderSummaryDto(code = "GHI123", name = "East of England"))
     }
@@ -52,19 +52,19 @@ class ProviderMappersTest {
 
     @Test
     fun `should map SupervisorSummaries to DTO correctly`() {
-      val supervisorSummaries = SupervisorSummaries(
+      val supervisorSummaries = NDSupervisorSummaries(
         listOf(
-          SupervisorSummary(
-            name = SupervisorName(
+          NDSupervisorSummary(
+            name = NDSupervisorName(
               forename = "wilma",
               middleName = null,
               surname = "flintstone",
             ),
             code = "WF01",
-            grade = Grade("S1", "S1 Description"),
+            grade = NDGrade("S1", "S1 Description"),
           ),
-          SupervisorSummary(
-            name = SupervisorName(
+          NDSupervisorSummary(
+            name = NDSupervisorName(
               forename = "Barney",
               middleName = null,
               surname = "Rubble",
@@ -72,14 +72,14 @@ class ProviderMappersTest {
             code = "BR01",
             grade = null,
           ),
-          SupervisorSummary(
-            name = SupervisorName(
+          NDSupervisorSummary(
+            name = NDSupervisorName(
               forename = "Fred",
               middleName = null,
               surname = "Flintstone",
             ),
             code = "FF01",
-            grade = Grade("PO", "PO Description"),
+            grade = NDGrade("PO", "PO Description"),
           ),
         ),
       )
@@ -97,14 +97,14 @@ class ProviderMappersTest {
 
     @Test
     fun `should map SupervisorSummary to DTO correctly`() {
-      val supervisorSummary = SupervisorSummary(
-        name = SupervisorName(
+      val supervisorSummary = NDSupervisorSummary(
+        name = NDSupervisorName(
           forename = "Fred",
           middleName = null,
           surname = "Flintstone",
         ),
         code = "FF01",
-        grade = Grade("PO", "PO Description"),
+        grade = NDGrade("PO", "PO Description"),
       )
 
       assertThat(supervisorSummary.toDto()).isEqualTo(
@@ -126,7 +126,7 @@ class ProviderMappersTest {
 
     @Test
     fun `should map empty SupervisorSummaries list correctly`() {
-      val supervisorSummaries = SupervisorSummaries(emptyList())
+      val supervisorSummaries = NDSupervisorSummaries(emptyList())
       val supervisorSummariesDto = supervisorSummaries.toDto()
 
       assertThat(supervisorSummariesDto.supervisors).isEmpty()

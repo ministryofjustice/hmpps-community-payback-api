@@ -1,13 +1,13 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers
 
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Grade
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProviderSummaries
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProviderSummary
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProviderTeamSummaries
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProviderTeamSummary
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.SupervisorName
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.SupervisorSummaries
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.SupervisorSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDGrade
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProviderSummaries
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProviderSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProviderTeamSummaries
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProviderTeamSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSupervisorName
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSupervisorSummaries
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSupervisorSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.GradeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.NameDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProviderSummariesDto
@@ -17,19 +17,19 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProviderTeamSummaryD
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SupervisorSummariesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SupervisorSummaryDto
 
-fun ProviderSummaries.toDto() = ProviderSummariesDto(this.providers.map { it.toDto() })
-fun ProviderSummary.toDto() = ProviderSummaryDto(this.code, this.name)
+fun NDProviderSummaries.toDto() = ProviderSummariesDto(this.providers.map { it.toDto() })
+fun NDProviderSummary.toDto() = ProviderSummaryDto(this.code, this.name)
 
-fun ProviderTeamSummaries.toDto() = ProviderTeamSummariesDto(this.teams.map { it.toDto() })
-fun ProviderTeamSummary.toDto() = ProviderTeamSummaryDto(this.code, this.description)
+fun NDProviderTeamSummaries.toDto() = ProviderTeamSummariesDto(this.teams.map { it.toDto() })
+fun NDProviderTeamSummary.toDto() = ProviderTeamSummaryDto(this.code, this.description)
 
-fun SupervisorSummaries.toDto() = SupervisorSummariesDto(
+fun NDSupervisorSummaries.toDto() = SupervisorSummariesDto(
   this.supervisors
     .sortedBy { "${it.name.surname}${it.name.forename}".lowercase() }
     .map { it.toDto() },
 )
 
-fun SupervisorSummary.toDto() = SupervisorSummaryDto(
+fun NDSupervisorSummary.toDto() = SupervisorSummaryDto(
   code = this.code,
   name = NameDto(
     forename = this.name.forename,
@@ -40,13 +40,13 @@ fun SupervisorSummary.toDto() = SupervisorSummaryDto(
   grade = this.grade?.toDto(),
 )
 
-fun Grade.toDto() = GradeDto(
+fun NDGrade.toDto() = GradeDto(
   code = this.code,
   description = this.description,
 )
 
-fun SupervisorName.toDtoValue() = forename + " " +
+fun NDSupervisorName.toDtoValue() = forename + " " +
   (middleName?.let { "$it " } ?: "") +
   surname
 
-fun Grade.toDtoValue() = "[$code - $description]"
+fun NDGrade.toDtoValue() = "[$code - $description]"

@@ -6,11 +6,11 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Appointment
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CaseSummary
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ContactOutcome
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.EnforcementAction
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Project
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointment
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDContactOutcome
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDEnforcementAction
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AttendanceDataDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.FormKeyDto
@@ -96,12 +96,12 @@ class SupervisorAppointmentsIT : IntegrationTestBase() {
       val crn = "X434334"
 
       CommunityPaybackAndDeliusMockServer.getAppointment(
-        appointment = Appointment.valid().copy(
+        appointment = NDAppointment.valid().copy(
           id = id,
-          project = Project.valid().copy(name = projectName, code = "PC01"),
-          case = CaseSummary.valid().copy(crn = crn),
-          outcome = ContactOutcome.valid(ctx),
-          enforcementAction = EnforcementAction.valid(ctx),
+          project = NDProject.valid().copy(name = projectName, code = "PC01"),
+          case = NDCaseSummary.valid().copy(crn = crn),
+          outcome = NDContactOutcome.valid(ctx),
+          enforcementAction = NDEnforcementAction.valid(ctx),
         ),
         username = "theusername",
       )
@@ -188,9 +188,9 @@ class SupervisorAppointmentsIT : IntegrationTestBase() {
     @Test
     fun `Should send update upstream and delete corresponding form data`() {
       CommunityPaybackAndDeliusMockServer.getAppointment(
-        appointment = Appointment.validNoOutcome().copy(
+        appointment = NDAppointment.validNoOutcome().copy(
           id = 1234L,
-          project = Project.valid().copy(code = "PC01"),
+          project = NDProject.valid().copy(code = "PC01"),
           date = LocalDate.now(),
         ),
         username = "theusername",
@@ -280,9 +280,9 @@ class SupervisorAppointmentsIT : IntegrationTestBase() {
     @Test
     fun `succeeds and calls upstream endpoint`() {
       CommunityPaybackAndDeliusMockServer.getAppointment(
-        appointment = Appointment.validNoOutcome().copy(
+        appointment = NDAppointment.validNoOutcome().copy(
           id = 1234L,
-          project = Project.valid().copy(code = "PC01"),
+          project = NDProject.valid().copy(code = "PC01"),
           date = LocalDate.now(),
         ),
         username = "theusername",
@@ -293,9 +293,9 @@ class SupervisorAppointmentsIT : IntegrationTestBase() {
       )
 
       CommunityPaybackAndDeliusMockServer.getAppointment(
-        appointment = Appointment.validNoOutcome().copy(
+        appointment = NDAppointment.validNoOutcome().copy(
           id = 5678L,
-          project = Project.valid().copy(code = "PC01"),
+          project = NDProject.valid().copy(code = "PC01"),
           date = LocalDate.now(),
         ),
         username = "theusername",

@@ -4,15 +4,15 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProjectSummary
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProviderSummaries
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProviderSummary
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProviderTeamSummaries
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProviderTeamSummary
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.SessionSummaries
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.SessionSummary
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.SupervisorSummaries
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.SupervisorSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProviderSummaries
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProviderSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProviderTeamSummaries
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProviderTeamSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSessionSummaries
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSessionSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSupervisorSummaries
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSupervisorSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProviderSummariesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProviderTeamSummariesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionSummariesDto
@@ -61,11 +61,11 @@ class AdminProvidersIT : IntegrationTestBase() {
     fun `should return OK`() {
       CommunityPaybackAndDeliusMockServer.providers(
         username = "calling_user",
-        providers = ProviderSummaries(
+        providers = NDProviderSummaries(
           listOf(
-            ProviderSummary(code = "ABC123", "Entry 1"),
-            ProviderSummary(code = "DEF123", "Entry 2"),
-            ProviderSummary(code = "GHI123", "Entry 3"),
+            NDProviderSummary(code = "ABC123", "Entry 1"),
+            NDProviderSummary(code = "DEF123", "Entry 2"),
+            NDProviderSummary(code = "GHI123", "Entry 3"),
           ),
         ),
       )
@@ -121,11 +121,11 @@ class AdminProvidersIT : IntegrationTestBase() {
     fun `should return OK`() {
       CommunityPaybackAndDeliusMockServer.providerTeams(
         providerCode = "N123456789",
-        ProviderTeamSummaries(
+        NDProviderTeamSummaries(
           listOf(
-            ProviderTeamSummary(code = "ABC123", "Team 1"),
-            ProviderTeamSummary(code = "DEF123", "Team 2"),
-            ProviderTeamSummary(code = "GHI123", "Team 3"),
+            NDProviderTeamSummary(code = "ABC123", "Team 1"),
+            NDProviderTeamSummary(code = "DEF123", "Team 2"),
+            NDProviderTeamSummary(code = "GHI123", "Team 3"),
           ),
         ),
       )
@@ -170,8 +170,8 @@ class AdminProvidersIT : IntegrationTestBase() {
     @Test
     fun `should return OK with team supervisors`() {
       CommunityPaybackAndDeliusMockServer.teamSupervisors(
-        SupervisorSummaries(
-          listOf(SupervisorSummary.valid(), SupervisorSummary.valid()),
+        NDSupervisorSummaries(
+          listOf(NDSupervisorSummary.valid(), NDSupervisorSummary.valid()),
         ),
       )
 
@@ -189,7 +189,7 @@ class AdminProvidersIT : IntegrationTestBase() {
     @Test
     fun `should return empty list when no supervisors found`() {
       CommunityPaybackAndDeliusMockServer.teamSupervisors(
-        SupervisorSummaries(emptyList()),
+        NDSupervisorSummaries(emptyList()),
       )
 
       val supervisors = webTestClient.get()
@@ -254,10 +254,10 @@ class AdminProvidersIT : IntegrationTestBase() {
         teamCode = "999",
         startDate = LocalDate.of(2025, 1, 9),
         endDate = LocalDate.of(2025, 1, 12),
-        projectSessions = SessionSummaries(
+        projectSessions = NDSessionSummaries(
           listOf(
-            SessionSummary.valid().copy(project = ProjectSummary.valid().copy(description = "Community Garden Maintenance")),
-            SessionSummary.valid().copy(project = ProjectSummary.valid().copy(description = "Park Cleanup")),
+            NDSessionSummary.valid().copy(project = NDProjectSummary.valid().copy(description = "Community Garden Maintenance")),
+            NDSessionSummary.valid().copy(project = NDProjectSummary.valid().copy(description = "Park Cleanup")),
           ),
         ),
       )
@@ -282,7 +282,7 @@ class AdminProvidersIT : IntegrationTestBase() {
         teamCode = "999",
         startDate = LocalDate.of(2025, 1, 9),
         endDate = LocalDate.of(2025, 1, 11),
-        projectSessions = SessionSummaries(emptyList()),
+        projectSessions = NDSessionSummaries(emptyList()),
       )
 
       val sessionSummaries = webTestClient.get()

@@ -4,7 +4,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Supervisor
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSupervisor
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SupervisorDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.bodyAsObject
@@ -73,7 +73,7 @@ class SupervisorSupervisorsIT : IntegrationTestBase() {
     fun `should return OK with supervisor info`() {
       CommunityPaybackAndDeliusMockServer.getSupervisor(
         username = "thesupervisorusername",
-        supervisor = Supervisor.valid().copy(
+        supervisor = NDSupervisor.valid().copy(
           code = "SUP01",
           isUnpaidWorkTeamMember = true,
         ),

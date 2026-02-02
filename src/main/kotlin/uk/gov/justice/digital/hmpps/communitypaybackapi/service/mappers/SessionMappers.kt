@@ -1,10 +1,10 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers
 
 import org.springframework.stereotype.Service
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Address
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.Session
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.SessionSummaries
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.SessionSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAddress
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSession
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSessionSummaries
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSessionSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionSummariesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionSummaryDto
@@ -20,7 +20,7 @@ class SessionMappers(
 
   fun toDto(
     date: LocalDate,
-    session: Session,
+    session: NDSession,
   ) = SessionDto(
     projectCode = session.project.code,
     projectName = session.project.name,
@@ -36,7 +36,7 @@ class SessionMappers(
 
   fun toSummaryDto(
     date: LocalDate,
-    session: Session,
+    session: NDSession,
   ) = SessionSummaryDto(
     projectName = session.project.name,
     projectCode = session.project.code,
@@ -51,8 +51,8 @@ class SessionMappers(
   private fun findOutcome(deliusCode: String) = contactOutcomeEntityRepository.findByCode(deliusCode) ?: error("Can't find outcome for code $deliusCode")
 }
 
-fun SessionSummaries.toDto() = SessionSummariesDto(this.sessions.map { it.toDto() })
-fun SessionSummary.toDto() = SessionSummaryDto(
+fun NDSessionSummaries.toDto() = SessionSummariesDto(this.sessions.map { it.toDto() })
+fun NDSessionSummary.toDto() = SessionSummaryDto(
   projectName = this.project.description,
   projectCode = this.project.code,
   date = this.date,
@@ -63,7 +63,7 @@ fun SessionSummary.toDto() = SessionSummaryDto(
   numberOfOffendersWithEA = this.enforcementActionCount,
 )
 
-fun Address.toFullAddress() = listOfNotNull(
+fun NDAddress.toFullAddress() = listOfNotNull(
   this.buildingName,
   listOfNotNull(
     this.addressNumber,
