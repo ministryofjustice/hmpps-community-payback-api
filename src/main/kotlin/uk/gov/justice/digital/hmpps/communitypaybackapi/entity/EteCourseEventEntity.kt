@@ -11,6 +11,7 @@ import org.hibernate.annotations.UpdateTimestamp
 import org.hibernate.proxy.HibernateProxy
 import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseCompletionStatus
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.util.UUID
 
@@ -30,6 +31,8 @@ data class EteCourseEventEntity(
   val courseName: String,
   val courseType: String,
   val provider: String,
+
+  val completionDateTime: LocalDateTime,
 
   @Enumerated(EnumType.STRING)
   val status: EteCourseEventStatus,

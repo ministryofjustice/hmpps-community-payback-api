@@ -26,6 +26,7 @@ fun EducationCourseCourse.Companion.valid() = EducationCourseCourse(
   courseType = String.random(20),
   provider = String.random(5),
   status = EducationCourseCompletionStatus.entries.random(),
+  completionDateTime = randomLocalDateTime(),
   totalTime = Random.nextLong(10, 100),
   expectedMinutes = Random.nextInt(30, 240),
 )
