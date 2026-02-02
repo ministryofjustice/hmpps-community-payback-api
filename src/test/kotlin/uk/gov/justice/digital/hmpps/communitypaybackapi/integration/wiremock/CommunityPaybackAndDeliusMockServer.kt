@@ -16,7 +16,6 @@ import com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor
 import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
 import com.github.tomakehurst.wiremock.client.WireMock.urlMatching
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointment
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCreatedAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProviderSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProviderTeamSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSession
@@ -131,14 +130,22 @@ object CommunityPaybackAndDeliusMockServer {
 
   fun postAppointments(
     projectCode: String,
-    response: List<NDCreatedAppointment>,
+    appointmentCount: Int,
   ) {
+    val response = (0..<appointmentCount).map { i ->
+      mapOf(
+        "id" to i + 1,
+        "reference" to $$"{{jsonPath request.body '$.appointments[$$i].reference'}}",
+      )
+    }
+
     WireMock.stubFor(
       post("/community-payback-and-delius/projects/$projectCode/appointments")
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")
-            .withBody(objectMapper.writeValueAsString(response)),
+            .withBody(objectMapper.writeValueAsString(response))
+            .withTransformers("response-template"),
         ),
     )
   }

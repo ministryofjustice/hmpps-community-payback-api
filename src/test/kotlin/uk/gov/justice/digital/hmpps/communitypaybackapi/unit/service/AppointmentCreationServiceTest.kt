@@ -61,7 +61,10 @@ class AppointmentCreationServiceTest {
         appointments = listOf(createAppointment1Dto, createAppointment2Dto),
       )
 
-      val creationEvent1 = AppointmentEventEntity.valid().copy(eventType = AppointmentEventType.CREATE)
+      val creationEvent1 = AppointmentEventEntity.valid().copy(
+        eventType = AppointmentEventType.CREATE,
+        communityPaybackAppointmentId = createAppointment1Dto.id,
+      )
       every {
         appointmentEventEntityFactory.buildCreatedEvent(
           projectCode = PROJECT_CODE,
@@ -71,7 +74,10 @@ class AppointmentCreationServiceTest {
         )
       } returns creationEvent1
 
-      val creationEvent2 = AppointmentEventEntity.valid().copy(eventType = AppointmentEventType.CREATE)
+      val creationEvent2 = AppointmentEventEntity.valid().copy(
+        eventType = AppointmentEventType.CREATE,
+        communityPaybackAppointmentId = createAppointment2Dto.id,
+      )
       every {
         appointmentEventEntityFactory.buildCreatedEvent(
           projectCode = PROJECT_CODE,
@@ -84,8 +90,8 @@ class AppointmentCreationServiceTest {
       every {
         communityPaybackAndDeliusClient.createAppointments(any(), any())
       } returns listOf(
-        NDCreatedAppointment(id = 15),
-        NDCreatedAppointment(id = 153),
+        NDCreatedAppointment(id = 15, reference = createAppointment1Dto.id),
+        NDCreatedAppointment(id = 153, reference = createAppointment2Dto.id),
       )
 
       service.createAppointments(

@@ -341,6 +341,7 @@ data class NDCreateAppointment(
 
 data class NDCreatedAppointment(
   val id: Long,
+  val reference: UUID,
 )
 
 data class NDUpdateAppointment(
