@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.listener
 
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 data class EducationCourseCompletionMessage(
   val externalId: String,
@@ -26,6 +27,7 @@ data class EducationCourseCourse(
   val courseName: String,
   val courseType: String,
   val provider: String,
+  val completionDateTime: LocalDateTime,
   val status: EducationCourseCompletionStatus,
   val totalTime: Long,
   val expectedMinutes: Int,

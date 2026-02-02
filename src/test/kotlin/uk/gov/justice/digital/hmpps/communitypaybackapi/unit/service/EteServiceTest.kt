@@ -12,19 +12,29 @@ import org.junit.jupiter.api.extension.ExtendWith
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseEventStatus
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.randomLocalDateTime
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseCompletionMessage
 import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseCompletionStatus
 import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseCourse
 import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCoursePerson
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentCreationService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.EteService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.EducationCourseCompletionMapper
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 @ExtendWith(MockKExtension::class)
 class EteServiceTest {
 
   @RelaxedMockK
   lateinit var eteCourseEventEntityRepository: EteCourseEventEntityRepository
+
+  @RelaxedMockK
+  lateinit var appointmentCreationService: AppointmentCreationService
+
+  @RelaxedMockK
+  lateinit var educationCourseCompletionMapper: EducationCourseCompletionMapper
 
   @InjectMockKs
   private lateinit var service: EteService
@@ -55,6 +65,7 @@ class EteServiceTest {
             totalTime = 70,
             expectedMinutes = 120,
             status = EducationCourseCompletionStatus.Failed,
+            completionDateTime = LocalDateTime.of(2026, 1, 1, 10, 0),
           ),
         ),
       )
@@ -77,6 +88,7 @@ class EteServiceTest {
       assertThat(persistedEntity.totalTime).isEqualTo(70)
       assertThat(persistedEntity.expectedMinutes).isEqualTo(120)
       assertThat(persistedEntity.status).isEqualTo(EteCourseEventStatus.FAILED)
+      assertThat(persistedEntity.completionDateTime).isEqualTo("2026-01-01T10:00")
 
       // External ID assertion
       assertThat(persistedEntity.externalId).isEqualTo("EXT123")
@@ -108,6 +120,7 @@ class EteServiceTest {
             totalTime = 150,
             expectedMinutes = 150,
             status = EducationCourseCompletionStatus.Completed,
+            completionDateTime = randomLocalDateTime(),
           ),
         ),
       )
@@ -120,6 +133,8 @@ class EteServiceTest {
       assertThat(persistedEntity.totalTime).isEqualTo(150) // 2 hours 30 minutes = 150 minutes
       assertThat(persistedEntity.expectedMinutes).isEqualTo(150)
       assertThat(persistedEntity.externalId).isEqualTo("EXT456")
+
+      // ensure appointment is created
     }
   }
 }
