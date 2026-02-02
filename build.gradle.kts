@@ -16,6 +16,9 @@ configurations {
     exclude(group = "org.mockito")
     exclude(group = "org.mockito.kotlin")
   }
+  all {
+    exclude(group = "dev.detekt", module = "detekt-report-checkstyle")
+  }
 }
 
 dependencies {
