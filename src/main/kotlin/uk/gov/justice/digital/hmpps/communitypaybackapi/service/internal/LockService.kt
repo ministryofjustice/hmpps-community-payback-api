@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.communitypaybackapi.listener
+package uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal
 
 import org.redisson.api.RedissonClient
 import org.slf4j.Logger
@@ -7,18 +7,27 @@ import org.springframework.stereotype.Component
 import java.time.Duration
 import java.util.concurrent.TimeUnit
 
+interface LockService {
+  @Suppress("MagicNumber")
+  fun <T> withDistributedLock(
+    key: String,
+    waitTime: Duration = Duration.ofSeconds(60),
+    leaseTime: Duration,
+    exec: () -> T,
+  ): T
+}
+
 @Component
-class LockService(
+class RedisLockService(
   private val redissonClient: RedissonClient,
-) {
+) : LockService {
   private companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)
   }
 
-  @Suppress("MagicNumber")
-  fun <T> withDistributedLock(
+  override fun <T> withDistributedLock(
     key: String,
-    waitTime: Duration = Duration.ofSeconds(5),
+    waitTime: Duration,
     leaseTime: Duration,
     exec: () -> T,
   ): T {
