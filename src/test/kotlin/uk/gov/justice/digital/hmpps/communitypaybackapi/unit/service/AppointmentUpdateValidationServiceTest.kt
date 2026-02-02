@@ -18,20 +18,20 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.BadReques
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentOutcomeValidationService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentUpdateValidationService
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
 
 @ExtendWith(MockKExtension::class)
-class AppointmentOutcomeValidationServiceTest {
+class AppointmentUpdateValidationServiceTest {
 
   @MockK
   lateinit var contactOutcomeEntityRepository: ContactOutcomeEntityRepository
 
   @InjectMockKs
-  lateinit var service: AppointmentOutcomeValidationService
+  lateinit var service: AppointmentUpdateValidationService
 
   private fun outcome(
     contactOutcomeCode: String = "OUTCOME1",

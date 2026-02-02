@@ -11,7 +11,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.SentryS
 
 @Service
 class AppointmentBulkUpdateService(
-  private val appointmentOutcomeValidationService: AppointmentOutcomeValidationService,
+  private val appointmentOutcomeValidationService: AppointmentUpdateValidationService,
   private val appointmentRetrievalService: AppointmentRetrievalService,
   private val appointmentUpdateService: AppointmentUpdateService,
   private val sentryService: SentryService,

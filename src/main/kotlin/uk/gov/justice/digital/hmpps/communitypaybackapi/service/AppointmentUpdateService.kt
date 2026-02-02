@@ -21,7 +21,7 @@ class AppointmentUpdateService(
   private val appointmentEventEntityRepository: AppointmentEventEntityRepository,
   private val communityPaybackAndDeliusClient: CommunityPaybackAndDeliusClient,
   private val formService: FormService,
-  private val appointmentOutcomeValidationService: AppointmentOutcomeValidationService,
+  private val appointmentOutcomeValidationService: AppointmentUpdateValidationService,
   private val appointmentEventEntityFactory: AppointmentEventEntityFactory,
   private val domainEventService: DomainEventService,
 ) {
