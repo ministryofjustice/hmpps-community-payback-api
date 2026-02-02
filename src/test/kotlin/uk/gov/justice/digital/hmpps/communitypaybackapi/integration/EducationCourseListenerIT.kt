@@ -8,8 +8,10 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import software.amazon.awssdk.services.sqs.model.SendMessageRequest
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCreatedAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
+import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.CommunityPaybackAndDeliusMockServer
 import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseCompletionMessage
 import uk.gov.justice.hmpps.sqs.HmppsQueueService
 import uk.gov.justice.hmpps.sqs.MissingQueueException
@@ -40,8 +42,14 @@ class EducationCourseListenerIT : IntegrationTestBase() {
 
     @Test
     fun `Message is received`() {
-      val message = objectMapper.writeValueAsString(EducationCourseCompletionMessage.valid())
+      CommunityPaybackAndDeliusMockServer.postAppointments(
+        projectCode = "N56CCTEST",
+        response = listOf(
+          NDCreatedAppointment(id = 1L),
+        ),
+      )
 
+      val message = objectMapper.writeValueAsString(EducationCourseCompletionMessage.valid())
       val queue = hmppsQueueService.findByQueueId(QUEUE_NAME)
         ?: throw MissingQueueException("HmppsQueue $QUEUE_NAME not found")
 
