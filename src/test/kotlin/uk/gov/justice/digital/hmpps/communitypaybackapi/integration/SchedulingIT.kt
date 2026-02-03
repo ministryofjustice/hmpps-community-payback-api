@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.ApplicationContext
 import org.springframework.data.repository.findByIdOrNull
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCreatedAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDRequirementProgress
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingAllocation
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingDayOfWeek
@@ -383,16 +382,11 @@ class SchedulingIT : IntegrationTestBase() {
 
     CommunityPaybackAndDeliusMockServer.postAppointments(
       projectCode = "PROJ1",
-      response = listOf(
-        NDCreatedAppointment(id = 1L),
-      ),
+      appointmentCount = 1,
     )
     CommunityPaybackAndDeliusMockServer.postAppointments(
       projectCode = "PROJ2",
-      response = listOf(
-        NDCreatedAppointment(id = 2L),
-        NDCreatedAppointment(id = 3L),
-      ),
+      appointmentCount = 2,
     )
 
     val triggeringEvent = publishTriggeringEvent()

@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import software.amazon.awssdk.services.sqs.model.SendMessageRequest
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCreatedAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.CommunityPaybackAndDeliusMockServer
@@ -44,9 +43,7 @@ class EducationCourseListenerIT : IntegrationTestBase() {
     fun `Message is received`() {
       CommunityPaybackAndDeliusMockServer.postAppointments(
         projectCode = "N56CCTEST",
-        response = listOf(
-          NDCreatedAppointment(id = 1L),
-        ),
+        appointmentCount = 1,
       )
 
       val message = objectMapper.writeValueAsString(EducationCourseCompletionMessage.valid())

@@ -42,13 +42,8 @@ class AppointmentCreationService(
       appointments = appointmentCreateRequests,
     )
 
-    val requestCount = appointmentCreateRequests.appointments.size
-    require(creationResponse.size == appointmentCreateRequests.appointments.size) {
-      "Expected $requestCount appointments to be created, but was ${creationResponse.size}"
-    }
-
-    val appointmentCreationEventsWithIds = appointmentCreationEvents.mapIndexed { index, event ->
-      event.copy(deliusAppointmentId = creationResponse[index].id)
+    val appointmentCreationEventsWithIds = appointmentCreationEvents.map { event ->
+      event.copy(deliusAppointmentId = creationResponse.first { it.reference == event.communityPaybackAppointmentId!! }.id)
     }
 
     appointmentEventEntityRepository.saveAll(appointmentCreationEventsWithIds)
