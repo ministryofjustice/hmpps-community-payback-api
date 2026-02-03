@@ -28,7 +28,7 @@ class EducationCourseListenerIT : IntegrationTestBase() {
   lateinit var eteCourseEventEntityRepository: EteCourseEventEntityRepository
 
   companion object {
-    const val QUEUE_NAME = "educationcoursecompletionqueue"
+    const val QUEUE_NAME = "educationcoursecompletionevents"
   }
 
   @Nested
