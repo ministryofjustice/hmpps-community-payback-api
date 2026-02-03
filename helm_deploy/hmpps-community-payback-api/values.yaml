@@ -63,7 +63,7 @@ generic-service:
     sqs-course-completion-events-secret:
       HMPPS_SQS_QUEUES_EDUCATIONCOURSECOMPLETIONEVENTS_QUEUE_NAME: "queue_name"
     sqs-domain-events-dlq-secret:
-      HMPPS_SQS_QUEUES_HMPPSDOMAINEVENTSQUEUE_DLQ_NAME: "queue_name"
+      HMPPS_SQS_QUEUES_HMPPSDOMAINEVENTSQUEUE_DLQ_NAME: "sqs_queue_name"
     rds-postgresql-instance-output:
       SPRING_DATASOURCE_USERNAME: "database_username"
       SPRING_DATASOURCE_PASSWORD: "database_password"

@@ -34,8 +34,8 @@ generic-prometheus-alerts:
   # Max expected connections for 2 x pods = 40 + additional 10 (buffer for direct connections)
   rdsAlertsConnectionThreshold: 50
   sqsAlertsQueueNames:
-    - "hmpps-community-payback-devs-dev-education_course_completion_events_dlq"
-    - "hmpps-community-payback-devs-dev-education_course_completion_events_queue"
+    - "hmpps-community-payback-devs-dev-course_completion_events_dlq"
+    - "hmpps-community-payback-devs-dev-course_completion_events_queue"
     - "hmpps-community-payback-devs-dev-hmpps_cp_domain_events_dlq"
     - "hmpps-community-payback-devs-dev-hmpps_cp_domain_events_queue"
   sqsAlertsOldestThreshold: 30
