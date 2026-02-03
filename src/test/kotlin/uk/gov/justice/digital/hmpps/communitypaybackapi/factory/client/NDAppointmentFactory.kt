@@ -31,6 +31,7 @@ fun NDAppointment.Companion.validNoOutcome() = NDAppointment.valid().copy(
 
 fun NDAppointment.Companion.valid() = NDAppointment(
   id = Long.random(),
+  reference = UUID.randomUUID(),
   version = UUID.randomUUID(),
   project = NDProject.valid(),
   projectType = NDProjectType.valid(),

@@ -295,6 +295,7 @@ class AppointmentEventEntityFactoryTest {
 
     @Test
     fun `all fields populated`() {
+      val communityPaybackId = UUID.randomUUID()
       val deliusVersion = UUID.randomUUID()
 
       val contactOutcomeEntity = ContactOutcomeEntity.valid().copy(
@@ -330,6 +331,7 @@ class AppointmentEventEntityFactoryTest {
           sensitive = true,
         ),
         existingAppointment = AppointmentDto.valid().copy(
+          communityPaybackId = communityPaybackId,
           offender = OffenderDto.OffenderLimitedDto(crn = "X12345"),
           deliusEventNumber = 48,
           projectCode = "PC01",
@@ -346,8 +348,8 @@ class AppointmentEventEntityFactoryTest {
       )
 
       assertThat(result.id).isNotNull
+      assertThat(result.communityPaybackAppointmentId).isEqualTo(communityPaybackId)
       assertThat(result.eventType).isEqualTo(AppointmentEventType.UPDATE)
-      assertThat(result.communityPaybackAppointmentId).isNull()
       assertThat(result.priorDeliusVersion).isEqualTo(deliusVersion)
       assertThat(result.crn).isEqualTo("X12345")
       assertThat(result.deliusEventNumber).isEqualTo(48)
@@ -395,6 +397,7 @@ class AppointmentEventEntityFactoryTest {
         ),
         existingAppointment = AppointmentDto.valid().copy(
           offender = OffenderDto.OffenderLimitedDto(crn = "X12345"),
+          communityPaybackId = null,
           deliusEventNumber = 48,
           projectCode = "PC01",
           date = LocalDate.of(2014, 6, 7),
@@ -407,8 +410,8 @@ class AppointmentEventEntityFactoryTest {
       )
 
       assertThat(result.id).isNotNull
-      assertThat(result.eventType).isEqualTo(AppointmentEventType.UPDATE)
       assertThat(result.communityPaybackAppointmentId).isNull()
+      assertThat(result.eventType).isEqualTo(AppointmentEventType.UPDATE)
       assertThat(result.priorDeliusVersion).isEqualTo(deliusVersion)
       assertThat(result.crn).isEqualTo("X12345")
       assertThat(result.deliusEventNumber).isEqualTo(48)

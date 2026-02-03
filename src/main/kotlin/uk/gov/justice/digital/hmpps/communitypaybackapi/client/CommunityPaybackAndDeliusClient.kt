@@ -151,6 +151,7 @@ data class NDRequirementProgress(
 
 data class NDAppointment(
   val id: Long,
+  val reference: UUID?,
   val version: UUID,
   val project: NDProject,
   val projectType: NDProjectType,
