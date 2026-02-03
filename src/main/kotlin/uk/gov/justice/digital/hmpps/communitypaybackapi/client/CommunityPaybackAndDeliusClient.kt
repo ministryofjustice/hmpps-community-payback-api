@@ -28,6 +28,7 @@ interface CommunityPaybackAndDeliusClient {
     @PathVariable teamCode: String,
     @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) startDate: LocalDate,
     @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) endDate: LocalDate,
+    @RequestParam projectTypeCodes: List<String>?,
   ): NDSessionSummaries
 
   @GetExchange("/projects/{projectCode}/appointments")

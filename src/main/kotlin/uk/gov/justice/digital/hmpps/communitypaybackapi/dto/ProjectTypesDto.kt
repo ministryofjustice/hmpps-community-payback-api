@@ -16,3 +16,8 @@ data class ProjectTypesDto(
   @param:Schema(description = "List of project types")
   val projectTypes: List<ProjectTypeDto>,
 )
+
+enum class ProjectTypeGroupDto {
+  GROUP,
+  INDIVIDUAL,
+}
