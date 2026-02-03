@@ -42,7 +42,7 @@ hmpps.sqs:
   # explicitly add it to our listener with a default of ''
   pollTimeoutSeconds: 1
   queues:
-    educationcoursecompletionqueue:
+    educationcoursecompletionevents:
       dlqName: ${random.uuid}
       queueName: ${random.uuid}
       dlqMaxReceiveCount: 1

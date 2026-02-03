@@ -22,7 +22,7 @@ class EducationCourseListener(
   }
 
   @SqsListener(
-    "educationcoursecompletionqueue",
+    "educationcoursecompletionevents",
     factory = "hmppsQueueContainerFactoryProxy",
     pollTimeoutSeconds = $$"${hmpps.sqs.pollTimeoutSeconds:}",
   )
