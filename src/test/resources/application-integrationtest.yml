@@ -36,6 +36,17 @@ community-payback:
 hmpps-auth:
   url: "http://localhost:${wiremock.server.port}/auth"
 
+hmpps.sar:
+  tests:
+    expected-api-response:
+      path: /subject-access-request/expected-api-response.json
+    expected-render-result:
+      path: /subject-access-request/expected-report.html
+    attachments-expected: false
+    expected-flyway-schema-version: 20260130172009
+    expected-jpa-entity-schema:
+      path: /subject-access-request/expected-jpa-schema.json
+
 hmpps.sqs:
   provider: localstack
   # this is not supported by the hmpps sqs library, instead we

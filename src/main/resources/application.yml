@@ -78,6 +78,10 @@ management:
         time-to-live: 2000ms
 
 hmpps:
+  sar:
+    template:
+      path: /sar-template.mustache
+      enabled: true
   sqs:
     # this sets a backoff for retries on when errors occur consuming messages
     # see https://github.com/ministryofjustice/hmpps-spring-boot-sqs

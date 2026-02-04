@@ -7,6 +7,7 @@ import org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDO
 import org.springframework.boot.test.web.server.LocalServerPort
 import org.springframework.boot.webtestclient.autoconfigure.AutoConfigureWebTestClient
 import org.springframework.context.ApplicationContext
+import org.springframework.context.annotation.Import
 import org.springframework.http.HttpHeaders
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.DynamicPropertyRegistry
@@ -21,12 +22,14 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.container.Po
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.container.RedisContainer
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.container.RedisContainer.setRedisProperties
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.HmppsAuthMockServer
+import uk.gov.justice.digital.hmpps.subjectaccessrequest.SarIntegrationTestHelperConfig
 import uk.gov.justice.hmpps.test.kotlin.auth.JwtAuthorisationHelper
 
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @ActiveProfiles("integrationtest")
 @AutoConfigureWebTestClient
 @EnableWireMock
+@Import(SarIntegrationTestHelperConfig::class)
 abstract class IntegrationTestBase {
 
   @LocalServerPort
