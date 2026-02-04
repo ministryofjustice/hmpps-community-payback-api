@@ -16,8 +16,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.randomLocalDateT
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseCompletionMessage
 import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseCompletionStatus
-import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseCourse
-import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCoursePerson
+import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseMessageAttributes
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentCreationService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.EteService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.EducationCourseCompletionMapper
@@ -49,16 +48,14 @@ class EteServiceTest {
 
       service.handleEducationCourseMessage(
         EducationCourseCompletionMessage.valid().copy(
-          externalReference = "EXT123",
-          person = EducationCoursePerson.valid().copy(
+          messageAttributes = EducationCourseMessageAttributes.valid().copy(
+            externalReference = "EXT123",
             crn = "CRN01",
             firstName = "John",
             lastName = "Doe",
             dateOfBirth = LocalDate.of(1990, 5, 15),
             region = "London",
             email = "john.doe@example.com",
-          ),
-          course = EducationCourseCourse.valid().copy(
             courseName = "The course name",
             courseType = "Online",
             provider = "Training Provider Inc.",
@@ -104,16 +101,14 @@ class EteServiceTest {
 
       service.handleEducationCourseMessage(
         EducationCourseCompletionMessage.valid().copy(
-          externalReference = "EXT456",
-          person = EducationCoursePerson.valid().copy(
+          messageAttributes = EducationCourseMessageAttributes.valid().copy(
+            externalReference = "EXT456",
             crn = "CRN02",
             firstName = "Jane",
             lastName = "Smith",
             dateOfBirth = LocalDate.of(1985, 8, 22),
             region = "Manchester",
             email = "jane.smith@example.com",
-          ),
-          course = EducationCourseCourse.valid().copy(
             courseName = "Advanced Course",
             courseType = "In-person",
             provider = "Education Corp",
