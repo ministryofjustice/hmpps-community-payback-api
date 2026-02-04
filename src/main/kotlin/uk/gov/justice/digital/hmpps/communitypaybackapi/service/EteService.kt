@@ -20,31 +20,32 @@ class EteService(
 
   @Transactional
   fun handleEducationCourseMessage(message: EducationCourseCompletionMessage) {
+    val attributes = message.messageAttributes
     eteCourseEventEntityRepository.save(
       EteCourseEventEntity(
         id = UUID.randomUUID(),
-        crn = message.person.crn,
-        firstName = message.person.firstName,
-        lastName = message.person.lastName,
-        dateOfBirth = message.person.dateOfBirth,
-        region = message.person.region,
-        email = message.person.email,
-        courseName = message.course.courseName,
-        courseType = message.course.courseType,
-        provider = message.course.provider,
-        completionDateTime = message.course.completionDateTime,
-        status = EteCourseEventStatus.fromMessage(message.course.status),
-        totalTime = message.course.totalTime,
-        expectedMinutes = message.course.expectedMinutes,
-        externalId = message.externalReference,
+        crn = attributes.crn,
+        firstName = attributes.firstName,
+        lastName = attributes.lastName,
+        dateOfBirth = attributes.dateOfBirth,
+        region = attributes.region,
+        email = attributes.email,
+        courseName = attributes.courseName,
+        courseType = attributes.courseType,
+        provider = attributes.provider,
+        completionDateTime = attributes.completionDateTime,
+        status = EteCourseEventStatus.fromMessage(attributes.status),
+        totalTime = attributes.totalTime,
+        expectedMinutes = attributes.expectedMinutes,
+        externalId = attributes.externalReference,
       ),
     )
-    if (message.course.status == EducationCourseCompletionStatus.Completed) {
+    if (attributes.status == EducationCourseCompletionStatus.Completed) {
       appointmentCreationService.createAppointments(
         educationCourseCompletionMapper.toCreateAppointmentsDto(message, projectCode = "N56CCTEST"),
         AppointmentEventTrigger(
           triggerType = AppointmentEventTriggerType.ETE_COURSE_COMPLETION,
-          triggeredBy = "External ETE System: ${message.externalReference}",
+          triggeredBy = "External ETE System: ${attributes.externalReference}",
         ),
       )
     }

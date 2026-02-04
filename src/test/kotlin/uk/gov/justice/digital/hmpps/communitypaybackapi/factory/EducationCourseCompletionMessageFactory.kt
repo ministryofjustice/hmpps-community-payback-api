@@ -2,31 +2,31 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.factory
 
 import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseCompletionMessage
 import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseCompletionStatus
-import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseCourse
-import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCoursePerson
+import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseMessageAttributes
 import kotlin.random.Random
 
 fun EducationCourseCompletionMessage.Companion.valid() = EducationCourseCompletionMessage(
-  externalReference = String.random(),
-  person = EducationCoursePerson.valid(),
-  course = EducationCourseCourse.valid(),
+  messageId = String.random(),
+  eventType = "educationCourseCompletionCreated",
+  description = null,
+  messageAttributes = EducationCourseMessageAttributes.valid(),
+  who = null,
 )
 
-fun EducationCoursePerson.Companion.valid() = EducationCoursePerson(
+fun EducationCourseMessageAttributes.Companion.valid() = EducationCourseMessageAttributes(
   crn = String.random(5),
   firstName = String.random(20),
   lastName = String.random(20),
   dateOfBirth = randomLocalDate(),
   region = String.random(10),
   email = "${String.random(10).lowercase()}@example.com",
-)
-
-fun EducationCourseCourse.Companion.valid() = EducationCourseCourse(
   courseName = String.random(20),
   courseType = String.random(20),
   provider = String.random(5),
   status = EducationCourseCompletionStatus.entries.random(),
   completionDateTime = randomLocalDateTime(),
   totalTime = Random.nextLong(10, 100),
+  attempts = "1",
   expectedMinutes = Random.nextInt(30, 240),
+  externalReference = String.random(),
 )

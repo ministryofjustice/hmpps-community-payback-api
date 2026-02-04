@@ -9,8 +9,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentsDt
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseCompletionMessage
 import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseCompletionStatus
-import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseCourse
-import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCoursePerson
+import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseMessageAttributes
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.EducationCourseCompletionMapper
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -109,8 +108,8 @@ class EducationCourseCompletionMapperTest {
     assertThat(result.appointments).hasSize(1)
 
     val appointment = result.appointments.first()
-    assertThat(appointment.crn).isEqualTo(message.person.crn)
-    assertThat(appointment.notes).contains(message.course.courseName)
+    assertThat(appointment.crn).isEqualTo(message.messageAttributes.crn)
+    assertThat(appointment.notes).contains(message.messageAttributes.courseName)
   }
 
   @Test
@@ -163,15 +162,16 @@ class EducationCourseCompletionMapperTest {
     expectedMinutes: Int = 60,
     externalId: String = "EXT_ID",
   ): EducationCourseCompletionMessage = EducationCourseCompletionMessage(
-    person = createDefaultPerson(
+    messageId = "90a9f09a-ce9f-4151-850c-fe281f81cc6f",
+    eventType = "educationCourseCompletionCreated",
+    description = null,
+    messageAttributes = EducationCourseMessageAttributes(
       crn = crn,
       firstName = firstName,
       lastName = lastName,
       dateOfBirth = dateOfBirth,
       region = region,
       email = email,
-    ),
-    course = createDefaultCourse(
       completionDateTime = completionDateTime,
       totalTime = totalTime,
       courseName = courseName,
@@ -179,41 +179,9 @@ class EducationCourseCompletionMapperTest {
       provider = provider,
       status = status,
       expectedMinutes = expectedMinutes,
+      externalReference = externalId,
+      attempts = "1",
     ),
-    externalReference = externalId,
-  )
-
-  private fun createDefaultPerson(
-    crn: String,
-    firstName: String,
-    lastName: String,
-    dateOfBirth: LocalDate,
-    region: String,
-    email: String,
-  ): EducationCoursePerson = EducationCoursePerson(
-    crn = crn,
-    firstName = firstName,
-    lastName = lastName,
-    dateOfBirth = dateOfBirth,
-    region = region,
-    email = email,
-  )
-
-  private fun createDefaultCourse(
-    completionDateTime: LocalDateTime,
-    totalTime: Long,
-    courseName: String,
-    courseType: String,
-    provider: String,
-    status: EducationCourseCompletionStatus,
-    expectedMinutes: Int,
-  ): EducationCourseCourse = EducationCourseCourse(
-    completionDateTime = completionDateTime,
-    totalTime = totalTime,
-    courseName = courseName,
-    courseType = courseType,
-    provider = provider,
-    status = status,
-    expectedMinutes = expectedMinutes,
+    who = null,
   )
 }

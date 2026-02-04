@@ -22,12 +22,13 @@ class EducationCourseCompletionMapper {
   )
 
   fun toCreateAppointmentDto(message: EducationCourseCompletionMessage): CreateAppointmentDto {
-    val completionDateTime = message.course.completionDateTime
-    val startTime = completionDateTime.toLocalTime().minusMinutes(message.course.totalTime)
+    val attributes = message.messageAttributes
+    val completionDateTime = attributes.completionDateTime
+    val startTime = completionDateTime.toLocalTime().minusMinutes(attributes.totalTime)
 
     return CreateAppointmentDto(
       id = UUID.randomUUID(),
-      crn = message.person.crn, // X980484 <--- Use for testing
+      crn = attributes.crn, // X980484 <--- Use for testing
       deliusEventNumber = 1, // This is not right, we need to find the correct event id
       allocationId = null,
       date = completionDateTime.toLocalDate(),
@@ -40,7 +41,7 @@ class EducationCourseCompletionMapper {
       contactOutcomeCode = ContactOutcomeEntity.ATTENDED_COMPLIED_OUTCOME_CODE,
       attendanceData = createAttendanceData(),
       supervisorOfficerCode = null,
-      notes = "Ete course completed: ${message.course.courseName}",
+      notes = "Ete course completed: ${attributes.courseName}",
       alertActive = null,
       sensitive = null,
     )
