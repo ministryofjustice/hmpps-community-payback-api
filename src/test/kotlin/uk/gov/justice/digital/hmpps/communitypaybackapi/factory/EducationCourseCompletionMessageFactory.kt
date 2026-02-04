@@ -7,7 +7,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourse
 import kotlin.random.Random
 
 fun EducationCourseCompletionMessage.Companion.valid() = EducationCourseCompletionMessage(
-  externalId = String.random(),
+  externalReference = String.random(),
   person = EducationCoursePerson.valid(),
   course = EducationCourseCourse.valid(),
 )
