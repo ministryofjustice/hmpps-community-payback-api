@@ -49,7 +49,7 @@ class EteServiceTest {
 
       service.handleEducationCourseMessage(
         EducationCourseCompletionMessage.valid().copy(
-          externalId = "EXT123",
+          externalReference = "EXT123",
           person = EducationCoursePerson.valid().copy(
             crn = "CRN01",
             firstName = "John",
@@ -104,7 +104,7 @@ class EteServiceTest {
 
       service.handleEducationCourseMessage(
         EducationCourseCompletionMessage.valid().copy(
-          externalId = "EXT456",
+          externalReference = "EXT456",
           person = EducationCoursePerson.valid().copy(
             crn = "CRN02",
             firstName = "Jane",

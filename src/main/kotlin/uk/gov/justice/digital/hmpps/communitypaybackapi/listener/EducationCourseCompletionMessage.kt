@@ -4,7 +4,7 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 
 data class EducationCourseCompletionMessage(
-  val externalId: String,
+  val externalReference: String,
   val person: EducationCoursePerson,
   val course: EducationCourseCourse,
 ) {

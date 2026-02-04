@@ -180,7 +180,7 @@ class EducationCourseCompletionMapperTest {
       status = status,
       expectedMinutes = expectedMinutes,
     ),
-    externalId = externalId,
+    externalReference = externalId,
   )
 
   private fun createDefaultPerson(
