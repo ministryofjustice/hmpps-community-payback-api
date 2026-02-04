@@ -65,9 +65,17 @@ object CommunityPaybackAndDeliusMockServer {
     startDate: LocalDate,
     endDate: LocalDate,
     projectSessions: NDSessionSummaries,
+    projectTypeCodes: List<String> = emptyList(),
   ) {
+    val url = buildString {
+      append("/community-payback-and-delius/providers/$providerCode/teams/$teamCode/sessions?startDate=${startDate.toIsoDateString()}&endDate=${endDate.toIsoDateString()}")
+      projectTypeCodes.forEach {
+        append("&projectTypeCodes=$it")
+      }
+    }
+
     WireMock.stubFor(
-      get("/community-payback-and-delius/providers/$providerCode/teams/$teamCode/sessions?startDate=${startDate.toIsoDateString()}&endDate=${endDate.toIsoDateString()}")
+      get(url)
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")

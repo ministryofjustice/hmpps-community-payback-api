@@ -12,12 +12,14 @@ import org.junit.jupiter.api.extension.ExtendWith
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSessionSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSessionSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeGroupDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.BadRequestException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.SessionSupervisorEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ContextService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.SessionService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.SessionMappers
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toNDProjectTypeCodes
 import java.time.LocalDate
 
 @ExtendWith(MockKExtension::class)
@@ -49,6 +51,7 @@ class SessionServiceTest {
           teamCode = "team code 1",
           startDate = LocalDate.of(2025, 1, 1),
           endDate = LocalDate.of(2025, 1, 9),
+          projectTypeGroup = null,
         )
       }.isInstanceOf(BadRequestException::class.java).hasMessage("Date range cannot be greater than 7 days")
     }
@@ -61,6 +64,7 @@ class SessionServiceTest {
           teamCode = "team code 1",
           startDate = LocalDate.of(2025, 1, 1),
           endDate = LocalDate.of(2025, 1, 5),
+          projectTypeCodes = ProjectTypeGroupDto.GROUP.toNDProjectTypeCodes(),
         )
       } returns NDSessionSummaries.valid().copy(
         sessions = listOf(
@@ -75,6 +79,7 @@ class SessionServiceTest {
         teamCode = "team code 1",
         startDate = LocalDate.of(2025, 1, 1),
         endDate = LocalDate.of(2025, 1, 5),
+        projectTypeGroup = ProjectTypeGroupDto.GROUP,
       )
 
       assertThat(result.allocations).hasSize(3)

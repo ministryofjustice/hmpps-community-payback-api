@@ -4,6 +4,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeGroupDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionIdDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionSummariesDto
@@ -14,6 +15,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.SessionSupervisor
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.SessionSupervisorId
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.SessionMappers
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toNDProjectTypeCodes
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 
@@ -34,12 +36,19 @@ class SessionService(
     teamCode: String,
     startDate: LocalDate,
     endDate: LocalDate,
+    projectTypeGroup: ProjectTypeGroupDto?,
   ): SessionSummariesDto {
     if (ChronoUnit.DAYS.between(startDate, endDate) > 7) {
       throw BadRequestException("Date range cannot be greater than 7 days")
     }
 
-    return communityPaybackAndDeliusClient.getSessions(providerCode, teamCode, startDate, endDate).toDto()
+    return communityPaybackAndDeliusClient.getSessions(
+      providerCode = providerCode,
+      teamCode = teamCode,
+      startDate = startDate,
+      endDate = endDate,
+      projectTypeCodes = projectTypeGroup?.toNDProjectTypeCodes(),
+    ).toDto()
   }
 
   fun getSession(

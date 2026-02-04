@@ -10,6 +10,7 @@ import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeGroupDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.NotFoundException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.SessionService
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
@@ -66,7 +67,13 @@ class SupervisorSessionsController(
   fun getFutureSessions(
     @PathVariable providerCode: String,
     @PathVariable teamCode: String,
-  ) = sessionService.getSessions(providerCode, teamCode, LocalDate.now(), LocalDate.now().plusDays(7))
+  ) = sessionService.getSessions(
+    providerCode,
+    teamCode,
+    LocalDate.now(),
+    LocalDate.now().plusDays(7),
+    projectTypeGroup = ProjectTypeGroupDto.GROUP,
+  )
 
   @GetMapping(
     path = [ "/supervisor/projects/{projectCode}/sessions/{date}"],
