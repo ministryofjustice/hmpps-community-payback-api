@@ -36,7 +36,7 @@ class EteService(
         status = EteCourseEventStatus.fromMessage(message.course.status),
         totalTime = message.course.totalTime,
         expectedMinutes = message.course.expectedMinutes,
-        externalId = message.externalId,
+        externalId = message.externalReference,
       ),
     )
     if (message.course.status == EducationCourseCompletionStatus.Completed) {
@@ -44,7 +44,7 @@ class EteService(
         educationCourseCompletionMapper.toCreateAppointmentsDto(message, projectCode = "N56CCTEST"),
         AppointmentEventTrigger(
           triggerType = AppointmentEventTriggerType.ETE_COURSE_COMPLETION,
-          triggeredBy = "External ETE System: ${message.externalId}",
+          triggeredBy = "External ETE System: ${message.externalReference}",
         ),
       )
     }
