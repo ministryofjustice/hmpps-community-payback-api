@@ -5,10 +5,10 @@ import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
-import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.data.web.PageableDefault
+import org.springframework.data.web.PagedModel
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.HttpStatus.NOT_IMPLEMENTED
 import org.springframework.http.MediaType
@@ -164,5 +164,5 @@ class AdminProviderController(
     @PathVariable providerCode: String,
     @PathVariable teamCode: String,
     @RequestParam projectTypeGroup: ProjectTypeGroupDto,
-  ): Page<ProjectSummariesDto> = throw ResponseStatusException(NOT_IMPLEMENTED, "Not Implemented")
+  ): PagedModel<ProjectSummariesDto> = throw ResponseStatusException(NOT_IMPLEMENTED, "Not Implemented")
 }
