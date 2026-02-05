@@ -81,7 +81,7 @@ class AppointmentEventEntityFactory(
 
     return AppointmentEventEntity(
       id = UUID.randomUUID(),
-      communityPaybackAppointmentId = null,
+      communityPaybackAppointmentId = existingAppointment.communityPaybackId,
       eventType = AppointmentEventType.UPDATE,
       crn = existingAppointment.offender.crn,
       deliusAppointmentId = outcome.deliusId,

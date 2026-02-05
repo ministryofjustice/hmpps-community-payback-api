@@ -6,6 +6,7 @@ import java.util.UUID
 
 data class AppointmentDto(
   val id: Long,
+  val communityPaybackId: UUID?,
   val version: UUID,
   val deliusEventNumber: Int,
   val projectName: String,

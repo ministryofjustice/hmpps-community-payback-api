@@ -42,6 +42,7 @@ class AppointmentMappers(
 
     return AppointmentDto(
       id = appointment.id,
+      communityPaybackId = appointment.reference,
       version = appointment.version,
       deliusEventNumber = appointment.event.number,
       projectName = appointment.project.name,

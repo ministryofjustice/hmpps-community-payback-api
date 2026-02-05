@@ -311,6 +311,7 @@ class AppointmentMappersTest {
     @Test
     fun `should map ProjectAppointment to DTO correctly`() {
       val id = 101L
+      val communityPaybackId = UUID.randomUUID()
       val version = UUID.randomUUID()
       val projectName = "Community Garden Maintenance"
       val projectCode = "CGM101"
@@ -345,6 +346,7 @@ class AppointmentMappersTest {
 
       val appointment = NDAppointment(
         id = id,
+        reference = communityPaybackId,
         version = version,
         project = NDProject(
           name = projectName,
@@ -410,6 +412,7 @@ class AppointmentMappersTest {
       val result = service.toDto(appointment)
 
       assertThat(result.id).isEqualTo(id)
+      assertThat(result.communityPaybackId).isEqualTo(communityPaybackId)
       assertThat(result.version).isEqualTo(version)
       assertThat(result.projectName).isEqualTo(projectName)
       assertThat(result.projectCode).isEqualTo(projectCode)

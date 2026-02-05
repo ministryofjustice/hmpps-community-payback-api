@@ -9,6 +9,7 @@ import kotlin.String
 
 fun AppointmentDto.Companion.valid() = AppointmentDto(
   id = Long.random(),
+  communityPaybackId = UUID.randomUUID(),
   version = UUID.randomUUID(),
   deliusEventNumber = Int.random(0, 50),
   projectName = String.random(),
