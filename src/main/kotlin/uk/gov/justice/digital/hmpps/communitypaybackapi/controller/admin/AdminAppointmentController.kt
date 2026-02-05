@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
+import org.springdoc.core.converters.models.PageableAsQueryParam
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.data.web.PageableDefault
@@ -151,6 +152,7 @@ class AdminAppointmentController(
     ],
   )
   @Suppress("UnusedParameter")
+  @PageableAsQueryParam
   fun getAppointments(
     @Parameter(
       description = "Pagination and sorting parameters. Supported sort fields: crn, name, date, startTime, endTime, daysOverdue. Default sort: crn DESC, size: 50",

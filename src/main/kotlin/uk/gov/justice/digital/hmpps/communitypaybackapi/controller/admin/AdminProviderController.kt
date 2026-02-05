@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
+import org.springdoc.core.converters.models.PageableAsQueryParam
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.data.web.PageableDefault
@@ -152,6 +153,7 @@ class AdminProviderController(
     ],
   )
   @Suppress("UnusedParameter")
+  @PageableAsQueryParam
   fun getProjects(
     @Parameter(
       description = "Pagination and sorting parameters. Supported sort fields: projectName Default sort: projectName DESC, size: 50",
