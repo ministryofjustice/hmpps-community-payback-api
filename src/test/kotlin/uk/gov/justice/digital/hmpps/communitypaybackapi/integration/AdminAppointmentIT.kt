@@ -238,4 +238,38 @@ class AdminAppointmentIT : IntegrationTestBase() {
       assertThat(formCacheEntityRepository.count()).isEqualTo(0)
     }
   }
+
+  @Nested
+  @DisplayName("GET /admin/appointments")
+  inner class GetAppointments {
+
+    @Test
+    fun `should return unauthorized if no token`() {
+      webTestClient.get()
+        .uri("/admin/appointments")
+        .exchange()
+        .expectStatus()
+        .isUnauthorized
+    }
+
+    @Test
+    fun `should return forbidden if no role`() {
+      webTestClient.get()
+        .uri("/admin/appointments")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .isForbidden
+    }
+
+    @Test
+    fun `should return forbidden if wrong role`() {
+      webTestClient.get()
+        .uri("/admin/appointments")
+        .headers(setAuthorisation(roles = listOf("ROLE_WRONG")))
+        .exchange()
+        .expectStatus()
+        .isForbidden
+    }
+  }
 }
