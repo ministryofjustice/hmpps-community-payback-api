@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntity
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseEventEntityRepository
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseEventStatus
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.randomLocalDate
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
@@ -26,7 +26,7 @@ import java.time.LocalDate
 class EteServiceTest {
 
   @RelaxedMockK
-  lateinit var eteCourseEventEntityRepository: EteCourseEventEntityRepository
+  lateinit var eteCourseCompletionEventEntityRepository: EteCourseCompletionEventEntityRepository
 
   @RelaxedMockK
   lateinit var appointmentCreationService: AppointmentCreationService
@@ -43,7 +43,7 @@ class EteServiceTest {
     @Test
     fun `create ete course event entry`() {
       val entityCaptor = slot<EteCourseCompletionEventEntity>()
-      every { eteCourseEventEntityRepository.save(capture(entityCaptor)) } returnsArgument 0
+      every { eteCourseCompletionEventEntityRepository.save(capture(entityCaptor)) } returnsArgument 0
 
       service.handleEducationCourseCompletionMessage(
         EducationCourseCompletionMessage.valid().copy(
@@ -94,7 +94,7 @@ class EteServiceTest {
     @Test
     fun `create ete course event entry with completed status`() {
       val entityCaptor = slot<EteCourseCompletionEventEntity>()
-      every { eteCourseEventEntityRepository.save(capture(entityCaptor)) } returnsArgument 0
+      every { eteCourseCompletionEventEntityRepository.save(capture(entityCaptor)) } returnsArgument 0
 
       service.handleEducationCourseCompletionMessage(
         EducationCourseCompletionMessage.valid().copy(

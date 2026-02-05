@@ -78,7 +78,7 @@ class EducationCourseCompletionMapperTest {
   @Test
   fun `should handle midnight crossing scenario`() {
     val completionDate = LocalDate.of(2024, 1, 15)
-    val totalTimeMinutes = 120L // 2 hours, would roll back to the previous day
+    val totalTimeMinutes = 960L // 16 hours, would roll back to the previous day
     val message = createTestMessage(
       completionDate = completionDate,
       totalTimeMinutes = totalTimeMinutes,
@@ -90,7 +90,7 @@ class EducationCourseCompletionMapperTest {
     // The start time would be 23:00 on Jan 14, but date remains Jan 15
     // This would cause validation failure as mentioned in the code comment
     assertThat(result.startTime).isEqualTo(LocalTime.of(9, 0))
-    assertThat(result.endTime).isEqualTo(LocalTime.of(11, 0)) // 11:00 - 2 hours
+    assertThat(result.endTime).isEqualTo(LocalTime.of(1, 0, 0)) // 01:00 - 16 hours
     assertThat(result.date).isEqualTo(LocalDate.of(2024, 1, 15)) // Date remains the completion date
   }
 

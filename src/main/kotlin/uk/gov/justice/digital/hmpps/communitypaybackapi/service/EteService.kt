@@ -4,7 +4,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntity
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseEventEntityRepository
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseEventStatus
 import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseCompletionMessage
 import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseCompletionStatus
@@ -15,7 +15,7 @@ import java.util.UUID
 @Service
 class EteService(
   private val educationCourseCompletionMapper: EducationCourseCompletionMapper,
-  private val eteCourseCompletionEventEntityRepository: EteCourseEventEntityRepository,
+  private val eteCourseCompletionEventEntityRepository: EteCourseCompletionEventEntityRepository,
   private val appointmentCreationService: AppointmentCreationService,
 ) {
 
