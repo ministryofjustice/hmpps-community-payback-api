@@ -156,6 +156,7 @@ class AdminProviderController(
   @PageableAsQueryParam
   fun getProjects(
     @Parameter(
+      hidden = true,
       description = "Pagination and sorting parameters. Supported sort fields: projectName Default sort: projectName DESC, size: 50",
       schema = Schema(
         implementation = Pageable::class,

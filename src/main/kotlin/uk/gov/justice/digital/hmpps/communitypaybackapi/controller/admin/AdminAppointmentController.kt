@@ -155,6 +155,7 @@ class AdminAppointmentController(
   @PageableAsQueryParam
   fun getAppointments(
     @Parameter(
+      hidden = true,
       description = "Pagination and sorting parameters. Supported sort fields: crn, name, date, startTime, endTime, daysOverdue. Default sort: crn DESC, size: 50",
       schema = Schema(
         implementation = Pageable::class,
