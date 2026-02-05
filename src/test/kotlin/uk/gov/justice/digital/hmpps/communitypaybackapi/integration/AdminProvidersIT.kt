@@ -300,4 +300,48 @@ class AdminProvidersIT : IntegrationTestBase() {
       assertThat(sessionSummaries.allocations).isEmpty()
     }
   }
+
+  @Nested
+  @DisplayName("GET /admin/providers/{providerCode}/teams/{teamCode}/projects")
+  inner class ProjectsEndpoint {
+
+    @Test
+    fun `should return unauthorized if no token`() {
+      webTestClient.get()
+        .uri("/admin/providers/PC01/teams/1/projects?projectTypeGroup=INDIVIDUAL")
+        .exchange()
+        .expectStatus()
+        .isUnauthorized
+    }
+
+    @Test
+    fun `should return forbidden if no role`() {
+      webTestClient.get()
+        .uri("/admin/providers/PC01/teams/1/projects?projectTypeGroup=INDIVIDUAL")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .isForbidden
+    }
+
+    @Test
+    fun `should return forbidden if wrong role`() {
+      webTestClient.get()
+        .uri("/admin/providers/PC01/teams/1/projects?projectTypeGroup=INDIVIDUAL")
+        .headers(setAuthorisation(roles = listOf("ROLE_WRONG")))
+        .exchange()
+        .expectStatus()
+        .isForbidden
+    }
+
+    @Test
+    fun `should return bad request if missing parameters`() {
+      webTestClient.get()
+        .uri("/admin/providers/PC01/teams/1/projects")
+        .addAdminUiAuthHeader()
+        .exchange()
+        .expectStatus()
+        .is4xxClientError
+    }
+  }
 }

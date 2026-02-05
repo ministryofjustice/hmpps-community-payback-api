@@ -1,6 +1,13 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.dto
 
 import io.swagger.v3.oas.annotations.media.Schema
+import java.time.LocalDate
+import java.time.LocalTime
+
+data class AppointmentSummariesDto(
+  @param:Schema(description = "List of appointments")
+  val appointments: List<AppointmentSummaryDto>,
+)
 
 data class AppointmentSummaryDto(
   val id: Long,
@@ -16,6 +23,10 @@ data class AppointmentSummaryDto(
   @param:Schema(description = "How many community payback minutes the offender has completed to date. >= 0", example = "280")
   val completedMinutes: Int,
   val offender: OffenderDto,
+  val date: LocalDate,
+  val startTime: LocalTime,
+  val endTime: LocalTime,
+  val daysOverdue: Int?,
 ) {
   companion object
 }

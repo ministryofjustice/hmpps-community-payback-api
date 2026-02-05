@@ -26,6 +26,8 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.Behaviour
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EnforcementActionEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.WorkQuality
+import java.time.LocalDate
+import java.time.LocalTime
 
 @Service
 class AppointmentMappers(
@@ -83,6 +85,7 @@ class AppointmentMappers(
     )
   }
 
+  @Suppress("MagicNumber")
   fun toSummaryDto(
     appointmentSummary: NDAppointmentSummary,
   ) = AppointmentSummaryDto(
@@ -94,6 +97,10 @@ class AppointmentMappers(
     adjustmentMinutes = appointmentSummary.requirementProgress.adjustments,
     completedMinutes = appointmentSummary.requirementProgress.completedMinutes,
     offender = appointmentSummary.case.toDto(),
+    date = LocalDate.of(2026, 1, 1), // Temporary placeholder - to be populated from upstream
+    startTime = LocalTime.of(0, 0), // Temporary placeholder - to be populated from upstream
+    endTime = LocalTime.of(0, 0), // Temporary placeholder - to be populated from upstream
+    daysOverdue = null, // Temporary placeholder - to be populated from upstream
   )
 }
 

@@ -1,0 +1,9 @@
+package uk.gov.justice.digital.hmpps.communitypaybackapi.dto
+
+data class ProjectDto(
+  val projectName: String,
+  val projectCode: String,
+  val location: LocationDto,
+  val hiVisRequired: Boolean,
+  val beneficiaryDetailsDto: BeneficiaryDetailsDto,
+)

@@ -5,12 +5,20 @@ import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
+import org.springdoc.core.converters.models.PageableAsQueryParam
+import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Sort
+import org.springframework.data.web.PageableDefault
+import org.springframework.data.web.PagedModel
 import org.springframework.format.annotation.DateTimeFormat
+import org.springframework.http.HttpStatus.NOT_IMPLEMENTED
 import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.server.ResponseStatusException
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectSummariesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeGroupDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProviderSummariesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProviderTeamSummariesDto
@@ -124,4 +132,39 @@ class AdminProviderController(
     endDate,
     ProjectTypeGroupDto.GROUP,
   )
+
+  @GetMapping("/{providerCode}/teams/{teamCode}/projects")
+  @Operation(
+    description = "Get projects for a specific team",
+    responses = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Successful projects response",
+      ),
+      ApiResponse(
+        responseCode = "404",
+        description = "Provider or team not found",
+        content = [
+          Content(
+            schema = Schema(implementation = ErrorResponse::class),
+          ),
+        ],
+      ),
+    ],
+  )
+  @Suppress("UnusedParameter")
+  @PageableAsQueryParam
+  fun getProjects(
+    @Parameter(
+      description = "Pagination and sorting parameters. Supported sort fields: projectName Default sort: projectName DESC, size: 50",
+      schema = Schema(
+        implementation = Pageable::class,
+        description = "Only projectName. numberOfAppointmentsOverdue and oldestOverdueAppointmentInDays fields are supported for sorting",
+      ),
+    )
+    @PageableDefault(size = 50, sort = ["projectName"], direction = Sort.Direction.DESC) pageable: Pageable,
+    @PathVariable providerCode: String,
+    @PathVariable teamCode: String,
+    @RequestParam projectTypeGroup: ProjectTypeGroupDto,
+  ): PagedModel<ProjectSummariesDto> = throw ResponseStatusException(NOT_IMPLEMENTED, "Not Implemented")
 }
