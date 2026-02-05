@@ -18,7 +18,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.InternalS
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.NotFoundException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntityRepository
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdditionalInformationType
@@ -64,7 +63,7 @@ class AppointmentUpdateServiceTest {
   private companion object {
     const val PROJECT_CODE = "PROJ123"
     const val APPOINTMENT_ID = 101L
-    val TRIGGER: AppointmentEventTrigger = AppointmentEventTrigger(AppointmentEventTriggerType.USER, "user1")
+    val TRIGGER: AppointmentEventTrigger = AppointmentEventTrigger.valid()
   }
 
   @Nested

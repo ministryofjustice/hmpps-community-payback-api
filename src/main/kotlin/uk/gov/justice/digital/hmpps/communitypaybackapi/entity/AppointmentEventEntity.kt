@@ -25,6 +25,7 @@ data class AppointmentEventEntity(
   val eventType: AppointmentEventType,
   @CreationTimestamp
   val createdAt: OffsetDateTime = OffsetDateTime.now(),
+  val triggeredAt: OffsetDateTime,
   @Enumerated(EnumType.STRING)
   val triggerType: AppointmentEventTriggerType? = null,
   val triggeredBy: String? = null,

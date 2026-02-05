@@ -10,6 +10,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.Sched
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingAction
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingRequiredAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.toCreateAppointmentDto
+import java.time.OffsetDateTime
 
 @Service
 class SchedulePlanExecutor(
@@ -53,6 +54,7 @@ class SchedulePlanExecutor(
         },
       ),
       trigger = AppointmentEventTrigger(
+        triggeredAt = OffsetDateTime.now(),
         triggerType = AppointmentEventTriggerType.SCHEDULING,
         triggeredBy = plan.schedulingId.toString(),
       ),
