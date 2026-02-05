@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
+import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.data.web.PageableDefault
@@ -175,7 +176,7 @@ class AdminAppointmentController(
     )
     @RequestParam(required = false) outcomeCodes: List<String>?,
     @RequestParam projectTypeGroup: ProjectTypeGroupDto?,
-  ): AppointmentSummariesDto {
+  ): Page<AppointmentSummariesDto> {
     val hasFilter = !crn.isNullOrBlank() ||
       !projectCodes.isNullOrEmpty() ||
       fromDate != null ||
@@ -184,7 +185,7 @@ class AdminAppointmentController(
       projectTypeGroup != null
 
     if (!hasFilter) {
-      throw BadRequestException("At least one filter parameter must be provided (crn, projectCodes, fromDate, toDate, outcomeCodes, or projectTypeCodes)")
+      throw BadRequestException("At least one filter parameter must be provided")
     }
 
     throw ResponseStatusException(
