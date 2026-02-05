@@ -32,6 +32,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEvent
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
+import java.time.OffsetDateTime
 import java.util.UUID
 
 @ExtendWith(MockKExtension::class)
@@ -46,6 +47,7 @@ class AppointmentEventEntityFactoryTest {
   companion object {
     const val CONTACT_OUTCOME_CODE: String = "CONTACT-1"
     val ENFORCEMENT_ACTION_ID: UUID = UUID.randomUUID()
+    val TRIGGERED_AT: OffsetDateTime = OffsetDateTime.now()
     const val TRIGGERED_BY: String = "User1"
     val ID: UUID = UUID.randomUUID()
   }
@@ -66,6 +68,7 @@ class AppointmentEventEntityFactoryTest {
         projectCode = "PC01",
         deliusId = 101L,
         trigger = AppointmentEventTrigger(
+          triggeredAt = TRIGGERED_AT,
           triggerType = AppointmentEventTriggerType.SCHEDULING,
           triggeredBy = TRIGGERED_BY,
         ),
@@ -120,6 +123,7 @@ class AppointmentEventEntityFactoryTest {
       assertThat(result.alertActive).isEqualTo(false)
       assertThat(result.sensitive).isEqualTo(true)
       assertThat(result.deliusAllocationId).isEqualTo(22)
+      assertThat(result.triggeredAt).isEqualTo(TRIGGERED_AT)
       assertThat(result.triggerType).isEqualTo(AppointmentEventTriggerType.SCHEDULING)
       assertThat(result.triggeredBy).isEqualTo(TRIGGERED_BY)
     }
@@ -130,6 +134,7 @@ class AppointmentEventEntityFactoryTest {
         projectCode = "PC01",
         deliusId = 101L,
         trigger = AppointmentEventTrigger(
+          triggeredAt = TRIGGERED_AT,
           triggerType = AppointmentEventTriggerType.SCHEDULING,
           triggeredBy = TRIGGERED_BY,
         ),
@@ -177,6 +182,7 @@ class AppointmentEventEntityFactoryTest {
       assertThat(result.alertActive).isNull()
       assertThat(result.sensitive).isNull()
       assertThat(result.deliusAllocationId).isNull()
+      assertThat(result.triggeredAt).isEqualTo(TRIGGERED_AT)
       assertThat(result.triggerType).isEqualTo(AppointmentEventTriggerType.SCHEDULING)
       assertThat(result.triggeredBy).isEqualTo(TRIGGERED_BY)
     }
@@ -187,6 +193,7 @@ class AppointmentEventEntityFactoryTest {
         projectCode = "PC01",
         deliusId = 101L,
         trigger = AppointmentEventTrigger(
+          triggeredAt = TRIGGERED_AT,
           triggerType = AppointmentEventTriggerType.SCHEDULING,
           triggeredBy = TRIGGERED_BY,
         ),
@@ -206,6 +213,7 @@ class AppointmentEventEntityFactoryTest {
         projectCode = "PC01",
         deliusId = 101L,
         trigger = AppointmentEventTrigger(
+          triggeredAt = TRIGGERED_AT,
           triggerType = AppointmentEventTriggerType.SCHEDULING,
           triggeredBy = TRIGGERED_BY,
         ),
@@ -249,6 +257,7 @@ class AppointmentEventEntityFactoryTest {
         projectCode = "PC01",
         deliusId = 101L,
         trigger = AppointmentEventTrigger(
+          triggeredAt = TRIGGERED_AT,
           triggerType = AppointmentEventTriggerType.SCHEDULING,
           triggeredBy = TRIGGERED_BY,
         ),
@@ -274,6 +283,7 @@ class AppointmentEventEntityFactoryTest {
         projectCode = "PC01",
         deliusId = 101L,
         trigger = AppointmentEventTrigger(
+          triggeredAt = TRIGGERED_AT,
           triggerType = AppointmentEventTriggerType.SCHEDULING,
           triggeredBy = TRIGGERED_BY,
         ),
@@ -342,6 +352,7 @@ class AppointmentEventEntityFactoryTest {
           ),
         ),
         trigger = AppointmentEventTrigger(
+          triggeredAt = TRIGGERED_AT,
           triggerType = AppointmentEventTriggerType.USER,
           triggeredBy = TRIGGERED_BY,
         ),
@@ -372,6 +383,7 @@ class AppointmentEventEntityFactoryTest {
       assertThat(result.alertActive).isEqualTo(false)
       assertThat(result.sensitive).isEqualTo(true)
       assertThat(result.deliusAllocationId).isNull()
+      assertThat(result.triggeredAt).isEqualTo(TRIGGERED_AT)
       assertThat(result.triggerType).isEqualTo(AppointmentEventTriggerType.USER)
       assertThat(result.triggeredBy).isEqualTo(TRIGGERED_BY)
     }
@@ -404,6 +416,7 @@ class AppointmentEventEntityFactoryTest {
           pickUpData = null,
         ),
         trigger = AppointmentEventTrigger(
+          triggeredAt = TRIGGERED_AT,
           triggerType = AppointmentEventTriggerType.USER,
           triggeredBy = TRIGGERED_BY,
         ),
@@ -434,6 +447,7 @@ class AppointmentEventEntityFactoryTest {
       assertThat(result.alertActive).isNull()
       assertThat(result.sensitive).isNull()
       assertThat(result.deliusAllocationId).isNull()
+      assertThat(result.triggeredAt).isEqualTo(TRIGGERED_AT)
       assertThat(result.triggerType).isEqualTo(AppointmentEventTriggerType.USER)
       assertThat(result.triggeredBy).isEqualTo(TRIGGERED_BY)
     }
@@ -446,6 +460,7 @@ class AppointmentEventEntityFactoryTest {
         ),
         existingAppointment = AppointmentDto.valid(),
         trigger = AppointmentEventTrigger(
+          triggeredAt = TRIGGERED_AT,
           triggerType = AppointmentEventTriggerType.USER,
           triggeredBy = TRIGGERED_BY,
         ),
@@ -467,6 +482,7 @@ class AppointmentEventEntityFactoryTest {
         ),
         existingAppointment = AppointmentDto.valid(),
         trigger = AppointmentEventTrigger(
+          triggeredAt = TRIGGERED_AT,
           triggerType = AppointmentEventTriggerType.USER,
           triggeredBy = TRIGGERED_BY,
         ),
@@ -512,6 +528,7 @@ class AppointmentEventEntityFactoryTest {
         ),
         existingAppointment = AppointmentDto.valid(),
         trigger = AppointmentEventTrigger(
+          triggeredAt = TRIGGERED_AT,
           triggerType = AppointmentEventTriggerType.USER,
           triggeredBy = TRIGGERED_BY,
         ),
@@ -534,6 +551,7 @@ class AppointmentEventEntityFactoryTest {
         ),
         existingAppointment = AppointmentDto.valid(),
         trigger = AppointmentEventTrigger(
+          triggeredAt = TRIGGERED_AT,
           triggerType = AppointmentEventTriggerType.USER,
           triggeredBy = TRIGGERED_BY,
         ),
@@ -554,6 +572,7 @@ class AppointmentEventEntityFactoryTest {
         ),
         existingAppointment = AppointmentDto.valid(),
         trigger = AppointmentEventTrigger(
+          triggeredAt = TRIGGERED_AT,
           triggerType = AppointmentEventTriggerType.USER,
           triggeredBy = TRIGGERED_BY,
         ),

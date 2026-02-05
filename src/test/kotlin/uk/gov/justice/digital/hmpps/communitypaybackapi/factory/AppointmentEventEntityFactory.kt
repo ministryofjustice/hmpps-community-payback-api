@@ -3,11 +3,14 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.factory
 import org.springframework.beans.factory.getBean
 import org.springframework.context.ApplicationContext
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.Behaviour
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.WorkQuality
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventTrigger
+import java.time.OffsetDateTime
 import java.util.UUID
 import kotlin.collections.random
 
@@ -39,9 +42,16 @@ fun AppointmentEventEntity.Companion.valid(
   alertActive = Boolean.random(),
   sensitive = Boolean.random(),
   deliusAllocationId = null,
+  triggeredAt = OffsetDateTime.now(),
   triggeredBy = null,
 )
 
 fun AppointmentEventEntity.Companion.valid(ctx: ApplicationContext) = AppointmentEventEntity.valid().copy(
   contactOutcome = ctx.getBean<ContactOutcomeEntityRepository>().findAll().first(),
+)
+
+fun AppointmentEventTrigger.Companion.valid() = AppointmentEventTrigger(
+  triggeredAt = randomOffsetDateTime(),
+  triggeredBy = String.random(5),
+  triggerType = AppointmentEventTriggerType.entries.toTypedArray().random(),
 )

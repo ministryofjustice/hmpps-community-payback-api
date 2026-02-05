@@ -20,6 +20,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentRetri
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentUpdateService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ContextService
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
+import java.time.OffsetDateTime
 
 @SupervisorUiController
 @RequestMapping(
@@ -110,6 +111,7 @@ class SupervisorAppointmentsController(
       update = outcome,
       projectCode = projectCode,
       trigger = AppointmentEventTrigger(
+        triggeredAt = OffsetDateTime.now(),
         triggerType = AppointmentEventTriggerType.USER,
         triggeredBy = contextService.getUserName(),
       ),
@@ -146,6 +148,7 @@ class SupervisorAppointmentsController(
     projectCode = projectCode,
     request = request,
     trigger = AppointmentEventTrigger(
+      triggeredAt = OffsetDateTime.now(),
       triggerType = AppointmentEventTriggerType.USER,
       triggeredBy = contextService.getUserName(),
     ),

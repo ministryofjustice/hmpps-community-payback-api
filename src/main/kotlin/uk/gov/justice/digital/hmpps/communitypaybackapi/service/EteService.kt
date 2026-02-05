@@ -9,6 +9,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseEventSta
 import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseCompletionMessage
 import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseCompletionStatus
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.EducationCourseCompletionMapper
+import java.time.OffsetDateTime
 import java.util.UUID
 
 @Service
@@ -44,6 +45,7 @@ class EteService(
       appointmentCreationService.createAppointments(
         educationCourseCompletionMapper.toCreateAppointmentsDto(message, projectCode = "N56CCTEST"),
         AppointmentEventTrigger(
+          triggeredAt = OffsetDateTime.now(),
           triggerType = AppointmentEventTriggerType.ETE_COURSE_COMPLETION,
           triggeredBy = "External ETE System: ${attributes.externalReference}",
         ),

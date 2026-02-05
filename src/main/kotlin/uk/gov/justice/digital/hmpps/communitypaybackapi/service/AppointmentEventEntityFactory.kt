@@ -15,6 +15,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.WorkQuality
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.fromDto
 import java.time.Duration
 import java.time.LocalTime
+import java.time.OffsetDateTime
 import java.util.UUID
 
 @Service
@@ -64,6 +65,7 @@ class AppointmentEventEntityFactory(
       alertActive = createAppointmentDto.alertActive,
       sensitive = createAppointmentDto.sensitive,
       deliusAllocationId = createAppointmentDto.allocationId,
+      triggeredAt = trigger.triggeredAt,
       triggerType = trigger.triggerType,
       triggeredBy = trigger.triggeredBy,
     )
@@ -110,6 +112,7 @@ class AppointmentEventEntityFactory(
       alertActive = outcome.alertActive,
       sensitive = outcome.sensitive,
       deliusAllocationId = null,
+      triggeredAt = trigger.triggeredAt,
       triggerType = trigger.triggerType,
       triggeredBy = trigger.triggeredBy,
     )
@@ -135,6 +138,9 @@ class AppointmentEventEntityFactory(
 fun AttendanceDataDto.derivePenaltyMinutesDuration() = penaltyMinutes?.let { Duration.ofMinutes(it) } ?: penaltyTime?.duration
 
 data class AppointmentEventTrigger(
+  val triggeredAt: OffsetDateTime,
   val triggerType: AppointmentEventTriggerType,
   val triggeredBy: String,
-)
+) {
+  companion object
+}
