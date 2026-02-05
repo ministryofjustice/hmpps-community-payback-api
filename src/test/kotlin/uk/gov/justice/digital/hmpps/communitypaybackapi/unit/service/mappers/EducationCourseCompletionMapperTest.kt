@@ -12,7 +12,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourse
 import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseMessageAttributes
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.EducationCourseCompletionMapper
 import java.time.LocalDate
-import java.time.LocalDateTime
 import java.time.LocalTime
 
 class EducationCourseCompletionMapperTest {
@@ -21,12 +20,11 @@ class EducationCourseCompletionMapperTest {
 
   @Test
   fun `should map EducationCourseCompletionMessage to CreateAppointmentDto with correct values`() {
-    val completionDateTime = LocalDateTime.of(2024, 1, 15, 14, 30)
-    val totalTime = 120L // 2 hours
+    val completionDate = LocalDate.of(2024, 1, 15)
+    val totalTimeMinutes = 120L // 2 hours
     val message = createTestMessage(
-      completionDateTime = completionDateTime,
-      totalTime = totalTime,
-      crn = "X980484",
+      completionDate = completionDate,
+      totalTimeMinutes = totalTimeMinutes,
       courseName = "Maths Course",
     )
 
@@ -36,8 +34,8 @@ class EducationCourseCompletionMapperTest {
     assertThat(result.deliusEventNumber).isEqualTo(1)
     assertThat(result.allocationId).isNull()
     assertThat(result.date).isEqualTo(LocalDate.of(2024, 1, 15))
-    assertThat(result.startTime).isEqualTo(LocalTime.of(12, 30)) // 14:30 - 2 hours
-    assertThat(result.endTime).isEqualTo(LocalTime.of(14, 30))
+    assertThat(result.startTime).isEqualTo(LocalTime.of(9, 0, 0))
+    assertThat(result.endTime).isEqualTo(LocalTime.of(11, 0, 0)) // 14:30 - 2 hours
     assertThat(result.pickUpLocationCode).isNull()
     assertThat(result.pickUpTime).isNull()
     assertThat(result.contactOutcomeCode).isEqualTo(ContactOutcomeEntity.ATTENDED_COMPLIED_OUTCOME_CODE)
@@ -66,33 +64,30 @@ class EducationCourseCompletionMapperTest {
 
   @Test
   fun `should handle different course durations correctly`() {
-    val completionDateTime = LocalDateTime.of(2024, 1, 15, 10, 0)
-    val totalTime = 30L // 30 minutes
+    val completionDate = LocalDate.of(2024, 1, 15)
+    val totalTimeMinutes = 30L // 30 minutes
     val message = createTestMessage(
-      completionDateTime = completionDateTime,
-      totalTime = totalTime,
+      completionDate = completionDate,
+      totalTimeMinutes = totalTimeMinutes,
     )
     val result = mapper.toCreateAppointmentDto(message)
-    assertThat(result.startTime).isEqualTo(LocalTime.of(9, 30)) // 10:00 - 30 minutes
-    assertThat(result.endTime).isEqualTo(LocalTime.of(10, 0))
+    assertThat(result.startTime).isEqualTo(LocalTime.of(9, 0, 0))
+    assertThat(result.endTime).isEqualTo(LocalTime.of(9, 30)) // 10:00 - 30 minutes
   }
 
   @Test
   fun `should handle midnight crossing scenario`() {
-    val completionDateTime = LocalDateTime.of(2024, 1, 15, 1, 0) // 1 AM
-    val totalTime = 120L // 2 hours, would roll back to the previous day
+    val completionDate = LocalDate.of(2024, 1, 15)
+    val totalTimeMinutes = 120L // 2 hours, would roll back to the previous day
     val message = createTestMessage(
-      completionDateTime = completionDateTime,
-      totalTime = totalTime,
+      completionDate = completionDate,
+      totalTimeMinutes = totalTimeMinutes,
     )
 
     val result = mapper.toCreateAppointmentDto(message)
 
-    // Note: This test documents the behavior described in the TODO comment
-    // The start time would be 23:00 on Jan 14, but date remains Jan 15
-    // This would cause validation failure as mentioned in the code comment
-    assertThat(result.startTime).isEqualTo(LocalTime.of(23, 0)) // 1:00 - 2 hours
-    assertThat(result.endTime).isEqualTo(LocalTime.of(1, 0))
+    assertThat(result.startTime).isEqualTo(LocalTime.of(9, 0))
+    assertThat(result.endTime).isEqualTo(LocalTime.of(11, 0)) // 11:00 - 2 hours
     assertThat(result.date).isEqualTo(LocalDate.of(2024, 1, 15)) // Date remains the completion date
   }
 
@@ -108,7 +103,6 @@ class EducationCourseCompletionMapperTest {
     assertThat(result.appointments).hasSize(1)
 
     val appointment = result.appointments.first()
-    assertThat(appointment.crn).isEqualTo(message.messageAttributes.crn)
     assertThat(appointment.notes).contains(message.messageAttributes.courseName)
   }
 
@@ -138,49 +132,39 @@ class EducationCourseCompletionMapperTest {
     assertThat(attendanceData.behaviour).isEqualTo(AppointmentBehaviourDto.NOT_APPLICABLE)
   }
 
-  @Test
-  fun `should handle different CRN values`() {
-    val crn = "TEST12345"
-    val message = createTestMessage(crn = crn)
-    val result = mapper.toCreateAppointmentDto(message)
-    assertThat(result.crn).isEqualTo(crn)
-  }
-
   private fun createTestMessage(
-    crn: String = "X980484",
     firstName: String = "John",
     lastName: String = "Doe",
     dateOfBirth: LocalDate = LocalDate.of(1990, 5, 20),
     region: String = "London",
     email: String = "john.doe@example.com",
-    completionDateTime: LocalDateTime = LocalDateTime.of(2024, 1, 15, 14, 30),
-    totalTime: Long = 120L,
+    completionDate: LocalDate = LocalDate.of(2024, 1, 15),
+    totalTimeMinutes: Long = 120L,
     courseName: String = "Test Course",
     courseType: String = "Type A",
     provider: String = "Provider X",
     status: EducationCourseCompletionStatus = EducationCourseCompletionStatus.Completed,
-    expectedMinutes: Int = 60,
+    expectedTimeMinutes: Long = 60,
     externalId: String = "EXT_ID",
   ): EducationCourseCompletionMessage = EducationCourseCompletionMessage(
     messageId = "90a9f09a-ce9f-4151-850c-fe281f81cc6f",
     eventType = "educationCourseCompletionCreated",
     description = null,
     messageAttributes = EducationCourseMessageAttributes(
-      crn = crn,
       firstName = firstName,
       lastName = lastName,
       dateOfBirth = dateOfBirth,
       region = region,
       email = email,
-      completionDateTime = completionDateTime,
-      totalTime = totalTime,
+      completionDate = completionDate,
+      totalTimeMinutes = totalTimeMinutes,
       courseName = courseName,
       courseType = courseType,
       provider = provider,
       status = status,
-      expectedMinutes = expectedMinutes,
+      expectedTimeMinutes = expectedTimeMinutes,
       externalReference = externalId,
-      attempts = "1",
+      attempts = 1,
     ),
     who = null,
   )

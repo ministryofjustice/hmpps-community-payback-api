@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import software.amazon.awssdk.services.sqs.model.SendMessageRequest
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseEventEntityRepository
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.CommunityPaybackAndDeliusMockServer
 import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseCompletionMessage
@@ -16,7 +16,7 @@ import uk.gov.justice.hmpps.sqs.HmppsQueueService
 import uk.gov.justice.hmpps.sqs.MissingQueueException
 import java.util.concurrent.TimeUnit
 
-class EducationCourseListenerIT : IntegrationTestBase() {
+class EducationCourseCompletionListenerIT : IntegrationTestBase() {
 
   @Autowired
   lateinit var hmppsQueueService: HmppsQueueService
@@ -25,7 +25,7 @@ class EducationCourseListenerIT : IntegrationTestBase() {
   lateinit var objectMapper: ObjectMapper
 
   @Autowired
-  lateinit var eteCourseEventEntityRepository: EteCourseEventEntityRepository
+  lateinit var eteCourseCompletionEventEntityRepository: EteCourseCompletionEventEntityRepository
 
   companion object {
     const val QUEUE_NAME = "educationcoursecompletionevents"
@@ -36,7 +36,7 @@ class EducationCourseListenerIT : IntegrationTestBase() {
 
     @BeforeEach
     fun before() {
-      eteCourseEventEntityRepository.deleteAll()
+      eteCourseCompletionEventEntityRepository.deleteAll()
     }
 
     @Test
@@ -58,7 +58,7 @@ class EducationCourseListenerIT : IntegrationTestBase() {
       )
 
       await().atMost(5, TimeUnit.SECONDS).untilAsserted {
-        assertThat(eteCourseEventEntityRepository.count()).isEqualTo(1)
+        assertThat(eteCourseCompletionEventEntityRepository.count()).isEqualTo(1)
       }
     }
   }
