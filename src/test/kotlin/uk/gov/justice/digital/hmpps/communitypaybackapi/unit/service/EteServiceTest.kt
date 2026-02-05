@@ -9,10 +9,10 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseEventEntity
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseEventEntityRepository
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseEventStatus
-import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.randomLocalDateTime
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.randomLocalDate
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseCompletionMessage
 import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseCompletionStatus
@@ -21,13 +21,12 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentCreat
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.EteService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.EducationCourseCompletionMapper
 import java.time.LocalDate
-import java.time.LocalDateTime
 
 @ExtendWith(MockKExtension::class)
 class EteServiceTest {
 
   @RelaxedMockK
-  lateinit var eteCourseEventEntityRepository: EteCourseEventEntityRepository
+  lateinit var eteCourseCompletionEventEntityRepository: EteCourseCompletionEventEntityRepository
 
   @RelaxedMockK
   lateinit var appointmentCreationService: AppointmentCreationService
@@ -43,14 +42,13 @@ class EteServiceTest {
 
     @Test
     fun `create ete course event entry`() {
-      val entityCaptor = slot<EteCourseEventEntity>()
-      every { eteCourseEventEntityRepository.save(capture(entityCaptor)) } returnsArgument 0
+      val entityCaptor = slot<EteCourseCompletionEventEntity>()
+      every { eteCourseCompletionEventEntityRepository.save(capture(entityCaptor)) } returnsArgument 0
 
-      service.handleEducationCourseMessage(
+      service.handleEducationCourseCompletionMessage(
         EducationCourseCompletionMessage.valid().copy(
           messageAttributes = EducationCourseMessageAttributes.valid().copy(
             externalReference = "EXT123",
-            crn = "CRN01",
             firstName = "John",
             lastName = "Doe",
             dateOfBirth = LocalDate.of(1990, 5, 15),
@@ -59,10 +57,10 @@ class EteServiceTest {
             courseName = "The course name",
             courseType = "Online",
             provider = "Training Provider Inc.",
-            totalTime = 70,
-            expectedMinutes = 120,
+            totalTimeMinutes = 70,
+            expectedTimeMinutes = 120,
             status = EducationCourseCompletionStatus.Failed,
-            completionDateTime = LocalDateTime.of(2026, 1, 1, 10, 0),
+            completionDate = LocalDate.of(2026, 1, 1),
           ),
         ),
       )
@@ -71,7 +69,6 @@ class EteServiceTest {
       val persistedEntity = entityCaptor.captured
 
       // Person data assertions
-      assertThat(persistedEntity.crn).isEqualTo("CRN01")
       assertThat(persistedEntity.firstName).isEqualTo("John")
       assertThat(persistedEntity.lastName).isEqualTo("Doe")
       assertThat(persistedEntity.dateOfBirth).isEqualTo(LocalDate.of(1990, 5, 15))
@@ -82,13 +79,13 @@ class EteServiceTest {
       assertThat(persistedEntity.courseName).isEqualTo("The course name")
       assertThat(persistedEntity.courseType).isEqualTo("Online")
       assertThat(persistedEntity.provider).isEqualTo("Training Provider Inc.")
-      assertThat(persistedEntity.totalTime).isEqualTo(70)
-      assertThat(persistedEntity.expectedMinutes).isEqualTo(120)
+      assertThat(persistedEntity.totalTimeMinutes).isEqualTo(70)
+      assertThat(persistedEntity.expectedTimeMinutes).isEqualTo(120)
       assertThat(persistedEntity.status).isEqualTo(EteCourseEventStatus.FAILED)
-      assertThat(persistedEntity.completionDateTime).isEqualTo("2026-01-01T10:00")
+      assertThat(persistedEntity.completionDate).isEqualTo("2026-01-01")
 
       // External ID assertion
-      assertThat(persistedEntity.externalId).isEqualTo("EXT123")
+      assertThat(persistedEntity.externalReference).isEqualTo("EXT123")
 
       // Verify UUID is generated
       assertThat(persistedEntity.id).isNotNull
@@ -96,14 +93,13 @@ class EteServiceTest {
 
     @Test
     fun `create ete course event entry with completed status`() {
-      val entityCaptor = slot<EteCourseEventEntity>()
-      every { eteCourseEventEntityRepository.save(capture(entityCaptor)) } returnsArgument 0
+      val entityCaptor = slot<EteCourseCompletionEventEntity>()
+      every { eteCourseCompletionEventEntityRepository.save(capture(entityCaptor)) } returnsArgument 0
 
-      service.handleEducationCourseMessage(
+      service.handleEducationCourseCompletionMessage(
         EducationCourseCompletionMessage.valid().copy(
           messageAttributes = EducationCourseMessageAttributes.valid().copy(
             externalReference = "EXT456",
-            crn = "CRN02",
             firstName = "Jane",
             lastName = "Smith",
             dateOfBirth = LocalDate.of(1985, 8, 22),
@@ -112,10 +108,10 @@ class EteServiceTest {
             courseName = "Advanced Course",
             courseType = "In-person",
             provider = "Education Corp",
-            totalTime = 150,
-            expectedMinutes = 150,
+            totalTimeMinutes = 150,
+            expectedTimeMinutes = 150,
             status = EducationCourseCompletionStatus.Completed,
-            completionDateTime = randomLocalDateTime(),
+            completionDate = randomLocalDate(),
           ),
         ),
       )
@@ -123,11 +119,10 @@ class EteServiceTest {
       assertThat(entityCaptor.isCaptured).isTrue
       val persistedEntity = entityCaptor.captured
 
-      assertThat(persistedEntity.crn).isEqualTo("CRN02")
       assertThat(persistedEntity.status).isEqualTo(EteCourseEventStatus.COMPLETED)
-      assertThat(persistedEntity.totalTime).isEqualTo(150) // 2 hours 30 minutes = 150 minutes
-      assertThat(persistedEntity.expectedMinutes).isEqualTo(150)
-      assertThat(persistedEntity.externalId).isEqualTo("EXT456")
+      assertThat(persistedEntity.totalTimeMinutes).isEqualTo(150) // 2 hours 30 minutes = 150 minutes
+      assertThat(persistedEntity.expectedTimeMinutes).isEqualTo(150)
+      assertThat(persistedEntity.externalReference).isEqualTo("EXT456")
 
       // ensure appointment is created
     }

@@ -11,17 +11,15 @@ import org.hibernate.annotations.UpdateTimestamp
 import org.hibernate.proxy.HibernateProxy
 import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseCompletionStatus
 import java.time.LocalDate
-import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.util.UUID
 
 @Entity
-@Table(name = "ete_course_events")
-data class EteCourseEventEntity(
+@Table(name = "ete_course_completion_events")
+data class EteCourseCompletionEventEntity(
   @Id
   val id: UUID,
 
-  val crn: String,
   val firstName: String,
   val lastName: String,
   val dateOfBirth: LocalDate,
@@ -32,16 +30,18 @@ data class EteCourseEventEntity(
   val courseType: String,
   val provider: String,
 
-  val completionDateTime: LocalDateTime,
+  val completionDate: LocalDate,
 
   @Enumerated(EnumType.STRING)
   val status: EteCourseEventStatus,
 
-  val totalTime: Long,
+  val totalTimeMinutes: Long,
 
-  val expectedMinutes: Int,
+  val expectedTimeMinutes: Long,
 
-  val externalId: String,
+  val attempts: Int?,
+
+  val externalReference: String,
 
   @CreationTimestamp
   val createdAt: OffsetDateTime = OffsetDateTime.now(),
@@ -61,7 +61,7 @@ data class EteCourseEventEntity(
     val thisEffectiveClass =
       this.asHibernateProxy()?.hibernateLazyInitializer?.persistentClass ?: this.javaClass
     if (thisEffectiveClass != oEffectiveClass) return false
-    other as EteCourseEventEntity
+    other as EteCourseCompletionEventEntity
 
     return id == other.id
   }

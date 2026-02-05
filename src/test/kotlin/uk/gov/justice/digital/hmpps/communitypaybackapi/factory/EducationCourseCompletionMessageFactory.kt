@@ -14,7 +14,6 @@ fun EducationCourseCompletionMessage.Companion.valid() = EducationCourseCompleti
 )
 
 fun EducationCourseMessageAttributes.Companion.valid() = EducationCourseMessageAttributes(
-  crn = String.random(5),
   firstName = String.random(20),
   lastName = String.random(20),
   dateOfBirth = randomLocalDate(),
@@ -24,9 +23,9 @@ fun EducationCourseMessageAttributes.Companion.valid() = EducationCourseMessageA
   courseType = String.random(20),
   provider = String.random(5),
   status = EducationCourseCompletionStatus.entries.random(),
-  completionDateTime = randomLocalDateTime(),
-  totalTime = Random.nextLong(10, 100),
-  attempts = "1",
-  expectedMinutes = Random.nextInt(30, 240),
+  completionDate = randomLocalDate(),
+  totalTimeMinutes = Random.nextLong(10, 100),
+  attempts = 1,
+  expectedTimeMinutes = Random.nextLong(30, 240),
   externalReference = String.random(),
 )
