@@ -12,7 +12,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.EteService
 
 @Service
 @ConditionalOnProperty(name = ["community-payback.education-course-integration.enabled"], havingValue = "true")
-class EducationCourseListener(
+class EducationCourseCompletionListener(
   private val objectMapper: ObjectMapper,
   private val eteService: EteService,
   private val sqsListenerErrorHandler: SqsListenerErrorHandler,
@@ -33,7 +33,7 @@ class EducationCourseListener(
     log.debug("Have received education course course completion message '$messageString'")
     sqsListenerErrorHandler.withErrorHandler(headers) {
       val message = objectMapper.readValue(messageString, EducationCourseCompletionMessage::class.java)
-      eteService.handleEducationCourseMessage(message)
+      eteService.handleEducationCourseCompletionMessage(message)
     }
   }
 }

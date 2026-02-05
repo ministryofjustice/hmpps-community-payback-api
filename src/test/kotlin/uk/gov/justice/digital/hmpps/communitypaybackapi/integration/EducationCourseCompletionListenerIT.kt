@@ -16,7 +16,7 @@ import uk.gov.justice.hmpps.sqs.HmppsQueueService
 import uk.gov.justice.hmpps.sqs.MissingQueueException
 import java.util.concurrent.TimeUnit
 
-class EducationCourseListenerIT : IntegrationTestBase() {
+class EducationCourseCompletionListenerIT : IntegrationTestBase() {
 
   @Autowired
   lateinit var hmppsQueueService: HmppsQueueService
