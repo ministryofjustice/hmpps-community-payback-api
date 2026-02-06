@@ -5,5 +5,5 @@ data class ProjectDto(
   val projectCode: String,
   val location: LocationDto,
   val hiVisRequired: Boolean,
-  val beneficiaryDetailsDto: BeneficiaryDetailsDto,
+  val beneficiaryDetails: BeneficiaryDetailsDto,
 )

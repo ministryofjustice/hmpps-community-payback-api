@@ -59,13 +59,13 @@ class AdminProjectController {
       projectCode = projectCode,
       location = location,
       hiVisRequired = true,
-      beneficiaryDetailsDto = BeneficiaryDetailsDto(
+      beneficiaryDetails = BeneficiaryDetailsDto(
         beneficiary = "McDuck Enterprises",
         contactName = "Scrooge McDuck",
         emailAddress = "scrooge@localhost",
         website = "http://mcduckenterprises.localhost",
         telephoneNumber = "12345 6787890",
-        locationDto = location,
+        location = location,
       ),
     )
   }
