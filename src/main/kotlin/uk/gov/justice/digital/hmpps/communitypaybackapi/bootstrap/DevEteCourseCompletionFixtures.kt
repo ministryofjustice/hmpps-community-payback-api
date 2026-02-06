@@ -1,13 +1,12 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.bootstrap
 
 import org.slf4j.LoggerFactory
-import org.springframework.boot.ApplicationArguments
-import org.springframework.boot.ApplicationRunner
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseEventStatus
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AutoSeeder
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.random.Random
@@ -17,12 +16,12 @@ import kotlin.random.Random
 @Profile("dev", "localdev")
 class DevEteCourseCompletionFixtures(
   private val repository: EteCourseCompletionEventEntityRepository,
-) : ApplicationRunner {
+) : AutoSeeder {
   private val log = LoggerFactory.getLogger(javaClass)
   val seededRandom = Random(SEED)
 
-  override fun run(args: ApplicationArguments) {
-    val fixtures = buildFixtures()
+  override fun seed() {
+    val fixtures = List(NUMBER_OF_RECORDS) { buildFixture(it) }
 
     fixtures.forEach { entity ->
       if (!repository.existsById(entity.id)) {
@@ -78,20 +77,7 @@ class DevEteCourseCompletionFixtures(
 
   private fun randDOB(): LocalDate {
     val year = 1970 + seededRandom.nextInt(0, 31)
-    when (val month = seededRandom.nextInt(1, 13)) {
-      in listOf(1, 3, 5, 7, 8, 10, 12) -> {
-        val day = seededRandom.nextInt(1, 32)
-        return LocalDate.of(year, month, day)
-      }
-      in listOf(4, 6, 9, 11) -> {
-        val day = seededRandom.nextInt(1, 31)
-        return LocalDate.of(year, month, day)
-      }
-      else -> {
-        val day = seededRandom.nextInt(1, 29)
-        return LocalDate.of(year, month, day)
-      }
-    }
+    return LocalDate.of(year, 1, 1).plusDays(seededRandom.nextLong(0, 365))
   }
 
   private fun randomCourseName(): String {
