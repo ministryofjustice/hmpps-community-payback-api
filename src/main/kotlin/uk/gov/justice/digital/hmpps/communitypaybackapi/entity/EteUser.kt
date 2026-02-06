@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.entity
 
-import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.Id
 import jakarta.persistence.OneToMany
@@ -24,11 +23,9 @@ data class EteUser(
   @Id
   val id: UUID = UUID.randomUUID(),
 
-  @Column(name = "crn", nullable = false)
   val crn: String,
 
   @field:Email
-  @Column(name = "email", nullable = false)
   val email: String,
 
   val createdAt: OffsetDateTime = OffsetDateTime.now(),
