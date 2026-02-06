@@ -82,3 +82,7 @@ sonar-project.properties
 /tools/http-client/http-client.private.env.json
 gatling/.env
 actions-runner
+
+# keep sensetive files out of git
+*.pem
+*key

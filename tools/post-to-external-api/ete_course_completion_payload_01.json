@@ -1,0 +1,22 @@
+{
+  "courseCompletion": {
+    "externalReference": "CC123",
+    "person": {
+      "firstName": "John",
+      "lastName": "Doe",
+      "dateOfBirth": "1990-01-01",
+      "region": "London",
+      "email": "john.doe@example.com"
+    },
+    "course": {
+      "courseName": "Test Course",
+      "courseType": "Test course type",
+      "provider": "Moodle",
+      "completionDate": "2024-01-15",
+      "status": "Completed",
+      "totalTimeMinutes": 150,
+      "attempts": 1,
+      "expectedTimeMinutes": 120
+    }
+  }
+}
