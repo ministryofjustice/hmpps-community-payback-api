@@ -6,5 +6,5 @@ data class BeneficiaryDetailsDto(
   val emailAddress: String?,
   val website: String?,
   val telephoneNumber: String,
-  val locationDto: LocationDto,
+  val location: LocationDto,
 )
