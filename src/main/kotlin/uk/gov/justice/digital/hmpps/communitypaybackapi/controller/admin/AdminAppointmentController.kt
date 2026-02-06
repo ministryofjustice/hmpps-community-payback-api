@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import org.springdoc.core.converters.models.PageableAsQueryParam
+import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.data.web.PageableDefault
@@ -19,8 +20,9 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.server.ResponseStatusException
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentSummariesDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentSummaryDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ContactOutcomeDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.OffenderDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeGroupDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.BadRequestException
@@ -31,7 +33,9 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentUpdat
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ContextService
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 import java.time.LocalDate
+import java.time.LocalTime
 import java.time.OffsetDateTime
+import java.util.UUID
 
 @AdminUiController
 @RequestMapping(
@@ -151,7 +155,7 @@ class AdminAppointmentController(
       ),
     ],
   )
-  @Suppress("UnusedParameter")
+  @Suppress("UnusedParameter", "MagicNumber")
   @PageableAsQueryParam
   fun getAppointments(
     @Parameter(
@@ -179,7 +183,7 @@ class AdminAppointmentController(
     )
     @RequestParam(required = false) outcomeCodes: List<String>?,
     @RequestParam projectTypeGroup: ProjectTypeGroupDto?,
-  ): PagedModel<AppointmentSummariesDto> {
+  ): PagedModel<AppointmentSummaryDto> {
     val hasFilter = !crn.isNullOrBlank() ||
       !projectCodes.isNullOrEmpty() ||
       fromDate != null ||
@@ -191,9 +195,54 @@ class AdminAppointmentController(
       throw BadRequestException("At least one filter parameter must be provided")
     }
 
-    throw ResponseStatusException(
-      org.springframework.http.HttpStatus.NOT_IMPLEMENTED,
-      "Endpoint not yet implemented",
+    return PagedModel(
+      PageImpl(
+        listOf(
+          AppointmentSummaryDto(
+            id = 1L,
+            contactOutcome = null,
+            requirementMinutes = 400,
+            adjustmentMinutes = 0,
+            completedMinutes = 0,
+            offender = OffenderDto.OffenderFullDto(
+              crn = "CRN0001",
+              forename = "Barry",
+              surname = "Egan",
+              middleNames = emptyList(),
+              dateOfBirth = LocalDate.of(1982, 4, 5),
+            ),
+            date = LocalDate.now().minusDays(5),
+            startTime = LocalTime.of(10, 0),
+            endTime = LocalTime.of(12, 0),
+            daysOverdue = 5,
+          ),
+          AppointmentSummaryDto(
+            id = 2L,
+            contactOutcome = ContactOutcomeDto(
+              id = UUID.randomUUID(),
+              name = "Attended - Complied",
+              code = "ATTC",
+              enforceable = false,
+              attended = false,
+              availableToSupervisors = true,
+            ),
+            requirementMinutes = 800,
+            adjustmentMinutes = 50,
+            completedMinutes = 600,
+            offender = OffenderDto.OffenderFullDto(
+              crn = "CRN0002",
+              forename = "Lena",
+              surname = "Leonard",
+              middleNames = emptyList(),
+              dateOfBirth = LocalDate.of(1982, 4, 5),
+            ),
+            date = LocalDate.now().minusDays(1),
+            startTime = LocalTime.of(14, 0),
+            endTime = LocalTime.of(18, 0),
+            daysOverdue = null,
+          ),
+        ),
+      ),
     )
   }
 }

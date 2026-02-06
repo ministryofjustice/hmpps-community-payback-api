@@ -271,5 +271,17 @@ class AdminAppointmentIT : IntegrationTestBase() {
         .expectStatus()
         .isForbidden
     }
+
+    @Test
+    fun `should return canned data`() {
+      webTestClient.get()
+        .uri("/admin/appointments?crn=CRN000")
+        .addAdminUiAuthHeader("theusername")
+        .exchange()
+        .expectStatus()
+        .isOk()
+        .expectBody()
+        .jsonPath("$.page.totalElements").isEqualTo(2)
+    }
   }
 }

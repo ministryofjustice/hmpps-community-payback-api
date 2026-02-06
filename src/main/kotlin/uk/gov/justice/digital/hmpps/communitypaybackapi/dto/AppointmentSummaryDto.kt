@@ -4,11 +4,6 @@ import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate
 import java.time.LocalTime
 
-data class AppointmentSummariesDto(
-  @param:Schema(description = "List of appointments")
-  val appointments: List<AppointmentSummaryDto>,
-)
-
 data class AppointmentSummaryDto(
   val id: Long,
   @param:Schema(
