@@ -50,7 +50,7 @@ class DevEteCourseCompletionFixtures(
       firstName = firstName,
       lastName = lastName,
       dateOfBirth = randDOB(),
-      region = "London",
+      region = "East of England",
       email = "$firstName.$lastName@example.test",
       courseName = randomCourseName(),
       courseType = "Online",
