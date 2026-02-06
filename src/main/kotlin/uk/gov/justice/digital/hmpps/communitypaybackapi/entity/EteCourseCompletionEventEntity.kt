@@ -70,6 +70,8 @@ data class EteCourseCompletionEventEntity(
   override fun hashCode(): Int = this.asHibernateProxy()?.hibernateLazyInitializer?.persistentClass?.hashCode() ?: javaClass.hashCode()
 
   override fun toString(): String = "EteCourseEventEntity(id=$id)"
+
+  companion object
 }
 
 enum class EteCourseEventStatus(

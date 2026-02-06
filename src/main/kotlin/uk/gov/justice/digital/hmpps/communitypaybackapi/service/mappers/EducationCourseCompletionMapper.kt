@@ -6,7 +6,9 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentWorkQuali
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AttendanceDataDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentsDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EteCourseCompletionEventDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseCompletionMessage
 import java.time.LocalTime
 import java.util.UUID
@@ -60,3 +62,21 @@ class EducationCourseCompletionMapper {
     )
   }
 }
+
+fun EteCourseCompletionEventEntity.toDto() = EteCourseCompletionEventDto(
+  id = id,
+  firstName = firstName,
+  lastName = lastName,
+  dateOfBirth = dateOfBirth,
+  region = region,
+  email = email,
+  courseName = courseName,
+  courseType = courseType,
+  provider = provider,
+  completionDate = completionDate,
+  status = status,
+  totalTimeMinutes = totalTimeMinutes,
+  expectedTimeMinutes = expectedTimeMinutes,
+  attempts = attempts,
+  externalReference = externalReference,
+)
