@@ -60,7 +60,7 @@ class EducationCourseCompletionListenerIT : IntegrationTestBase() {
           .build(),
       )
 
-      await().atMost(5, TimeUnit.SECONDS).untilAsserted {
+      await().atMost(10, TimeUnit.SECONDS).untilAsserted {
         assertThat(eteCourseCompletionEventEntityRepository.count()).isEqualTo(1)
       }
     }

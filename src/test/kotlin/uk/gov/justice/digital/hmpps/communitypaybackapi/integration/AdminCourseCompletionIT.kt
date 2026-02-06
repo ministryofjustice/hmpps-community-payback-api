@@ -275,7 +275,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
 
       // First call: Create the record
       webTestClient.post()
-        .uri("/admin/ete-users")
+        .uri("/admin/ete/users")
         .addAdminUiAuthHeader()
         .bodyValue(request)
         .exchange()
@@ -283,7 +283,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
         .isCreated
 
       webTestClient.post()
-        .uri("/admin/ete-users")
+        .uri("/admin/ete/users")
         .addAdminUiAuthHeader()
         .bodyValue(request)
         .exchange()
@@ -292,19 +292,19 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
     }
 
     @Test
-    fun `should return 500 bad request for invalid email`() {
+    fun `should return 400 bad request for invalid email`() {
       val invalidRequest = mapOf(
         "crn" to "X123456",
         "email" to "not-an-email",
       )
 
       webTestClient.post()
-        .uri("/admin/ete-users")
+        .uri("/admin/ete/users")
         .addAdminUiAuthHeader()
         .bodyValue(invalidRequest)
         .exchange()
         .expectStatus()
-        .is5xxServerError
+        .isBadRequest
         .bodyAsObject<String>().contains("/Field error in object 'createEteUserRequest' on field 'email':/")
     }
   }

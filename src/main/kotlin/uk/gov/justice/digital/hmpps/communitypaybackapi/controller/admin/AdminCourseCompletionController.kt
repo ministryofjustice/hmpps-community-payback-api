@@ -102,17 +102,12 @@ class AdminCourseCompletionController(val eteService: EteService) {
     @PathVariable id: UUID,
   ): EteCourseCompletionEventDto = eteService.getCourseCompletionEvent(id)
 
-  @PostMapping("/ete-users", consumes = [MediaType.APPLICATION_JSON_VALUE])
+  @PostMapping("/ete/users", consumes = [MediaType.APPLICATION_JSON_VALUE])
   @Operation(
     description = "Create a new ETE user record. Returns 201 if created, 204 if it already exists.",
     responses = [
       ApiResponse(responseCode = "201", description = "User created successfully"),
       ApiResponse(responseCode = "204", description = "User already exists, no action taken"),
-      ApiResponse(
-        responseCode = "500",
-        description = "Internal server error",
-        content = [Content(schema = Schema(implementation = ErrorResponse::class))],
-      ),
     ],
   )
   fun postEteUser(
