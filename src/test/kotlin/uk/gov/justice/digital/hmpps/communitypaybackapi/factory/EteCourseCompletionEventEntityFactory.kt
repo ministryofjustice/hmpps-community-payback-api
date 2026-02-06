@@ -1,7 +1,7 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.factory
 
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntity
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseEventStatus
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseEventCompletionMessageStatus
 import java.util.UUID
 import kotlin.random.Random
 
@@ -15,7 +15,7 @@ fun EteCourseCompletionEventEntity.Companion.valid() = EteCourseCompletionEventE
   courseName = String.random(20),
   courseType = String.random(20),
   provider = String.random(5),
-  status = EteCourseEventStatus.entries.random(),
+  status = EteCourseEventCompletionMessageStatus.entries.random(),
   completionDate = randomLocalDate(),
   totalTimeMinutes = Random.nextLong(10, 100),
   attempts = 1,

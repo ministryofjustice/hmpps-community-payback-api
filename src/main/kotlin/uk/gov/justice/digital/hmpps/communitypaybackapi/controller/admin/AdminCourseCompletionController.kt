@@ -5,17 +5,23 @@ import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
+import jakarta.validation.Valid
 import org.springdoc.core.converters.models.PageableAsQueryParam
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.data.web.PageableDefault
 import org.springframework.format.annotation.DateTimeFormat
+import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateEteUserRequest
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EteCourseCompletionEventDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.EteService
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
@@ -95,4 +101,29 @@ class AdminCourseCompletionController(val eteService: EteService) {
   fun getCourseCompletion(
     @PathVariable id: UUID,
   ): EteCourseCompletionEventDto = eteService.getCourseCompletionEvent(id)
+
+  @PostMapping("/ete-users", consumes = [MediaType.APPLICATION_JSON_VALUE])
+  @Operation(
+    description = "Create a new ETE user record. Returns 201 if created, 204 if it already exists.",
+    responses = [
+      ApiResponse(responseCode = "201", description = "User created successfully"),
+      ApiResponse(responseCode = "204", description = "User already exists, no action taken"),
+      ApiResponse(
+        responseCode = "500",
+        description = "Internal server error",
+        content = [Content(schema = Schema(implementation = ErrorResponse::class))],
+      ),
+    ],
+  )
+  fun postEteUser(
+    @RequestBody @Valid request: CreateEteUserRequest,
+  ): ResponseEntity<Unit> {
+    val created = eteService.createUser(request.crn, request.email)
+
+    return if (created) {
+      ResponseEntity.status(HttpStatus.CREATED).build()
+    } else {
+      ResponseEntity.status(HttpStatus.NO_CONTENT).build()
+    }
+  }
 }

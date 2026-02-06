@@ -7,9 +7,11 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.hateoas.PagedModel
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateEteUserRequest
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EteCourseCompletionEventDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntityRepository
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteUserRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.bodyAsObject
 import java.util.UUID
@@ -18,6 +20,9 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
 
   @Autowired
   lateinit var eteAppointmentEventEntityRepository: EteCourseCompletionEventEntityRepository
+
+  @Autowired
+  lateinit var eteUserRepository: EteUserRepository
 
   @Nested
   @DisplayName("GET /providers/N07/course-completions")
@@ -30,6 +35,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
       @BeforeEach
       fun setUp() {
         eteAppointmentEventEntityRepository.deleteAll()
+        eteUserRepository.deleteAll()
       }
 
       @Test
@@ -78,6 +84,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
       fun `should return OK for one course completion`() {
         val entity = eteAppointmentEventEntityRepository.save(
           EteCourseCompletionEventEntity.valid().copy(
+            id = UUID.randomUUID(),
             region = "London",
           ),
         )
@@ -252,6 +259,53 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
 
       assertThat(courseCompletionEvent.id).isEqualTo(entity.id)
       assertThat(courseCompletionEvent.firstName).isEqualTo(entity.firstName)
+    }
+  }
+
+  @Nested
+  @DisplayName("POST /admin/ete-users")
+  inner class CreateEteUser {
+
+    @Test
+    fun `should return 201 when user is created and 204 when it already exists`() {
+      val request = CreateEteUserRequest(
+        crn = "X123456",
+        email = "test.user@digital.justice.gov.uk",
+      )
+
+      // First call: Create the record
+      webTestClient.post()
+        .uri("/admin/ete-users")
+        .addAdminUiAuthHeader()
+        .bodyValue(request)
+        .exchange()
+        .expectStatus()
+        .isCreated
+
+      webTestClient.post()
+        .uri("/admin/ete-users")
+        .addAdminUiAuthHeader()
+        .bodyValue(request)
+        .exchange()
+        .expectStatus()
+        .isNoContent
+    }
+
+    @Test
+    fun `should return 500 bad request for invalid email`() {
+      val invalidRequest = mapOf(
+        "crn" to "X123456",
+        "email" to "not-an-email",
+      )
+
+      webTestClient.post()
+        .uri("/admin/ete-users")
+        .addAdminUiAuthHeader()
+        .bodyValue(invalidRequest)
+        .exchange()
+        .expectStatus()
+        .is5xxServerError
+        .bodyAsObject<String>().contains("/Field error in object 'createEteUserRequest' on field 'email':/")
     }
   }
 }

@@ -8,7 +8,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AttendanceDataDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntity
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseEventStatus
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseEventCompletionMessageStatus
 import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseCompletionMessage
 import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseCompletionStatus
 import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseMessageAttributes
@@ -186,7 +186,7 @@ class EducationCourseCompletionMapperTest {
       courseType = "Type A",
       provider = "Provider X",
       completionDate = LocalDate.of(2024, 1, 15),
-      status = EteCourseEventStatus.COMPLETED,
+      status = EteCourseEventCompletionMessageStatus.COMPLETED,
       totalTimeMinutes = 120L,
       expectedTimeMinutes = 60L,
       attempts = 1,
@@ -205,7 +205,7 @@ class EducationCourseCompletionMapperTest {
     assertThat(result.courseType).isEqualTo("Type A")
     assertThat(result.provider).isEqualTo("Provider X")
     assertThat(result.completionDate).isEqualTo(LocalDate.of(2024, 1, 15))
-    assertThat(result.status).isEqualTo(EteCourseEventStatus.COMPLETED)
+    assertThat(result.status).isEqualTo(EteCourseEventCompletionMessageStatus.COMPLETED)
     assertThat(result.totalTimeMinutes).isEqualTo(120L)
     assertThat(result.expectedTimeMinutes).isEqualTo(60L)
     assertThat(result.attempts).isEqualTo(1)

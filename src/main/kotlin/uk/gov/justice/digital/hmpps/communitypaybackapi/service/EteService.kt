@@ -9,7 +9,9 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.NotFoundE
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntityRepository
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseEventStatus
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseEventCompletionMessageStatus
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteUser
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteUserRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseCompletionMessage
 import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseCompletionStatus
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.EducationCourseCompletionMapper
@@ -23,6 +25,7 @@ class EteService(
   private val educationCourseCompletionMapper: EducationCourseCompletionMapper,
   private val eteCourseCompletionEventEntityRepository: EteCourseCompletionEventEntityRepository,
   private val appointmentCreationService: AppointmentCreationService,
+  private val eteUserRepository: EteUserRepository,
 ) {
 
   private val regionToProviderCodeMap = mapOf(
@@ -55,7 +58,7 @@ class EteService(
         courseType = attributes.courseType,
         provider = attributes.provider,
         completionDate = attributes.completionDate,
-        status = EteCourseEventStatus.fromMessage(attributes.status),
+        status = EteCourseEventCompletionMessageStatus.fromMessage(attributes.status),
         totalTimeMinutes = attributes.totalTimeMinutes,
         expectedTimeMinutes = attributes.expectedTimeMinutes,
         externalReference = attributes.externalReference,
@@ -82,4 +85,22 @@ class EteService(
   fun getCourseCompletionEvent(id: UUID) = eteCourseCompletionEventEntityRepository.findById(id).orElseThrow {
     NotFoundException("Course completion event", id.toString())
   }.toDto()
+
+  @Transactional
+  fun createUser(crn: String, emailAddress: String): Boolean {
+    val existingUser = eteUserRepository.findByCrnAndEmail(crn, emailAddress.lowercase())
+
+    return if (existingUser == null) {
+      eteUserRepository.save(
+        EteUser(
+          id = UUID.randomUUID(),
+          crn = crn,
+          email = emailAddress.lowercase(),
+        ),
+      )
+      true
+    } else {
+      false
+    }
+  }
 }

@@ -4,7 +4,9 @@ import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.junit5.MockKExtension
+import io.mockk.mockk
 import io.mockk.slot
+import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -17,7 +19,9 @@ import org.springframework.data.domain.Pageable
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.NotFoundException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntityRepository
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseEventStatus
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseEventCompletionMessageStatus
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteUser
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteUserRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.randomLocalDate
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseCompletionMessage
@@ -43,7 +47,10 @@ class EteServiceTest {
   lateinit var educationCourseCompletionMapper: EducationCourseCompletionMapper
 
   @InjectMockKs
-  private lateinit var service: EteService
+  private lateinit var eteService: EteService
+
+  @RelaxedMockK
+  private lateinit var eteUserRepository: EteUserRepository
 
   @Nested
   inner class HandleEducationCourseMessage {
@@ -53,7 +60,7 @@ class EteServiceTest {
       val entityCaptor = slot<EteCourseCompletionEventEntity>()
       every { eteCourseCompletionEventEntityRepository.save(capture(entityCaptor)) } returnsArgument 0
 
-      service.handleEducationCourseCompletionMessage(
+      eteService.handleEducationCourseCompletionMessage(
         EducationCourseCompletionMessage.valid().copy(
           messageAttributes = EducationCourseMessageAttributes.valid().copy(
             externalReference = "EXT123",
@@ -89,7 +96,7 @@ class EteServiceTest {
       assertThat(persistedEntity.provider).isEqualTo("Training Provider Inc.")
       assertThat(persistedEntity.totalTimeMinutes).isEqualTo(70)
       assertThat(persistedEntity.expectedTimeMinutes).isEqualTo(120)
-      assertThat(persistedEntity.status).isEqualTo(EteCourseEventStatus.FAILED)
+      assertThat(persistedEntity.status).isEqualTo(EteCourseEventCompletionMessageStatus.FAILED)
       assertThat(persistedEntity.completionDate).isEqualTo("2026-01-01")
 
       // External ID assertion
@@ -104,7 +111,7 @@ class EteServiceTest {
       val entityCaptor = slot<EteCourseCompletionEventEntity>()
       every { eteCourseCompletionEventEntityRepository.save(capture(entityCaptor)) } returnsArgument 0
 
-      service.handleEducationCourseCompletionMessage(
+      eteService.handleEducationCourseCompletionMessage(
         EducationCourseCompletionMessage.valid().copy(
           messageAttributes = EducationCourseMessageAttributes.valid().copy(
             externalReference = "EXT456",
@@ -127,7 +134,7 @@ class EteServiceTest {
       assertThat(entityCaptor.isCaptured).isTrue
       val persistedEntity = entityCaptor.captured
 
-      assertThat(persistedEntity.status).isEqualTo(EteCourseEventStatus.COMPLETED)
+      assertThat(persistedEntity.status).isEqualTo(EteCourseEventCompletionMessageStatus.COMPLETED)
       assertThat(persistedEntity.totalTimeMinutes).isEqualTo(150) // 2 hours 30 minutes = 150 minutes
       assertThat(persistedEntity.expectedTimeMinutes).isEqualTo(150)
       assertThat(persistedEntity.externalReference).isEqualTo("EXT456")
@@ -142,7 +149,7 @@ class EteServiceTest {
     @Test
     fun `should return empty page when provider code not found`() {
       val pageable = Pageable.unpaged()
-      val result = service.getEteCourseCompletionEvents("INVALID", null, null, pageable)
+      val result = eteService.getEteCourseCompletionEvents("INVALID", null, null, pageable)
 
       assertThat(result.isEmpty).isTrue
     }
@@ -177,7 +184,7 @@ class EteServiceTest {
         courseType = "Course Type",
         provider = "Moodle",
         completionDate = LocalDate.of(2026, 6, 15),
-        status = EteCourseEventStatus.COMPLETED,
+        status = EteCourseEventCompletionMessageStatus.COMPLETED,
         totalTimeMinutes = 150,
         expectedTimeMinutes = 150,
         externalReference = "EXT456",
@@ -193,7 +200,7 @@ class EteServiceTest {
         )
       } returns PageImpl(listOf(entity))
 
-      val result = service.getEteCourseCompletionEvents(providerCode, fromDate, toDate, pageable)
+      val result = eteService.getEteCourseCompletionEvents(providerCode, fromDate, toDate, pageable)
 
       assertThat(result.isEmpty).isFalse
       assertThat(result.content).hasSize(1)
@@ -218,7 +225,7 @@ class EteServiceTest {
         courseType = "Online",
         provider = "Test Provider",
         completionDate = LocalDate.of(2026, 1, 1),
-        status = EteCourseEventStatus.COMPLETED,
+        status = EteCourseEventCompletionMessageStatus.COMPLETED,
         totalTimeMinutes = 120,
         expectedTimeMinutes = 120,
         externalReference = "EXT123",
@@ -227,13 +234,13 @@ class EteServiceTest {
 
       every { eteCourseCompletionEventEntityRepository.findById(eventId) } returns java.util.Optional.of(entity)
 
-      val result = service.getCourseCompletionEvent(eventId)
+      val result = eteService.getCourseCompletionEvent(eventId)
 
       assertThat(result.id).isEqualTo(eventId)
       assertThat(result.firstName).isEqualTo("John")
       assertThat(result.lastName).isEqualTo("Doe")
       assertThat(result.courseName).isEqualTo("Test Course")
-      assertThat(result.status).isEqualTo(EteCourseEventStatus.COMPLETED)
+      assertThat(result.status).isEqualTo(EteCourseEventCompletionMessageStatus.COMPLETED)
     }
 
     @Test
@@ -243,11 +250,47 @@ class EteServiceTest {
       every { eteCourseCompletionEventEntityRepository.findById(eventId) } returns empty()
 
       assertThrows<NotFoundException> {
-        service.getCourseCompletionEvent(eventId)
+        eteService.getCourseCompletionEvent(eventId)
       }.also {
         assertThat(it.message).contains("Course completion event")
         assertThat(it.message).contains(eventId.toString())
       }
+    }
+  }
+
+  @Nested
+  inner class CreateUser {
+    @Test
+    fun `createUser returns true and saves when user does not exist`() {
+      val crn = "X123456"
+      val email = "TEST@example.com"
+      val userSlot = slot<EteUser>() // Create a slot to capture the argument
+
+      every { eteUserRepository.findByCrnAndEmail(crn, email.lowercase()) } returns null
+      every { eteUserRepository.save(capture(userSlot)) } returns mockk<EteUser>()
+
+      val result = eteService.createUser(crn, email)
+
+      assertThat(result).isTrue()
+
+      val savedUser = userSlot.captured
+      assertThat(savedUser.crn).isEqualTo("X123456")
+      assertThat(savedUser.email).isEqualTo("test@example.com")
+      assertThat(savedUser.id).isNotNull()
+    }
+
+    @Test
+    fun `createUser returns false and does not save when user already exists`() {
+      val crn = "X123456"
+      val email = "test@example.com"
+      val existingUser = EteUser(crn = crn, email = email)
+
+      every { eteUserRepository.findByCrnAndEmail(crn, email) } returns existingUser
+
+      val result = eteService.createUser(crn, email)
+
+      assertThat(result).isFalse()
+      verify(exactly = 0) { eteUserRepository.save(any()) }
     }
   }
 }
