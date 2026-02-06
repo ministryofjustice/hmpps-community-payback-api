@@ -7,12 +7,16 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentWorkQuali
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AttendanceDataDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseEventStatus
 import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseCompletionMessage
 import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseCompletionStatus
 import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseMessageAttributes
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.EducationCourseCompletionMapper
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
 import java.time.LocalDate
 import java.time.LocalTime
+import java.util.UUID
 
 class EducationCourseCompletionMapperTest {
 
@@ -168,4 +172,43 @@ class EducationCourseCompletionMapperTest {
     ),
     who = null,
   )
+
+  @Test
+  fun `should map EteCourseCompletionEventEntity to EteCourseCompletionEventDto with all fields`() {
+    val entity = EteCourseCompletionEventEntity(
+      id = UUID.randomUUID(),
+      firstName = "John",
+      lastName = "Doe",
+      dateOfBirth = LocalDate.of(1990, 5, 20),
+      region = "London",
+      email = "john.doe@example.com",
+      courseName = "Test Course",
+      courseType = "Type A",
+      provider = "Provider X",
+      completionDate = LocalDate.of(2024, 1, 15),
+      status = EteCourseEventStatus.COMPLETED,
+      totalTimeMinutes = 120L,
+      expectedTimeMinutes = 60L,
+      attempts = 1,
+      externalReference = "EXT_ID",
+    )
+
+    val result = entity.toDto()
+
+    assertThat(result.id).isEqualTo(entity.id)
+    assertThat(result.firstName).isEqualTo("John")
+    assertThat(result.lastName).isEqualTo("Doe")
+    assertThat(result.dateOfBirth).isEqualTo(LocalDate.of(1990, 5, 20))
+    assertThat(result.region).isEqualTo("London")
+    assertThat(result.email).isEqualTo("john.doe@example.com")
+    assertThat(result.courseName).isEqualTo("Test Course")
+    assertThat(result.courseType).isEqualTo("Type A")
+    assertThat(result.provider).isEqualTo("Provider X")
+    assertThat(result.completionDate).isEqualTo(LocalDate.of(2024, 1, 15))
+    assertThat(result.status).isEqualTo(EteCourseEventStatus.COMPLETED)
+    assertThat(result.totalTimeMinutes).isEqualTo(120L)
+    assertThat(result.expectedTimeMinutes).isEqualTo(60L)
+    assertThat(result.attempts).isEqualTo(1)
+    assertThat(result.externalReference).isEqualTo("EXT_ID")
+  }
 }
