@@ -5,7 +5,7 @@ import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntityRepository
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseEventStatus
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseEventCompletionMessageStatus
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AutoSeeder
 import java.time.LocalDate
 import java.util.UUID
@@ -56,7 +56,7 @@ class DevEteCourseCompletionFixtures(
       courseType = "Online",
       provider = "Megan Excess",
       completionDate = LocalDate.now().minusDays(seededRandom.nextLong(1, 8)),
-      status = EteCourseEventStatus.COMPLETED,
+      status = EteCourseEventCompletionMessageStatus.COMPLETED,
       totalTimeMinutes = totalTime,
       expectedTimeMinutes = totalTime + seededRandom.nextLong(-10, 10),
       attempts = 1,

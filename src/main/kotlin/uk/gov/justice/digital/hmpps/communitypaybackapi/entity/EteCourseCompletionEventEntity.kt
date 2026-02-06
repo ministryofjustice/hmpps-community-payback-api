@@ -4,7 +4,8 @@ import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
 import jakarta.persistence.Id
-import jakarta.persistence.PreUpdate
+import jakarta.persistence.JoinColumn
+import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.UpdateTimestamp
@@ -33,7 +34,7 @@ data class EteCourseCompletionEventEntity(
   val completionDate: LocalDate,
 
   @Enumerated(EnumType.STRING)
-  val status: EteCourseEventStatus,
+  val status: EteCourseEventCompletionMessageStatus,
 
   val totalTimeMinutes: Long,
 
@@ -48,9 +49,11 @@ data class EteCourseCompletionEventEntity(
 
   @UpdateTimestamp
   val updatedAt: OffsetDateTime = OffsetDateTime.now(),
+
+  @ManyToOne
+  @JoinColumn(name = "user_id")
+  val user: EteUser? = null,
 ) {
-  @PreUpdate
-  fun preUpdate(): Unit = throw UnsupportedOperationException("This entity can't be updated")
 
   @Suppress("USELESS_IS_CHECK")
   override fun equals(other: Any?): Boolean {
@@ -74,7 +77,7 @@ data class EteCourseCompletionEventEntity(
   companion object
 }
 
-enum class EteCourseEventStatus(
+enum class EteCourseEventCompletionMessageStatus(
   val messageType: EducationCourseCompletionStatus,
 ) {
   COMPLETED(EducationCourseCompletionStatus.Completed),

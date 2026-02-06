@@ -26,4 +26,15 @@ interface EteCourseCompletionEventEntityRepository : JpaRepository<EteCourseComp
     @Param("toDate") toDate: LocalDate?,
     pageable: Pageable,
   ): Page<EteCourseCompletionEventEntity>
+
+  @Query(
+    """
+    SELECT e FROM EteCourseCompletionEventEntity e
+    INNER JOIN EteUser u ON e.email = u.email
+    WHERE (:crn = u.crn)
+  """,
+  )
+  fun findByCrn(crn: String): List<EteCourseCompletionEventEntity>
+
+  fun findByEmail(@Param("email") email: String): List<EteCourseCompletionEventEntity>
 }
