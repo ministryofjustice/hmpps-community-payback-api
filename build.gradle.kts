@@ -52,6 +52,7 @@ dependencies {
   testImplementation("org.wiremock.integrations:wiremock-spring-boot:4.1.0")
   testImplementation("io.mockk:mockk:1.14.9")
   testImplementation("com.lemonappdev:konsist:0.17.3")
+  testImplementation("org.zalando:logbook-spring-boot-starter:4.0.1")
 }
 
 kotlin {
