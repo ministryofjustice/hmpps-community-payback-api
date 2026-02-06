@@ -1,8 +1,11 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.integration
 
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.bodyAsObject
 
 class AdminProjectsIT : IntegrationTestBase() {
 
@@ -37,6 +40,19 @@ class AdminProjectsIT : IntegrationTestBase() {
         .exchange()
         .expectStatus()
         .isForbidden
+    }
+
+    @Test
+    fun `should return canned data`() {
+      val project = webTestClient.get()
+        .uri("/admin/projects/PROJ1")
+        .addAdminUiAuthHeader()
+        .exchange()
+        .expectStatus()
+        .isOk
+        .bodyAsObject<ProjectDto>()
+
+      assertThat(project.projectCode).isEqualTo("PROJ1")
     }
   }
 }
