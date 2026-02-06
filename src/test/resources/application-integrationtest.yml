@@ -39,13 +39,13 @@ hmpps-auth:
 hmpps.sar:
   tests:
     expected-api-response:
-      path: /subject-access-request/expected-api-response.json
+      path: /sar/expected-api-response.json
     expected-render-result:
-      path: /subject-access-request/expected-report.html
+      path: /sar/expected-report.html
     attachments-expected: false
-    expected-flyway-schema-version: 20260130172009
+    expected-flyway-schema-version: 20260205155110
     expected-jpa-entity-schema:
-      path: /subject-access-request/expected-jpa-schema.json
+      path: /sar/expected-jpa-schema.json
 
 hmpps.sqs:
   provider: localstack

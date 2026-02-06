@@ -1,1 +1,31 @@
 <h1>Community Payback</h1>
+
+<h2>Appointment Events</h2>
+
+{{#appointmentEvents}}
+<table class="summary-list">
+  <tr><td>Event Type</td><td>{{ eventType }}</td></tr>
+  <tr><td>Triggered At</td><td>{{ formatDate triggeredAt }}</td></tr>
+  <tr><td>Trigger Type</td><td>{{ triggerType }}</td></tr>
+  <tr><td>Triggered By User</td><td>{{#triggeredByUsername}}{{ getUserLastName triggeredByUsername }}{{/triggeredByUsername}}</td></tr>
+  <tr><td>Project Name</td><td>{{ projectName }}</td></tr>
+  <tr><td>Appointment Date</td><td>{{ formatDate date }}</td></tr>
+  <tr><td>Appointment Start Time</td><td>{{ startTime }}</td></tr>
+  <tr><td>Appointment End Time</td><td>{{ endTime }}</td></tr>
+  <tr><td>Pick Up Location</td><td>{{ pickupLocation }}</td></tr>
+  <tr><td>Pick Up Time</td><td>{{ pickupTime }}</td></tr>
+  <tr><td>Notes</td><td>{{ optionalValue notes }}</td></tr>
+  <tr><td>Sensitive</td><td>{{ optionalValue sensitive }}</td></tr>
+  <tr><td>Contact Outcome</td><td>{{ optionalValue contactOutcome }}</td></tr>
+  <tr><td>Minutes Credited</td><td>{{ optionalValue minutesCredited }}</td></tr>
+  <tr><td>Penalty Minutes</td><td>{{ optionalValue penaltyMinutes }}</td></tr>
+  <tr><td>Hi-Vis Worn</td><td>{{ optionalValue hiVisWorn }}</td></tr>
+  <tr><td>Worked Intensively</td><td>{{ optionalValue workedIntensively }}</td></tr>
+  <tr><td>Work Quality</td><td>{{ optionalValue workQuality }}</td></tr>
+  <tr><td>Behaviour</td><td>{{ optionalValue behaviour }}</td></tr>
+  <tr><td>Alert Active</td><td>{{ optionalValue alertActive }}</td></tr>
+</table>
+{{/appointmentEvents}}
+{{^appointmentEvents}}
+    <p>No Data Held</p>
+{{/appointmentEvents}}
