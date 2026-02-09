@@ -18,11 +18,11 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointmentSumm
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointmentSupervisor
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointmentWorkQuality
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseSummary
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCode
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDContactOutcome
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDEnforcementAction
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDName
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDPickUpLocation
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProvider
@@ -373,7 +373,9 @@ class AppointmentMappersTest {
           code = providerCode,
         ),
         pickUpData = NDAppointmentPickUp(
-          location = NDAddress(
+          location = NDPickUpLocation(
+            code = pickUpLocationCode,
+            description = "doesnt matter",
             buildingName = pickUpBuildingName,
             addressNumber = pickUpBuildingNumber,
             streetName = pickUpStreetName,
@@ -381,7 +383,6 @@ class AppointmentMappersTest {
             county = pickUpCounty,
             postCode = pickUpPostCode,
           ),
-          locationCode = NDCode(pickUpLocationCode),
           time = pickUpTime,
         ),
         date = date,
