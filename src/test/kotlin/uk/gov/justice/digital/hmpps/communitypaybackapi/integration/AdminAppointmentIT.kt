@@ -97,7 +97,7 @@ class AdminAppointmentIT : IntegrationTestBase() {
       val crn = "X434334"
 
       CommunityPaybackAndDeliusMockServer.getAppointment(
-        appointment = NDAppointment.valid().copy(
+        appointment = NDAppointment.valid(ctx).copy(
           id = id,
           project = NDProjectAndLocation.valid().copy(name = projectName, code = "PC01"),
           case = NDCaseSummary.valid().copy(crn = crn),
@@ -190,7 +190,7 @@ class AdminAppointmentIT : IntegrationTestBase() {
     @Test
     fun `Should send update upstream, raise domain event and delete corresponding form data`() {
       CommunityPaybackAndDeliusMockServer.getAppointment(
-        appointment = NDAppointment.validNoOutcome().copy(
+        appointment = NDAppointment.validNoOutcome(ctx).copy(
           id = 1234L,
           project = NDProjectAndLocation.valid().copy(code = "proj123"),
           date = LocalDate.now(),

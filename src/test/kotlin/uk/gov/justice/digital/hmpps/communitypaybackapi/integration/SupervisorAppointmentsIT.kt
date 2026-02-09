@@ -96,7 +96,7 @@ class SupervisorAppointmentsIT : IntegrationTestBase() {
       val crn = "X434334"
 
       CommunityPaybackAndDeliusMockServer.getAppointment(
-        appointment = NDAppointment.valid().copy(
+        appointment = NDAppointment.valid(ctx).copy(
           id = id,
           project = NDProjectAndLocation.valid().copy(name = projectName, code = "PC01"),
           case = NDCaseSummary.valid().copy(crn = crn),
@@ -188,7 +188,7 @@ class SupervisorAppointmentsIT : IntegrationTestBase() {
     @Test
     fun `Should send update upstream and delete corresponding form data`() {
       CommunityPaybackAndDeliusMockServer.getAppointment(
-        appointment = NDAppointment.validNoOutcome().copy(
+        appointment = NDAppointment.validNoOutcome(ctx).copy(
           id = 1234L,
           project = NDProjectAndLocation.valid().copy(code = "PC01"),
           date = LocalDate.now(),
@@ -280,7 +280,7 @@ class SupervisorAppointmentsIT : IntegrationTestBase() {
     @Test
     fun `succeeds and calls upstream endpoint`() {
       CommunityPaybackAndDeliusMockServer.getAppointment(
-        appointment = NDAppointment.validNoOutcome().copy(
+        appointment = NDAppointment.validNoOutcome(ctx).copy(
           id = 1234L,
           project = NDProjectAndLocation.valid().copy(code = "PC01"),
           date = LocalDate.now(),
@@ -293,7 +293,7 @@ class SupervisorAppointmentsIT : IntegrationTestBase() {
       )
 
       CommunityPaybackAndDeliusMockServer.getAppointment(
-        appointment = NDAppointment.validNoOutcome().copy(
+        appointment = NDAppointment.validNoOutcome(ctx).copy(
           id = 5678L,
           project = NDProjectAndLocation.valid().copy(code = "PC01"),
           date = LocalDate.now(),

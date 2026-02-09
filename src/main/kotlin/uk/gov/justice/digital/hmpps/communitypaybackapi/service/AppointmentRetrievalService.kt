@@ -12,6 +12,7 @@ class AppointmentRetrievalService(
   private val communityPaybackAndDeliusClient: CommunityPaybackAndDeliusClient,
   private val appointmentMappers: AppointmentMappers,
   private val contextService: ContextService,
+  private val projectService: ProjectService,
 ) {
 
   fun getAppointment(
@@ -22,7 +23,12 @@ class AppointmentRetrievalService(
       projectCode = projectCode,
       appointmentId = appointmentId,
       username = contextService.getUserName(),
-    ).let { appointmentMappers.toDto(it) }
+    ).let { appointment ->
+      val projectTypeCode = appointment.projectType.code
+      val projectType = projectService.getProjectTypeForCode(projectTypeCode) ?: error("Can't resolve project type for code $projectTypeCode")
+
+      appointmentMappers.toDto(appointment, projectType)
+    }
   } catch (_: WebClientResponseException.NotFound) {
     throw NotFoundException("Appointment", "Project $projectCode, ID $appointmentId")
   }

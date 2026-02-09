@@ -25,6 +25,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventT
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.Behaviour
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EnforcementActionEntityRepository
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ProjectTypeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.WorkQuality
 import java.time.LocalDate
 import java.time.LocalTime
@@ -37,6 +38,7 @@ class AppointmentMappers(
 
   fun toDto(
     appointment: NDAppointment,
+    projectType: ProjectTypeEntity,
   ): AppointmentDto {
     val contactOutcomeEntity = appointment.outcome?.code?.let {
       contactOutcomeEntityRepository.findByCode(it) ?: error("Can't find outcome for code $it")
@@ -51,6 +53,7 @@ class AppointmentMappers(
       projectCode = appointment.project.code,
       projectTypeName = appointment.projectType.name,
       projectTypeCode = appointment.projectType.code,
+      projectType = projectType.toDto(),
       offender = appointment.case.toDto(),
       supervisingTeam = appointment.team.name,
       supervisingTeamCode = appointment.team.code,

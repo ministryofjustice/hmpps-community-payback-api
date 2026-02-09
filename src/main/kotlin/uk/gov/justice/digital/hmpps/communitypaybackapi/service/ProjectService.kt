@@ -15,6 +15,7 @@ class ProjectService(
   private val projectTypeEntityRepository: ProjectTypeEntityRepository,
   private val communityPaybackAndDeliusClient: CommunityPaybackAndDeliusClient,
 ) {
+  fun getProjectTypeForCode(code: String) = projectTypeEntityRepository.getByCode(code)
 
   fun projectTypesForGroup(projectTypeGroup: ProjectTypeGroupDto) = projectTypeEntityRepository.findByProjectTypeGroupOrderByCodeAsc(ProjectTypeGroup.fromDto(projectTypeGroup)).map { it.toDto() }
 

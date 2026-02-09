@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.dto
 
+import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
@@ -11,8 +12,13 @@ data class AppointmentDto(
   val deliusEventNumber: Int,
   val projectName: String,
   val projectCode: String,
-  val projectTypeName: String,
-  val projectTypeCode: String,
+  @Deprecated("Use [projectType.name] instead")
+  @param:Schema(description = "Deprecated, use projectType.name instead", deprecated = true)
+  val projectTypeName: String?,
+  @Deprecated("Use [projectType.code] instead")
+  @param:Schema(description = "Deprecated, use projectType.code instead", deprecated = true)
+  val projectTypeCode: String?,
+  val projectType: ProjectTypeDto,
   val offender: OffenderDto,
   val supervisingTeam: String,
   val supervisingTeamCode: String,

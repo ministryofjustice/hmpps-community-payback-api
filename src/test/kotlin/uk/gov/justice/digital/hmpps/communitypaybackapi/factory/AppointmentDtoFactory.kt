@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.factory
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.OffenderDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.PickUpDataDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeDto
 import java.util.UUID
 import kotlin.Long
 import kotlin.String
@@ -16,6 +17,7 @@ fun AppointmentDto.Companion.valid() = AppointmentDto(
   projectCode = String.random(),
   projectTypeName = String.random(),
   projectTypeCode = String.random(),
+  projectType = ProjectTypeDto.valid(),
   offender = OffenderDto.OffenderLimitedDto(crn = String.random()),
   supervisingTeam = String.random(),
   supervisingTeamCode = String.random(),

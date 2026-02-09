@@ -39,6 +39,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEnt
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EnforcementActionEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EnforcementActionEntityRepository
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ProjectTypeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.WorkQuality
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
@@ -410,7 +411,7 @@ class AppointmentMappersTest {
       every { contactOutcomeEntityRepository.findByCode("OUTCOME1") } returns ContactOutcomeEntity.valid().copy(code = contactOutcomeCode, attended = true)
       every { enforcementActionEntityRepository.findByCode("ENFORCE1") } returns EnforcementActionEntity.valid().copy(id = enforcementActionId)
 
-      val result = service.toDto(appointment)
+      val result = service.toDto(appointment, ProjectTypeEntity.valid())
 
       assertThat(result.id).isEqualTo(id)
       assertThat(result.communityPaybackId).isEqualTo(communityPaybackId)
@@ -464,7 +465,7 @@ class AppointmentMappersTest {
       every { contactOutcomeEntityRepository.findByCode("OUTCOME1") } returns ContactOutcomeEntity.valid().copy(attended = true)
       every { enforcementActionEntityRepository.findByCode("ENFORCE1") } returns EnforcementActionEntity.valid()
 
-      val result = service.toDto(projectAppointment)
+      val result = service.toDto(projectAppointment, ProjectTypeEntity.valid())
 
       assertThat(result.attendanceData).isNotNull()
     }
@@ -479,7 +480,7 @@ class AppointmentMappersTest {
       every { contactOutcomeEntityRepository.findByCode("OUTCOME1") } returns ContactOutcomeEntity.valid().copy(attended = false)
       every { enforcementActionEntityRepository.findByCode("ENFORCE1") } returns EnforcementActionEntity.valid()
 
-      val result = service.toDto(projectAppointment)
+      val result = service.toDto(projectAppointment, ProjectTypeEntity.valid())
 
       assertThat(result.attendanceData).isNull()
     }
