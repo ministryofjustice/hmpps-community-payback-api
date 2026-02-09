@@ -38,6 +38,8 @@
   },
   "pickUpData": {
     "location": {
+      "code": "PU1",
+      "description": "Pickup Location 1",
       "buildingName": "4th Floor Ashby House",
       "addressNumber": null,
       "streetName": "Brook Street",
