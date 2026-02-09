@@ -5,4 +5,6 @@ import org.springframework.stereotype.Repository
 import java.util.UUID
 
 @Repository
-interface ProjectTypeEntityRepository : JpaRepository<ProjectTypeEntity, UUID>
+interface ProjectTypeEntityRepository : JpaRepository<ProjectTypeEntity, UUID> {
+  fun findByProjectTypeGroupOrderByCodeAsc(projectTypeGroup: ProjectTypeGroup): List<ProjectTypeEntity>
+}

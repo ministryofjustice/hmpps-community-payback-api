@@ -9,6 +9,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EnforcementActionEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ProjectTypeEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
 import java.util.UUID
 
@@ -28,17 +29,17 @@ class ReferenceMappersTest {
     @Test
     fun `should map ProjectTypes to DTO correctly`() {
       val projectTypes = listOf(
-        ProjectTypeEntity(
+        ProjectTypeEntity.valid().copy(
           id = UUID.fromString("e68f2cd5-c6f2-4ed8-af66-cd9a46d5fe77"),
           name = "ETE - CFO",
           code = "ET3",
         ),
-        ProjectTypeEntity(
+        ProjectTypeEntity.valid().copy(
           id = UUID.fromString("ea55e70e-c1ca-45b9-9001-18af7a907b25"),
           name = "Externally Supervised Placement",
           code = "ES",
         ),
-        ProjectTypeEntity(
+        ProjectTypeEntity.valid().copy(
           id = UUID.fromString("b9391e9a-515a-4139-a956-20e0f0a129b9"),
           name = "Independent Working",
           code = "WH1",
@@ -67,7 +68,7 @@ class ReferenceMappersTest {
   inner class ProjectTypeMapper {
     @Test
     fun `should map ProjectType to DTO correctly`() {
-      val projectType = ProjectTypeEntity(
+      val projectType = ProjectTypeEntity.valid().copy(
         id = UUID.fromString("ea55e70e-c1ca-45b9-9001-18af7a907b25"),
         name = "Externally Supervised Placement",
         code = "ES",
