@@ -61,7 +61,7 @@ class AppointmentRetrievalServiceTest {
 
       assertThatThrownBy {
         service.getAppointment(PROJECT_CODE, 101L)
-      }.isInstanceOf(NotFoundException::class.java).hasMessage("Appointment not found for ID '101'")
+      }.isInstanceOf(NotFoundException::class.java).hasMessage("Appointment not found for ID 'Project PROJ123, ID 101'")
     }
 
     @Test

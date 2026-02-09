@@ -24,6 +24,6 @@ class AppointmentRetrievalService(
       username = contextService.getUserName(),
     ).let { appointmentMappers.toDto(it) }
   } catch (_: WebClientResponseException.NotFound) {
-    throw NotFoundException("Appointment", appointmentId.toString())
+    throw NotFoundException("Appointment", "Project $projectCode, ID $appointmentId")
   }
 }
