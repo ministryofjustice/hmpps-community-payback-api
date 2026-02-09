@@ -1,0 +1,10 @@
+{
+  "priority": 100,
+  "request": {
+    "method": "PUT",
+    "urlPattern": "/projects/.*/appointments/.*/outcome"
+  },
+  "response": {
+    "status": 200
+  }
+}

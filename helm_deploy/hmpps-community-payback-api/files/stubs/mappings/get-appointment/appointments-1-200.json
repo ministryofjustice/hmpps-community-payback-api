@@ -1,0 +1,14 @@
+{
+  "priority": 1,
+  "request": {
+    "method": "GET",
+    "urlPathPattern": "/projects/.*/appointments/1"
+  },
+  "response": {
+    "status": 200,
+    "bodyFileName": "get-appointment/appointment-1-200-response.json",
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}
