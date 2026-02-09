@@ -1,8 +1,8 @@
 {
   "priority": 50,
   "request": {
-    "method": "GET",
-    "urlPattern": "/providers"
+    "method": "PUT",
+    "urlPattern": ".*"
   },
   "response": {
     "proxyBaseUrl": "https://community-payback-and-delius-dev.hmpps.service.justice.gov.uk"
