@@ -16,6 +16,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor
 import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
 import com.github.tomakehurst.wiremock.client.WireMock.urlMatching
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointment
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProviderSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProviderTeamSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSession
@@ -55,6 +56,30 @@ object CommunityPaybackAndDeliusMockServer {
         aResponse()
           .withHeader("Content-Type", "application/json")
           .withBody(objectMapper.writeValueAsString(providerTeams)),
+      ),
+    )
+  }
+
+  fun getProjectNotFound(
+    projectCode: String,
+  ) {
+    WireMock.stubFor(
+      get("/community-payback-and-delius/projects/$projectCode")
+        .willReturn(
+          aResponse().withStatus(404),
+        ),
+    )
+  }
+
+  fun getProject(
+    projectCode: String,
+    project: NDProject,
+  ) {
+    WireMock.stubFor(
+      get("/community-payback-and-delius/projects/$projectCode").willReturn(
+        aResponse()
+          .withHeader("Content-Type", "application/json")
+          .withBody(objectMapper.writeValueAsString(project)),
       ),
     )
   }

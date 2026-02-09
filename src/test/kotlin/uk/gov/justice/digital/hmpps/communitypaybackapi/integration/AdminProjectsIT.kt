@@ -4,8 +4,11 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.bodyAsObject
+import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.CommunityPaybackAndDeliusMockServer
 
 class AdminProjectsIT : IntegrationTestBase() {
 
@@ -43,16 +46,37 @@ class AdminProjectsIT : IntegrationTestBase() {
     }
 
     @Test
-    fun `should return canned data`() {
-      val project = webTestClient.get()
-        .uri("/admin/projects/PROJ1")
-        .addAdminUiAuthHeader()
+    fun `Should return 404 if a project can't be found`() {
+      CommunityPaybackAndDeliusMockServer.getProjectNotFound(
+        projectCode = "PC01",
+      )
+
+      webTestClient.get()
+        .uri("/admin/projects/PC01")
+        .addAdminUiAuthHeader("theusername")
         .exchange()
         .expectStatus()
-        .isOk
+        .isNotFound()
+    }
+
+    @Test
+    fun `Should return existing project`() {
+      CommunityPaybackAndDeliusMockServer.getProject(
+        projectCode = "PC01",
+        project = NDProject.valid().copy(
+          name = "the project name",
+        ),
+      )
+
+      val response = webTestClient.get()
+        .uri("/admin/projects/PC01")
+        .addAdminUiAuthHeader("theusername")
+        .exchange()
+        .expectStatus()
+        .isOk()
         .bodyAsObject<ProjectDto>()
 
-      assertThat(project.projectCode).isEqualTo("PROJ1")
+      assertThat(response.projectName).isEqualTo("the project name")
     }
   }
 }

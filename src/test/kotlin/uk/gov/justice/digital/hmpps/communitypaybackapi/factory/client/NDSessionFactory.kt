@@ -2,11 +2,11 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client
 
 import org.springframework.context.ApplicationContext
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointmentSummary
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProject
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectAndLocation
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSession
 
 fun NDSession.Companion.valid() = NDSession(
-  project = NDProject.valid(),
+  project = NDProjectAndLocation.valid(),
   appointmentSummaries = listOf(
     NDAppointmentSummary.valid(),
     NDAppointmentSummary.valid(),

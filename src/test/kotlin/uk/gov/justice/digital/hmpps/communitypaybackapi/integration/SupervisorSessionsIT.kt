@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointmentSummary
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProject
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectAndLocation
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSession
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSessionSummaries
@@ -80,7 +80,7 @@ class SupervisorSessionsIT : IntegrationTestBase() {
         date = LocalDate.of(2025, 1, 9),
         session =
         NDSession.valid().copy(
-          project = NDProject.valid().copy(
+          project = NDProjectAndLocation.valid().copy(
             name = "Community Garden Maintenance",
             code = "N123456789",
           ),
@@ -172,7 +172,7 @@ class SupervisorSessionsIT : IntegrationTestBase() {
         username = "USER1",
         date = today,
         session = NDSession.valid(ctx).copy(
-          project = NDProject.valid().copy(code = "PROJ1"),
+          project = NDProjectAndLocation.valid().copy(code = "PROJ1"),
         ),
       )
 
