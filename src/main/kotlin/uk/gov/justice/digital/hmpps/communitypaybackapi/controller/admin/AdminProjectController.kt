@@ -8,9 +8,7 @@ import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.BeneficiaryDetailsDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.LocationDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ProjectService
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 import kotlin.String
 
@@ -19,7 +17,9 @@ import kotlin.String
   "/admin/projects",
   produces = [MediaType.APPLICATION_JSON_VALUE],
 )
-class AdminProjectController {
+class AdminProjectController(
+  val projectService: ProjectService,
+) {
 
   @GetMapping(
     path = [ "/{projectCode}"],
@@ -43,30 +43,5 @@ class AdminProjectController {
       ),
     ],
   )
-  @Suppress("UnusedParameter")
-  fun getProject(@PathVariable projectCode: String): ProjectDto {
-    val location = LocationDto(
-      buildingName = null,
-      buildingNumber = "1001",
-      streetName = "Office Street",
-      townCity = "City",
-      county = "Shireshire",
-      postCode = "ZY98XW",
-    )
-
-    return ProjectDto(
-      projectName = "Test Project 1",
-      projectCode = projectCode,
-      location = location,
-      hiVisRequired = true,
-      beneficiaryDetails = BeneficiaryDetailsDto(
-        beneficiary = "McDuck Enterprises",
-        contactName = "Scrooge McDuck",
-        emailAddress = "scrooge@localhost",
-        website = "http://mcduckenterprises.localhost",
-        telephoneNumber = "12345 6787890",
-        location = location,
-      ),
-    )
-  }
+  fun getProject(@PathVariable projectCode: String) = projectService.getProject(projectCode)
 }

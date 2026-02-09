@@ -1,0 +1,30 @@
+{
+  "name": "Test Project 1",
+  "code": "TEST01",
+  "projectTypeCode": "ICP",
+  "location": {
+    "streetName": "Office Street",
+    "buildingName": "1001",
+    "addressNumber": "14B",
+    "townCity": "City",
+    "county": "Shireshire",
+    "postCode": "ZY98XW"
+  },
+  "beneficiaryDetails": {
+    "beneficiary": "McDuck Enterprises",
+    "contactName": "Scrooge McDuck",
+    "emailAddress": "scrooge@localhost",
+    "website": "http://mcduckenterprises.localhost",
+    "telephoneNumber": "12345 6787890",
+    "location": {
+      "streetName": "Office Street",
+      "buildingName": "1001",
+      "addressNumber": "14B",
+      "townCity": "City",
+      "county": "Shireshire",
+      "postCode": "ZY98XW"
+    }
+  },
+  "hiVisRequired": true
+}
+

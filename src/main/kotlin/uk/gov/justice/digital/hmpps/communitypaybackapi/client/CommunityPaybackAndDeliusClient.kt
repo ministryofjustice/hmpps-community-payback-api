@@ -31,6 +31,11 @@ interface CommunityPaybackAndDeliusClient {
     @RequestParam projectTypeCodes: List<String>?,
   ): NDSessionSummaries
 
+  @GetExchange("/projects/{projectCode}")
+  fun getProject(
+    @PathVariable projectCode: String,
+  ): NDProject
+
   @GetExchange("/projects/{projectCode}/appointments")
   fun getSession(
     @PathVariable projectCode: String,
@@ -114,7 +119,7 @@ data class NDSessionSummary(
 }
 
 data class NDSession(
-  val project: NDProject,
+  val project: NDProjectAndLocation,
   val appointmentSummaries: List<NDAppointmentSummary>,
 ) {
   companion object
@@ -153,7 +158,7 @@ data class NDAppointment(
   val id: Long,
   val reference: UUID?,
   val version: UUID,
-  val project: NDProject,
+  val project: NDProjectAndLocation,
   val projectType: NDProjectType,
   val case: NDCaseSummary,
   val event: NDEvent,
@@ -187,7 +192,30 @@ data class NDContactOutcome(val code: String, val description: String) {
 data class NDEnforcementAction(val code: String, val description: String, val respondBy: LocalDate?) {
   companion object
 }
-data class NDProject(val name: String, val code: String, val location: NDAddress) {
+
+data class NDProject(
+  val name: String,
+  val code: String,
+  val projectTypeCode: String,
+  val location: NDAddress,
+  val beneficiaryDetails: NDBeneficiaryDetails,
+  val hiVisRequired: Boolean,
+) {
+  companion object
+}
+
+data class NDBeneficiaryDetails(
+  val beneficiary: String,
+  val contactName: String,
+  val emailAddress: String?,
+  val website: String?,
+  val telephoneNumber: String,
+  val location: NDAddress,
+) {
+  companion object
+}
+
+data class NDProjectAndLocation(val name: String, val code: String, val location: NDAddress) {
   companion object
 }
 data class NDProjectSummary(val description: String, val code: String) {

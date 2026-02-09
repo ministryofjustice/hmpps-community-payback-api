@@ -23,7 +23,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDEnforcementActi
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDName
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDPickUpLocation
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProject
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectAndLocation
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProvider
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDRequirementProgress
@@ -348,7 +348,7 @@ class AppointmentMappersTest {
         id = id,
         reference = communityPaybackId,
         version = version,
-        project = NDProject(
+        project = NDProjectAndLocation(
           name = projectName,
           code = projectCode,
           location = NDAddress.valid(),

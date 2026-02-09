@@ -10,7 +10,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDContactOutcome
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDEnforcementAction
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProject
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectAndLocation
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AttendanceDataDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.FormKeyDto
@@ -98,7 +98,7 @@ class SupervisorAppointmentsIT : IntegrationTestBase() {
       CommunityPaybackAndDeliusMockServer.getAppointment(
         appointment = NDAppointment.valid().copy(
           id = id,
-          project = NDProject.valid().copy(name = projectName, code = "PC01"),
+          project = NDProjectAndLocation.valid().copy(name = projectName, code = "PC01"),
           case = NDCaseSummary.valid().copy(crn = crn),
           outcome = NDContactOutcome.valid(ctx),
           enforcementAction = NDEnforcementAction.valid(ctx),
@@ -190,7 +190,7 @@ class SupervisorAppointmentsIT : IntegrationTestBase() {
       CommunityPaybackAndDeliusMockServer.getAppointment(
         appointment = NDAppointment.validNoOutcome().copy(
           id = 1234L,
-          project = NDProject.valid().copy(code = "PC01"),
+          project = NDProjectAndLocation.valid().copy(code = "PC01"),
           date = LocalDate.now(),
         ),
         username = "theusername",
@@ -282,7 +282,7 @@ class SupervisorAppointmentsIT : IntegrationTestBase() {
       CommunityPaybackAndDeliusMockServer.getAppointment(
         appointment = NDAppointment.validNoOutcome().copy(
           id = 1234L,
-          project = NDProject.valid().copy(code = "PC01"),
+          project = NDProjectAndLocation.valid().copy(code = "PC01"),
           date = LocalDate.now(),
         ),
         username = "theusername",
@@ -295,7 +295,7 @@ class SupervisorAppointmentsIT : IntegrationTestBase() {
       CommunityPaybackAndDeliusMockServer.getAppointment(
         appointment = NDAppointment.validNoOutcome().copy(
           id = 5678L,
-          project = NDProject.valid().copy(code = "PC01"),
+          project = NDProjectAndLocation.valid().copy(code = "PC01"),
           date = LocalDate.now(),
         ),
         username = "theusername",

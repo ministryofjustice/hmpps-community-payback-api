@@ -9,7 +9,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDContactOutcome
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDEnforcementAction
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDEvent
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProject
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectAndLocation
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProvider
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDTeam
@@ -33,7 +33,7 @@ fun NDAppointment.Companion.valid() = NDAppointment(
   id = Long.random(),
   reference = UUID.randomUUID(),
   version = UUID.randomUUID(),
-  project = NDProject.valid(),
+  project = NDProjectAndLocation.valid(),
   projectType = NDProjectType.valid(),
   case = NDCaseSummary.valid(),
   event = NDEvent.valid(),

@@ -12,7 +12,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAddress
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointmentSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDContactOutcome
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProject
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectAndLocation
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSession
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSessionSummaries
@@ -139,7 +139,7 @@ class SessionMappersTest {
       every { appointmentMappers.toSummaryDto(appointmentSummary2) } returns appointmentSummaryDto2
 
       val session = NDSession(
-        project = NDProject(
+        project = NDProjectAndLocation(
           name = "Park Cleanup",
           code = "N987654321",
           location = NDAddress(
@@ -180,7 +180,7 @@ class SessionMappersTest {
     @Test
     fun `Should map correctly`() {
       val session = NDSession(
-        project = NDProject(
+        project = NDProjectAndLocation(
           name = "Park Cleanup",
           code = "N987654321",
           location = NDAddress.valid(),
