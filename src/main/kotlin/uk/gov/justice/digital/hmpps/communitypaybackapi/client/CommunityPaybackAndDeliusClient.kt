@@ -203,9 +203,21 @@ data class NDProvider(val name: String, val code: String) {
   companion object
 }
 
+data class NDPickUpLocation(
+  val code: String,
+  val description: String,
+  val streetName: String?,
+  val buildingName: String?,
+  val addressNumber: String?,
+  val townCity: String?,
+  val county: String?,
+  val postCode: String?,
+) {
+  companion object
+}
+
 data class NDAppointmentPickUp(
-  val location: NDAddress?,
-  val locationCode: NDCode?,
+  val location: NDPickUpLocation?,
   val time: LocalTime?,
 ) {
   companion object
