@@ -6,6 +6,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackA
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCreateAppointments
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntityRepository
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toNDCreateAppointment
 
 @Service
@@ -25,11 +26,11 @@ class AppointmentCreationService(
 
     val appointmentCreationEvents = createAppointments.appointments.map { createAppointment ->
       appointmentEventEntityFactory.buildCreatedEvent(
-        projectCode = projectCode,
         // the ID will be provided by the upstream response and set on the event before persistence
         deliusId = 0L,
         trigger = trigger,
         createAppointmentDto = createAppointment,
+        project = communityPaybackAndDeliusClient.getProject(projectCode).toDto(),
       )
     }
 

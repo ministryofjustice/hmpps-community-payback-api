@@ -72,11 +72,10 @@ object CommunityPaybackAndDeliusMockServer {
   }
 
   fun getProject(
-    projectCode: String,
     project: NDProject,
   ) {
     WireMock.stubFor(
-      get("/community-payback-and-delius/projects/$projectCode").willReturn(
+      get("/community-payback-and-delius/projects/${project.code}").willReturn(
         aResponse()
           .withHeader("Content-Type", "application/json")
           .withBody(objectMapper.writeValueAsString(project)),

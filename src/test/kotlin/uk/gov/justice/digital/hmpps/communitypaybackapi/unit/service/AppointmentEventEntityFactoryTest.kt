@@ -19,6 +19,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EnforcementDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.OffenderDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.PickUpDataDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventType
@@ -26,6 +27,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.Behaviour
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.WorkQuality
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventEntityFactory
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventTrigger
@@ -65,7 +67,10 @@ class AppointmentEventEntityFactoryTest {
       every { contactOutcomeEntityRepository.findByCode(CONTACT_OUTCOME_CODE) } returns contactOutcomeEntity
 
       val result = factory.buildCreatedEvent(
-        projectCode = "PC01",
+        project = ProjectDto.valid().copy(
+          projectCode = "PC01",
+          projectName = "The project name",
+        ),
         deliusId = 101L,
         trigger = AppointmentEventTrigger(
           triggeredAt = TRIGGERED_AT,
@@ -105,6 +110,7 @@ class AppointmentEventEntityFactoryTest {
       assertThat(result.crn).isEqualTo("X12345")
       assertThat(result.deliusEventNumber).isEqualTo(48)
       assertThat(result.projectCode).isEqualTo("PC01")
+      assertThat(result.projectName).isEqualTo("The project name")
       assertThat(result.deliusAppointmentId).isEqualTo(101L)
       assertThat(result.date).isEqualTo(LocalDate.of(2014, 6, 7))
       assertThat(result.startTime).isEqualTo(LocalTime.of(10, 1))
@@ -131,7 +137,10 @@ class AppointmentEventEntityFactoryTest {
     @Test
     fun `mandatory fields only`() {
       val result = factory.buildCreatedEvent(
-        projectCode = "PC01",
+        project = ProjectDto.valid().copy(
+          projectCode = "PC01",
+          projectName = "The project name",
+        ),
         deliusId = 101L,
         trigger = AppointmentEventTrigger(
           triggeredAt = TRIGGERED_AT,
@@ -164,6 +173,7 @@ class AppointmentEventEntityFactoryTest {
       assertThat(result.crn).isEqualTo("X12345")
       assertThat(result.deliusEventNumber).isEqualTo(48)
       assertThat(result.projectCode).isEqualTo("PC01")
+      assertThat(result.projectName).isEqualTo("The project name")
       assertThat(result.deliusAppointmentId).isEqualTo(101L)
       assertThat(result.date).isEqualTo(LocalDate.of(2014, 6, 7))
       assertThat(result.startTime).isEqualTo(LocalTime.of(10, 1))
@@ -190,7 +200,10 @@ class AppointmentEventEntityFactoryTest {
     @Test
     fun `minutes credited is null if no outcome`() {
       val result = factory.buildCreatedEvent(
-        projectCode = "PC01",
+        project = ProjectDto.valid().copy(
+          projectCode = "PC01",
+          projectName = "The project name",
+        ),
         deliusId = 101L,
         trigger = AppointmentEventTrigger(
           triggeredAt = TRIGGERED_AT,
@@ -210,7 +223,10 @@ class AppointmentEventEntityFactoryTest {
       every { contactOutcomeEntityRepository.findByCode(CONTACT_OUTCOME_CODE) } returns ContactOutcomeEntity.valid().copy(attended = false)
 
       val result = factory.buildCreatedEvent(
-        projectCode = "PC01",
+        project = ProjectDto.valid().copy(
+          projectCode = "PC01",
+          projectName = "The project name",
+        ),
         deliusId = 101L,
         trigger = AppointmentEventTrigger(
           triggeredAt = TRIGGERED_AT,
@@ -254,7 +270,10 @@ class AppointmentEventEntityFactoryTest {
       every { contactOutcomeEntityRepository.findByCode(CONTACT_OUTCOME_CODE) } returns ContactOutcomeEntity.valid().copy(attended = true)
 
       val result = factory.buildCreatedEvent(
-        projectCode = "PC01",
+        project = ProjectDto.valid().copy(
+          projectCode = "PC01",
+          projectName = "The project name",
+        ),
         deliusId = 101L,
         trigger = AppointmentEventTrigger(
           triggeredAt = TRIGGERED_AT,
@@ -280,7 +299,10 @@ class AppointmentEventEntityFactoryTest {
       every { contactOutcomeEntityRepository.findByCode(CONTACT_OUTCOME_CODE) } returns ContactOutcomeEntity.valid()
 
       val result = factory.buildCreatedEvent(
-        projectCode = "PC01",
+        project = ProjectDto.valid().copy(
+          projectCode = "PC01",
+          projectName = "The project name",
+        ),
         deliusId = 101L,
         trigger = AppointmentEventTrigger(
           triggeredAt = TRIGGERED_AT,
@@ -345,6 +367,7 @@ class AppointmentEventEntityFactoryTest {
           offender = OffenderDto.OffenderLimitedDto(crn = "X12345"),
           deliusEventNumber = 48,
           projectCode = "PC01",
+          projectName = "The project name",
           date = LocalDate.of(2014, 6, 7),
           pickUpData = PickUpDataDto.valid().copy(
             locationCode = "PICKUP99",
@@ -365,6 +388,7 @@ class AppointmentEventEntityFactoryTest {
       assertThat(result.crn).isEqualTo("X12345")
       assertThat(result.deliusEventNumber).isEqualTo(48)
       assertThat(result.projectCode).isEqualTo("PC01")
+      assertThat(result.projectName).isEqualTo("The project name")
       assertThat(result.deliusAppointmentId).isEqualTo(101L)
       assertThat(result.date).isEqualTo(LocalDate.of(2014, 6, 7))
       assertThat(result.startTime).isEqualTo(LocalTime.of(10, 1))
@@ -412,6 +436,7 @@ class AppointmentEventEntityFactoryTest {
           communityPaybackId = null,
           deliusEventNumber = 48,
           projectCode = "PC01",
+          projectName = "The project name",
           date = LocalDate.of(2014, 6, 7),
           pickUpData = null,
         ),
@@ -429,6 +454,7 @@ class AppointmentEventEntityFactoryTest {
       assertThat(result.crn).isEqualTo("X12345")
       assertThat(result.deliusEventNumber).isEqualTo(48)
       assertThat(result.projectCode).isEqualTo("PC01")
+      assertThat(result.projectName).isEqualTo("The project name")
       assertThat(result.deliusAppointmentId).isEqualTo(101L)
       assertThat(result.date).isEqualTo(LocalDate.of(2014, 6, 7))
       assertThat(result.startTime).isEqualTo(LocalTime.of(10, 1, 2))

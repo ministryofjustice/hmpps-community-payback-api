@@ -7,4 +7,6 @@ data class LocationDto(
   val townCity: String?,
   val county: String?,
   val postCode: String?,
-)
+) {
+  companion object
+}

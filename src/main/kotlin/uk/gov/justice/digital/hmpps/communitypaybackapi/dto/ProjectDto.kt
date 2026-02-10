@@ -6,4 +6,6 @@ data class ProjectDto(
   val location: LocationDto,
   val hiVisRequired: Boolean,
   val beneficiaryDetails: BeneficiaryDetailsDto,
-)
+) {
+  companion object
+}
