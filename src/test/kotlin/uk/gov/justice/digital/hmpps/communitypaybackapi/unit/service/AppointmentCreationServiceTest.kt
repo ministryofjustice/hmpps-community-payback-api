@@ -26,7 +26,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.DomainEventService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.DomainEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.PersonReferenceType
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ProjectService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toNDCreateAppointment
 
 @ExtendWith(MockKExtension::class)
@@ -42,9 +41,6 @@ class AppointmentCreationServiceTest {
 
   @RelaxedMockK
   lateinit var domainEventService: DomainEventService
-
-  @RelaxedMockK
-  lateinit var projectService: ProjectService
 
   @InjectMockKs
   private lateinit var service: AppointmentCreationService
@@ -69,8 +65,6 @@ class AppointmentCreationServiceTest {
         appointments = listOf(createAppointment1Dto, createAppointment2Dto),
       )
 
-      every { projectService.getProject(PROJECT_CODE) } returns PROJECT
-
       val creationEvent1 = AppointmentEventEntity.valid().copy(
         eventType = AppointmentEventType.CREATE,
         communityPaybackAppointmentId = createAppointment1Dto.id,
@@ -80,7 +74,7 @@ class AppointmentCreationServiceTest {
           deliusId = 0,
           trigger = TRIGGER,
           createAppointmentDto = createAppointment1Dto,
-          project = PROJECT,
+          projectCode = PROJECT_CODE,
         )
       } returns creationEvent1
 
@@ -93,7 +87,7 @@ class AppointmentCreationServiceTest {
           deliusId = 0,
           trigger = TRIGGER,
           createAppointmentDto = createAppointment2Dto,
-          project = PROJECT,
+          projectCode = PROJECT_CODE,
         )
       } returns creationEvent2
 

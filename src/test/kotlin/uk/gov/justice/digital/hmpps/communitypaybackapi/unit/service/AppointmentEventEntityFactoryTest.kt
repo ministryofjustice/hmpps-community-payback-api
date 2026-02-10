@@ -2,9 +2,10 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.unit.service
 
 import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
-import io.mockk.impl.annotations.MockK
+import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.junit5.MockKExtension
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -31,6 +32,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventEntityFactory
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventTrigger
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ProjectService
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
@@ -40,8 +42,11 @@ import java.util.UUID
 @ExtendWith(MockKExtension::class)
 class AppointmentEventEntityFactoryTest {
 
-  @MockK
+  @RelaxedMockK
   lateinit var contactOutcomeEntityRepository: ContactOutcomeEntityRepository
+
+  @RelaxedMockK
+  lateinit var projectService: ProjectService
 
   @InjectMockKs
   lateinit var factory: AppointmentEventEntityFactory
@@ -52,10 +57,20 @@ class AppointmentEventEntityFactoryTest {
     val TRIGGERED_AT: OffsetDateTime = OffsetDateTime.now()
     const val TRIGGERED_BY: String = "User1"
     val ID: UUID = UUID.randomUUID()
+    const val PROJECT_CODE: String = "PC01"
+    val PROJECT = ProjectDto.valid().copy(
+      projectCode = PROJECT_CODE,
+      projectName = "The project name",
+    )
   }
 
   @Nested
   inner class BuildCreatedEvent {
+
+    @BeforeEach
+    fun `setup get project mock`() {
+      every { projectService.getProject(PROJECT_CODE) } returns PROJECT
+    }
 
     @Test
     fun `all fields populated`() {
@@ -63,14 +78,9 @@ class AppointmentEventEntityFactoryTest {
         code = CONTACT_OUTCOME_CODE,
         attended = true,
       )
-
       every { contactOutcomeEntityRepository.findByCode(CONTACT_OUTCOME_CODE) } returns contactOutcomeEntity
 
       val result = factory.buildCreatedEvent(
-        project = ProjectDto.valid().copy(
-          projectCode = "PC01",
-          projectName = "The project name",
-        ),
         deliusId = 101L,
         trigger = AppointmentEventTrigger(
           triggeredAt = TRIGGERED_AT,
@@ -101,6 +111,7 @@ class AppointmentEventEntityFactoryTest {
           alertActive = false,
           sensitive = true,
         ),
+        projectCode = PROJECT_CODE,
       )
 
       assertThat(result.id).isNotNull
@@ -109,7 +120,7 @@ class AppointmentEventEntityFactoryTest {
       assertThat(result.priorDeliusVersion).isNull()
       assertThat(result.crn).isEqualTo("X12345")
       assertThat(result.deliusEventNumber).isEqualTo(48)
-      assertThat(result.projectCode).isEqualTo("PC01")
+      assertThat(result.projectCode).isEqualTo(PROJECT_CODE)
       assertThat(result.projectName).isEqualTo("The project name")
       assertThat(result.deliusAppointmentId).isEqualTo(101L)
       assertThat(result.date).isEqualTo(LocalDate.of(2014, 6, 7))
@@ -137,10 +148,6 @@ class AppointmentEventEntityFactoryTest {
     @Test
     fun `mandatory fields only`() {
       val result = factory.buildCreatedEvent(
-        project = ProjectDto.valid().copy(
-          projectCode = "PC01",
-          projectName = "The project name",
-        ),
         deliusId = 101L,
         trigger = AppointmentEventTrigger(
           triggeredAt = TRIGGERED_AT,
@@ -164,6 +171,7 @@ class AppointmentEventEntityFactoryTest {
           alertActive = null,
           sensitive = null,
         ),
+        projectCode = PROJECT_CODE,
       )
 
       assertThat(result.id).isNotNull
@@ -172,7 +180,7 @@ class AppointmentEventEntityFactoryTest {
       assertThat(result.priorDeliusVersion).isNull()
       assertThat(result.crn).isEqualTo("X12345")
       assertThat(result.deliusEventNumber).isEqualTo(48)
-      assertThat(result.projectCode).isEqualTo("PC01")
+      assertThat(result.projectCode).isEqualTo(PROJECT_CODE)
       assertThat(result.projectName).isEqualTo("The project name")
       assertThat(result.deliusAppointmentId).isEqualTo(101L)
       assertThat(result.date).isEqualTo(LocalDate.of(2014, 6, 7))
@@ -200,10 +208,6 @@ class AppointmentEventEntityFactoryTest {
     @Test
     fun `minutes credited is null if no outcome`() {
       val result = factory.buildCreatedEvent(
-        project = ProjectDto.valid().copy(
-          projectCode = "PC01",
-          projectName = "The project name",
-        ),
         deliusId = 101L,
         trigger = AppointmentEventTrigger(
           triggeredAt = TRIGGERED_AT,
@@ -213,6 +217,7 @@ class AppointmentEventEntityFactoryTest {
         createAppointmentDto = CreateAppointmentDto.valid().copy(
           contactOutcomeCode = null,
         ),
+        projectCode = PROJECT_CODE,
       )
 
       assertThat(result.minutesCredited).isNull()
@@ -223,10 +228,6 @@ class AppointmentEventEntityFactoryTest {
       every { contactOutcomeEntityRepository.findByCode(CONTACT_OUTCOME_CODE) } returns ContactOutcomeEntity.valid().copy(attended = false)
 
       val result = factory.buildCreatedEvent(
-        project = ProjectDto.valid().copy(
-          projectCode = "PC01",
-          projectName = "The project name",
-        ),
         deliusId = 101L,
         trigger = AppointmentEventTrigger(
           triggeredAt = TRIGGERED_AT,
@@ -239,6 +240,7 @@ class AppointmentEventEntityFactoryTest {
           endTime = LocalTime.of(12, 0),
           attendanceData = AttendanceDataDto.valid().copy(penaltyTime = null),
         ),
+        projectCode = PROJECT_CODE,
       )
 
       assertThat(result.minutesCredited).isNull()
@@ -270,10 +272,6 @@ class AppointmentEventEntityFactoryTest {
       every { contactOutcomeEntityRepository.findByCode(CONTACT_OUTCOME_CODE) } returns ContactOutcomeEntity.valid().copy(attended = true)
 
       val result = factory.buildCreatedEvent(
-        project = ProjectDto.valid().copy(
-          projectCode = "PC01",
-          projectName = "The project name",
-        ),
         deliusId = 101L,
         trigger = AppointmentEventTrigger(
           triggeredAt = TRIGGERED_AT,
@@ -289,6 +287,7 @@ class AppointmentEventEntityFactoryTest {
             penaltyTime = penaltyTime?.let { HourMinuteDuration(it) },
           ),
         ),
+        projectCode = PROJECT_CODE,
       )
 
       assertThat(result.minutesCredited).isEqualTo(expectedTimeCredited)
@@ -299,10 +298,6 @@ class AppointmentEventEntityFactoryTest {
       every { contactOutcomeEntityRepository.findByCode(CONTACT_OUTCOME_CODE) } returns ContactOutcomeEntity.valid()
 
       val result = factory.buildCreatedEvent(
-        project = ProjectDto.valid().copy(
-          projectCode = "PC01",
-          projectName = "The project name",
-        ),
         deliusId = 101L,
         trigger = AppointmentEventTrigger(
           triggeredAt = TRIGGERED_AT,
@@ -316,6 +311,7 @@ class AppointmentEventEntityFactoryTest {
             penaltyTime = HourMinuteDuration(Duration.ofMinutes(300)),
           ),
         ),
+        projectCode = PROJECT_CODE,
       )
 
       assertThat(result.penaltyMinutes).isEqualTo(150L)
@@ -324,6 +320,11 @@ class AppointmentEventEntityFactoryTest {
 
   @Nested
   inner class BuildUpdatedEvent {
+
+    @BeforeEach
+    fun `setup get project mock`() {
+      every { projectService.getProject(PROJECT_CODE) } returns PROJECT
+    }
 
     @Test
     fun `all fields populated`() {
@@ -379,6 +380,7 @@ class AppointmentEventEntityFactoryTest {
           triggerType = AppointmentEventTriggerType.USER,
           triggeredBy = TRIGGERED_BY,
         ),
+        projectCode = PROJECT_CODE,
       )
 
       assertThat(result.id).isNotNull
@@ -387,7 +389,7 @@ class AppointmentEventEntityFactoryTest {
       assertThat(result.priorDeliusVersion).isEqualTo(deliusVersion)
       assertThat(result.crn).isEqualTo("X12345")
       assertThat(result.deliusEventNumber).isEqualTo(48)
-      assertThat(result.projectCode).isEqualTo("PC01")
+      assertThat(result.projectCode).isEqualTo(PROJECT_CODE)
       assertThat(result.projectName).isEqualTo("The project name")
       assertThat(result.deliusAppointmentId).isEqualTo(101L)
       assertThat(result.date).isEqualTo(LocalDate.of(2014, 6, 7))
@@ -445,6 +447,7 @@ class AppointmentEventEntityFactoryTest {
           triggerType = AppointmentEventTriggerType.USER,
           triggeredBy = TRIGGERED_BY,
         ),
+        projectCode = PROJECT_CODE,
       )
 
       assertThat(result.id).isNotNull
@@ -453,7 +456,7 @@ class AppointmentEventEntityFactoryTest {
       assertThat(result.priorDeliusVersion).isEqualTo(deliusVersion)
       assertThat(result.crn).isEqualTo("X12345")
       assertThat(result.deliusEventNumber).isEqualTo(48)
-      assertThat(result.projectCode).isEqualTo("PC01")
+      assertThat(result.projectCode).isEqualTo(PROJECT_CODE)
       assertThat(result.projectName).isEqualTo("The project name")
       assertThat(result.deliusAppointmentId).isEqualTo(101L)
       assertThat(result.date).isEqualTo(LocalDate.of(2014, 6, 7))
@@ -490,6 +493,7 @@ class AppointmentEventEntityFactoryTest {
           triggerType = AppointmentEventTriggerType.USER,
           triggeredBy = TRIGGERED_BY,
         ),
+        projectCode = PROJECT_CODE,
       )
 
       assertThat(result.minutesCredited).isNull()
@@ -512,6 +516,7 @@ class AppointmentEventEntityFactoryTest {
           triggerType = AppointmentEventTriggerType.USER,
           triggeredBy = TRIGGERED_BY,
         ),
+        projectCode = PROJECT_CODE,
       )
 
       assertThat(result.minutesCredited).isNull()
@@ -558,6 +563,7 @@ class AppointmentEventEntityFactoryTest {
           triggerType = AppointmentEventTriggerType.USER,
           triggeredBy = TRIGGERED_BY,
         ),
+        projectCode = PROJECT_CODE,
       )
 
       assertThat(result.minutesCredited).isEqualTo(expectedTimeCredited)
@@ -581,6 +587,7 @@ class AppointmentEventEntityFactoryTest {
           triggerType = AppointmentEventTriggerType.USER,
           triggeredBy = TRIGGERED_BY,
         ),
+        projectCode = PROJECT_CODE,
       )
 
       assertThat(result.penaltyMinutes).isEqualTo(150L)
@@ -602,6 +609,7 @@ class AppointmentEventEntityFactoryTest {
           triggerType = AppointmentEventTriggerType.USER,
           triggeredBy = TRIGGERED_BY,
         ),
+        projectCode = PROJECT_CODE,
       )
 
       assertThat(result.penaltyMinutes).isEqualTo(300L)

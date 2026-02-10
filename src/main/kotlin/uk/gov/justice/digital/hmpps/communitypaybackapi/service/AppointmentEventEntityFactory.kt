@@ -4,7 +4,6 @@ import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AttendanceDataDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventTriggerType
@@ -22,14 +21,16 @@ import java.util.UUID
 @Service
 class AppointmentEventEntityFactory(
   private val contactOutcomeEntityRepository: ContactOutcomeEntityRepository,
+  private val projectService: ProjectService,
 ) {
 
   fun buildCreatedEvent(
     deliusId: Long,
     trigger: AppointmentEventTrigger,
+    projectCode: String,
     createAppointmentDto: CreateAppointmentDto,
-    project: ProjectDto,
   ): AppointmentEventEntity {
+    val project = projectService.getProject(projectCode)
     val startTime = createAppointmentDto.startTime
     val endTime = createAppointmentDto.endTime
     val penaltyMinutes = createAppointmentDto.attendanceData?.derivePenaltyMinutesDuration()?.toMinutes()
@@ -77,7 +78,9 @@ class AppointmentEventEntityFactory(
     outcome: UpdateAppointmentOutcomeDto,
     existingAppointment: AppointmentDto,
     trigger: AppointmentEventTrigger,
+    projectCode: String,
   ): AppointmentEventEntity {
+    val project = projectService.getProject(projectCode)
     val startTime = outcome.startTime
     val endTime = outcome.endTime
     val penaltyMinutes = outcome.attendanceData?.derivePenaltyMinutesDuration()?.toMinutes()
@@ -91,8 +94,8 @@ class AppointmentEventEntityFactory(
       deliusAppointmentId = outcome.deliusId,
       priorDeliusVersion = outcome.deliusVersionToUpdate,
       deliusEventNumber = existingAppointment.deliusEventNumber,
-      projectCode = existingAppointment.projectCode,
-      projectName = existingAppointment.projectName!!,
+      projectCode = project.projectCode,
+      projectName = project.projectName,
       date = existingAppointment.date,
       startTime = startTime,
       endTime = endTime,

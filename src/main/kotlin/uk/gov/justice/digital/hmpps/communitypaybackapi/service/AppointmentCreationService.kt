@@ -14,7 +14,6 @@ class AppointmentCreationService(
   private val communityPaybackAndDeliusClient: CommunityPaybackAndDeliusClient,
   private val appointmentEventEntityRepository: AppointmentEventEntityRepository,
   private val domainEventService: DomainEventService,
-  private val projectService: ProjectService,
 ) {
 
   @Transactional
@@ -30,7 +29,7 @@ class AppointmentCreationService(
         deliusId = 0L,
         trigger = trigger,
         createAppointmentDto = createAppointment,
-        project = projectService.getProject(projectCode),
+        projectCode = projectCode,
       )
     }
 
