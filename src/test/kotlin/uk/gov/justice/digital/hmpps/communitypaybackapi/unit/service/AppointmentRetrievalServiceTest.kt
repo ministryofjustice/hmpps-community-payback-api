@@ -12,12 +12,15 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointment
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.NotFoundException
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ProjectTypeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentRetrievalService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ContextService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ProjectService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.AppointmentMappers
 import uk.gov.justice.digital.hmpps.communitypaybackapi.unit.util.WebClientResponseExceptionFactory
 
@@ -33,11 +36,15 @@ class AppointmentRetrievalServiceTest {
   @RelaxedMockK
   private lateinit var contextService: ContextService
 
+  @RelaxedMockK
+  private lateinit var projectService: ProjectService
+
   @InjectMockKs
   private lateinit var service: AppointmentRetrievalService
 
   private companion object {
     const val PROJECT_CODE = "PROJ123"
+    const val PROJECT_TYPE_CODE = "PROJTYPE123"
     const val USERNAME = "mr-user"
   }
 
@@ -66,11 +73,14 @@ class AppointmentRetrievalServiceTest {
 
     @Test
     fun `appointment found`() {
-      val appointment = NDAppointment.valid()
+      val appointment = NDAppointment.valid().copy(projectType = NDProjectType.valid().copy(code = PROJECT_TYPE_CODE))
       every { communityPaybackAndDeliusClient.getAppointment(PROJECT_CODE, 101L, USERNAME) } returns appointment
 
+      val projectType = ProjectTypeEntity.valid()
+      every { projectService.getProjectTypeForCode(PROJECT_TYPE_CODE) } returns projectType
+
       val appointmentDto = AppointmentDto.valid()
-      every { appointmentMappers.toDto(appointment) } returns appointmentDto
+      every { appointmentMappers.toDto(appointment, projectType) } returns appointmentDto
 
       val result = service.getAppointment(PROJECT_CODE, 101L)
 

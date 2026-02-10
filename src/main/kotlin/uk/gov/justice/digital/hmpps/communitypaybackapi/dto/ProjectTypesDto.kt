@@ -10,6 +10,7 @@ data class ProjectTypeDto(
   val name: String,
   @param:Schema(description = "Project type code", example = "NP1")
   val code: String,
+  val group: ProjectTypeGroupDto?,
 ) {
   companion object
 }

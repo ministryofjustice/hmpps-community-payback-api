@@ -1,5 +1,7 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client
 
+import org.springframework.beans.factory.getBean
+import org.springframework.context.ApplicationContext
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointmentBehaviour
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointmentPickUp
@@ -13,13 +15,17 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectAndLocat
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProvider
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDTeam
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ProjectTypeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.random
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.randomHourMinuteDuration
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.randomLocalDate
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.randomLocalTime
 import java.util.UUID
 
-fun NDAppointment.Companion.validNoOutcome() = NDAppointment.valid().copy(
+fun NDAppointment.Companion.validNoOutcome() = NDAppointment.valid().withNoOutcome()
+fun NDAppointment.Companion.validNoOutcome(ctx: ApplicationContext) = NDAppointment.valid(ctx).withNoOutcome()
+
+fun NDAppointment.withNoOutcome() = copy(
   outcome = null,
   enforcementAction = null,
   penaltyHours = null,
@@ -28,6 +34,17 @@ fun NDAppointment.Companion.validNoOutcome() = NDAppointment.valid().copy(
   workQuality = null,
   behaviour = null,
 )
+
+fun NDAppointment.Companion.valid(ctx: ApplicationContext): NDAppointment {
+  val projectType = ctx.getBean<ProjectTypeEntityRepository>().findAll().first()
+
+  return NDAppointment.valid().copy(
+    projectType = NDProjectType.valid().copy(
+      name = projectType.name,
+      code = projectType.code,
+    ),
+  )
+}
 
 fun NDAppointment.Companion.valid() = NDAppointment(
   id = Long.random(),

@@ -6,9 +6,11 @@ import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ContactOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EnforcementActionDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeGroupDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EnforcementActionEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ProjectTypeEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ProjectTypeGroup
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
 import java.util.UUID
@@ -72,6 +74,7 @@ class ReferenceMappersTest {
         id = UUID.fromString("ea55e70e-c1ca-45b9-9001-18af7a907b25"),
         name = "Externally Supervised Placement",
         code = "ES",
+        projectTypeGroup = ProjectTypeGroup.INDIVIDUAL,
       )
 
       Assertions.assertThat(projectType.toDto()).isEqualTo(
@@ -79,6 +82,7 @@ class ReferenceMappersTest {
           id = UUID.fromString("ea55e70e-c1ca-45b9-9001-18af7a907b25"),
           name = "Externally Supervised Placement",
           code = "ES",
+          group = ProjectTypeGroupDto.INDIVIDUAL,
         ),
       )
     }
