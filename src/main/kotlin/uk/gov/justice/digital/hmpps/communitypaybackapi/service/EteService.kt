@@ -28,7 +28,7 @@ class EteService(
   private val eteUserRepository: EteUserRepository,
 ) {
 
-  private val regionToProviderCodeMap = mapOf(
+  private val providerCodeToRegionName = mapOf(
     "N53" to "East Midlands",
     "N52" to "West Midlands",
     "N56" to "East of England",
@@ -78,7 +78,7 @@ class EteService(
   }
 
   fun getEteCourseCompletionEvents(providerCode: String, fromDate: LocalDate?, toDate: LocalDate?, pageable: Pageable): Page<EteCourseCompletionEventDto> {
-    val region = regionToProviderCodeMap[providerCode] ?: return Page.empty()
+    val region = providerCodeToRegionName[providerCode] ?: return Page.empty()
     return eteCourseCompletionEventEntityRepository.findByRegionAndDateRange(region, fromDate, toDate, pageable).map { it.toDto() }
   }
 

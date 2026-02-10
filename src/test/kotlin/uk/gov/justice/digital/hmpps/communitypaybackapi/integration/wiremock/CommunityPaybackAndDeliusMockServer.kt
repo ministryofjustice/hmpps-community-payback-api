@@ -24,6 +24,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSessionSummarie
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSupervisor
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSupervisorSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDUnpaidWorkRequirement
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.PageResponse
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
@@ -297,6 +298,32 @@ object CommunityPaybackAndDeliusMockServer {
           aResponse()
             .withHeader("Content-Type", "application/json")
             .withBody(objectMapper.writer().writeValueAsString(nonWorkingDates)),
+        ),
+    )
+  }
+
+  fun getProjects(
+    providerCode: String,
+    teamCode: String,
+    projectTypeCodes: List<String> = emptyList(),
+    projects: List<NDProject>,
+  ) {
+    val url = buildString {
+      append("/community-payback-and-delius/providers/$providerCode/teams/$teamCode/projects?")
+      projectTypeCodes.forEach {
+        append("projectTypeCodes=$it&")
+      }
+      append("page=0&size=50&sort=projectName%2Cdesc")
+    }
+
+    val pageResponse = PageResponse(projects, PageResponse.PageMeta(50, 1, projects.size.toLong(), 1))
+
+    WireMock.stubFor(
+      get(url)
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withBody(objectMapper.writeValueAsString(pageResponse)),
         ),
     )
   }

@@ -2,11 +2,6 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.dto
 
 import io.swagger.v3.oas.annotations.media.Schema
 
-data class ProjectSummariesDto(
-  @param:Schema(description = "List of projects")
-  val projects: List<ProjectSummaryDto>,
-)
-
 data class ProjectSummaryDto(
   @param:Schema(description = "Project name", example = "Community Garden Maintenance")
   val projectName: String,
