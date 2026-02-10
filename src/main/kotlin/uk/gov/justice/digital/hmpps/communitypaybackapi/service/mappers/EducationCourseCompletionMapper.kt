@@ -41,6 +41,7 @@ class EducationCourseCompletionMapper {
       startTime = startTime,
       endTime = startTime.plusMinutes(attributes.totalTimeMinutes),
       pickUpLocationCode = null,
+      pickUpLocationDescription = null,
       pickUpTime = null,
       contactOutcomeCode = ContactOutcomeEntity.ATTENDED_COMPLIED_OUTCOME_CODE,
       attendanceData = createAttendanceData(),

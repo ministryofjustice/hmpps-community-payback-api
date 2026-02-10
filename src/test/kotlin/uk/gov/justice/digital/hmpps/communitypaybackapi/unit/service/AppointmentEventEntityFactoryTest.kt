@@ -96,6 +96,7 @@ class AppointmentEventEntityFactoryTest {
           startTime = LocalTime.of(10, 1),
           endTime = LocalTime.of(16, 3),
           pickUpLocationCode = "PICKUPLOC1",
+          pickUpLocationDescription = "Pickup Description",
           pickUpTime = LocalTime.of(20, 5),
           contactOutcomeCode = CONTACT_OUTCOME_CODE,
           supervisorOfficerCode = "N45",
@@ -127,6 +128,7 @@ class AppointmentEventEntityFactoryTest {
       assertThat(result.startTime).isEqualTo(LocalTime.of(10, 1))
       assertThat(result.endTime).isEqualTo(LocalTime.of(16, 3))
       assertThat(result.pickupLocationCode).isEqualTo("PICKUPLOC1")
+      assertThat(result.pickupLocationDescription).isEqualTo("Pickup Description")
       assertThat(result.pickupTime).isEqualTo(LocalTime.of(20, 5))
       assertThat(result.contactOutcome).isEqualTo(contactOutcomeEntity)
       assertThat(result.supervisorOfficerCode).isEqualTo("N45")
@@ -163,6 +165,7 @@ class AppointmentEventEntityFactoryTest {
           startTime = LocalTime.of(10, 1),
           endTime = LocalTime.of(16, 3),
           pickUpLocationCode = null,
+          pickUpLocationDescription = null,
           pickUpTime = null,
           contactOutcomeCode = null,
           supervisorOfficerCode = null,
@@ -187,6 +190,7 @@ class AppointmentEventEntityFactoryTest {
       assertThat(result.startTime).isEqualTo(LocalTime.of(10, 1))
       assertThat(result.endTime).isEqualTo(LocalTime.of(16, 3))
       assertThat(result.pickupLocationCode).isNull()
+      assertThat(result.pickupLocationDescription).isNull()
       assertThat(result.pickupTime).isNull()
       assertThat(result.contactOutcome).isNull()
       assertThat(result.supervisorOfficerCode).isNull()

@@ -16,6 +16,7 @@ data class CreateAppointmentDto(
   @param:Schema(example = "14:00", description = "The end local time of the appointment", pattern = "^([0-1][0-9]|2[0-3]):[0-5][0-9]$")
   val endTime: LocalTime,
   val pickUpLocationCode: String?,
+  val pickUpLocationDescription: String?,
   val pickUpTime: LocalTime?,
   val contactOutcomeCode: String? = null,
   val attendanceData: AttendanceDataDto? = null,

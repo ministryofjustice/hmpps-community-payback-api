@@ -83,6 +83,7 @@ fun SchedulingRequiredAppointment.toCreateAppointmentDto(
   startTime = this.startTime,
   endTime = this.endTime,
   pickUpLocationCode = this.allocation.pickUpLocationCode,
+  pickUpLocationDescription = this.allocation.pickUpLocationDescription,
   pickUpTime = this.allocation.pickUpTime,
   notes = "[System scheduled appointment]",
 )

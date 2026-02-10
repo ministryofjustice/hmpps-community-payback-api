@@ -46,8 +46,11 @@ data class AppointmentEventEntity(
   val date: LocalDate,
   val startTime: LocalTime,
   val endTime: LocalTime,
+
   val pickupLocationCode: String?,
+  val pickupLocationDescription: String?,
   val pickupTime: LocalTime?,
+
   val supervisorOfficerCode: String?,
   val notes: String?,
 
