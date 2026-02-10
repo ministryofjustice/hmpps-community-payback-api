@@ -52,6 +52,7 @@ fun NDSchedulingAllocation.toSchedulingAllocation() = SchedulingAllocation(
   startTime = this.startTime,
   endTime = this.endTime,
   pickUpLocationCode = this.pickUp?.location?.code,
+  pickUpLocationDescription = this.pickUp?.location?.description,
   pickUpTime = this.pickUp?.time,
 )
 

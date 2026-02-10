@@ -8,7 +8,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointmentSumm
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointmentWorkQuality
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCode
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCreateAppointment
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDPickUp
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCreateAppointmentPickUpData
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDUpdateAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentBehaviourDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
@@ -173,7 +173,7 @@ fun AppointmentEventEntity.toNDCreateAppointment(): NDCreateAppointment {
     behaviour = this.behaviour?.upstreamType,
     sensitive = this.sensitive,
     alertActive = this.alertActive,
-    pickUp = NDPickUp(
+    pickUp = NDCreateAppointmentPickUpData(
       location = this.pickupLocationCode?.let { NDCode(it) },
       time = this.pickupTime,
     ),
