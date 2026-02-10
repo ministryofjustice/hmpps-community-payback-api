@@ -186,6 +186,7 @@ fun Behaviour.Companion.fromDto(dto: AppointmentBehaviourDto) = Behaviour.entrie
 fun NDAppointmentPickUp.toDto() = PickUpDataDto(
   location = location?.toDto(),
   locationCode = location?.code,
+  locationDescription = location?.description,
   time = time,
 )
 

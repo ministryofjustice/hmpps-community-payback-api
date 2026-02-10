@@ -376,7 +376,7 @@ class AppointmentMappersTest {
         pickUpData = NDAppointmentPickUp(
           location = NDPickUpLocation(
             code = pickUpLocationCode,
-            description = "doesnt matter",
+            description = "Pickup location description",
             buildingName = pickUpBuildingName,
             addressNumber = pickUpBuildingNumber,
             streetName = pickUpStreetName,
@@ -431,6 +431,7 @@ class AppointmentMappersTest {
       assertThat(pickUpData.location.county).isEqualTo(pickUpCounty)
       assertThat(pickUpData.location.postCode).isEqualTo(pickUpPostCode)
       assertThat(pickUpData.locationCode).isEqualTo(pickUpLocationCode)
+      assertThat(pickUpData.locationDescription).isEqualTo("Pickup location description")
       assertThat(pickUpData.time).isEqualTo(pickUpTime)
 
       assertThat(result.contactOutcomeCode).isEqualTo(contactOutcomeCode)
