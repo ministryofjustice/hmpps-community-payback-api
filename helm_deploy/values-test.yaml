@@ -17,6 +17,10 @@ generic-service:
 
     COMMUNITY_PAYBACK_DOMAIN_EVENTS_ENVIRONMENT: test
     COMMUNITY_PAYBACK_DOMAIN_EVENTS_DETAILS_URL_PATTERN: https://community-payback-api-test.hmpps.service.justice.gov.uk/domain-event-details/#type/#id
+
+    # we disable this in test because dev will be handling the same messages
+    COMMUNITY_PAYBACK_EDUCATION_COURSE_INTEGRATION_ENABLED: false
+
     COMMUNITY_PAYBACK_AUTO_SEED_ENABLED: true
 
     COMMUNITY_PAYBACK_SCHEDULING_ENABLED: true
