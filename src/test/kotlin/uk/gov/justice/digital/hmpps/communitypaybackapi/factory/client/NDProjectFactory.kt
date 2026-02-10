@@ -6,6 +6,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAddress
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDBeneficiaryDetails
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectAndLocation
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectOutcomeSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ProjectTypeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.random
 
@@ -22,6 +23,14 @@ fun NDProject.Companion.valid() = NDProject(
   location = NDAddress.valid(),
   beneficiaryDetails = NDBeneficiaryDetails.valid(),
   hiVisRequired = Boolean.random(),
+)
+
+fun NDProjectOutcomeSummary.Companion.valid() = NDProjectOutcomeSummary(
+  code = String.random(),
+  name = String.random(),
+  location = NDAddress.valid(),
+  overdueOutcomesCount = Int.random(),
+  oldestOverdueInDays = Int.random(),
 )
 
 fun NDProject.Companion.valid(ctx: ApplicationContext): NDProject {

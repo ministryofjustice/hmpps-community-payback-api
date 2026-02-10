@@ -91,7 +91,7 @@ interface CommunityPaybackAndDeliusClient {
     @RequestParam page: Int?,
     @RequestParam size: Int?,
     @RequestParam sort: List<String>?,
-  ): PageResponse<NDProject>
+  ): PageResponse<NDProjectOutcomeSummary>
 }
 
 data class NDProviderSummaries(
@@ -226,6 +226,9 @@ data class NDBeneficiaryDetails(
 }
 
 data class NDProjectAndLocation(val name: String, val code: String, val location: NDAddress) {
+  companion object
+}
+data class NDProjectOutcomeSummary(val name: String, val code: String, val location: NDAddress, val overdueOutcomesCount: Int, val oldestOverdueInDays: Int) {
   companion object
 }
 data class NDProjectSummary(val description: String, val code: String) {

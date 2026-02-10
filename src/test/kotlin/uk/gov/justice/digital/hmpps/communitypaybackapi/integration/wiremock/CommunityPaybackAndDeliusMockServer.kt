@@ -17,6 +17,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
 import com.github.tomakehurst.wiremock.client.WireMock.urlMatching
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProject
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectOutcomeSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProviderSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProviderTeamSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSession
@@ -306,7 +307,7 @@ object CommunityPaybackAndDeliusMockServer {
     providerCode: String,
     teamCode: String,
     projectTypeCodes: List<String> = emptyList(),
-    projects: List<NDProject>,
+    projects: List<NDProjectOutcomeSummary>,
   ) {
     val url = buildString {
       append("/community-payback-and-delius/providers/$providerCode/teams/$teamCode/projects?")

@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectSummaryDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectOutcomeSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeGroupDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProviderSummariesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProviderTeamSummariesDto
@@ -166,5 +166,5 @@ class AdminProviderController(
     @PathVariable providerCode: String,
     @PathVariable teamCode: String,
     @RequestParam projectTypeGroup: ProjectTypeGroupDto,
-  ): Page<ProjectSummaryDto> = projectService.getProjects(providerCode, teamCode, projectTypeGroup, pageable)
+  ): Page<ProjectOutcomeSummaryDto> = projectService.getProjects(providerCode, teamCode, projectTypeGroup, pageable)
 }

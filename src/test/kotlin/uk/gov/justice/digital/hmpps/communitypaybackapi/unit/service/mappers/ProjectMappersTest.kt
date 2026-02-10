@@ -3,13 +3,13 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.unit.service.mappers
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAddress
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProject
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectOutcomeSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
 
 class ProjectMappersTest {
 
   @Test
-  fun `should map NDProject to ProjectSummaryDto correctly`() {
+  fun `should map NDProjectOutcomeSummary to ProjectOutcomeSummaryDto correctly`() {
     val ndAddress = NDAddress(
       buildingName = "Justice Building",
       addressNumber = "123",
@@ -19,7 +19,7 @@ class ProjectMappersTest {
       postCode = "SW1A 1AA",
     )
 
-    val ndProject = NDProject(
+    val ndProject = NDProjectOutcomeSummary(
       name = "Community Garden Maintenance",
       code = "PRJ123",
       location = ndAddress,

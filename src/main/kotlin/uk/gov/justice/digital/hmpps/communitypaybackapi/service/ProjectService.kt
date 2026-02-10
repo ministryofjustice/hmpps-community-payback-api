@@ -6,15 +6,14 @@ import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectOutcomeSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeGroupDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.toQueryTriplet
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.NotFoundException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ProjectTypeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ProjectTypeGroup
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.toQueryTriplet
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toNDProjectTypeCodes
 
 @Service
 class ProjectService(
@@ -29,12 +28,12 @@ class ProjectService(
     teamCode: String,
     projectTypeGroup: ProjectTypeGroupDto?,
     pageable: Pageable,
-  ): Page<ProjectSummaryDto> {
+  ): Page<ProjectOutcomeSummaryDto> {
     val (page, size, sortValues) = pageable.toQueryTriplet()
     val pageResponse = communityPaybackAndDeliusClient.getProjects(
       providerCode = providerCode,
       teamCode = teamCode,
-      projectTypeCodes = projectTypeGroup?.toNDProjectTypeCodes(),
+      projectTypeCodes = projectTypeGroup?.let { projectTypeGroup -> projectTypesForGroup(projectTypeGroup).map { it.code } },
       page = page,
       size = size,
       sort = sortValues,
@@ -42,9 +41,8 @@ class ProjectService(
     return PageImpl(pageResponse.content.map { it.toDto() }, pageable, pageResponse.page.totalElements)
   }
 
-  fun projectTypesForGroup(projectTypeGroup: ProjectTypeGroupDto) =
-    projectTypeEntityRepository.findByProjectTypeGroupOrderByCodeAsc(ProjectTypeGroup.fromDto(projectTypeGroup))
-      .map { it.toDto() }
+  fun projectTypesForGroup(projectTypeGroup: ProjectTypeGroupDto) = projectTypeEntityRepository.findByProjectTypeGroupOrderByCodeAsc(ProjectTypeGroup.fromDto(projectTypeGroup))
+    .map { it.toDto() }
 
   fun getProject(projectCode: String): ProjectDto {
     val project = try {

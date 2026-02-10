@@ -4,7 +4,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProject
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectOutcomeSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProviderSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProviderSummary
@@ -15,8 +15,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSessionSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSupervisorSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSupervisorSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.PageResponse
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectSummaryDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeGroupDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectOutcomeSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProviderSummariesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProviderTeamSummariesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionSummariesDto
@@ -348,12 +347,12 @@ class AdminProvidersIT : IntegrationTestBase() {
 
     @Test
     fun `should return 200 for successful paginated response for individual projects`() {
-      val project1 = NDProject.valid()
-      val project2 = NDProject.valid()
+      val project1 = NDProjectOutcomeSummary.valid()
+      val project2 = NDProjectOutcomeSummary.valid()
       CommunityPaybackAndDeliusMockServer.getProjects(
         providerCode = "PC01",
         teamCode = "999",
-        projectTypeCodes = ProjectTypeGroupDto.INDIVIDUAL.toNDProjectTypeCodes(),
+        projectTypeCodes = listOf("ES", "ICP", "PIP2"),
         projects = listOf(project1, project2),
       )
 
@@ -363,7 +362,7 @@ class AdminProvidersIT : IntegrationTestBase() {
         .exchange()
         .expectStatus()
         .isOk
-        .bodyAsObject<PageResponse<ProjectSummaryDto>>()
+        .bodyAsObject<PageResponse<ProjectOutcomeSummaryDto>>()
 
       assertThat(pageResponse.content).hasSize(2)
       assertThat(pageResponse.content[0].projectName).isEqualTo(project1.name)
