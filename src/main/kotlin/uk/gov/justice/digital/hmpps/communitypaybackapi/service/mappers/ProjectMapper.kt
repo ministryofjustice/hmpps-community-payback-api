@@ -4,10 +4,14 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDBeneficiaryDeta
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.BeneficiaryDetailsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ProjectTypeEntity
 
-fun NDProject.toDto() = ProjectDto(
+fun NDProject.toDto(
+  projectType: ProjectTypeEntity,
+) = ProjectDto(
   projectName = this.name,
   projectCode = this.code,
+  projectType = projectType.toDto(),
   location = this.location.toDto(),
   hiVisRequired = this.hiVisRequired,
   beneficiaryDetails = this.beneficiaryDetails.toDto(),

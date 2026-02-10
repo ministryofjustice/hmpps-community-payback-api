@@ -92,7 +92,7 @@ class AppointmentEventEntityFactory(
       priorDeliusVersion = outcome.deliusVersionToUpdate,
       deliusEventNumber = existingAppointment.deliusEventNumber,
       projectCode = existingAppointment.projectCode,
-      projectName = existingAppointment.projectName,
+      projectName = existingAppointment.projectName!!,
       date = existingAppointment.date,
       startTime = startTime,
       endTime = endTime,

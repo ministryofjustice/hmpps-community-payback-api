@@ -22,7 +22,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.randomLocalDate
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.randomLocalTime
 import java.util.UUID
 
-fun NDAppointment.Companion.validNoOutcome() = NDAppointment.valid().withNoOutcome()
 fun NDAppointment.Companion.validNoOutcome(ctx: ApplicationContext) = NDAppointment.valid(ctx).withNoOutcome()
 
 fun NDAppointment.withNoOutcome() = copy(

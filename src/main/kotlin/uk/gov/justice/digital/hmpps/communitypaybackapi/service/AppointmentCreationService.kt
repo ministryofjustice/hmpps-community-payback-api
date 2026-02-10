@@ -6,7 +6,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackA
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCreateAppointments
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntityRepository
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toNDCreateAppointment
 
 @Service
@@ -15,6 +14,7 @@ class AppointmentCreationService(
   private val communityPaybackAndDeliusClient: CommunityPaybackAndDeliusClient,
   private val appointmentEventEntityRepository: AppointmentEventEntityRepository,
   private val domainEventService: DomainEventService,
+  private val projectService: ProjectService,
 ) {
 
   @Transactional
@@ -30,7 +30,7 @@ class AppointmentCreationService(
         deliusId = 0L,
         trigger = trigger,
         createAppointmentDto = createAppointment,
-        project = communityPaybackAndDeliusClient.getProject(projectCode).toDto(),
+        project = projectService.getProject(projectCode),
       )
     }
 
