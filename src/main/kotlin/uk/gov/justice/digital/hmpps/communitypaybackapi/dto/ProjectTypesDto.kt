@@ -10,7 +10,9 @@ data class ProjectTypeDto(
   val name: String,
   @param:Schema(description = "Project type code", example = "NP1")
   val code: String,
-)
+) {
+  companion object
+}
 
 data class ProjectTypesDto(
   @param:Schema(description = "List of project types")
@@ -20,4 +22,5 @@ data class ProjectTypesDto(
 enum class ProjectTypeGroupDto {
   GROUP,
   INDIVIDUAL,
+  INDUCTION,
 }

@@ -12,6 +12,7 @@ import org.junit.jupiter.api.extension.ExtendWith
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.NotFoundException
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ProjectTypeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ProjectService
@@ -23,6 +24,9 @@ class ProjectServiceTest {
 
   @RelaxedMockK
   lateinit var communityPaybackAndDeliusClient: CommunityPaybackAndDeliusClient
+
+  @RelaxedMockK
+  lateinit var projectTypeEntityRepository: ProjectTypeEntityRepository
 
   @InjectMockKs
   private lateinit var service: ProjectService

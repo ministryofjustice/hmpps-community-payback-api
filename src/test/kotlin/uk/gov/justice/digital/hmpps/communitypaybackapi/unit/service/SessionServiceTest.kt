@@ -12,14 +12,16 @@ import org.junit.jupiter.api.extension.ExtendWith
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSessionSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSessionSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeGroupDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.BadRequestException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.SessionSupervisorEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ContextService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ProjectService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.SessionService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.SessionMappers
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toNDProjectTypeCodes
 import java.time.LocalDate
 
 @ExtendWith(MockKExtension::class)
@@ -36,6 +38,9 @@ class SessionServiceTest {
 
   @RelaxedMockK
   lateinit var contextService: ContextService
+
+  @RelaxedMockK
+  lateinit var projectService: ProjectService
 
   @InjectMockKs
   private lateinit var service: SessionService
@@ -59,12 +64,16 @@ class SessionServiceTest {
     @Test
     fun `success path`() {
       every {
+        projectService.projectTypesForGroup(ProjectTypeGroupDto.GROUP)
+      } returns listOf(ProjectTypeDto.valid().copy(code = "PT1"))
+
+      every {
         communityPaybackAndDeliusClient.getSessions(
           providerCode = "provider code 1",
           teamCode = "team code 1",
           startDate = LocalDate.of(2025, 1, 1),
           endDate = LocalDate.of(2025, 1, 5),
-          projectTypeCodes = ProjectTypeGroupDto.GROUP.toNDProjectTypeCodes(),
+          projectTypeCodes = listOf("PT1"),
         )
       } returns NDSessionSummaries.valid().copy(
         sessions = listOf(

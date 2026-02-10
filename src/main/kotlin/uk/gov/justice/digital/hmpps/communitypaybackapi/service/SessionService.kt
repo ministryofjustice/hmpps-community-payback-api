@@ -15,7 +15,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.SessionSupervisor
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.SessionSupervisorId
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.SessionMappers
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toNDProjectTypeCodes
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 
@@ -25,6 +24,7 @@ class SessionService(
   val sessionMappers: SessionMappers,
   val sessionSupervisorEntityRepository: SessionSupervisorEntityRepository,
   val contextService: ContextService,
+  val projectService: ProjectService,
 ) {
   private companion object {
     private val log = LoggerFactory.getLogger(this::class.java)
@@ -47,7 +47,9 @@ class SessionService(
       teamCode = teamCode,
       startDate = startDate,
       endDate = endDate,
-      projectTypeCodes = projectTypeGroup?.toNDProjectTypeCodes(),
+      projectTypeCodes = projectTypeGroup?.let { projectTypeGroup ->
+        projectService.projectTypesForGroup(projectTypeGroup).map { it.code }
+      },
     ).toDto()
   }
 

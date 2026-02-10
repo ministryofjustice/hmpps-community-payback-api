@@ -12,7 +12,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSession
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSessionSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSessionSummary
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeGroupDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionSummariesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionSummaryDto
@@ -22,7 +21,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.bodyAsObject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.CommunityPaybackAndDeliusMockServer
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toNDProjectTypeCodes
 import java.time.LocalDate
 
 class SupervisorSessionsIT : IntegrationTestBase() {
@@ -233,7 +231,7 @@ class SupervisorSessionsIT : IntegrationTestBase() {
         teamCode = "T456",
         startDate = LocalDate.now(),
         endDate = LocalDate.now().plusDays(7),
-        projectTypeCodes = ProjectTypeGroupDto.GROUP.toNDProjectTypeCodes(),
+        projectTypeCodes = listOf("NP1", "NP2", "PL"),
         projectSessions = NDSessionSummaries(
           listOf(
             NDSessionSummary.valid().copy(project = NDProjectSummary.valid().copy(description = "Community Garden Maintenance")),
