@@ -49,7 +49,7 @@ data class EteCourseCompletionEventDto(
   @param:Schema(description = "Expected time for the course in minutes", example = "240")
   val expectedTimeMinutes: Long,
 
-  @param:Schema(description = "Number of attempts made to complete the course", example = "2", nullable = true)
+  @param:Schema(description = "Number of attempts made to complete the course. Will be > 0", example = "2", nullable = true)
   val attempts: Int?,
 
   @param:Schema(description = "External reference identifier", example = "EXT-12345")
