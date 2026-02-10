@@ -41,6 +41,8 @@ data class AppointmentEventEntity(
   val deliusAllocationId: Long?,
 
   val projectCode: String,
+  val projectName: String,
+
   val date: LocalDate,
   val startTime: LocalTime,
   val endTime: LocalTime,

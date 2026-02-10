@@ -25,6 +25,7 @@ fun AppointmentEventEntity.Companion.valid(
   crn = String.random(5),
   deliusEventNumber = Int.random(0, 50),
   projectCode = String.random(5),
+  projectName = String.random(50),
   date = randomLocalDate(),
   startTime = randomLocalTime(),
   endTime = randomLocalTime(),

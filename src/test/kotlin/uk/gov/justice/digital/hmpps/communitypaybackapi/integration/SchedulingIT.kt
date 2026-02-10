@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.ApplicationContext
 import org.springframework.data.repository.findByIdOrNull
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDRequirementProgress
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingAllocation
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingDayOfWeek
@@ -379,6 +380,9 @@ class SchedulingIT : IntegrationTestBase() {
         ),
       ),
     )
+
+    CommunityPaybackAndDeliusMockServer.getProject(project = NDProject.valid().copy(code = "PROJ1"))
+    CommunityPaybackAndDeliusMockServer.getProject(project = NDProject.valid().copy(code = "PROJ2"))
 
     CommunityPaybackAndDeliusMockServer.postAppointments(
       projectCode = "PROJ1",

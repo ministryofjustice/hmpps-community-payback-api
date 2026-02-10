@@ -7,4 +7,6 @@ data class BeneficiaryDetailsDto(
   val website: String?,
   val telephoneNumber: String,
   val location: LocationDto,
-)
+) {
+  companion object
+}

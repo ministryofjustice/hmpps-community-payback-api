@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AttendanceDataDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventTriggerType
@@ -24,10 +25,10 @@ class AppointmentEventEntityFactory(
 ) {
 
   fun buildCreatedEvent(
-    projectCode: String,
     deliusId: Long,
     trigger: AppointmentEventTrigger,
     createAppointmentDto: CreateAppointmentDto,
+    project: ProjectDto,
   ): AppointmentEventEntity {
     val startTime = createAppointmentDto.startTime
     val endTime = createAppointmentDto.endTime
@@ -42,7 +43,8 @@ class AppointmentEventEntityFactory(
       deliusAppointmentId = deliusId,
       priorDeliusVersion = null,
       deliusEventNumber = createAppointmentDto.deliusEventNumber,
-      projectCode = projectCode,
+      projectCode = project.projectCode,
+      projectName = project.projectName,
       date = createAppointmentDto.date,
       startTime = startTime,
       endTime = endTime,
@@ -90,6 +92,7 @@ class AppointmentEventEntityFactory(
       priorDeliusVersion = outcome.deliusVersionToUpdate,
       deliusEventNumber = existingAppointment.deliusEventNumber,
       projectCode = existingAppointment.projectCode,
+      projectName = existingAppointment.projectName,
       date = existingAppointment.date,
       startTime = startTime,
       endTime = endTime,
