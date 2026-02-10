@@ -381,8 +381,8 @@ class SchedulingIT : IntegrationTestBase() {
       ),
     )
 
-    CommunityPaybackAndDeliusMockServer.getProject(project = NDProject.valid().copy(code = "PROJ1"))
-    CommunityPaybackAndDeliusMockServer.getProject(project = NDProject.valid().copy(code = "PROJ2"))
+    CommunityPaybackAndDeliusMockServer.getProject(project = NDProject.valid(ctx).copy(code = "PROJ1"))
+    CommunityPaybackAndDeliusMockServer.getProject(project = NDProject.valid(ctx).copy(code = "PROJ2"))
 
     CommunityPaybackAndDeliusMockServer.postAppointments(
       projectCode = "PROJ1",

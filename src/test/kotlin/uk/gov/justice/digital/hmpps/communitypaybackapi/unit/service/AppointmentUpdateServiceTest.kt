@@ -12,6 +12,7 @@ import org.junit.jupiter.api.extension.ExtendWith
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.FormKeyDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.ConflictException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.InternalServerErrorException
@@ -63,7 +64,8 @@ class AppointmentUpdateServiceTest {
   private companion object {
     const val PROJECT_CODE = "PROJ123"
     const val APPOINTMENT_ID = 101L
-    val TRIGGER: AppointmentEventTrigger = AppointmentEventTrigger.valid()
+    val TRIGGER = AppointmentEventTrigger.valid()
+    val PROJECT = ProjectDto.valid()
   }
 
   @Nested
@@ -90,7 +92,7 @@ class AppointmentUpdateServiceTest {
     fun `if appointment not found on update, throw not found exception`() {
       every { appointmentRetrievalService.getAppointment(PROJECT_CODE, APPOINTMENT_ID) } returns existingAppointment
       every { appointmentEventEntityRepository.findTopByDeliusAppointmentIdOrderByCreatedAtDesc(APPOINTMENT_ID) } returns null
-      every { appointmentEventEntityFactory.buildUpdatedEvent(any(), any(), any()) } returns AppointmentEventEntity.fromUpdateRequest(updateRequest)
+      every { appointmentEventEntityFactory.buildUpdatedEvent(any(), any(), any(), any()) } returns AppointmentEventEntity.fromUpdateRequest(updateRequest)
       every { appointmentEventEntityRepository.save(any()) } returnsArgument 0
 
       every {
@@ -112,7 +114,7 @@ class AppointmentUpdateServiceTest {
       every { appointmentEventEntityRepository.findTopByDeliusAppointmentIdOrderByCreatedAtDesc(APPOINTMENT_ID) } returns null
 
       val entityReturnedByFactory = AppointmentEventEntity.fromUpdateRequest(updateRequest)
-      every { appointmentEventEntityFactory.buildUpdatedEvent(updateRequest, existingAppointment, TRIGGER) } returns entityReturnedByFactory
+      every { appointmentEventEntityFactory.buildUpdatedEvent(updateRequest, existingAppointment, TRIGGER, PROJECT_CODE) } returns entityReturnedByFactory
       every { appointmentEventEntityRepository.save(any()) } returnsArgument 0
 
       service.updateAppointmentOutcome(
@@ -143,7 +145,7 @@ class AppointmentUpdateServiceTest {
 
       every { appointmentRetrievalService.getAppointment(PROJECT_CODE, APPOINTMENT_ID) } returns existingAppointment
       every { appointmentEventEntityRepository.findTopByDeliusAppointmentIdOrderByCreatedAtDesc(APPOINTMENT_ID) } returns existingIdenticalEntity
-      every { appointmentEventEntityFactory.buildUpdatedEvent(updateRequest, existingAppointment, TRIGGER) } returns existingIdenticalEntity
+      every { appointmentEventEntityFactory.buildUpdatedEvent(updateRequest, existingAppointment, TRIGGER, PROJECT_CODE) } returns existingIdenticalEntity
 
       service.updateAppointmentOutcome(
         projectCode = PROJECT_CODE,
@@ -163,7 +165,9 @@ class AppointmentUpdateServiceTest {
 
       every { appointmentRetrievalService.getAppointment(PROJECT_CODE, APPOINTMENT_ID) } returns existingAppointment
       every { appointmentEventEntityRepository.findTopByDeliusAppointmentIdOrderByCreatedAtDesc(APPOINTMENT_ID) } returns existingOutcomeEntity
-      every { appointmentEventEntityFactory.buildUpdatedEvent(updateRequest, existingAppointment, TRIGGER) } returns AppointmentEventEntity.fromUpdateRequest(updateRequest).copy(deliusAppointmentId = APPOINTMENT_ID)
+      every {
+        appointmentEventEntityFactory.buildUpdatedEvent(updateRequest, existingAppointment, TRIGGER, PROJECT_CODE)
+      } returns AppointmentEventEntity.fromUpdateRequest(updateRequest).copy(deliusAppointmentId = APPOINTMENT_ID)
       every { appointmentEventEntityRepository.save(any()) } returnsArgument 0
 
       service.updateAppointmentOutcome(
@@ -180,7 +184,7 @@ class AppointmentUpdateServiceTest {
     fun `if appointment has newer version on update, throw conflict exception`() {
       every { appointmentRetrievalService.getAppointment(PROJECT_CODE, APPOINTMENT_ID) } returns existingAppointment
       every { appointmentEventEntityRepository.findTopByDeliusAppointmentIdOrderByCreatedAtDesc(APPOINTMENT_ID) } returns null
-      every { appointmentEventEntityFactory.buildUpdatedEvent(any(), any(), any()) } returns AppointmentEventEntity.fromUpdateRequest(updateRequest)
+      every { appointmentEventEntityFactory.buildUpdatedEvent(any(), any(), any(), any()) } returns AppointmentEventEntity.fromUpdateRequest(updateRequest)
       every { appointmentEventEntityRepository.save(any()) } returnsArgument 0
 
       every {
@@ -199,7 +203,7 @@ class AppointmentUpdateServiceTest {
     @Test
     fun `if bad request returned throw internal server error`() {
       every { appointmentEventEntityRepository.findTopByDeliusAppointmentIdOrderByCreatedAtDesc(APPOINTMENT_ID) } returns null
-      every { appointmentEventEntityFactory.buildUpdatedEvent(any(), any(), any()) } returns AppointmentEventEntity.fromUpdateRequest(updateRequest)
+      every { appointmentEventEntityFactory.buildUpdatedEvent(any(), any(), any(), any()) } returns AppointmentEventEntity.fromUpdateRequest(updateRequest)
       every { appointmentEventEntityRepository.save(any()) } returnsArgument 0
 
       every {
@@ -225,7 +229,7 @@ class AppointmentUpdateServiceTest {
       val updateRequest = updateRequest.copy(formKeyToDelete = formKey)
 
       every { appointmentEventEntityRepository.save(any()) } returnsArgument 0
-      every { appointmentEventEntityFactory.buildUpdatedEvent(any(), any(), any()) } returns AppointmentEventEntity.fromUpdateRequest(updateRequest)
+      every { appointmentEventEntityFactory.buildUpdatedEvent(any(), any(), any(), any()) } returns AppointmentEventEntity.fromUpdateRequest(updateRequest)
 
       service.updateAppointmentOutcome(
         projectCode = PROJECT_CODE,

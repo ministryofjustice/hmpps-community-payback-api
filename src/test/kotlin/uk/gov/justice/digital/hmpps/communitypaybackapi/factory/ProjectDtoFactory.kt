@@ -3,11 +3,13 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.factory
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.BeneficiaryDetailsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.LocationDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeDto
 import kotlin.String
 
 fun ProjectDto.Companion.valid() = ProjectDto(
   projectName = String.random(50),
   projectCode = String.random(5),
+  projectType = ProjectTypeDto.valid(),
   location = LocationDto.valid(),
   hiVisRequired = Boolean.random(),
   beneficiaryDetails = BeneficiaryDetailsDto.valid(),

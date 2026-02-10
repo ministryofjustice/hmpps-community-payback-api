@@ -10,15 +10,19 @@ data class AppointmentDto(
   val communityPaybackId: UUID?,
   val version: UUID,
   val deliusEventNumber: Int,
-  val projectName: String,
+  @Deprecated("Retrieve project information from GET project instead")
+  @param:Schema(description = "Retrieve project information from GET project instead. Whilst marked as optional to support deprecation, this will always be populated.", deprecated = true)
+  val projectName: String?,
   val projectCode: String,
-  @Deprecated("Use [projectType.name] instead")
-  @param:Schema(description = "Deprecated, use projectType.name instead", deprecated = true)
+  @Deprecated("Retrieve project information from GET project instead")
+  @param:Schema(description = "Retrieve project information from GET project instead. Whilst marked as optional to support deprecation, this will always be populated.", deprecated = true)
   val projectTypeName: String?,
-  @Deprecated("Use [projectType.code] instead")
-  @param:Schema(description = "Deprecated, use projectType.code instead", deprecated = true)
+  @Deprecated("Retrieve project information from GET project instead")
+  @param:Schema(description = "Retrieve project information from GET project instead. Whilst marked as optional to support deprecation, this will always be populated.", deprecated = true)
   val projectTypeCode: String?,
-  val projectType: ProjectTypeDto,
+  @Deprecated("Retrieve project information from GET project instead")
+  @param:Schema(description = "Retrieve project information from GET project instead. Whilst marked as optional to support deprecation, this will always be populated.", deprecated = true)
+  val projectType: ProjectTypeDto?,
   val offender: OffenderDto,
   val supervisingTeam: String,
   val supervisingTeamCode: String,

@@ -62,7 +62,7 @@ class AdminProjectsIT : IntegrationTestBase() {
     @Test
     fun `Should return existing project`() {
       CommunityPaybackAndDeliusMockServer.getProject(
-        project = NDProject.valid().copy(
+        project = NDProject.valid(ctx).copy(
           code = "PC01",
           name = "the project name",
         ),

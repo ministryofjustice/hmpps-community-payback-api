@@ -11,9 +11,9 @@ import org.junit.jupiter.api.extension.ExtendWith
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCreateAppointments
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCreatedAppointment
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentsDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventType
@@ -26,7 +26,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.DomainEventService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.DomainEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.PersonReferenceType
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toNDCreateAppointment
 
 @ExtendWith(MockKExtension::class)
@@ -48,8 +47,8 @@ class AppointmentCreationServiceTest {
 
   private companion object {
     const val PROJECT_CODE: String = "PROJ25"
-    val PROJECT = NDProject.valid().copy(
-      code = PROJECT_CODE,
+    val PROJECT = ProjectDto.valid().copy(
+      projectCode = PROJECT_CODE,
     )
     val TRIGGER: AppointmentEventTrigger = AppointmentEventTrigger.valid()
   }
@@ -66,18 +65,16 @@ class AppointmentCreationServiceTest {
         appointments = listOf(createAppointment1Dto, createAppointment2Dto),
       )
 
-      every { communityPaybackAndDeliusClient.getProject(PROJECT_CODE) } returns PROJECT
-
       val creationEvent1 = AppointmentEventEntity.valid().copy(
         eventType = AppointmentEventType.CREATE,
         communityPaybackAppointmentId = createAppointment1Dto.id,
       )
       every {
         appointmentEventEntityFactory.buildCreatedEvent(
-          project = PROJECT.toDto(),
           deliusId = 0,
           trigger = TRIGGER,
           createAppointmentDto = createAppointment1Dto,
+          projectCode = PROJECT_CODE,
         )
       } returns creationEvent1
 
@@ -90,7 +87,7 @@ class AppointmentCreationServiceTest {
           deliusId = 0,
           trigger = TRIGGER,
           createAppointmentDto = createAppointment2Dto,
-          project = PROJECT.toDto(),
+          projectCode = PROJECT_CODE,
         )
       } returns creationEvent2
 

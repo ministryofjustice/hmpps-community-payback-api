@@ -19,11 +19,19 @@ class ProjectService(
 
   fun projectTypesForGroup(projectTypeGroup: ProjectTypeGroupDto) = projectTypeEntityRepository.findByProjectTypeGroupOrderByCodeAsc(ProjectTypeGroup.fromDto(projectTypeGroup)).map { it.toDto() }
 
-  fun getProject(projectCode: String): ProjectDto = try {
-    communityPaybackAndDeliusClient.getProject(
-      projectCode = projectCode,
-    ).toDto()
-  } catch (_: WebClientResponseException.NotFound) {
-    throw NotFoundException("Project", projectCode)
+  fun getProject(projectCode: String): ProjectDto {
+    val project = try {
+      communityPaybackAndDeliusClient.getProject(
+        projectCode = projectCode,
+      )
+    } catch (_: WebClientResponseException.NotFound) {
+      throw NotFoundException("Project", projectCode)
+    }
+
+    val projectTypeCode = project.projectTypeCode
+    val projectType = projectTypeEntityRepository.getByCode(projectTypeCode)
+      ?: error("could not find project type for code '$projectTypeCode'")
+
+    return project.toDto(projectType)
   }
 }

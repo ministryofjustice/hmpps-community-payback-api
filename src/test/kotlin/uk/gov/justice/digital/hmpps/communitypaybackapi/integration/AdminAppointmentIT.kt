@@ -10,6 +10,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDContactOutcome
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDEnforcementAction
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectAndLocation
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AttendanceDataDto
@@ -197,6 +198,7 @@ class AdminAppointmentIT : IntegrationTestBase() {
         ),
         username = "theusername",
       )
+      CommunityPaybackAndDeliusMockServer.getProject(NDProject.valid(ctx).copy(code = "proj123"))
 
       CommunityPaybackAndDeliusMockServer.putAppointment(
         projectCode = "proj123",

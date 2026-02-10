@@ -12,6 +12,7 @@ import org.junit.jupiter.api.extension.ExtendWith
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.NotFoundException
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ProjectTypeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ProjectTypeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
@@ -33,6 +34,7 @@ class ProjectServiceTest {
 
   private companion object {
     const val PROJECT_CODE = "PROJ123"
+    const val PROJECT_TYPE_CODE = "PROJTYPE"
   }
 
   @Nested
@@ -52,13 +54,28 @@ class ProjectServiceTest {
     }
 
     @Test
-    fun `project found`() {
-      val project = NDProject.valid()
+    fun `throw exception if project type can't be resolved`() {
+      val project = NDProject.valid().copy(projectTypeCode = PROJECT_TYPE_CODE)
+
       every { communityPaybackAndDeliusClient.getProject(PROJECT_CODE) } returns project
+      every { projectTypeEntityRepository.getByCode(PROJECT_TYPE_CODE) } returns null
+
+      assertThatThrownBy {
+        service.getProject(PROJECT_CODE)
+      }.isInstanceOf(RuntimeException::class.java).hasMessage("could not find project type for code 'PROJTYPE'")
+    }
+
+    @Test
+    fun `project found`() {
+      val project = NDProject.valid().copy(projectTypeCode = PROJECT_TYPE_CODE)
+      val projectType = ProjectTypeEntity.valid()
+
+      every { communityPaybackAndDeliusClient.getProject(PROJECT_CODE) } returns project
+      every { projectTypeEntityRepository.getByCode(PROJECT_TYPE_CODE) } returns projectType
 
       val result = service.getProject(PROJECT_CODE)
 
-      assertThat(result).isEqualTo(project.toDto())
+      assertThat(result).isEqualTo(project.toDto(projectType))
     }
   }
 }
