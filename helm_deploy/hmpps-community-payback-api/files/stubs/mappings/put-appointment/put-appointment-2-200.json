@@ -2,7 +2,7 @@
   "priority": 1,
   "request": {
     "method": "PUT",
-    "urlPattern": "/projects/.*/appointments/1/outcome"
+    "urlPattern": "/projects/.*/appointments/2/outcome"
   },
   "response": {
     "status": 200
