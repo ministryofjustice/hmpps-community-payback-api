@@ -28,6 +28,7 @@ fun ContactOutcomeEntity.toDto() = ContactOutcomeDto(
   enforceable = this.enforceable,
   attended = this.attended,
   availableToSupervisors = this.availableToSupervisors,
+  willAlertEnforcementDiary = this.enforceable,
 )
 
 fun List<EnforcementActionEntity>.toDto() = EnforcementActionsDto(this.map { it.toDto() })
