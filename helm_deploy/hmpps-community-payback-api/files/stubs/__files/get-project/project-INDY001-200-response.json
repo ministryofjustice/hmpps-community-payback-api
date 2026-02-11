@@ -1,7 +1,7 @@
 {
-  "name": "Default National Group Project 1",
-  "code": "TEST01",
-  "projectTypeCode": "NP2",
+  "name": "Test Individual Project 1",
+  "code": "INDY001",
+  "projectTypeCode": "ICP",
   "location": {
     "streetName": "Office Street",
     "buildingName": "1001",

@@ -5,12 +5,12 @@
     "number":  1
   },
   "project": {
-    "name": "Test Project 1",
-    "code": "N000001",
+    "name": "Test Individual Project 1",
+    "code": "INDY001",
     "location": {
       "streetName": "Office Street",
-      "buildingName": null,
-      "addressNumber": "90",
+      "buildingName": "1001",
+      "addressNumber": "14B",
       "townCity": "City",
       "county": "Shireshire",
       "postCode": "ZY98XW"
