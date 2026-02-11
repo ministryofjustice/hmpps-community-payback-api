@@ -5,10 +5,10 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCode
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCodeDescription
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDNameCode
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDPickUp
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDPickUpLocation
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDRequirementProgress
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingAllocation
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingAvailability
@@ -179,7 +179,10 @@ class SchedulingMappersTest {
         endTime = LocalTime.of(3, 4),
         pickUp = NDPickUp(
           time = LocalTime.of(5, 6),
-          location = NDCode("PICKUPLOC1"),
+          location = NDPickUpLocation.valid().copy(
+            code = "PICKUPLOC1",
+            description = "PICKUP DESC",
+          ),
         ),
       ).toSchedulingAllocation()
 
@@ -193,6 +196,7 @@ class SchedulingMappersTest {
       assertThat(result.startTime).isEqualTo(LocalTime.of(1, 2))
       assertThat(result.endTime).isEqualTo(LocalTime.of(3, 4))
       assertThat(result.pickUpLocationCode).isEqualTo("PICKUPLOC1")
+      assertThat(result.pickUpLocationDescription).isEqualTo("PICKUP DESC")
       assertThat(result.pickUpTime).isEqualTo(LocalTime.of(5, 6))
     }
 
@@ -311,6 +315,7 @@ class SchedulingMappersTest {
         allocation = SchedulingAllocation.valid().copy(
           id = 55L,
           pickUpLocationCode = "PICKUP1",
+          pickUpLocationDescription = "Pickup Description",
           pickUpTime = LocalTime.of(13, 14),
         ),
       ).toCreateAppointmentDto(
@@ -325,6 +330,7 @@ class SchedulingMappersTest {
       assertThat(result.startTime).isEqualTo(LocalTime.of(1, 2))
       assertThat(result.endTime).isEqualTo(LocalTime.of(11, 12))
       assertThat(result.pickUpLocationCode).isEqualTo("PICKUP1")
+      assertThat(result.pickUpLocationDescription).isEqualTo("Pickup Description")
       assertThat(result.pickUpTime).isEqualTo(LocalTime.of(13, 14))
       assertThat(result.contactOutcomeCode).isNull()
       assertThat(result.attendanceData).isNull()

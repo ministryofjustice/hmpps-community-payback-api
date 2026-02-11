@@ -14,6 +14,7 @@ fun CreateAppointmentDto.Companion.valid() = CreateAppointmentDto(
   startTime = LocalTime.of(10, 0),
   endTime = LocalTime.of(16, 0),
   pickUpLocationCode = String.random(5),
+  pickUpLocationDescription = String.random(50),
   pickUpTime = randomLocalTime(),
   contactOutcomeCode = String.random(5),
   supervisorOfficerCode = String.random(),

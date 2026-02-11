@@ -41,6 +41,7 @@ class EducationCourseCompletionMapperTest {
     assertThat(result.startTime).isEqualTo(LocalTime.of(9, 0, 0))
     assertThat(result.endTime).isEqualTo(LocalTime.of(11, 0, 0)) // 14:30 - 2 hours
     assertThat(result.pickUpLocationCode).isNull()
+    assertThat(result.pickUpLocationDescription).isNull()
     assertThat(result.pickUpTime).isNull()
     assertThat(result.contactOutcomeCode).isEqualTo(ContactOutcomeEntity.ATTENDED_COMPLIED_OUTCOME_CODE)
     assertThat(result.supervisorOfficerCode).isNull()
