@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client
 import org.springframework.context.ApplicationContext
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAddress
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDBeneficiaryDetails
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCode
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectAndLocation
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectOutcomeSummary
@@ -19,6 +20,8 @@ fun NDProject.Companion.valid() = NDProject(
   code = String.random(),
   name = String.random(),
   type = NDProjectType.valid(),
+  provider = NDCode.valid(),
+  team = NDCode.valid(),
   location = NDAddress.valid(),
   beneficiaryDetails = NDBeneficiaryDetails.valid(),
   hiVisRequired = Boolean.random(),

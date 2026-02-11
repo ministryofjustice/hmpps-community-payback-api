@@ -5,6 +5,12 @@
     "code": "ICP",
     "name": "Individual Placement - ICP (Individual Community Placement)"
   },
+  "provider": {
+    "code": "1000"
+  },
+  "team": {
+    "code": "N56DTX"
+  },
   "location": {
     "streetName": "Office Street",
     "buildingName": "1001",
