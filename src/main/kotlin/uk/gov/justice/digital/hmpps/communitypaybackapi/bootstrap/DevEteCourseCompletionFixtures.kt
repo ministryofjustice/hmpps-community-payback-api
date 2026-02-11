@@ -1,19 +1,18 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.bootstrap
 
 import org.slf4j.LoggerFactory
-import org.springframework.context.annotation.Profile
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.stereotype.Component
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseEventCompletionMessageStatus
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AutoSeeder
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.random.Random
 
 @Component
 @Suppress("MagicNumber")
-@Profile("dev", "localdev")
+@ConditionalOnProperty(name = ["community-payback.auto-seed.enabled"], havingValue = "true")
 class DevEteCourseCompletionFixtures(
   private val repository: EteCourseCompletionEventEntityRepository,
 ) : AutoSeeder {

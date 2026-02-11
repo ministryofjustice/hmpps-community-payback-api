@@ -1,9 +1,10 @@
-package uk.gov.justice.digital.hmpps.communitypaybackapi.service
+package uk.gov.justice.digital.hmpps.communitypaybackapi.bootstrap
 
 import jakarta.annotation.PostConstruct
 import org.slf4j.LoggerFactory
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.EnvironmentService
 
 @Service
 @ConditionalOnProperty(name = ["community-payback.auto-seed.enabled"], havingValue = "true")
