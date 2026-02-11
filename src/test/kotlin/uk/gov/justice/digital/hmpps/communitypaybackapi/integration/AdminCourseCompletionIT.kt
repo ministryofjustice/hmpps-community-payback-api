@@ -14,6 +14,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompleti
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteUserRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.bodyAsObject
+import java.time.LocalDate
 import java.util.UUID
 
 class AdminCourseCompletionIT : IntegrationTestBase() {
@@ -84,7 +85,6 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
       fun `should return OK for one course completion`() {
         val entity = eteAppointmentEventEntityRepository.save(
           EteCourseCompletionEventEntity.valid().copy(
-            id = UUID.randomUUID(),
             region = "London",
           ),
         )
@@ -99,6 +99,51 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
 
         assertThat(pagedCourseCompletions.content).hasSize(1)
         assertThat(pagedCourseCompletions.content.first().id).isEqualTo(entity.id)
+      }
+
+      @Test
+      fun `should apply date range`() {
+        // before range
+        eteAppointmentEventEntityRepository.save(
+          EteCourseCompletionEventEntity.valid().copy(
+            region = "London",
+            completionDate = LocalDate.of(2025, 5, 9),
+          ),
+        )
+
+        val inRange1 = eteAppointmentEventEntityRepository.save(
+          EteCourseCompletionEventEntity.valid().copy(
+            region = "London",
+            completionDate = LocalDate.of(2025, 5, 10),
+          ),
+        )
+
+        val inRange2 = eteAppointmentEventEntityRepository.save(
+          EteCourseCompletionEventEntity.valid().copy(
+            region = "London",
+            completionDate = LocalDate.of(2025, 6, 20),
+          ),
+        )
+
+        // after range
+        eteAppointmentEventEntityRepository.save(
+          EteCourseCompletionEventEntity.valid().copy(
+            region = "London",
+            completionDate = LocalDate.of(2025, 6, 21),
+          ),
+        )
+
+        val pagedCourseCompletions = webTestClient.get()
+          .uri("/admin/providers/N07/course-completions?dateFrom=2025-05-10&dateTo=2025-06-20&sort=completionDate,asc")
+          .addAdminUiAuthHeader()
+          .exchange()
+          .expectStatus()
+          .isOk
+          .bodyAsObject<PagedModel<EteCourseCompletionEventDto>>()
+
+        assertThat(pagedCourseCompletions.content).hasSize(2)
+        assertThat(pagedCourseCompletions.content.first().id).isEqualTo(inRange1.id)
+        assertThat(pagedCourseCompletions.content.last().id).isEqualTo(inRange2.id)
       }
 
       @Test

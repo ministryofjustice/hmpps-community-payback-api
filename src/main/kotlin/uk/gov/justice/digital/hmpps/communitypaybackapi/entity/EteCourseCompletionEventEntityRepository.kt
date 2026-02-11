@@ -16,8 +16,8 @@ interface EteCourseCompletionEventEntityRepository : JpaRepository<EteCourseComp
     """
     SELECT e FROM EteCourseCompletionEventEntity e 
     WHERE e.region = :region 
-    AND (:fromDate IS NULL OR e.completionDate >= :fromDate)
-    AND (:toDate IS NULL OR e.completionDate <= :toDate)
+    AND (cast(:fromDate as date) IS NULL OR e.completionDate >= :fromDate)
+    AND (cast(:toDate as date) IS NULL OR e.completionDate <= :toDate)
   """,
   )
   fun findByRegionAndDateRange(
