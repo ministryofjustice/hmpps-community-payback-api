@@ -88,9 +88,7 @@ interface CommunityPaybackAndDeliusClient {
     @PathVariable providerCode: String,
     @PathVariable teamCode: String,
     @RequestParam projectTypeCodes: List<String>?,
-    @RequestParam page: Int?,
-    @RequestParam size: Int?,
-    @RequestParam sort: List<String>?,
+    @RequestParam params: Map<String, String>,
   ): PageResponse<NDProjectOutcomeSummary>
 }
 

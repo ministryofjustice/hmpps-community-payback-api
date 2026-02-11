@@ -12,7 +12,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeGroupDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.NotFoundException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ProjectTypeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ProjectTypeGroup
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.toQueryTriplet
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.toHttpParams
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
 
 @Service
@@ -29,14 +29,11 @@ class ProjectService(
     projectTypeGroup: ProjectTypeGroupDto?,
     pageable: Pageable,
   ): Page<ProjectOutcomeSummaryDto> {
-    val (page, size, sortValues) = pageable.toQueryTriplet()
     val pageResponse = communityPaybackAndDeliusClient.getProjects(
       providerCode = providerCode,
       teamCode = teamCode,
       projectTypeCodes = projectTypeGroup?.let { projectTypeGroup -> projectTypesForGroup(projectTypeGroup).map { it.code } },
-      page = page,
-      size = size,
-      sort = sortValues,
+      params = pageable.toHttpParams()
     )
     return PageImpl(pageResponse.content.map { it.toDto() }, pageable, pageResponse.page.totalElements)
   }

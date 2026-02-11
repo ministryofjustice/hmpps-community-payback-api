@@ -346,7 +346,7 @@ class AdminProvidersIT : IntegrationTestBase() {
     }
 
     @Test
-    fun `should return 200 for successful paginated response for individual projects`() {
+    fun `should return 200 for successful default paginated response for individual projects`() {
       val project1 = NDProjectOutcomeSummary.valid()
       val project2 = NDProjectOutcomeSummary.valid()
       CommunityPaybackAndDeliusMockServer.getProjects(
@@ -368,6 +368,37 @@ class AdminProvidersIT : IntegrationTestBase() {
       assertThat(pageResponse.content[0].projectName).isEqualTo(project1.name)
       assertThat(pageResponse.content[1].projectName).isEqualTo(project2.name)
       assertThat(pageResponse.page.size).isEqualTo(50)
+      assertThat(pageResponse.page.totalPages).isEqualTo(1)
+      assertThat(pageResponse.page.totalElements).isEqualTo(2)
+      assertThat(pageResponse.page.number).isEqualTo(0)
+    }
+
+    @Test
+    fun `should return 200 for successful requested paginated response for individual projects`() {
+      val project1 = NDProjectOutcomeSummary.valid()
+      val project2 = NDProjectOutcomeSummary.valid()
+      CommunityPaybackAndDeliusMockServer.getProjects(
+        providerCode = "PC01",
+        teamCode = "999",
+        projectTypeCodes = listOf("ES", "ICP", "PIP2"),
+        projects = listOf(project1, project2),
+        pageNumber = 0,
+        pageSize = 25,
+        sortString = "projectCode,asc"
+      )
+
+      val pageResponse = webTestClient.get()
+        .uri("/admin/providers/PC01/teams/999/projects?projectTypeGroup=INDIVIDUAL&page=0&size=25&sort=projectCode%2Casc")
+        .addAdminUiAuthHeader()
+        .exchange()
+        .expectStatus()
+        .isOk
+        .bodyAsObject<PageResponse<ProjectOutcomeSummaryDto>>()
+
+      assertThat(pageResponse.content).hasSize(2)
+      assertThat(pageResponse.content[0].projectName).isEqualTo(project1.name)
+      assertThat(pageResponse.content[1].projectName).isEqualTo(project2.name)
+      assertThat(pageResponse.page.size).isEqualTo(25)
       assertThat(pageResponse.page.totalPages).isEqualTo(1)
       assertThat(pageResponse.page.totalElements).isEqualTo(2)
       assertThat(pageResponse.page.number).isEqualTo(0)

@@ -1,7 +1,7 @@
 {
   "request": {
     "method": "GET",
-    "urlPathPattern": "/providers/([^/]+)/team/([^/]+)/projects",
+    "urlPathPattern": "/providers/([^/]+)/teams/([^/]+)/projects",
     "queryParameters": {
       "projectTypeCodes": {
         "matches": ".*"

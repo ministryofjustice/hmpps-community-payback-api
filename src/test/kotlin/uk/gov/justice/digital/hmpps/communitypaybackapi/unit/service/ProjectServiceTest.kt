@@ -63,9 +63,7 @@ class ProjectServiceTest {
           providerCode = providerCode,
           teamCode = teamCode,
           projectTypeCodes = listOf("PJ01"),
-          page = pageNumber,
-          size = 20,
-          sort = listOf("projectName,desc"),
+          params = mapOf("page" to pageNumber.toString(), "size" to pageSize.toString(), "sort" to "projectName,desc"),
         )
       } returns PageResponse(
         content = listOf(ndProjectOutcomeSummary),

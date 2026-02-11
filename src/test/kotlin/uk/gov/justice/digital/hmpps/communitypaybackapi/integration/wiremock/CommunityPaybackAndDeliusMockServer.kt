@@ -26,6 +26,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSupervisor
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSupervisorSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDUnpaidWorkRequirement
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.PageResponse
+import java.net.URLEncoder
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
@@ -308,16 +309,19 @@ object CommunityPaybackAndDeliusMockServer {
     teamCode: String,
     projectTypeCodes: List<String> = emptyList(),
     projects: List<NDProjectOutcomeSummary>,
+    pageNumber: Int = 0,
+    pageSize: Int = 50,
+    sortString: String = "projectName,desc"
   ) {
     val url = buildString {
       append("/community-payback-and-delius/providers/$providerCode/teams/$teamCode/projects?")
       projectTypeCodes.forEach {
         append("projectTypeCodes=$it&")
       }
-      append("page=0&size=50&sort=projectName%2Cdesc")
+      append("page=$pageNumber&size=$pageSize&sort=${URLEncoder.encode(sortString, "UTF-8")}")
     }
 
-    val pageResponse = PageResponse(projects, PageResponse.PageMeta(50, 1, projects.size.toLong(), 1))
+    val pageResponse = PageResponse(projects, PageResponse.PageMeta(pageSize, pageNumber, projects.size.toLong(), 1))
 
     WireMock.stubFor(
       get(url)
