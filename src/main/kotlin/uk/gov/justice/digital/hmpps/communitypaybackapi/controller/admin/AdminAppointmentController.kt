@@ -225,6 +225,7 @@ class AdminAppointmentController(
               enforceable = false,
               attended = false,
               availableToSupervisors = true,
+              willAlertEnforcementDiary = false,
             ),
             requirementMinutes = 800,
             adjustmentMinutes = 50,

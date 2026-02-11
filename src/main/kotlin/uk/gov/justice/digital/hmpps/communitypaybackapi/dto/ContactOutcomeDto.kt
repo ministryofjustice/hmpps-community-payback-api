@@ -16,6 +16,7 @@ data class ContactOutcomeDto(
   val attended: Boolean,
   @param:Schema(description = "If this outcome can be used by a supervisor", example = "false")
   val availableToSupervisors: Boolean,
+  val willAlertEnforcementDiary: Boolean,
 ) {
   companion object
 }

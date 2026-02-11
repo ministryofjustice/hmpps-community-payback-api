@@ -10,4 +10,5 @@ fun ContactOutcomeDto.Companion.valid() = ContactOutcomeDto(
   enforceable = Boolean.random(),
   attended = Boolean.random(),
   availableToSupervisors = Boolean.random(),
+  willAlertEnforcementDiary = Boolean.random(),
 )
