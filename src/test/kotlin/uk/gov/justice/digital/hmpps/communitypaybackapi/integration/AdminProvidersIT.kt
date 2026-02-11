@@ -384,7 +384,7 @@ class AdminProvidersIT : IntegrationTestBase() {
         projects = listOf(project1, project2),
         pageNumber = 0,
         pageSize = 25,
-        sortString = "projectCode,asc"
+        sortString = "projectCode,asc",
       )
 
       val pageResponse = webTestClient.get()

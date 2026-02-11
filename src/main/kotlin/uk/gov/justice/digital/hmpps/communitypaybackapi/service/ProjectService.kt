@@ -33,7 +33,7 @@ class ProjectService(
       providerCode = providerCode,
       teamCode = teamCode,
       projectTypeCodes = projectTypeGroup?.let { projectTypeGroup -> projectTypesForGroup(projectTypeGroup).map { it.code } },
-      params = pageable.toHttpParams()
+      params = pageable.toHttpParams(),
     )
     return PageImpl(pageResponse.content.map { it.toDto() }, pageable, pageResponse.page.totalElements)
   }
