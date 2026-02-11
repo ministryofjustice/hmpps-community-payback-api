@@ -205,7 +205,7 @@ data class NDEnforcementAction(val code: String, val description: String, val re
 data class NDProject(
   val name: String,
   val code: String,
-  val projectTypeCode: String,
+  val type: NDProjectType,
   val location: NDAddress,
   val beneficiaryDetails: NDBeneficiaryDetails,
   val hiVisRequired: Boolean,

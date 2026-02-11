@@ -50,7 +50,7 @@ class ProjectService(
       throw NotFoundException("Project", projectCode)
     }
 
-    val projectTypeCode = project.projectTypeCode
+    val projectTypeCode = project.type.code
     val projectType = projectTypeEntityRepository.getByCode(projectTypeCode)
       ?: error("could not find project type for code '$projectTypeCode'")
 

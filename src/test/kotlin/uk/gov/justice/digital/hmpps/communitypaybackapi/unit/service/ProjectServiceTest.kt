@@ -15,6 +15,7 @@ import org.springframework.data.domain.Sort
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectOutcomeSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.PageResponse
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectOutcomeSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeGroupDto.INDIVIDUAL
@@ -103,7 +104,7 @@ class ProjectServiceTest {
 
     @Test
     fun `throw exception if project type can't be resolved`() {
-      val project = NDProject.valid().copy(projectTypeCode = PROJECT_TYPE_CODE)
+      val project = NDProject.valid().copy(type = NDProjectType.valid().copy(code = PROJECT_TYPE_CODE))
 
       every { communityPaybackAndDeliusClient.getProject(PROJECT_CODE) } returns project
       every { projectTypeEntityRepository.getByCode(PROJECT_TYPE_CODE) } returns null
@@ -115,7 +116,7 @@ class ProjectServiceTest {
 
     @Test
     fun `project found`() {
-      val project = NDProject.valid().copy(projectTypeCode = PROJECT_TYPE_CODE)
+      val project = NDProject.valid().copy(type = NDProjectType.valid().copy(code = PROJECT_TYPE_CODE))
       val projectType = ProjectTypeEntity.valid()
 
       every { communityPaybackAndDeliusClient.getProject(PROJECT_CODE) } returns project

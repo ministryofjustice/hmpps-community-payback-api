@@ -1,7 +1,10 @@
 {
   "name": "Test Individual Project 1",
   "code": "INDY001",
-  "projectTypeCode": "ICP",
+  "type": {
+    "code": "ICP",
+    "name": "Individual Placement - ICP (Individual Community Placement)"
+  },
   "location": {
     "streetName": "Office Street",
     "buildingName": "1001",

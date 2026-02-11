@@ -1,7 +1,10 @@
 {
   "name": "Default National Group Project 1",
   "code": "TEST01",
-  "projectTypeCode": "NP2",
+  "type": {
+    "code": "NP2",
+    "name": "Group Placement - National Project"
+  },
   "location": {
     "streetName": "Office Street",
     "buildingName": "1001",
