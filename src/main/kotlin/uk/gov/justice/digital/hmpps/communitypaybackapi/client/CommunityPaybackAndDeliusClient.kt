@@ -214,7 +214,7 @@ data class NDProject(
 }
 
 data class NDBeneficiaryDetails(
-  val beneficiary: String,
+  val name: String,
   val contactName: String,
   val emailAddress: String?,
   val website: String?,

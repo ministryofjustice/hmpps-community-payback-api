@@ -14,7 +14,7 @@
     "postCode": "ZY98XW"
   },
   "beneficiaryDetails": {
-    "beneficiary": "McDuck Enterprises",
+    "name": "McDuck Enterprises",
     "contactName": "Scrooge McDuck",
     "emailAddress": "scrooge@localhost",
     "website": "http://mcduckenterprises.localhost",
