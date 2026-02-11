@@ -82,6 +82,14 @@ interface CommunityPaybackAndDeliusClient {
 
   @GetExchange("/reference-data/non-working-days")
   fun getNonWorkingDays(): List<LocalDate>
+
+  @GetExchange("/providers/{providerCode}/teams/{teamCode}/projects")
+  fun getProjects(
+    @PathVariable providerCode: String,
+    @PathVariable teamCode: String,
+    @RequestParam projectTypeCodes: List<String>?,
+    @RequestParam params: Map<String, String>,
+  ): PageResponse<NDProjectOutcomeSummary>
 }
 
 data class NDProviderSummaries(
@@ -216,6 +224,9 @@ data class NDBeneficiaryDetails(
 }
 
 data class NDProjectAndLocation(val name: String, val code: String, val location: NDAddress) {
+  companion object
+}
+data class NDProjectOutcomeSummary(val name: String, val code: String, val location: NDAddress, val overdueOutcomesCount: Int, val oldestOverdueInDays: Int) {
   companion object
 }
 data class NDProjectSummary(val description: String, val code: String) {
@@ -480,4 +491,16 @@ data class NDSchedulingExistingAppointment(
   val allocationId: Long?,
 ) {
   companion object
+}
+
+data class PageResponse<T>(
+  val content: List<T>,
+  val page: PageMeta,
+) {
+  data class PageMeta(
+    val size: Int,
+    val number: Int,
+    val totalElements: Long,
+    val totalPages: Int,
+  )
 }

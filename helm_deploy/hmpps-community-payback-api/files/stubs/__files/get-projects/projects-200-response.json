@@ -1,0 +1,38 @@
+{
+  "content": [
+    {
+      "name": "Test Project 1",
+      "code": "TEST01",
+      "location": {
+        "streetName": "Office Street",
+        "buildingName": "1001",
+        "addressNumber": "14B",
+        "townCity": "City",
+        "county": "Shireshire",
+        "postCode": "ZY98XW"
+      },
+      "overdueOutcomesCount": 4,
+      "oldestOverdueInDays": 4
+    },
+    {
+      "name": "Test Project 1",
+      "code": "TEST02",
+      "location": {
+        "streetName": "Pancake Road",
+        "buildingName": "Big Warehouse",
+        "addressNumber": "19",
+        "townCity": "New York",
+        "county": "Cornwall",
+        "postCode": "ZZ18 4EX"
+      },
+      "overdueOutcomesCount": 0,
+      "oldestOverdueInDays": 2
+    }
+  ],
+  "page": {
+    "size": 2,
+    "number": 1,
+    "totalElements": 2,
+    "totalPages": 1
+  }
+}

@@ -17,6 +17,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
 import com.github.tomakehurst.wiremock.client.WireMock.urlMatching
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProject
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectOutcomeSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProviderSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProviderTeamSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSession
@@ -24,6 +25,8 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSessionSummarie
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSupervisor
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSupervisorSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDUnpaidWorkRequirement
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.PageResponse
+import java.net.URLEncoder
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
@@ -297,6 +300,35 @@ object CommunityPaybackAndDeliusMockServer {
           aResponse()
             .withHeader("Content-Type", "application/json")
             .withBody(objectMapper.writer().writeValueAsString(nonWorkingDates)),
+        ),
+    )
+  }
+
+  fun getProjects(
+    providerCode: String,
+    teamCode: String,
+    projectTypeCodes: List<String> = emptyList(),
+    projects: List<NDProjectOutcomeSummary>,
+    pageNumber: Int = 0,
+    pageSize: Int = 50,
+    sortString: String = "projectName,desc",
+  ) {
+    val url = buildString {
+      append("/community-payback-and-delius/providers/$providerCode/teams/$teamCode/projects?")
+      projectTypeCodes.forEach {
+        append("projectTypeCodes=$it&")
+      }
+      append("page=$pageNumber&size=$pageSize&sort=${URLEncoder.encode(sortString, "UTF-8")}")
+    }
+
+    val pageResponse = PageResponse(projects, PageResponse.PageMeta(pageSize, pageNumber, projects.size.toLong(), 1))
+
+    WireMock.stubFor(
+      get(url)
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withBody(objectMapper.writeValueAsString(pageResponse)),
         ),
     )
   }

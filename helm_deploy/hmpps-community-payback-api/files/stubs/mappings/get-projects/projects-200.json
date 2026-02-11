@@ -1,0 +1,18 @@
+{
+  "request": {
+    "method": "GET",
+    "urlPathPattern": "/providers/([^/]+)/teams/([^/]+)/projects",
+    "queryParameters": {
+      "projectTypeCodes": {
+        "matches": ".*"
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "bodyFileName": "get-projects/projects-200-response.json",
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}

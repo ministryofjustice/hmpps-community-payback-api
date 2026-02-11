@@ -4,6 +4,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectOutcomeSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProviderSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProviderSummary
@@ -13,6 +14,8 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSessionSummarie
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSessionSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSupervisorSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSupervisorSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.PageResponse
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectOutcomeSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProviderSummariesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProviderTeamSummariesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionSummariesDto
@@ -340,6 +343,65 @@ class AdminProvidersIT : IntegrationTestBase() {
         .exchange()
         .expectStatus()
         .is4xxClientError
+    }
+
+    @Test
+    fun `should return 200 for successful default paginated response for individual projects`() {
+      val project1 = NDProjectOutcomeSummary.valid()
+      val project2 = NDProjectOutcomeSummary.valid()
+      CommunityPaybackAndDeliusMockServer.getProjects(
+        providerCode = "PC01",
+        teamCode = "999",
+        projectTypeCodes = listOf("ES", "ICP", "PIP2"),
+        projects = listOf(project1, project2),
+      )
+
+      val pageResponse = webTestClient.get()
+        .uri("/admin/providers/PC01/teams/999/projects?projectTypeGroup=INDIVIDUAL")
+        .addAdminUiAuthHeader()
+        .exchange()
+        .expectStatus()
+        .isOk
+        .bodyAsObject<PageResponse<ProjectOutcomeSummaryDto>>()
+
+      assertThat(pageResponse.content).hasSize(2)
+      assertThat(pageResponse.content[0].projectName).isEqualTo(project1.name)
+      assertThat(pageResponse.content[1].projectName).isEqualTo(project2.name)
+      assertThat(pageResponse.page.size).isEqualTo(50)
+      assertThat(pageResponse.page.totalPages).isEqualTo(1)
+      assertThat(pageResponse.page.totalElements).isEqualTo(2)
+      assertThat(pageResponse.page.number).isEqualTo(0)
+    }
+
+    @Test
+    fun `should return 200 for successful requested paginated response for individual projects`() {
+      val project1 = NDProjectOutcomeSummary.valid()
+      val project2 = NDProjectOutcomeSummary.valid()
+      CommunityPaybackAndDeliusMockServer.getProjects(
+        providerCode = "PC01",
+        teamCode = "999",
+        projectTypeCodes = listOf("ES", "ICP", "PIP2"),
+        projects = listOf(project1, project2),
+        pageNumber = 0,
+        pageSize = 25,
+        sortString = "projectCode,asc",
+      )
+
+      val pageResponse = webTestClient.get()
+        .uri("/admin/providers/PC01/teams/999/projects?projectTypeGroup=INDIVIDUAL&page=0&size=25&sort=projectCode%2Casc")
+        .addAdminUiAuthHeader()
+        .exchange()
+        .expectStatus()
+        .isOk
+        .bodyAsObject<PageResponse<ProjectOutcomeSummaryDto>>()
+
+      assertThat(pageResponse.content).hasSize(2)
+      assertThat(pageResponse.content[0].projectName).isEqualTo(project1.name)
+      assertThat(pageResponse.content[1].projectName).isEqualTo(project2.name)
+      assertThat(pageResponse.page.size).isEqualTo(25)
+      assertThat(pageResponse.page.totalPages).isEqualTo(1)
+      assertThat(pageResponse.page.totalElements).isEqualTo(2)
+      assertThat(pageResponse.page.number).isEqualTo(0)
     }
   }
 }

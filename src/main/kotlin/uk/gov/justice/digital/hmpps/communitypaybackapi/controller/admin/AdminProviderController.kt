@@ -6,23 +6,22 @@ import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import org.springdoc.core.converters.models.PageableAsQueryParam
+import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.data.web.PageableDefault
-import org.springframework.data.web.PagedModel
 import org.springframework.format.annotation.DateTimeFormat
-import org.springframework.http.HttpStatus.NOT_IMPLEMENTED
 import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.server.ResponseStatusException
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectSummariesDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectOutcomeSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeGroupDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProviderSummariesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProviderTeamSummariesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SupervisorSummariesDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ProjectService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ProviderService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.SessionService
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
@@ -36,6 +35,7 @@ import java.time.LocalDate
 class AdminProviderController(
   val providerService: ProviderService,
   val sessionService: SessionService,
+  val projectService: ProjectService,
 ) {
 
   @GetMapping
@@ -152,7 +152,6 @@ class AdminProviderController(
       ),
     ],
   )
-  @Suppress("UnusedParameter")
   @PageableAsQueryParam
   fun getProjects(
     @Parameter(
@@ -167,5 +166,5 @@ class AdminProviderController(
     @PathVariable providerCode: String,
     @PathVariable teamCode: String,
     @RequestParam projectTypeGroup: ProjectTypeGroupDto,
-  ): PagedModel<ProjectSummariesDto> = throw ResponseStatusException(NOT_IMPLEMENTED, "Not Implemented")
+  ): Page<ProjectOutcomeSummaryDto> = projectService.getProjects(providerCode, teamCode, projectTypeGroup, pageable)
 }
