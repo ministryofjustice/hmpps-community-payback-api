@@ -1,0 +1,99 @@
+#!/bin/bash
+
+trap "pkill -f 'port-forward'" EXIT
+
+NAMESPACE=
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+
+while getopts "dp:s:n:i:" flag; do
+    case "$flag" in
+    n)
+        PORT_FORWARD_CONTAINER_NAME=${OPTARG}
+        ;;
+    :)
+        echo "Option -${OPTARG} requires an argument."
+        exit 1
+        ;;
+    ?)
+        echo "Invalid option: -${OPTARG}."
+        exit 1
+        ;;
+    esac
+done
+
+if ! command -v jq &> /dev/null
+then
+    echo "Cannot find 'jq'. Please install using 'brew install jq'"
+    exit 1
+fi
+
+shift $(($OPTIND - 1));
+ENV=$1;
+
+if [ -z "$ENV" ] || { [ "$ENV" != "dev" ] && [ "$ENV" != "test" ] ;} then
+  echo "Name:"
+  echo "    remote_db_tunnel [dev|test] - creates a port forwarding tunnel to connect to the dev/test wiremock instance"
+  echo ""
+  echo ""
+  echo "Description:"
+  echo ""
+  echo "    This is slimmed down version of `remote_db_tunnel`. See instructions for that command for more information"
+  exit 1
+fi
+
+NAMESPACE="hmpps-community-payback-$ENV"
+PORT=8880
+IMAGE='ministryofjustice/port-forward'
+
+if [ -z "${PORT_FORWARD_CONTAINER_NAME}" ]
+then
+  if [ -z "${CP_PORT_FORWARD_CONTAINER_NAME}" ]
+  then
+    PORT_FORWARD_CONTAINER_NAME='port-forward-pod'
+  else
+    PORT_FORWARD_CONTAINER_NAME="${CP_PORT_FORWARD_CONTAINER_NAME}"
+  fi
+fi
+
+echo "---------------------------------------------------------------"
+echo "The following parameters will be used:"
+echo ""
+echo "* Namespace: $NAMESPACE"
+echo "* Port: $PORT"
+echo "* Port Forward Container Name: $PORT_FORWARD_CONTAINER_NAME"
+echo "* Port Forward Image: $IMAGE"
+echo ""
+
+# ensure we're in the right k8s context
+kubectl config use-context live.cloud-platform.service.justice.gov.uk
+
+echo "---------------------------------------------------------------"
+echo "Checking if port forward container already exists"
+echo ""
+kubectl get pod $PORT_FORWARD_CONTAINER_NAME -n "$NAMESPACE"
+POD_EXISTS_RETURN_CODE=$?
+echo ""
+
+if [ $POD_EXISTS_RETURN_CODE -gt 0 ]
+then
+    echo "Creating pod..."
+    kubectl -n "$NAMESPACE" run $PORT_FORWARD_CONTAINER_NAME --image=$IMAGE \
+        --port=$PORT \
+        --env="REMOTE_HOST=hmpps-community-payback-api-stubs" \
+        --env="LOCAL_PORT=$PORT" \
+        --env="REMOTE_PORT=80"
+    kubectl wait --for=condition=ready pod/$PORT_FORWARD_CONTAINER_NAME -n "$NAMESPACE"
+    echo "Port-forward pod $PORT_FORWARD_CONTAINER_NAME created!"
+else
+    echo "Port-forward pod already exists"
+fi
+
+echo ""
+echo "Forwarding port. Use ctl-c to close port forwarding"
+echo ""
+echo "Can poke wiremock using curl -v http://localhost:8880/__admin/"
+echo ""
+kubectl -n "$NAMESPACE" port-forward $PORT_FORWARD_CONTAINER_NAME $PORT:$PORT
+
+echo "Deleting pod $PORT_FORWARD_CONTAINER_NAME. This may take a few seconds."
+kubectl -n "$NAMESPACE" delete pod "$PORT_FORWARD_CONTAINER_NAME"
