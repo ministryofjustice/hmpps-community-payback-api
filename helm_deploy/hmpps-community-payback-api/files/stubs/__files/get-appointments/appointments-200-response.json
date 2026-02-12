@@ -1,0 +1,65 @@
+{
+  "content": [
+    {
+      "id": 1,
+      "contactOutcome": null,
+      "requirementProgress": {
+        "requiredMinutes": 400,
+        "completedMinutes": 0,
+        "adjustments": 0
+      },
+      "case": {
+        "crn": "CRN0001",
+        "name": {
+          "forename": "Barry",
+          "surname": "Egan",
+          "middleNames": []
+        },
+        "dateOfBirth": "1982-04-05",
+        "currentExclusion": false,
+        "exclusionMessage": "",
+        "currentRestriction": false,
+        "restrictionMessage": null
+      },
+      "date": "2026-02-05",
+      "startTime": "10:00",
+      "endTime": "12:00",
+      "daysOverdue": 5
+    },
+    {
+      "id": 2,
+      "contactOutcome": {
+        "description": "Attended - Complied",
+        "code": "ATTC"
+      },
+      "requirementProgress": {
+        "requiredMinutes": 800,
+        "completedMinutes": 50,
+        "adjustments": 600
+      },
+      "case": {
+        "crn": "CRN0002",
+        "name": {
+          "forename": "Lena",
+          "surname": "Leonard",
+          "middleNames": []
+        },
+        "dateOfBirth": "1982-04-05",
+        "currentExclusion": false,
+        "exclusionMessage": "",
+        "currentRestriction": false,
+        "restrictionMessage": null
+      },
+      "date": "2026-02-09",
+      "startTime": "14:00",
+      "endTime": "18:00",
+      "daysOverdue": null
+    }
+  ],
+  "page": {
+    "size": 2,
+    "totalElements": 2,
+    "totalPages": 1,
+    "number": 0
+  }
+}

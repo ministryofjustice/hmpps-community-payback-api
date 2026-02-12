@@ -7,12 +7,15 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointment
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointmentSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDContactOutcome
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDEnforcementAction
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectAndLocation
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.PageResponse
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AttendanceDataDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.FormKeyDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
@@ -275,15 +278,30 @@ class AdminAppointmentIT : IntegrationTestBase() {
     }
 
     @Test
-    fun `should return canned data`() {
-      webTestClient.get()
+    fun `should return filtered appointments with 200`() {
+      val appointment1 = NDAppointmentSummary.valid(ctx)
+      val appointment2 = NDAppointmentSummary.valid(ctx)
+
+      CommunityPaybackAndDeliusMockServer.getAppointments(
+        crn = "CRN000",
+        appointments = listOf(appointment1, appointment2),
+      )
+
+      val pageResponse = webTestClient.get()
         .uri("/admin/appointments?crn=CRN000")
         .addAdminUiAuthHeader("theusername")
         .exchange()
         .expectStatus()
-        .isOk()
-        .expectBody()
-        .jsonPath("$.page.totalElements").isEqualTo(2)
+        .isOk
+        .bodyAsObject<PageResponse<AppointmentSummaryDto>>()
+
+      assertThat(pageResponse.content).hasSize(2)
+      assertThat(pageResponse.content[0].id).isEqualTo(appointment1.id)
+      assertThat(pageResponse.content[1].id).isEqualTo(appointment2.id)
+      assertThat(pageResponse.page.size).isEqualTo(50)
+      assertThat(pageResponse.page.totalPages).isEqualTo(1)
+      assertThat(pageResponse.page.totalElements).isEqualTo(2)
+      assertThat(pageResponse.page.number).isEqualTo(0)
     }
   }
 }
