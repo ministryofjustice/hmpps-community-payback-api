@@ -34,7 +34,7 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-flyway")
   implementation("org.postgresql:postgresql")
 
-  implementation("org.redisson:redisson-spring-boot-starter:4.1.0")
+  implementation("org.redisson:redisson-spring-boot-starter:4.2.0")
 
   runtimeOnly("org.flywaydb:flyway-database-postgresql")
 
@@ -51,7 +51,7 @@ dependencies {
   testImplementation("org.wiremock.integrations:wiremock-spring-boot:4.1.0")
   testImplementation("io.mockk:mockk:1.14.9")
   testImplementation("com.lemonappdev:konsist:0.17.3")
-  testImplementation("org.zalando:logbook-spring-boot-starter:4.0.1")
+  testImplementation("org.zalando:logbook-spring-boot-starter:4.0.2")
 }
 
 kotlin {
