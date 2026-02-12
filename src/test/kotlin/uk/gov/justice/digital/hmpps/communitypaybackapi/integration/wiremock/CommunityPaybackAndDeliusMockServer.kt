@@ -347,7 +347,7 @@ object CommunityPaybackAndDeliusMockServer {
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")
-            .withBody(objectMapper.writeValueAsString(pageResponse)),
+            .withBody(jsonMapper.writeValueAsString(pageResponse)),
         ),
     )
   }
