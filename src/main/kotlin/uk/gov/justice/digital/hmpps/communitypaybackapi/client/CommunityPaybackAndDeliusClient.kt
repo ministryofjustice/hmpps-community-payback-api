@@ -205,7 +205,9 @@ data class NDEnforcementAction(val code: String, val description: String, val re
 data class NDProject(
   val name: String,
   val code: String,
-  val projectTypeCode: String,
+  val type: NDProjectType,
+  val provider: NDCode,
+  val team: NDCode,
   val location: NDAddress,
   val beneficiaryDetails: NDBeneficiaryDetails,
   val hiVisRequired: Boolean,
@@ -214,7 +216,7 @@ data class NDProject(
 }
 
 data class NDBeneficiaryDetails(
-  val beneficiary: String,
+  val name: String,
   val contactName: String,
   val emailAddress: String?,
   val website: String?,
@@ -422,7 +424,9 @@ data class NDUpdateAppointment(
 
 data class NDCode(
   val code: String,
-)
+) {
+  companion object
+}
 
 data class NDUnpaidWorkRequirement(
   val requirementProgress: NDRequirementProgress,

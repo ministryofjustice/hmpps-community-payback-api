@@ -18,7 +18,7 @@ fun NDProject.toDto(
 )
 
 fun NDBeneficiaryDetails.toDto() = BeneficiaryDetailsDto(
-  beneficiary = this.beneficiary,
+  beneficiary = this.name,
   contactName = this.contactName,
   emailAddress = this.emailAddress,
   website = this.website,

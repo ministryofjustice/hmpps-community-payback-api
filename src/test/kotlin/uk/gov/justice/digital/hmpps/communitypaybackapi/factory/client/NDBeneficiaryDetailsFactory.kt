@@ -6,7 +6,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.random
 import kotlin.String
 
 fun NDBeneficiaryDetails.Companion.valid() = NDBeneficiaryDetails(
-  beneficiary = String.random(50),
+  name = String.random(50),
   contactName = String.random(50),
   emailAddress = String.random(50) + "@localhost",
   website = String.random(50),

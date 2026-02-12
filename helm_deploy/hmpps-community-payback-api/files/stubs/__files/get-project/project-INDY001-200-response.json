@@ -1,7 +1,16 @@
 {
   "name": "Test Individual Project 1",
   "code": "INDY001",
-  "projectTypeCode": "ICP",
+  "type": {
+    "code": "ICP",
+    "name": "Individual Placement - ICP (Individual Community Placement)"
+  },
+  "provider": {
+    "code": "1000"
+  },
+  "team": {
+    "code": "N56DTX"
+  },
   "location": {
     "streetName": "Office Street",
     "buildingName": "1001",
@@ -11,7 +20,7 @@
     "postCode": "ZY98XW"
   },
   "beneficiaryDetails": {
-    "beneficiary": "McDuck Enterprises",
+    "name": "McDuck Enterprises",
     "contactName": "Scrooge McDuck",
     "emailAddress": "scrooge@localhost",
     "website": "http://mcduckenterprises.localhost",
