@@ -91,6 +91,17 @@ interface CommunityPaybackAndDeliusClient {
     @RequestParam projectTypeCodes: List<String>?,
     @RequestParam params: Map<String, String>,
   ): PageResponse<NDProjectOutcomeSummary>
+
+  @GetExchange("/appointments")
+  fun getAppointments(
+    @RequestParam crn: String?,
+    @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) fromDate: LocalDate?,
+    @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) toDate: LocalDate?,
+    @RequestParam outcomeCodes: List<String>?,
+    @RequestParam projectCodes: List<String>?,
+    @RequestParam projectTypeCodes: List<String>?,
+    @RequestParam params: Map<String, String>,
+  ): PageResponse<NDAppointmentSummary>
 }
 
 data class NDProviderSummaries(
@@ -139,6 +150,10 @@ data class NDAppointmentSummary(
   val case: NDCaseSummary,
   val outcome: NDContactOutcome?,
   val requirementProgress: NDRequirementProgress,
+  val date: LocalDate? = null, // Remove this nullability when session search changes to new endpoints
+  val startTime: LocalTime? = null, // Remove this nullability when session search changes to new endpoints
+  val endTime: LocalTime? = null, // Remove this nullability when session search changes to new endpoints
+  val daysOverdue: Int? = null, // Remove this nullability when session search changes to new endpoints
 ) {
   fun hasOutcome() = outcome != null
 

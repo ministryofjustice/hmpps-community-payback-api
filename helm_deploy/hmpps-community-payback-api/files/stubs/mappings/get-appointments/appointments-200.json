@@ -1,0 +1,13 @@
+{
+  "request": {
+    "method": "GET",
+    "urlPathPattern": "/appointments"
+  },
+  "response": {
+    "status": 200,
+    "bodyFileName": "get-appointments/appointments-200-response.json",
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}

@@ -13,6 +13,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
 import com.github.tomakehurst.wiremock.client.WireMock.urlMatching
 import tools.jackson.databind.json.JsonMapper
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointment
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointmentSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectOutcomeSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProviderSummaries
@@ -319,6 +320,27 @@ object CommunityPaybackAndDeliusMockServer {
     }
 
     val pageResponse = PageResponse(projects, PageResponse.PageMeta(pageSize, pageNumber, projects.size.toLong(), 1))
+
+    WireMock.stubFor(
+      get(url)
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withBody(jsonMapper.writeValueAsString(pageResponse)),
+        ),
+    )
+  }
+
+  fun getAppointments(
+    crn: String,
+    appointments: List<NDAppointmentSummary>,
+    pageNumber: Int = 0,
+    pageSize: Int = 50,
+    sortString: String = "crn,desc",
+  ) {
+    val url = "/community-payback-and-delius/appointments?crn=$crn&page=$pageNumber&size=$pageSize&sort=${URLEncoder.encode(sortString, "UTF-8")}"
+
+    val pageResponse = PageResponse(appointments, PageResponse.PageMeta(pageSize, pageNumber, appointments.size.toLong(), 1))
 
     WireMock.stubFor(
       get(url)

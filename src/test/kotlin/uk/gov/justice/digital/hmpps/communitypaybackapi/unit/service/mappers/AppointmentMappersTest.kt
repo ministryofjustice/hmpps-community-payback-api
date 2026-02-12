@@ -504,6 +504,10 @@ class AppointmentMappersTest {
             adjustments = 40,
             completedMinutes = 30,
           ),
+          date = LocalDate.of(2025, 9, 1),
+          startTime = LocalTime.of(10, 0),
+          endTime = LocalTime.of(11, 0),
+          daysOverdue = 0,
         ),
       )
 
@@ -513,6 +517,9 @@ class AppointmentMappersTest {
       assertThat(result.requirementMinutes).isEqualTo(520)
       assertThat(result.adjustmentMinutes).isEqualTo(40)
       assertThat(result.completedMinutes).isEqualTo(30)
+      assertThat(result.date).isEqualTo(LocalDate.of(2025, 9, 1))
+      assertThat(result.startTime).isEqualTo(LocalTime.of(10, 0))
+      assertThat(result.endTime).isEqualTo(LocalTime.of(11, 0))
     }
   }
 
