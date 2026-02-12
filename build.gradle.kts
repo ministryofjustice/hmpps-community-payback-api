@@ -3,8 +3,8 @@ import java.net.Socket
 
 plugins {
   id("uk.gov.justice.hmpps.gradle-spring-boot") version "10.0.3"
-  kotlin("plugin.spring") version "2.3.0"
-  kotlin("plugin.jpa") version "2.3.0"
+  kotlin("plugin.spring") version "2.3.10"
+  kotlin("plugin.jpa") version "2.3.10"
   id("dev.detekt") version "2.0.0-alpha.2"
   jacoco
   id("io.sentry.jvm.gradle") version "6.0.0"
@@ -63,6 +63,16 @@ detekt {
   allRules = false
   ignoreFailures = false
   config.setFrom(files("$rootDir/detekt.yml"))
+}
+
+// detekt must use a specific kotlin version when running, this block ensures it's using the correct version
+// this is variation on https://detekt.dev/docs/gettingstarted/gradle/#gradle-runtime-dependencies
+configurations.matching { it.name == "detekt" }.all {
+  resolutionStrategy.eachDependency {
+    if (requested.group == "org.jetbrains.kotlin") {
+      useVersion("2.3.0")
+    }
+  }
 }
 
 tasks {
