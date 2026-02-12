@@ -1,16 +1,15 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.unit.common
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import tools.jackson.databind.json.JsonMapper
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.HourMinuteDuration
 import java.time.Duration
 
 class HourMinuteDurationSerializeDeserializeTest {
 
-  val objectMapper: ObjectMapper = jacksonObjectMapper()
+  val jsonMapper: JsonMapper = JsonMapper()
 
   data class TimeDurationContainer(
     val myDuration: HourMinuteDuration?,
@@ -21,7 +20,7 @@ class HourMinuteDurationSerializeDeserializeTest {
 
     @Test
     fun `serializes value correctly`() {
-      val result = objectMapper.writeValueAsString(
+      val result = jsonMapper.writeValueAsString(
         TimeDurationContainer(
           myDuration = HourMinuteDuration(Duration.ofHours(23).plusMinutes(59)),
         ),
@@ -32,7 +31,7 @@ class HourMinuteDurationSerializeDeserializeTest {
 
     @Test
     fun `serializes null correctly`() {
-      val result = objectMapper.writeValueAsString(
+      val result = jsonMapper.writeValueAsString(
         TimeDurationContainer(
           myDuration = null,
         ),
@@ -47,7 +46,7 @@ class HourMinuteDurationSerializeDeserializeTest {
 
     @Test
     fun `deserializes value correctly`() {
-      val result = objectMapper.readValue(
+      val result = jsonMapper.readValue(
         "{\"myDuration\":\"23:59\"}",
         TimeDurationContainer::class.java,
       )
@@ -61,7 +60,7 @@ class HourMinuteDurationSerializeDeserializeTest {
 
     @Test
     fun `deserializes null correctly`() {
-      val result = objectMapper.readValue(
+      val result = jsonMapper.readValue(
         "{\"myDuration\":null}",
         TimeDurationContainer::class.java,
       )
@@ -75,7 +74,7 @@ class HourMinuteDurationSerializeDeserializeTest {
 
     @Test
     fun `deserializes empty string correctly`() {
-      val result = objectMapper.readValue(
+      val result = jsonMapper.readValue(
         "{\"myDuration\":\"\"}",
         TimeDurationContainer::class.java,
       )

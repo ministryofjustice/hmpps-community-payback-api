@@ -1,18 +1,19 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.unit.service
 
-import com.fasterxml.jackson.core.JsonParseException
-import com.fasterxml.jackson.databind.ObjectMapper
 import io.mockk.CapturingSlot
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.slot
 import io.mockk.verify
-import org.assertj.core.api.Assertions
+import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import tools.jackson.core.exc.UnexpectedEndOfInputException
+import tools.jackson.databind.json.JsonMapper
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.FormKeyDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.FormCacheEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.FormCacheEntityRepository
@@ -24,13 +25,11 @@ class FormServiceTest {
   @MockK
   lateinit var repository: FormCacheEntityRepository
 
-  private val objectMapper = ObjectMapper()
-
   lateinit var service: FormService
 
   @BeforeEach
   fun setup() {
-    service = FormService(repository, objectMapper)
+    service = FormService(repository, JsonMapper())
   }
 
   private val formType = "assessment"
@@ -49,7 +48,7 @@ class FormServiceTest {
 
       val result = service.get(FormKeyDto(formType, id))
 
-      Assertions.assertThat(result).isEqualTo(json)
+      assertThat(result).isEqualTo(json)
       verify(exactly = 1) { repository.findByFormIdAndFormType(id, formType) }
     }
 
@@ -57,7 +56,7 @@ class FormServiceTest {
     fun `throws NotFoundException when missing`() {
       every { repository.findByFormIdAndFormType(id, formType) } returns null
 
-      Assertions.assertThatThrownBy {
+      assertThatThrownBy {
         service.get(FormKeyDto(formType, id))
       }.hasMessage("Form data not found for ID 'assessment/12345'")
     }
@@ -75,19 +74,19 @@ class FormServiceTest {
 
       verify(exactly = 1) { repository.save(any()) }
       val saved = slotEntity.captured
-      Assertions.assertThat(saved.formId).isEqualTo(id)
-      Assertions.assertThat(saved.formType).isEqualTo(formType)
-      Assertions.assertThat(saved.formData).isEqualTo(json)
+      assertThat(saved.formId).isEqualTo(id)
+      assertThat(saved.formType).isEqualTo(formType)
+      assertThat(saved.formData).isEqualTo(json)
     }
 
     @Test
-    fun `invalid json throws`() {
-      val badJson = "{" // invalid
+    fun `invalid json throws exception and doesnt save`() {
+      val badJson = "{"
 
-      val ex = org.junit.jupiter.api.Assertions.assertThrows(JsonParseException::class.java) {
+      assertThatThrownBy {
         service.put(FormKeyDto(formType, id), badJson)
-      }
-      Assertions.assertThat(ex).isNotNull
+      }.isInstanceOf(UnexpectedEndOfInputException::class.java)
+
       verify(exactly = 0) { repository.save(any()) }
     }
   }
