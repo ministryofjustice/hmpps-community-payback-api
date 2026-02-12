@@ -1,9 +1,13 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.service
 
+import org.slf4j.LoggerFactory
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
+import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.web.server.ResponseStatusException
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EteCourseCompletionEventDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.NotFoundException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventTriggerType
@@ -13,7 +17,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseEventCom
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteUser
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteUserRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseCompletionMessage
-import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseCompletionStatus
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.EducationCourseCompletionMapper
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
 import java.time.LocalDate
@@ -25,8 +28,10 @@ class EteService(
   private val educationCourseCompletionMapper: EducationCourseCompletionMapper,
   private val eteCourseCompletionEventEntityRepository: EteCourseCompletionEventEntityRepository,
   private val appointmentCreationService: AppointmentCreationService,
+  private val communityPaybackAndDeliusClient: CommunityPaybackAndDeliusClient,
   private val eteUserRepository: EteUserRepository,
 ) {
+  private val log = LoggerFactory.getLogger(this::class.java)
 
   private val providerCodeToRegionName = mapOf(
     "N53" to "East Midlands",
@@ -65,16 +70,6 @@ class EteService(
         attempts = attributes.attempts,
       ),
     )
-    if (attributes.status == EducationCourseCompletionStatus.Completed) {
-      appointmentCreationService.createAppointments(
-        educationCourseCompletionMapper.toCreateAppointmentsDto(message, projectCode = "N56CCTEST"),
-        AppointmentEventTrigger(
-          triggeredAt = OffsetDateTime.now(),
-          triggerType = AppointmentEventTriggerType.ETE_COURSE_COMPLETION,
-          triggeredBy = "External ETE System: ${attributes.externalReference}",
-        ),
-      )
-    }
   }
 
   fun getEteCourseCompletionEvents(providerCode: String, fromDate: LocalDate?, toDate: LocalDate?, pageable: Pageable): Page<EteCourseCompletionEventDto> {
@@ -87,10 +82,36 @@ class EteService(
   }.toDto()
 
   @Transactional
+  fun processCompletedCourseEvents(emailAddress: String) {
+    val courseCompletionEvents = eteCourseCompletionEventEntityRepository.findByEmailAndStatus(email = emailAddress.lowercase(), status = EteCourseEventCompletionMessageStatus.COMPLETED)
+
+    courseCompletionEvents.forEach { event ->
+      appointmentCreationService.createAppointments(
+        educationCourseCompletionMapper.toCreateAppointmentsDto(
+          event,
+          projectCode = "N56CCTEST",
+        ),
+        AppointmentEventTrigger(
+          triggeredAt = OffsetDateTime.now(),
+          triggerType = AppointmentEventTriggerType.ETE_COURSE_COMPLETION,
+          triggeredBy = "External ETE System: ${event.externalReference}",
+        ),
+      )
+    }
+  }
+
+  @Transactional
   fun createUser(crn: String, emailAddress: String): Boolean {
+    val caseSummary = communityPaybackAndDeliusClient.getUpwDetailsSummary(crn)
+      ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Case summary not found for CRN: $crn")
+
+    if (caseSummary.unpaidWorkDetails.isNullOrEmpty()) {
+      throw ResponseStatusException(HttpStatus.NOT_FOUND, "UPW details not found for CRN: $crn")
+    }
+
     val existingUser = eteUserRepository.findByCrnAndEmail(crn, emailAddress.lowercase())
 
-    return if (existingUser == null) {
+    val isNewUser = if (existingUser == null) {
       eteUserRepository.save(
         EteUser(
           id = UUID.randomUUID(),
@@ -102,5 +123,9 @@ class EteService(
     } else {
       false
     }
+
+    processCompletedCourseEvents(emailAddress)
+
+    return isNewUser
   }
 }

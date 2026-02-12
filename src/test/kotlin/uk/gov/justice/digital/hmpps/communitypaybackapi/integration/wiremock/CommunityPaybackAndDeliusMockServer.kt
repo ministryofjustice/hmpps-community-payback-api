@@ -14,6 +14,8 @@ import com.github.tomakehurst.wiremock.client.WireMock.urlMatching
 import tools.jackson.databind.json.JsonMapper
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointmentSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseDetail
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseDetailsSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectOutcomeSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProviderSummaries
@@ -28,6 +30,7 @@ import java.net.URLEncoder
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
+import kotlin.Long
 
 object CommunityPaybackAndDeliusMockServer {
 
@@ -348,6 +351,29 @@ object CommunityPaybackAndDeliusMockServer {
           aResponse()
             .withHeader("Content-Type", "application/json")
             .withBody(jsonMapper.writeValueAsString(pageResponse)),
+        ),
+    )
+  }
+
+  fun getUpwDetailsSummary(crn: String) {
+    val ndCaseDetailsSummary = NDCaseDetailsSummary(
+      unpaidWorkDetails = listOf(
+        NDCaseDetail(
+          eventNumber = 1L,
+          requiredMinutes = 300L,
+          completedMinutes = 200L,
+          adjustments = 50L,
+          completedEteMinutes = 20L,
+        ),
+      ),
+    )
+
+    WireMock.stubFor(
+      get("/community-payback-and-delius/case/$crn/summary")
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withBody(jsonMapper.writeValueAsString(ndCaseDetailsSummary)),
         ),
     )
   }
