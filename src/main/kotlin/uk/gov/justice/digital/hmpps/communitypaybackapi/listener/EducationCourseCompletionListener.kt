@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.listener
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import io.awspring.cloud.sqs.annotation.SqsListener
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -8,12 +7,13 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.messaging.MessageHeaders
 import org.springframework.messaging.handler.annotation.Headers
 import org.springframework.stereotype.Service
+import tools.jackson.databind.json.JsonMapper
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.EteService
 
 @Service
 @ConditionalOnProperty(name = ["community-payback.education-course-integration.enabled"], havingValue = "true")
 class EducationCourseCompletionListener(
-  private val objectMapper: ObjectMapper,
+  private val jsonMapper: JsonMapper,
   private val eteService: EteService,
   private val sqsListenerErrorHandler: SqsListenerErrorHandler,
 ) {
@@ -32,7 +32,7 @@ class EducationCourseCompletionListener(
   ) {
     log.debug("Have received education course course completion message '$messageString'")
     sqsListenerErrorHandler.withErrorHandler(headers) {
-      val message = objectMapper.readValue(messageString, EducationCourseCompletionMessage::class.java)
+      val message = jsonMapper.readValue(messageString, EducationCourseCompletionMessage::class.java)
       eteService.handleEducationCourseCompletionMessage(message)
     }
   }

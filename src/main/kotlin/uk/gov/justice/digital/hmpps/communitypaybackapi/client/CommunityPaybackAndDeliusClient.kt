@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.client
 
+import com.fasterxml.jackson.annotation.JsonProperty
 import io.swagger.v3.oas.annotations.media.Schema
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.PathVariable
@@ -317,6 +318,7 @@ data class NDName(
 
 data class NDSupervisor(
   val code: String,
+  @get:JsonProperty("isUnpaidWorkTeamMember")
   val isUnpaidWorkTeamMember: Boolean,
   val unpaidWorkTeams: List<NDSupervisorTeam>,
 ) {

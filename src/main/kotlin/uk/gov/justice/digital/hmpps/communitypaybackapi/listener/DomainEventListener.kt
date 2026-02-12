@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.listener
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.awspring.cloud.sqs.annotation.SqsListener
 import org.slf4j.Logger
@@ -9,6 +8,8 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.messaging.MessageHeaders
 import org.springframework.messaging.handler.annotation.Headers
 import org.springframework.stereotype.Service
+import tools.jackson.databind.json.JsonMapper
+import tools.jackson.module.kotlin.readValue
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdditionalInformationType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.DomainEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.HmppsDomainEvent
@@ -23,7 +24,7 @@ import java.util.UUID
 @Service
 @ConditionalOnProperty(name = ["community-payback.scheduling.enabled"], havingValue = "true")
 class DomainEventListener(
-  private val objectMapper: ObjectMapper,
+  private val jsonMapper: JsonMapper,
   private val sqsListenerErrorHandler: SqsListenerErrorHandler,
   private val schedulingAppointmentEventHandler: SchedulingAppointmentDomainEventHandler,
 ) {
@@ -64,8 +65,8 @@ class DomainEventListener(
   private fun handleDomainEvent(messageString: String) {
     log.debug("Have received domain event message '$messageString'")
 
-    val sqsMessage = objectMapper.readValue<SqsMessage>(messageString)
-    val event = objectMapper.readValue<HmppsDomainEvent>(sqsMessage.message)
+    val sqsMessage = jsonMapper.readValue<SqsMessage>(messageString)
+    val event = jsonMapper.readValue<HmppsDomainEvent>(sqsMessage.message)
 
     when (event.eventType) {
       DomainEventType.APPOINTMENT_UPDATED.eventType,

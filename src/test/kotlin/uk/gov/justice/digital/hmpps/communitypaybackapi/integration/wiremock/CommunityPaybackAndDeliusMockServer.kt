@@ -1,9 +1,5 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.equalTo
@@ -15,6 +11,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.put
 import com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor
 import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
 import com.github.tomakehurst.wiremock.client.WireMock.urlMatching
+import tools.jackson.databind.json.JsonMapper
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectOutcomeSummary
@@ -33,9 +30,7 @@ import java.time.format.DateTimeFormatter
 
 object CommunityPaybackAndDeliusMockServer {
 
-  val objectMapper: ObjectMapper = jacksonObjectMapper()
-    .registerModule(JavaTimeModule())
-    .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+  val jsonMapper: JsonMapper = JsonMapper()
 
   fun providers(
     username: String,
@@ -45,7 +40,7 @@ object CommunityPaybackAndDeliusMockServer {
       get("/community-payback-and-delius/providers?username=$username").willReturn(
         aResponse()
           .withHeader("Content-Type", "application/json")
-          .withBody(objectMapper.writeValueAsString(providers)),
+          .withBody(jsonMapper.writeValueAsString(providers)),
       ),
     )
   }
@@ -58,7 +53,7 @@ object CommunityPaybackAndDeliusMockServer {
       get("/community-payback-and-delius/providers/$providerCode/teams").willReturn(
         aResponse()
           .withHeader("Content-Type", "application/json")
-          .withBody(objectMapper.writeValueAsString(providerTeams)),
+          .withBody(jsonMapper.writeValueAsString(providerTeams)),
       ),
     )
   }
@@ -81,7 +76,7 @@ object CommunityPaybackAndDeliusMockServer {
       get("/community-payback-and-delius/projects/${project.code}").willReturn(
         aResponse()
           .withHeader("Content-Type", "application/json")
-          .withBody(objectMapper.writeValueAsString(project)),
+          .withBody(jsonMapper.writeValueAsString(project)),
       ),
     )
   }
@@ -106,7 +101,7 @@ object CommunityPaybackAndDeliusMockServer {
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")
-            .withBody(objectMapper.writeValueAsString(projectSessions)),
+            .withBody(jsonMapper.writeValueAsString(projectSessions)),
         ),
     )
   }
@@ -115,12 +110,14 @@ object CommunityPaybackAndDeliusMockServer {
     username: String,
     supervisor: NDSupervisor,
   ) {
+    println("This is " + jsonMapper.writeValueAsString(supervisor))
+
     WireMock.stubFor(
       get("/community-payback-and-delius/supervisors?username=$username")
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")
-            .withBody(objectMapper.writeValueAsString(supervisor)),
+            .withBody(jsonMapper.writeValueAsString(supervisor)),
         ),
     )
   }
@@ -158,7 +155,7 @@ object CommunityPaybackAndDeliusMockServer {
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")
-            .withBody(objectMapper.writeValueAsString(appointment)),
+            .withBody(jsonMapper.writeValueAsString(appointment)),
         ),
     )
   }
@@ -179,7 +176,7 @@ object CommunityPaybackAndDeliusMockServer {
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")
-            .withBody(objectMapper.writeValueAsString(response))
+            .withBody(jsonMapper.writeValueAsString(response))
             .withTransformers("response-template"),
         ),
     )
@@ -260,7 +257,7 @@ object CommunityPaybackAndDeliusMockServer {
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")
-            .withBody(objectMapper.writeValueAsString(session)),
+            .withBody(jsonMapper.writeValueAsString(session)),
         ),
     )
   }
@@ -271,7 +268,7 @@ object CommunityPaybackAndDeliusMockServer {
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")
-            .withBody(objectMapper.writer().writeValueAsString(supervisorSummaries)),
+            .withBody(jsonMapper.writer().writeValueAsString(supervisorSummaries)),
         ),
     )
   }
@@ -286,7 +283,7 @@ object CommunityPaybackAndDeliusMockServer {
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")
-            .withBody(objectMapper.writer().writeValueAsString(requirement)),
+            .withBody(jsonMapper.writer().writeValueAsString(requirement)),
         ),
     )
   }
@@ -299,7 +296,7 @@ object CommunityPaybackAndDeliusMockServer {
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")
-            .withBody(objectMapper.writer().writeValueAsString(nonWorkingDates)),
+            .withBody(jsonMapper.writer().writeValueAsString(nonWorkingDates)),
         ),
     )
   }
@@ -328,7 +325,7 @@ object CommunityPaybackAndDeliusMockServer {
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")
-            .withBody(objectMapper.writeValueAsString(pageResponse)),
+            .withBody(jsonMapper.writeValueAsString(pageResponse)),
         ),
     )
   }

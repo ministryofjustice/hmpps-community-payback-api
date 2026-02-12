@@ -1,18 +1,21 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import io.awspring.cloud.sqs.annotation.SqsListener
 import org.awaitility.Awaitility.await
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.test.context.event.annotation.BeforeTestMethod
+import tools.jackson.databind.json.JsonMapper
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.HmppsDomainEvent
 import java.util.concurrent.TimeUnit
 import kotlin.collections.first
 import kotlin.jvm.java
 
 @Service
-class DomainEventAsserter(private val objectMapper: ObjectMapper) {
+class DomainEventAsserter(
+  private val jsonMapper: JsonMapper,
+) {
+
   private val log = LoggerFactory.getLogger(this::class.java)
 
   private val messages = mutableListOf<HmppsDomainEvent>()
@@ -23,8 +26,8 @@ class DomainEventAsserter(private val objectMapper: ObjectMapper) {
     pollTimeoutSeconds = "1",
   )
   fun processMessage(rawMessage: String?) {
-    val sqsMessage = objectMapper.readValue(rawMessage, SqsMessage::class.java)
-    val event = objectMapper.readValue(sqsMessage.Message, HmppsDomainEvent::class.java)
+    val sqsMessage = jsonMapper.readValue(rawMessage, SqsMessage::class.java)
+    val event = jsonMapper.readValue(sqsMessage.Message, HmppsDomainEvent::class.java)
 
     log.info("Received Domain Event: $event")
     synchronized(messages) {
