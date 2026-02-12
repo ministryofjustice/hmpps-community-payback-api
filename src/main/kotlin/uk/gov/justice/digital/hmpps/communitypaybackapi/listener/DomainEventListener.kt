@@ -14,6 +14,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdditionalInform
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.DomainEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.HmppsDomainEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingAppointmentDomainEventHandler
+import uk.gov.justice.hmpps.sqs.SnsMessage
 import java.time.Duration
 import java.util.UUID
 
@@ -65,8 +66,8 @@ class DomainEventListener(
   private fun handleDomainEvent(messageString: String) {
     log.debug("Have received domain event message '$messageString'")
 
-    val sqsMessage = jsonMapper.readValue<SqsMessage>(messageString)
-    val event = jsonMapper.readValue<HmppsDomainEvent>(sqsMessage.message)
+    val snsMessage = jsonMapper.readValue<SnsMessage>(messageString)
+    val event = jsonMapper.readValue<HmppsDomainEvent>(snsMessage.message)
 
     when (event.eventType) {
       DomainEventType.APPOINTMENT_UPDATED.eventType,
