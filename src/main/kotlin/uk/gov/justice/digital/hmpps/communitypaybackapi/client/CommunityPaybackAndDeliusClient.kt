@@ -102,6 +102,9 @@ interface CommunityPaybackAndDeliusClient {
     @RequestParam projectTypeCodes: List<String>?,
     @RequestParam params: Map<String, String>,
   ): PageResponse<NDAppointmentSummary>
+
+  @GetExchange("/case/{crn}/summary")
+  fun getUpwDetailsSummary(@PathVariable crn: String): NDCaseDetailsSummary?
 }
 
 data class NDProviderSummaries(
@@ -526,4 +529,20 @@ data class PageResponse<T>(
     val totalElements: Long,
     val totalPages: Int,
   )
+}
+
+data class NDCaseDetailsSummary(
+  val unpaidWorkDetails: List<NDCaseDetail> = emptyList(),
+) {
+  companion object
+}
+
+data class NDCaseDetail(
+  val eventNumber: Long,
+  val requiredMinutes: Long,
+  val completedMinutes: Long,
+  val adjustments: Long,
+  val completedEteMinutes: Long,
+) {
+  companion object
 }

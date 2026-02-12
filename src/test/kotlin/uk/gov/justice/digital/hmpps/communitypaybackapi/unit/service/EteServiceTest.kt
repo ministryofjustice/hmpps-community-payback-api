@@ -16,12 +16,15 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseDetailsSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.NotFoundException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseEventCompletionMessageStatus
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteUser
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteUserRepository
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.randomLocalDate
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseCompletionMessage
@@ -45,6 +48,9 @@ class EteServiceTest {
 
   @RelaxedMockK
   lateinit var educationCourseCompletionMapper: EducationCourseCompletionMapper
+
+  @RelaxedMockK
+  lateinit var communityPaybackAndDeliusClient: CommunityPaybackAndDeliusClient
 
   @InjectMockKs
   private lateinit var eteService: EteService
@@ -264,8 +270,10 @@ class EteServiceTest {
     fun `createUser returns true and saves when user does not exist`() {
       val crn = "X123456"
       val email = "TEST@example.com"
-      val userSlot = slot<EteUser>() // Create a slot to capture the argument
+      val userSlot = slot<EteUser>()
+      val ndCaseDetailsSummary = NDCaseDetailsSummary.valid()
 
+      every { communityPaybackAndDeliusClient.getUpwDetailsSummary(crn) } returns NDCaseDetailsSummary.valid()
       every { eteUserRepository.findByCrnAndEmail(crn, email.lowercase()) } returns null
       every { eteUserRepository.save(capture(userSlot)) } returns mockk<EteUser>()
 
@@ -285,6 +293,7 @@ class EteServiceTest {
       val email = "test@example.com"
       val existingUser = EteUser(crn = crn, email = email)
 
+      every { communityPaybackAndDeliusClient.getUpwDetailsSummary(crn) } returns NDCaseDetailsSummary.valid()
       every { eteUserRepository.findByCrnAndEmail(crn, email) } returns existingUser
 
       val result = eteService.createUser(crn, email)

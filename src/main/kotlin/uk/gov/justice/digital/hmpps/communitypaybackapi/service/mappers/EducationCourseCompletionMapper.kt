@@ -9,7 +9,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentsDt
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EteCourseCompletionEventDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntity
-import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseCompletionMessage
 import java.time.LocalTime
 import java.util.UUID
 
@@ -17,17 +16,16 @@ import java.util.UUID
 class EducationCourseCompletionMapper {
 
   fun toCreateAppointmentsDto(
-    message: EducationCourseCompletionMessage,
+    eteCourseCompletionEventEntity: EteCourseCompletionEventEntity,
     projectCode: String,
   ) = CreateAppointmentsDto(
     projectCode = projectCode,
-    appointments = listOf(toCreateAppointmentDto(message)),
+    appointments = listOf(toCreateAppointmentDto(eteCourseCompletionEventEntity)),
   )
 
   @Suppress("MagicNumber")
-  fun toCreateAppointmentDto(message: EducationCourseCompletionMessage): CreateAppointmentDto {
-    val attributes = message.messageAttributes
-    val completionDate = attributes.completionDate
+  fun toCreateAppointmentDto(eteCourseCompletionEventEntity: EteCourseCompletionEventEntity): CreateAppointmentDto {
+    val completionDate = eteCourseCompletionEventEntity.completionDate
     val startTime = LocalTime.of(9, 0) // Temporary until decided - 9am as start time
 
     return CreateAppointmentDto(
@@ -39,14 +37,14 @@ class EducationCourseCompletionMapper {
       // If this rolls time back into the previous day, this fails appointment creation validation
       // because start time is after end time
       startTime = startTime,
-      endTime = startTime.plusMinutes(attributes.totalTimeMinutes),
+      endTime = startTime.plusMinutes(eteCourseCompletionEventEntity.totalTimeMinutes),
       pickUpLocationCode = null,
       pickUpLocationDescription = null,
       pickUpTime = null,
       contactOutcomeCode = ContactOutcomeEntity.ATTENDED_COMPLIED_OUTCOME_CODE,
       attendanceData = createAttendanceData(),
       supervisorOfficerCode = null,
-      notes = "Ete course completed: ${attributes.courseName}",
+      notes = "Ete course completed: ${eteCourseCompletionEventEntity.courseName}",
       alertActive = null,
       sensitive = null,
     )

@@ -31,4 +31,9 @@ interface EteCourseCompletionEventEntityRepository : JpaRepository<EteCourseComp
   fun findByCrn(@Param("crn") crn: String): List<EteCourseCompletionEventEntity>
 
   fun findByEmail(@Param("email") email: String): List<EteCourseCompletionEventEntity>
+
+  fun findByEmailAndStatus(
+    @Param("email") email: String,
+    @Param("status") status: EteCourseEventCompletionMessageStatus,
+  ): List<EteCourseCompletionEventEntity>
 }

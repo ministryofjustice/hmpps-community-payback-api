@@ -14,6 +14,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompleti
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteUserRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.bodyAsObject
+import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.CommunityPaybackAndDeliusMockServer
 import java.time.LocalDate
 import java.util.UUID
 
@@ -318,7 +319,8 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
         email = "test.user@digital.justice.gov.uk",
       )
 
-      // First call: Create the record
+      CommunityPaybackAndDeliusMockServer.getUpwDetailsSummary(request.crn)
+
       webTestClient.post()
         .uri("/admin/ete/users")
         .addAdminUiAuthHeader()
