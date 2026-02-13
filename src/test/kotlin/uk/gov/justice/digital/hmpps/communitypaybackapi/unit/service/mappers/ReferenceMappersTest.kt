@@ -109,6 +109,7 @@ class ReferenceMappersTest {
           enforceable = false,
           attended = true,
           availableToSupervisors = false,
+          groups = emptyList(),
         ),
         ContactOutcomeEntity(
           id = UUID.fromString("f352472b-a277-4976-b8b4-224898d4a9b8"),
@@ -117,6 +118,7 @@ class ReferenceMappersTest {
           enforceable = true,
           attended = false,
           availableToSupervisors = true,
+          groups = emptyList(),
         ),
         ContactOutcomeEntity(
           id = UUID.fromString("5e8f3124-d794-43b1-b844-df0bb95814dc"),
@@ -125,6 +127,7 @@ class ReferenceMappersTest {
           enforceable = true,
           attended = false,
           availableToSupervisors = true,
+          groups = emptyList(),
         ),
       )
 
@@ -157,6 +160,7 @@ class ReferenceMappersTest {
         enforceable = false,
         attended = true,
         availableToSupervisors = false,
+        groups = emptyList(),
       )
 
       assertThat(contactOutcome.toDto()).isEqualTo(

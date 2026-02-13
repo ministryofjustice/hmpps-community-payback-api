@@ -5,6 +5,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ContactOutcomeGroupDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ContactOutcomesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EnforcementActionsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypesDto
@@ -39,7 +41,10 @@ class CommonReferenceController(val referenceService: ReferenceService) {
       ),
     ],
   )
-  fun getContactOutcomes(): ContactOutcomesDto = referenceService.getContactOutcomes()
+  fun getContactOutcomes(
+    @RequestParam
+    group: ContactOutcomeGroupDto?,
+  ): ContactOutcomesDto = referenceService.getContactOutcomes(group)
 
   @GetMapping("/enforcement-actions")
   @Operation(description = "Get all enforcement actions")

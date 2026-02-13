@@ -10,4 +10,5 @@ fun ContactOutcomeEntity.Companion.valid() = ContactOutcomeEntity(
   enforceable = false,
   attended = false,
   availableToSupervisors = false,
+  groups = emptyList(),
 )

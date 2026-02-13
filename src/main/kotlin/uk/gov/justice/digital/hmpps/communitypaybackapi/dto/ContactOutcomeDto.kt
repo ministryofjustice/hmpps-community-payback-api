@@ -20,3 +20,7 @@ data class ContactOutcomeDto(
 ) {
   companion object
 }
+
+enum class ContactOutcomeGroupDto {
+  AVAILABLE_TO_ADMIN,
+}

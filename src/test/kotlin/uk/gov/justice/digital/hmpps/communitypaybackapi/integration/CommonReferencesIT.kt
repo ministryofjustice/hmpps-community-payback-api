@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ContactOutcomesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EnforcementActionsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypesDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ProjectTypeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.bodyAsObject
 
@@ -15,6 +16,8 @@ class CommonReferencesIT : IntegrationTestBase() {
 
   @Autowired
   lateinit var projectTypeEntityRepository: ProjectTypeEntityRepository
+
+  lateinit var contactOutcomesEntityRepository: ContactOutcomeEntityRepository
 
   @Nested
   @DisplayName("GET /common/references/project-types")
@@ -124,6 +127,19 @@ class CommonReferencesIT : IntegrationTestBase() {
       assertThat(contactOutcomes.contactOutcomes[2].id).isNotNull
       assertThat(contactOutcomes.contactOutcomes[2].name).isEqualTo("Acceptable Absence - Family/ Childcare")
       assertThat(contactOutcomes.contactOutcomes[2].code).isEqualTo("AAFC")
+    }
+
+    @Test
+    fun `should filter on provided group`() {
+      val contactOutcomes = webTestClient.get()
+        .uri("/common/references/contact-outcomes?group=AVAILABLE_TO_ADMIN")
+        .addAdminUiAuthHeader()
+        .exchange()
+        .expectStatus()
+        .isOk
+        .bodyAsObject<ContactOutcomesDto>()
+
+      assertThat(contactOutcomes.contactOutcomes).hasSize(10)
     }
   }
 
