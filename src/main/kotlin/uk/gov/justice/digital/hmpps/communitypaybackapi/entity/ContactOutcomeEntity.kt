@@ -1,12 +1,18 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.entity
 
+import jakarta.persistence.CollectionTable
 import jakarta.persistence.Column
+import jakarta.persistence.ElementCollection
 import jakarta.persistence.Entity
+import jakarta.persistence.EnumType
+import jakarta.persistence.Enumerated
+import jakarta.persistence.FetchType
 import jakarta.persistence.Id
 import jakarta.persistence.Table
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.Immutable
 import org.hibernate.annotations.UpdateTimestamp
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ContactOutcomeGroupDto
 import java.time.OffsetDateTime
 import java.util.UUID
 
@@ -22,7 +28,11 @@ data class ContactOutcomeEntity(
   val name: String,
   val enforceable: Boolean,
   val attended: Boolean,
-  val availableToSupervisors: Boolean,
+  @ElementCollection(fetch = FetchType.EAGER)
+  @CollectionTable(name = "contact_outcomes_groups")
+  @Column(name = "contact_outcome_group")
+  @Enumerated(EnumType.STRING)
+  val groups: List<ContactOutcomeGroup>,
   @CreationTimestamp
   val createdAt: OffsetDateTime = OffsetDateTime.now(),
   @UpdateTimestamp
@@ -40,5 +50,16 @@ data class ContactOutcomeEntity(
 
   companion object {
     const val ATTENDED_COMPLIED_OUTCOME_CODE = "ATTC"
+  }
+}
+
+enum class ContactOutcomeGroup {
+  AVAILABLE_TO_ADMIN,
+  ;
+
+  companion object {
+    fun fromDto(dto: ContactOutcomeGroupDto) = when (dto) {
+      ContactOutcomeGroupDto.AVAILABLE_TO_ADMIN -> AVAILABLE_TO_ADMIN
+    }
   }
 }
