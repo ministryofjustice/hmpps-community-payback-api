@@ -14,8 +14,9 @@ data class ContactOutcomeDto(
   val enforceable: Boolean,
   @param:Schema(description = "If this outcome represents attendance, and as such attendance information is required", example = "false")
   val attended: Boolean,
-  @param:Schema(description = "If this outcome can be used by a supervisor", example = "false")
-  val availableToSupervisors: Boolean,
+  @Deprecated("If required, use a contact outcome group instead")
+  @param:Schema(description = "If this outcome can be used by a supervisor. Deprecated, If required, use a contact outcome group instead", example = "false", deprecated = true)
+  val availableToSupervisors: Boolean?,
   val willAlertEnforcementDiary: Boolean,
 ) {
   companion object

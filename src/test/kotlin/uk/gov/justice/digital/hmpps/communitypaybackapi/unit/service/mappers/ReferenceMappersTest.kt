@@ -108,7 +108,6 @@ class ReferenceMappersTest {
           code = "ATTC",
           enforceable = false,
           attended = true,
-          availableToSupervisors = false,
           groups = emptyList(),
         ),
         ContactOutcomeEntity(
@@ -117,7 +116,6 @@ class ReferenceMappersTest {
           code = "AFTC",
           enforceable = true,
           attended = false,
-          availableToSupervisors = true,
           groups = emptyList(),
         ),
         ContactOutcomeEntity(
@@ -126,7 +124,6 @@ class ReferenceMappersTest {
           code = "ATSH",
           enforceable = true,
           attended = false,
-          availableToSupervisors = true,
           groups = emptyList(),
         ),
       )
@@ -159,7 +156,6 @@ class ReferenceMappersTest {
         code = "ATTC",
         enforceable = false,
         attended = true,
-        availableToSupervisors = false,
         groups = emptyList(),
       )
 

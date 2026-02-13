@@ -27,7 +27,7 @@ fun ContactOutcomeEntity.toDto() = ContactOutcomeDto(
   code = this.code,
   enforceable = this.enforceable,
   attended = this.attended,
-  availableToSupervisors = this.availableToSupervisors,
+  availableToSupervisors = false,
   willAlertEnforcementDiary = this.enforceable,
 )
 

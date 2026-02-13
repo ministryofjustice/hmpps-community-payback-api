@@ -9,6 +9,5 @@ fun ContactOutcomeEntity.Companion.valid() = ContactOutcomeEntity(
   name = String.random(length = 20),
   enforceable = false,
   attended = false,
-  availableToSupervisors = false,
   groups = emptyList(),
 )

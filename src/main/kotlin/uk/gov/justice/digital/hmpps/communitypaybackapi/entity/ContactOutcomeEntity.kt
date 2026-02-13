@@ -28,7 +28,6 @@ data class ContactOutcomeEntity(
   val name: String,
   val enforceable: Boolean,
   val attended: Boolean,
-  val availableToSupervisors: Boolean,
   @ElementCollection(fetch = FetchType.EAGER)
   @CollectionTable(name = "contact_outcomes_groups")
   @Column(name = "contact_outcome_group")
