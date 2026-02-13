@@ -12,5 +12,10 @@ class ProviderService(
 
   fun getProviderTeams(providerCode: String) = communityPaybackAndDeliusClient.getProviderTeams(providerCode).toDto()
 
-  fun getTeamSupervisors(providerCode: String, teamCode: String) = communityPaybackAndDeliusClient.teamSupervisors(providerCode, teamCode).toDto()
+  fun getTeamSupervisors(teamId: TeamId) = communityPaybackAndDeliusClient.teamSupervisors(teamId.providerCode, teamId.teamCode).toDto()
+
+  data class TeamId(
+    val providerCode: String,
+    val teamCode: String,
+  )
 }

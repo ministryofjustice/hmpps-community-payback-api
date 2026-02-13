@@ -95,7 +95,7 @@ class AdminProviderController(
   fun getTeamSupervisors(
     @PathVariable providerCode: String,
     @PathVariable teamCode: String,
-  ): SupervisorSummariesDto = providerService.getTeamSupervisors(providerCode, teamCode)
+  ): SupervisorSummariesDto = providerService.getTeamSupervisors(ProviderService.TeamId(providerCode, teamCode))
 
   @GetMapping("/{providerCode}/teams/{teamCode}/sessions")
   @Operation(
