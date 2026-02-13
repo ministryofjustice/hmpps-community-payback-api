@@ -12,4 +12,14 @@ fun NDSupervisorSummary.Companion.valid() = NDSupervisorSummary(
     code = String.random(5),
     description = String.random(50),
   ),
+  unallocated = Boolean.random(),
+)
+
+fun NDSupervisorSummary.Companion.unallocated() = NDSupervisorSummary.valid().copy(
+  unallocated = true,
+  name = NDSupervisorName.valid().copy(
+    forename = "Unallocated",
+    surname = "",
+    middleName = null,
+  ),
 )

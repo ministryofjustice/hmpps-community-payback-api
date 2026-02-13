@@ -21,6 +21,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EnforcementDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.OffenderDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.PickUpDataDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SupervisorSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventType
@@ -33,6 +34,8 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventEntityFactory
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventTrigger
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ProjectService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ProviderService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.TeamId
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
@@ -48,6 +51,9 @@ class AppointmentEventEntityFactoryTest {
   @RelaxedMockK
   lateinit var projectService: ProjectService
 
+  @RelaxedMockK
+  lateinit var providerService: ProviderService
+
   @InjectMockKs
   lateinit var factory: AppointmentEventEntityFactory
 
@@ -58,9 +64,14 @@ class AppointmentEventEntityFactoryTest {
     const val TRIGGERED_BY: String = "User1"
     val ID: UUID = UUID.randomUUID()
     const val PROJECT_CODE: String = "PC01"
+    const val PROVIDER_CODE: String = "PRIV1"
+    const val TEAM_CODE: String = "TEAM1"
+    const val UNALLOCATED_SUPERVISOR_CODE: String = "SUPCODE1"
     val PROJECT = ProjectDto.valid().copy(
       projectCode = PROJECT_CODE,
       projectName = "The project name",
+      providerCode = PROVIDER_CODE,
+      teamCode = TEAM_CODE,
     )
   }
 
@@ -68,8 +79,11 @@ class AppointmentEventEntityFactoryTest {
   inner class BuildCreatedEvent {
 
     @BeforeEach
-    fun `setup get project mock`() {
+    fun `setup mocks`() {
       every { projectService.getProject(PROJECT_CODE) } returns PROJECT
+      every {
+        providerService.getTeamUnallocatedSupervisor(TeamId(PROVIDER_CODE, TEAM_CODE))
+      } returns SupervisorSummaryDto.valid().copy(code = UNALLOCATED_SUPERVISOR_CODE)
     }
 
     @Test
@@ -193,7 +207,7 @@ class AppointmentEventEntityFactoryTest {
       assertThat(result.pickupLocationDescription).isNull()
       assertThat(result.pickupTime).isNull()
       assertThat(result.contactOutcome).isNull()
-      assertThat(result.supervisorOfficerCode).isNull()
+      assertThat(result.supervisorOfficerCode).isEqualTo(UNALLOCATED_SUPERVISOR_CODE)
       assertThat(result.notes).isNull()
       assertThat(result.hiVisWorn).isNull()
       assertThat(result.workedIntensively).isNull()

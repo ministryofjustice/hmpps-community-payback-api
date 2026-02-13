@@ -20,7 +20,7 @@ data class CreateAppointmentDto(
   val pickUpTime: LocalTime?,
   val contactOutcomeCode: String? = null,
   val attendanceData: AttendanceDataDto? = null,
-  @param:Schema(description = "Will default to the unallocated supervisor for the project's team")
+  @param:Schema(description = "Will default to the unallocated supervisor for the project's team if not defined")
   val supervisorOfficerCode: String? = null,
   val notes: String? = null,
   @param:Schema(description = "If the corresponding delius contact should be alerted")

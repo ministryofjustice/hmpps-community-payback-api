@@ -266,6 +266,12 @@ object CommunityPaybackAndDeliusMockServer {
     )
   }
 
+  fun getTeamSupervisors(forProject: NDProject, supervisorSummaries: NDSupervisorSummaries) = getTeamSupervisors(
+    providerCode = forProject.provider.code,
+    teamCode = forProject.team.code,
+    supervisorSummaries = supervisorSummaries,
+  )
+
   fun getTeamSupervisors(
     providerCode: String,
     teamCode: String,

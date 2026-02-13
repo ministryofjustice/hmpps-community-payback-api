@@ -70,7 +70,7 @@ interface CommunityPaybackAndDeliusClient {
   ): List<NDCreatedAppointment>
 
   @GetExchange("/providers/{providerCode}/teams/{teamCode}/supervisors")
-  fun teamSupervisors(
+  fun getTeamSupervisors(
     @PathVariable providerCode: String,
     @PathVariable teamCode: String,
   ): NDSupervisorSummaries
@@ -371,6 +371,7 @@ data class NDSupervisorSummary(
   val name: NDSupervisorName,
   val code: String,
   val grade: NDGrade?,
+  val unallocated: Boolean,
 ) {
   companion object
 }

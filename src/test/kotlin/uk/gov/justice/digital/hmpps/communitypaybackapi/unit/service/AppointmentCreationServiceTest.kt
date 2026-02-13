@@ -13,7 +13,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCreateAppointme
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCreatedAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentsDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventType
@@ -47,9 +46,6 @@ class AppointmentCreationServiceTest {
 
   private companion object {
     const val PROJECT_CODE: String = "PROJ25"
-    val PROJECT = ProjectDto.valid().copy(
-      projectCode = PROJECT_CODE,
-    )
     val TRIGGER: AppointmentEventTrigger = AppointmentEventTrigger.valid()
   }
 
