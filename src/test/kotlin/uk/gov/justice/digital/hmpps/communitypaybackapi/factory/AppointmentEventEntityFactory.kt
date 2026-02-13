@@ -49,7 +49,7 @@ fun AppointmentEventEntity.Companion.valid(
 )
 
 fun AppointmentEventEntity.Companion.valid(ctx: ApplicationContext) = AppointmentEventEntity.valid().copy(
-  contactOutcome = ctx.getBean<ContactOutcomeEntityRepository>().findAll().first(),
+  contactOutcome = ctx.getBean<ContactOutcomeEntityRepository>().findAll().minByOrNull { it.name }!!,
 )
 
 fun AppointmentEventTrigger.Companion.valid() = AppointmentEventTrigger(
