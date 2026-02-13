@@ -13,7 +13,10 @@ data class SupervisorSummaryDto(
   )
   val fullName: String,
   val grade: GradeDto?,
-)
+  val unallocated: Boolean,
+) {
+  companion object
+}
 
 data class SupervisorSummariesDto(
   @param:Schema(description = "List of supervisors for a given team")

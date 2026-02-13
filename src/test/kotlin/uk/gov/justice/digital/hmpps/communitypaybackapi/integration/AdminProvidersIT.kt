@@ -172,7 +172,9 @@ class AdminProvidersIT : IntegrationTestBase() {
 
     @Test
     fun `should return OK with team supervisors`() {
-      CommunityPaybackAndDeliusMockServer.teamSupervisors(
+      CommunityPaybackAndDeliusMockServer.getTeamSupervisors(
+        providerCode = "123",
+        teamCode = "99",
         NDSupervisorSummaries(
           listOf(NDSupervisorSummary.valid(), NDSupervisorSummary.valid()),
         ),
@@ -191,7 +193,9 @@ class AdminProvidersIT : IntegrationTestBase() {
 
     @Test
     fun `should return empty list when no supervisors found`() {
-      CommunityPaybackAndDeliusMockServer.teamSupervisors(
+      CommunityPaybackAndDeliusMockServer.getTeamSupervisors(
+        providerCode = "123",
+        teamCode = "99",
         NDSupervisorSummaries(emptyList()),
       )
 

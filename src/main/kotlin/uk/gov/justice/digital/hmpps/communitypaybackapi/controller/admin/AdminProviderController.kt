@@ -24,6 +24,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SupervisorSummariesD
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ProjectService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ProviderService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.SessionService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.TeamId
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 import java.time.LocalDate
 
@@ -95,7 +96,7 @@ class AdminProviderController(
   fun getTeamSupervisors(
     @PathVariable providerCode: String,
     @PathVariable teamCode: String,
-  ): SupervisorSummariesDto = providerService.getTeamSupervisors(providerCode, teamCode)
+  ): SupervisorSummariesDto = providerService.getTeamSupervisors(TeamId(providerCode, teamCode))
 
   @GetMapping("/{providerCode}/teams/{teamCode}/sessions")
   @Operation(

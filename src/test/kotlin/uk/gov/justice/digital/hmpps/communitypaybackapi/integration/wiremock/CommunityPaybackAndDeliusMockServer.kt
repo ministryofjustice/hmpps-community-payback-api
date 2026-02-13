@@ -266,9 +266,19 @@ object CommunityPaybackAndDeliusMockServer {
     )
   }
 
-  fun teamSupervisors(supervisorSummaries: NDSupervisorSummaries) {
+  fun getTeamSupervisors(forProject: NDProject, supervisorSummaries: NDSupervisorSummaries) = getTeamSupervisors(
+    providerCode = forProject.provider.code,
+    teamCode = forProject.team.code,
+    supervisorSummaries = supervisorSummaries,
+  )
+
+  fun getTeamSupervisors(
+    providerCode: String,
+    teamCode: String,
+    supervisorSummaries: NDSupervisorSummaries,
+  ) {
     WireMock.stubFor(
-      get("/community-payback-and-delius/providers/123/teams/99/supervisors")
+      get("/community-payback-and-delius/providers/$providerCode/teams/$teamCode/supervisors")
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")

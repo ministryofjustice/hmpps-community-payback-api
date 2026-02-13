@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.ApplicationContext
 import org.springframework.data.repository.findByIdOrNull
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCode
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDRequirementProgress
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingAllocation
@@ -14,11 +15,14 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingDayOf
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingExistingAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingFrequency
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingProject
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSupervisorSummaries
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSupervisorSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDUnpaidWorkRequirement
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.findNextOrSameDateForDayOfWeek
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventType
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.unallocated
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.validNoEndDate
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.validWithOutcome
@@ -381,17 +385,22 @@ class SchedulingIT : IntegrationTestBase() {
       ),
     )
 
-    CommunityPaybackAndDeliusMockServer.getProject(project = NDProject.valid(ctx).copy(code = "PROJ1"))
-    CommunityPaybackAndDeliusMockServer.getProject(project = NDProject.valid(ctx).copy(code = "PROJ2"))
+    val project1 = NDProject.valid(ctx).copy(code = "PROJ1", provider = NDCode("PROV1"), team = NDCode("TEAM1"))
+    CommunityPaybackAndDeliusMockServer.getProject(project1)
+    CommunityPaybackAndDeliusMockServer.getTeamSupervisors(
+      forProject = project1,
+      supervisorSummaries = NDSupervisorSummaries(listOf(NDSupervisorSummary.unallocated())),
+    )
 
-    CommunityPaybackAndDeliusMockServer.postAppointments(
-      projectCode = "PROJ1",
-      appointmentCount = 1,
+    val project2 = NDProject.valid(ctx).copy(code = "PROJ2", provider = NDCode("PROV2"), team = NDCode("TEAM2"))
+    CommunityPaybackAndDeliusMockServer.getProject(project2)
+    CommunityPaybackAndDeliusMockServer.getTeamSupervisors(
+      forProject = project2,
+      supervisorSummaries = NDSupervisorSummaries(listOf(NDSupervisorSummary.unallocated())),
     )
-    CommunityPaybackAndDeliusMockServer.postAppointments(
-      projectCode = "PROJ2",
-      appointmentCount = 2,
-    )
+
+    CommunityPaybackAndDeliusMockServer.postAppointments(projectCode = "PROJ1", appointmentCount = 1)
+    CommunityPaybackAndDeliusMockServer.postAppointments(projectCode = "PROJ2", appointmentCount = 2)
 
     val triggeringEvent = publishTriggeringEvent()
     waitForSchedulingToRun(triggeringEvent.id)

@@ -22,6 +22,7 @@ import java.util.UUID
 class AppointmentEventEntityFactory(
   private val contactOutcomeEntityRepository: ContactOutcomeEntityRepository,
   private val projectService: ProjectService,
+  private val providerService: ProviderService,
 ) {
 
   fun buildCreatedEvent(
@@ -35,6 +36,8 @@ class AppointmentEventEntityFactory(
     val endTime = createAppointmentDto.endTime
     val penaltyMinutes = createAppointmentDto.attendanceData?.derivePenaltyMinutesDuration()?.toMinutes()
     val contactOutcome = loadOutcome(createAppointmentDto.contactOutcomeCode)
+
+    val supervisorCode = createAppointmentDto.supervisorOfficerCode ?: providerService.getTeamUnallocatedSupervisor(project.getTeamId()).code
 
     return AppointmentEventEntity(
       id = UUID.randomUUID(),
@@ -53,7 +56,7 @@ class AppointmentEventEntityFactory(
       pickupLocationDescription = createAppointmentDto.pickUpLocationDescription,
       pickupTime = createAppointmentDto.pickUpTime,
       contactOutcome = contactOutcome,
-      supervisorOfficerCode = createAppointmentDto.supervisorOfficerCode,
+      supervisorOfficerCode = supervisorCode,
       notes = createAppointmentDto.notes,
       hiVisWorn = createAppointmentDto.attendanceData?.hiVisWorn,
       workedIntensively = createAppointmentDto.attendanceData?.workedIntensively,

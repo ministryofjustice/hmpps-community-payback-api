@@ -38,6 +38,7 @@ fun NDSupervisorSummary.toDto() = SupervisorSummaryDto(
   ),
   fullName = this.name.toDtoValue() + (this.grade?.let { " ${it.toDtoValue()}" } ?: ""),
   grade = this.grade?.toDto(),
+  unallocated = this.unallocated,
 )
 
 fun NDGrade.toDto() = GradeDto(
