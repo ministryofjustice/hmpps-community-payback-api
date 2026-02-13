@@ -14,6 +14,8 @@ fun NDProject.toDto(
   projectName = this.name,
   projectCode = this.code,
   projectType = projectType.toDto(),
+  providerCode = this.provider.code,
+  teamCode = this.team.code,
   location = this.location.toDto(),
   hiVisRequired = this.hiVisRequired,
   beneficiaryDetails = this.beneficiaryDetails.toDto(),

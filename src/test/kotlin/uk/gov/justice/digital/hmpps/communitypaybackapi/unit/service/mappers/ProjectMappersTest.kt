@@ -46,6 +46,8 @@ class ProjectMappersTest {
       assertThat(result.projectName).isEqualTo("The Project Name")
       assertThat(result.projectCode).isEqualTo("The Project Code")
       assertThat(result.projectType).isEqualTo(projectTypeEntity.toDto())
+      assertThat(result.teamCode).isEqualTo("team code")
+      assertThat(result.projectType).isEqualTo(projectTypeEntity.toDto())
       assertThat(result.location).isEqualTo(location.toDto())
       assertThat(result.beneficiaryDetails.beneficiary).isEqualTo("ben name")
       assertThat(result.beneficiaryDetails.contactName).isEqualTo("ben contact")
