@@ -4,8 +4,8 @@ import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentBehaviourDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentWorkQualityDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AttendanceDataDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EteCourseCompletionEventDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntity
@@ -15,22 +15,25 @@ import java.util.UUID
 @Service
 class EducationCourseCompletionMapper {
 
-  fun toCreateAppointmentsDto(
-    eteCourseCompletionEventEntity: EteCourseCompletionEventEntity,
-    projectCode: String,
-  ) = CreateAppointmentsDto(
-    projectCode = projectCode,
-    appointments = listOf(toCreateAppointmentDto(eteCourseCompletionEventEntity)),
-  )
+//  fun toCreateAppointmentsDto(
+//    eteCourseCompletionEventEntity: EteCourseCompletionEventEntity,
+//    projectCode: String,
+//  ) = CreateAppointmentsDto(
+//    projectCode = projectCode,
+//    appointments = listOf(toCreateAppointmentDto(eteCourseCompletionEventEntity)),
+//  )
 
   @Suppress("MagicNumber")
-  fun toCreateAppointmentDto(eteCourseCompletionEventEntity: EteCourseCompletionEventEntity): CreateAppointmentDto {
+  fun toCreateAppointmentDto(
+    eteCourseCompletionEventEntity: EteCourseCompletionEventEntity,
+    courseCompletionOutcome: CourseCompletionOutcomeDto? = null,
+  ): CreateAppointmentDto {
     val completionDate = eteCourseCompletionEventEntity.completionDate
     val startTime = LocalTime.of(9, 0) // Temporary until decided - 9am as start time
 
     return CreateAppointmentDto(
-      id = UUID.randomUUID(),
-      crn = "X980484", // X980484 <--- Use for testing - Hardcoded for now, until we have a CRN assigning mechanism
+      id = courseCompletionOutcome?.appointmentIdToUpdate ?: UUID.randomUUID(),
+      crn = courseCompletionOutcome?.crn ?: error("CRN is required for creating appointment"),
       deliusEventNumber = 1, // This is not right, we need to find the correct event id
       allocationId = null,
       date = completionDate,
@@ -42,7 +45,7 @@ class EducationCourseCompletionMapper {
       pickUpLocationDescription = null,
       pickUpTime = null,
       contactOutcomeCode = ContactOutcomeEntity.ATTENDED_COMPLIED_OUTCOME_CODE,
-      attendanceData = createAttendanceData(),
+      attendanceData = createAttendanceData(courseCompletionOutcome),
       supervisorOfficerCode = null,
       notes = "Ete course completed: ${eteCourseCompletionEventEntity.courseName}",
       alertActive = null,
@@ -51,9 +54,12 @@ class EducationCourseCompletionMapper {
   }
 
   companion object DefaultEducationCourseCompletionAttendanceData {
-    fun createAttendanceData(): AttendanceDataDto = AttendanceDataDto(
+    fun createAttendanceData(
+      courseCompletionOutcome: CourseCompletionOutcomeDto?,
+    ): AttendanceDataDto = AttendanceDataDto(
       hiVisWorn = false,
       workedIntensively = false,
+      minutesCredited = courseCompletionOutcome?.minutesToCredit,
       penaltyTime = null,
       penaltyMinutes = null,
       workQuality = AppointmentWorkQualityDto.NOT_APPLICABLE,

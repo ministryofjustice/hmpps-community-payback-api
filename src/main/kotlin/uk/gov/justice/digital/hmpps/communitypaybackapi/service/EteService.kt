@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.server.ResponseStatusException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EteCourseCompletionEventDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.NotFoundException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventTriggerType
@@ -81,31 +82,31 @@ class EteService(
     NotFoundException("Course completion event", id.toString())
   }.toDto()
 
-  @Transactional
-  fun processCompletedCourseEvents(emailAddress: String) {
-    val courseCompletionEvents = eteCourseCompletionEventEntityRepository.findByEmailAndStatus(email = emailAddress.lowercase(), status = EteCourseEventCompletionMessageStatus.COMPLETED)
-
-    courseCompletionEvents.forEach { event ->
-      appointmentCreationService.createAppointments(
-        educationCourseCompletionMapper.toCreateAppointmentsDto(
-          event,
-          projectCode = "N56CCTEST",
-        ),
-        AppointmentEventTrigger(
-          triggeredAt = OffsetDateTime.now(),
-          triggerType = AppointmentEventTriggerType.ETE_COURSE_COMPLETION,
-          triggeredBy = "External ETE System: ${event.externalReference}",
-        ),
-      )
-    }
-  }
+//  @Transactional
+//  fun processCompletedCourseEvents(emailAddress: String) {
+//    val courseCompletionEvents = eteCourseCompletionEventEntityRepository.findByEmailAndStatus(email = emailAddress.lowercase(), status = EteCourseEventCompletionMessageStatus.COMPLETED)
+//
+//    courseCompletionEvents.forEach { event ->
+//      appointmentCreationService.createAppointments(
+//        educationCourseCompletionMapper.toCreateAppointmentsDto(
+//          event,
+//          projectCode = "N56CCTEST",
+//        ),
+//        AppointmentEventTrigger(
+//          triggeredAt = OffsetDateTime.now(),
+//          triggerType = AppointmentEventTriggerType.ETE_COURSE_COMPLETION,
+//          triggeredBy = "External ETE System: ${event.externalReference}",
+//        ),
+//      )
+//    }
+//  }
 
   @Transactional
   fun createUser(crn: String, emailAddress: String): Boolean {
     val caseSummary = communityPaybackAndDeliusClient.getUpwDetailsSummary(crn)
       ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Case summary not found for CRN: $crn")
 
-    if (caseSummary.unpaidWorkDetails.isNullOrEmpty()) {
+    if (caseSummary.unpaidWorkDetails.isEmpty()) {
       throw ResponseStatusException(HttpStatus.NOT_FOUND, "UPW details not found for CRN: $crn")
     }
 
@@ -124,8 +125,41 @@ class EteService(
       false
     }
 
-    processCompletedCourseEvents(emailAddress)
+    // We don't do this now, we load all apts with this email and set the CRN
+    // Or do we? Is this function needed anymore, or is it replaced by the processCourseCompletionOutcome end point
+    // processCompletedCourseEvents(emailAddress)
 
     return isNewUser
+  }
+
+  fun processCourseCompletionOutcome(
+    eteCourseCompletionEventId: UUID,
+    courseCompletionOutcome: CourseCompletionOutcomeDto,
+  ) {
+    val courseCompletionEvent = eteCourseCompletionEventEntityRepository.findById(eteCourseCompletionEventId).orElseThrow {
+      NotFoundException("ETE Course completion event", eteCourseCompletionEventId.toString())
+    }
+
+    val createAppointmentDto = educationCourseCompletionMapper.toCreateAppointmentDto(
+      courseCompletionEvent,
+      courseCompletionOutcome,
+    )
+    appointmentCreationService.createAppointment(
+      createAppointmentDto,
+      AppointmentEventTrigger(
+        triggeredAt = OffsetDateTime.now(),
+        triggerType = AppointmentEventTriggerType.ETE_COURSE_COMPLETION,
+        triggeredBy = "Course completion outcome for course completion event id: $eteCourseCompletionEventId",
+      ),
+    )
+//
+//    We have this currently:
+//    companion object {
+//      const val ATTENDED_COMPLIED_OUTCOME_CODE = "ATTC"
+//    }
+    // I think we need a new emun
+//    Move of the information is stored in the AppointmentEventEntiy
+//
+//    Add some new columns to the course completion table, linking to the new entry in AppointmentEventEntiy. Populate
   }
 }

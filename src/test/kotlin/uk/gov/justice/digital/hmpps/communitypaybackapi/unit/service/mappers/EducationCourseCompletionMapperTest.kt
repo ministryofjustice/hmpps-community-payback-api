@@ -220,7 +220,9 @@ class EducationCourseCompletionMapperTest {
   inner class DefaultAttendanceData {
     @Test
     fun `createAttendanceData should return default values`() {
-      val result = EducationCourseCompletionMapper.DefaultEducationCourseCompletionAttendanceData.createAttendanceData()
+      val result = EducationCourseCompletionMapper.DefaultEducationCourseCompletionAttendanceData.createAttendanceData(
+        courseCompletionOutcome,
+      )
 
       assertThat(result).isNotNull
       assertThat(result.hiVisWorn).isFalse()
@@ -232,8 +234,12 @@ class EducationCourseCompletionMapperTest {
 
     @Test
     fun `createAttendanceData should return new instance each call`() {
-      val result1 = EducationCourseCompletionMapper.DefaultEducationCourseCompletionAttendanceData.createAttendanceData()
-      val result2 = EducationCourseCompletionMapper.DefaultEducationCourseCompletionAttendanceData.createAttendanceData()
+      val result1 = EducationCourseCompletionMapper.DefaultEducationCourseCompletionAttendanceData.createAttendanceData(
+        courseCompletionOutcome,
+      )
+      val result2 = EducationCourseCompletionMapper.DefaultEducationCourseCompletionAttendanceData.createAttendanceData(
+        courseCompletionOutcome,
+      )
 
       assertThat(result1).isNotSameAs(result2)
     }

@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateEteUserRequest
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EteCourseCompletionEventDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.EteService
@@ -120,5 +121,21 @@ class AdminCourseCompletionController(val eteService: EteService) {
     } else {
       ResponseEntity.status(HttpStatus.NO_CONTENT).build()
     }
+  }
+
+  @PostMapping("/course-completion/{eteCourseCompletionEventId}", consumes = [MediaType.APPLICATION_JSON_VALUE])
+  @Operation(
+    description = "",
+    responses = [
+      ApiResponse(responseCode = "204", description = "Outcome processed"),
+      ApiResponse(responseCode = "404", description = "Course completion not found", content = [Content(schema = Schema(implementation = ErrorResponse::class))]),
+    ],
+  )
+  fun postCourseCompletionOutcome(
+    @PathVariable("eteCourseCompletionEventId") eteCourseCompletionEventId: UUID,
+    @RequestBody @Valid courseCompletionOutcome: CourseCompletionOutcomeDto,
+  ): ResponseEntity<Unit> {
+    eteService.processCourseCompletionOutcome(eteCourseCompletionEventId, courseCompletionOutcome)
+    return ResponseEntity.status(HttpStatus.NO_CONTENT).build()
   }
 }

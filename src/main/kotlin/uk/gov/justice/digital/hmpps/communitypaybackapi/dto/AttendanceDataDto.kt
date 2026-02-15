@@ -6,6 +6,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.common.HourMinuteDuratio
 data class AttendanceDataDto(
   val hiVisWorn: Boolean,
   val workedIntensively: Boolean,
+  val minutesCredited: Long?,
   @Deprecated("use penaltyMinutes")
   @param:Schema(description = "Deprecated, use penaltyMinutes instead", deprecated = true)
   val penaltyTime: HourMinuteDuration? = null,
