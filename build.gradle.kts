@@ -144,7 +144,7 @@ fun isPortInUse(port: Int): Boolean = try {
     socket.connect(InetSocketAddress("localhost", port), 1000)
     true
   }
-} catch (e: Exception) {
+} catch (_: Exception) {
   false
 }
 
@@ -153,25 +153,30 @@ tasks.bootRun {
   val maxRetries = 10
   val retryDelayMs = 1000L
 
-  // Check if debug port is in use and wait if necessary
-  var retries = 0
-  while (isPortInUse(debugPort) && retries < maxRetries) {
-    println("Debug port $debugPort is in use. Waiting for ${retryDelayMs}ms (attempt ${retries + 1}/$maxRetries)...")
-    Thread.sleep(retryDelayMs)
-    retries++
-  }
+  doFirst {
 
-  if (isPortInUse(debugPort)) {
-    throw IllegalStateException("Debug port $debugPort is still in use after $maxRetries attempts. Please make sure the previous application instance is stopped.")
-  }
+    println("Ensuring debug port isn't currently in use before starting spring boot")
 
-  System.getenv()["BOOT_RUN_ENV_FILE"]?.let { envFilePath ->
-    println("Reading env vars from file $envFilePath")
-    file(envFilePath).readLines().forEach {
-      if (it.isNotBlank() && !it.startsWith("#")) {
-        val (key, value) = it.split("=", limit = 2)
-        println("Setting env var $key")
-        environment(key, value)
+    // Check if debug port is in use and wait if necessary
+    var retries = 0
+    while (isPortInUse(debugPort) && retries < maxRetries) {
+      println("Debug port $debugPort is in use. Waiting for ${retryDelayMs}ms (attempt ${retries + 1}/$maxRetries)...")
+      Thread.sleep(retryDelayMs)
+      retries++
+    }
+
+    if (isPortInUse(debugPort)) {
+      throw IllegalStateException("Debug port $debugPort is still in use after $maxRetries attempts. Please make sure the previous application instance is stopped.")
+    }
+
+    System.getenv()["BOOT_RUN_ENV_FILE"]?.let { envFilePath ->
+      println("Reading env vars from file $envFilePath")
+      file(envFilePath).readLines().forEach {
+        if (it.isNotBlank() && !it.startsWith("#")) {
+          val (key, value) = it.split("=", limit = 2)
+          println("Setting env var $key")
+          environment(key, value)
+        }
       }
     }
   }
