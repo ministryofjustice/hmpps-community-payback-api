@@ -30,7 +30,6 @@ class SessionService(
     private val log = LoggerFactory.getLogger(this::class.java)
   }
 
-  @SuppressWarnings("MagicNumber")
   fun getSessions(
     providerCode: String,
     teamCode: String,

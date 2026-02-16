@@ -11,7 +11,6 @@ import java.util.UUID
 import kotlin.random.Random
 
 @Component
-@Suppress("MagicNumber")
 @ConditionalOnProperty(name = ["community-payback.auto-seed.enabled"], havingValue = "true")
 class DevEteCourseCompletionFixtures(
   private val repository: EteCourseCompletionEventEntityRepository,

@@ -20,6 +20,8 @@ performance:
     active: true
 
 style:
+  MagicNumber:
+    active: false
   MaxLineLength:
     maxLineLength: 220
   ReturnCount:

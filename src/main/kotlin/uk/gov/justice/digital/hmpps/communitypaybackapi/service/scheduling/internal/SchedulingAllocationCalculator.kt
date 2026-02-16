@@ -50,7 +50,6 @@ private fun SchedulingAllocation.calculateWeeklyFrequency(
   onOrAfter: LocalDate,
 ) = earliestPotentialAppointmentDateOnOrAfter(onOrAfter).findNextOrSameDateForDayOfWeek(dayOfWeek)
 
-@SuppressWarnings("MagicNumber")
 private fun SchedulingAllocation.calculateFortnightlyFrequency(
   onOrAfter: LocalDate,
 ): LocalDate {

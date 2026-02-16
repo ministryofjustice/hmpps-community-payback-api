@@ -150,7 +150,6 @@ class AdminAppointmentController(
       ),
     ],
   )
-  @Suppress("UnusedParameter", "MagicNumber")
   @PageableAsQueryParam
   fun getAppointments(
     @Parameter(

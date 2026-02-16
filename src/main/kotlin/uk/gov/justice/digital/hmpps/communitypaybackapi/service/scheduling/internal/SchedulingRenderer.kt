@@ -172,7 +172,6 @@ object SchedulingRenderer {
   }
 
   // "28f0, Today+6, ALLOC1, 16:00-20:00"
-  @SuppressWarnings("MagicNumber")
   private fun SchedulingRequiredAppointment.render(today: LocalDate) = buildString {
     append(id.toString().substring(0, 4))
     append(", ")

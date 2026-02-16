@@ -8,7 +8,6 @@ import java.time.Duration
 import java.util.concurrent.TimeUnit
 
 interface LockService {
-  @Suppress("MagicNumber")
   fun <T> withDistributedLock(
     key: String,
     waitTime: Duration = Duration.ofSeconds(60),

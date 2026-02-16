@@ -63,7 +63,6 @@ class SupervisorSessionsController(
       ),
     ],
   )
-  @SuppressWarnings("MagicNumber")
   fun getFutureSessions(
     @PathVariable providerCode: String,
     @PathVariable teamCode: String,
