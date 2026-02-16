@@ -23,7 +23,6 @@ class EducationCourseCompletionMapper {
     appointments = listOf(toCreateAppointmentDto(eteCourseCompletionEventEntity)),
   )
 
-  @Suppress("MagicNumber")
   fun toCreateAppointmentDto(eteCourseCompletionEventEntity: EteCourseCompletionEventEntity): CreateAppointmentDto {
     val completionDate = eteCourseCompletionEventEntity.completionDate
     val startTime = LocalTime.of(9, 0) // Temporary until decided - 9am as start time

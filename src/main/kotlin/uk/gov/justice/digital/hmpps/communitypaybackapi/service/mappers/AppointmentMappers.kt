@@ -86,7 +86,6 @@ class AppointmentMappers(
     )
   }
 
-  @Suppress("MagicNumber")
   fun toSummaryDto(
     appointmentSummary: NDAppointmentSummary,
   ) = AppointmentSummaryDto(

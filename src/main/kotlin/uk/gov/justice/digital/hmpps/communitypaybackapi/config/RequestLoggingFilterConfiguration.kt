@@ -15,7 +15,6 @@ class RequestLoggingFilterConfiguration(
   @param:Value("\${logging.request.include-headers:true}") private val includeHeaders: Boolean,
 ) {
   @Bean
-  @SuppressWarnings("MagicNumber")
   fun logFilter(): CommonsRequestLoggingFilter? {
     if (environmentService.isNotATestEnvironment()) {
       error("request logging should not be enabled outside of test environments")

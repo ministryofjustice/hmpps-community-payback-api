@@ -61,7 +61,6 @@ class AppointmentOutcomeValidationService(
     }
   }
 
-  @SuppressWarnings("MagicNumber")
   fun validateNotes(update: UpdateAppointmentOutcomeDto) {
     validateLengthLessThan(update.notes, 4000) { _, _ ->
       "Outcome notes must be fewer than 4000 characters"
