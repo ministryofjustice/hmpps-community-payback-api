@@ -18,20 +18,20 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.BadReques
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentOutcomeValidationService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentUpdateValidationService
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
 
 @ExtendWith(MockKExtension::class)
-class AppointmentOutcomeValidationServiceTest {
+class AppointmentUpdateValidationServiceTest {
 
   @MockK
   lateinit var contactOutcomeEntityRepository: ContactOutcomeEntityRepository
 
   @InjectMockKs
-  lateinit var service: AppointmentOutcomeValidationService
+  lateinit var service: AppointmentUpdateValidationService
 
   private fun outcome(
     contactOutcomeCode: String = "OUTCOME1",
@@ -51,7 +51,7 @@ class AppointmentOutcomeValidationServiceTest {
       every { contactOutcomeEntityRepository.findByCode(code) } returns null
 
       assertThatThrownBy {
-        service.validateContactOutcome(
+        service.validateUpdate(
           appointment = AppointmentDto.valid(),
           update = outcome(contactOutcomeCode = code),
         )
@@ -69,7 +69,7 @@ class AppointmentOutcomeValidationServiceTest {
       every { contactOutcomeEntityRepository.findByCode(outcome.code) } returns outcome
 
       assertThatThrownBy {
-        service.validateContactOutcome(
+        service.validateUpdate(
           appointment = AppointmentDto.valid().copy(date = LocalDate.now().plusDays(1)),
           update = UpdateAppointmentOutcomeDto.valid().copy(contactOutcomeCode = outcome.code),
         )
@@ -83,7 +83,7 @@ class AppointmentOutcomeValidationServiceTest {
       every { contactOutcomeEntityRepository.findByCode(outcome.code) } returns outcome
 
       assertThatThrownBy {
-        service.validateContactOutcome(
+        service.validateUpdate(
           appointment = AppointmentDto.valid().copy(date = LocalDate.now().plusDays(1)),
           update = UpdateAppointmentOutcomeDto.valid().copy(contactOutcomeCode = outcome.code),
         )
@@ -96,7 +96,7 @@ class AppointmentOutcomeValidationServiceTest {
       val outcome = ContactOutcomeEntity.valid().copy(attended = false, enforceable = false)
       every { contactOutcomeEntityRepository.findByCode(outcome.code) } returns outcome
 
-      service.validateContactOutcome(
+      service.validateUpdate(
         appointment = AppointmentDto.valid().copy(date = LocalDate.now().plusDays(1)),
         update = UpdateAppointmentOutcomeDto.valid().copy(contactOutcomeCode = outcome.code),
       )
@@ -111,7 +111,7 @@ class AppointmentOutcomeValidationServiceTest {
       val outcome = ContactOutcomeEntity.valid().copy(attended = false, enforceable = false)
       every { contactOutcomeEntityRepository.findByCode(outcome.code) } returns outcome
 
-      service.validateContactOutcome(
+      service.validateUpdate(
         appointment = AppointmentDto.valid().copy(date = LocalDate.now()),
         update = UpdateAppointmentOutcomeDto.valid().copy(contactOutcomeCode = outcome.code),
       )
@@ -123,7 +123,7 @@ class AppointmentOutcomeValidationServiceTest {
       every { contactOutcomeEntityRepository.findByCode(outcome.code) } returns outcome
 
       assertThatThrownBy {
-        service.validateContactOutcome(
+        service.validateUpdate(
           appointment = AppointmentDto.valid().copy(date = LocalDate.now()),
           update = UpdateAppointmentOutcomeDto.valid().copy(
             contactOutcomeCode = outcome.code,
@@ -139,7 +139,7 @@ class AppointmentOutcomeValidationServiceTest {
       val outcome = ContactOutcomeEntity.valid().copy(attended = true, enforceable = false)
       every { contactOutcomeEntityRepository.findByCode(outcome.code) } returns outcome
 
-      service.validateContactOutcome(
+      service.validateUpdate(
         appointment = AppointmentDto.valid().copy(date = LocalDate.now()),
         update = UpdateAppointmentOutcomeDto.valid().copy(
           contactOutcomeCode = outcome.code,
