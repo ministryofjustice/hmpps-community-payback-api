@@ -21,7 +21,7 @@ class AppointmentUpdateService(
   private val appointmentEventEntityRepository: AppointmentEventEntityRepository,
   private val communityPaybackAndDeliusClient: CommunityPaybackAndDeliusClient,
   private val formService: FormService,
-  private val appointmentOutcomeValidationService: AppointmentOutcomeValidationService,
+  private val appointmentUpdateValidationService: AppointmentUpdateValidationService,
   private val appointmentEventEntityFactory: AppointmentEventEntityFactory,
   private val domainEventService: DomainEventService,
 ) {
@@ -37,7 +37,7 @@ class AppointmentUpdateService(
   ) {
     val existingAppointment = appointmentRetrievalService.getAppointment(projectCode, update.deliusId)
 
-    appointmentOutcomeValidationService.ensureUpdateIsValid(existingAppointment, update)
+    appointmentUpdateValidationService.ensureUpdateIsValid(existingAppointment, update)
 
     val proposedEntity = appointmentEventEntityFactory.buildUpdatedEvent(
       outcome = update,
