@@ -25,6 +25,8 @@ spring:
       host: localhost
 
 community-payback:
+  cache:
+    enabled: false
   education-course-integration:
     enabled: true
   scheduling:

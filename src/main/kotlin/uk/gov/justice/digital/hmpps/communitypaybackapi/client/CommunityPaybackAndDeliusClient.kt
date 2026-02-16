@@ -1,7 +1,10 @@
+@file:Suppress("SpringCacheAnnotationsOnInterfaceInspection")
+
 package uk.gov.justice.digital.hmpps.communitypaybackapi.client
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import io.swagger.v3.oas.annotations.media.Schema
+import org.springframework.cache.annotation.Cacheable
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestBody
@@ -10,16 +13,29 @@ import org.springframework.web.service.annotation.GetExchange
 import org.springframework.web.service.annotation.PostExchange
 import org.springframework.web.service.annotation.PutExchange
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.HourMinuteDuration
+import uk.gov.justice.digital.hmpps.communitypaybackapi.config.CacheConfig.Companion.CacheKey
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
 
+/**
+ * Some endpoint responses are cached for a limited time, configured by a corresponding entry in
+ * [org.springframework.cache.annotation.CacheConfig].
+ *
+ * Spring raises a warning regarding use of the @Cacheable annotation on interfaces because this will
+ * only work when using proxy mode (the default). If we ever switch to aspectj weaving, we'd need
+ * to move these annotations elsewhere.
+ */
+@Suppress("SpringCacheAnnotationsOnInterfaceInspection")
 interface CommunityPaybackAndDeliusClient {
+
+  @Cacheable(CacheKey.Delius.GET_PROVIDERS)
   @GetExchange("/providers")
   fun getProviders(
     @RequestParam username: String,
   ): NDProviderSummaries
 
+  @Cacheable(CacheKey.Delius.GET_PROVIDER_TEAMS)
   @GetExchange("/providers/{providerCode}/teams")
   fun getProviderTeams(@PathVariable providerCode: String): NDProviderTeamSummaries
 
@@ -32,6 +48,7 @@ interface CommunityPaybackAndDeliusClient {
     @RequestParam projectTypeCodes: List<String>?,
   ): NDSessionSummaries
 
+  @Cacheable(CacheKey.Delius.GET_PROJECT)
   @GetExchange("/projects/{projectCode}")
   fun getProject(
     @PathVariable projectCode: String,
@@ -44,6 +61,7 @@ interface CommunityPaybackAndDeliusClient {
     @RequestParam username: String,
   ): NDSession
 
+  @Cacheable(CacheKey.Delius.GET_SUPERVISORS)
   @GetExchange("/supervisors")
   fun getSupervisor(
     @RequestParam username: String,
@@ -69,6 +87,7 @@ interface CommunityPaybackAndDeliusClient {
     @RequestBody appointments: NDCreateAppointments,
   ): List<NDCreatedAppointment>
 
+  @Cacheable(CacheKey.Delius.GET_TEAM_SUPERVISORS)
   @GetExchange("/providers/{providerCode}/teams/{teamCode}/supervisors")
   fun getTeamSupervisors(
     @PathVariable providerCode: String,
@@ -81,6 +100,7 @@ interface CommunityPaybackAndDeliusClient {
     @PathVariable eventNumber: Int,
   ): NDUnpaidWorkRequirement
 
+  @Cacheable(CacheKey.Delius.GET_NON_WORKING_DAYS)
   @GetExchange("/reference-data/non-working-days")
   fun getNonWorkingDays(): List<LocalDate>
 
