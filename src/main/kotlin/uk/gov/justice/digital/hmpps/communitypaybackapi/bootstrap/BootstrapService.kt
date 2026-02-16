@@ -7,8 +7,8 @@ import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.EnvironmentService
 
 @Service
-@ConditionalOnProperty(name = ["community-payback.auto-seed.enabled"], havingValue = "true")
-class AutoSeedService(
+@ConditionalOnProperty(name = ["community-payback.bootstrap.enabled"], havingValue = "true")
+class BootstrapService(
   private val environmentService: EnvironmentService,
   private val seeders: List<AutoSeeder> = listOf(),
 ) {
@@ -18,23 +18,23 @@ class AutoSeedService(
   @PostConstruct
   fun onStartup() {
     if (environmentService.isNotATestEnvironment()) {
-      error("auto seed should not be enabled outside of test environments")
+      error("boot strap should not be enabled outside of test environments")
     }
 
     if (seeders.isEmpty()) {
-      log.info("[AutoSeed] No seeders registered")
+      log.info("No auto-seeders registered")
     } else {
-      log.info("[AutoSeed] Running ${seeders.size} seeders...")
+      log.info("Running ${seeders.size} seeders...")
       seeders.forEach { seeder ->
         try {
           seeder.seed()
-          log.info("[AutoSeed] Seeder ${seeder::class.simpleName} completed")
+          log.info("Seeder ${seeder::class.simpleName} completed")
         } catch (e: Exception) {
-          log.error("[AutoSeed] Seeder ${seeder::class.simpleName} failed", e)
+          log.error("Seeder ${seeder::class.simpleName} failed", e)
           throw e
         }
       }
-      log.info("[AutoSeed] Completed running seeders")
+      log.info("Completed running seeders")
     }
   }
 }
