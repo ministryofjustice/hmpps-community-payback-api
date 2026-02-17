@@ -1,0 +1,38 @@
+{
+  "name": "Age UK",
+  "code": "TEST02",
+  "type": {
+    "code": "ICP",
+    "name": "Individual Placement - ICP (Individual Community Placement)"
+  },
+  "provider": {
+    "code": "1000"
+  },
+  "team": {
+    "code": "N56DTX"
+  },
+  "location": {
+    "streetName": "Canal Wharf Road",
+    "buildingName": "Unit 3",
+    "addressNumber": "",
+    "townCity": "Nottingham",
+    "county": "Nottinghamshire",
+    "postCode": "NG7 4ZZ"
+  },
+  "beneficiaryDetails": {
+    "name": "Age UK",
+    "contactName": "Matthias Smith",
+    "emailAddress": "msmith@ageuk.co.uk",
+    "website": "http://mcduckenterprises.localhost",
+    "telephoneNumber": "012345 6787890",
+    "location": {
+      "streetName": "Office Street",
+      "buildingName": "1001",
+      "addressNumber": "14B",
+      "townCity": "City",
+      "county": "Shireshire",
+      "postCode": "ZY98XW"
+    }
+  },
+  "hiVisRequired": true
+}
