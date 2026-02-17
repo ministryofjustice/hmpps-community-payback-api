@@ -6,13 +6,13 @@ import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import org.assertj.core.api.Assertions.assertThatCode
 import org.assertj.core.api.Assertions.assertThatThrownBy
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.HourMinuteDuration
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AttendanceDataDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EnforcementDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.BadRequestException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
@@ -22,7 +22,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentUpdat
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
-import java.util.UUID
 
 @ExtendWith(MockKExtension::class)
 class AppointmentUpdateValidationServiceTest {
@@ -33,300 +32,342 @@ class AppointmentUpdateValidationServiceTest {
   @InjectMockKs
   lateinit var service: AppointmentUpdateValidationService
 
-  private fun outcome(
-    contactOutcomeCode: String = "OUTCOME1",
-    enforcementData: EnforcementDto? = null,
-  ): UpdateAppointmentOutcomeDto = UpdateAppointmentOutcomeDto.valid(
-    contactOutcomeCode = contactOutcomeCode,
-    enforcementActionId = enforcementData?.enforcementActionId ?: UUID.randomUUID(),
-  ).copy(
-    enforcementData = enforcementData,
-  )
+  companion object {
+    const val OUTCOME_CODE = "OUTCOME1"
+  }
 
   @Nested
-  inner class ContactOutcomeLookup {
-    @Test
-    fun `throws BadRequestException when contact outcome not found`() {
-      val code = "MISSING_CODE"
-      every { contactOutcomeEntityRepository.findByCode(code) } returns null
+  inner class Update {
 
-      assertThatThrownBy {
+    val baselineUpdate = UpdateAppointmentOutcomeDto.valid().copy(contactOutcomeCode = OUTCOME_CODE)
+    val baselineOutcome = ContactOutcomeEntity.valid().copy(code = OUTCOME_CODE)
+
+    @Nested
+    inner class Success {
+
+      @Test
+      fun success() {
+        every { contactOutcomeEntityRepository.findByCode(OUTCOME_CODE) } returns baselineOutcome
+
         service.validateUpdate(
           appointment = AppointmentDto.valid(),
-          update = outcome(contactOutcomeCode = code),
+          update = baselineUpdate,
         )
-      }.isInstanceOf(BadRequestException::class.java)
-        .hasMessage("Contact outcome not found for code $code")
+      }
     }
-  }
 
-  @Nested
-  inner class ContactOutcomeForFutureAppointment {
+    @Nested
+    inner class ContactOutcome {
 
-    @Test
-    fun `if appointment is in future, attendance outcome can't be recorded`() {
-      val outcome = ContactOutcomeEntity.valid().copy(attended = true, enforceable = false)
-      every { contactOutcomeEntityRepository.findByCode(outcome.code) } returns outcome
+      @Test
+      fun `throws BadRequestException when contact outcome not found`() {
+        every { contactOutcomeEntityRepository.findByCode(OUTCOME_CODE) } returns null
 
-      assertThatThrownBy {
+        assertThatThrownBy {
+          service.validateUpdate(
+            appointment = AppointmentDto.valid(),
+            update = baselineUpdate,
+          )
+        }.isInstanceOf(BadRequestException::class.java)
+          .hasMessage("Contact outcome not found for code $OUTCOME_CODE")
+      }
+
+      @Test
+      fun `if appointment is in future, attendance outcome can't be recorded`() {
+        val outcome = baselineOutcome.copy(attended = true, enforceable = false)
+        every { contactOutcomeEntityRepository.findByCode(OUTCOME_CODE) } returns outcome
+
+        assertThatThrownBy {
+          service.validateUpdate(
+            appointment = AppointmentDto.valid().copy(date = LocalDate.now().plusDays(1)),
+            update = baselineUpdate,
+          )
+        }.isInstanceOf(BadRequestException::class.java)
+          .hasMessage("If the appointment is in the future, only acceptable absences are permitted to be recorded")
+      }
+
+      @Test
+      fun `if appointment is in future, enforceable outcome can't be recorded`() {
+        val outcome = baselineOutcome.copy(attended = false, enforceable = true)
+        every { contactOutcomeEntityRepository.findByCode(outcome.code) } returns outcome
+
+        assertThatThrownBy {
+          service.validateUpdate(
+            appointment = AppointmentDto.valid().copy(date = LocalDate.now().plusDays(1)),
+            update = baselineUpdate,
+          )
+        }.isInstanceOf(BadRequestException::class.java)
+          .hasMessage("If the appointment is in the future, only acceptable absences are permitted to be recorded")
+      }
+
+      @Test
+      fun `if appointment is in future, non-enforceable absence can be recorded`() {
+        val outcome = baselineOutcome.copy(attended = false, enforceable = false)
+        every { contactOutcomeEntityRepository.findByCode(outcome.code) } returns outcome
+
         service.validateUpdate(
           appointment = AppointmentDto.valid().copy(date = LocalDate.now().plusDays(1)),
-          update = UpdateAppointmentOutcomeDto.valid().copy(contactOutcomeCode = outcome.code),
+          update = baselineUpdate,
         )
-      }.isInstanceOf(BadRequestException::class.java)
-        .hasMessage("If the appointment is in the future, only acceptable absences are permitted to be recorded")
-    }
+      }
 
-    @Test
-    fun `if appointment is in future, enforceable outcome can't be recorded`() {
-      val outcome = ContactOutcomeEntity.valid().copy(attended = false, enforceable = true)
-      every { contactOutcomeEntityRepository.findByCode(outcome.code) } returns outcome
+      @Test
+      fun `if outcome attended is false, attendance data isn't required`() {
+        val outcome = baselineOutcome.copy(attended = false, enforceable = false)
+        every { contactOutcomeEntityRepository.findByCode(outcome.code) } returns outcome
 
-      assertThatThrownBy {
-        service.validateUpdate(
-          appointment = AppointmentDto.valid().copy(date = LocalDate.now().plusDays(1)),
-          update = UpdateAppointmentOutcomeDto.valid().copy(contactOutcomeCode = outcome.code),
-        )
-      }.isInstanceOf(BadRequestException::class.java)
-        .hasMessage("If the appointment is in the future, only acceptable absences are permitted to be recorded")
-    }
-
-    @Test
-    fun `if appointment is in future, non-enforceable absence can be recorded`() {
-      val outcome = ContactOutcomeEntity.valid().copy(attended = false, enforceable = false)
-      every { contactOutcomeEntityRepository.findByCode(outcome.code) } returns outcome
-
-      service.validateUpdate(
-        appointment = AppointmentDto.valid().copy(date = LocalDate.now().plusDays(1)),
-        update = UpdateAppointmentOutcomeDto.valid().copy(contactOutcomeCode = outcome.code),
-      )
-    }
-  }
-
-  @Nested
-  inner class ContactOutcomeAttended {
-
-    @Test
-    fun `if outcome attended is false, attendance data isn't required`() {
-      val outcome = ContactOutcomeEntity.valid().copy(attended = false, enforceable = false)
-      every { contactOutcomeEntityRepository.findByCode(outcome.code) } returns outcome
-
-      service.validateUpdate(
-        appointment = AppointmentDto.valid().copy(date = LocalDate.now()),
-        update = UpdateAppointmentOutcomeDto.valid().copy(contactOutcomeCode = outcome.code),
-      )
-    }
-
-    @Test
-    fun `if outcome attended is true and attendance data isn't provided, throw exception`() {
-      val outcome = ContactOutcomeEntity.valid().copy(attended = true, enforceable = false)
-      every { contactOutcomeEntityRepository.findByCode(outcome.code) } returns outcome
-
-      assertThatThrownBy {
         service.validateUpdate(
           appointment = AppointmentDto.valid().copy(date = LocalDate.now()),
-          update = UpdateAppointmentOutcomeDto.valid().copy(
-            contactOutcomeCode = outcome.code,
-            attendanceData = null,
+          update = baselineUpdate,
+        )
+      }
+
+      @Test
+      fun `if outcome attended is true and attendance data isn't provided, throw exception`() {
+        val outcome = baselineOutcome.copy(attended = true, enforceable = false)
+        every { contactOutcomeEntityRepository.findByCode(outcome.code) } returns outcome
+
+        assertThatThrownBy {
+          service.validateUpdate(
+            appointment = AppointmentDto.valid().copy(date = LocalDate.now()),
+            update = baselineUpdate.copy(
+              attendanceData = null,
+            ),
+          )
+        }.isInstanceOf(BadRequestException::class.java)
+          .hasMessage("Attendance data is required for 'attended' contact outcomes")
+      }
+
+      @Test
+      fun `if outcome attended is true and attendance data is provided, don't throw exception`() {
+        val outcome = baselineOutcome.copy(attended = true, enforceable = false)
+        every { contactOutcomeEntityRepository.findByCode(outcome.code) } returns outcome
+
+        service.validateUpdate(
+          appointment = AppointmentDto.valid().copy(date = LocalDate.now()),
+          update = baselineUpdate.copy(
+            attendanceData = AttendanceDataDto.valid(),
           ),
         )
-      }.isInstanceOf(BadRequestException::class.java)
-        .hasMessage("Attendance data is required for 'attended' contact outcomes")
+      }
     }
 
-    @Test
-    fun `if outcome attended is true and attendance data is provided, don't throw exception`() {
-      val outcome = ContactOutcomeEntity.valid().copy(attended = true, enforceable = false)
-      every { contactOutcomeEntityRepository.findByCode(outcome.code) } returns outcome
+    @Nested
+    inner class AppointmentDuration {
 
-      service.validateUpdate(
-        appointment = AppointmentDto.valid().copy(date = LocalDate.now()),
-        update = UpdateAppointmentOutcomeDto.valid().copy(
-          contactOutcomeCode = outcome.code,
-          attendanceData = AttendanceDataDto.valid(),
-        ),
-      )
-    }
-  }
+      @BeforeEach
+      fun setupOutcome() {
+        every { contactOutcomeEntityRepository.findByCode(baselineOutcome.code) } returns baselineOutcome
+      }
 
-  @Nested
-  inner class AppointmentDuration {
+      @Test
+      fun `if end time same as start time, throw exception`() {
+        assertThatThrownBy {
+          service.validateUpdate(
+            appointment = AppointmentDto.valid(),
+            baselineUpdate.copy(
+              startTime = LocalTime.of(10, 0),
+              endTime = LocalTime.of(10, 0),
+            ),
+          )
+        }.isInstanceOf(BadRequestException::class.java)
+          .hasMessage("End Time '10:00' must be after Start Time '10:00'")
+      }
 
-    @Test
-    fun `if end time same as start time, throw exception`() {
-      assertThatThrownBy {
-        service.validateDuration(
-          UpdateAppointmentOutcomeDto.valid().copy(
+      @Test
+      fun `if end time after start time, do nothing`() {
+        service.validateUpdate(
+          appointment = AppointmentDto.valid(),
+          baselineUpdate.copy(
             startTime = LocalTime.of(10, 0),
-            endTime = LocalTime.of(10, 0),
+            endTime = LocalTime.of(10, 1),
           ),
         )
-      }.isInstanceOf(BadRequestException::class.java)
-        .hasMessage("End Time '10:00' must be after Start Time '10:00'")
+      }
+
+      @Test
+      fun `if end time before start time, throw exception`() {
+        assertThatThrownBy {
+          service.validateUpdate(
+            appointment = AppointmentDto.valid(),
+            baselineUpdate.copy(
+              startTime = LocalTime.of(10, 1),
+              endTime = LocalTime.of(10, 0),
+            ),
+          )
+        }.isInstanceOf(BadRequestException::class.java)
+          .hasMessage("End Time '10:00' must be after Start Time '10:01'")
+      }
     }
 
-    @Test
-    fun `if end time after start time, do nothing`() {
-      service.validateDuration(
-        UpdateAppointmentOutcomeDto.valid().copy(
-          startTime = LocalTime.of(10, 0),
-          endTime = LocalTime.of(10, 1),
-        ),
-      )
-    }
+    @Nested
+    inner class PenaltyMinutesDuration {
 
-    @Test
-    fun `if end time before start time, throw exception`() {
-      assertThatThrownBy {
-        service.validateDuration(
-          UpdateAppointmentOutcomeDto.valid().copy(
-            startTime = LocalTime.of(10, 1),
-            endTime = LocalTime.of(10, 0),
+      @BeforeEach
+      fun setupOutcome() {
+        every { contactOutcomeEntityRepository.findByCode(baselineOutcome.code) } returns baselineOutcome
+      }
+
+      @Test
+      fun `if no penalty minutes, do nothing`() {
+        service.validateUpdate(
+          appointment = AppointmentDto.valid(),
+          baselineUpdate.copy(
+            attendanceData = AttendanceDataDto.valid().copy(
+              penaltyMinutes = null,
+              penaltyTime = null,
+            ),
           ),
         )
-      }.isInstanceOf(BadRequestException::class.java)
-        .hasMessage("End Time '10:00' must be after Start Time '10:01'")
-    }
-  }
+      }
 
-  @Nested
-  inner class PenaltyMinutesDuration {
-
-    @Test
-    fun `if no penalty minutes, do nothing`() {
-      service.validatePenaltyTime(
-        UpdateAppointmentOutcomeDto.valid().copy(
-          attendanceData = AttendanceDataDto.valid().copy(
-            penaltyMinutes = null,
-            penaltyTime = null,
-          ),
-        ),
-      )
-    }
-
-    @Test
-    fun `if penalty time is less than duration, do nothing`() {
-      service.validatePenaltyTime(
-        UpdateAppointmentOutcomeDto.valid().copy(
-          startTime = LocalTime.of(10, 0),
-          endTime = LocalTime.of(16, 35),
-          attendanceData = AttendanceDataDto.valid().copy(
-            penaltyMinutes = null,
-            penaltyTime = HourMinuteDuration(Duration.ofHours(6).plusMinutes(30)),
-          ),
-        ),
-      )
-    }
-
-    @Test
-    fun `if penalty minutes is less than duration, do nothing`() {
-      service.validatePenaltyTime(
-        UpdateAppointmentOutcomeDto.valid().copy(
-          startTime = LocalTime.of(10, 0),
-          endTime = LocalTime.of(16, 35),
-          attendanceData = AttendanceDataDto.valid().copy(
-            penaltyMinutes = 390,
-            penaltyTime = null,
-          ),
-        ),
-      )
-    }
-
-    @Test
-    fun `if penalty time is same as duration, do nothing`() {
-      service.validatePenaltyTime(
-        UpdateAppointmentOutcomeDto.valid().copy(
-          startTime = LocalTime.of(10, 0),
-          endTime = LocalTime.of(16, 35),
-          attendanceData = AttendanceDataDto.valid().copy(
-            penaltyMinutes = null,
-            penaltyTime = HourMinuteDuration(Duration.ofHours(6).plusMinutes(35)),
-          ),
-        ),
-      )
-    }
-
-    @Test
-    fun `if penalty minutes is same as duration, do nothing`() {
-      service.validatePenaltyTime(
-        UpdateAppointmentOutcomeDto.valid().copy(
-          startTime = LocalTime.of(10, 0),
-          endTime = LocalTime.of(16, 35),
-          attendanceData = AttendanceDataDto.valid().copy(
-            penaltyMinutes = 395,
-            penaltyTime = HourMinuteDuration(Duration.ofHours(6).plusMinutes(35)),
-          ),
-        ),
-      )
-    }
-
-    @Test
-    fun `if penalty time is greater than as duration, throw exception`() {
-      assertThatThrownBy {
-        service.validatePenaltyTime(
-          UpdateAppointmentOutcomeDto.valid().copy(
+      @Test
+      fun `if penalty time is less than duration, do nothing`() {
+        service.validateUpdate(
+          appointment = AppointmentDto.valid(),
+          baselineUpdate.copy(
             startTime = LocalTime.of(10, 0),
             endTime = LocalTime.of(16, 35),
             attendanceData = AttendanceDataDto.valid().copy(
               penaltyMinutes = null,
-              penaltyTime = HourMinuteDuration(Duration.ofHours(6).plusMinutes(36)),
+              penaltyTime = HourMinuteDuration(Duration.ofHours(6).plusMinutes(30)),
             ),
           ),
         )
-      }.isInstanceOf(BadRequestException::class.java)
-        .hasMessage("Penalty duration 'PT6H36M' is greater than appointment duration 'PT6H35M'")
-    }
+      }
 
-    @Test
-    fun `if penalty minutes is greater than as duration, throw exception`() {
-      assertThatThrownBy {
-        service.validatePenaltyTime(
-          UpdateAppointmentOutcomeDto.valid().copy(
+      @Test
+      fun `if penalty minutes is less than duration, do nothing`() {
+        service.validateUpdate(
+          appointment = AppointmentDto.valid(),
+          baselineUpdate.copy(
             startTime = LocalTime.of(10, 0),
             endTime = LocalTime.of(16, 35),
             attendanceData = AttendanceDataDto.valid().copy(
-              penaltyMinutes = 396,
-              penaltyTime = HourMinuteDuration(Duration.ofMinutes(5)),
+              penaltyMinutes = 390,
+              penaltyTime = null,
             ),
           ),
         )
-      }.isInstanceOf(BadRequestException::class.java)
-        .hasMessage("Penalty duration 'PT6H36M' is greater than appointment duration 'PT6H35M'")
+      }
+
+      @Test
+      fun `if penalty time is same as duration, do nothing`() {
+        service.validateUpdate(
+          appointment = AppointmentDto.valid(),
+          baselineUpdate.copy(
+            startTime = LocalTime.of(10, 0),
+            endTime = LocalTime.of(16, 35),
+            attendanceData = AttendanceDataDto.valid().copy(
+              penaltyMinutes = null,
+              penaltyTime = HourMinuteDuration(Duration.ofHours(6).plusMinutes(35)),
+            ),
+          ),
+        )
+      }
+
+      @Test
+      fun `if penalty minutes is same as duration, do nothing`() {
+        service.validateUpdate(
+          appointment = AppointmentDto.valid(),
+          baselineUpdate.copy(
+            startTime = LocalTime.of(10, 0),
+            endTime = LocalTime.of(16, 35),
+            attendanceData = AttendanceDataDto.valid().copy(
+              penaltyMinutes = 395,
+              penaltyTime = HourMinuteDuration(Duration.ofHours(6).plusMinutes(35)),
+            ),
+          ),
+        )
+      }
+
+      @Test
+      fun `if penalty time is greater than as duration, throw exception`() {
+        assertThatThrownBy {
+          service.validateUpdate(
+            appointment = AppointmentDto.valid(),
+            baselineUpdate.copy(
+              startTime = LocalTime.of(10, 0),
+              endTime = LocalTime.of(16, 35),
+              attendanceData = AttendanceDataDto.valid().copy(
+                penaltyMinutes = null,
+                penaltyTime = HourMinuteDuration(Duration.ofHours(6).plusMinutes(36)),
+              ),
+            ),
+          )
+        }.isInstanceOf(BadRequestException::class.java)
+          .hasMessage("Penalty duration 'PT6H36M' is greater than appointment duration 'PT6H35M'")
+      }
+
+      @Test
+      fun `if penalty minutes is greater than as duration, throw exception`() {
+        assertThatThrownBy {
+          service.validateUpdate(
+            appointment = AppointmentDto.valid(),
+            baselineUpdate.copy(
+              startTime = LocalTime.of(10, 0),
+              endTime = LocalTime.of(16, 35),
+              attendanceData = AttendanceDataDto.valid().copy(
+                penaltyMinutes = 396,
+                penaltyTime = HourMinuteDuration(Duration.ofMinutes(5)),
+              ),
+            ),
+          )
+        }.isInstanceOf(BadRequestException::class.java)
+          .hasMessage("Penalty duration 'PT6H36M' is greater than appointment duration 'PT6H35M'")
+      }
     }
-  }
 
-  @Nested
-  inner class NotesValidation {
+    @Nested
+    inner class NotesValidation {
 
-    @Test
-    fun `null notes is accepted`() {
-      assertThatCode {
-        service.validateNotes(UpdateAppointmentOutcomeDto.valid().copy(notes = null))
-      }.doesNotThrowAnyException()
-    }
+      @BeforeEach
+      fun setupOutcome() {
+        every { contactOutcomeEntityRepository.findByCode(baselineOutcome.code) } returns baselineOutcome
+      }
 
-    @Test
-    fun `empty notes is accepted`() {
-      assertThatCode {
-        service.validateNotes(UpdateAppointmentOutcomeDto.valid().copy(notes = ""))
-      }.doesNotThrowAnyException()
-    }
+      @Test
+      fun `null notes is accepted`() {
+        assertThatCode {
+          service.validateUpdate(
+            appointment = AppointmentDto.valid(),
+            baselineUpdate.copy(notes = null),
+          )
+        }.doesNotThrowAnyException()
+      }
 
-    @Test
-    fun `notes length 4000 is accepted`() {
-      val notes = "a".repeat(4000)
-      assertThatCode {
-        service.validateNotes(UpdateAppointmentOutcomeDto.valid().copy(notes = notes))
-      }.doesNotThrowAnyException()
-    }
+      @Test
+      fun `empty notes is accepted`() {
+        assertThatCode {
+          service.validateUpdate(
+            appointment = AppointmentDto.valid(),
+            baselineUpdate.copy(notes = ""),
+          )
+        }.doesNotThrowAnyException()
+      }
 
-    @Test
-    fun `notes length 4001 throws BadRequest`() {
-      val notes = "a".repeat(4001)
-      assertThatThrownBy {
-        service.validateNotes(UpdateAppointmentOutcomeDto.valid().copy(notes = notes))
-      }.isInstanceOf(BadRequestException::class.java)
-        .hasMessage("Outcome notes must be fewer than 4000 characters")
+      @Test
+      fun `notes length 4000 is accepted`() {
+        val notes = "a".repeat(4000)
+        assertThatCode {
+          service.validateUpdate(
+            appointment = AppointmentDto.valid(),
+            baselineUpdate.copy(notes = notes),
+          )
+        }.doesNotThrowAnyException()
+      }
+
+      @Test
+      fun `notes length 4001 throws BadRequest`() {
+        val notes = "a".repeat(4001)
+        assertThatThrownBy {
+          service.validateUpdate(
+            appointment = AppointmentDto.valid(),
+            baselineUpdate.copy(notes = notes),
+          )
+        }.isInstanceOf(BadRequestException::class.java)
+          .hasMessage("Outcome notes must be fewer than 4000 characters")
+      }
     }
   }
 }

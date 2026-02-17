@@ -14,17 +14,17 @@ class AppointmentUpdateValidationService(
   private val contactOutcomeEntityRepository: ContactOutcomeEntityRepository,
 ) {
 
-  fun ensureUpdateIsValid(
+  fun validateUpdate(
     appointment: AppointmentDto,
     update: UpdateAppointmentOutcomeDto,
   ) {
-    validateUpdate(appointment, update)
+    validateOutcome(appointment, update)
     validateDuration(update)
     validatePenaltyTime(update)
     validateNotes(update)
   }
 
-  fun validateUpdate(
+  private fun validateOutcome(
     appointment: AppointmentDto,
     update: UpdateAppointmentOutcomeDto,
   ) {
@@ -46,13 +46,13 @@ class AppointmentUpdateValidationService(
     }
   }
 
-  fun validateDuration(update: UpdateAppointmentOutcomeDto) {
+  private fun validateDuration(update: UpdateAppointmentOutcomeDto) {
     if (update.endTime <= update.startTime) {
       throw BadRequestException("End Time '${update.endTime}' must be after Start Time '${update.startTime}'")
     }
   }
 
-  fun validatePenaltyTime(update: UpdateAppointmentOutcomeDto) {
+  private fun validatePenaltyTime(update: UpdateAppointmentOutcomeDto) {
     update.attendanceData?.derivePenaltyMinutesDuration()?.let { penaltyDuration ->
       val appointmentDuration = Duration.between(update.startTime, update.endTime)
       if (penaltyDuration > appointmentDuration) {
@@ -61,7 +61,7 @@ class AppointmentUpdateValidationService(
     }
   }
 
-  fun validateNotes(update: UpdateAppointmentOutcomeDto) {
+  private fun validateNotes(update: UpdateAppointmentOutcomeDto) {
     validateLengthLessThan(update.notes, 4000) { _, _ ->
       "Outcome notes must be fewer than 4000 characters"
     }
