@@ -11,6 +11,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toNDCrea
 @Service
 class AppointmentCreationService(
   private val appointmentEventEntityFactory: AppointmentEventEntityFactory,
+  private val appointmentValidationService: AppointmentValidationService,
   private val communityPaybackAndDeliusClient: CommunityPaybackAndDeliusClient,
   private val appointmentEventEntityRepository: AppointmentEventEntityRepository,
   private val domainEventService: DomainEventService,
@@ -24,6 +25,9 @@ class AppointmentCreationService(
     val projectCode = createAppointments.projectCode
 
     val appointmentCreationEvents = createAppointments.appointments.map { createAppointment ->
+
+      appointmentValidationService.validateCreate(createAppointment)
+
       appointmentEventEntityFactory.buildCreatedEvent(
         // the ID will be provided by the upstream response and set on the event before persistence
         deliusId = 0L,
