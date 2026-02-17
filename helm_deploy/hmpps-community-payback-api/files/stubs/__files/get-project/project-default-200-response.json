@@ -1,5 +1,5 @@
 {
-  "name": "Default National Group Project 1",
+  "name": "Greenway Community Allotment Project",
   "code": "TEST01",
   "type": {
     "code": "NP2",
@@ -12,26 +12,26 @@
     "code": "N56DTX"
   },
   "location": {
-    "streetName": "Office Street",
-    "buildingName": "1001",
-    "addressNumber": "14B",
-    "townCity": "City",
-    "county": "Shireshire",
-    "postCode": "ZY98XW"
+    "streetName": "Meadow Lane",
+    "buildingName": "",
+    "addressNumber": "22",
+    "townCity": "Leeds",
+    "county": "West Yorkshire",
+    "postCode": "LS9 8ZZ"
   },
   "beneficiaryDetails": {
-    "name": "McDuck Enterprises",
-    "contactName": "Scrooge McDuck",
-    "emailAddress": "scrooge@localhost",
-    "website": "http://mcduckenterprises.localhost",
+    "name": "Greenway Community Allotment Association",
+    "contactName": "Sarah Witton",
+    "emailAddress": "sarah.witton@greenwayallotments.org.uk",
+    "website": "https://www.greenwayallotments.org.uk",
     "telephoneNumber": "12345 6787890",
     "location": {
-      "streetName": "Office Street",
-      "buildingName": "1001",
-      "addressNumber": "14B",
-      "townCity": "City",
-      "county": "Shireshire",
-      "postCode": "ZY98XW"
+      "streetName": "Meadow Lane",
+      "buildingName": "",
+      "addressNumber": "22",
+      "townCity": "Leeds",
+      "county": "West Yorkshire",
+      "postCode": "LS9 8ZZ"
     }
   },
   "hiVisRequired": true
