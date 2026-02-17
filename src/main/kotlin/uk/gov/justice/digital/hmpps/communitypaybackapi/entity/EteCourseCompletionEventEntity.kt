@@ -4,9 +4,8 @@ import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
 import jakarta.persistence.Id
-import jakarta.persistence.JoinColumn
-import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
+import jakarta.persistence.Version
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.UpdateTimestamp
 import org.hibernate.proxy.HibernateProxy
@@ -20,6 +19,9 @@ import java.util.UUID
 data class EteCourseCompletionEventEntity(
   @Id
   val id: UUID,
+
+  @Version
+  var version: Long = 1,
 
   val firstName: String,
   val lastName: String,
@@ -49,10 +51,6 @@ data class EteCourseCompletionEventEntity(
 
   @UpdateTimestamp
   val updatedAt: OffsetDateTime = OffsetDateTime.now(),
-
-  @ManyToOne
-  @JoinColumn(name = "user_id")
-  val user: EteUser? = null,
 ) {
 
   @Suppress("USELESS_IS_CHECK")

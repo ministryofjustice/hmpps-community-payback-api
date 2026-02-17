@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.integration
 
+import io.mockk.impl.annotations.RelaxedMockK
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
@@ -7,24 +8,39 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.hateoas.PagedModel
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateEteUserRequest
+import org.springframework.http.MediaType
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointment
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProject
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectAndLocation
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSupervisorSummaries
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSupervisorSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EteCourseCompletionEventDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntityRepository
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteUserRepository
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.unallocated
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.validNoOutcome
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
+import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.DomainEventAsserter
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.bodyAsObject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.CommunityPaybackAndDeliusMockServer
+import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.CommunityPaybackAndDeliusMockServer.ExpectedAppointmentCreate
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ContextService
 import java.time.LocalDate
+import java.time.LocalTime
 import java.util.UUID
 
 class AdminCourseCompletionIT : IntegrationTestBase() {
 
   @Autowired
-  lateinit var eteAppointmentEventEntityRepository: EteCourseCompletionEventEntityRepository
+  lateinit var eteCourseCompletionEventEntityRepository: EteCourseCompletionEventEntityRepository
 
   @Autowired
-  lateinit var eteUserRepository: EteUserRepository
+  lateinit var domainEventAsserter: DomainEventAsserter
+
+  @RelaxedMockK
+  lateinit var contextService: ContextService
 
   @Nested
   @DisplayName("GET /providers/N07/course-completions")
@@ -36,8 +52,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
 
       @BeforeEach
       fun setUp() {
-        eteAppointmentEventEntityRepository.deleteAll()
-        eteUserRepository.deleteAll()
+        eteCourseCompletionEventEntityRepository.deleteAll()
       }
 
       @Test
@@ -84,7 +99,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
 
       @Test
       fun `should return OK for one course completion`() {
-        val entity = eteAppointmentEventEntityRepository.save(
+        val entity = eteCourseCompletionEventEntityRepository.save(
           EteCourseCompletionEventEntity.valid().copy(
             region = "London",
           ),
@@ -105,21 +120,21 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
       @Test
       fun `should apply date range`() {
         // before range
-        eteAppointmentEventEntityRepository.save(
+        eteCourseCompletionEventEntityRepository.save(
           EteCourseCompletionEventEntity.valid().copy(
             region = "London",
             completionDate = LocalDate.of(2025, 5, 9),
           ),
         )
 
-        val inRange1 = eteAppointmentEventEntityRepository.save(
+        val inRange1 = eteCourseCompletionEventEntityRepository.save(
           EteCourseCompletionEventEntity.valid().copy(
             region = "London",
             completionDate = LocalDate.of(2025, 5, 10),
           ),
         )
 
-        val inRange2 = eteAppointmentEventEntityRepository.save(
+        val inRange2 = eteCourseCompletionEventEntityRepository.save(
           EteCourseCompletionEventEntity.valid().copy(
             region = "London",
             completionDate = LocalDate.of(2025, 6, 20),
@@ -127,7 +142,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
         )
 
         // after range
-        eteAppointmentEventEntityRepository.save(
+        eteCourseCompletionEventEntityRepository.save(
           EteCourseCompletionEventEntity.valid().copy(
             region = "London",
             completionDate = LocalDate.of(2025, 6, 21),
@@ -150,7 +165,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
       @Test
       fun `should return OK for multiple course completions with pagination`() {
         repeat(10) {
-          eteAppointmentEventEntityRepository.save(
+          eteCourseCompletionEventEntityRepository.save(
             EteCourseCompletionEventEntity.valid().copy(
               region = "London",
             ),
@@ -186,28 +201,28 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
 
       @Test
       fun `should return OK for multiple course completions with sorting`() {
-        eteAppointmentEventEntityRepository.save(
+        eteCourseCompletionEventEntityRepository.save(
           EteCourseCompletionEventEntity.valid().copy(
             firstName = "John",
             lastName = "Smith",
             region = "London",
           ),
         )
-        eteAppointmentEventEntityRepository.save(
+        eteCourseCompletionEventEntityRepository.save(
           EteCourseCompletionEventEntity.valid().copy(
             firstName = "John",
             lastName = "Doe",
             region = "London",
           ),
         )
-        eteAppointmentEventEntityRepository.save(
+        eteCourseCompletionEventEntityRepository.save(
           EteCourseCompletionEventEntity.valid().copy(
             firstName = "Pi",
             lastName = "Patel",
             region = "London",
           ),
         )
-        eteAppointmentEventEntityRepository.save(
+        eteCourseCompletionEventEntityRepository.save(
           EteCourseCompletionEventEntity.valid().copy(
             firstName = "Zack",
             lastName = "Jones",
@@ -238,6 +253,196 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
   }
 
   @Nested
+  @DisplayName("POST /course-completion/{eteCourseCompletionEventId}")
+  inner class PostCourseCompletionOutcomeEndpoint {
+
+    val courseCompletionOutcomeDto = CourseCompletionOutcomeDto(
+      crn = "X123456",
+      appointmentIdToUpdate = null,
+      minutesToCredit = 60,
+      contactOutcome = "COMP",
+      projectCode = "PRJ001",
+    )
+
+    @BeforeEach
+    fun setUp() {
+      eteCourseCompletionEventEntityRepository.deleteAll()
+    }
+
+    @Test
+    fun `should return unauthorized if no token`() {
+      val id = UUID.randomUUID()
+      webTestClient.post()
+        .uri("/admin/course-completion/$id")
+        .contentType(MediaType.APPLICATION_JSON)
+        .bodyValue(courseCompletionOutcomeDto)
+        .exchange()
+        .expectStatus()
+        .isUnauthorized
+    }
+
+    @Test
+    fun `should return forbidden if no role`() {
+      val id = UUID.randomUUID()
+      webTestClient.post()
+        .uri("/admin/course-completions/$id")
+        .headers(setAuthorisation())
+        .contentType(MediaType.APPLICATION_JSON)
+        .bodyValue(courseCompletionOutcomeDto)
+        .exchange()
+        .expectStatus()
+        .isForbidden
+    }
+
+    @Test
+    fun `should return forbidden if wrong role`() {
+      val id = UUID.randomUUID()
+      webTestClient.post()
+        .uri("/admin/course-completions/$id")
+        .headers(setAuthorisation(roles = listOf("ROLE_WRONG")))
+        .contentType(MediaType.APPLICATION_JSON)
+        .bodyValue(courseCompletionOutcomeDto)
+        .exchange()
+        .expectStatus()
+        .isForbidden
+    }
+
+    @Test
+    fun `should create appointment when appointmentIdToUpdate is null`() {
+      val projectCode = "PRJ001"
+      val crn = "X999999"
+      val minutesToCredit = 90L
+      val eventEntity = eteCourseCompletionEventEntityRepository.save(
+        EteCourseCompletionEventEntity.valid(),
+      )
+      val outcome = CourseCompletionOutcomeDto.valid().copy(
+        crn = crn,
+        appointmentIdToUpdate = null,
+        minutesToCredit = minutesToCredit,
+        contactOutcome = "ATTC",
+        projectCode = projectCode,
+      )
+
+      val project = NDProject.valid(ctx).copy(code = projectCode)
+      CommunityPaybackAndDeliusMockServer.getProject(project)
+      CommunityPaybackAndDeliusMockServer.getTeamSupervisors(
+        forProject = project,
+        supervisorSummaries = NDSupervisorSummaries(listOf(NDSupervisorSummary.unallocated())),
+      )
+      CommunityPaybackAndDeliusMockServer.postAppointments(projectCode = projectCode, appointmentCount = 1)
+
+      webTestClient.post()
+        .uri("/admin/course-completions/${eventEntity.id}")
+        .addAdminUiAuthHeader("theusername")
+        .contentType(MediaType.APPLICATION_JSON)
+        .bodyValue(outcome)
+        .exchange()
+        .expectStatus()
+        .isNoContent
+
+      val expectedAppointment = ExpectedAppointmentCreate(
+        crn = crn,
+        eventNumber = 1,
+        date = eventEntity.completionDate,
+        startTime = LocalTime.of(9, 0),
+        endTime = LocalTime.of(9, 0).plusMinutes(minutesToCredit),
+      )
+
+      CommunityPaybackAndDeliusMockServer.postAppointmentVerify(
+        projectCode = projectCode,
+        expectedAppointments = listOf(expectedAppointment),
+      )
+    }
+
+    @Test
+    fun `should update appointment when appointmentIdToUpdate is present`() {
+      val projectCode = "PRJ001"
+      val crn = "X999999"
+      val minutesToCredit = 90L
+      val appointmentId = 12345L
+      val eventEntity = eteCourseCompletionEventEntityRepository.save(
+        EteCourseCompletionEventEntity.valid(),
+      )
+      val outcome = CourseCompletionOutcomeDto.valid().copy(
+        crn = crn,
+        appointmentIdToUpdate = null,
+        minutesToCredit = minutesToCredit,
+        contactOutcome = "ATTC",
+        projectCode = projectCode,
+      )
+
+      val upstreamAppointment = NDAppointment.validNoOutcome(ctx).copy(
+        id = appointmentId,
+        project = NDProjectAndLocation.valid().copy(
+          code = projectCode,
+        ),
+        date = LocalDate.now().minusDays(5),
+      )
+      CommunityPaybackAndDeliusMockServer.getAppointment(
+        appointment = upstreamAppointment,
+        username = "theusername",
+      )
+      val project = NDProject.valid(ctx).copy(code = projectCode)
+      CommunityPaybackAndDeliusMockServer.getProject(project)
+      CommunityPaybackAndDeliusMockServer.getTeamSupervisors(
+        forProject = project,
+        supervisorSummaries = NDSupervisorSummaries(listOf(NDSupervisorSummary.unallocated())),
+      )
+      CommunityPaybackAndDeliusMockServer.putAppointment(
+        projectCode = projectCode,
+        appointmentId = appointmentId,
+      )
+      CommunityPaybackAndDeliusMockServer.postAppointments(
+        projectCode = projectCode,
+        appointmentCount = 1,
+      )
+
+      webTestClient.post()
+        .uri("/admin/course-completions/${eventEntity.id}")
+        .addAdminUiAuthHeader("theusername")
+        .contentType(MediaType.APPLICATION_JSON)
+        .bodyValue(outcome)
+        .exchange()
+        .expectStatus()
+        .isNoContent
+
+      val expectedAppointment = ExpectedAppointmentCreate(
+        crn = crn,
+        eventNumber = 1,
+        date = eventEntity.completionDate,
+        startTime = LocalTime.of(9, 0),
+        endTime = LocalTime.of(9, 0).plusMinutes(minutesToCredit),
+      )
+
+      CommunityPaybackAndDeliusMockServer.postAppointmentVerify(
+        projectCode = projectCode,
+        expectedAppointments = listOf(expectedAppointment),
+      )
+    }
+
+    @Test
+    fun `should return 404 when ete event not found`() {
+      val id = UUID.randomUUID()
+      webTestClient.post()
+        .uri("/admin/course-completion/$id")
+        .addAdminUiAuthHeader("theusername")
+        .contentType(MediaType.APPLICATION_JSON)
+        .bodyValue(
+          CourseCompletionOutcomeDto(
+            crn = "X123456",
+            appointmentIdToUpdate = null,
+            minutesToCredit = 60,
+            contactOutcome = "COMP",
+            projectCode = "PRJ001",
+          ),
+        )
+        .exchange()
+        .expectStatus()
+        .isNotFound
+    }
+  }
+
+  @Nested
   @DisplayName("GET /course-completions/{id}")
   inner class CourseCompletionEndpoint {
 
@@ -245,7 +450,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
 
     @BeforeEach
     fun setUp() {
-      eteAppointmentEventEntityRepository.deleteAll()
+      eteCourseCompletionEventEntityRepository.deleteAll()
     }
 
     @Test
@@ -289,7 +494,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
 
     @Test
     fun `should return OK for a course completion`() {
-      val entity = eteAppointmentEventEntityRepository.save(
+      val entity = eteCourseCompletionEventEntityRepository.save(
         EteCourseCompletionEventEntity.valid().copy(
           region = "London",
         ),
@@ -305,54 +510,6 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
 
       assertThat(courseCompletionEvent.id).isEqualTo(entity.id)
       assertThat(courseCompletionEvent.firstName).isEqualTo(entity.firstName)
-    }
-  }
-
-  @Nested
-  @DisplayName("POST /admin/ete-users")
-  inner class CreateEteUser {
-
-    @Test
-    fun `should return 201 when user is created and 204 when it already exists`() {
-      val request = CreateEteUserRequest(
-        crn = "X123456",
-        email = "test.user@digital.justice.gov.uk",
-      )
-
-      CommunityPaybackAndDeliusMockServer.getUpwDetailsSummary(request.crn)
-
-      webTestClient.post()
-        .uri("/admin/ete/users")
-        .addAdminUiAuthHeader()
-        .bodyValue(request)
-        .exchange()
-        .expectStatus()
-        .isCreated
-
-      webTestClient.post()
-        .uri("/admin/ete/users")
-        .addAdminUiAuthHeader()
-        .bodyValue(request)
-        .exchange()
-        .expectStatus()
-        .isNoContent
-    }
-
-    @Test
-    fun `should return 400 bad request for invalid email`() {
-      val invalidRequest = mapOf(
-        "crn" to "X123456",
-        "email" to "not-an-email",
-      )
-
-      webTestClient.post()
-        .uri("/admin/ete/users")
-        .addAdminUiAuthHeader()
-        .bodyValue(invalidRequest)
-        .exchange()
-        .expectStatus()
-        .isBadRequest
-        .bodyAsObject<String>().contains("/Field error in object 'createEteUserRequest' on field 'email':/")
     }
   }
 }

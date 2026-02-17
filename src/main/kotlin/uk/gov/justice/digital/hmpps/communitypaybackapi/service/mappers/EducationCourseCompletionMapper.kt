@@ -1,9 +1,11 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers
 
+import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentBehaviourDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentWorkQualityDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AttendanceDataDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EteCourseCompletionEventDto
@@ -15,21 +17,22 @@ import java.util.UUID
 @Service
 class EducationCourseCompletionMapper {
 
+  @Transactional
   fun toCreateAppointmentsDto(
-    eteCourseCompletionEventEntity: EteCourseCompletionEventEntity,
-    projectCode: String,
+    eteCourseCompletionEventEntities: List<EteCourseCompletionEventEntity>,
+    courseCompletionOutcome: CourseCompletionOutcomeDto,
   ) = CreateAppointmentsDto(
-    projectCode = projectCode,
-    appointments = listOf(toCreateAppointmentDto(eteCourseCompletionEventEntity)),
+    projectCode = courseCompletionOutcome.projectCode,
+    appointments = eteCourseCompletionEventEntities.map { toCreateAppointmentDto(it, courseCompletionOutcome.crn) },
   )
 
-  fun toCreateAppointmentDto(eteCourseCompletionEventEntity: EteCourseCompletionEventEntity): CreateAppointmentDto {
+  fun toCreateAppointmentDto(eteCourseCompletionEventEntity: EteCourseCompletionEventEntity, crn: String): CreateAppointmentDto {
     val completionDate = eteCourseCompletionEventEntity.completionDate
     val startTime = LocalTime.of(9, 0) // Temporary until decided - 9am as start time
 
     return CreateAppointmentDto(
       id = UUID.randomUUID(),
-      crn = "X980484", // X980484 <--- Use for testing - Hardcoded for now, until we have a CRN assigning mechanism
+      crn = crn,
       deliusEventNumber = 1, // This is not right, we need to find the correct event id
       allocationId = null,
       date = completionDate,

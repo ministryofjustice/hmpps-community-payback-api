@@ -4,9 +4,7 @@ import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.junit5.MockKExtension
-import io.mockk.mockk
 import io.mockk.slot
-import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -17,13 +15,14 @@ import org.junit.jupiter.params.provider.CsvSource
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseDetailsSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionOutcomeDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.NotFoundException
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseEventCompletionMessageStatus
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteUser
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteUserRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.randomLocalDate
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
@@ -31,9 +30,15 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourse
 import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseCompletionStatus
 import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseMessageAttributes
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentCreationService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventTrigger
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentRetrievalService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentUpdateService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ContextService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.EteService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.EducationCourseCompletionMapper
 import java.time.LocalDate
+import java.time.LocalTime
+import java.util.Optional
 import java.util.Optional.empty
 import java.util.UUID
 
@@ -52,11 +57,17 @@ class EteServiceTest {
   @RelaxedMockK
   lateinit var communityPaybackAndDeliusClient: CommunityPaybackAndDeliusClient
 
-  @InjectMockKs
-  private lateinit var eteService: EteService
+  @RelaxedMockK
+  lateinit var appointmentUpdateService: AppointmentUpdateService
 
   @RelaxedMockK
-  private lateinit var eteUserRepository: EteUserRepository
+  lateinit var appointmentRetrievalService: AppointmentRetrievalService
+
+  @RelaxedMockK
+  lateinit var contextService: ContextService
+
+  @InjectMockKs
+  private lateinit var eteService: EteService
 
   @Nested
   inner class HandleEducationCourseMessage {
@@ -265,41 +276,122 @@ class EteServiceTest {
   }
 
   @Nested
-  inner class CreateUser {
+  inner class ProcessCourseCompletionOutcome {
     @Test
-    fun `createUser returns true and saves when user does not exist`() {
-      val crn = "X123456"
-      val email = "TEST@example.com"
-      val userSlot = slot<EteUser>()
-      val ndCaseDetailsSummary = NDCaseDetailsSummary.valid()
+    fun `should create new appointment when appointmentIdToUpdate is null`() {
+      val event = EteCourseCompletionEventEntity.valid()
+      val outcome = CourseCompletionOutcomeDto.valid()
 
-      every { communityPaybackAndDeliusClient.getUpwDetailsSummary(crn) } returns NDCaseDetailsSummary.valid()
-      every { eteUserRepository.findByCrnAndEmail(crn, email.lowercase()) } returns null
-      every { eteUserRepository.save(capture(userSlot)) } returns mockk<EteUser>()
+      every { eteCourseCompletionEventEntityRepository.findById(event.id) } returns Optional.of(event)
+      every {
+        educationCourseCompletionMapper.toCreateAppointmentDto(event, outcome.crn)
+      } returns EducationCourseCompletionMapper().toCreateAppointmentDto(event, outcome.crn)
+      every { contextService.getUserName() } returns "admin-ui"
 
-      val result = eteService.createUser(crn, email)
+      eteService.processCourseCompletionOutcome(event.id, outcome)
 
-      assertThat(result).isTrue()
+      val triggerSlot = slot<AppointmentEventTrigger>()
+      val createAppointmentsSlot = slot<uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentsDto>()
 
-      val savedUser = userSlot.captured
-      assertThat(savedUser.crn).isEqualTo("X123456")
-      assertThat(savedUser.email).isEqualTo("test@example.com")
-      assertThat(savedUser.id).isNotNull()
+      io.mockk.verify {
+        appointmentCreationService.createAppointments(capture(createAppointmentsSlot), capture(triggerSlot))
+      }
+
+      assertThat(triggerSlot.captured.triggerType).isEqualTo(AppointmentEventTriggerType.ETE_COURSE_COMPLETION)
+      assertThat(triggerSlot.captured.triggeredBy).isEqualTo("admin-ui")
+
+      assertThat(createAppointmentsSlot.captured.projectCode).isEqualTo(outcome.projectCode)
+      val appointment = createAppointmentsSlot.captured.appointments.first()
+      assertThat(appointment.crn).isEqualTo(outcome.crn)
+      assertThat(appointment.contactOutcomeCode).isEqualTo(outcome.contactOutcome)
+      assertThat(appointment.endTime).isEqualTo(appointment.startTime.plusMinutes(outcome.minutesToCredit))
     }
 
     @Test
-    fun `createUser returns false and does not save when user already exists`() {
+    fun `should update existing appointment when appointmentIdToUpdate is present`() {
+      val eventId = UUID.randomUUID()
+      val appointmentId = 12345L
+      val projectCode = "PRJ001"
       val crn = "X123456"
-      val email = "test@example.com"
-      val existingUser = EteUser(crn = crn, email = email)
+      val event = EteCourseCompletionEventEntity.valid().copy(
+        id = eventId,
+        firstName = "John",
+        lastName = "Doe",
+        dateOfBirth = LocalDate.of(1990, 5, 15),
+        region = "London",
+        email = "john.doe@example.com",
+        courseName = "Test Course",
+        courseType = "Online",
+        provider = "Test Provider",
+        completionDate = LocalDate.of(2026, 1, 1),
+        status = EteCourseEventCompletionMessageStatus.COMPLETED,
+        totalTimeMinutes = 120,
+        expectedTimeMinutes = 120,
+        externalReference = "EXT123",
+        attempts = 1,
+      )
 
-      every { communityPaybackAndDeliusClient.getUpwDetailsSummary(crn) } returns NDCaseDetailsSummary.valid()
-      every { eteUserRepository.findByCrnAndEmail(crn, email) } returns existingUser
+      val existingAppointment = AppointmentDto.valid().copy(
+        id = appointmentId,
+        version = UUID.randomUUID(),
+        startTime = LocalTime.of(10, 0),
+        endTime = LocalTime.of(12, 0),
+        supervisorOfficerCode = "SUP001",
+        alertActive = true,
+        sensitive = false,
+      )
 
-      val result = eteService.createUser(crn, email)
+      val outcome = CourseCompletionOutcomeDto.valid().copy(
+        crn = crn,
+        appointmentIdToUpdate = appointmentId,
+        minutesToCredit = 90,
+        contactOutcome = "COMP",
+        projectCode = projectCode,
+      )
 
-      assertThat(result).isFalse()
-      verify(exactly = 0) { eteUserRepository.save(any()) }
+      every { eteCourseCompletionEventEntityRepository.findById(eventId) } returns Optional.of(event)
+      every {
+        educationCourseCompletionMapper.toCreateAppointmentDto(event, outcome.crn)
+      } returns EducationCourseCompletionMapper().toCreateAppointmentDto(event, outcome.crn)
+      every { appointmentRetrievalService.getAppointment(projectCode, appointmentId) } returns existingAppointment
+      every { contextService.getUserName() } returns "admin-ui"
+
+      eteService.processCourseCompletionOutcome(eventId, outcome)
+
+      val updateSlot = slot<UpdateAppointmentOutcomeDto>()
+      val triggerSlot = slot<AppointmentEventTrigger>()
+
+      io.mockk.verify {
+        appointmentUpdateService.updateAppointmentOutcome(
+          projectCode = projectCode,
+          update = capture(updateSlot),
+          trigger = capture(triggerSlot),
+        )
+      }
+
+      assertThat(triggerSlot.captured.triggerType).isEqualTo(AppointmentEventTriggerType.ETE_COURSE_COMPLETION)
+      assertThat(updateSlot.captured.deliusId).isEqualTo(appointmentId)
+      assertThat(updateSlot.captured.contactOutcomeCode).isEqualTo("COMP")
+      assertThat(updateSlot.captured.endTime).isEqualTo(existingAppointment.startTime.plusMinutes(90))
+      assertThat(updateSlot.captured.notes).contains("Ete course completed: Test Course")
+    }
+
+    @Test
+    fun `throws NotFoundException when event not found in processCourseCompletionOutcome`() {
+      val eventId = UUID.randomUUID()
+      val outcome = CourseCompletionOutcomeDto(
+        crn = "X123456",
+        appointmentIdToUpdate = null,
+        minutesToCredit = 120,
+        contactOutcome = "COMP",
+        projectCode = "PRJ001",
+      )
+
+      every { eteCourseCompletionEventEntityRepository.findById(eventId) } returns empty()
+
+      assertThrows<NotFoundException> {
+        eteService.processCourseCompletionOutcome(eventId, outcome)
+      }
     }
   }
 }
