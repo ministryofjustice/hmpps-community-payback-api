@@ -2,18 +2,18 @@
   "id": 1,
   "version": "A7C52A48-6F99-4603-941D-B0FF1465F8EC",
   "event": {
-    "number":  1
+    "number": 1
   },
   "project": {
-    "name": "Test Individual Project 1",
-    "code": "INDY001",
+    "name": "Cancer Research UK",
+    "code": "TEST01",
     "location": {
-      "streetName": "Office Street",
-      "buildingName": "1001",
-      "addressNumber": "14B",
-      "townCity": "City",
-      "county": "Shireshire",
-      "postCode": "ZY98XW"
+      "streetName": "Meadow Lane",
+      "buildingName": "",
+      "addressNumber": "22",
+      "townCity": "Leeds",
+      "county": "West Yorkshire",
+      "postCode": "LS9 8ZZ"
     }
   },
   "projectType": {
@@ -31,11 +31,11 @@
     "currentExclusion": false,
     "currentRestriction": false
   },
-  "team" : {
+  "team": {
     "name": "Default Designated Transfer Team",
     "code": "N56DTX"
   },
-  "provider" : {
+  "provider": {
     "name": "East of England",
     "code": "N56"
   },
