@@ -1,6 +1,6 @@
 {
-  "name": "Test Individual Project 1",
-  "code": "INDY001",
+  "name": "Age UK",
+  "code": "TEST02",
   "type": {
     "code": "ICP",
     "name": "Individual Placement - ICP (Individual Community Placement)"
@@ -12,19 +12,19 @@
     "code": "N56DTX"
   },
   "location": {
-    "streetName": "Office Street",
-    "buildingName": "1001",
-    "addressNumber": "14B",
-    "townCity": "City",
-    "county": "Shireshire",
-    "postCode": "ZY98XW"
+    "streetName": "Canal Wharf Road",
+    "buildingName": "Unit 3",
+    "addressNumber": "",
+    "townCity": "Nottingham",
+    "county": "Nottinghamshire",
+    "postCode": "NG7 4ZZ"
   },
   "beneficiaryDetails": {
-    "name": "McDuck Enterprises",
-    "contactName": "Scrooge McDuck",
-    "emailAddress": "scrooge@localhost",
+    "name": "Age UK",
+    "contactName": "Matthias Smith",
+    "emailAddress": "msmith@ageuk.co.uk",
     "website": "http://mcduckenterprises.localhost",
-    "telephoneNumber": "12345 6787890",
+    "telephoneNumber": "012345 6787890",
     "location": {
       "streetName": "Office Street",
       "buildingName": "1001",
@@ -36,4 +36,3 @@
   },
   "hiVisRequired": true
 }
-

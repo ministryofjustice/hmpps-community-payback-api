@@ -1,0 +1,38 @@
+{
+  "name": "Mind",
+  "code": "TEST03",
+  "type": {
+    "code": "ICP",
+    "name": "Individual Placement - ICP (Individual Community Placement)"
+  },
+  "provider": {
+    "code": "1000"
+  },
+  "team": {
+    "code": "N56DTX"
+  },
+  "location": {
+    "streetName": "Harbour Trade Park",
+    "buildingName": "Warehouse 4",
+    "addressNumber": "",
+    "townCity": "Liverpool",
+    "county": "Merseyside",
+    "postCode": "L20 8ZZ"
+  },
+  "beneficiaryDetails": {
+    "name": "Mind",
+    "contactName": "Rachel Porter",
+    "emailAddress": "rporter@mind.co.uk",
+    "website": "http://mcduckenterprises.localhost",
+    "telephoneNumber": "012345 6787890",
+    "location": {
+      "streetName": "Office Street",
+      "buildingName": "1001",
+      "addressNumber": "14B",
+      "townCity": "City",
+      "county": "Shireshire",
+      "postCode": "ZY98XW"
+    }
+  },
+  "hiVisRequired": true
+}

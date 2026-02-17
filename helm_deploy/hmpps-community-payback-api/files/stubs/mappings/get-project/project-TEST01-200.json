@@ -2,11 +2,11 @@
   "priority": 1,
   "request": {
     "method": "GET",
-    "urlPathPattern": "/projects/INDY001"
+    "urlPathPattern": "/projects/TEST01"
   },
   "response": {
     "status": 200,
-    "bodyFileName": "get-project/project-INDY001-200-response.json",
+    "bodyFileName": "get-project/project-TEST01-200-response.json",
     "headers": {
       "Content-Type": "application/json"
     }

@@ -1,0 +1,38 @@
+{
+  "name": "Cancer Research UK",
+  "code": "TEST01",
+  "type": {
+    "code": "ICP",
+    "name": "Individual Placement - ICP (Individual Community Placement)"
+  },
+  "provider": {
+    "code": "1000"
+  },
+  "team": {
+    "code": "N56DTX"
+  },
+  "location": {
+    "streetName": "Meadow Lane",
+    "buildingName": "",
+    "addressNumber": "22",
+    "townCity": "Leeds",
+    "county": "West Yorkshire",
+    "postCode": "LS9 8ZZ"
+  },
+  "beneficiaryDetails": {
+    "name": "Cancer Research UK",
+    "contactName": "Zinnia Wormwood",
+    "emailAddress": "zinnia@cancerresearch.co.uk",
+    "website": "http://mcduckenterprises.localhost",
+    "telephoneNumber": "012345 6787890",
+    "location": {
+      "streetName": "Office Street",
+      "buildingName": "1001",
+      "addressNumber": "14B",
+      "townCity": "City",
+      "county": "Shireshire",
+      "postCode": "ZY98XW"
+    }
+  },
+  "hiVisRequired": true
+}

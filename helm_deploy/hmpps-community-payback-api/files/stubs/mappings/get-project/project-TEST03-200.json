@@ -1,0 +1,14 @@
+{
+  "priority": 1,
+  "request": {
+    "method": "GET",
+    "urlPathPattern": "/projects/TEST03"
+  },
+  "response": {
+    "status": 200,
+    "bodyFileName": "get-project/project-TEST03-200-response.json",
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}
