@@ -22,8 +22,8 @@
         "restrictionMessage": null
       },
       "date": "2026-02-05",
-      "startTime": "10:00",
-      "endTime": "12:00",
+      "startTime": "09:00",
+      "endTime": "17:00",
       "daysOverdue": 5
     },
     {
@@ -51,8 +51,8 @@
         "restrictionMessage": null
       },
       "date": "2026-02-09",
-      "startTime": "14:00",
-      "endTime": "18:00",
+      "startTime": "09:00",
+      "endTime": "17:00",
       "daysOverdue": null
     }
   ],
