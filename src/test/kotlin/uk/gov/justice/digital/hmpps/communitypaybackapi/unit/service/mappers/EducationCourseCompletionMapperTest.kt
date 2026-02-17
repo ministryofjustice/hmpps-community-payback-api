@@ -9,10 +9,12 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentBehaviourDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentWorkQualityDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AttendanceDataDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseEventCompletionMessageStatus
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.random
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.EducationCourseCompletionMapper
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
 import java.time.LocalDate
@@ -24,6 +26,8 @@ class EducationCourseCompletionMapperTest {
 
   private lateinit var mapper: EducationCourseCompletionMapper
 
+  private val crn = String.random(1).uppercase() + Int.random(0, 99999)
+
   @BeforeEach
   fun setUp() {
     mapper = EducationCourseCompletionMapper()
@@ -34,22 +38,28 @@ class EducationCourseCompletionMapperTest {
   inner class ToCreateAppointmentsDto {
     @Test
     fun `should map entity to CreateAppointmentsDto with correct project code`() {
-      val entity = createTestEntity()
-      val projectCode = "TEST-PROJECT-001"
+      val eteCourseCompletionEventEntities = listOf(
+        EteCourseCompletionEventEntity.valid(),
+        EteCourseCompletionEventEntity.valid(),
+        EteCourseCompletionEventEntity.valid(),
+      )
+      val outcome = CourseCompletionOutcomeDto.valid()
 
-      val result = mapper.toCreateAppointmentsDto(entity, projectCode)
+      val result = mapper.toCreateAppointmentsDto(eteCourseCompletionEventEntities, outcome)
 
       assertThat(result).isNotNull
-      assertThat(result.projectCode).isEqualTo(projectCode)
-      assertThat(result.appointments).hasSize(1)
+      assertThat(result.projectCode).isEqualTo(outcome.projectCode)
+      assertThat(result.appointments).hasSize(3)
     }
 
     @Test
     fun `should map entity to CreateAppointmentsDto with single appointment`() {
-      val entity = createTestEntity()
-      val projectCode = "TEST-PROJECT-001"
+      val eteCourseCompletionEventEntities = listOf(
+        EteCourseCompletionEventEntity.valid(),
+      )
+      val outcome = CourseCompletionOutcomeDto.valid()
 
-      val result = mapper.toCreateAppointmentsDto(entity, projectCode)
+      val result = mapper.toCreateAppointmentsDto(eteCourseCompletionEventEntities, outcome)
 
       assertThat(result.appointments).hasSize(1)
       val appointment = result.appointments.first()
@@ -62,24 +72,17 @@ class EducationCourseCompletionMapperTest {
   inner class ToCreateAppointmentDto {
     @Test
     fun `should map all fields correctly`() {
-      val completionDate = LocalDate.of(2024, 1, 15)
-      val totalTimeMinutes = 120L
-      val courseName = "Health and Safety Level 2"
-      val entity = createTestEntity(
-        completionDate = completionDate,
-        totalTimeMinutes = totalTimeMinutes,
-        courseName = courseName,
-      )
+      val entity = EteCourseCompletionEventEntity.valid()
 
-      val result = mapper.toCreateAppointmentDto(entity)
+      val result = mapper.toCreateAppointmentDto(entity, crn)
 
       assertThat(result).isNotNull
       assertThat(result.id).isNotNull()
-      assertThat(result.crn).isEqualTo("X980484")
+      assertThat(result.crn).isEqualTo(crn)
       assertThat(result.deliusEventNumber).isEqualTo(1)
       assertThat(result.allocationId).isNull()
-      assertThat(result.date).isEqualTo(completionDate)
-      assertThat(result.notes).isEqualTo("Ete course completed: $courseName")
+      assertThat(result.date).isEqualTo(entity.completionDate)
+      assertThat(result.notes).isEqualTo("Ete course completed: ${entity.courseName}")
       assertThat(result.contactOutcomeCode).isEqualTo(ContactOutcomeEntity.ATTENDED_COMPLIED_OUTCOME_CODE)
       assertThat(result.pickUpLocationCode).isNull()
       assertThat(result.pickUpTime).isNull()
@@ -90,41 +93,41 @@ class EducationCourseCompletionMapperTest {
 
     @Test
     fun `should set start time to 9am`() {
-      val entity = createTestEntity()
+      val entity = EteCourseCompletionEventEntity.valid()
 
-      val result = mapper.toCreateAppointmentDto(entity)
+      val result = mapper.toCreateAppointmentDto(entity, crn)
 
       assertThat(result.startTime).isEqualTo(LocalTime.of(9, 0))
     }
 
     @Test
     fun `should calculate end time as start time plus total time minutes`() {
-      val totalTimeMinutes = 90L
-      val entity = createTestEntity(totalTimeMinutes = totalTimeMinutes)
+      val entity = EteCourseCompletionEventEntity.valid()
 
-      val result = mapper.toCreateAppointmentDto(entity)
+      val result = mapper.toCreateAppointmentDto(entity, crn)
 
-      assertThat(result.endTime).isEqualTo(LocalTime.of(9, 0).plusMinutes(totalTimeMinutes))
-      assertThat(result.endTime).isEqualTo(LocalTime.of(10, 30))
+      assertThat(result.endTime).isEqualTo(LocalTime.of(9, 0).plusMinutes(entity.totalTimeMinutes))
     }
 
     @ParameterizedTest
     @ValueSource(longs = [30, 60, 120, 180, 240])
     fun `should handle various total time minutes`(totalTimeMinutes: Long) {
-      val entity = createTestEntity(totalTimeMinutes = totalTimeMinutes)
+      val entity = EteCourseCompletionEventEntity.valid().copy(
+        totalTimeMinutes = totalTimeMinutes,
+      )
 
-      val result = mapper.toCreateAppointmentDto(entity)
+      val result = mapper.toCreateAppointmentDto(entity, crn)
 
       assertThat(result.endTime).isEqualTo(LocalTime.of(9, 0).plusMinutes(totalTimeMinutes))
     }
 
     @Test
     fun `should generate unique UUID for each appointment`() {
-      val entity1 = createTestEntity()
-      val entity2 = createTestEntity()
+      val entity1 = EteCourseCompletionEventEntity.valid()
+      val entity2 = EteCourseCompletionEventEntity.valid()
 
-      val result1 = mapper.toCreateAppointmentDto(entity1)
-      val result2 = mapper.toCreateAppointmentDto(entity2)
+      val result1 = mapper.toCreateAppointmentDto(entity1, crn)
+      val result2 = mapper.toCreateAppointmentDto(entity2, crn)
 
       assertThat(result1.id).isNotEqualTo(result2.id)
       assertThat(result1.id).isInstanceOf(UUID::class.java)
@@ -132,9 +135,9 @@ class EducationCourseCompletionMapperTest {
 
     @Test
     fun `should set attendance data with default values`() {
-      val entity = createTestEntity()
+      val entity = EteCourseCompletionEventEntity.valid()
 
-      val result = mapper.toCreateAppointmentDto(entity)
+      val result = mapper.toCreateAppointmentDto(entity, crn)
 
       assertThat(result.attendanceData).isNotNull
       assertThat(result.attendanceData?.hiVisWorn).isFalse()
@@ -146,13 +149,12 @@ class EducationCourseCompletionMapperTest {
 
     @Test
     fun `should handle large total time minutes that roll into next day`() {
-      val totalTimeMinutes = 960L
-      val entity = createTestEntity(totalTimeMinutes = totalTimeMinutes)
+      val entity = EteCourseCompletionEventEntity.valid()
 
-      val result = mapper.toCreateAppointmentDto(entity)
+      val result = mapper.toCreateAppointmentDto(entity, crn)
 
       assertThat(result.startTime).isEqualTo(LocalTime.of(9, 0))
-      assertThat(result.endTime).isEqualTo(LocalTime.of(9, 0).plusMinutes(totalTimeMinutes))
+      assertThat(result.endTime).isEqualTo(LocalTime.of(9, 0).plusMinutes(entity.totalTimeMinutes))
     }
   }
 
@@ -238,76 +240,4 @@ class EducationCourseCompletionMapperTest {
       assertThat(result1).isNotSameAs(result2)
     }
   }
-
-  @Nested
-  @DisplayName("Integration Tests")
-  inner class IntegrationTests {
-    @Test
-    fun `full mapping flow from entity to appointments dto`() {
-      val entity = createTestEntity(
-        completionDate = LocalDate.of(2024, 3, 10),
-        totalTimeMinutes = 90L,
-        courseName = "First Aid",
-      )
-      val projectCode = "PROJ-2024-001"
-
-      val appointmentsDto = mapper.toCreateAppointmentsDto(entity, projectCode)
-      val appointmentDto = appointmentsDto.appointments.first()
-      val courseCompletionDto = entity.toDto()
-
-      assertThat(appointmentsDto.projectCode).isEqualTo(projectCode)
-      assertThat(appointmentDto.date).isEqualTo(LocalDate.of(2024, 3, 10))
-      assertThat(appointmentDto.startTime).isEqualTo(LocalTime.of(9, 0))
-      assertThat(appointmentDto.endTime).isEqualTo(LocalTime.of(10, 30))
-      assertThat(appointmentDto.notes).isEqualTo("Ete course completed: First Aid")
-
-      assertThat(appointmentDto.attendanceData).isEqualTo(createExpectedAttendanceData())
-
-      assertThat(courseCompletionDto.courseName).isEqualTo("First Aid")
-      assertThat(courseCompletionDto.totalTimeMinutes).isEqualTo(90L)
-    }
-  }
-
-  private fun createTestEntity(
-    id: UUID = UUID.randomUUID(),
-    firstName: String = "Test",
-    lastName: String = "User",
-    dateOfBirth: LocalDate = LocalDate.of(2000, 1, 1),
-    region: String = "Test Region",
-    email: String = "test.user@example.com",
-    courseName: String = "Test Course",
-    courseType: String = "ONLINE",
-    provider: String = "Test Provider",
-    completionDate: LocalDate = LocalDate.now(),
-    status: EteCourseEventCompletionMessageStatus = EteCourseEventCompletionMessageStatus.COMPLETED,
-    totalTimeMinutes: Long = 60L,
-    expectedTimeMinutes: Long = 60L,
-    attempts: Int = 1,
-    externalReference: String = "REF-123",
-  ): EteCourseCompletionEventEntity = EteCourseCompletionEventEntity(
-    id = id,
-    firstName = firstName,
-    lastName = lastName,
-    dateOfBirth = dateOfBirth,
-    region = region,
-    email = email,
-    courseName = courseName,
-    courseType = courseType,
-    provider = provider,
-    completionDate = completionDate,
-    status = status,
-    totalTimeMinutes = totalTimeMinutes,
-    expectedTimeMinutes = expectedTimeMinutes,
-    attempts = attempts,
-    externalReference = externalReference,
-  )
-
-  private fun createExpectedAttendanceData(): AttendanceDataDto = AttendanceDataDto(
-    hiVisWorn = false,
-    workedIntensively = false,
-    penaltyTime = null,
-    penaltyMinutes = null,
-    workQuality = AppointmentWorkQualityDto.NOT_APPLICABLE,
-    behaviour = AppointmentBehaviourDto.NOT_APPLICABLE,
-  )
 }

@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateEteUserRequest
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EteCourseCompletionEventDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.EteService
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
@@ -102,23 +102,19 @@ class AdminCourseCompletionController(val eteService: EteService) {
     @PathVariable id: UUID,
   ): EteCourseCompletionEventDto = eteService.getCourseCompletionEvent(id)
 
-  @PostMapping("/ete/users", consumes = [MediaType.APPLICATION_JSON_VALUE])
+  @PostMapping("/course-completions/{eteCourseCompletionEventId}", consumes = [MediaType.APPLICATION_JSON_VALUE])
   @Operation(
-    description = "Create a new ETE user record. Returns 201 if created, 204 if it already exists.",
+    description = "Create or updates an appointment to record the course completion outcome.",
     responses = [
-      ApiResponse(responseCode = "201", description = "User created successfully"),
-      ApiResponse(responseCode = "204", description = "User already exists, no action taken"),
+      ApiResponse(responseCode = "204", description = "Outcome processed"),
+      ApiResponse(responseCode = "404", description = "Course completion not found", content = [Content(schema = Schema(implementation = ErrorResponse::class))]),
     ],
   )
-  fun postEteUser(
-    @RequestBody @Valid request: CreateEteUserRequest,
+  fun postCourseCompletionOutcome(
+    @PathVariable eteCourseCompletionEventId: UUID,
+    @RequestBody @Valid courseCompletionOutcome: CourseCompletionOutcomeDto,
   ): ResponseEntity<Unit> {
-    val created = eteService.createUser(request.crn, request.email)
-
-    return if (created) {
-      ResponseEntity.status(HttpStatus.CREATED).build()
-    } else {
-      ResponseEntity.status(HttpStatus.NO_CONTENT).build()
-    }
+    eteService.processCourseCompletionOutcome(eteCourseCompletionEventId, courseCompletionOutcome)
+    return ResponseEntity.status(HttpStatus.NO_CONTENT).build()
   }
 }

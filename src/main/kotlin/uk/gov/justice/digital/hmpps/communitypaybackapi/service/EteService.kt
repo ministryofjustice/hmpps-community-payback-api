@@ -1,21 +1,18 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.service
 
-import org.slf4j.LoggerFactory
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
-import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import org.springframework.web.server.ResponseStatusException
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionOutcomeDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EteCourseCompletionEventDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.NotFoundException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseEventCompletionMessageStatus
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteUser
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteUserRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseCompletionMessage
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.EducationCourseCompletionMapper
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
@@ -28,11 +25,10 @@ class EteService(
   private val educationCourseCompletionMapper: EducationCourseCompletionMapper,
   private val eteCourseCompletionEventEntityRepository: EteCourseCompletionEventEntityRepository,
   private val appointmentCreationService: AppointmentCreationService,
-  private val communityPaybackAndDeliusClient: CommunityPaybackAndDeliusClient,
-  private val eteUserRepository: EteUserRepository,
+  private val appointmentUpdateService: AppointmentUpdateService,
+  private val appointmentRetrievalService: AppointmentRetrievalService,
+  private val contextService: ContextService,
 ) {
-  private val log = LoggerFactory.getLogger(this::class.java)
-
   private val providerCodeToRegionName = mapOf(
     "N53" to "East Midlands",
     "N52" to "West Midlands",
@@ -82,50 +78,64 @@ class EteService(
   }.toDto()
 
   @Transactional
-  fun processCompletedCourseEvents(emailAddress: String) {
-    val courseCompletionEvents = eteCourseCompletionEventEntityRepository.findByEmailAndStatus(email = emailAddress.lowercase(), status = EteCourseEventCompletionMessageStatus.COMPLETED)
-
-    courseCompletionEvents.forEach { event ->
-      appointmentCreationService.createAppointments(
-        educationCourseCompletionMapper.toCreateAppointmentsDto(
-          event,
-          projectCode = "N56CCTEST",
-        ),
-        AppointmentEventTrigger(
-          triggeredAt = OffsetDateTime.now(),
-          triggerType = AppointmentEventTriggerType.ETE_COURSE_COMPLETION,
-          triggeredBy = "External ETE System: ${event.externalReference}",
-        ),
-      )
-    }
-  }
-
-  @Transactional
-  fun createUser(crn: String, emailAddress: String): Boolean {
-    val caseSummary = communityPaybackAndDeliusClient.getUpwDetailsSummary(crn)
-      ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Case summary not found for CRN: $crn")
-
-    if (caseSummary.unpaidWorkDetails.isNullOrEmpty()) {
-      throw ResponseStatusException(HttpStatus.NOT_FOUND, "UPW details not found for CRN: $crn")
+  fun processCourseCompletionOutcome(
+    eteCourseCompletionEventId: UUID,
+    courseCompletionOutcome: CourseCompletionOutcomeDto,
+  ) {
+    val eteEvent = eteCourseCompletionEventEntityRepository.findById(eteCourseCompletionEventId).orElseThrow {
+      NotFoundException("Course completion event", eteCourseCompletionEventId.toString())
     }
 
-    val existingUser = eteUserRepository.findByCrnAndEmail(crn, emailAddress.lowercase())
+    val trigger = AppointmentEventTrigger(
+      triggeredAt = OffsetDateTime.now(),
+      triggerType = AppointmentEventTriggerType.ETE_COURSE_COMPLETION,
+      triggeredBy = contextService.getUserName(),
+    )
 
-    val isNewUser = if (existingUser == null) {
-      eteUserRepository.save(
-        EteUser(
-          id = UUID.randomUUID(),
-          crn = crn,
-          email = emailAddress.lowercase(),
-        ),
+    val appointmentIdToUpdate = courseCompletionOutcome.appointmentIdToUpdate
+    if (appointmentIdToUpdate != null) {
+      val existingAppointment = appointmentRetrievalService.getAppointment(
+        projectCode = courseCompletionOutcome.projectCode,
+        appointmentId = appointmentIdToUpdate,
       )
-      true
+
+      val update = UpdateAppointmentOutcomeDto(
+        deliusId = existingAppointment.id,
+        deliusVersionToUpdate = existingAppointment.version,
+        startTime = existingAppointment.startTime,
+        endTime = existingAppointment.startTime.plusMinutes(courseCompletionOutcome.minutesToCredit),
+        contactOutcomeCode = courseCompletionOutcome.contactOutcome,
+        attendanceData = EducationCourseCompletionMapper.DefaultEducationCourseCompletionAttendanceData.createAttendanceData(),
+        enforcementData = null,
+        supervisorOfficerCode = existingAppointment.supervisorOfficerCode,
+        notes = "Ete course completed: ${eteEvent.courseName}",
+        formKeyToDelete = null,
+        alertActive = existingAppointment.alertActive,
+        sensitive = existingAppointment.sensitive,
+      )
+
+      appointmentUpdateService.updateAppointmentOutcome(
+        projectCode = courseCompletionOutcome.projectCode,
+        update = update,
+        trigger = trigger,
+      )
     } else {
-      false
+      val appointment = educationCourseCompletionMapper.toCreateAppointmentDto(eteEvent, courseCompletionOutcome.crn)
+      val adjustedAppointment = appointment.copy(
+        crn = courseCompletionOutcome.crn,
+        endTime = appointment.startTime.plusMinutes(courseCompletionOutcome.minutesToCredit),
+        contactOutcomeCode = courseCompletionOutcome.contactOutcome,
+      )
+
+      val createAppointments = CreateAppointmentsDto(
+        projectCode = courseCompletionOutcome.projectCode,
+        appointments = listOf(adjustedAppointment),
+      )
+
+      appointmentCreationService.createAppointments(
+        createAppointments = createAppointments,
+        trigger = trigger,
+      )
     }
-
-    processCompletedCourseEvents(emailAddress)
-
-    return isNewUser
   }
 }

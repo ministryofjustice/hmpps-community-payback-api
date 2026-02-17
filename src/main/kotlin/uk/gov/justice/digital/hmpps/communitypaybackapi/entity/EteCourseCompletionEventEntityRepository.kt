@@ -27,9 +27,6 @@ interface EteCourseCompletionEventEntityRepository : JpaRepository<EteCourseComp
     pageable: Pageable,
   ): Page<EteCourseCompletionEventEntity>
 
-  @Query("SELECT e FROM EteCourseCompletionEventEntity e WHERE e.user.crn = :crn")
-  fun findByCrn(@Param("crn") crn: String): List<EteCourseCompletionEventEntity>
-
   fun findByEmail(@Param("email") email: String): List<EteCourseCompletionEventEntity>
 
   fun findByEmailAndStatus(
