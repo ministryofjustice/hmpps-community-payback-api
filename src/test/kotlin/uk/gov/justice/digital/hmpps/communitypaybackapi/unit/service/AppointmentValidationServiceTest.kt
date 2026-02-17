@@ -4,6 +4,7 @@ import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
+import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatCode
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach
@@ -20,6 +21,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEnt
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.Validated
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
@@ -50,9 +52,11 @@ class AppointmentValidationServiceTest {
       fun success() {
         every { contactOutcomeEntityRepository.findByCode(OUTCOME_CODE) } returns baselineOutcome
 
-        service.validateCreate(
+        val result = service.validateCreate(
           create = baselineCreate,
         )
+
+        assertThat(result).isEqualTo(Validated(baselineCreate))
       }
     }
 
@@ -355,10 +359,12 @@ class AppointmentValidationServiceTest {
       fun success() {
         every { contactOutcomeEntityRepository.findByCode(OUTCOME_CODE) } returns baselineOutcome
 
-        service.validateUpdate(
+        val result = service.validateUpdate(
           appointment = AppointmentDto.valid(),
           update = baselineUpdate,
         )
+
+        assertThat(result).isEqualTo(Validated(baselineUpdate))
       }
     }
 

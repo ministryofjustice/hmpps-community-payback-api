@@ -37,10 +37,8 @@ class AppointmentUpdateService(
   ) {
     val existingAppointment = appointmentRetrievalService.getAppointment(projectCode, update.deliusId)
 
-    appointmentUpdateValidationService.validateUpdate(existingAppointment, update)
-
     val proposedEntity = appointmentEventEntityFactory.buildUpdatedEvent(
-      outcome = update,
+      validatedUpdate = appointmentUpdateValidationService.validateUpdate(existingAppointment, update),
       existingAppointment = existingAppointment,
       trigger = trigger,
       projectCode = projectCode,

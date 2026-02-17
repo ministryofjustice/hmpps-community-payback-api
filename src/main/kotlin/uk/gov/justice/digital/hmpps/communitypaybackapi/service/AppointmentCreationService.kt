@@ -25,14 +25,11 @@ class AppointmentCreationService(
     val projectCode = createAppointments.projectCode
 
     val appointmentCreationEvents = createAppointments.appointments.map { createAppointment ->
-
-      appointmentValidationService.validateCreate(createAppointment)
-
       appointmentEventEntityFactory.buildCreatedEvent(
         // the ID will be provided by the upstream response and set on the event before persistence
         deliusId = 0L,
         trigger = trigger,
-        createAppointmentDto = createAppointment,
+        validatedCreateAppointmentDto = appointmentValidationService.validateCreate(createAppointment),
         projectCode = projectCode,
       )
     }

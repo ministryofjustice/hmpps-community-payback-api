@@ -29,8 +29,9 @@ class AppointmentEventEntityFactory(
     deliusId: Long,
     trigger: AppointmentEventTrigger,
     projectCode: String,
-    createAppointmentDto: CreateAppointmentDto,
+    validatedCreateAppointmentDto: Validated<CreateAppointmentDto>,
   ): AppointmentEventEntity {
+    val createAppointmentDto = validatedCreateAppointmentDto.value
     val project = projectService.getProject(projectCode)
     val startTime = createAppointmentDto.startTime
     val endTime = createAppointmentDto.endTime
@@ -79,11 +80,12 @@ class AppointmentEventEntityFactory(
   }
 
   fun buildUpdatedEvent(
-    outcome: UpdateAppointmentOutcomeDto,
+    validatedUpdate: Validated<UpdateAppointmentOutcomeDto>,
     existingAppointment: AppointmentDto,
     trigger: AppointmentEventTrigger,
     projectCode: String,
   ): AppointmentEventEntity {
+    val outcome = validatedUpdate.value
     val project = projectService.getProject(projectCode)
     val startTime = outcome.startTime
     val endTime = outcome.endTime

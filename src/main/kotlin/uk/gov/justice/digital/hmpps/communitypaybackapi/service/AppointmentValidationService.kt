@@ -18,7 +18,7 @@ class AppointmentValidationService(
 
   fun validateCreate(
     create: CreateAppointmentDto,
-  ) {
+  ): Validated<CreateAppointmentDto> {
     validateOutcome(
       appointmentDate = create.date,
       command = create,
@@ -26,12 +26,14 @@ class AppointmentValidationService(
     validateDuration(create)
     validatePenaltyTime(create)
     validateNotes(create)
+
+    return Validated(create)
   }
 
   fun validateUpdate(
     appointment: AppointmentDto,
     update: UpdateAppointmentOutcomeDto,
-  ) {
+  ): Validated<UpdateAppointmentOutcomeDto> {
     validateOutcome(
       appointmentDate = appointment.date,
       command = update,
@@ -39,6 +41,8 @@ class AppointmentValidationService(
     validateDuration(update)
     validatePenaltyTime(update)
     validateNotes(update)
+
+    return Validated(update)
   }
 
   private fun validateOutcome(
@@ -84,3 +88,5 @@ class AppointmentValidationService(
     }
   }
 }
+
+data class Validated<T>(val value: T)
