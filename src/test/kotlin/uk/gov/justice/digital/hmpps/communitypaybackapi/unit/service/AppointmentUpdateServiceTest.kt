@@ -26,7 +26,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventTrigger
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentRetrievalService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentUpdateService
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentUpdateValidationService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.DomainEventService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.DomainEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.FormService
@@ -50,7 +50,7 @@ class AppointmentUpdateServiceTest {
   lateinit var formService: FormService
 
   @RelaxedMockK
-  private lateinit var appointmentOutcomeValidationService: AppointmentUpdateValidationService
+  private lateinit var appointmentOutcomeValidationService: AppointmentValidationService
 
   @RelaxedMockK
   private lateinit var appointmentEventEntityFactory: AppointmentEventEntityFactory

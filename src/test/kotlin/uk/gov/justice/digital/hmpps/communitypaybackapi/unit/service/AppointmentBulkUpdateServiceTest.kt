@@ -24,14 +24,14 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentBulkU
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventTrigger
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentRetrievalService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentUpdateService
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentUpdateValidationService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.SentryService
 
 @ExtendWith(MockKExtension::class)
 class AppointmentBulkUpdateServiceTest {
 
   @MockK(relaxed = true)
-  private lateinit var appointmentUpdateValidationService: AppointmentUpdateValidationService
+  private lateinit var appointmentUpdateValidationService: AppointmentValidationService
 
   @MockK(relaxed = true)
   private lateinit var appointmentRetrievalService: AppointmentRetrievalService

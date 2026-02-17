@@ -18,19 +18,19 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.BadReques
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentUpdateValidationService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
 
 @ExtendWith(MockKExtension::class)
-class AppointmentUpdateValidationServiceTest {
+class AppointmentValidationServiceTest {
 
   @MockK
   lateinit var contactOutcomeEntityRepository: ContactOutcomeEntityRepository
 
   @InjectMockKs
-  lateinit var service: AppointmentUpdateValidationService
+  lateinit var service: AppointmentValidationService
 
   companion object {
     const val OUTCOME_CODE = "OUTCOME1"

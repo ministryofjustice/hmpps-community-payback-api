@@ -10,7 +10,7 @@ import java.time.Duration
 import java.time.LocalDate
 
 @Service
-class AppointmentUpdateValidationService(
+class AppointmentValidationService(
   private val contactOutcomeEntityRepository: ContactOutcomeEntityRepository,
 ) {
 
