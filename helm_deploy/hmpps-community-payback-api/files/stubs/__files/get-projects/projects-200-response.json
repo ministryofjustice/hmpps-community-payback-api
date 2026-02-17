@@ -1,7 +1,7 @@
 {
   "content": [
     {
-      "name": "Greenway Community Allotment Project",
+      "name": "Cancer Research UK",
       "code": "TEST01",
       "location": {
         "streetName": "Meadow Lane",
@@ -15,7 +15,7 @@
       "oldestOverdueInDays": 4
     },
     {
-      "name": "Riverside Animal Care",
+      "name": "Age UK",
       "code": "TEST02",
       "location": {
         "streetName": "Canal Wharf Road",
@@ -29,7 +29,7 @@
       "oldestOverdueInDays": 2
     },
     {
-      "name": "International Community Relief",
+      "name": "Mind",
       "code": "TEST03",
       "location": {
         "streetName": "Harbour Trade Park",
