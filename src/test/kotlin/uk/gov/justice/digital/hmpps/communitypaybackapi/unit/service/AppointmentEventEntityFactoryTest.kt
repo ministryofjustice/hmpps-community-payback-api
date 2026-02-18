@@ -36,6 +36,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ProjectService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ProviderService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.TeamId
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.Validated
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
@@ -101,30 +102,32 @@ class AppointmentEventEntityFactoryTest {
           triggerType = AppointmentEventTriggerType.SCHEDULING,
           triggeredBy = TRIGGERED_BY,
         ),
-        createAppointmentDto = CreateAppointmentDto(
-          id = ID,
-          crn = "X12345",
-          deliusEventNumber = 48,
-          allocationId = 22,
-          date = LocalDate.of(2014, 6, 7),
-          startTime = LocalTime.of(10, 1),
-          endTime = LocalTime.of(16, 3),
-          pickUpLocationCode = "PICKUPLOC1",
-          pickUpLocationDescription = "Pickup Description",
-          pickUpTime = LocalTime.of(20, 5),
-          contactOutcomeCode = CONTACT_OUTCOME_CODE,
-          supervisorOfficerCode = "N45",
-          notes = "some notes",
-          attendanceData = AttendanceDataDto(
-            hiVisWorn = false,
-            workedIntensively = true,
-            penaltyMinutes = 300,
-            penaltyTime = HourMinuteDuration(Duration.ofMinutes(400)),
-            workQuality = AppointmentWorkQualityDto.SATISFACTORY,
-            behaviour = AppointmentBehaviourDto.UNSATISFACTORY,
+        validatedCreateAppointmentDto = Validated(
+          CreateAppointmentDto(
+            id = ID,
+            crn = "X12345",
+            deliusEventNumber = 48,
+            allocationId = 22,
+            date = LocalDate.of(2014, 6, 7),
+            startTime = LocalTime.of(10, 1),
+            endTime = LocalTime.of(16, 3),
+            pickUpLocationCode = "PICKUPLOC1",
+            pickUpLocationDescription = "Pickup Description",
+            pickUpTime = LocalTime.of(20, 5),
+            contactOutcomeCode = CONTACT_OUTCOME_CODE,
+            supervisorOfficerCode = "N45",
+            notes = "some notes",
+            attendanceData = AttendanceDataDto(
+              hiVisWorn = false,
+              workedIntensively = true,
+              penaltyMinutes = 300,
+              penaltyTime = HourMinuteDuration(Duration.ofMinutes(400)),
+              workQuality = AppointmentWorkQualityDto.SATISFACTORY,
+              behaviour = AppointmentBehaviourDto.UNSATISFACTORY,
+            ),
+            alertActive = false,
+            sensitive = true,
           ),
-          alertActive = false,
-          sensitive = true,
         ),
         projectCode = PROJECT_CODE,
       )
@@ -170,23 +173,25 @@ class AppointmentEventEntityFactoryTest {
           triggerType = AppointmentEventTriggerType.SCHEDULING,
           triggeredBy = TRIGGERED_BY,
         ),
-        createAppointmentDto = CreateAppointmentDto(
-          id = ID,
-          crn = "X12345",
-          deliusEventNumber = 48,
-          allocationId = null,
-          date = LocalDate.of(2014, 6, 7),
-          startTime = LocalTime.of(10, 1),
-          endTime = LocalTime.of(16, 3),
-          pickUpLocationCode = null,
-          pickUpLocationDescription = null,
-          pickUpTime = null,
-          contactOutcomeCode = null,
-          supervisorOfficerCode = null,
-          notes = null,
-          attendanceData = null,
-          alertActive = null,
-          sensitive = null,
+        validatedCreateAppointmentDto = Validated(
+          CreateAppointmentDto(
+            id = ID,
+            crn = "X12345",
+            deliusEventNumber = 48,
+            allocationId = null,
+            date = LocalDate.of(2014, 6, 7),
+            startTime = LocalTime.of(10, 1),
+            endTime = LocalTime.of(16, 3),
+            pickUpLocationCode = null,
+            pickUpLocationDescription = null,
+            pickUpTime = null,
+            contactOutcomeCode = null,
+            supervisorOfficerCode = null,
+            notes = null,
+            attendanceData = null,
+            alertActive = null,
+            sensitive = null,
+          ),
         ),
         projectCode = PROJECT_CODE,
       )
@@ -232,8 +237,11 @@ class AppointmentEventEntityFactoryTest {
           triggerType = AppointmentEventTriggerType.SCHEDULING,
           triggeredBy = TRIGGERED_BY,
         ),
-        createAppointmentDto = CreateAppointmentDto.valid().copy(
-          contactOutcomeCode = null,
+        validatedCreateAppointmentDto =
+        Validated(
+          CreateAppointmentDto.valid().copy(
+            contactOutcomeCode = null,
+          ),
         ),
         projectCode = PROJECT_CODE,
       )
@@ -252,11 +260,14 @@ class AppointmentEventEntityFactoryTest {
           triggerType = AppointmentEventTriggerType.SCHEDULING,
           triggeredBy = TRIGGERED_BY,
         ),
-        createAppointmentDto = CreateAppointmentDto.valid().copy(
-          contactOutcomeCode = null,
-          startTime = LocalTime.of(10, 0),
-          endTime = LocalTime.of(12, 0),
-          attendanceData = AttendanceDataDto.valid().copy(penaltyTime = null),
+
+        validatedCreateAppointmentDto = Validated(
+          CreateAppointmentDto.valid().copy(
+            contactOutcomeCode = null,
+            startTime = LocalTime.of(10, 0),
+            endTime = LocalTime.of(12, 0),
+            attendanceData = AttendanceDataDto.valid().copy(penaltyTime = null),
+          ),
         ),
         projectCode = PROJECT_CODE,
       )
@@ -296,13 +307,16 @@ class AppointmentEventEntityFactoryTest {
           triggerType = AppointmentEventTriggerType.SCHEDULING,
           triggeredBy = TRIGGERED_BY,
         ),
-        createAppointmentDto = CreateAppointmentDto.valid().copy(
-          contactOutcomeCode = CONTACT_OUTCOME_CODE,
-          startTime = startTime,
-          endTime = endTime,
-          attendanceData = AttendanceDataDto.valid().copy(
-            penaltyMinutes = penaltyMinutes?.toMinutes(),
-            penaltyTime = penaltyTime?.let { HourMinuteDuration(it) },
+
+        validatedCreateAppointmentDto = Validated(
+          CreateAppointmentDto.valid().copy(
+            contactOutcomeCode = CONTACT_OUTCOME_CODE,
+            startTime = startTime,
+            endTime = endTime,
+            attendanceData = AttendanceDataDto.valid().copy(
+              penaltyMinutes = penaltyMinutes?.toMinutes(),
+              penaltyTime = penaltyTime?.let { HourMinuteDuration(it) },
+            ),
           ),
         ),
         projectCode = PROJECT_CODE,
@@ -322,11 +336,13 @@ class AppointmentEventEntityFactoryTest {
           triggerType = AppointmentEventTriggerType.SCHEDULING,
           triggeredBy = TRIGGERED_BY,
         ),
-        createAppointmentDto = CreateAppointmentDto.valid().copy(
-          contactOutcomeCode = null,
-          attendanceData = AttendanceDataDto.valid().copy(
-            penaltyMinutes = 150,
-            penaltyTime = HourMinuteDuration(Duration.ofMinutes(300)),
+        validatedCreateAppointmentDto = Validated(
+          CreateAppointmentDto.valid().copy(
+            contactOutcomeCode = null,
+            attendanceData = AttendanceDataDto.valid().copy(
+              penaltyMinutes = 150,
+              penaltyTime = HourMinuteDuration(Duration.ofMinutes(300)),
+            ),
           ),
         ),
         projectCode = PROJECT_CODE,
@@ -357,29 +373,31 @@ class AppointmentEventEntityFactoryTest {
       every { contactOutcomeEntityRepository.findByCode(CONTACT_OUTCOME_CODE) } returns contactOutcomeEntity
 
       val result = factory.buildUpdatedEvent(
-        outcome = UpdateAppointmentOutcomeDto(
-          deliusId = 101L,
-          deliusVersionToUpdate = deliusVersion,
-          startTime = LocalTime.of(10, 1),
-          endTime = LocalTime.of(16, 3),
-          contactOutcomeCode = CONTACT_OUTCOME_CODE,
-          supervisorOfficerCode = "N45",
-          notes = "some notes",
-          attendanceData = AttendanceDataDto(
-            hiVisWorn = false,
-            workedIntensively = true,
-            penaltyMinutes = 300,
-            penaltyTime = HourMinuteDuration(Duration.ofMinutes(400)),
-            workQuality = AppointmentWorkQualityDto.SATISFACTORY,
-            behaviour = AppointmentBehaviourDto.UNSATISFACTORY,
+        validatedUpdate = Validated(
+          UpdateAppointmentOutcomeDto(
+            deliusId = 101L,
+            deliusVersionToUpdate = deliusVersion,
+            startTime = LocalTime.of(10, 1),
+            endTime = LocalTime.of(16, 3),
+            contactOutcomeCode = CONTACT_OUTCOME_CODE,
+            supervisorOfficerCode = "N45",
+            notes = "some notes",
+            attendanceData = AttendanceDataDto(
+              hiVisWorn = false,
+              workedIntensively = true,
+              penaltyMinutes = 300,
+              penaltyTime = HourMinuteDuration(Duration.ofMinutes(400)),
+              workQuality = AppointmentWorkQualityDto.SATISFACTORY,
+              behaviour = AppointmentBehaviourDto.UNSATISFACTORY,
+            ),
+            enforcementData = EnforcementDto(
+              enforcementActionId = ENFORCEMENT_ACTION_ID,
+              respondBy = LocalDate.of(2026, 8, 10),
+            ),
+            formKeyToDelete = null,
+            alertActive = false,
+            sensitive = true,
           ),
-          enforcementData = EnforcementDto(
-            enforcementActionId = ENFORCEMENT_ACTION_ID,
-            respondBy = LocalDate.of(2026, 8, 10),
-          ),
-          formKeyToDelete = null,
-          alertActive = false,
-          sensitive = true,
         ),
         existingAppointment = AppointmentDto.valid().copy(
           communityPaybackId = communityPaybackId,
@@ -437,19 +455,21 @@ class AppointmentEventEntityFactoryTest {
       val deliusVersion = UUID.randomUUID()
 
       val result = factory.buildUpdatedEvent(
-        outcome = UpdateAppointmentOutcomeDto(
-          deliusId = 101L,
-          deliusVersionToUpdate = deliusVersion,
-          startTime = LocalTime.of(10, 1, 2),
-          endTime = LocalTime.of(16, 3, 4),
-          contactOutcomeCode = null,
-          supervisorOfficerCode = "N45",
-          notes = null,
-          attendanceData = null,
-          enforcementData = null,
-          formKeyToDelete = null,
-          alertActive = null,
-          sensitive = null,
+        validatedUpdate = Validated(
+          UpdateAppointmentOutcomeDto(
+            deliusId = 101L,
+            deliusVersionToUpdate = deliusVersion,
+            startTime = LocalTime.of(10, 1, 2),
+            endTime = LocalTime.of(16, 3, 4),
+            contactOutcomeCode = null,
+            supervisorOfficerCode = "N45",
+            notes = null,
+            attendanceData = null,
+            enforcementData = null,
+            formKeyToDelete = null,
+            alertActive = null,
+            sensitive = null,
+          ),
         ),
         existingAppointment = AppointmentDto.valid().copy(
           offender = OffenderDto.OffenderLimitedDto(crn = "X12345"),
@@ -502,8 +522,10 @@ class AppointmentEventEntityFactoryTest {
     @Test
     fun `minutes credited is null if no outcome`() {
       val result = factory.buildUpdatedEvent(
-        outcome = UpdateAppointmentOutcomeDto.valid().copy(
-          contactOutcomeCode = null,
+        validatedUpdate = Validated(
+          UpdateAppointmentOutcomeDto.valid().copy(
+            contactOutcomeCode = null,
+          ),
         ),
         existingAppointment = AppointmentDto.valid(),
         trigger = AppointmentEventTrigger(
@@ -522,11 +544,13 @@ class AppointmentEventEntityFactoryTest {
       every { contactOutcomeEntityRepository.findByCode(CONTACT_OUTCOME_CODE) } returns ContactOutcomeEntity.valid().copy(attended = false)
 
       val result = factory.buildUpdatedEvent(
-        outcome = UpdateAppointmentOutcomeDto.valid().copy(
-          contactOutcomeCode = null,
-          startTime = LocalTime.of(10, 0),
-          endTime = LocalTime.of(12, 0),
-          attendanceData = AttendanceDataDto.valid().copy(penaltyTime = null),
+        validatedUpdate = Validated(
+          UpdateAppointmentOutcomeDto.valid().copy(
+            contactOutcomeCode = null,
+            startTime = LocalTime.of(10, 0),
+            endTime = LocalTime.of(12, 0),
+            attendanceData = AttendanceDataDto.valid().copy(penaltyTime = null),
+          ),
         ),
         existingAppointment = AppointmentDto.valid(),
         trigger = AppointmentEventTrigger(
@@ -566,13 +590,15 @@ class AppointmentEventEntityFactoryTest {
       every { contactOutcomeEntityRepository.findByCode(CONTACT_OUTCOME_CODE) } returns ContactOutcomeEntity.valid().copy(attended = true)
 
       val result = factory.buildUpdatedEvent(
-        outcome = UpdateAppointmentOutcomeDto.valid().copy(
-          contactOutcomeCode = CONTACT_OUTCOME_CODE,
-          startTime = startTime,
-          endTime = endTime,
-          attendanceData = AttendanceDataDto.valid().copy(
-            penaltyMinutes = penaltyMinutes?.toMinutes(),
-            penaltyTime = penaltyTime?.let { HourMinuteDuration(it) },
+        validatedUpdate = Validated(
+          UpdateAppointmentOutcomeDto.valid().copy(
+            contactOutcomeCode = CONTACT_OUTCOME_CODE,
+            startTime = startTime,
+            endTime = endTime,
+            attendanceData = AttendanceDataDto.valid().copy(
+              penaltyMinutes = penaltyMinutes?.toMinutes(),
+              penaltyTime = penaltyTime?.let { HourMinuteDuration(it) },
+            ),
           ),
         ),
         existingAppointment = AppointmentDto.valid(),
@@ -592,11 +618,13 @@ class AppointmentEventEntityFactoryTest {
       every { contactOutcomeEntityRepository.findByCode(CONTACT_OUTCOME_CODE) } returns ContactOutcomeEntity.valid()
 
       val result = factory.buildUpdatedEvent(
-        outcome = UpdateAppointmentOutcomeDto.valid().copy(
-          contactOutcomeCode = null,
-          attendanceData = AttendanceDataDto.valid().copy(
-            penaltyMinutes = 150,
-            penaltyTime = HourMinuteDuration(Duration.ofMinutes(300)),
+        validatedUpdate = Validated(
+          UpdateAppointmentOutcomeDto.valid().copy(
+            contactOutcomeCode = null,
+            attendanceData = AttendanceDataDto.valid().copy(
+              penaltyMinutes = 150,
+              penaltyTime = HourMinuteDuration(Duration.ofMinutes(300)),
+            ),
           ),
         ),
         existingAppointment = AppointmentDto.valid(),
@@ -614,11 +642,13 @@ class AppointmentEventEntityFactoryTest {
     @Test
     fun `use legacy penaltyTime if penaltyMinutes not defined`() {
       val result = factory.buildUpdatedEvent(
-        outcome = UpdateAppointmentOutcomeDto.valid().copy(
-          contactOutcomeCode = null,
-          attendanceData = AttendanceDataDto.valid().copy(
-            penaltyMinutes = null,
-            penaltyTime = HourMinuteDuration(Duration.ofMinutes(300)),
+        validatedUpdate = Validated(
+          UpdateAppointmentOutcomeDto.valid().copy(
+            contactOutcomeCode = null,
+            attendanceData = AttendanceDataDto.valid().copy(
+              penaltyMinutes = null,
+              penaltyTime = HourMinuteDuration(Duration.ofMinutes(300)),
+            ),
           ),
         ),
         existingAppointment = AppointmentDto.valid(),

@@ -22,13 +22,18 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdditionalInform
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentCreationService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventEntityFactory
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventTrigger
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.DomainEventService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.DomainEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.PersonReferenceType
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.Validated
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toNDCreateAppointment
 
 @ExtendWith(MockKExtension::class)
 class AppointmentCreationServiceTest {
+  @RelaxedMockK
+  lateinit var appointmentValidationService: AppointmentValidationService
+
   @RelaxedMockK
   lateinit var appointmentEventEntityFactory: AppointmentEventEntityFactory
 
@@ -65,11 +70,12 @@ class AppointmentCreationServiceTest {
         eventType = AppointmentEventType.CREATE,
         communityPaybackAppointmentId = createAppointment1Dto.id,
       )
+      every { appointmentValidationService.validateCreate(createAppointment1Dto) } returns Validated(createAppointment1Dto)
       every {
         appointmentEventEntityFactory.buildCreatedEvent(
           deliusId = 0,
           trigger = TRIGGER,
-          createAppointmentDto = createAppointment1Dto,
+          validatedCreateAppointmentDto = Validated(createAppointment1Dto),
           projectCode = PROJECT_CODE,
         )
       } returns creationEvent1
@@ -78,11 +84,12 @@ class AppointmentCreationServiceTest {
         eventType = AppointmentEventType.CREATE,
         communityPaybackAppointmentId = createAppointment2Dto.id,
       )
+      every { appointmentValidationService.validateCreate(createAppointment2Dto) } returns Validated(createAppointment2Dto)
       every {
         appointmentEventEntityFactory.buildCreatedEvent(
           deliusId = 0,
           trigger = TRIGGER,
-          createAppointmentDto = createAppointment2Dto,
+          validatedCreateAppointmentDto = Validated(createAppointment2Dto),
           projectCode = PROJECT_CODE,
         )
       } returns creationEvent2

@@ -12,21 +12,21 @@ data class CreateAppointmentDto(
   val allocationId: Long?,
   val date: LocalDate,
   @param:Schema(example = "09:00", description = "The start local time of the appointment", pattern = "^([0-1][0-9]|2[0-3]):[0-5][0-9]$")
-  val startTime: LocalTime,
+  override val startTime: LocalTime,
   @param:Schema(example = "14:00", description = "The end local time of the appointment", pattern = "^([0-1][0-9]|2[0-3]):[0-5][0-9]$")
-  val endTime: LocalTime,
+  override val endTime: LocalTime,
   val pickUpLocationCode: String?,
   val pickUpLocationDescription: String?,
   val pickUpTime: LocalTime?,
-  val contactOutcomeCode: String? = null,
-  val attendanceData: AttendanceDataDto? = null,
+  override val contactOutcomeCode: String? = null,
+  override val attendanceData: AttendanceDataDto? = null,
   @param:Schema(description = "Will default to the unallocated supervisor for the project's team if not defined")
   val supervisorOfficerCode: String? = null,
-  val notes: String? = null,
+  override val notes: String? = null,
   @param:Schema(description = "If the corresponding delius contact should be alerted")
   val alertActive: Boolean? = null,
   @param:Schema(description = "If the corresponding delius contact should be marked as sensitive")
   val sensitive: Boolean? = null,
-) {
+) : AppointmentCommandDto {
   companion object
 }
