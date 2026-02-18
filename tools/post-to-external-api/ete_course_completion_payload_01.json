@@ -5,7 +5,7 @@
       "firstName": "John",
       "lastName": "Doe",
       "dateOfBirth": "1990-01-01",
-      "region": "London",
+      "region": "East of England",
       "email": "john.doe@example.com"
     },
     "course": {

@@ -109,7 +109,8 @@ brew install awscli-local
 AWS_DEFAULT_REGION=eu-west-2
 # list queues (if running integration tests there may be many)
 awslocal sqs list-queues 
-awslocal sqs send-message --queue-url http://sqs.eu-west-2.localhost.localstack.cloud:4566/000000000000/cp_stack_cc_course_completion --message-body '{"communityCampusId":"123","person":{"crn":"CRN01","firstName":"first","lastName":"last","dateOfBirth":"2018-04-21","region":"midlands","email":"someone@test.com"},"course":{"courseName":"the course","source":"F6I0f","enrollmentDateTime":"2025-11-10T14:19:37.401581","completionDateTime":"2025-11-15T14:19:37.401604","status":"Completed","totalTime":"07:06","attempts":1,"expectedMinutes":0,"expectedMinutesAdditional":3}}'
+awslocal sqs send-message --queue-url http://sqs.eu-west-2.localhost.localstack.cloud:4566/000000000000/cp_stack_course_completion_events --message-body '{"communityCampusId":"123","person":{"crn":"CRN01","firstName":"first","lastName":"last","dateOfBirth":"2018-04-21","region":"midlands","email":"someone@test.com"},"course":{"courseName":"the course","source":"F6I0f","enrollmentDateTime":"2025-11-10T14:19:37.401581","completionDateTime":"2025-11-15T14:19:37.401604","status":"Completed","totalTime":"07:06","attempts":1,"expectedMinutes":0,"expectedMinutesAdditional":3}}'
+
 ```
 
 ### Listening for Domain Events
