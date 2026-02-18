@@ -42,7 +42,11 @@ class AppointmentValidationServiceTest {
   @Nested
   inner class Create {
 
-    val baselineCreate = CreateAppointmentDto.valid().copy(contactOutcomeCode = OUTCOME_CODE)
+    val baselineCreate = CreateAppointmentDto.valid().copy(
+      contactOutcomeCode = OUTCOME_CODE,
+      startTime = LocalTime.MIN,
+      endTime = LocalTime.MAX,
+    )
     val baselineOutcome = ContactOutcomeEntity.valid().copy(code = OUTCOME_CODE)
 
     @Nested
@@ -74,12 +78,56 @@ class AppointmentValidationServiceTest {
       }
 
       @Test
+      fun `if appointment is current or in the past, attendance outcome can be recorded`() {
+        val outcome = baselineOutcome.copy(attended = true, enforceable = false)
+        every { contactOutcomeEntityRepository.findByCode(OUTCOME_CODE) } returns outcome
+
+        service.validateCreate(
+          baselineCreate.copy(
+            date = LocalDate.now(),
+            startTime = LocalTime.now().minusMinutes(1),
+          ),
+        )
+      }
+
+      @Test
+      fun `if appointment is current or in the past, enforceable outcome can be recorded`() {
+        val outcome = baselineOutcome.copy(attended = false, enforceable = true)
+        every { contactOutcomeEntityRepository.findByCode(OUTCOME_CODE) } returns outcome
+
+        service.validateCreate(
+          baselineCreate.copy(
+            date = LocalDate.now(),
+            startTime = LocalTime.now().minusMinutes(1),
+          ),
+        )
+      }
+
+      @Test
+      fun `if appointment is current or in the past, non enforceable outcome can be recorded`() {
+        val outcome = baselineOutcome.copy(attended = false, enforceable = false)
+        every { contactOutcomeEntityRepository.findByCode(OUTCOME_CODE) } returns outcome
+
+        service.validateCreate(
+          baselineCreate.copy(
+            date = LocalDate.now(),
+            startTime = LocalTime.now().minusMinutes(1),
+          ),
+        )
+      }
+
+      @Test
       fun `if appointment is in future, attendance outcome can't be recorded`() {
         val outcome = baselineOutcome.copy(attended = true, enforceable = false)
         every { contactOutcomeEntityRepository.findByCode(OUTCOME_CODE) } returns outcome
 
         assertThatThrownBy {
-          service.validateCreate(baselineCreate.copy(date = LocalDate.now().plusDays(1)))
+          service.validateCreate(
+            baselineCreate.copy(
+              date = LocalDate.now(),
+              startTime = LocalTime.now().plusMinutes(1),
+            ),
+          )
         }.isInstanceOf(BadRequestException::class.java)
           .hasMessage("If the appointment is in the future, only acceptable absences are permitted to be recorded")
       }
@@ -90,7 +138,12 @@ class AppointmentValidationServiceTest {
         every { contactOutcomeEntityRepository.findByCode(outcome.code) } returns outcome
 
         assertThatThrownBy {
-          service.validateCreate(baselineCreate.copy(date = LocalDate.now().plusDays(1)))
+          service.validateCreate(
+            baselineCreate.copy(
+              date = LocalDate.now(),
+              startTime = LocalTime.now().plusMinutes(1),
+            ),
+          )
         }.isInstanceOf(BadRequestException::class.java)
           .hasMessage("If the appointment is in the future, only acceptable absences are permitted to be recorded")
       }
@@ -100,7 +153,12 @@ class AppointmentValidationServiceTest {
         val outcome = baselineOutcome.copy(attended = false, enforceable = false)
         every { contactOutcomeEntityRepository.findByCode(outcome.code) } returns outcome
 
-        service.validateCreate(baselineCreate.copy(date = LocalDate.now().plusDays(1)))
+        service.validateCreate(
+          baselineCreate.copy(
+            date = LocalDate.now(),
+            startTime = LocalTime.now().plusMinutes(1),
+          ),
+        )
       }
 
       @Test
@@ -349,7 +407,11 @@ class AppointmentValidationServiceTest {
   @Nested
   inner class Update {
 
-    val baselineUpdate = UpdateAppointmentOutcomeDto.valid().copy(contactOutcomeCode = OUTCOME_CODE)
+    val baselineUpdate = UpdateAppointmentOutcomeDto.valid().copy(
+      contactOutcomeCode = OUTCOME_CODE,
+      startTime = LocalTime.MIN,
+      endTime = LocalTime.MAX,
+    )
     val baselineOutcome = ContactOutcomeEntity.valid().copy(code = OUTCOME_CODE)
 
     @Nested
@@ -385,14 +447,55 @@ class AppointmentValidationServiceTest {
       }
 
       @Test
+      fun `if appointment is current or in the past, attendance outcome can be recorded`() {
+        val outcome = baselineOutcome.copy(attended = true, enforceable = false)
+        every { contactOutcomeEntityRepository.findByCode(OUTCOME_CODE) } returns outcome
+
+        service.validateUpdate(
+          appointment = AppointmentDto.valid().copy(date = LocalDate.now()),
+          update = baselineUpdate.copy(
+            startTime = LocalTime.now().minusMinutes(1),
+          ),
+        )
+      }
+
+      @Test
+      fun `if appointment is current or in the past, enforceable outcome can be recorded`() {
+        val outcome = baselineOutcome.copy(attended = false, enforceable = true)
+        every { contactOutcomeEntityRepository.findByCode(OUTCOME_CODE) } returns outcome
+
+        service.validateUpdate(
+          appointment = AppointmentDto.valid().copy(date = LocalDate.now()),
+          update = baselineUpdate.copy(
+            startTime = LocalTime.now().minusMinutes(1),
+          ),
+        )
+      }
+
+      @Test
+      fun `if appointment is current or in the past, non-enforceable absence outcome can be recorded`() {
+        val outcome = baselineOutcome.copy(attended = false, enforceable = false)
+        every { contactOutcomeEntityRepository.findByCode(OUTCOME_CODE) } returns outcome
+
+        service.validateUpdate(
+          appointment = AppointmentDto.valid().copy(date = LocalDate.now()),
+          update = baselineUpdate.copy(
+            startTime = LocalTime.now().minusMinutes(1),
+          ),
+        )
+      }
+
+      @Test
       fun `if appointment is in future, attendance outcome can't be recorded`() {
         val outcome = baselineOutcome.copy(attended = true, enforceable = false)
         every { contactOutcomeEntityRepository.findByCode(OUTCOME_CODE) } returns outcome
 
         assertThatThrownBy {
           service.validateUpdate(
-            appointment = AppointmentDto.valid().copy(date = LocalDate.now().plusDays(1)),
-            update = baselineUpdate,
+            appointment = AppointmentDto.valid().copy(date = LocalDate.now()),
+            update = baselineUpdate.copy(
+              startTime = LocalTime.now().plusMinutes(1),
+            ),
           )
         }.isInstanceOf(BadRequestException::class.java)
           .hasMessage("If the appointment is in the future, only acceptable absences are permitted to be recorded")
@@ -405,8 +508,10 @@ class AppointmentValidationServiceTest {
 
         assertThatThrownBy {
           service.validateUpdate(
-            appointment = AppointmentDto.valid().copy(date = LocalDate.now().plusDays(1)),
-            update = baselineUpdate,
+            appointment = AppointmentDto.valid().copy(date = LocalDate.now()),
+            update = baselineUpdate.copy(
+              startTime = LocalTime.now().plusMinutes(1),
+            ),
           )
         }.isInstanceOf(BadRequestException::class.java)
           .hasMessage("If the appointment is in the future, only acceptable absences are permitted to be recorded")
@@ -418,8 +523,10 @@ class AppointmentValidationServiceTest {
         every { contactOutcomeEntityRepository.findByCode(outcome.code) } returns outcome
 
         service.validateUpdate(
-          appointment = AppointmentDto.valid().copy(date = LocalDate.now().plusDays(1)),
-          update = baselineUpdate,
+          appointment = AppointmentDto.valid().copy(date = LocalDate.now()),
+          update = baselineUpdate.copy(
+            startTime = LocalTime.now().plusMinutes(1),
+          ),
         )
       }
 

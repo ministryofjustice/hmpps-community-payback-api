@@ -10,6 +10,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.validat
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.validateNotNull
 import java.time.Duration
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 @Service
 class AppointmentValidationService(
@@ -54,7 +55,7 @@ class AppointmentValidationService(
     val contactOutcome = contactOutcomeEntityRepository.findByCode(code)
       ?: throw BadRequestException("Contact outcome not found for code $code")
 
-    val appointmentIsInFuture = appointmentDate.isAfter(LocalDate.now())
+    val appointmentIsInFuture = appointmentDate.atTime(command.startTime).isAfter(LocalDateTime.now())
     val attendanceOrEnforcementRecorded = contactOutcome.attended || contactOutcome.enforceable
     if (appointmentIsInFuture && attendanceOrEnforcementRecorded) {
       throw BadRequestException("If the appointment is in the future, only acceptable absences are permitted to be recorded")
