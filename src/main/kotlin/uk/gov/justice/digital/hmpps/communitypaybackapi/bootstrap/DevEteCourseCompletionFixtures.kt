@@ -11,7 +11,7 @@ import java.util.UUID
 import kotlin.random.Random
 
 @Component
-@ConditionalOnProperty(name = ["community-payback.auto-seed.enabled"], havingValue = "true")
+@ConditionalOnProperty(name = ["community-payback.bootstrap.enabled"], havingValue = "true")
 class DevEteCourseCompletionFixtures(
   private val repository: EteCourseCompletionEventEntityRepository,
 ) : AutoSeeder {
@@ -24,9 +24,9 @@ class DevEteCourseCompletionFixtures(
     fixtures.forEach { entity ->
       if (!repository.existsById(entity.id)) {
         repository.save(entity)
-        log.info("[Dev Fixtures] Inserted ete_course_completion_event id={} externalRef={}", entity.id, entity.externalReference)
+        log.info("Inserted ete_course_completion_event id={} externalRef={}", entity.id, entity.externalReference)
       } else {
-        log.debug("[Dev Fixtures] Skipped existing ete_course_completion_event id={}", entity.id)
+        log.debug("Skipped existing ete_course_completion_event id={}", entity.id)
       }
     }
   }
