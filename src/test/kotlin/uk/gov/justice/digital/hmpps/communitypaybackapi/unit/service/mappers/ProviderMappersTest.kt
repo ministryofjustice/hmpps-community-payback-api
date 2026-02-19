@@ -41,7 +41,7 @@ class ProviderMappersTest {
   inner class ProviderSummariesMapper {
     @Test
     fun `should map using toDto() correctly`() {
-      val providerSummary = NDProviderSummary(code = "GHI123", name = "East of England")
+      val providerSummary = NDProviderSummary(code = "GHI123", description = "East of England")
       assertThat(providerSummary.toDto())
         .isEqualTo(ProviderSummaryDto(code = "GHI123", name = "East of England"))
     }
