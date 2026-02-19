@@ -8,6 +8,8 @@ set -o pipefail
 # Will replace entries in a given template file in the format ${SECRET_NAME}
 # with secret values derived from the given k8s secret in the given k8s namespace
 #
+# If an entry's name ends with 'B64' the value will be left in Base64
+#
 # $1 source template file to update
 # $2 where to write the resulting file
 # $3 kubernetes namespace
@@ -37,13 +39,22 @@ resolve_secrets() {
 
       echo "Loading secrets for $secretName"
 
-      secrets=$(kubectl get secrets "$secretName" --namespace "$k8s_namespace" -o json | jq ".data | map_values(@base64d)")
-      # get value in format 'key=value' which can then be used with the 'export' command, setting them as env vars
-      for secret in $(echo "$secrets" | jq -r "to_entries | map(\"\(.key)=\(.value|tostring)\") | .[]" ); do
-        # shellcheck disable=SC2163
-        export "$secret" || echo "Cannot export secret (see logged error above)"
-      done
+      secrets_json=$(kubectl get secrets "$secretName" --namespace "$k8s_namespace" -o json | jq ".data")
 
+      secret_keys=$(echo "$secrets_json" | jq -r "to_entries[] | .key")
+      for key in $secret_keys; do
+        value=$(echo "$secrets_json" | jq -r "to_entries[] | select(.key == \"""${key}""\") | .value")
+
+        if [[ "$key" == *B64 ]]
+        then
+          # shellcheck disable=SC2163
+          export "$key=$value" || echo "Cannot export secret (see logged error above)"
+        else
+          decoded_value=$(echo $value | base64 -d)
+          export "$key=$decoded_value" || echo "Cannot export secret (see logged error above)"
+        fi
+
+      done
     done
 
     rm -f "$target"
