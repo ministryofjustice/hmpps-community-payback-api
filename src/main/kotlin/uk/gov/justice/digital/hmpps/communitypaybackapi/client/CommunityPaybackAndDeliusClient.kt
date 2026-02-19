@@ -133,7 +133,7 @@ data class NDProviderSummaries(
 
 data class NDProviderSummary(
   val code: String,
-  val name: String,
+  val description: String,
 )
 
 data class NDProviderTeamSummaries(
