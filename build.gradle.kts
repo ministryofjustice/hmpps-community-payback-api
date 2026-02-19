@@ -7,7 +7,7 @@ plugins {
   kotlin("plugin.jpa") version "2.3.10"
   id("dev.detekt") version "2.0.0-alpha.2"
   jacoco
-  id("io.sentry.jvm.gradle") version "6.0.0"
+  id("io.sentry.jvm.gradle") version "6.1.0"
 }
 
 configurations {
