@@ -486,7 +486,7 @@ data class NDUnpaidWorkRequirement(
 data class NDSchedulingAllocation(
   val id: Long,
   val project: NDSchedulingProject,
-  val projectAvailability: NDSchedulingAvailability?,
+  val projectAvailability: NDProjectAvailability?,
   val frequency: NDSchedulingFrequency?,
   val dayOfWeek: NDSchedulingDayOfWeek,
   val startDateInclusive: LocalDate,
@@ -512,8 +512,10 @@ data class NDSchedulingProject(
   companion object
 }
 
-data class NDSchedulingAvailability(
+data class NDProjectAvailability(
   val frequency: NDSchedulingFrequency?,
+  val dayOfWeek: NDSchedulingDayOfWeek,
+  val startDateInclusive: LocalDate?,
   val endDateExclusive: LocalDate?,
 ) {
   companion object

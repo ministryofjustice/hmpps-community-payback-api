@@ -2,8 +2,8 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client
 
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDPickUp
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDPickUpLocation
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectAvailability
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingAllocation
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingAvailability
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingDayOfWeek
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingFrequency
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingProject
@@ -22,7 +22,7 @@ fun NDSchedulingAllocation.Companion.valid(): NDSchedulingAllocation {
   return NDSchedulingAllocation(
     id = Long.random(),
     project = NDSchedulingProject.valid(),
-    projectAvailability = NDSchedulingAvailability.valid(),
+    projectAvailability = NDProjectAvailability.valid(),
     frequency = NDSchedulingFrequency.entries.random(),
     dayOfWeek = NDSchedulingDayOfWeek.entries.toTypedArray().random(),
     startDateInclusive = startDateInclusive,
