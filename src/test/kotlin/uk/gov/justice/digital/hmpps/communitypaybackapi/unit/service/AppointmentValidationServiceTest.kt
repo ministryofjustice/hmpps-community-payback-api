@@ -70,8 +70,6 @@ class AppointmentValidationServiceTest {
 
       @Test
       fun success() {
-        every { contactOutcomeEntityRepository.findByCode(OUTCOME_CODE) } returns baselineOutcome
-
         val result = service.validateCreate(
           create = baselineCreate,
         )

@@ -34,5 +34,42 @@
       "postCode": "ZY98XW"
     }
   },
-  "hiVisRequired": true
+  "hiVisRequired": true,
+  "availability": [
+    {
+      "frequency": "Weekly",
+      "dayOfWeek": "Monday",
+      "startDateInclusive": "2026-01-20"
+    },
+    {
+      "frequency": "Weekly",
+      "dayOfWeek": "Tuesday",
+      "startDateInclusive": "2026-01-20"
+    },
+    {
+      "frequency": "Weekly",
+      "dayOfWeek": "Wednesday",
+      "startDateInclusive": "2026-01-20"
+    },
+    {
+      "frequency": "Weekly",
+      "dayOfWeek": "Thursday",
+      "startDateInclusive": "2026-01-20"
+    },
+    {
+      "frequency": "Weekly",
+      "dayOfWeek": "Friday",
+      "startDateInclusive": "2026-01-20"
+    },
+    {
+      "frequency": "Weekly",
+      "dayOfWeek": "Saturday",
+      "startDateInclusive": "2026-01-20"
+    },
+    {
+      "frequency": "Weekly",
+      "dayOfWeek": "Sunday",
+      "startDateInclusive": "2026-01-20"
+    }
+  ]
 }
