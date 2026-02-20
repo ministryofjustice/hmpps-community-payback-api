@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.service
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.onOrAfter
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentCommandDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
@@ -15,11 +16,13 @@ import java.time.LocalDateTime
 @Service
 class AppointmentValidationService(
   private val contactOutcomeEntityRepository: ContactOutcomeEntityRepository,
+  private val projectService: ProjectService,
 ) {
 
   fun validateCreate(
     create: CreateAppointmentDto,
   ): Validated<CreateAppointmentDto> {
+    validateDate(create)
     validateOutcome(
       appointmentDate = create.date,
       command = create,
@@ -44,6 +47,20 @@ class AppointmentValidationService(
     validateNotes(update)
 
     return Validated(update)
+  }
+
+  fun validateDate(
+    appointment: CreateAppointmentDto,
+  ) {
+    val project = projectService.getProject(appointment.projectCode)
+    val appointmentDate = appointment.date
+    val projectEndDateExclusive = project.actualEndDateExclusive
+
+    projectEndDateExclusive?.let {
+      if (appointmentDate.onOrAfter(projectEndDateExclusive)) {
+        throw BadRequestException("Appointment Date of $appointmentDate must be before project end date $projectEndDateExclusive")
+      }
+    }
   }
 
   private fun validateOutcome(

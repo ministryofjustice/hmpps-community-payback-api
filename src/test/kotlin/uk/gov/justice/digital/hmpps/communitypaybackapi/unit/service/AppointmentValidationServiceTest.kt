@@ -15,12 +15,14 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.common.HourMinuteDuratio
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AttendanceDataDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.BadRequestException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ProjectService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.Validated
 import java.time.Duration
 import java.time.LocalDate
@@ -32,22 +34,36 @@ class AppointmentValidationServiceTest {
   @MockK
   lateinit var contactOutcomeEntityRepository: ContactOutcomeEntityRepository
 
+  @MockK
+  lateinit var projectService: ProjectService
+
   @InjectMockKs
   lateinit var service: AppointmentValidationService
 
   companion object {
     const val OUTCOME_CODE = "OUTCOME1"
+    const val PROJECT_CODE = "PROJ123"
   }
 
   @Nested
   inner class Create {
 
     val baselineCreate = CreateAppointmentDto.valid().copy(
+      projectCode = PROJECT_CODE,
       contactOutcomeCode = OUTCOME_CODE,
       startTime = LocalTime.MIN,
       endTime = LocalTime.MAX,
     )
     val baselineOutcome = ContactOutcomeEntity.valid().copy(code = OUTCOME_CODE)
+    val baselineProject = ProjectDto.valid().copy(
+      actualEndDateExclusive = null,
+    )
+
+    @BeforeEach
+    fun setupBaselineMockResponses() {
+      every { projectService.getProject(PROJECT_CODE) } returns baselineProject
+      every { contactOutcomeEntityRepository.findByCode(baselineOutcome.code) } returns baselineOutcome
+    }
 
     @Nested
     inner class Success {
@@ -61,6 +77,55 @@ class AppointmentValidationServiceTest {
         )
 
         assertThat(result).isEqualTo(Validated(baselineCreate))
+      }
+    }
+
+    @Nested
+    inner class Date {
+
+      @Test
+      fun `ok if date is before project end date`() {
+        every { projectService.getProject(PROJECT_CODE) } returns baselineProject.copy(
+          actualEndDateExclusive = LocalDate.of(2030, 5, 4),
+        )
+
+        service.validateCreate(
+          baselineCreate.copy(
+            date = LocalDate.of(2030, 5, 3),
+          ),
+        )
+      }
+
+      @Test
+      fun `throws BadRequestException if date is on project end date`() {
+        every { projectService.getProject(PROJECT_CODE) } returns baselineProject.copy(
+          actualEndDateExclusive = LocalDate.of(2030, 5, 4),
+        )
+
+        assertThatThrownBy {
+          service.validateCreate(
+            baselineCreate.copy(
+              date = LocalDate.of(2030, 5, 4),
+            ),
+          )
+        }.isInstanceOf(BadRequestException::class.java)
+          .hasMessage("Appointment Date of 2030-05-04 must be before project end date 2030-05-04")
+      }
+
+      @Test
+      fun `throws BadRequestException if date is after project end date`() {
+        every { projectService.getProject(PROJECT_CODE) } returns baselineProject.copy(
+          actualEndDateExclusive = LocalDate.of(2030, 5, 4),
+        )
+
+        assertThatThrownBy {
+          service.validateCreate(
+            baselineCreate.copy(
+              date = LocalDate.of(2030, 5, 5),
+            ),
+          )
+        }.isInstanceOf(BadRequestException::class.java)
+          .hasMessage("Appointment Date of 2030-05-05 must be before project end date 2030-05-04")
       }
     }
 
@@ -247,11 +312,6 @@ class AppointmentValidationServiceTest {
     @Nested
     inner class PenaltyMinutesDuration {
 
-      @BeforeEach
-      fun setupOutcome() {
-        every { contactOutcomeEntityRepository.findByCode(baselineOutcome.code) } returns baselineOutcome
-      }
-
       @Test
       fun `if no penalty minutes, do nothing`() {
         service.validateCreate(
@@ -357,11 +417,6 @@ class AppointmentValidationServiceTest {
 
     @Nested
     inner class NotesValidation {
-
-      @BeforeEach
-      fun setupOutcome() {
-        every { contactOutcomeEntityRepository.findByCode(baselineOutcome.code) } returns baselineOutcome
-      }
 
       @Test
       fun `null notes is accepted`() {
