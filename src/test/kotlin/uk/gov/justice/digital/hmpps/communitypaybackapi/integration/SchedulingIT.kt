@@ -385,14 +385,14 @@ class SchedulingIT : IntegrationTestBase() {
       ),
     )
 
-    val project1 = NDProject.valid(ctx).copy(code = "PROJ1", provider = NDCode("PROV1"), team = NDCode("TEAM1"))
+    val project1 = NDProject.valid(ctx).copy(code = "PROJ1", provider = NDCode("PROV1"), team = NDCode("TEAM1"), actualEndDateExclusive = null)
     CommunityPaybackAndDeliusMockServer.getProject(project1)
     CommunityPaybackAndDeliusMockServer.getTeamSupervisors(
       forProject = project1,
       supervisorSummaries = NDSupervisorSummaries(listOf(NDSupervisorSummary.unallocated())),
     )
 
-    val project2 = NDProject.valid(ctx).copy(code = "PROJ2", provider = NDCode("PROV2"), team = NDCode("TEAM2"))
+    val project2 = NDProject.valid(ctx).copy(code = "PROJ2", provider = NDCode("PROV2"), team = NDCode("TEAM2"), actualEndDateExclusive = null)
     CommunityPaybackAndDeliusMockServer.getProject(project2)
     CommunityPaybackAndDeliusMockServer.getTeamSupervisors(
       forProject = project2,

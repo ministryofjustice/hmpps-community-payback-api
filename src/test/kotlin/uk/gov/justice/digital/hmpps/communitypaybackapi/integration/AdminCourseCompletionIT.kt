@@ -323,7 +323,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
         projectCode = projectCode,
       )
 
-      val project = NDProject.valid(ctx).copy(code = projectCode)
+      val project = NDProject.valid(ctx).copy(code = projectCode, actualEndDateExclusive = null)
       CommunityPaybackAndDeliusMockServer.getProject(project)
       CommunityPaybackAndDeliusMockServer.getTeamSupervisors(
         forProject = project,
@@ -382,7 +382,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
         appointment = upstreamAppointment,
         username = "theusername",
       )
-      val project = NDProject.valid(ctx).copy(code = projectCode)
+      val project = NDProject.valid(ctx).copy(code = projectCode, actualEndDateExclusive = null)
       CommunityPaybackAndDeliusMockServer.getProject(project)
       CommunityPaybackAndDeliusMockServer.getTeamSupervisors(
         forProject = project,
