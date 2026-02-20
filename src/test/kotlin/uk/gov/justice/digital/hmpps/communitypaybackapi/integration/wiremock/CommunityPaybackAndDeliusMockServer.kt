@@ -17,7 +17,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointmentSumm
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseDetail
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseDetailsSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProject
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectOutcomeSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectOutcomeStats
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProviderSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProviderTeamSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSession
@@ -319,7 +319,7 @@ object CommunityPaybackAndDeliusMockServer {
     providerCode: String,
     teamCode: String,
     projectTypeCodes: List<String> = emptyList(),
-    projects: List<NDProjectOutcomeSummary>,
+    response: List<NDProjectOutcomeStats>,
     pageNumber: Int = 0,
     pageSize: Int = 50,
     sortString: String = "projectName,desc",
@@ -332,7 +332,7 @@ object CommunityPaybackAndDeliusMockServer {
       append("page=$pageNumber&size=$pageSize&sort=${URLEncoder.encode(sortString, "UTF-8")}")
     }
 
-    val pageResponse = PageResponse(projects, PageResponse.PageMeta(pageSize, pageNumber, projects.size.toLong(), 1))
+    val pageResponse = PageResponse(response, PageResponse.PageMeta(pageSize, pageNumber, response.size.toLong(), 1))
 
     WireMock.stubFor(
       get(url)

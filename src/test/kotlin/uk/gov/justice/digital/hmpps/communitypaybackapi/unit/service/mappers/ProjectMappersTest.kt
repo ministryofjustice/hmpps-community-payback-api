@@ -7,7 +7,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAddress
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDBeneficiaryDetails
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCode
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProject
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectOutcomeSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectOutcomeStats
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ProjectTypeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
@@ -65,7 +65,7 @@ class ProjectMappersTest {
   }
 
   @Nested
-  inner class NDProjectOutcomeSummaryToDto {
+  inner class NDProjectOutcomeStatsToDto {
 
     @Test
     fun `should map NDProjectOutcomeSummary to ProjectOutcomeSummaryDto correctly`() {
@@ -78,15 +78,19 @@ class ProjectMappersTest {
         postCode = "SW1A 1AA",
       )
 
-      val ndProject = NDProjectOutcomeSummary(
+      val ndProject = NDProject.valid().copy(
         name = "Community Garden Maintenance",
         code = "PRJ123",
         location = ndAddress,
+      )
+
+      val ndProjectOutcomeStats = NDProjectOutcomeStats(
+        project = ndProject,
         overdueOutcomesCount = 5,
         oldestOverdueInDays = 10,
       )
 
-      val result = ndProject.toDto()
+      val result = ndProjectOutcomeStats.toDto()
 
       assertThat(result.projectName).isEqualTo("Community Garden Maintenance")
       assertThat(result.projectCode).isEqualTo("PRJ123")

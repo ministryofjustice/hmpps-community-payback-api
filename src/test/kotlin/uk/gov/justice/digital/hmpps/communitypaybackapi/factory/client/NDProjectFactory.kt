@@ -6,7 +6,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDBeneficiaryDeta
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCode
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectAndLocation
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectOutcomeSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectOutcomeStats
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.random
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.randomLocalDate
@@ -30,10 +30,8 @@ fun NDProject.Companion.valid() = NDProject(
   actualEndDateExclusive = randomLocalDate(),
 )
 
-fun NDProjectOutcomeSummary.Companion.valid() = NDProjectOutcomeSummary(
-  code = String.random(),
-  name = String.random(),
-  location = NDAddress.valid(),
+fun NDProjectOutcomeStats.Companion.valid() = NDProjectOutcomeStats(
+  project = NDProject.valid(),
   overdueOutcomesCount = Int.random(),
   oldestOverdueInDays = Int.random(),
 )

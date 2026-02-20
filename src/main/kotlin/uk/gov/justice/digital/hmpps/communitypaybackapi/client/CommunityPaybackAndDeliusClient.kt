@@ -110,7 +110,7 @@ interface CommunityPaybackAndDeliusClient {
     @PathVariable teamCode: String,
     @RequestParam projectTypeCodes: List<String>?,
     @RequestParam params: Map<String, String>,
-  ): PageResponse<NDProjectOutcomeSummary>
+  ): PageResponse<NDProjectOutcomeStats>
 
   @GetExchange("/appointments")
   fun getAppointments(
@@ -269,9 +269,15 @@ data class NDBeneficiaryDetails(
 data class NDProjectAndLocation(val name: String, val code: String, val location: NDAddress) {
   companion object
 }
-data class NDProjectOutcomeSummary(val name: String, val code: String, val location: NDAddress, val overdueOutcomesCount: Int, val oldestOverdueInDays: Int) {
+
+data class NDProjectOutcomeStats(
+  val project: NDProject,
+  val overdueOutcomesCount: Int,
+  val oldestOverdueInDays: Int,
+) {
   companion object
 }
+
 data class NDProjectSummary(val description: String, val code: String) {
   companion object
 }
