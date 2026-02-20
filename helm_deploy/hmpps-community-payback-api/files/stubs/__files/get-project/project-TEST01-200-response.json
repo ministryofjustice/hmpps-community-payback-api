@@ -19,7 +19,7 @@
     "county": "West Yorkshire",
     "postCode": "LS9 8ZZ"
   },
-  "beneficiaryDetails": {
+  "beneficiary": {
     "name": "Cancer Research UK",
     "contactName": "Zinnia Wormwood",
     "emailAddress": "zinnia@cancerresearch.co.uk",

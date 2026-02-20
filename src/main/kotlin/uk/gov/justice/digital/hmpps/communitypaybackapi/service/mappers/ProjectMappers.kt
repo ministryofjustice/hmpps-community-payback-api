@@ -18,7 +18,9 @@ fun NDProject.toDto(
   teamCode = this.team.code,
   location = this.location.toDto(),
   hiVisRequired = this.hiVisRequired,
-  beneficiaryDetails = this.beneficiaryDetails.toDto(),
+  beneficiaryDetails = this.beneficiary.toDto(),
+  expectedEndDateExclusive = this.expectedEndDateExclusive,
+  actualEndDateExclusive = this.actualEndDateExclusive,
 )
 
 fun NDBeneficiaryDetails.toDto() = BeneficiaryDetailsDto(
@@ -27,7 +29,7 @@ fun NDBeneficiaryDetails.toDto() = BeneficiaryDetailsDto(
   emailAddress = this.emailAddress,
   website = this.website,
   telephoneNumber = this.telephoneNumber,
-  location = location.toDto(),
+  location = location?.toDto(),
 )
 
 fun NDProjectOutcomeSummary.toDto() = ProjectOutcomeSummaryDto(

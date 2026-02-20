@@ -15,6 +15,8 @@ fun ProjectDto.Companion.valid() = ProjectDto(
   location = LocationDto.valid(),
   hiVisRequired = Boolean.random(),
   beneficiaryDetails = BeneficiaryDetailsDto.valid(),
+  expectedEndDateExclusive = randomLocalDate(),
+  actualEndDateExclusive = randomLocalDate(),
 )
 
 fun LocationDto.Companion.valid() = LocationDto(

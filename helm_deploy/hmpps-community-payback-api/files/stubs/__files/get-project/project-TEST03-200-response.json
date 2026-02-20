@@ -19,7 +19,7 @@
     "county": "Merseyside",
     "postCode": "L20 8ZZ"
   },
-  "beneficiaryDetails": {
+  "beneficiary": {
     "name": "Mind",
     "contactName": "Rachel Porter",
     "emailAddress": "rporter@mind.co.uk",
