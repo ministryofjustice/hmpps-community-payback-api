@@ -5,7 +5,6 @@ import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionOutcomeDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EteCourseCompletionEventDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.NotFoundException
@@ -105,7 +104,7 @@ class EteService(
         startTime = existingAppointment.startTime,
         endTime = existingAppointment.startTime.plusMinutes(courseCompletionOutcome.minutesToCredit),
         contactOutcomeCode = courseCompletionOutcome.contactOutcome,
-        attendanceData = EducationCourseCompletionMapper.DefaultEducationCourseCompletionAttendanceData.createAttendanceData(),
+        attendanceData = EducationCourseCompletionMapper.createAttendanceData(),
         enforcementData = null,
         supervisorOfficerCode = existingAppointment.supervisorOfficerCode,
         notes = "Ete course completed: ${eteEvent.courseName}",
@@ -120,20 +119,20 @@ class EteService(
         trigger = trigger,
       )
     } else {
-      val appointment = educationCourseCompletionMapper.toCreateAppointmentDto(eteEvent, courseCompletionOutcome.crn)
+      val appointment = educationCourseCompletionMapper.toCreateAppointmentDto(
+        eteCourseCompletionEventEntity = eteEvent,
+        crn = courseCompletionOutcome.crn,
+        projectCode = courseCompletionOutcome.projectCode,
+      )
+
       val adjustedAppointment = appointment.copy(
         crn = courseCompletionOutcome.crn,
         endTime = appointment.startTime.plusMinutes(courseCompletionOutcome.minutesToCredit),
         contactOutcomeCode = courseCompletionOutcome.contactOutcome,
       )
 
-      val createAppointments = CreateAppointmentsDto(
-        projectCode = courseCompletionOutcome.projectCode,
-        appointments = listOf(adjustedAppointment),
-      )
-
-      appointmentCreationService.createAppointments(
-        createAppointments = createAppointments,
+      appointmentCreationService.createAppointment(
+        appointment = adjustedAppointment,
         trigger = trigger,
       )
     }

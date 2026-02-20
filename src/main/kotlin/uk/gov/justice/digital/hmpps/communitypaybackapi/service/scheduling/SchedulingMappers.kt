@@ -79,6 +79,7 @@ fun SchedulingRequiredAppointment.toCreateAppointmentDto(
   crn = crn,
   deliusEventNumber = eventNumber,
   allocationId = allocation.id,
+  projectCode = this.project.code,
   date = this.date,
   startTime = this.startTime,
   endTime = this.endTime,

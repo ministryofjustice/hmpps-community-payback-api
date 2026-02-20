@@ -28,11 +28,10 @@ class AppointmentEventEntityFactory(
   fun buildCreatedEvent(
     deliusId: Long,
     trigger: AppointmentEventTrigger,
-    projectCode: String,
     validatedCreateAppointmentDto: Validated<CreateAppointmentDto>,
   ): AppointmentEventEntity {
     val createAppointmentDto = validatedCreateAppointmentDto.value
-    val project = projectService.getProject(projectCode)
+    val project = projectService.getProject(createAppointmentDto.projectCode)
     val startTime = createAppointmentDto.startTime
     val endTime = createAppointmentDto.endTime
     val penaltyMinutes = createAppointmentDto.attendanceData?.derivePenaltyMinutesDuration()?.toMinutes()

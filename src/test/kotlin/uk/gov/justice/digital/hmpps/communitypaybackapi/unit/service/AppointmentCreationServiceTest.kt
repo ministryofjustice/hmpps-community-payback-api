@@ -5,6 +5,7 @@ import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.verify
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -12,11 +13,9 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackA
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCreateAppointments
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCreatedAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventType
-import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdditionalInformationType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentCreationService
@@ -58,13 +57,32 @@ class AppointmentCreationServiceTest {
   inner class CreateAppointment {
 
     @Test
+    fun `ensure at least one appointment provided`() {
+      assertThatThrownBy {
+        service.createAppointmentsForProject(
+          appointments = emptyList(),
+          trigger = TRIGGER,
+        )
+      }.hasMessage("At least one appointment must be provided")
+    }
+
+    @Test
+    fun `ensure all appointments have the same project code`() {
+      assertThatThrownBy {
+        service.createAppointmentsForProject(
+          appointments = listOf(
+            CreateAppointmentDto.valid().copy(projectCode = "code1"),
+            CreateAppointmentDto.valid().copy(projectCode = "code2"),
+          ),
+          trigger = TRIGGER,
+        )
+      }.hasMessage("All appointments must be for the same project code")
+    }
+
+    @Test
     fun `create appointments sends to ND, persists events, raises a domain events`() {
-      val createAppointment1Dto = CreateAppointmentDto.valid()
-      val createAppointment2Dto = CreateAppointmentDto.valid()
-      val createAppointmentsDto = CreateAppointmentsDto(
-        projectCode = PROJECT_CODE,
-        appointments = listOf(createAppointment1Dto, createAppointment2Dto),
-      )
+      val createAppointment1Dto = CreateAppointmentDto.valid().copy(projectCode = PROJECT_CODE)
+      val createAppointment2Dto = CreateAppointmentDto.valid().copy(projectCode = PROJECT_CODE)
 
       val creationEvent1 = AppointmentEventEntity.valid().copy(
         eventType = AppointmentEventType.CREATE,
@@ -76,7 +94,6 @@ class AppointmentCreationServiceTest {
           deliusId = 0,
           trigger = TRIGGER,
           validatedCreateAppointmentDto = Validated(createAppointment1Dto),
-          projectCode = PROJECT_CODE,
         )
       } returns creationEvent1
 
@@ -90,7 +107,6 @@ class AppointmentCreationServiceTest {
           deliusId = 0,
           trigger = TRIGGER,
           validatedCreateAppointmentDto = Validated(createAppointment2Dto),
-          projectCode = PROJECT_CODE,
         )
       } returns creationEvent2
 
@@ -101,8 +117,8 @@ class AppointmentCreationServiceTest {
         NDCreatedAppointment(id = 153, reference = createAppointment2Dto.id),
       )
 
-      service.createAppointments(
-        createAppointments = createAppointmentsDto,
+      service.createAppointmentsForProject(
+        appointments = listOf(createAppointment1Dto, createAppointment2Dto),
         trigger = TRIGGER,
       )
 

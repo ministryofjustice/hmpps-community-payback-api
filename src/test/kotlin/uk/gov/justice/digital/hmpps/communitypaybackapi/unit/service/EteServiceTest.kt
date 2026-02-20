@@ -17,13 +17,13 @@ import org.springframework.data.domain.Pageable
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionOutcomeDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.NotFoundException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseEventCompletionMessageStatus
-import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.randomLocalDate
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseCompletionMessage
@@ -284,25 +284,25 @@ class EteServiceTest {
 
       every { eteCourseCompletionEventEntityRepository.findById(event.id) } returns Optional.of(event)
       every {
-        educationCourseCompletionMapper.toCreateAppointmentDto(event, outcome.crn)
-      } returns EducationCourseCompletionMapper().toCreateAppointmentDto(event, outcome.crn)
+        educationCourseCompletionMapper.toCreateAppointmentDto(event, outcome.crn, outcome.projectCode)
+      } returns EducationCourseCompletionMapper().toCreateAppointmentDto(event, outcome.crn, outcome.projectCode)
       every { contextService.getUserName() } returns "admin-ui"
 
       eteService.processCourseCompletionOutcome(event.id, outcome)
 
       val triggerSlot = slot<AppointmentEventTrigger>()
-      val createAppointmentsSlot = slot<uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentsDto>()
+      val createAppointmentSlot = slot<CreateAppointmentDto>()
 
       io.mockk.verify {
-        appointmentCreationService.createAppointments(capture(createAppointmentsSlot), capture(triggerSlot))
+        appointmentCreationService.createAppointment(capture(createAppointmentSlot), capture(triggerSlot))
       }
 
       assertThat(triggerSlot.captured.triggerType).isEqualTo(AppointmentEventTriggerType.ETE_COURSE_COMPLETION)
       assertThat(triggerSlot.captured.triggeredBy).isEqualTo("admin-ui")
 
-      assertThat(createAppointmentsSlot.captured.projectCode).isEqualTo(outcome.projectCode)
-      val appointment = createAppointmentsSlot.captured.appointments.first()
+      val appointment = createAppointmentSlot.captured
       assertThat(appointment.crn).isEqualTo(outcome.crn)
+      assertThat(appointment.projectCode).isEqualTo(outcome.projectCode)
       assertThat(appointment.contactOutcomeCode).isEqualTo(outcome.contactOutcome)
       assertThat(appointment.endTime).isEqualTo(appointment.startTime.plusMinutes(outcome.minutesToCredit))
     }
@@ -351,8 +351,8 @@ class EteServiceTest {
 
       every { eteCourseCompletionEventEntityRepository.findById(eventId) } returns Optional.of(event)
       every {
-        educationCourseCompletionMapper.toCreateAppointmentDto(event, outcome.crn)
-      } returns EducationCourseCompletionMapper().toCreateAppointmentDto(event, outcome.crn)
+        educationCourseCompletionMapper.toCreateAppointmentDto(event, outcome.crn, outcome.projectCode)
+      } returns EducationCourseCompletionMapper().toCreateAppointmentDto(event, outcome.crn, outcome.projectCode)
       every { appointmentRetrievalService.getAppointment(projectCode, appointmentId) } returns existingAppointment
       every { contextService.getUserName() } returns "admin-ui"
 

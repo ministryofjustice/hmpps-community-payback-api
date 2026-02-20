@@ -4,7 +4,7 @@ import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCreateAppointments
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentsDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toNDCreateAppointment
 
@@ -18,19 +18,30 @@ class AppointmentCreationService(
 ) {
 
   @Transactional
-  fun createAppointments(
-    createAppointments: CreateAppointmentsDto,
+  fun createAppointment(
+    appointment: CreateAppointmentDto,
+    trigger: AppointmentEventTrigger,
+  ) = createAppointmentsForProject(
+    listOf(appointment),
+    trigger,
+  )
+
+  @Transactional
+  fun createAppointmentsForProject(
+    appointments: List<CreateAppointmentDto>,
     trigger: AppointmentEventTrigger,
   ) {
-    val projectCode = createAppointments.projectCode
+    require(appointments.isNotEmpty()) { "At least one appointment must be provided" }
+    require(appointments.map { it.projectCode }.toSet().size == 1) { "All appointments must be for the same project code" }
 
-    val appointmentCreationEvents = createAppointments.appointments.map { createAppointment ->
+    val projectCode = appointments[0].projectCode
+
+    val appointmentCreationEvents = appointments.map { createAppointment ->
       appointmentEventEntityFactory.buildCreatedEvent(
         // the ID will be provided by the upstream response and set on the event before persistence
         deliusId = 0L,
         trigger = trigger,
         validatedCreateAppointmentDto = appointmentValidationService.validateCreate(createAppointment),
-        projectCode = projectCode,
       )
     }
 
