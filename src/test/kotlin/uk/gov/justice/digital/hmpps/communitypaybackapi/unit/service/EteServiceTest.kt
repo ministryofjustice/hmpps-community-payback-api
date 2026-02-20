@@ -24,7 +24,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventT
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseEventCompletionMessageStatus
-import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.randomLocalDate
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.random
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseCompletionMessage
 import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseCompletionStatus
@@ -41,6 +41,7 @@ import java.time.LocalTime
 import java.util.Optional
 import java.util.Optional.empty
 import java.util.UUID
+import kotlin.random.Random
 
 @ExtendWith(MockKExtension::class)
 class EteServiceTest {
@@ -77,25 +78,26 @@ class EteServiceTest {
       val entityCaptor = slot<EteCourseCompletionEventEntity>()
       every { eteCourseCompletionEventEntityRepository.save(capture(entityCaptor)) } returnsArgument 0
 
-      eteService.handleEducationCourseCompletionMessage(
-        EducationCourseCompletionMessage.valid().copy(
-          messageAttributes = EducationCourseMessageAttributes.valid().copy(
-            externalReference = "EXT123",
-            firstName = "John",
-            lastName = "Doe",
-            dateOfBirth = LocalDate.of(1990, 5, 15),
-            region = "London",
-            email = "john.doe@example.com",
-            courseName = "The course name",
-            courseType = "Online",
-            provider = "Training Provider Inc.",
-            totalTimeMinutes = 70,
-            expectedTimeMinutes = 120,
-            status = EducationCourseCompletionStatus.Failed,
-            completionDate = LocalDate.of(2026, 1, 1),
-          ),
+      val entity = EducationCourseCompletionMessage.valid().copy(
+        messageAttributes = EducationCourseMessageAttributes.valid().copy(
+          externalReference = "EXT123",
+          firstName = "John",
+          lastName = "Doe",
+          dateOfBirth = LocalDate.of(1990, 5, 15),
+          region = "London",
+          office = "The Office",
+          email = "john.doe@example.com",
+          courseName = "The course name",
+          courseType = "Online",
+          provider = "Training Provider Inc.",
+          totalTimeMinutes = 70,
+          expectedTimeMinutes = 120,
+          status = EducationCourseCompletionStatus.Failed,
+          completionDate = LocalDate.of(2026, 1, 1),
         ),
       )
+
+      eteService.handleEducationCourseCompletionMessage(entity)
 
       assertThat(entityCaptor.isCaptured).isTrue
       val persistedEntity = entityCaptor.captured
@@ -105,6 +107,7 @@ class EteServiceTest {
       assertThat(persistedEntity.lastName).isEqualTo("Doe")
       assertThat(persistedEntity.dateOfBirth).isEqualTo(LocalDate.of(1990, 5, 15))
       assertThat(persistedEntity.region).isEqualTo("London")
+      assertThat(persistedEntity.office).isEqualTo("The Office")
       assertThat(persistedEntity.email).isEqualTo("john.doe@example.com")
 
       // Course data assertions
@@ -132,18 +135,9 @@ class EteServiceTest {
         EducationCourseCompletionMessage.valid().copy(
           messageAttributes = EducationCourseMessageAttributes.valid().copy(
             externalReference = "EXT456",
-            firstName = "Jane",
-            lastName = "Smith",
-            dateOfBirth = LocalDate.of(1985, 8, 22),
-            region = "Manchester",
-            email = "jane.smith@example.com",
-            courseName = "Advanced Course",
-            courseType = "In-person",
-            provider = "Education Corp",
             totalTimeMinutes = 150,
             expectedTimeMinutes = 150,
             status = EducationCourseCompletionStatus.Completed,
-            completionDate = randomLocalDate(),
           ),
         ),
       )
@@ -166,7 +160,7 @@ class EteServiceTest {
     @Test
     fun `should return empty page when provider code not found`() {
       val pageable = Pageable.unpaged()
-      val result = eteService.getEteCourseCompletionEvents("INVALID", null, null, pageable)
+      val result = eteService.getEteCourseCompletionEvents("INVALID", null, null, null, pageable)
 
       assertThat(result.isEmpty).isTrue
     }
@@ -190,22 +184,9 @@ class EteServiceTest {
       val pageable = Pageable.unpaged()
       val fromDate = LocalDate.of(2026, 1, 1)
       val toDate = LocalDate.of(2026, 12, 31)
-      val entity = EteCourseCompletionEventEntity(
-        id = UUID.randomUUID(),
-        firstName = "Jane",
-        lastName = "Smith",
-        dateOfBirth = LocalDate.of(1985, 8, 22),
+      val entity = EteCourseCompletionEventEntity.valid().copy(
         region = region,
-        email = "jane.smith@example.com",
-        courseName = "Advanced Course",
-        courseType = "Course Type",
-        provider = "Moodle",
         completionDate = LocalDate.of(2026, 6, 15),
-        status = EteCourseEventCompletionMessageStatus.COMPLETED,
-        totalTimeMinutes = 150,
-        expectedTimeMinutes = 150,
-        externalReference = "EXT456",
-        attempts = 1,
       )
 
       every {
@@ -217,11 +198,50 @@ class EteServiceTest {
         )
       } returns PageImpl(listOf(entity))
 
-      val result = eteService.getEteCourseCompletionEvents(providerCode, fromDate, toDate, pageable)
+      val result = eteService.getEteCourseCompletionEvents(providerCode, fromDate, toDate, null, pageable)
 
       assertThat(result.isEmpty).isFalse
       assertThat(result.content).hasSize(1)
       assertThat(result.content[0].completionDate).isEqualTo("2026-06-15")
+    }
+
+    fun `should return course completion events filtered by office`() {
+      val pageable = Pageable.unpaged()
+      val providerCode = "N07"
+      val office = "The Office"
+      val startDate = LocalDate.of(2026, 1, 1)
+      val endDate = LocalDate.of(2026, 12, 31)
+
+      (1..5).forEach {
+        eteCourseCompletionEventEntityRepository.save(
+          EteCourseCompletionEventEntity.valid().copy(
+            office = office,
+            provider = providerCode,
+            completionDate = endDate.minusDays(Random.nextLong(21)),
+          ),
+        )
+      }
+
+      (1..3).forEach {
+        eteCourseCompletionEventEntityRepository.save(
+          EteCourseCompletionEventEntity.valid().copy(
+            office = String.random(21),
+            provider = providerCode,
+            completionDate = endDate.minusDays(Random.nextLong(21)),
+          ),
+        )
+      }
+
+      val result = eteService.getEteCourseCompletionEvents(
+        providerCode,
+        startDate,
+        endDate,
+        null,
+        pageable,
+      )
+
+      assertThat(result.isEmpty).isFalse
+      assertThat(result.content).hasSize(5)
     }
   }
 
@@ -237,6 +257,7 @@ class EteServiceTest {
         lastName = "Doe",
         dateOfBirth = LocalDate.of(1990, 5, 15),
         region = "London",
+        office = "Office 123",
         email = "john.doe@example.com",
         courseName = "Test Course",
         courseType = "Online",
@@ -319,6 +340,7 @@ class EteServiceTest {
         lastName = "Doe",
         dateOfBirth = LocalDate.of(1990, 5, 15),
         region = "London",
+        office = "Office 123",
         email = "john.doe@example.com",
         courseName = "Test Course",
         courseType = "Online",

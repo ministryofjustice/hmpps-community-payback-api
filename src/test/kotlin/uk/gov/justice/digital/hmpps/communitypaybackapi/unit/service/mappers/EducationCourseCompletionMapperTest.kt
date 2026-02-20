@@ -151,6 +151,7 @@ class EducationCourseCompletionMapperTest {
         lastName = lastName,
         dateOfBirth = dateOfBirth,
         region = region,
+        office = "Office 1",
         email = email,
         courseName = courseName,
         courseType = courseType,

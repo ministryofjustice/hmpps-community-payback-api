@@ -27,6 +27,7 @@ data class EteCourseCompletionEventEntity(
   val lastName: String,
   val dateOfBirth: LocalDate,
   val region: String,
+  val office: String,
   val email: String,
 
   val courseName: String,

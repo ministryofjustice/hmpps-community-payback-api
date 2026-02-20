@@ -12,6 +12,7 @@ fun EteCourseCompletionEventEntity.Companion.valid() = EteCourseCompletionEventE
   lastName = String.random(20),
   dateOfBirth = randomLocalDate(),
   region = String.random(10),
+  office = String.random(20),
   email = "${String.random(10).lowercase()}@example.com",
   courseName = String.random(20),
   courseType = String.random(20),

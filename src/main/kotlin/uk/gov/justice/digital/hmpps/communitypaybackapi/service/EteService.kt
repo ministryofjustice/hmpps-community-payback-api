@@ -53,6 +53,7 @@ class EteService(
         lastName = attributes.lastName,
         dateOfBirth = attributes.dateOfBirth,
         region = attributes.region,
+        office = attributes.office,
         email = attributes.email,
         courseName = attributes.courseName,
         courseType = attributes.courseType,
@@ -67,9 +68,31 @@ class EteService(
     )
   }
 
-  fun getEteCourseCompletionEvents(providerCode: String, fromDate: LocalDate?, toDate: LocalDate?, pageable: Pageable): Page<EteCourseCompletionEventDto> {
+  fun getEteCourseCompletionEvents(
+    providerCode: String,
+    fromDate: LocalDate?,
+    toDate: LocalDate?,
+    offices: List<String>?,
+    pageable: Pageable,
+  ): Page<EteCourseCompletionEventDto> {
     val region = providerCodeToRegionName[providerCode] ?: return Page.empty()
-    return eteCourseCompletionEventEntityRepository.findByRegionAndDateRange(region, fromDate, toDate, pageable).map { it.toDto() }
+    val page = if (offices.isNullOrEmpty()) {
+      eteCourseCompletionEventEntityRepository.findByRegionAndDateRange(
+        region,
+        fromDate,
+        toDate,
+        pageable,
+      )
+    } else {
+      eteCourseCompletionEventEntityRepository.findByRegionDateRangeAndOffices(
+        region,
+        offices,
+        fromDate,
+        toDate,
+        pageable,
+      )
+    }
+    return page.map { it.toDto() }
   }
 
   fun getCourseCompletionEvent(id: UUID) = eteCourseCompletionEventEntityRepository.findById(id).orElseThrow {

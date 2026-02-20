@@ -49,6 +49,7 @@ class DevEteCourseCompletionFixtures(
       lastName = lastName,
       dateOfBirth = randDOB(),
       region = "East of England",
+      office = "The Lighthouse",
       email = "$firstName.$lastName@example.test",
       courseName = randomCourseName(),
       courseType = "Online",
@@ -59,7 +60,6 @@ class DevEteCourseCompletionFixtures(
       expectedTimeMinutes = totalTime + seededRandom.nextLong(-10, 10),
       attempts = 1,
       externalReference = "EXT-DEV-" + offset.toString().padStart(6, '0'),
-
     )
   }
 

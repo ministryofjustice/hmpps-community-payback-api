@@ -72,10 +72,15 @@ class AdminCourseCompletionController(val eteService: EteService) {
     @RequestParam
     @Parameter(description = "To date, inclusive", example = "2025-09-01")
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) dateTo: LocalDate?,
+    @RequestParam(required = false)
+    @Parameter(description = "Filter by one or more office codes. Example: ?office=London&office=Norwich", example = "London")
+    office: List<String>?,
   ): Page<EteCourseCompletionEventDto> = eteService.getEteCourseCompletionEvents(
     providerCode,
     dateFrom,
     dateTo,
+    office,
+
     pageable,
   )
 
