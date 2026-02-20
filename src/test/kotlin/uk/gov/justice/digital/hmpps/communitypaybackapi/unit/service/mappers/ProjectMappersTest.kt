@@ -13,6 +13,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ProjectTypeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
+import java.time.LocalDate
 
 class ProjectMappersTest {
 
@@ -32,7 +33,7 @@ class ProjectMappersTest {
         provider = NDCode("provider code"),
         team = NDCode("team code"),
         location = location,
-        beneficiaryDetails = NDBeneficiaryDetails(
+        beneficiary = NDBeneficiaryDetails(
           name = "ben name",
           contactName = "ben contact",
           emailAddress = "ben email",
@@ -41,6 +42,8 @@ class ProjectMappersTest {
           location = beneficiaryLocation,
         ),
         hiVisRequired = false,
+        expectedEndDateExclusive = LocalDate.of(2028, 1, 2),
+        actualEndDateExclusive = LocalDate.of(2027, 5, 12),
       ).toDto(projectTypeEntity)
 
       assertThat(result.projectName).isEqualTo("The Project Name")
@@ -56,6 +59,8 @@ class ProjectMappersTest {
       assertThat(result.beneficiaryDetails.telephoneNumber).isEqualTo("ben tel")
       assertThat(result.beneficiaryDetails.location).isEqualTo(beneficiaryLocation.toDto())
       assertThat(result.hiVisRequired).isFalse
+      assertThat(result.expectedEndDateExclusive).isEqualTo(LocalDate.of(2028, 1, 2))
+      assertThat(result.actualEndDateExclusive).isEqualTo(LocalDate.of(2027, 5, 12))
     }
   }
 

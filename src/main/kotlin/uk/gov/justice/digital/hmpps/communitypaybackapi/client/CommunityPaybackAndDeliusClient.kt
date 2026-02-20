@@ -244,22 +244,24 @@ data class NDProject(
   val name: String,
   val code: String,
   val type: NDProjectType,
-  val provider: NDCode,
   val team: NDCode,
+  val provider: NDCode,
   val location: NDAddress,
-  val beneficiaryDetails: NDBeneficiaryDetails,
+  val beneficiary: NDBeneficiaryDetails,
   val hiVisRequired: Boolean,
+  val expectedEndDateExclusive: LocalDate?,
+  val actualEndDateExclusive: LocalDate?,
 ) {
   companion object
 }
 
 data class NDBeneficiaryDetails(
-  val name: String,
-  val contactName: String,
+  val name: String?,
+  val contactName: String?,
   val emailAddress: String?,
   val website: String?,
   val telephoneNumber: String,
-  val location: NDAddress,
+  val location: NDAddress?,
 ) {
   companion object
 }

@@ -19,7 +19,7 @@
     "county": "Nottinghamshire",
     "postCode": "NG7 4ZZ"
   },
-  "beneficiaryDetails": {
+  "beneficiary": {
     "name": "Age UK",
     "contactName": "Matthias Smith",
     "emailAddress": "msmith@ageuk.co.uk",

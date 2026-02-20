@@ -19,7 +19,7 @@
     "county": "West Yorkshire",
     "postCode": "LS9 8ZZ"
   },
-  "beneficiaryDetails": {
+  "beneficiary": {
     "name": "Greenway Community Allotment Association",
     "contactName": "Sarah Witton",
     "emailAddress": "sarah.witton@greenwayallotments.org.uk",
