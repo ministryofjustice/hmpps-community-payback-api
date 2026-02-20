@@ -2,7 +2,7 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers
 
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDBeneficiaryDetails
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProject
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectOutcomeSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectOutcomeStats
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.BeneficiaryDetailsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectOutcomeSummaryDto
@@ -32,10 +32,10 @@ fun NDBeneficiaryDetails.toDto() = BeneficiaryDetailsDto(
   location = location?.toDto(),
 )
 
-fun NDProjectOutcomeSummary.toDto() = ProjectOutcomeSummaryDto(
-  projectName = this.name,
-  projectCode = this.code,
-  location = this.location.toDto(),
+fun NDProjectOutcomeStats.toDto() = ProjectOutcomeSummaryDto(
+  projectName = this.project.name,
+  projectCode = this.project.code,
+  location = this.project.location.toDto(),
   numberOfAppointmentsOverdue = this.overdueOutcomesCount,
   oldestOverdueAppointmentInDays = this.oldestOverdueInDays,
 )

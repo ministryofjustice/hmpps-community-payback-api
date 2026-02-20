@@ -1,52 +1,136 @@
 {
   "content": [
     {
-      "name": "Cancer Research UK",
-      "code": "TEST01",
-      "location": {
-        "streetName": "Meadow Lane",
-        "buildingName": "",
-        "addressNumber": "22",
-        "townCity": "Leeds",
-        "county": "West Yorkshire",
-        "postCode": "LS9 8ZZ"
+      "project": {
+        "name": "Cancer Research UK",
+        "code": "TEST01",
+        "type": {
+          "code": "ICP",
+          "name": "Individual Placement - ICP (Individual Community Placement)"
+        },
+        "provider": {
+          "code": "1000"
+        },
+        "team": {
+          "code": "N56DTX"
+        },
+        "location": {
+          "streetName": "Meadow Lane",
+          "buildingName": "",
+          "addressNumber": "22",
+          "townCity": "Leeds",
+          "county": "West Yorkshire",
+          "postCode": "LS9 8ZZ"
+        },
+        "beneficiary": {
+          "name": "Cancer Research UK",
+          "contactName": "Zinnia Wormwood",
+          "emailAddress": "zinnia@cancerresearch.co.uk",
+          "website": "http://mcduckenterprises.localhost",
+          "telephoneNumber": "012345 6787890",
+          "location": {
+            "streetName": "Office Street",
+            "buildingName": "1001",
+            "addressNumber": "14B",
+            "townCity": "City",
+            "county": "Shireshire",
+            "postCode": "ZY98XW"
+          }
+        },
+        "hiVisRequired": true
       },
       "overdueOutcomesCount": 4,
       "oldestOverdueInDays": 4
     },
     {
-      "name": "Age UK",
-      "code": "TEST02",
-      "location": {
-        "streetName": "Canal Wharf Road",
-        "buildingName": "Unit 3",
-        "addressNumber": "",
-        "townCity": "Nottingham",
-        "county": "Nottinghamshire",
-        "postCode": "NG7 4ZZ"
+      "project": {
+        "name": "Age UK",
+        "code": "TEST02",
+        "type": {
+          "code": "ICP",
+          "name": "Individual Placement - ICP (Individual Community Placement)"
+        },
+        "provider": {
+          "code": "1000"
+        },
+        "team": {
+          "code": "N56DTX"
+        },
+        "location": {
+          "streetName": "Canal Wharf Road",
+          "buildingName": "Unit 3",
+          "addressNumber": "",
+          "townCity": "Nottingham",
+          "county": "Nottinghamshire",
+          "postCode": "NG7 4ZZ"
+        },
+        "beneficiary": {
+          "name": "Age UK",
+          "contactName": "Matthias Smith",
+          "emailAddress": "msmith@ageuk.co.uk",
+          "website": "http://mcduckenterprises.localhost",
+          "telephoneNumber": "012345 6787890",
+          "location": {
+            "streetName": "Office Street",
+            "buildingName": "1001",
+            "addressNumber": "14B",
+            "townCity": "City",
+            "county": "Shireshire",
+            "postCode": "ZY98XW"
+          }
+        },
+        "hiVisRequired": true
       },
       "overdueOutcomesCount": 0,
       "oldestOverdueInDays": 2
     },
     {
-      "name": "Mind",
-      "code": "TEST03",
-      "location": {
-        "streetName": "Harbour Trade Park",
-        "buildingName": "Warehouse 4",
-        "addressNumber": "",
-        "townCity": "Liverpool",
-        "county": "Merseyside",
-        "postCode": "L20 8ZZ"
+      "project":  {
+        "name": "Mind",
+        "code": "TEST03",
+        "type": {
+          "code": "ICP",
+          "name": "Individual Placement - ICP (Individual Community Placement)"
+        },
+        "provider": {
+          "code": "1000"
+        },
+        "team": {
+          "code": "N56DTX"
+        },
+        "location": {
+          "streetName": "Harbour Trade Park",
+          "buildingName": "Warehouse 4",
+          "addressNumber": "",
+          "townCity": "Liverpool",
+          "county": "Merseyside",
+          "postCode": "L20 8ZZ"
+        },
+        "beneficiary": {
+          "name": "Mind",
+          "contactName": "Rachel Porter",
+          "emailAddress": "rporter@mind.co.uk",
+          "website": "http://mcduckenterprises.localhost",
+          "telephoneNumber": "012345 6787890",
+          "location": {
+            "streetName": "Office Street",
+            "buildingName": "1001",
+            "addressNumber": "14B",
+            "townCity": "City",
+            "county": "Shireshire",
+            "postCode": "ZY98XW"
+          }
+        },
+        "hiVisRequired": true
       },
       "overdueOutcomesCount": 1,
       "oldestOverdueInDays": 5
     }
   ],
   "page": {
-    "size": 2,
+    "size": 3,
     "number": 1,
-    "totalElements": 2,
+    "totalElements": 3,
     "totalPages": 1
   }
 }

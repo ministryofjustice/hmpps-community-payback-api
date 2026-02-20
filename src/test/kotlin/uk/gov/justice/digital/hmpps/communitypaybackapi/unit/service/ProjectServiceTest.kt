@@ -14,7 +14,7 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProject
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectOutcomeSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectOutcomeStats
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.PageResponse
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectOutcomeSummaryDto
@@ -57,7 +57,7 @@ class ProjectServiceTest {
       val pageSize = 20
 
       val pageable = PageRequest.of(pageNumber, pageSize, Sort.by(Sort.Direction.DESC, "projectName"))
-      val ndProjectOutcomeSummary = NDProjectOutcomeSummary.valid()
+      val ndProjectOutcomeSummary = NDProjectOutcomeStats.valid()
 
       every {
         communityPaybackAndDeliusClient.getProjects(
@@ -81,8 +81,8 @@ class ProjectServiceTest {
       assertThat(projectsPageResponse.totalPages).isEqualTo(1)
       assertThat(projectsPageResponse.number).isEqualTo(pageNumber)
       assertThat(projectsPageResponse.size).isEqualTo(pageSize)
-      assertThat(projectsPageResponse.content[0].projectName).isEqualTo(ndProjectOutcomeSummary.name)
-      assertThat(projectsPageResponse.content[0].projectCode).isEqualTo(ndProjectOutcomeSummary.code)
+      assertThat(projectsPageResponse.content[0].projectName).isEqualTo(ndProjectOutcomeSummary.project.name)
+      assertThat(projectsPageResponse.content[0].projectCode).isEqualTo(ndProjectOutcomeSummary.project.code)
     }
   }
 
