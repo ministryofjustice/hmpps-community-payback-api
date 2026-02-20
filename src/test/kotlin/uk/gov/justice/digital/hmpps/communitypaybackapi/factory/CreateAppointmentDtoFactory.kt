@@ -10,6 +10,7 @@ fun CreateAppointmentDto.Companion.valid() = CreateAppointmentDto(
   crn = String.random(5),
   deliusEventNumber = Int.random(50),
   allocationId = Long.random(),
+  projectCode = String.random(5),
   date = randomLocalDate(),
   startTime = LocalTime.of(10, 0),
   endTime = LocalTime.of(16, 0),

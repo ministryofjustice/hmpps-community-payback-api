@@ -108,6 +108,7 @@ class AppointmentEventEntityFactoryTest {
             crn = "X12345",
             deliusEventNumber = 48,
             allocationId = 22,
+            projectCode = PROJECT_CODE,
             date = LocalDate.of(2014, 6, 7),
             startTime = LocalTime.of(10, 1),
             endTime = LocalTime.of(16, 3),
@@ -129,7 +130,6 @@ class AppointmentEventEntityFactoryTest {
             sensitive = true,
           ),
         ),
-        projectCode = PROJECT_CODE,
       )
 
       assertThat(result.id).isNotNull
@@ -179,6 +179,7 @@ class AppointmentEventEntityFactoryTest {
             crn = "X12345",
             deliusEventNumber = 48,
             allocationId = null,
+            projectCode = PROJECT_CODE,
             date = LocalDate.of(2014, 6, 7),
             startTime = LocalTime.of(10, 1),
             endTime = LocalTime.of(16, 3),
@@ -193,7 +194,6 @@ class AppointmentEventEntityFactoryTest {
             sensitive = null,
           ),
         ),
-        projectCode = PROJECT_CODE,
       )
 
       assertThat(result.id).isNotNull
@@ -243,7 +243,6 @@ class AppointmentEventEntityFactoryTest {
             contactOutcomeCode = null,
           ),
         ),
-        projectCode = PROJECT_CODE,
       )
 
       assertThat(result.minutesCredited).isNull()
@@ -269,7 +268,6 @@ class AppointmentEventEntityFactoryTest {
             attendanceData = AttendanceDataDto.valid().copy(penaltyTime = null),
           ),
         ),
-        projectCode = PROJECT_CODE,
       )
 
       assertThat(result.minutesCredited).isNull()
@@ -319,7 +317,6 @@ class AppointmentEventEntityFactoryTest {
             ),
           ),
         ),
-        projectCode = PROJECT_CODE,
       )
 
       assertThat(result.minutesCredited).isEqualTo(expectedTimeCredited)
@@ -345,7 +342,6 @@ class AppointmentEventEntityFactoryTest {
             ),
           ),
         ),
-        projectCode = PROJECT_CODE,
       )
 
       assertThat(result.penaltyMinutes).isEqualTo(150L)
