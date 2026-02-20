@@ -162,6 +162,64 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
         assertThat(pagedCourseCompletions.content.last().id).isEqualTo(inRange2.id)
       }
 
+      fun `should apply office filter`() {
+        eteCourseCompletionEventEntityRepository.save(
+          EteCourseCompletionEventEntity.valid().copy(
+            region = "Norwich",
+          ),
+        )
+
+        val inOffice = eteCourseCompletionEventEntityRepository.save(
+          EteCourseCompletionEventEntity.valid().copy(
+            region = "London",
+          ),
+        )
+
+        val pagedCourseCompletions = webTestClient.get()
+          .uri("/admin/providers/N07/course-completions?office=London")
+          .addAdminUiAuthHeader()
+          .exchange()
+          .expectStatus()
+          .isOk
+          .bodyAsObject<PagedModel<EteCourseCompletionEventDto>>()
+
+        assertThat(pagedCourseCompletions.content).hasSize(1)
+        assertThat(pagedCourseCompletions.content.first().id).isEqualTo(inOffice.id)
+      }
+
+      fun `should apply multiple office filters`() {
+        eteCourseCompletionEventEntityRepository.save(
+          EteCourseCompletionEventEntity.valid().copy(
+            region = "Norwich",
+          ),
+        )
+
+        val inOffice1 = eteCourseCompletionEventEntityRepository.save(
+          EteCourseCompletionEventEntity.valid().copy(
+            region = "London",
+          ),
+        )
+
+        val inOffice2 = eteCourseCompletionEventEntityRepository.save(
+          EteCourseCompletionEventEntity.valid().copy(
+            region = "Manchester",
+          ),
+        )
+
+        val pagedCourseCompletions = webTestClient.get()
+          .uri("/admin/providers/N07/course-completions?office=London&office=Manchester")
+          .addAdminUiAuthHeader()
+          .exchange()
+          .expectStatus()
+          .isOk
+          .bodyAsObject<PagedModel<EteCourseCompletionEventDto>>()
+
+        assertThat(pagedCourseCompletions.content).hasSize(2)
+        val contentList = pagedCourseCompletions.content.toList()
+        assertThat(contentList[0].id).isEqualTo(inOffice1.id)
+        assertThat(contentList[1].id).isEqualTo(inOffice2.id)
+      }
+
       @Test
       fun `should return OK for multiple course completions with pagination`() {
         repeat(10) {
