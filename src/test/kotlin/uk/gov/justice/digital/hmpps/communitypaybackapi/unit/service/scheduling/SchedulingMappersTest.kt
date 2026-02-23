@@ -9,9 +9,9 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCodeDescription
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDNameCode
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDPickUp
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDPickUpLocation
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectAvailability
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDRequirementProgress
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingAllocation
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingAvailability
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingDayOfWeek
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingExistingAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingFrequency
@@ -168,7 +168,7 @@ class SchedulingMappersTest {
         project = NDSchedulingProject.valid().copy(
           code = "PROJ1",
         ),
-        projectAvailability = NDSchedulingAvailability.valid().copy(
+        projectAvailability = NDProjectAvailability.valid().copy(
           frequency = null,
         ),
         frequency = NDSchedulingFrequency.Once,
@@ -256,7 +256,7 @@ class SchedulingMappersTest {
       expectedFrequency: SchedulingFrequency,
     ) {
       val result = NDSchedulingAllocation.valid().copy(
-        projectAvailability = NDSchedulingAvailability.valid().copy(
+        projectAvailability = NDProjectAvailability.valid().copy(
           frequency = availabilityFreq,
         ),
         frequency = allocationFreq,
@@ -289,7 +289,7 @@ class SchedulingMappersTest {
           expectedEndDateExclusive = projectExpectedEndDateExclusive,
           actualEndDateExclusive = projectActualEndDateExclusive,
         ),
-        projectAvailability = NDSchedulingAvailability.valid().copy(
+        projectAvailability = NDProjectAvailability.valid().copy(
           endDateExclusive = availabilityEndDateExclusive,
         ),
         endDateInclusive = allocationEndDateInclusive,
