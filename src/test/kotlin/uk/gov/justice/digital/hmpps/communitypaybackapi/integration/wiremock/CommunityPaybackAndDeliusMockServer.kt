@@ -365,18 +365,8 @@ object CommunityPaybackAndDeliusMockServer {
     )
   }
 
-  fun getUpwDetailsSummary(crn: String) {
-    val ndCaseDetailsSummary = NDCaseDetailsSummary(
-      unpaidWorkDetails = listOf(
-        NDCaseDetail(
-          eventNumber = 1L,
-          requiredMinutes = 300L,
-          completedMinutes = 200L,
-          adjustments = 50L,
-          completedEteMinutes = 20L,
-        ),
-      ),
-    )
+  fun getUpwDetailsSummary(crn: String, ndCaseDetails: List<NDCaseDetail>) {
+    val ndCaseDetailsSummary = NDCaseDetailsSummary(unpaidWorkDetails = ndCaseDetails)
 
     WireMock.stubFor(
       get("/community-payback-and-delius/case/$crn/summary")
@@ -384,6 +374,16 @@ object CommunityPaybackAndDeliusMockServer {
           aResponse()
             .withHeader("Content-Type", "application/json")
             .withBody(jsonMapper.writeValueAsString(ndCaseDetailsSummary)),
+        ),
+    )
+  }
+
+  fun getUpwDetailsSummaryNotFound(crn: String) {
+    WireMock.stubFor(
+      get("/community-payback-and-delius/case/$crn/summary")
+        .willReturn(
+          aResponse()
+            .withStatus(404),
         ),
     )
   }

@@ -5,7 +5,9 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ArnsClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CaseDetailsSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.NotFoundException
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
 
 @Service
 class OffenderService(
@@ -14,6 +16,12 @@ class OffenderService(
 ) {
   fun getRiskSummary(crn: String) = try {
     arnsClient.rosh(crn).summary.overallRiskLevel.toString()
+  } catch (_: WebClientResponseException.NotFound) {
+    throw NotFoundException("CRN", crn)
+  }
+
+  fun getOffenderSummaryByCrn(crn: String): CaseDetailsSummaryDto = try {
+    communityPaybackAndDeliusClient.getUpwDetailsSummary(crn).toDto()
   } catch (_: WebClientResponseException.NotFound) {
     throw NotFoundException("CRN", crn)
   }
