@@ -114,6 +114,7 @@ interface CommunityPaybackAndDeliusClient {
 
   @GetExchange("/appointments")
   fun getAppointments(
+    @RequestParam username: String,
     @RequestParam crn: String?,
     @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) fromDate: LocalDate?,
     @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) toDate: LocalDate?,
