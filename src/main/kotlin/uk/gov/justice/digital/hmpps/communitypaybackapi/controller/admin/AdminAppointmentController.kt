@@ -158,7 +158,7 @@ class AdminAppointmentController(
         description = "Only crn, name, date, startTime, endTime and daysOverdue fields are supported for sorting",
       ),
     )
-    @PageableDefault(size = 50, sort = ["crn"], direction = Sort.Direction.DESC) pageable: Pageable,
+    @PageableDefault(size = 50, sort = ["name"], direction = Sort.Direction.DESC) pageable: Pageable,
     @RequestParam(required = false) crn: String?,
     @Parameter(
       description = "Filter by one or more project codes",

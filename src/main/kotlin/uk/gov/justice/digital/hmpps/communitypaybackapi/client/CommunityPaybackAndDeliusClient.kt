@@ -262,7 +262,7 @@ data class NDBeneficiaryDetails(
   val contactName: String?,
   val emailAddress: String?,
   val website: String?,
-  val telephoneNumber: String,
+  val telephoneNumber: String?,
   val location: NDAddress?,
 ) {
   companion object
