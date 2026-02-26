@@ -571,6 +571,7 @@ data class NDCaseDetailsSummary(
 
 data class NDCaseDetail(
   val eventNumber: Long,
+  val sentenceDate: LocalDate,
   val requiredMinutes: Long,
   val completedMinutes: Long,
   val adjustments: Long,
