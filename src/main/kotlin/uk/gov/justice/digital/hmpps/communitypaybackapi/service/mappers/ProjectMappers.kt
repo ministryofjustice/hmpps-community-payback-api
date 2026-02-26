@@ -13,6 +13,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectOutcomeSummar
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SchedulingDayOfWeekDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SchedulingFrequencyDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ProjectTypeEntity
+import java.time.DayOfWeek
 
 fun NDProject.toDto(
   projectType: ProjectTypeEntity,
@@ -68,4 +69,14 @@ fun NDSchedulingDayOfWeek.toDto() = when (this) {
   NDSchedulingDayOfWeek.Friday -> SchedulingDayOfWeekDto.FRIDAY
   NDSchedulingDayOfWeek.Saturday -> SchedulingDayOfWeekDto.SATURDAY
   NDSchedulingDayOfWeek.Sunday -> SchedulingDayOfWeekDto.SUNDAY
+}
+
+fun SchedulingDayOfWeekDto.toDayOfWeek() = when (this) {
+  SchedulingDayOfWeekDto.MONDAY -> DayOfWeek.MONDAY
+  SchedulingDayOfWeekDto.TUESDAY -> DayOfWeek.TUESDAY
+  SchedulingDayOfWeekDto.WEDNESDAY -> DayOfWeek.WEDNESDAY
+  SchedulingDayOfWeekDto.THURSDAY -> DayOfWeek.THURSDAY
+  SchedulingDayOfWeekDto.FRIDAY -> DayOfWeek.FRIDAY
+  SchedulingDayOfWeekDto.SATURDAY -> DayOfWeek.SATURDAY
+  SchedulingDayOfWeekDto.SUNDAY -> DayOfWeek.SUNDAY
 }

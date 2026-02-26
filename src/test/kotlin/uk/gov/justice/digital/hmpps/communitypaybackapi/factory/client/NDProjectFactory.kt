@@ -9,8 +9,10 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectAndLocat
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectAvailability
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectOutcomeStats
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectType
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingDayOfWeek
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.random
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.randomLocalDate
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 
 fun NDProjectAndLocation.Companion.valid() = NDProjectAndLocation(
   code = String.random(),
@@ -29,9 +31,9 @@ fun NDProject.Companion.valid() = NDProject(
   hiVisRequired = Boolean.random(),
   expectedEndDateExclusive = randomLocalDate(),
   actualEndDateExclusive = randomLocalDate(),
-  availability = listOf(
-    NDProjectAvailability.valid(),
-  ),
+  availability = NDSchedulingDayOfWeek.entries.map { dayOfWeek ->
+    NDProjectAvailability.valid().copy(dayOfWeek = dayOfWeek)
+  },
 )
 
 fun NDProjectOutcomeStats.Companion.valid() = NDProjectOutcomeStats(

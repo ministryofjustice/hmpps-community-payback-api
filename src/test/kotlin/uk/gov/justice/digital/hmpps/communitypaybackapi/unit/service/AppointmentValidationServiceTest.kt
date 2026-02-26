@@ -15,7 +15,9 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.common.HourMinuteDuratio
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AttendanceDataDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectAvailabilityDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SchedulingDayOfWeekDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.BadRequestException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
@@ -57,6 +59,9 @@ class AppointmentValidationServiceTest {
     val baselineOutcome = ContactOutcomeEntity.valid().copy(code = OUTCOME_CODE)
     val baselineProject = ProjectDto.valid().copy(
       actualEndDateExclusive = null,
+      availability = SchedulingDayOfWeekDto.entries.map { dayOfWeek ->
+        ProjectAvailabilityDto.valid().copy(dayOfWeek = dayOfWeek)
+      },
     )
 
     @BeforeEach
@@ -124,6 +129,29 @@ class AppointmentValidationServiceTest {
           )
         }.isInstanceOf(BadRequestException::class.java)
           .hasMessage("Appointment Date of 2030-05-05 must be before project end date 2030-05-04")
+      }
+    }
+
+    @Nested
+    inner class Availability {
+
+      @Test
+      fun `throws BadRequestException if project isn't available on requested day of week`() {
+        every { projectService.getProject(PROJECT_CODE) } returns baselineProject.copy(
+          availability = SchedulingDayOfWeekDto.entries.filter { it != SchedulingDayOfWeekDto.WEDNESDAY }.map { dayOfWeek ->
+            ProjectAvailabilityDto.valid().copy(dayOfWeek = dayOfWeek)
+          },
+        )
+
+        assertThatThrownBy {
+          service.validateCreate(
+            baselineCreate.copy(
+              // Wednesday
+              date = LocalDate.of(2026, 2, 25),
+            ),
+          )
+        }.isInstanceOf(BadRequestException::class.java)
+          .hasMessage("Project is not available on WEDNESDAY. Available days are [MONDAY, TUESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY]")
       }
     }
 
