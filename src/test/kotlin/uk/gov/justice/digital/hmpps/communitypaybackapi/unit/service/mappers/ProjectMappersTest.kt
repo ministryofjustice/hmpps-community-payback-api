@@ -7,8 +7,13 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAddress
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDBeneficiaryDetails
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCode
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProject
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectAvailability
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectOutcomeStats
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectType
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingDayOfWeek
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingFrequency
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SchedulingDayOfWeekDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SchedulingFrequencyDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ProjectTypeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
@@ -44,6 +49,14 @@ class ProjectMappersTest {
         hiVisRequired = false,
         expectedEndDateExclusive = LocalDate.of(2028, 1, 2),
         actualEndDateExclusive = LocalDate.of(2027, 5, 12),
+        availability = listOf(
+          NDProjectAvailability(
+            frequency = NDSchedulingFrequency.Fortnightly,
+            dayOfWeek = NDSchedulingDayOfWeek.Saturday,
+            startDateInclusive = LocalDate.of(2020, 10, 11),
+            endDateExclusive = LocalDate.of(2035, 12, 30),
+          ),
+        ),
       ).toDto(projectTypeEntity)
 
       assertThat(result.projectName).isEqualTo("The Project Name")
@@ -61,6 +74,13 @@ class ProjectMappersTest {
       assertThat(result.hiVisRequired).isFalse
       assertThat(result.expectedEndDateExclusive).isEqualTo(LocalDate.of(2028, 1, 2))
       assertThat(result.actualEndDateExclusive).isEqualTo(LocalDate.of(2027, 5, 12))
+      assertThat(result.actualEndDateExclusive).isEqualTo(LocalDate.of(2027, 5, 12))
+
+      assertThat(result.availability).hasSize(1)
+      assertThat(result.availability[0].frequency).isEqualTo(SchedulingFrequencyDto.FORTNIGHTLY)
+      assertThat(result.availability[0].dayOfWeek).isEqualTo(SchedulingDayOfWeekDto.SATURDAY)
+      assertThat(result.availability[0].startDateInclusive).isEqualTo(LocalDate.of(2020, 10, 11))
+      assertThat(result.availability[0].endDateExclusive).isEqualTo(LocalDate.of(2035, 12, 30))
     }
   }
 

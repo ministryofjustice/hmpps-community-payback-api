@@ -6,6 +6,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDBeneficiaryDeta
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCode
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectAndLocation
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectAvailability
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectOutcomeStats
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.random
@@ -28,6 +29,9 @@ fun NDProject.Companion.valid() = NDProject(
   hiVisRequired = Boolean.random(),
   expectedEndDateExclusive = randomLocalDate(),
   actualEndDateExclusive = randomLocalDate(),
+  availability = listOf(
+    NDProjectAvailability.valid(),
+  ),
 )
 
 fun NDProjectOutcomeStats.Companion.valid() = NDProjectOutcomeStats(
