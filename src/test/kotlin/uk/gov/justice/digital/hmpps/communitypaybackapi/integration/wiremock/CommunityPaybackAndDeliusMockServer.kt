@@ -332,7 +332,7 @@ object CommunityPaybackAndDeliusMockServer {
     response: List<NDProjectOutcomeStats>,
     pageNumber: Int = 0,
     pageSize: Int = 50,
-    sortString: String = "projectName,desc",
+    sortString: String = "name,desc",
   ) {
     val url = buildString {
       append("/community-payback-and-delius/providers/$providerCode/teams/$teamCode/projects?")
@@ -356,12 +356,13 @@ object CommunityPaybackAndDeliusMockServer {
 
   fun getAppointments(
     crn: String,
+    username: String,
     appointments: List<NDAppointmentSummary>,
     pageNumber: Int = 0,
     pageSize: Int = 50,
-    sortString: String = "crn,desc",
+    sortString: String = "name,desc",
   ) {
-    val url = "/community-payback-and-delius/appointments?crn=$crn&page=$pageNumber&size=$pageSize&sort=${URLEncoder.encode(sortString, "UTF-8")}"
+    val url = "/community-payback-and-delius/appointments?username=$username&crn=$crn&page=$pageNumber&size=$pageSize&sort=${URLEncoder.encode(sortString, "UTF-8")}"
 
     val pageResponse = PageResponse(appointments, PageResponse.PageMeta(pageSize, pageNumber, appointments.size.toLong(), 1))
 
