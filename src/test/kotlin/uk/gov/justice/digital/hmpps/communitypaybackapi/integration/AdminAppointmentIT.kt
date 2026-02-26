@@ -263,6 +263,7 @@ class AdminAppointmentIT : IntegrationTestBase() {
 
       CommunityPaybackAndDeliusMockServer.getAppointments(
         crn = "CRN000",
+        username = "theusername",
         appointments = listOf(appointment1, appointment2),
       )
 
