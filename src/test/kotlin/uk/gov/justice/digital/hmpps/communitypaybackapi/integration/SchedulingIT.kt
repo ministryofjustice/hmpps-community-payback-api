@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.ApplicationContext
 import org.springframework.data.repository.findByIdOrNull
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseDetail
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCode
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDRequirementProgress
@@ -44,7 +45,6 @@ import java.time.LocalTime
 import java.time.OffsetDateTime
 import java.util.UUID
 import java.util.concurrent.TimeUnit
-import kotlin.Int
 
 class SchedulingIT : IntegrationTestBase() {
 
@@ -65,7 +65,7 @@ class SchedulingIT : IntegrationTestBase() {
 
   companion object {
     const val CRN: String = "CRN01"
-    const val EVENT_NUMBER: Int = 10
+    const val EVENT_NUMBER: Long = 10
   }
 
   @Nested
@@ -103,7 +103,7 @@ class SchedulingIT : IntegrationTestBase() {
     private fun createEvent() = appointmentEventEntityRepository.save(
       AppointmentEventEntity.valid(applicationContext).copy(
         crn = CRN,
-        deliusEventNumber = EVENT_NUMBER,
+        deliusEventNumber = EVENT_NUMBER.toInt(),
         eventType = AppointmentEventType.CREATE,
       ),
     )
@@ -160,7 +160,7 @@ class SchedulingIT : IntegrationTestBase() {
     private fun createEvent() = appointmentEventEntityRepository.save(
       AppointmentEventEntity.valid(applicationContext).copy(
         crn = CRN,
-        deliusEventNumber = EVENT_NUMBER,
+        deliusEventNumber = EVENT_NUMBER.toInt(),
         eventType = AppointmentEventType.UPDATE,
       ),
     )
@@ -204,7 +204,7 @@ class SchedulingIT : IntegrationTestBase() {
 
     CommunityPaybackAndDeliusMockServer.getUnpaidWorkRequirement(
       crn = CRN,
-      eventNumber = EVENT_NUMBER,
+      eventNumber = EVENT_NUMBER.toInt(),
       NDUnpaidWorkRequirement(
         requirementProgress = NDRequirementProgress(
           requiredMinutes = Duration.ofHours(22).toMinutes().toInt(),
@@ -283,7 +283,7 @@ class SchedulingIT : IntegrationTestBase() {
 
     CommunityPaybackAndDeliusMockServer.getUnpaidWorkRequirement(
       crn = CRN,
-      eventNumber = EVENT_NUMBER,
+      eventNumber = EVENT_NUMBER.toInt(),
       NDUnpaidWorkRequirement(
         requirementProgress = NDRequirementProgress.valid().copy(
           requiredMinutes = Duration.ofHours(52).toMinutes().toInt(),
@@ -385,6 +385,16 @@ class SchedulingIT : IntegrationTestBase() {
       ),
     )
 
+    CommunityPaybackAndDeliusMockServer.getUpwDetailsSummary(
+      crn = CRN,
+      ndCaseDetails = listOf(
+        NDCaseDetail.valid().copy(
+          eventNumber = EVENT_NUMBER,
+          sentenceDate = LocalDate.now().minusYears(1),
+        ),
+      ),
+    )
+
     val project1 = NDProject.valid(ctx).copy(code = "PROJ1", provider = NDCode("PROV1"), team = NDCode("TEAM1"), actualEndDateExclusive = null)
     CommunityPaybackAndDeliusMockServer.getProject(project1)
     CommunityPaybackAndDeliusMockServer.getTeamSupervisors(
@@ -415,7 +425,7 @@ class SchedulingIT : IntegrationTestBase() {
       expectedAppointments = listOf(
         CommunityPaybackAndDeliusMockServer.ExpectedAppointmentCreate(
           crn = CRN,
-          eventNumber = EVENT_NUMBER,
+          eventNumber = EVENT_NUMBER.toInt(),
           date = schedulingDate.plusDays(3),
           startTime = LocalTime.of(10, 0),
           endTime = LocalTime.of(14, 0),
@@ -427,14 +437,14 @@ class SchedulingIT : IntegrationTestBase() {
       expectedAppointments = listOf(
         CommunityPaybackAndDeliusMockServer.ExpectedAppointmentCreate(
           crn = CRN,
-          eventNumber = EVENT_NUMBER,
+          eventNumber = EVENT_NUMBER.toInt(),
           date = schedulingDate.plusDays(4),
           startTime = LocalTime.of(12, 0),
           endTime = LocalTime.of(18, 0),
         ),
         CommunityPaybackAndDeliusMockServer.ExpectedAppointmentCreate(
           crn = CRN,
-          eventNumber = EVENT_NUMBER,
+          eventNumber = EVENT_NUMBER.toInt(),
           date = schedulingDate.plusDays(18),
           startTime = LocalTime.of(12, 0),
           endTime = LocalTime.of(14, 0),

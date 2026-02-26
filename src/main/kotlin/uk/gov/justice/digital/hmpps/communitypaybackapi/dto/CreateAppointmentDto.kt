@@ -8,7 +8,7 @@ import java.util.UUID
 data class CreateAppointmentDto(
   val id: UUID,
   val crn: String,
-  val deliusEventNumber: Int,
+  val deliusEventNumber: Long,
   val allocationId: Long?,
   val projectCode: String,
   val date: LocalDate,

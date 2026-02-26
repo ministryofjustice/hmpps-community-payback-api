@@ -50,7 +50,7 @@ class SchedulingService(
 
   fun scheduleAppointments(
     crn: String,
-    eventNumber: Int,
+    eventNumber: Long,
     trigger: SchedulingTrigger,
     dryRun: Boolean,
   ): UUID {

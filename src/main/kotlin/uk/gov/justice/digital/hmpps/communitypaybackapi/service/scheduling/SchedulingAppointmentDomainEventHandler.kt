@@ -49,7 +49,7 @@ class SchedulingAppointmentDomainEventHandler(
 
       scheduleService.scheduleAppointments(
         crn = appointmentEvent.crn,
-        eventNumber = appointmentEvent.deliusEventNumber,
+        eventNumber = appointmentEvent.deliusEventNumber.toLong(),
         trigger = when (appointmentEvent.eventType) {
           AppointmentEventType.CREATE -> SchedulingTrigger(
             type = SchedulingTriggerType.AppointmentCreated,
