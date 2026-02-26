@@ -4,11 +4,13 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.common.onOrAfter
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentCommandDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.BadRequestException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.validateLengthLessThan
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.validateNotNull
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDayOfWeek
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -22,7 +24,10 @@ class AppointmentValidationService(
   fun validateCreate(
     create: CreateAppointmentDto,
   ): Validated<CreateAppointmentDto> {
-    validateDate(create)
+    val project = projectService.getProject(create.projectCode)
+
+    validateDate(project, create)
+    validateAvailability(project, create)
     validateOutcome(
       appointmentDate = create.date,
       command = create,
@@ -50,9 +55,9 @@ class AppointmentValidationService(
   }
 
   fun validateDate(
+    project: ProjectDto,
     appointment: CreateAppointmentDto,
   ) {
-    val project = projectService.getProject(appointment.projectCode)
     val appointmentDate = appointment.date
     val projectEndDateExclusive = project.actualEndDateExclusive
 
@@ -60,6 +65,18 @@ class AppointmentValidationService(
       if (appointmentDate.onOrAfter(projectEndDateExclusive)) {
         throw BadRequestException("Appointment Date of $appointmentDate must be before project end date $projectEndDateExclusive")
       }
+    }
+  }
+
+  fun validateAvailability(
+    project: ProjectDto,
+    appointment: CreateAppointmentDto,
+  ) {
+    val appointmentDayOfWeek = appointment.date.dayOfWeek
+
+    if (project.availability.none { it.dayOfWeek.toDayOfWeek() == appointmentDayOfWeek }) {
+      val availableDays = project.availability.map { it.dayOfWeek }.toSet()
+      throw BadRequestException("Project is not available on $appointmentDayOfWeek. Available days are $availableDays")
     }
   }
 

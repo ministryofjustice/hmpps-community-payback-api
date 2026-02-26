@@ -2,8 +2,11 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.factory
 
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.BeneficiaryDetailsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.LocationDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectAvailabilityDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SchedulingDayOfWeekDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SchedulingFrequencyDto
 import kotlin.String
 
 fun ProjectDto.Companion.valid() = ProjectDto(
@@ -17,6 +20,9 @@ fun ProjectDto.Companion.valid() = ProjectDto(
   beneficiaryDetails = BeneficiaryDetailsDto.valid(),
   expectedEndDateExclusive = randomLocalDate(),
   actualEndDateExclusive = randomLocalDate(),
+  availability = listOf(
+    ProjectAvailabilityDto.valid(),
+  ),
 )
 
 fun LocationDto.Companion.valid() = LocationDto(
@@ -35,4 +41,11 @@ fun BeneficiaryDetailsDto.Companion.valid() = BeneficiaryDetailsDto(
   website = String.random(50),
   telephoneNumber = String.random(50),
   location = LocationDto.valid(),
+)
+
+fun ProjectAvailabilityDto.Companion.valid() = ProjectAvailabilityDto(
+  frequency = SchedulingFrequencyDto.entries.random(),
+  dayOfWeek = SchedulingDayOfWeekDto.entries.random(),
+  startDateInclusive = randomLocalDate(),
+  endDateExclusive = randomLocalDate(),
 )

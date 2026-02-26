@@ -251,6 +251,7 @@ data class NDProject(
   val hiVisRequired: Boolean,
   val expectedEndDateExclusive: LocalDate?,
   val actualEndDateExclusive: LocalDate?,
+  val availability: List<NDProjectAvailability>,
 ) {
   companion object
 }
