@@ -58,7 +58,7 @@ class CommonOffenderIT : IntegrationTestBase() {
         .isNotFound()
         .bodyAsObject<ErrorResponse>()
 
-      assertThat(response.userMessage).isEqualTo("No resource found failure: CRN not found for ID 'CRN123'")
+      assertThat(response.userMessage).isEqualTo("No resource found failure: Risk Summary not found for ID 'CRN123'")
     }
 
     @Test

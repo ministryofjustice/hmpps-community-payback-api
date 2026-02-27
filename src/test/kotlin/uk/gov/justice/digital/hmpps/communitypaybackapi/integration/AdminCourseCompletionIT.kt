@@ -390,7 +390,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
       CommunityPaybackAndDeliusMockServer.getProject(project)
       CommunityPaybackAndDeliusMockServer.getUpwDetailsSummary(
         crn = crn,
-        ndCaseDetails = listOf(
+        unpaidWorkDetails = listOf(
           NDCaseDetail.valid().copy(
             eventNumber = DELIUS_EVENT_NUMBER,
             sentenceDate = LocalDate.now().minusDays(10),

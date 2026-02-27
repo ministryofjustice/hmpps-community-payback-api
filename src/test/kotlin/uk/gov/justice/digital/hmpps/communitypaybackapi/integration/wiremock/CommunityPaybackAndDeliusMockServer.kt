@@ -365,8 +365,8 @@ object CommunityPaybackAndDeliusMockServer {
     )
   }
 
-  fun getUpwDetailsSummary(crn: String, ndCaseDetails: List<NDCaseDetail>) {
-    val ndCaseDetailsSummary = NDCaseDetailsSummary(unpaidWorkDetails = ndCaseDetails)
+  fun getUpwDetailsSummary(crn: String, unpaidWorkDetails: List<NDCaseDetail>) {
+    val ndCaseDetailsSummary = NDCaseDetailsSummary(unpaidWorkDetails)
 
     WireMock.stubFor(
       get("/community-payback-and-delius/case/$crn/summary")

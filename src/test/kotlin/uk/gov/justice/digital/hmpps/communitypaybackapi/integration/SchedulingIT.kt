@@ -387,7 +387,7 @@ class SchedulingIT : IntegrationTestBase() {
 
     CommunityPaybackAndDeliusMockServer.getUpwDetailsSummary(
       crn = CRN,
-      ndCaseDetails = listOf(
+      unpaidWorkDetails = listOf(
         NDCaseDetail.valid().copy(
           eventNumber = EVENT_NUMBER,
           sentenceDate = LocalDate.now().minusYears(1),

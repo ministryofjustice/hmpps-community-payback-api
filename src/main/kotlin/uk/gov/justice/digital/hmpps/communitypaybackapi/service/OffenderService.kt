@@ -4,7 +4,6 @@ import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ArnsClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CaseDetailsSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.NotFoundException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
@@ -17,22 +16,15 @@ class OffenderService(
   fun getRiskSummary(crn: String) = try {
     arnsClient.rosh(crn).summary.overallRiskLevel.toString()
   } catch (_: WebClientResponseException.NotFound) {
-    throw NotFoundException("CRN", crn)
+    throw NotFoundException("Risk Summary", crn)
   }
+
+  fun getUnpaidWorkDetails(crn: String, deliusEventNumber: Long) = getOffenderSummaryByCrn(crn).unpaidWorkDetails.firstOrNull { it.eventNumber == deliusEventNumber }
+    ?: throw NotFoundException("Unpaid Work Details", "CRN $crn, Event Number $deliusEventNumber")
 
   fun getOffenderSummaryByCrn(crn: String): CaseDetailsSummaryDto = try {
     communityPaybackAndDeliusClient.getUpwDetailsSummary(crn).toDto()
   } catch (_: WebClientResponseException.NotFound) {
-    throw NotFoundException("CRN", crn)
+    throw NotFoundException("Offender Summary", crn)
   }
-}
-
-sealed interface OffenderInfoResult {
-  val crn: String
-
-  data class Full(override val crn: String, val summary: NDCaseSummary) : OffenderInfoResult {
-    companion object
-  }
-  data class Limited(override val crn: String) : OffenderInfoResult
-  data class NotFound(override val crn: String) : OffenderInfoResult
 }
