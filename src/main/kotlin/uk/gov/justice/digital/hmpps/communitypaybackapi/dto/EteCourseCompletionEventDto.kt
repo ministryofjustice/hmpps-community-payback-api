@@ -5,6 +5,7 @@ import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseEventCompletionMessageStatus
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.util.UUID
 
 data class EteCourseCompletionEventDto(
@@ -57,4 +58,7 @@ data class EteCourseCompletionEventDto(
 
   @param:Schema(description = "External reference identifier", example = "EXT-12345")
   val externalReference: String,
+
+  @param:Schema(description = "The Date/Time that the record was imported into the CAS database")
+  val importedOn: LocalDateTime,
 )
