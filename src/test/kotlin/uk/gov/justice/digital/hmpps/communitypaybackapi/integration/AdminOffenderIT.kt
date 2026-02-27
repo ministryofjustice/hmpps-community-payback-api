@@ -13,16 +13,19 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.Com
 
 class AdminOffenderIT : IntegrationTestBase() {
 
+  companion object {
+    const val CRN = "X123456"
+    const val DELIUS_EVENT_NUMBER = 92L
+  }
+
   @Nested
   @DisplayName("GET /admin/offenders/{crn}/summary")
   inner class GetOffenderSummaryEndpoint {
 
-    private val crn = "X123456"
-
     @Test
     fun `should return unauthorized if no token`() {
       webTestClient.get()
-        .uri("/admin/offenders/$crn/summary")
+        .uri("/admin/offenders/$CRN/summary")
         .exchange()
         .expectStatus()
         .isUnauthorized
@@ -31,7 +34,7 @@ class AdminOffenderIT : IntegrationTestBase() {
     @Test
     fun `should return forbidden if no role`() {
       webTestClient.get()
-        .uri("/admin/offenders/$crn/summary")
+        .uri("/admin/offenders/$CRN/summary")
         .headers(setAuthorisation())
         .exchange()
         .expectStatus()
@@ -41,7 +44,7 @@ class AdminOffenderIT : IntegrationTestBase() {
     @Test
     fun `should return forbidden if wrong role`() {
       webTestClient.get()
-        .uri("/admin/offenders/$crn/summary")
+        .uri("/admin/offenders/$CRN/summary")
         .headers(setAuthorisation(roles = listOf("ROLE_WRONG")))
         .exchange()
         .expectStatus()
@@ -52,10 +55,10 @@ class AdminOffenderIT : IntegrationTestBase() {
     fun `should return OK with offender summary`() {
       val ndCaseDetail = NDCaseDetail.valid()
 
-      CommunityPaybackAndDeliusMockServer.getUpwDetailsSummary(crn, listOf(ndCaseDetail))
+      CommunityPaybackAndDeliusMockServer.getUpwDetailsSummary(CRN, listOf(ndCaseDetail))
 
       val result = webTestClient.get()
-        .uri("/admin/offenders/$crn/summary")
+        .uri("/admin/offenders/$CRN/summary")
         .addAdminUiAuthHeader()
         .exchange()
         .expectStatus()
@@ -63,7 +66,7 @@ class AdminOffenderIT : IntegrationTestBase() {
         .bodyAsObject<CaseDetailsSummaryDto>()
 
       assertThat(result.unpaidWorkDetails.size).isEqualTo(1)
-      val caseSummaryDetail = result.unpaidWorkDetails[0] as UnpaidWorkDetailsDto
+      val caseSummaryDetail = result.unpaidWorkDetails[0]
       assertThat(caseSummaryDetail.eventNumber).isEqualTo(ndCaseDetail.eventNumber)
       assertThat(caseSummaryDetail.requiredMinutes).isEqualTo(ndCaseDetail.requiredMinutes)
       assertThat(caseSummaryDetail.completedEteMinutes).isEqualTo(ndCaseDetail.completedEteMinutes)
@@ -82,6 +85,60 @@ class AdminOffenderIT : IntegrationTestBase() {
         .exchange()
         .expectStatus()
         .isNotFound
+    }
+  }
+
+  @Nested
+  @DisplayName("GET /admin/offenders/{crn}/unpaid-work-details/{deliusEventNumber}")
+  inner class GetUnpaidWorkDetails {
+
+    @Test
+    fun `should return unauthorized if no token`() {
+      webTestClient.get()
+        .uri("/admin/offenders/$CRN/unpaid-work-details/$DELIUS_EVENT_NUMBER")
+        .exchange()
+        .expectStatus()
+        .isUnauthorized
+    }
+
+    @Test
+    fun `should return forbidden if no role`() {
+      webTestClient.get()
+        .uri("/admin/offenders/$CRN/unpaid-work-details/$DELIUS_EVENT_NUMBER")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .isForbidden
+    }
+
+    @Test
+    fun `should return forbidden if wrong role`() {
+      webTestClient.get()
+        .uri("/admin/offenders/$CRN/unpaid-work-details/$DELIUS_EVENT_NUMBER")
+        .headers(setAuthorisation(roles = listOf("ROLE_WRONG")))
+        .exchange()
+        .expectStatus()
+        .isForbidden
+    }
+
+    @Test
+    fun `should return OK with unpaid work details`() {
+      CommunityPaybackAndDeliusMockServer.getUpwDetailsSummary(
+        crn = CRN,
+        unpaidWorkDetails = listOf(
+          NDCaseDetail.valid().copy(eventNumber = DELIUS_EVENT_NUMBER),
+        ),
+      )
+
+      val result = webTestClient.get()
+        .uri("/admin/offenders/$CRN/unpaid-work-details/$DELIUS_EVENT_NUMBER")
+        .addAdminUiAuthHeader()
+        .exchange()
+        .expectStatus()
+        .isOk
+        .bodyAsObject<UnpaidWorkDetailsDto>()
+
+      assertThat(result.eventNumber).isEqualTo(DELIUS_EVENT_NUMBER)
     }
   }
 }
