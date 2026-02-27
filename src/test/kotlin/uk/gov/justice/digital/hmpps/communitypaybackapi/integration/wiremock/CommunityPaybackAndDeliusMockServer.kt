@@ -207,7 +207,7 @@ object CommunityPaybackAndDeliusMockServer {
 
   data class ExpectedAppointmentCreate(
     val crn: String,
-    val eventNumber: Int,
+    val eventNumber: Long,
     val date: LocalDate,
     val startTime: LocalTime,
     val endTime: LocalTime,

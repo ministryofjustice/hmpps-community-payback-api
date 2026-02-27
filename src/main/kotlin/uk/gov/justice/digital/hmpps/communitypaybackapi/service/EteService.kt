@@ -145,6 +145,7 @@ class EteService(
         eteCourseCompletionEventEntity = eteEvent,
         crn = courseCompletionOutcome.crn,
         projectCode = courseCompletionOutcome.projectCode,
+        deliusEventNumber = courseCompletionOutcome.deliusEventNumber,
       )
 
       val adjustedAppointment = appointment.copy(

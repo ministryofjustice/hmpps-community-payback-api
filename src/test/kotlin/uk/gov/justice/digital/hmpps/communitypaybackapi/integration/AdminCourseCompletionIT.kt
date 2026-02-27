@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.integration
 
-import io.mockk.impl.annotations.RelaxedMockK
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
@@ -27,7 +26,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.DomainE
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.bodyAsObject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.CommunityPaybackAndDeliusMockServer
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.CommunityPaybackAndDeliusMockServer.ExpectedAppointmentCreate
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ContextService
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
@@ -40,8 +38,9 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
   @Autowired
   lateinit var domainEventAsserter: DomainEventAsserter
 
-  @RelaxedMockK
-  lateinit var contextService: ContextService
+  companion object {
+    const val DELIUS_EVENT_NUMBER = 5L
+  }
 
   @Nested
   @DisplayName("GET /providers/N07/course-completions")
@@ -317,6 +316,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
 
     val courseCompletionOutcomeDto = CourseCompletionOutcomeDto(
       crn = "X123456",
+      deliusEventNumber = DELIUS_EVENT_NUMBER,
       appointmentIdToUpdate = null,
       minutesToCredit = 60,
       contactOutcome = "COMP",
@@ -379,6 +379,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
       )
       val outcome = CourseCompletionOutcomeDto.valid().copy(
         crn = crn,
+        deliusEventNumber = DELIUS_EVENT_NUMBER,
         appointmentIdToUpdate = null,
         minutesToCredit = minutesToCredit,
         contactOutcome = "ATTC",
@@ -391,7 +392,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
         crn = crn,
         ndCaseDetails = listOf(
           NDCaseDetail.valid().copy(
-            eventNumber = 1L,
+            eventNumber = DELIUS_EVENT_NUMBER,
             sentenceDate = LocalDate.now().minusDays(10),
           ),
         ),
@@ -413,7 +414,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
 
       val expectedAppointment = ExpectedAppointmentCreate(
         crn = crn,
-        eventNumber = 1,
+        eventNumber = DELIUS_EVENT_NUMBER,
         date = eventEntity.completionDate,
         startTime = LocalTime.of(9, 0),
         endTime = LocalTime.of(9, 0).plusMinutes(minutesToCredit),
@@ -490,6 +491,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
         .bodyValue(
           CourseCompletionOutcomeDto(
             crn = "X123456",
+            deliusEventNumber = DELIUS_EVENT_NUMBER,
             appointmentIdToUpdate = null,
             minutesToCredit = 60,
             contactOutcome = "COMP",

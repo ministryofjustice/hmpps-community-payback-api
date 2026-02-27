@@ -425,7 +425,7 @@ class SchedulingIT : IntegrationTestBase() {
       expectedAppointments = listOf(
         CommunityPaybackAndDeliusMockServer.ExpectedAppointmentCreate(
           crn = CRN,
-          eventNumber = EVENT_NUMBER.toInt(),
+          eventNumber = EVENT_NUMBER,
           date = schedulingDate.plusDays(3),
           startTime = LocalTime.of(10, 0),
           endTime = LocalTime.of(14, 0),
@@ -437,14 +437,14 @@ class SchedulingIT : IntegrationTestBase() {
       expectedAppointments = listOf(
         CommunityPaybackAndDeliusMockServer.ExpectedAppointmentCreate(
           crn = CRN,
-          eventNumber = EVENT_NUMBER.toInt(),
+          eventNumber = EVENT_NUMBER,
           date = schedulingDate.plusDays(4),
           startTime = LocalTime.of(12, 0),
           endTime = LocalTime.of(18, 0),
         ),
         CommunityPaybackAndDeliusMockServer.ExpectedAppointmentCreate(
           crn = CRN,
-          eventNumber = EVENT_NUMBER.toInt(),
+          eventNumber = EVENT_NUMBER,
           date = schedulingDate.plusDays(18),
           startTime = LocalTime.of(12, 0),
           endTime = LocalTime.of(14, 0),
