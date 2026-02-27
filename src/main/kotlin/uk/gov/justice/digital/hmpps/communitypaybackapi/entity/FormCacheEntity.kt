@@ -6,7 +6,6 @@ import jakarta.persistence.Id
 import jakarta.persistence.IdClass
 import jakarta.persistence.Table
 import org.hibernate.annotations.CreationTimestamp
-import org.hibernate.annotations.UpdateTimestamp
 import java.time.OffsetDateTime
 
 @Entity
@@ -24,7 +23,6 @@ data class FormCacheEntity(
   @CreationTimestamp
   val createdAt: OffsetDateTime = OffsetDateTime.now(),
 
-  @UpdateTimestamp
   val updatedAt: OffsetDateTime = OffsetDateTime.now(),
 ) {
   override fun equals(other: Any?): Boolean {

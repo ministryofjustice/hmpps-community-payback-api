@@ -35,6 +35,8 @@ dependencies {
 
   implementation("org.redisson:redisson-spring-boot-starter:4.2.0")
   implementation("com.github.ben-manes.caffeine:caffeine:3.2.3")
+  implementation("net.javacrumbs.shedlock:shedlock-spring:7.6.0")
+  implementation("net.javacrumbs.shedlock:shedlock-provider-redis-spring:7.6.0")
 
   runtimeOnly("org.flywaydb:flyway-database-postgresql")
 

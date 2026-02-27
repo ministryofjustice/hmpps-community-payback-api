@@ -1,5 +1,7 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.service
 
+import jakarta.transaction.Transactional
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import tools.jackson.databind.json.JsonMapper
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.FormKeyDto
@@ -7,12 +9,20 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.NotFoundE
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.FormCacheEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.FormCacheEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.FormCacheId
+import java.time.OffsetDateTime
 
 @Service
 class FormService(
   private val repository: FormCacheEntityRepository,
   private val jsonMapper: JsonMapper,
 ) {
+
+  companion object {
+    private val log = LoggerFactory.getLogger(this::class.java)
+
+    const val TTL_DAYS: Long = 7
+  }
+
   fun get(key: FormKeyDto): String {
     val existing = repository.findByFormIdAndFormType(key.id, key.type)
       ?: throw NotFoundException("Form data", "${key.type}/${key.id}")
@@ -28,6 +38,7 @@ class FormService(
       formId = key.id,
       formType = key.type,
       formData = json,
+      updatedAt = OffsetDateTime.now(),
     )
 
     repository.save(entity)
@@ -40,5 +51,13 @@ class FormService(
         formType = key.type,
       ),
     )
+  }
+
+  @Transactional
+  fun deleteExpiredEntries() {
+    val threshold = OffsetDateTime.now().minusDays(TTL_DAYS)
+    log.info("Removing form cache entries that were last updated on or before $threshold")
+    val deletedCount = repository.deleteByLastUpdatedAtBefore(threshold)
+    log.info("Have removed $deletedCount form cache entries")
   }
 }
