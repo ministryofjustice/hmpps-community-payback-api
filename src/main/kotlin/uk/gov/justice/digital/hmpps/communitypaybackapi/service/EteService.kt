@@ -163,16 +163,12 @@ class EteService(
       crn = courseCompletionOutcome.crn,
       projectCode = courseCompletionOutcome.projectCode,
       deliusEventNumber = courseCompletionOutcome.deliusEventNumber,
-    )
-
-    val adjustedAppointment = appointment.copy(
-      crn = courseCompletionOutcome.crn,
-      endTime = appointment.startTime.plusMinutes(courseCompletionOutcome.minutesToCredit),
+      minutesToCredit = courseCompletionOutcome.minutesToCredit,
       contactOutcomeCode = courseCompletionOutcome.contactOutcome,
     )
 
     appointmentCreationService.createAppointment(
-      appointment = adjustedAppointment,
+      appointment = appointment,
       trigger = buildEventTrigger(),
     )
   }

@@ -304,28 +304,23 @@ class EteServiceTest {
       val outcome = CourseCompletionOutcomeDto.valid()
 
       every { eteCourseCompletionEventEntityRepository.findById(event.id) } returns Optional.of(event)
+
+      val appointmentToCreate = CreateAppointmentDto.valid()
       every {
-        educationCourseCompletionMapper.toCreateAppointmentDto(event, outcome.crn, outcome.projectCode, outcome.deliusEventNumber)
-      } returns EducationCourseCompletionMapper().toCreateAppointmentDto(event, outcome.crn, outcome.projectCode, outcome.deliusEventNumber)
+        educationCourseCompletionMapper.toCreateAppointmentDto(event, outcome.crn, outcome.projectCode, outcome.deliusEventNumber, outcome.minutesToCredit, outcome.contactOutcome)
+      } returns appointmentToCreate
       every { contextService.getUserName() } returns "admin-ui"
 
       eteService.processCourseCompletionOutcome(event.id, outcome)
 
       val triggerSlot = slot<AppointmentEventTrigger>()
-      val createAppointmentSlot = slot<CreateAppointmentDto>()
 
       io.mockk.verify {
-        appointmentCreationService.createAppointment(capture(createAppointmentSlot), capture(triggerSlot))
+        appointmentCreationService.createAppointment(appointmentToCreate, capture(triggerSlot))
       }
 
       assertThat(triggerSlot.captured.triggerType).isEqualTo(AppointmentEventTriggerType.ETE_COURSE_COMPLETION)
       assertThat(triggerSlot.captured.triggeredBy).isEqualTo("admin-ui")
-
-      val appointment = createAppointmentSlot.captured
-      assertThat(appointment.crn).isEqualTo(outcome.crn)
-      assertThat(appointment.projectCode).isEqualTo(outcome.projectCode)
-      assertThat(appointment.contactOutcomeCode).isEqualTo(outcome.contactOutcome)
-      assertThat(appointment.endTime).isEqualTo(appointment.startTime.plusMinutes(outcome.minutesToCredit))
     }
 
     @Test
@@ -373,8 +368,8 @@ class EteServiceTest {
 
       every { eteCourseCompletionEventEntityRepository.findById(eventId) } returns Optional.of(event)
       every {
-        educationCourseCompletionMapper.toCreateAppointmentDto(event, outcome.crn, outcome.projectCode, outcome.deliusEventNumber)
-      } returns EducationCourseCompletionMapper().toCreateAppointmentDto(event, outcome.crn, outcome.projectCode, outcome.deliusEventNumber)
+        educationCourseCompletionMapper.toCreateAppointmentDto(event, outcome.crn, outcome.projectCode, outcome.deliusEventNumber, outcome.minutesToCredit, outcome.contactOutcome)
+      } returns EducationCourseCompletionMapper().toCreateAppointmentDto(event, outcome.crn, outcome.projectCode, outcome.deliusEventNumber, outcome.minutesToCredit, outcome.contactOutcome)
       every { appointmentRetrievalService.getAppointment(projectCode, appointmentId) } returns existingAppointment
       every { contextService.getUserName() } returns "admin-ui"
 

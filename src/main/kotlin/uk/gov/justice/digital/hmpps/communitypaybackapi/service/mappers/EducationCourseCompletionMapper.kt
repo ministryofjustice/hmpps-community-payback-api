@@ -6,9 +6,9 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentWorkQuali
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AttendanceDataDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EteCourseCompletionEventDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntity
 import java.time.LocalTime
+import java.time.temporal.ChronoUnit
 import java.util.UUID
 
 @Service
@@ -16,13 +16,19 @@ class EducationCourseCompletionMapper {
 
   fun toCreateAppointmentDto(
     eteCourseCompletionEventEntity: EteCourseCompletionEventEntity,
-    // once we're capturing the following on EteCourseCompletionEventEntity we won't need to pass them in
     crn: String,
     projectCode: String,
     deliusEventNumber: Long,
+    minutesToCredit: Long,
+    contactOutcomeCode: String,
   ): CreateAppointmentDto {
     val completionDate = eteCourseCompletionEventEntity.completionDate
-    val startTime = LocalTime.of(9, 0) // Temporary until decided - 9am as start time
+    val startTime = LocalTime.of(9, 0)
+
+    val creditLimit = ChronoUnit.MINUTES.between(startTime, LocalTime.MIDNIGHT.minusMinutes(1))
+    if (minutesToCredit > creditLimit) {
+      error("Cannot credit more than $creditLimit minutes")
+    }
 
     return CreateAppointmentDto(
       id = UUID.randomUUID(),
@@ -34,11 +40,11 @@ class EducationCourseCompletionMapper {
       // If this rolls time back into the previous day, this fails appointment creation validation
       // because start time is after end time
       startTime = startTime,
-      endTime = startTime.plusMinutes(eteCourseCompletionEventEntity.totalTimeMinutes),
+      endTime = startTime.plusMinutes(minutesToCredit),
       pickUpLocationCode = null,
       pickUpLocationDescription = null,
       pickUpTime = null,
-      contactOutcomeCode = ContactOutcomeEntity.ATTENDED_COMPLIED_OUTCOME_CODE,
+      contactOutcomeCode = contactOutcomeCode,
       attendanceData = createAttendanceData(),
       supervisorOfficerCode = null,
       notes = "Ete course completed: ${eteCourseCompletionEventEntity.courseName}",

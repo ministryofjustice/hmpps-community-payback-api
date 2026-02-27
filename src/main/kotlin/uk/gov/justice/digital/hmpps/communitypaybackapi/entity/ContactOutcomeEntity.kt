@@ -48,9 +48,7 @@ data class ContactOutcomeEntity(
 
   override fun toString(): String = "ContactOutcomeEntity(id=$id, code='$code', name='$name', enforceable=$enforceable)"
 
-  companion object {
-    const val ATTENDED_COMPLIED_OUTCOME_CODE = "ATTC"
-  }
+  companion object
 }
 
 enum class ContactOutcomeGroup {

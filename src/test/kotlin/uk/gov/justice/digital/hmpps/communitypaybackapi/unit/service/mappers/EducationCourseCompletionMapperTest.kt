@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.unit.service.mappers
 
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
@@ -9,7 +10,6 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentBehaviourDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentWorkQualityDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseEventCompletionMessageStatus
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
@@ -26,9 +26,8 @@ class EducationCourseCompletionMapperTest {
 
   private lateinit var mapper: EducationCourseCompletionMapper
 
-  private val projectCode = "PROJ123"
-
   companion object {
+    const val CONTACT_OUTCOME_CODE = "OUTCOME1"
     const val CRN = "CRN1234"
     const val PROJECT_CODE = "PROJ123"
     const val DELIUS_EVENT_NUMBER = 52L
@@ -46,7 +45,14 @@ class EducationCourseCompletionMapperTest {
     fun `should map all fields correctly`() {
       val entity = EteCourseCompletionEventEntity.valid()
 
-      val result = mapper.toCreateAppointmentDto(entity, CRN, PROJECT_CODE, DELIUS_EVENT_NUMBER)
+      val result = mapper.toCreateAppointmentDto(
+        eteCourseCompletionEventEntity = entity,
+        crn = CRN,
+        projectCode = PROJECT_CODE,
+        deliusEventNumber = DELIUS_EVENT_NUMBER,
+        minutesToCredit = 60L,
+        contactOutcomeCode = CONTACT_OUTCOME_CODE,
+      )
 
       assertThat(result).isNotNull
       assertThat(result.id).isNotNull()
@@ -55,7 +61,7 @@ class EducationCourseCompletionMapperTest {
       assertThat(result.allocationId).isNull()
       assertThat(result.date).isEqualTo(entity.completionDate)
       assertThat(result.notes).isEqualTo("Ete course completed: ${entity.courseName}")
-      assertThat(result.contactOutcomeCode).isEqualTo(ContactOutcomeEntity.ATTENDED_COMPLIED_OUTCOME_CODE)
+      assertThat(result.contactOutcomeCode).isEqualTo(CONTACT_OUTCOME_CODE)
       assertThat(result.pickUpLocationCode).isNull()
       assertThat(result.pickUpTime).isNull()
       assertThat(result.supervisorOfficerCode).isNull()
@@ -67,49 +73,49 @@ class EducationCourseCompletionMapperTest {
     fun `should set start time to 9am`() {
       val entity = EteCourseCompletionEventEntity.valid()
 
-      val result = mapper.toCreateAppointmentDto(entity, CRN, PROJECT_CODE, DELIUS_EVENT_NUMBER)
+      val result = mapper.toCreateAppointmentDto(
+        eteCourseCompletionEventEntity = entity,
+        crn = CRN,
+        projectCode = PROJECT_CODE,
+        deliusEventNumber = DELIUS_EVENT_NUMBER,
+        minutesToCredit = 60L,
+        contactOutcomeCode = CONTACT_OUTCOME_CODE,
+      )
 
       assertThat(result.startTime).isEqualTo(LocalTime.of(9, 0))
     }
 
-    @Test
-    fun `should calculate end time as start time plus total time minutes`() {
-      val entity = EteCourseCompletionEventEntity.valid()
-
-      val result = mapper.toCreateAppointmentDto(entity, CRN, PROJECT_CODE, DELIUS_EVENT_NUMBER)
-
-      assertThat(result.endTime).isEqualTo(LocalTime.of(9, 0).plusMinutes(entity.totalTimeMinutes))
-    }
-
     @ParameterizedTest
     @ValueSource(longs = [30, 60, 120, 180, 240])
-    fun `should handle various total time minutes`(totalTimeMinutes: Long) {
-      val entity = EteCourseCompletionEventEntity.valid().copy(
-        totalTimeMinutes = totalTimeMinutes,
+    fun `should calculate end time as start time plus total time minutes`(
+      minutesToCredit: Long,
+    ) {
+      val entity = EteCourseCompletionEventEntity.valid()
+
+      val result = mapper.toCreateAppointmentDto(
+        eteCourseCompletionEventEntity = entity,
+        crn = CRN,
+        projectCode = PROJECT_CODE,
+        deliusEventNumber = DELIUS_EVENT_NUMBER,
+        minutesToCredit = minutesToCredit,
+        contactOutcomeCode = CONTACT_OUTCOME_CODE,
       )
 
-      val result = mapper.toCreateAppointmentDto(entity, CRN, PROJECT_CODE, DELIUS_EVENT_NUMBER)
-
-      assertThat(result.endTime).isEqualTo(LocalTime.of(9, 0).plusMinutes(totalTimeMinutes))
-    }
-
-    @Test
-    fun `should generate unique UUID for each appointment`() {
-      val entity1 = EteCourseCompletionEventEntity.valid()
-      val entity2 = EteCourseCompletionEventEntity.valid()
-
-      val result1 = mapper.toCreateAppointmentDto(entity1, CRN, PROJECT_CODE, DELIUS_EVENT_NUMBER)
-      val result2 = mapper.toCreateAppointmentDto(entity2, CRN, PROJECT_CODE, DELIUS_EVENT_NUMBER)
-
-      assertThat(result1.id).isNotEqualTo(result2.id)
-      assertThat(result1.id).isInstanceOf(UUID::class.java)
+      assertThat(result.endTime).isEqualTo(LocalTime.of(9, 0).plusMinutes(minutesToCredit))
     }
 
     @Test
     fun `should set attendance data with default values`() {
       val entity = EteCourseCompletionEventEntity.valid()
 
-      val result = mapper.toCreateAppointmentDto(entity, CRN, PROJECT_CODE, DELIUS_EVENT_NUMBER)
+      val result = mapper.toCreateAppointmentDto(
+        eteCourseCompletionEventEntity = entity,
+        crn = CRN,
+        projectCode = PROJECT_CODE,
+        deliusEventNumber = DELIUS_EVENT_NUMBER,
+        minutesToCredit = 60L,
+        contactOutcomeCode = CONTACT_OUTCOME_CODE,
+      )
 
       assertThat(result.attendanceData).isNotNull
       assertThat(result.attendanceData?.hiVisWorn).isFalse()
@@ -120,13 +126,19 @@ class EducationCourseCompletionMapperTest {
     }
 
     @Test
-    fun `should handle large total time minutes that roll into next day`() {
+    fun `should error if crediting minutes that would roll into next day`() {
       val entity = EteCourseCompletionEventEntity.valid()
 
-      val result = mapper.toCreateAppointmentDto(entity, CRN, PROJECT_CODE, DELIUS_EVENT_NUMBER)
-
-      assertThat(result.startTime).isEqualTo(LocalTime.of(9, 0))
-      assertThat(result.endTime).isEqualTo(LocalTime.of(9, 0).plusMinutes(entity.totalTimeMinutes))
+      assertThatThrownBy {
+        mapper.toCreateAppointmentDto(
+          eteCourseCompletionEventEntity = entity,
+          crn = CRN,
+          projectCode = PROJECT_CODE,
+          deliusEventNumber = DELIUS_EVENT_NUMBER,
+          minutesToCredit = 60 * 15,
+          contactOutcomeCode = CONTACT_OUTCOME_CODE,
+        )
+      }.hasMessage("Cannot credit more than 899 minutes")
     }
   }
 
