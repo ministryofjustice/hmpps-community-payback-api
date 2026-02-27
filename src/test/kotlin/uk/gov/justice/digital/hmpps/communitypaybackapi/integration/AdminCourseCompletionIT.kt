@@ -319,7 +319,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
       deliusEventNumber = DELIUS_EVENT_NUMBER,
       appointmentIdToUpdate = null,
       minutesToCredit = 60,
-      contactOutcome = "COMP",
+      contactOutcomeCode = "COMP",
       projectCode = "PRJ001",
     )
 
@@ -382,7 +382,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
         deliusEventNumber = DELIUS_EVENT_NUMBER,
         appointmentIdToUpdate = null,
         minutesToCredit = minutesToCredit,
-        contactOutcome = "ATTC",
+        contactOutcomeCode = "ATTC",
         projectCode = projectCode,
       )
 
@@ -440,7 +440,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
         crn = crn,
         appointmentIdToUpdate = appointmentId,
         minutesToCredit = minutesToCredit,
-        contactOutcome = "ATTC",
+        contactOutcomeCode = "ATTC",
         projectCode = projectCode,
       )
 
@@ -494,7 +494,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
             deliusEventNumber = DELIUS_EVENT_NUMBER,
             appointmentIdToUpdate = null,
             minutesToCredit = 60,
-            contactOutcome = "COMP",
+            contactOutcomeCode = "COMP",
             projectCode = "PRJ001",
           ),
         )

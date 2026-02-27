@@ -307,7 +307,7 @@ class EteServiceTest {
 
       val appointmentToCreate = CreateAppointmentDto.valid()
       every {
-        educationCourseCompletionMapper.toCreateAppointmentDto(event, outcome.crn, outcome.projectCode, outcome.deliusEventNumber, outcome.minutesToCredit, outcome.contactOutcome)
+        educationCourseCompletionMapper.toCreateAppointmentDto(event, outcome)
       } returns appointmentToCreate
       every { contextService.getUserName() } returns "admin-ui"
 
@@ -362,14 +362,14 @@ class EteServiceTest {
         crn = crn,
         appointmentIdToUpdate = appointmentId,
         minutesToCredit = 90,
-        contactOutcome = "COMP",
+        contactOutcomeCode = "COMP",
         projectCode = projectCode,
       )
 
       every { eteCourseCompletionEventEntityRepository.findById(eventId) } returns Optional.of(event)
       every {
-        educationCourseCompletionMapper.toCreateAppointmentDto(event, outcome.crn, outcome.projectCode, outcome.deliusEventNumber, outcome.minutesToCredit, outcome.contactOutcome)
-      } returns EducationCourseCompletionMapper().toCreateAppointmentDto(event, outcome.crn, outcome.projectCode, outcome.deliusEventNumber, outcome.minutesToCredit, outcome.contactOutcome)
+        educationCourseCompletionMapper.toCreateAppointmentDto(event, outcome)
+      } returns EducationCourseCompletionMapper().toCreateAppointmentDto(event, outcome)
       every { appointmentRetrievalService.getAppointment(projectCode, appointmentId) } returns existingAppointment
       every { contextService.getUserName() } returns "admin-ui"
 
@@ -401,7 +401,7 @@ class EteServiceTest {
         deliusEventNumber = 10L,
         appointmentIdToUpdate = null,
         minutesToCredit = 120,
-        contactOutcome = "COMP",
+        contactOutcomeCode = "COMP",
         projectCode = "PRJ001",
       )
 

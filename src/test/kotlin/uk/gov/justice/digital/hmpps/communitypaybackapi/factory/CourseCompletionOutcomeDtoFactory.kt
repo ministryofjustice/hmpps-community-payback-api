@@ -8,6 +8,6 @@ fun CourseCompletionOutcomeDto.Companion.valid() = CourseCompletionOutcomeDto(
   deliusEventNumber = Long.random(50),
   appointmentIdToUpdate = null,
   minutesToCredit = Long.random(0, 181),
-  contactOutcome = String.random(20),
+  contactOutcomeCode = String.random(20),
   projectCode = String.random(20),
 )

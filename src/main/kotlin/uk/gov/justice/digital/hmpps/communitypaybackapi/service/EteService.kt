@@ -138,7 +138,7 @@ class EteService(
       deliusVersionToUpdate = existingAppointment.version,
       startTime = existingAppointment.startTime,
       endTime = existingAppointment.startTime.plusMinutes(courseCompletionOutcome.minutesToCredit),
-      contactOutcomeCode = courseCompletionOutcome.contactOutcome,
+      contactOutcomeCode = courseCompletionOutcome.contactOutcomeCode,
       attendanceData = EducationCourseCompletionMapper.createAttendanceData(),
       enforcementData = null,
       supervisorOfficerCode = existingAppointment.supervisorOfficerCode,
@@ -160,11 +160,7 @@ class EteService(
   ) {
     val appointment = educationCourseCompletionMapper.toCreateAppointmentDto(
       eteCourseCompletionEventEntity = courseCompletionEvent,
-      crn = courseCompletionOutcome.crn,
-      projectCode = courseCompletionOutcome.projectCode,
-      deliusEventNumber = courseCompletionOutcome.deliusEventNumber,
-      minutesToCredit = courseCompletionOutcome.minutesToCredit,
-      contactOutcomeCode = courseCompletionOutcome.contactOutcome,
+      courseCompletionOutcome = courseCompletionOutcome,
     )
 
     appointmentCreationService.createAppointment(

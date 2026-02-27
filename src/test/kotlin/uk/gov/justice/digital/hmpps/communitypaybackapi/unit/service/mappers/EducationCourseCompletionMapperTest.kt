@@ -10,6 +10,7 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentBehaviourDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentWorkQualityDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseEventCompletionMessageStatus
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
@@ -33,6 +34,13 @@ class EducationCourseCompletionMapperTest {
     const val DELIUS_EVENT_NUMBER = 52L
   }
 
+  val baselineCourseCompletionOutcome = CourseCompletionOutcomeDto.valid().copy(
+    crn = CRN,
+    projectCode = PROJECT_CODE,
+    deliusEventNumber = DELIUS_EVENT_NUMBER,
+    contactOutcomeCode = CONTACT_OUTCOME_CODE,
+  )
+
   @BeforeEach
   fun setUp() {
     mapper = EducationCourseCompletionMapper()
@@ -47,11 +55,9 @@ class EducationCourseCompletionMapperTest {
 
       val result = mapper.toCreateAppointmentDto(
         eteCourseCompletionEventEntity = entity,
-        crn = CRN,
-        projectCode = PROJECT_CODE,
-        deliusEventNumber = DELIUS_EVENT_NUMBER,
-        minutesToCredit = 60L,
-        contactOutcomeCode = CONTACT_OUTCOME_CODE,
+        baselineCourseCompletionOutcome.copy(
+          minutesToCredit = 60L,
+        ),
       )
 
       assertThat(result).isNotNull
@@ -75,11 +81,9 @@ class EducationCourseCompletionMapperTest {
 
       val result = mapper.toCreateAppointmentDto(
         eteCourseCompletionEventEntity = entity,
-        crn = CRN,
-        projectCode = PROJECT_CODE,
-        deliusEventNumber = DELIUS_EVENT_NUMBER,
-        minutesToCredit = 60L,
-        contactOutcomeCode = CONTACT_OUTCOME_CODE,
+        baselineCourseCompletionOutcome.copy(
+          minutesToCredit = 60L,
+        ),
       )
 
       assertThat(result.startTime).isEqualTo(LocalTime.of(9, 0))
@@ -94,11 +98,9 @@ class EducationCourseCompletionMapperTest {
 
       val result = mapper.toCreateAppointmentDto(
         eteCourseCompletionEventEntity = entity,
-        crn = CRN,
-        projectCode = PROJECT_CODE,
-        deliusEventNumber = DELIUS_EVENT_NUMBER,
-        minutesToCredit = minutesToCredit,
-        contactOutcomeCode = CONTACT_OUTCOME_CODE,
+        baselineCourseCompletionOutcome.copy(
+          minutesToCredit = minutesToCredit,
+        ),
       )
 
       assertThat(result.endTime).isEqualTo(LocalTime.of(9, 0).plusMinutes(minutesToCredit))
@@ -110,11 +112,9 @@ class EducationCourseCompletionMapperTest {
 
       val result = mapper.toCreateAppointmentDto(
         eteCourseCompletionEventEntity = entity,
-        crn = CRN,
-        projectCode = PROJECT_CODE,
-        deliusEventNumber = DELIUS_EVENT_NUMBER,
-        minutesToCredit = 60L,
-        contactOutcomeCode = CONTACT_OUTCOME_CODE,
+        baselineCourseCompletionOutcome.copy(
+          minutesToCredit = 60L,
+        ),
       )
 
       assertThat(result.attendanceData).isNotNull
@@ -132,11 +132,9 @@ class EducationCourseCompletionMapperTest {
       assertThatThrownBy {
         mapper.toCreateAppointmentDto(
           eteCourseCompletionEventEntity = entity,
-          crn = CRN,
-          projectCode = PROJECT_CODE,
-          deliusEventNumber = DELIUS_EVENT_NUMBER,
-          minutesToCredit = 60 * 15,
-          contactOutcomeCode = CONTACT_OUTCOME_CODE,
+          baselineCourseCompletionOutcome.copy(
+            minutesToCredit = 60L * 15,
+          ),
         )
       }.hasMessage("Cannot credit more than 899 minutes")
     }

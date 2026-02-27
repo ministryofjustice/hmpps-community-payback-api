@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentBehaviourDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentWorkQualityDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AttendanceDataDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EteCourseCompletionEventDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntity
@@ -16,14 +17,11 @@ class EducationCourseCompletionMapper {
 
   fun toCreateAppointmentDto(
     eteCourseCompletionEventEntity: EteCourseCompletionEventEntity,
-    crn: String,
-    projectCode: String,
-    deliusEventNumber: Long,
-    minutesToCredit: Long,
-    contactOutcomeCode: String,
+    courseCompletionOutcome: CourseCompletionOutcomeDto,
   ): CreateAppointmentDto {
     val completionDate = eteCourseCompletionEventEntity.completionDate
     val startTime = LocalTime.of(9, 0)
+    val minutesToCredit = courseCompletionOutcome.minutesToCredit
 
     val creditLimit = ChronoUnit.MINUTES.between(startTime, LocalTime.MIDNIGHT.minusMinutes(1))
     if (minutesToCredit > creditLimit) {
@@ -32,10 +30,10 @@ class EducationCourseCompletionMapper {
 
     return CreateAppointmentDto(
       id = UUID.randomUUID(),
-      crn = crn,
-      deliusEventNumber = deliusEventNumber,
+      crn = courseCompletionOutcome.crn,
+      deliusEventNumber = courseCompletionOutcome.deliusEventNumber,
       allocationId = null,
-      projectCode = projectCode,
+      projectCode = courseCompletionOutcome.projectCode,
       date = completionDate,
       // If this rolls time back into the previous day, this fails appointment creation validation
       // because start time is after end time
@@ -44,7 +42,7 @@ class EducationCourseCompletionMapper {
       pickUpLocationCode = null,
       pickUpLocationDescription = null,
       pickUpTime = null,
-      contactOutcomeCode = contactOutcomeCode,
+      contactOutcomeCode = courseCompletionOutcome.contactOutcomeCode,
       attendanceData = createAttendanceData(),
       supervisorOfficerCode = null,
       notes = "Ete course completed: ${eteCourseCompletionEventEntity.courseName}",
