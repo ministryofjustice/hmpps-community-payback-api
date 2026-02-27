@@ -14,7 +14,7 @@ import java.util.UUID
 @Service
 class SchedulingAppointmentDomainEventHandler(
   private val scheduleService: SchedulingService,
-  @param:Value("\${community-payback.scheduling.dryRun:false}")
+  @param:Value("\${community-payback.appointment-scheduling.dryRun:false}")
   private val schedulingDryRun: Boolean,
   private val lockService: LockService,
   private val appointmentEventService: AppointmentEventService,
