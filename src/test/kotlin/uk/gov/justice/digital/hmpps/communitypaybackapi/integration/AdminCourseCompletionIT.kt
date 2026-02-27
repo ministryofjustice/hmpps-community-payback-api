@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.hateoas.PagedModel
 import org.springframework.http.MediaType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointment
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseDetail
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectAndLocation
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSupervisorSummaries
@@ -370,8 +371,11 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
       val projectCode = "PRJ001"
       val crn = "X999999"
       val minutesToCredit = 90L
+
       val eventEntity = eteCourseCompletionEventEntityRepository.save(
-        EteCourseCompletionEventEntity.valid(),
+        EteCourseCompletionEventEntity.valid().copy(
+          completionDate = LocalDate.now().minusDays(1),
+        ),
       )
       val outcome = CourseCompletionOutcomeDto.valid().copy(
         crn = crn,
@@ -383,6 +387,15 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
 
       val project = NDProject.valid(ctx).copy(code = projectCode, actualEndDateExclusive = null)
       CommunityPaybackAndDeliusMockServer.getProject(project)
+      CommunityPaybackAndDeliusMockServer.getUpwDetailsSummary(
+        crn = crn,
+        ndCaseDetails = listOf(
+          NDCaseDetail.valid().copy(
+            eventNumber = 1L,
+            sentenceDate = LocalDate.now().minusDays(10),
+          ),
+        ),
+      )
       CommunityPaybackAndDeliusMockServer.getTeamSupervisors(
         forProject = project,
         supervisorSummaries = NDSupervisorSummaries(listOf(NDSupervisorSummary.unallocated())),
@@ -418,12 +431,13 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
       val crn = "X999999"
       val minutesToCredit = 90L
       val appointmentId = 12345L
+
       val eventEntity = eteCourseCompletionEventEntityRepository.save(
         EteCourseCompletionEventEntity.valid(),
       )
       val outcome = CourseCompletionOutcomeDto.valid().copy(
         crn = crn,
-        appointmentIdToUpdate = null,
+        appointmentIdToUpdate = appointmentId,
         minutesToCredit = minutesToCredit,
         contactOutcome = "ATTC",
         projectCode = projectCode,
@@ -450,10 +464,6 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
         projectCode = projectCode,
         appointmentId = appointmentId,
       )
-      CommunityPaybackAndDeliusMockServer.postAppointments(
-        projectCode = projectCode,
-        appointmentCount = 1,
-      )
 
       webTestClient.post()
         .uri("/admin/course-completions/${eventEntity.id}")
@@ -464,17 +474,9 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
         .expectStatus()
         .isNoContent
 
-      val expectedAppointment = ExpectedAppointmentCreate(
-        crn = crn,
-        eventNumber = 1,
-        date = eventEntity.completionDate,
-        startTime = LocalTime.of(9, 0),
-        endTime = LocalTime.of(9, 0).plusMinutes(minutesToCredit),
-      )
-
-      CommunityPaybackAndDeliusMockServer.postAppointmentVerify(
+      CommunityPaybackAndDeliusMockServer.putAppointmentVerify(
         projectCode = projectCode,
-        expectedAppointments = listOf(expectedAppointment),
+        appointmentId = appointmentId,
       )
     }
 

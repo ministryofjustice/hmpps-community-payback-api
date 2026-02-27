@@ -8,7 +8,7 @@ import java.util.UUID.randomUUID
 fun SchedulePlan.Companion.valid() = SchedulePlan(
   schedulingId = randomUUID(),
   crn = String.random(5),
-  eventNumber = Int.random(50),
+  eventNumber = Long.random(50),
   actions = emptyList(),
   shortfall = randomDuration(),
 )

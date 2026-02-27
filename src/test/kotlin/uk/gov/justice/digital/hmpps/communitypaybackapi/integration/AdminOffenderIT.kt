@@ -5,8 +5,8 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseDetail
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CaseDetailDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CaseDetailsSummaryDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.bodyAsObject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.CommunityPaybackAndDeliusMockServer
@@ -63,7 +63,7 @@ class AdminOffenderIT : IntegrationTestBase() {
         .bodyAsObject<CaseDetailsSummaryDto>()
 
       assertThat(result.unpaidWorkDetails.size).isEqualTo(1)
-      val caseSummaryDetail = result.unpaidWorkDetails[0] as CaseDetailDto
+      val caseSummaryDetail = result.unpaidWorkDetails[0] as UnpaidWorkDetailsDto
       assertThat(caseSummaryDetail.eventNumber).isEqualTo(ndCaseDetail.eventNumber)
       assertThat(caseSummaryDetail.requiredMinutes).isEqualTo(ndCaseDetail.requiredMinutes)
       assertThat(caseSummaryDetail.completedEteMinutes).isEqualTo(ndCaseDetail.completedEteMinutes)

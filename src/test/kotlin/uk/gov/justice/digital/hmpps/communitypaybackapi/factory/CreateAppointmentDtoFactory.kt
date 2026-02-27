@@ -8,7 +8,7 @@ import java.util.UUID
 fun CreateAppointmentDto.Companion.valid() = CreateAppointmentDto(
   id = UUID.randomUUID(),
   crn = String.random(5),
-  deliusEventNumber = Int.random(50),
+  deliusEventNumber = Long.random(50),
   allocationId = Long.random(),
   projectCode = String.random(5),
   date = randomLocalDate(),

@@ -46,7 +46,7 @@ class AppointmentEventEntityFactory(
       crn = createAppointmentDto.crn,
       deliusAppointmentId = deliusId,
       priorDeliusVersion = null,
-      deliusEventNumber = createAppointmentDto.deliusEventNumber,
+      deliusEventNumber = createAppointmentDto.deliusEventNumber.toInt(),
       projectCode = project.projectCode,
       projectName = project.projectName,
       date = createAppointmentDto.date,

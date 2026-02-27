@@ -14,16 +14,19 @@ import org.junit.jupiter.api.extension.ExtendWith
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.HourMinuteDuration
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AttendanceDataDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CaseDetailsSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectAvailabilityDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SchedulingDayOfWeekDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.BadRequestException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.OffenderService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ProjectService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.Validated
 import java.time.Duration
@@ -37,12 +40,17 @@ class AppointmentValidationServiceTest {
   lateinit var contactOutcomeEntityRepository: ContactOutcomeEntityRepository
 
   @MockK
+  lateinit var offenderService: OffenderService
+
+  @MockK
   lateinit var projectService: ProjectService
 
   @InjectMockKs
   lateinit var service: AppointmentValidationService
 
   companion object {
+    const val CRN = "CRN123"
+    const val EVENT_NUMBER = 1234321L
     const val OUTCOME_CODE = "OUTCOME1"
     const val PROJECT_CODE = "PROJ123"
   }
@@ -51,6 +59,9 @@ class AppointmentValidationServiceTest {
   inner class Create {
 
     val baselineCreate = CreateAppointmentDto.valid().copy(
+      crn = CRN,
+      date = LocalDate.of(2025, 1, 1),
+      deliusEventNumber = EVENT_NUMBER,
       projectCode = PROJECT_CODE,
       contactOutcomeCode = OUTCOME_CODE,
       startTime = LocalTime.MIN,
@@ -63,11 +74,20 @@ class AppointmentValidationServiceTest {
         ProjectAvailabilityDto.valid().copy(dayOfWeek = dayOfWeek)
       },
     )
+    val baselineCaseSummary = CaseDetailsSummaryDto.valid().copy(
+      unpaidWorkDetails = listOf(
+        UnpaidWorkDetailsDto.valid().copy(
+          eventNumber = EVENT_NUMBER,
+          sentenceDate = baselineCreate.date,
+        ),
+      ),
+    )
 
     @BeforeEach
     fun setupBaselineMockResponses() {
       every { projectService.getProject(PROJECT_CODE) } returns baselineProject
       every { contactOutcomeEntityRepository.findByCode(baselineOutcome.code) } returns baselineOutcome
+      every { offenderService.getOffenderSummaryByCrn(CRN) } returns baselineCaseSummary
     }
 
     @Nested
@@ -129,6 +149,44 @@ class AppointmentValidationServiceTest {
           )
         }.isInstanceOf(BadRequestException::class.java)
           .hasMessage("Appointment Date of 2030-05-05 must be before project end date 2030-05-04")
+      }
+
+      @Test
+      fun `throws BadRequestException if can't find delius event`() {
+        every { offenderService.getOffenderSummaryByCrn(CRN) } returns CaseDetailsSummaryDto.valid().copy(
+          unpaidWorkDetails = listOf(
+            UnpaidWorkDetailsDto.valid().copy(
+              eventNumber = 52,
+              sentenceDate = LocalDate.of(2025, 1, 2),
+            ),
+          ),
+        )
+
+        assertThatThrownBy {
+          service.validateCreate(
+            baselineCreate.copy(
+              deliusEventNumber = 53,
+            ),
+          )
+        }.isInstanceOf(BadRequestException::class.java)
+          .hasMessage("Cannot find unpaid work details for event number 53")
+      }
+
+      @Test
+      fun `throws BadRequestException if date is before sentencing date`() {
+        every { offenderService.getOffenderSummaryByCrn(CRN) } returns CaseDetailsSummaryDto.valid().copy(
+          unpaidWorkDetails = listOf(
+            UnpaidWorkDetailsDto.valid().copy(
+              eventNumber = EVENT_NUMBER,
+              sentenceDate = LocalDate.of(2025, 1, 2),
+            ),
+          ),
+        )
+
+        assertThatThrownBy {
+          service.validateCreate(baselineCreate)
+        }.isInstanceOf(BadRequestException::class.java)
+          .hasMessage("Appointment Date of 2025-01-01 must be on or after sentence date of 2025-01-02")
       }
     }
 

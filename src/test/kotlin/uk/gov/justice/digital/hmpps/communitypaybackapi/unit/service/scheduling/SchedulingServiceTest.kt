@@ -45,7 +45,7 @@ class SchedulingServiceTest {
 
   companion object {
     const val CRN: String = "CRN01"
-    const val EVENT_NO: Int = 5
+    const val EVENT_NO: Long = 5
   }
 
   @Test
