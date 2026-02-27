@@ -7,7 +7,6 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EteCourseCompletionEventDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.NotFoundException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntity
@@ -133,18 +132,10 @@ class EteService(
       appointmentId = appointmentIdToUpdate,
     )
 
-    val update = UpdateAppointmentOutcomeDto(
-      deliusId = existingAppointment.id,
-      deliusVersionToUpdate = existingAppointment.version,
-      startTime = existingAppointment.startTime,
-      endTime = existingAppointment.startTime.plusMinutes(courseCompletionOutcome.minutesToCredit),
-      contactOutcomeCode = courseCompletionOutcome.contactOutcomeCode,
-      attendanceData = EducationCourseCompletionMapper.createAttendanceData(),
-      enforcementData = null,
-      supervisorOfficerCode = existingAppointment.supervisorOfficerCode,
-      notes = "Ete course completed: ${courseCompletionEvent.courseName}",
-      alertActive = existingAppointment.alertActive,
-      sensitive = existingAppointment.sensitive,
+    val update = educationCourseCompletionMapper.toUpdateAppointmentDto(
+      eteCourseCompletionEventEntity = courseCompletionEvent,
+      courseCompletionOutcome = courseCompletionOutcome,
+      existingAppointment = existingAppointment,
     )
 
     appointmentUpdateService.updateAppointmentOutcome(

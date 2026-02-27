@@ -14,6 +14,7 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
+import org.springframework.data.repository.findByIdOrNull
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionOutcomeDto
@@ -37,7 +38,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ContextService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.EteService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.EducationCourseCompletionMapper
 import java.time.LocalDate
-import java.time.LocalTime
 import java.util.Optional
 import java.util.Optional.empty
 import java.util.UUID
@@ -303,7 +303,7 @@ class EteServiceTest {
       val event = EteCourseCompletionEventEntity.valid()
       val outcome = CourseCompletionOutcomeDto.valid()
 
-      every { eteCourseCompletionEventEntityRepository.findById(event.id) } returns Optional.of(event)
+      every { eteCourseCompletionEventEntityRepository.findByIdOrNull(event.id) } returns event
 
       val appointmentToCreate = CreateAppointmentDto.valid()
       every {
@@ -328,69 +328,43 @@ class EteServiceTest {
       val eventId = UUID.randomUUID()
       val appointmentId = 12345L
       val projectCode = "PRJ001"
-      val crn = "X123456"
-      val event = EteCourseCompletionEventEntity.valid().copy(
-        id = eventId,
-        firstName = "John",
-        lastName = "Doe",
-        dateOfBirth = LocalDate.of(1990, 5, 15),
-        region = "London",
-        office = "Office 123",
-        email = "john.doe@example.com",
-        courseName = "Test Course",
-        courseType = "Online",
-        provider = "Test Provider",
-        completionDate = LocalDate.of(2026, 1, 1),
-        status = EteCourseEventCompletionMessageStatus.COMPLETED,
-        totalTimeMinutes = 120,
-        expectedTimeMinutes = 120,
-        externalReference = "EXT123",
-        attempts = 1,
-      )
+      val event = EteCourseCompletionEventEntity.valid()
 
-      val existingAppointment = AppointmentDto.valid().copy(
-        id = appointmentId,
-        version = UUID.randomUUID(),
-        startTime = LocalTime.of(10, 0),
-        endTime = LocalTime.of(12, 0),
-        supervisorOfficerCode = "SUP001",
-        alertActive = true,
-        sensitive = false,
-      )
+      val existingAppointment = AppointmentDto.valid()
 
       val outcome = CourseCompletionOutcomeDto.valid().copy(
-        crn = crn,
         appointmentIdToUpdate = appointmentId,
         minutesToCredit = 90,
         contactOutcomeCode = "COMP",
         projectCode = projectCode,
       )
 
-      every { eteCourseCompletionEventEntityRepository.findById(eventId) } returns Optional.of(event)
-      every {
-        educationCourseCompletionMapper.toCreateAppointmentDto(event, outcome)
-      } returns EducationCourseCompletionMapper().toCreateAppointmentDto(event, outcome)
+      every { eteCourseCompletionEventEntityRepository.findByIdOrNull(eventId) } returns event
       every { appointmentRetrievalService.getAppointment(projectCode, appointmentId) } returns existingAppointment
+
+      val updateAppointmentDto = UpdateAppointmentOutcomeDto.valid()
+      every {
+        educationCourseCompletionMapper.toUpdateAppointmentDto(
+          eteCourseCompletionEventEntity = event,
+          courseCompletionOutcome = outcome,
+          existingAppointment = existingAppointment,
+        )
+      } returns updateAppointmentDto
       every { contextService.getUserName() } returns "admin-ui"
 
       eteService.processCourseCompletionOutcome(eventId, outcome)
 
-      val updateSlot = slot<UpdateAppointmentOutcomeDto>()
       val triggerSlot = slot<AppointmentEventTrigger>()
 
       io.mockk.verify {
         appointmentUpdateService.updateAppointmentOutcome(
           projectCode = projectCode,
-          update = capture(updateSlot),
+          update = updateAppointmentDto,
           trigger = capture(triggerSlot),
         )
       }
 
       assertThat(triggerSlot.captured.triggerType).isEqualTo(AppointmentEventTriggerType.ETE_COURSE_COMPLETION)
-      assertThat(updateSlot.captured.deliusId).isEqualTo(appointmentId)
-      assertThat(updateSlot.captured.contactOutcomeCode).isEqualTo("COMP")
-      assertThat(updateSlot.captured.endTime).isEqualTo(existingAppointment.startTime.plusMinutes(90))
-      assertThat(updateSlot.captured.notes).contains("Ete course completed: Test Course")
     }
 
     @Test
