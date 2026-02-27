@@ -29,8 +29,6 @@ community-payback:
     enabled: false
   education-course-integration:
     enabled: true
-  scheduling:
-    enabled: true
   request-logging-enabled: true
   domain-events:
     details-url-pattern:  http://localhost:8080/domain-event-details/#type/#id

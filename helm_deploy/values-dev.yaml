@@ -18,8 +18,6 @@ generic-service:
     COMMUNITY_PAYBACK_DOMAIN_EVENTS_DETAILS_URL_PATTERN: https://community-payback-api-dev.hmpps.service.justice.gov.uk/domain-event-details/#type/#id
     COMMUNITY_PAYBACK_BOOTSTRAP_ENABLED: true
 
-    COMMUNITY_PAYBACK_SCHEDULING_ENABLED: true
-
     CLIENT_ARNS_URL: https://assess-risks-and-needs-dev.hmpps.service.justice.gov.uk
     CLIENT_COMMUNITY_PAYBACK_AND_DELIUS_URL: http://hmpps-community-payback-api-stubs
 

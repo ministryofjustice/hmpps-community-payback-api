@@ -4,7 +4,6 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import io.awspring.cloud.sqs.annotation.SqsListener
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.messaging.MessageHeaders
 import org.springframework.messaging.handler.annotation.Headers
 import org.springframework.stereotype.Service
@@ -23,7 +22,6 @@ import java.util.UUID
  * See https://tech-docs.hmpps.service.justice.gov.uk/common-kotlin-patterns/domain-events/
  */
 @Service
-@ConditionalOnProperty(name = ["community-payback.scheduling.enabled"], havingValue = "true")
 class DomainEventListener(
   private val jsonMapper: JsonMapper,
   private val sqsListenerErrorHandler: SqsListenerErrorHandler,
