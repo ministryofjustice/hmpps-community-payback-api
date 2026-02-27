@@ -16,7 +16,9 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.EducationCourseCompletionMapper
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.LocalTime
+import java.time.OffsetDateTime
 import java.util.UUID
 
 @DisplayName("EducationCourseCompletionMapper")
@@ -39,7 +41,7 @@ class EducationCourseCompletionMapperTest {
 
   @Nested
   @DisplayName("toCreateAppointmentDto")
-  inner class ToCreateAppointmentDto {
+  inner class EntityToCreateAppointmentDto {
     @Test
     fun `should map all fields correctly`() {
       val entity = EteCourseCompletionEventEntity.valid()
@@ -129,8 +131,7 @@ class EducationCourseCompletionMapperTest {
   }
 
   @Nested
-  @DisplayName("toDto")
-  inner class ToDto {
+  inner class EntityToEteCourseCompletionEventDto {
     @Test
     fun `should map all entity fields to DTO`() {
       val id = UUID.randomUUID()
@@ -148,6 +149,7 @@ class EducationCourseCompletionMapperTest {
       val expectedTimeMinutes = 120L
       val attempts = 1
       val externalReference = "REF-123-ABC"
+      val createdAt = OffsetDateTime.parse("2007-06-03T10:15:30+01:00")
 
       val entity = EteCourseCompletionEventEntity(
         id = id,
@@ -166,6 +168,7 @@ class EducationCourseCompletionMapperTest {
         expectedTimeMinutes = expectedTimeMinutes,
         attempts = attempts,
         externalReference = externalReference,
+        createdAt = createdAt,
       )
 
       val result = entity.toDto()
@@ -185,6 +188,7 @@ class EducationCourseCompletionMapperTest {
       assertThat(result.expectedTimeMinutes).isEqualTo(expectedTimeMinutes)
       assertThat(result.attempts).isEqualTo(attempts)
       assertThat(result.externalReference).isEqualTo(externalReference)
+      assertThat(result.importedOn).isEqualTo(LocalDateTime.parse("2007-06-03T10:15:30"))
     }
   }
 
