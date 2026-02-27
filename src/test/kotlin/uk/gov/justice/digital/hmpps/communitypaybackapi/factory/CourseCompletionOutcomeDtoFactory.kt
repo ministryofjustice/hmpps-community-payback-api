@@ -5,6 +5,7 @@ import kotlin.random.Random
 
 fun CourseCompletionOutcomeDto.Companion.valid() = CourseCompletionOutcomeDto(
   crn = String.random(1).uppercase() + Random.nextInt(0, 99999),
+  deliusEventNumber = Long.random(50),
   appointmentIdToUpdate = null,
   minutesToCredit = Long.random(0, 181),
   contactOutcome = String.random(20),

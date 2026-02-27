@@ -16,8 +16,10 @@ class EducationCourseCompletionMapper {
 
   fun toCreateAppointmentDto(
     eteCourseCompletionEventEntity: EteCourseCompletionEventEntity,
+    // once we're capturing the following on EteCourseCompletionEventEntity we won't need to pass them in
     crn: String,
     projectCode: String,
+    deliusEventNumber: Long,
   ): CreateAppointmentDto {
     val completionDate = eteCourseCompletionEventEntity.completionDate
     val startTime = LocalTime.of(9, 0) // Temporary until decided - 9am as start time
@@ -25,7 +27,7 @@ class EducationCourseCompletionMapper {
     return CreateAppointmentDto(
       id = UUID.randomUUID(),
       crn = crn,
-      deliusEventNumber = 1, // This is not right, we need to find the correct event id
+      deliusEventNumber = deliusEventNumber,
       allocationId = null,
       projectCode = projectCode,
       date = completionDate,

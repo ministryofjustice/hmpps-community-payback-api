@@ -12,7 +12,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentWorkQuali
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseEventCompletionMessageStatus
-import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.random
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.EducationCourseCompletionMapper
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
@@ -25,8 +24,13 @@ class EducationCourseCompletionMapperTest {
 
   private lateinit var mapper: EducationCourseCompletionMapper
 
-  private val crn = String.random(1).uppercase() + Int.random(0, 99999)
   private val projectCode = "PROJ123"
+
+  companion object {
+    const val CRN = "CRN1234"
+    const val PROJECT_CODE = "PROJ123"
+    const val DELIUS_EVENT_NUMBER = 52L
+  }
 
   @BeforeEach
   fun setUp() {
@@ -40,12 +44,12 @@ class EducationCourseCompletionMapperTest {
     fun `should map all fields correctly`() {
       val entity = EteCourseCompletionEventEntity.valid()
 
-      val result = mapper.toCreateAppointmentDto(entity, crn, projectCode)
+      val result = mapper.toCreateAppointmentDto(entity, CRN, PROJECT_CODE, DELIUS_EVENT_NUMBER)
 
       assertThat(result).isNotNull
       assertThat(result.id).isNotNull()
-      assertThat(result.crn).isEqualTo(crn)
-      assertThat(result.deliusEventNumber).isEqualTo(1)
+      assertThat(result.crn).isEqualTo(CRN)
+      assertThat(result.deliusEventNumber).isEqualTo(DELIUS_EVENT_NUMBER)
       assertThat(result.allocationId).isNull()
       assertThat(result.date).isEqualTo(entity.completionDate)
       assertThat(result.notes).isEqualTo("Ete course completed: ${entity.courseName}")
@@ -61,7 +65,7 @@ class EducationCourseCompletionMapperTest {
     fun `should set start time to 9am`() {
       val entity = EteCourseCompletionEventEntity.valid()
 
-      val result = mapper.toCreateAppointmentDto(entity, crn, projectCode)
+      val result = mapper.toCreateAppointmentDto(entity, CRN, PROJECT_CODE, DELIUS_EVENT_NUMBER)
 
       assertThat(result.startTime).isEqualTo(LocalTime.of(9, 0))
     }
@@ -70,7 +74,7 @@ class EducationCourseCompletionMapperTest {
     fun `should calculate end time as start time plus total time minutes`() {
       val entity = EteCourseCompletionEventEntity.valid()
 
-      val result = mapper.toCreateAppointmentDto(entity, crn, projectCode)
+      val result = mapper.toCreateAppointmentDto(entity, CRN, PROJECT_CODE, DELIUS_EVENT_NUMBER)
 
       assertThat(result.endTime).isEqualTo(LocalTime.of(9, 0).plusMinutes(entity.totalTimeMinutes))
     }
@@ -82,7 +86,7 @@ class EducationCourseCompletionMapperTest {
         totalTimeMinutes = totalTimeMinutes,
       )
 
-      val result = mapper.toCreateAppointmentDto(entity, crn, projectCode)
+      val result = mapper.toCreateAppointmentDto(entity, CRN, PROJECT_CODE, DELIUS_EVENT_NUMBER)
 
       assertThat(result.endTime).isEqualTo(LocalTime.of(9, 0).plusMinutes(totalTimeMinutes))
     }
@@ -92,8 +96,8 @@ class EducationCourseCompletionMapperTest {
       val entity1 = EteCourseCompletionEventEntity.valid()
       val entity2 = EteCourseCompletionEventEntity.valid()
 
-      val result1 = mapper.toCreateAppointmentDto(entity1, crn, projectCode)
-      val result2 = mapper.toCreateAppointmentDto(entity2, crn, projectCode)
+      val result1 = mapper.toCreateAppointmentDto(entity1, CRN, PROJECT_CODE, DELIUS_EVENT_NUMBER)
+      val result2 = mapper.toCreateAppointmentDto(entity2, CRN, PROJECT_CODE, DELIUS_EVENT_NUMBER)
 
       assertThat(result1.id).isNotEqualTo(result2.id)
       assertThat(result1.id).isInstanceOf(UUID::class.java)
@@ -103,7 +107,7 @@ class EducationCourseCompletionMapperTest {
     fun `should set attendance data with default values`() {
       val entity = EteCourseCompletionEventEntity.valid()
 
-      val result = mapper.toCreateAppointmentDto(entity, crn, projectCode)
+      val result = mapper.toCreateAppointmentDto(entity, CRN, PROJECT_CODE, DELIUS_EVENT_NUMBER)
 
       assertThat(result.attendanceData).isNotNull
       assertThat(result.attendanceData?.hiVisWorn).isFalse()
@@ -117,7 +121,7 @@ class EducationCourseCompletionMapperTest {
     fun `should handle large total time minutes that roll into next day`() {
       val entity = EteCourseCompletionEventEntity.valid()
 
-      val result = mapper.toCreateAppointmentDto(entity, crn, projectCode)
+      val result = mapper.toCreateAppointmentDto(entity, CRN, PROJECT_CODE, DELIUS_EVENT_NUMBER)
 
       assertThat(result.startTime).isEqualTo(LocalTime.of(9, 0))
       assertThat(result.endTime).isEqualTo(LocalTime.of(9, 0).plusMinutes(entity.totalTimeMinutes))
