@@ -11,8 +11,6 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.FormKeyDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.ConflictException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.InternalServerErrorException
@@ -29,7 +27,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentUpdat
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.DomainEventService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.DomainEventType
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.FormService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.PersonReferenceType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.Validated
 import uk.gov.justice.digital.hmpps.communitypaybackapi.unit.util.WebClientResponseExceptionFactory
@@ -48,9 +45,6 @@ class AppointmentUpdateServiceTest {
   lateinit var communityPaybackAndDeliusClient: CommunityPaybackAndDeliusClient
 
   @RelaxedMockK
-  lateinit var formService: FormService
-
-  @RelaxedMockK
   private lateinit var appointmentOutcomeValidationService: AppointmentValidationService
 
   @RelaxedMockK
@@ -66,7 +60,6 @@ class AppointmentUpdateServiceTest {
     const val PROJECT_CODE = "PROJ123"
     const val APPOINTMENT_ID = 101L
     val TRIGGER = AppointmentEventTrigger.valid()
-    val PROJECT = ProjectDto.valid()
   }
 
   @Nested
@@ -223,27 +216,6 @@ class AppointmentUpdateServiceTest {
           trigger = TRIGGER,
         )
       }.isInstanceOf(InternalServerErrorException::class.java).hasMessage("Bad request returned updating an appointment. Upstream response is 'didn't look good'")
-    }
-
-    @Test
-    fun `if there's an existing entry and form data key is specified, remove the form data`() {
-      val formKey = FormKeyDto(
-        id = "formKeyId",
-        type = "formKeyType",
-      )
-
-      val updateRequest = updateRequest.copy(formKeyToDelete = formKey)
-
-      every { appointmentEventEntityRepository.save(any()) } returnsArgument 0
-      every { appointmentEventEntityFactory.buildUpdatedEvent(any(), any(), any(), any()) } returns AppointmentEventEntity.fromUpdateRequest(updateRequest)
-
-      service.updateAppointmentOutcome(
-        projectCode = PROJECT_CODE,
-        update = updateRequest,
-        trigger = TRIGGER,
-      )
-
-      verify { formService.deleteIfExists(formKey) }
     }
   }
 

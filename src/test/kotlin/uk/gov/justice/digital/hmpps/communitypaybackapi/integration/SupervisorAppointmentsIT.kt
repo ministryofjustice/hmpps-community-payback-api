@@ -14,14 +14,11 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectAndLocation
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AttendanceDataDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.FormKeyDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeResultType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentsOutcomesResultDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntityRepository
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.FormCacheEntity
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.FormCacheEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.validNoOutcome
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
@@ -35,9 +32,6 @@ class SupervisorAppointmentsIT : IntegrationTestBase() {
 
   @Autowired
   lateinit var appointmentOutcomeEntityRepository: AppointmentEventEntityRepository
-
-  @Autowired
-  lateinit var formCacheEntityRepository: FormCacheEntityRepository
 
   @Autowired
   lateinit var domainEventAsserter: DomainEventAsserter
@@ -127,7 +121,6 @@ class SupervisorAppointmentsIT : IntegrationTestBase() {
     @BeforeEach
     fun setUp() {
       appointmentOutcomeEntityRepository.deleteAll()
-      formCacheEntityRepository.deleteAll()
     }
 
     @Test
@@ -202,14 +195,6 @@ class SupervisorAppointmentsIT : IntegrationTestBase() {
         appointmentId = 1234L,
       )
 
-      formCacheEntityRepository.save(
-        FormCacheEntity(
-          formId = "id1",
-          formType = "formtype",
-          formData = "data",
-        ),
-      )
-
       webTestClient.post()
         .uri("/supervisor/projects/PC01/appointments/1234/outcome")
         .addSupervisorUiAuthHeader("theusername")
@@ -217,10 +202,6 @@ class SupervisorAppointmentsIT : IntegrationTestBase() {
           UpdateAppointmentOutcomeDto.valid(ctx).copy(
             deliusId = 1234L,
             attendanceData = AttendanceDataDto.valid(),
-            formKeyToDelete = FormKeyDto(
-              id = "id1",
-              type = "formtype",
-            ),
           ),
         )
         .exchange()
@@ -233,8 +214,6 @@ class SupervisorAppointmentsIT : IntegrationTestBase() {
       )
 
       domainEventAsserter.assertEventCount("community-payback.appointment.updated", 1)
-
-      assertThat(formCacheEntityRepository.count()).isEqualTo(0)
     }
   }
 
