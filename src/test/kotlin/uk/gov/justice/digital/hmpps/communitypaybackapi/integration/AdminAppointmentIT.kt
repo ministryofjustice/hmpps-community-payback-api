@@ -17,11 +17,8 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.PageResponse
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AttendanceDataDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.FormKeyDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntityRepository
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.FormCacheEntity
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.FormCacheEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.validNoOutcome
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
@@ -35,9 +32,6 @@ class AdminAppointmentIT : IntegrationTestBase() {
 
   @Autowired
   lateinit var appointmentOutcomeEntityRepository: AppointmentEventEntityRepository
-
-  @Autowired
-  lateinit var formCacheEntityRepository: FormCacheEntityRepository
 
   @Autowired
   lateinit var domainEventAsserter: DomainEventAsserter
@@ -131,7 +125,6 @@ class AdminAppointmentIT : IntegrationTestBase() {
     @BeforeEach
     fun setUp() {
       appointmentOutcomeEntityRepository.deleteAll()
-      formCacheEntityRepository.deleteAll()
     }
 
     @Test
@@ -208,14 +201,6 @@ class AdminAppointmentIT : IntegrationTestBase() {
         appointmentId = 1234L,
       )
 
-      formCacheEntityRepository.save(
-        FormCacheEntity(
-          formId = "id1",
-          formType = "formtype",
-          formData = "data",
-        ),
-      )
-
       webTestClient.post()
         .uri("/admin/projects/proj123/appointments/1234/outcome")
         .addAdminUiAuthHeader("theusername")
@@ -223,10 +208,6 @@ class AdminAppointmentIT : IntegrationTestBase() {
           UpdateAppointmentOutcomeDto.valid(ctx).copy(
             deliusId = 1234L,
             attendanceData = AttendanceDataDto.valid(),
-            formKeyToDelete = FormKeyDto(
-              id = "id1",
-              type = "formtype",
-            ),
           ),
         )
         .exchange()
@@ -239,8 +220,6 @@ class AdminAppointmentIT : IntegrationTestBase() {
       )
 
       domainEventAsserter.assertEventCount("community-payback.appointment.updated", 1)
-
-      assertThat(formCacheEntityRepository.count()).isEqualTo(0)
     }
   }
 

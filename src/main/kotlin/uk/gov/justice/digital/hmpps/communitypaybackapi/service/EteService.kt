@@ -131,7 +131,6 @@ class EteService(
         enforcementData = null,
         supervisorOfficerCode = existingAppointment.supervisorOfficerCode,
         notes = "Ete course completed: ${eteEvent.courseName}",
-        formKeyToDelete = null,
         alertActive = existingAppointment.alertActive,
         sensitive = existingAppointment.sensitive,
       )
