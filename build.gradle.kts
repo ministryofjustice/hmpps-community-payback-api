@@ -53,9 +53,10 @@ dependencies {
   testImplementation("org.wiremock.integrations:wiremock-spring-boot:4.1.0")
   testImplementation("io.mockk:mockk:1.14.9")
   testImplementation("com.lemonappdev:konsist:0.17.3")
-  testImplementation("uk.gov.justice.service.hmpps:hmpps-subject-access-request-test-support:2.0.1")
-  // this newer version is used by hmpps-subject-access-request-test-support
-  testImplementation("org.mockito.kotlin:mockito-kotlin:6.2.3")
+  testImplementation("uk.gov.justice.service.hmpps:hmpps-subject-access-request-test-support:2.0.2")
+  // if we don't force this version of kotlin-mockito we use a newer version that's not compatible
+  // with hmpps-subject-access-request-test-support. It's not clear what's pulling in that newer version
+  testImplementation("org.mockito.kotlin:mockito-kotlin:6.1.0")
   testImplementation("org.zalando:logbook-spring-boot-starter:4.0.2")
 }
 
