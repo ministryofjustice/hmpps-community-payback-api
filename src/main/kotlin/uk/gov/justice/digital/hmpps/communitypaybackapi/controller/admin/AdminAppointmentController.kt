@@ -25,8 +25,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOut
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.BadRequestException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventTrigger
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentRetrievalService
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentUpdateService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ContextService
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 import java.time.LocalDate
@@ -38,8 +37,7 @@ import java.time.OffsetDateTime
   produces = [MediaType.APPLICATION_JSON_VALUE],
 )
 class AdminAppointmentController(
-  private val appointmentRetrievalService: AppointmentRetrievalService,
-  private val appointmentUpdateService: AppointmentUpdateService,
+  private val appointmentService: AppointmentService,
   private val contextService: ContextService,
 ) {
 
@@ -68,7 +66,7 @@ class AdminAppointmentController(
   fun getAppointment(
     @PathVariable projectCode: String,
     @PathVariable deliusAppointmentId: Long,
-  ) = appointmentRetrievalService.getAppointment(
+  ) = appointmentService.getAppointment(
     projectCode = projectCode,
     appointmentId = deliusAppointmentId,
   )
@@ -117,7 +115,7 @@ class AdminAppointmentController(
       throw BadRequestException("ID in URL should match ID in payload")
     }
 
-    appointmentUpdateService.updateAppointmentOutcome(
+    appointmentService.updateAppointmentOutcome(
       projectCode = projectCode,
       update = outcome,
       trigger = AppointmentEventTrigger(
@@ -189,7 +187,7 @@ class AdminAppointmentController(
       throw BadRequestException("At least one filter parameter must be provided")
     }
 
-    return appointmentRetrievalService.getAppointments(
+    return appointmentService.getAppointments(
       crn = crn,
       projectCodes = projectCodes,
       fromDate = fromDate,
