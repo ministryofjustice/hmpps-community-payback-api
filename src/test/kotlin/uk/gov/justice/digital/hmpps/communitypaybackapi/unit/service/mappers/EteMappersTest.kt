@@ -15,7 +15,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionOutc
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventStatus
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.EducationCourseCompletionMapper
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.EteMappers
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -23,10 +23,9 @@ import java.time.LocalTime
 import java.time.OffsetDateTime
 import java.util.UUID
 
-@DisplayName("EducationCourseCompletionMapper")
-class EducationCourseCompletionMapperTest {
+class EteMappersTest {
 
-  private lateinit var mapper: EducationCourseCompletionMapper
+  private lateinit var mapper: EteMappers
 
   companion object {
     const val CONTACT_OUTCOME_CODE = "OUTCOME1"
@@ -44,7 +43,7 @@ class EducationCourseCompletionMapperTest {
 
   @BeforeEach
   fun setUp() {
-    mapper = EducationCourseCompletionMapper()
+    mapper = EteMappers()
   }
 
   @Nested

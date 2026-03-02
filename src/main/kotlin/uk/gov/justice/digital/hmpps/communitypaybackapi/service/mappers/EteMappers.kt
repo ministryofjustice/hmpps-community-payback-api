@@ -15,7 +15,7 @@ import java.time.temporal.ChronoUnit
 import java.util.UUID
 
 @Service
-class EducationCourseCompletionMapper {
+class EteMappers {
 
   companion object {
     val APPOINTMENT_START_TIME: LocalTime = LocalTime.of(0, 0)

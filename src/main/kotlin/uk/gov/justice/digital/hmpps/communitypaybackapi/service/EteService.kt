@@ -13,7 +13,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompleti
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventStatus
 import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseCompletionMessage
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.EducationCourseCompletionMapper
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.EteMappers
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
 import java.time.LocalDate
 import java.time.OffsetDateTime
@@ -21,7 +21,7 @@ import java.util.UUID
 
 @Service
 class EteService(
-  private val educationCourseCompletionMapper: EducationCourseCompletionMapper,
+  private val educationCourseCompletionMapper: EteMappers,
   private val eteCourseCompletionEventEntityRepository: EteCourseCompletionEventEntityRepository,
   private val contextService: ContextService,
   private val appointmentService: AppointmentService,

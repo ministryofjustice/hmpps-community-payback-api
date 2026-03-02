@@ -33,7 +33,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ContextService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.EteService
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.EducationCourseCompletionMapper
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.EteMappers
 import java.time.LocalDate
 import java.util.Optional.empty
 import java.util.UUID
@@ -49,7 +49,7 @@ class EteServiceTest {
   lateinit var appointmentService: AppointmentService
 
   @RelaxedMockK
-  lateinit var educationCourseCompletionMapper: EducationCourseCompletionMapper
+  lateinit var educationCourseCompletionMapper: EteMappers
 
   @RelaxedMockK
   lateinit var contextService: ContextService
