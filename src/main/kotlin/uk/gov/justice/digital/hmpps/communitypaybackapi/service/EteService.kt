@@ -11,6 +11,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.NotFoundE
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntityRepository
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventResolutionRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventStatus
 import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseCompletionMessage
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.EteMappers
@@ -21,8 +22,9 @@ import java.util.UUID
 
 @Service
 class EteService(
-  private val educationCourseCompletionMapper: EteMappers,
+  private val eteMapper: EteMappers,
   private val eteCourseCompletionEventEntityRepository: EteCourseCompletionEventEntityRepository,
+  private val eteCourseCompletionEventResolutionRepository: EteCourseCompletionEventResolutionRepository,
   private val contextService: ContextService,
   private val appointmentService: AppointmentService,
   private val eteValidationService: EteValidationService,
@@ -108,24 +110,35 @@ class EteService(
     val courseCompletionEvent = eteCourseCompletionEventEntityRepository.findByIdOrNull(eteCourseCompletionEventId)
       ?: throw NotFoundException("Course completion event", eteCourseCompletionEventId.toString())
 
-    val appointmentIdToUpdate = courseCompletionOutcome.appointmentIdToUpdate
-    if (appointmentIdToUpdate != null) {
-      updateExistingAppointment(
-        courseCompletionEvent = courseCompletionEvent,
-        courseCompletionOutcome = courseCompletionOutcome,
-      )
-    } else {
+    val createAppointment = courseCompletionOutcome.appointmentIdToUpdate == null
+
+    val deliusAppointmentId = if (createAppointment) {
       createAppointment(
         courseCompletionEvent = courseCompletionEvent,
         courseCompletionOutcome = courseCompletionOutcome,
       )
+    } else {
+      updateExistingAppointment(
+        courseCompletionEvent = courseCompletionEvent,
+        courseCompletionOutcome = courseCompletionOutcome,
+      )
     }
+
+    val res = eteMapper.toResolutionEntity(
+      courseCompletionEvent = courseCompletionEvent,
+      courseCompletionOutcome = courseCompletionOutcome,
+      deliusAppointmentId = deliusAppointmentId,
+      deliusAppointmentCreated = createAppointment,
+    )
+    eteCourseCompletionEventResolutionRepository.save(
+      res,
+    )
   }
 
   private fun updateExistingAppointment(
     courseCompletionEvent: EteCourseCompletionEventEntity,
     courseCompletionOutcome: CourseCompletionOutcomeDto,
-  ) {
+  ): Long {
     val appointmentIdToUpdate = courseCompletionOutcome.appointmentIdToUpdate!!
 
     val existingAppointment = appointmentService.getAppointment(
@@ -133,7 +146,7 @@ class EteService(
       appointmentId = appointmentIdToUpdate,
     )
 
-    val update = educationCourseCompletionMapper.toUpdateAppointmentDto(
+    val update = eteMapper.toUpdateAppointmentDto(
       eteCourseCompletionEventEntity = courseCompletionEvent,
       courseCompletionOutcome = courseCompletionOutcome,
       existingAppointment = existingAppointment,
@@ -144,18 +157,20 @@ class EteService(
       update = update,
       trigger = buildEventTrigger(),
     )
+
+    return appointmentIdToUpdate
   }
 
   private fun createAppointment(
     courseCompletionEvent: EteCourseCompletionEventEntity,
     courseCompletionOutcome: CourseCompletionOutcomeDto,
-  ) {
-    val appointment = educationCourseCompletionMapper.toCreateAppointmentDto(
+  ): Long {
+    val appointment = eteMapper.toCreateAppointmentDto(
       eteCourseCompletionEventEntity = courseCompletionEvent,
       courseCompletionOutcome = courseCompletionOutcome,
     )
 
-    appointmentService.createAppointment(
+    return appointmentService.createAppointment(
       appointment = appointment,
       trigger = buildEventTrigger(),
     )

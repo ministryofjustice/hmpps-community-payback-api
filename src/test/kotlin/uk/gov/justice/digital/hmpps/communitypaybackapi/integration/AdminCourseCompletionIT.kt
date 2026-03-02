@@ -22,6 +22,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.unallocat
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.validNoOutcome
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
+import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.DatabasePurgeUtils
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.DomainEventAsserter
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.bodyAsObject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.CommunityPaybackAndDeliusMockServer
@@ -38,6 +39,9 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
   @Autowired
   lateinit var domainEventAsserter: DomainEventAsserter
 
+  @Autowired
+  lateinit var databasePurgeUtils: DatabasePurgeUtils
+
   companion object {
     const val DELIUS_EVENT_NUMBER = 5L
   }
@@ -52,7 +56,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
 
       @BeforeEach
       fun setUp() {
-        eteCourseCompletionEventEntityRepository.deleteAll()
+        databasePurgeUtils.deleteAllEteData()
       }
 
       @Test
@@ -325,7 +329,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
 
     @BeforeEach
     fun setUp() {
-      eteCourseCompletionEventEntityRepository.deleteAll()
+      databasePurgeUtils.deleteAllEteData()
     }
 
     @Test
