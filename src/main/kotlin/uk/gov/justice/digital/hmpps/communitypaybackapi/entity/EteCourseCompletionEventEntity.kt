@@ -37,7 +37,7 @@ data class EteCourseCompletionEventEntity(
   val completionDate: LocalDate,
 
   @Enumerated(EnumType.STRING)
-  val status: EteCourseEventCompletionMessageStatus,
+  val status: EteCourseCompletionEventStatus,
 
   val totalTimeMinutes: Long,
 
@@ -76,7 +76,7 @@ data class EteCourseCompletionEventEntity(
   companion object
 }
 
-enum class EteCourseEventCompletionMessageStatus(
+enum class EteCourseCompletionEventStatus(
   val messageType: EducationCourseCompletionStatus,
 ) {
   COMPLETED(EducationCourseCompletionStatus.Completed),

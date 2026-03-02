@@ -23,7 +23,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.NotFoundE
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntityRepository
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseEventCompletionMessageStatus
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventStatus
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.random
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseCompletionMessage
@@ -35,7 +35,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ContextService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.EteService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.EducationCourseCompletionMapper
 import java.time.LocalDate
-import java.util.Optional
 import java.util.Optional.empty
 import java.util.UUID
 import kotlin.random.Random
@@ -104,7 +103,7 @@ class EteServiceTest {
       assertThat(persistedEntity.provider).isEqualTo("Training Provider Inc.")
       assertThat(persistedEntity.totalTimeMinutes).isEqualTo(70)
       assertThat(persistedEntity.expectedTimeMinutes).isEqualTo(120)
-      assertThat(persistedEntity.status).isEqualTo(EteCourseEventCompletionMessageStatus.FAILED)
+      assertThat(persistedEntity.status).isEqualTo(EteCourseCompletionEventStatus.FAILED)
       assertThat(persistedEntity.completionDate).isEqualTo("2026-01-01")
 
       // External ID assertion
@@ -133,7 +132,7 @@ class EteServiceTest {
       assertThat(entityCaptor.isCaptured).isTrue
       val persistedEntity = entityCaptor.captured
 
-      assertThat(persistedEntity.status).isEqualTo(EteCourseEventCompletionMessageStatus.COMPLETED)
+      assertThat(persistedEntity.status).isEqualTo(EteCourseCompletionEventStatus.COMPLETED)
       assertThat(persistedEntity.totalTimeMinutes).isEqualTo(150) // 2 hours 30 minutes = 150 minutes
       assertThat(persistedEntity.expectedTimeMinutes).isEqualTo(150)
       assertThat(persistedEntity.externalReference).isEqualTo("EXT456")
@@ -251,7 +250,7 @@ class EteServiceTest {
         courseType = "Online",
         provider = "Test Provider",
         completionDate = LocalDate.of(2026, 1, 1),
-        status = EteCourseEventCompletionMessageStatus.COMPLETED,
+        status = EteCourseCompletionEventStatus.COMPLETED,
         totalTimeMinutes = 120,
         expectedTimeMinutes = 120,
         externalReference = "EXT123",
@@ -266,7 +265,7 @@ class EteServiceTest {
       assertThat(result.firstName).isEqualTo("John")
       assertThat(result.lastName).isEqualTo("Doe")
       assertThat(result.courseName).isEqualTo("Test Course")
-      assertThat(result.status).isEqualTo(EteCourseEventCompletionMessageStatus.COMPLETED)
+      assertThat(result.status).isEqualTo(EteCourseCompletionEventStatus.COMPLETED)
     }
 
     @Test

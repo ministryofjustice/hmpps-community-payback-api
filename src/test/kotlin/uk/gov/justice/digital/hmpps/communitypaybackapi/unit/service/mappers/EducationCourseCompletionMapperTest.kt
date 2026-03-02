@@ -13,7 +13,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentWorkQualityDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntity
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseEventCompletionMessageStatus
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventStatus
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.EducationCourseCompletionMapper
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
@@ -232,7 +232,7 @@ class EducationCourseCompletionMapperTest {
       val courseType = "ONLINE"
       val provider = "Skills for Life"
       val completionDate = LocalDate.of(2024, 2, 20)
-      val status = EteCourseEventCompletionMessageStatus.COMPLETED
+      val status = EteCourseCompletionEventStatus.COMPLETED
       val totalTimeMinutes = 120L
       val expectedTimeMinutes = 120L
       val attempts = 1

@@ -11,7 +11,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.NotFoundE
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntityRepository
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseEventCompletionMessageStatus
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventStatus
 import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseCompletionMessage
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.EducationCourseCompletionMapper
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
@@ -57,7 +57,7 @@ class EteService(
         courseType = attributes.courseType,
         provider = attributes.provider,
         completionDate = attributes.completionDate,
-        status = EteCourseEventCompletionMessageStatus.fromMessage(attributes.status),
+        status = EteCourseCompletionEventStatus.fromMessage(attributes.status),
         totalTimeMinutes = attributes.totalTimeMinutes,
         expectedTimeMinutes = attributes.expectedTimeMinutes,
         externalReference = attributes.externalReference,
