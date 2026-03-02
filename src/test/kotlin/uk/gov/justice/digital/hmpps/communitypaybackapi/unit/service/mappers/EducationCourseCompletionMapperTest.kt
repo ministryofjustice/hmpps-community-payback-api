@@ -86,7 +86,7 @@ class EducationCourseCompletionMapperTest {
         ),
       )
 
-      assertThat(result.startTime).isEqualTo(LocalTime.of(9, 0))
+      assertThat(result.startTime).isEqualTo(LocalTime.of(0, 0))
     }
 
     @ParameterizedTest
@@ -103,7 +103,7 @@ class EducationCourseCompletionMapperTest {
         ),
       )
 
-      assertThat(result.endTime).isEqualTo(LocalTime.of(9, 0).plusMinutes(minutesToCredit))
+      assertThat(result.endTime).isEqualTo(LocalTime.of(0, 0).plusMinutes(minutesToCredit))
     }
 
     @Test
@@ -133,10 +133,10 @@ class EducationCourseCompletionMapperTest {
         mapper.toCreateAppointmentDto(
           eteCourseCompletionEventEntity = entity,
           baselineCourseCompletionOutcome.copy(
-            minutesToCredit = 60L * 15,
+            minutesToCredit = 60L * 24,
           ),
         )
-      }.hasMessage("Cannot credit more than 899 minutes")
+      }.hasMessage("Cannot credit more than 1439 minutes")
     }
   }
 
@@ -167,7 +167,7 @@ class EducationCourseCompletionMapperTest {
     }
 
     @Test
-    fun `should set start time to 9am`() {
+    fun `should set start time to first minute of the day`() {
       val entity = EteCourseCompletionEventEntity.valid()
       val existingAppointment = AppointmentDto.valid()
 
@@ -179,7 +179,7 @@ class EducationCourseCompletionMapperTest {
         existingAppointment = existingAppointment,
       )
 
-      assertThat(result.startTime).isEqualTo(LocalTime.of(9, 0))
+      assertThat(result.startTime).isEqualTo(LocalTime.of(0, 0))
     }
 
     @ParameterizedTest
@@ -198,7 +198,7 @@ class EducationCourseCompletionMapperTest {
         existingAppointment = existingAppointment,
       )
 
-      assertThat(result.endTime).isEqualTo(LocalTime.of(9, 0).plusMinutes(minutesToCredit))
+      assertThat(result.endTime).isEqualTo(LocalTime.of(0, 0).plusMinutes(minutesToCredit))
     }
 
     @Test
@@ -210,11 +210,11 @@ class EducationCourseCompletionMapperTest {
         mapper.toUpdateAppointmentDto(
           eteCourseCompletionEventEntity = entity,
           courseCompletionOutcome = baselineCourseCompletionOutcome.copy(
-            minutesToCredit = 60L * 15,
+            minutesToCredit = 60L * 24,
           ),
           existingAppointment = existingAppointment,
         )
-      }.hasMessage("Cannot credit more than 899 minutes")
+      }.hasMessage("Cannot credit more than 1439 minutes")
     }
   }
 

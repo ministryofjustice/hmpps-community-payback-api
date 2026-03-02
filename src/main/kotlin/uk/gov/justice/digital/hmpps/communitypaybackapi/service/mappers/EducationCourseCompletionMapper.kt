@@ -18,7 +18,7 @@ import java.util.UUID
 class EducationCourseCompletionMapper {
 
   companion object {
-    val APPOINTMENT_START_TIME: LocalTime = LocalTime.of(9, 0)
+    val APPOINTMENT_START_TIME: LocalTime = LocalTime.of(0, 0)
   }
 
   fun toCreateAppointmentDto(

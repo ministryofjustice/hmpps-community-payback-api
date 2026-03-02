@@ -416,8 +416,8 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
         crn = crn,
         eventNumber = DELIUS_EVENT_NUMBER,
         date = eventEntity.completionDate,
-        startTime = LocalTime.of(9, 0),
-        endTime = LocalTime.of(9, 0).plusMinutes(minutesToCredit),
+        startTime = LocalTime.of(0, 0),
+        endTime = LocalTime.of(1, 30),
       )
 
       CommunityPaybackAndDeliusMockServer.postAppointmentVerify(
