@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ContactOutcomesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EnforcementActionsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypesDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ProjectTypeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.bodyAsObject
 
@@ -16,9 +15,6 @@ class CommonReferencesIT : IntegrationTestBase() {
 
   @Autowired
   lateinit var projectTypeEntityRepository: ProjectTypeEntityRepository
-
-  @Autowired
-  lateinit var contactOutcomesEntityRepository: ContactOutcomeEntityRepository
 
   @Nested
   @DisplayName("GET /common/references/project-types")
