@@ -15,7 +15,6 @@ import org.junit.jupiter.params.provider.CsvSource
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
@@ -30,10 +29,8 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseCompletionMessage
 import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseCompletionStatus
 import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseMessageAttributes
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentCreationService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventTrigger
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentRetrievalService
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentUpdateService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ContextService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.EteService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.EducationCourseCompletionMapper
@@ -50,19 +47,10 @@ class EteServiceTest {
   lateinit var eteCourseCompletionEventEntityRepository: EteCourseCompletionEventEntityRepository
 
   @RelaxedMockK
-  lateinit var appointmentCreationService: AppointmentCreationService
+  lateinit var appointmentService: AppointmentService
 
   @RelaxedMockK
   lateinit var educationCourseCompletionMapper: EducationCourseCompletionMapper
-
-  @RelaxedMockK
-  lateinit var communityPaybackAndDeliusClient: CommunityPaybackAndDeliusClient
-
-  @RelaxedMockK
-  lateinit var appointmentUpdateService: AppointmentUpdateService
-
-  @RelaxedMockK
-  lateinit var appointmentRetrievalService: AppointmentRetrievalService
 
   @RelaxedMockK
   lateinit var contextService: ContextService
@@ -316,7 +304,7 @@ class EteServiceTest {
       val triggerSlot = slot<AppointmentEventTrigger>()
 
       io.mockk.verify {
-        appointmentCreationService.createAppointment(appointmentToCreate, capture(triggerSlot))
+        appointmentService.createAppointment(appointmentToCreate, capture(triggerSlot))
       }
 
       assertThat(triggerSlot.captured.triggerType).isEqualTo(AppointmentEventTriggerType.ETE_COURSE_COMPLETION)
@@ -340,7 +328,7 @@ class EteServiceTest {
       )
 
       every { eteCourseCompletionEventEntityRepository.findByIdOrNull(eventId) } returns event
-      every { appointmentRetrievalService.getAppointment(projectCode, appointmentId) } returns existingAppointment
+      every { appointmentService.getAppointment(projectCode, appointmentId) } returns existingAppointment
 
       val updateAppointmentDto = UpdateAppointmentOutcomeDto.valid()
       every {
@@ -357,7 +345,7 @@ class EteServiceTest {
       val triggerSlot = slot<AppointmentEventTrigger>()
 
       io.mockk.verify {
-        appointmentUpdateService.updateAppointmentOutcome(
+        appointmentService.updateAppointmentOutcome(
           projectCode = projectCode,
           update = updateAppointmentDto,
           trigger = capture(triggerSlot),

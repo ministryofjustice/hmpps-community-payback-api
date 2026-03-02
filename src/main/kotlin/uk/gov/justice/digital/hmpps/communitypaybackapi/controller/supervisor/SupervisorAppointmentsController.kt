@@ -14,10 +14,8 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOut
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.BadRequestException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventTriggerType
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentBulkUpdateService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventTrigger
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentRetrievalService
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentUpdateService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ContextService
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 import java.time.OffsetDateTime
@@ -28,9 +26,7 @@ import java.time.OffsetDateTime
   produces = [MediaType.APPLICATION_JSON_VALUE],
 )
 class SupervisorAppointmentsController(
-  private val appointmentRetrievalService: AppointmentRetrievalService,
-  private val appointmentUpdateService: AppointmentUpdateService,
-  private val appointmentBulkUpdateService: AppointmentBulkUpdateService,
+  private val appointmentService: AppointmentService,
   private val contextService: ContextService,
 ) {
 
@@ -59,7 +55,7 @@ class SupervisorAppointmentsController(
   fun getAppointment(
     @PathVariable projectCode: String,
     @PathVariable deliusAppointmentId: Long,
-  ) = appointmentRetrievalService.getAppointment(
+  ) = appointmentService.getAppointment(
     projectCode = projectCode,
     appointmentId = deliusAppointmentId,
   )
@@ -107,7 +103,7 @@ class SupervisorAppointmentsController(
       throw BadRequestException("ID in URL should match ID in payload")
     }
 
-    appointmentUpdateService.updateAppointmentOutcome(
+    appointmentService.updateAppointmentOutcome(
       update = outcome,
       projectCode = projectCode,
       trigger = AppointmentEventTrigger(
@@ -144,7 +140,7 @@ class SupervisorAppointmentsController(
   fun updateAppointmentOutcomes(
     @PathVariable projectCode: String,
     @RequestBody request: UpdateAppointmentOutcomesDto,
-  ) = appointmentBulkUpdateService.updateAppointmentOutcomes(
+  ) = appointmentService.updateAppointmentOutcomes(
     projectCode = projectCode,
     request = request,
     trigger = AppointmentEventTrigger(

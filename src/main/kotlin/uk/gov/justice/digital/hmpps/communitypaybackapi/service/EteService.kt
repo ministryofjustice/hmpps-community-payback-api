@@ -23,10 +23,8 @@ import java.util.UUID
 class EteService(
   private val educationCourseCompletionMapper: EducationCourseCompletionMapper,
   private val eteCourseCompletionEventEntityRepository: EteCourseCompletionEventEntityRepository,
-  private val appointmentCreationService: AppointmentCreationService,
-  private val appointmentUpdateService: AppointmentUpdateService,
-  private val appointmentRetrievalService: AppointmentRetrievalService,
   private val contextService: ContextService,
+  private val appointmentService: AppointmentService,
 ) {
   private val providerCodeToRegionName = mapOf(
     "N53" to "East Midlands",
@@ -127,7 +125,7 @@ class EteService(
   ) {
     val appointmentIdToUpdate = courseCompletionOutcome.appointmentIdToUpdate!!
 
-    val existingAppointment = appointmentRetrievalService.getAppointment(
+    val existingAppointment = appointmentService.getAppointment(
       projectCode = courseCompletionOutcome.projectCode,
       appointmentId = appointmentIdToUpdate,
     )
@@ -138,7 +136,7 @@ class EteService(
       existingAppointment = existingAppointment,
     )
 
-    appointmentUpdateService.updateAppointmentOutcome(
+    appointmentService.updateAppointmentOutcome(
       projectCode = courseCompletionOutcome.projectCode,
       update = update,
       trigger = buildEventTrigger(),
@@ -154,7 +152,7 @@ class EteService(
       courseCompletionOutcome = courseCompletionOutcome,
     )
 
-    appointmentCreationService.createAppointment(
+    appointmentService.createAppointment(
       appointment = appointment,
       trigger = buildEventTrigger(),
     )
