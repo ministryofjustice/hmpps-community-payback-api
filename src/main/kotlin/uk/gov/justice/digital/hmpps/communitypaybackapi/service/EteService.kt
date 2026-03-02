@@ -25,6 +25,7 @@ class EteService(
   private val eteCourseCompletionEventEntityRepository: EteCourseCompletionEventEntityRepository,
   private val contextService: ContextService,
   private val appointmentService: AppointmentService,
+  private val eteValidationService: EteValidationService,
 ) {
   private val providerCodeToRegionName = mapOf(
     "N53" to "East Midlands",
@@ -102,6 +103,8 @@ class EteService(
     eteCourseCompletionEventId: UUID,
     courseCompletionOutcome: CourseCompletionOutcomeDto,
   ) {
+    eteValidationService.validateCourseCompletionOutcome(courseCompletionOutcome)
+
     val courseCompletionEvent = eteCourseCompletionEventEntityRepository.findByIdOrNull(eteCourseCompletionEventId)
       ?: throw NotFoundException("Course completion event", eteCourseCompletionEventId.toString())
 

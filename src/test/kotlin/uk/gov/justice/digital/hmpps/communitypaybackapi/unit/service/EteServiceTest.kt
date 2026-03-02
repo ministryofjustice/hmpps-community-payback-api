@@ -33,6 +33,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ContextService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.EteService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.EteValidationService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.EteMappers
 import java.time.LocalDate
 import java.util.Optional.empty
@@ -53,6 +54,9 @@ class EteServiceTest {
 
   @RelaxedMockK
   lateinit var contextService: ContextService
+
+  @RelaxedMockK
+  lateinit var eteValidationService: EteValidationService
 
   @InjectMockKs
   private lateinit var eteService: EteService
