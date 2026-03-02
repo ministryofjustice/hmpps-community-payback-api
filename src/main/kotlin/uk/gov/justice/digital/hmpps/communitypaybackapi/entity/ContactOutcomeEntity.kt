@@ -53,11 +53,13 @@ data class ContactOutcomeEntity(
 
 enum class ContactOutcomeGroup {
   AVAILABLE_TO_ADMIN,
+  AVAILABLE_FOR_ETE,
   ;
 
   companion object {
     fun fromDto(dto: ContactOutcomeGroupDto) = when (dto) {
       ContactOutcomeGroupDto.AVAILABLE_TO_ADMIN -> AVAILABLE_TO_ADMIN
+      ContactOutcomeGroupDto.AVAILABLE_FOR_ETE -> AVAILABLE_FOR_ETE
     }
   }
 }

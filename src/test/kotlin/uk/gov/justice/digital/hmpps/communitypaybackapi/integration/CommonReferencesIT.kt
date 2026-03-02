@@ -17,6 +17,7 @@ class CommonReferencesIT : IntegrationTestBase() {
   @Autowired
   lateinit var projectTypeEntityRepository: ProjectTypeEntityRepository
 
+  @Autowired
   lateinit var contactOutcomesEntityRepository: ContactOutcomeEntityRepository
 
   @Nested
@@ -140,6 +141,21 @@ class CommonReferencesIT : IntegrationTestBase() {
         .bodyAsObject<ContactOutcomesDto>()
 
       assertThat(contactOutcomes.contactOutcomes).hasSize(10)
+    }
+
+    @Test
+    fun `should filter on AVAILABLE_FOR_ETE group`() {
+      val contactOutcomes = webTestClient.get()
+        .uri("/common/references/contact-outcomes?group=AVAILABLE_FOR_ETE")
+        .addAdminUiAuthHeader()
+        .exchange()
+        .expectStatus()
+        .isOk
+        .bodyAsObject<ContactOutcomesDto>()
+
+      assertThat(contactOutcomes.contactOutcomes).hasSize(3)
+      assertThat(contactOutcomes.contactOutcomes).extracting("code")
+        .containsExactlyInAnyOrder("ATTC", "AFTC", "UAAB")
     }
   }
 
