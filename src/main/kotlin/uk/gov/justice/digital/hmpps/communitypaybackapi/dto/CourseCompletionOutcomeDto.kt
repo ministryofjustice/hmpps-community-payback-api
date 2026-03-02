@@ -5,7 +5,7 @@ data class CourseCompletionOutcomeDto(
   val deliusEventNumber: Long,
   val appointmentIdToUpdate: Long?,
   val minutesToCredit: Long,
-  val contactOutcome: String,
+  val contactOutcomeCode: String,
   val projectCode: String,
 ) {
   companion object

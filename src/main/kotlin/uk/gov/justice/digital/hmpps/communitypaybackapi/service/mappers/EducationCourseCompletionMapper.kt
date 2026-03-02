@@ -2,61 +2,91 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers
 
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentBehaviourDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentWorkQualityDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AttendanceDataDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EteCourseCompletionEventDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntity
 import java.time.LocalTime
+import java.time.temporal.ChronoUnit
 import java.util.UUID
 
 @Service
 class EducationCourseCompletionMapper {
 
+  companion object {
+    val APPOINTMENT_START_TIME: LocalTime = LocalTime.of(0, 0)
+  }
+
   fun toCreateAppointmentDto(
     eteCourseCompletionEventEntity: EteCourseCompletionEventEntity,
-    // once we're capturing the following on EteCourseCompletionEventEntity we won't need to pass them in
-    crn: String,
-    projectCode: String,
-    deliusEventNumber: Long,
+    courseCompletionOutcome: CourseCompletionOutcomeDto,
   ): CreateAppointmentDto {
     val completionDate = eteCourseCompletionEventEntity.completionDate
-    val startTime = LocalTime.of(9, 0) // Temporary until decided - 9am as start time
 
     return CreateAppointmentDto(
       id = UUID.randomUUID(),
-      crn = crn,
-      deliusEventNumber = deliusEventNumber,
+      crn = courseCompletionOutcome.crn,
+      deliusEventNumber = courseCompletionOutcome.deliusEventNumber,
       allocationId = null,
-      projectCode = projectCode,
+      projectCode = courseCompletionOutcome.projectCode,
       date = completionDate,
-      // If this rolls time back into the previous day, this fails appointment creation validation
-      // because start time is after end time
-      startTime = startTime,
-      endTime = startTime.plusMinutes(eteCourseCompletionEventEntity.totalTimeMinutes),
+      startTime = APPOINTMENT_START_TIME,
+      endTime = calculateEndTime(courseCompletionOutcome.minutesToCredit),
       pickUpLocationCode = null,
       pickUpLocationDescription = null,
       pickUpTime = null,
-      contactOutcomeCode = ContactOutcomeEntity.ATTENDED_COMPLIED_OUTCOME_CODE,
+      contactOutcomeCode = courseCompletionOutcome.contactOutcomeCode,
       attendanceData = createAttendanceData(),
       supervisorOfficerCode = null,
-      notes = "Ete course completed: ${eteCourseCompletionEventEntity.courseName}",
+      notes = buildNote(eteCourseCompletionEventEntity),
       alertActive = null,
       sensitive = null,
     )
   }
 
-  companion object DefaultEducationCourseCompletionAttendanceData {
-    fun createAttendanceData(): AttendanceDataDto = AttendanceDataDto(
-      hiVisWorn = false,
-      workedIntensively = false,
-      penaltyTime = null,
-      penaltyMinutes = null,
-      workQuality = AppointmentWorkQualityDto.NOT_APPLICABLE,
-      behaviour = AppointmentBehaviourDto.NOT_APPLICABLE,
-    )
+  fun toUpdateAppointmentDto(
+    eteCourseCompletionEventEntity: EteCourseCompletionEventEntity,
+    courseCompletionOutcome: CourseCompletionOutcomeDto,
+    existingAppointment: AppointmentDto,
+  ) = UpdateAppointmentOutcomeDto(
+    deliusId = existingAppointment.id,
+    deliusVersionToUpdate = existingAppointment.version,
+    startTime = APPOINTMENT_START_TIME,
+    endTime = calculateEndTime(courseCompletionOutcome.minutesToCredit),
+    contactOutcomeCode = courseCompletionOutcome.contactOutcomeCode,
+    attendanceData = createAttendanceData(),
+    enforcementData = null,
+    supervisorOfficerCode = existingAppointment.supervisorOfficerCode,
+    notes = buildNote(eteCourseCompletionEventEntity),
+    alertActive = existingAppointment.alertActive,
+    sensitive = existingAppointment.sensitive,
+  )
+
+  private fun calculateEndTime(
+    minutesToCredit: Long,
+  ): LocalTime {
+    val creditLimit = ChronoUnit.MINUTES.between(APPOINTMENT_START_TIME, LocalTime.MIDNIGHT.minusMinutes(1))
+    if (minutesToCredit > creditLimit) {
+      error("Cannot credit more than $creditLimit minutes")
+    }
+
+    return APPOINTMENT_START_TIME.plusMinutes(minutesToCredit)
   }
+
+  private fun buildNote(eteCourseCompletionEventEntity: EteCourseCompletionEventEntity) = "Ete course completed: ${eteCourseCompletionEventEntity.courseName}"
+
+  fun createAttendanceData() = AttendanceDataDto(
+    hiVisWorn = false,
+    workedIntensively = false,
+    penaltyTime = null,
+    penaltyMinutes = null,
+    workQuality = AppointmentWorkQualityDto.NOT_APPLICABLE,
+    behaviour = AppointmentBehaviourDto.NOT_APPLICABLE,
+  )
 }
 
 fun EteCourseCompletionEventEntity.toDto() = EteCourseCompletionEventDto(

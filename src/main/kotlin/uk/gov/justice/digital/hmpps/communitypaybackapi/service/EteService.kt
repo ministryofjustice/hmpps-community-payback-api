@@ -2,11 +2,11 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.service
 
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EteCourseCompletionEventDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.NotFoundException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntity
@@ -104,60 +104,65 @@ class EteService(
     eteCourseCompletionEventId: UUID,
     courseCompletionOutcome: CourseCompletionOutcomeDto,
   ) {
-    val eteEvent = eteCourseCompletionEventEntityRepository.findById(eteCourseCompletionEventId).orElseThrow {
-      NotFoundException("Course completion event", eteCourseCompletionEventId.toString())
-    }
-
-    val trigger = AppointmentEventTrigger(
-      triggeredAt = OffsetDateTime.now(),
-      triggerType = AppointmentEventTriggerType.ETE_COURSE_COMPLETION,
-      triggeredBy = contextService.getUserName(),
-    )
+    val courseCompletionEvent = eteCourseCompletionEventEntityRepository.findByIdOrNull(eteCourseCompletionEventId)
+      ?: throw NotFoundException("Course completion event", eteCourseCompletionEventId.toString())
 
     val appointmentIdToUpdate = courseCompletionOutcome.appointmentIdToUpdate
     if (appointmentIdToUpdate != null) {
-      val existingAppointment = appointmentRetrievalService.getAppointment(
-        projectCode = courseCompletionOutcome.projectCode,
-        appointmentId = appointmentIdToUpdate,
-      )
-
-      val update = UpdateAppointmentOutcomeDto(
-        deliusId = existingAppointment.id,
-        deliusVersionToUpdate = existingAppointment.version,
-        startTime = existingAppointment.startTime,
-        endTime = existingAppointment.startTime.plusMinutes(courseCompletionOutcome.minutesToCredit),
-        contactOutcomeCode = courseCompletionOutcome.contactOutcome,
-        attendanceData = EducationCourseCompletionMapper.createAttendanceData(),
-        enforcementData = null,
-        supervisorOfficerCode = existingAppointment.supervisorOfficerCode,
-        notes = "Ete course completed: ${eteEvent.courseName}",
-        alertActive = existingAppointment.alertActive,
-        sensitive = existingAppointment.sensitive,
-      )
-
-      appointmentUpdateService.updateAppointmentOutcome(
-        projectCode = courseCompletionOutcome.projectCode,
-        update = update,
-        trigger = trigger,
+      updateExistingAppointment(
+        courseCompletionEvent = courseCompletionEvent,
+        courseCompletionOutcome = courseCompletionOutcome,
       )
     } else {
-      val appointment = educationCourseCompletionMapper.toCreateAppointmentDto(
-        eteCourseCompletionEventEntity = eteEvent,
-        crn = courseCompletionOutcome.crn,
-        projectCode = courseCompletionOutcome.projectCode,
-        deliusEventNumber = courseCompletionOutcome.deliusEventNumber,
-      )
-
-      val adjustedAppointment = appointment.copy(
-        crn = courseCompletionOutcome.crn,
-        endTime = appointment.startTime.plusMinutes(courseCompletionOutcome.minutesToCredit),
-        contactOutcomeCode = courseCompletionOutcome.contactOutcome,
-      )
-
-      appointmentCreationService.createAppointment(
-        appointment = adjustedAppointment,
-        trigger = trigger,
+      createAppointment(
+        courseCompletionEvent = courseCompletionEvent,
+        courseCompletionOutcome = courseCompletionOutcome,
       )
     }
   }
+
+  private fun updateExistingAppointment(
+    courseCompletionEvent: EteCourseCompletionEventEntity,
+    courseCompletionOutcome: CourseCompletionOutcomeDto,
+  ) {
+    val appointmentIdToUpdate = courseCompletionOutcome.appointmentIdToUpdate!!
+
+    val existingAppointment = appointmentRetrievalService.getAppointment(
+      projectCode = courseCompletionOutcome.projectCode,
+      appointmentId = appointmentIdToUpdate,
+    )
+
+    val update = educationCourseCompletionMapper.toUpdateAppointmentDto(
+      eteCourseCompletionEventEntity = courseCompletionEvent,
+      courseCompletionOutcome = courseCompletionOutcome,
+      existingAppointment = existingAppointment,
+    )
+
+    appointmentUpdateService.updateAppointmentOutcome(
+      projectCode = courseCompletionOutcome.projectCode,
+      update = update,
+      trigger = buildEventTrigger(),
+    )
+  }
+
+  private fun createAppointment(
+    courseCompletionEvent: EteCourseCompletionEventEntity,
+    courseCompletionOutcome: CourseCompletionOutcomeDto,
+  ) {
+    val appointment = educationCourseCompletionMapper.toCreateAppointmentDto(
+      eteCourseCompletionEventEntity = courseCompletionEvent,
+      courseCompletionOutcome = courseCompletionOutcome,
+    )
+
+    appointmentCreationService.createAppointment(
+      appointment = appointment,
+      trigger = buildEventTrigger(),
+    )
+  }
+
+  private fun buildEventTrigger() = AppointmentEventTrigger(
+    triggeredAt = OffsetDateTime.now(),
+    triggerType = AppointmentEventTriggerType.ETE_COURSE_COMPLETION,
+    triggeredBy = contextService.getUserName(),
+  )
 }
