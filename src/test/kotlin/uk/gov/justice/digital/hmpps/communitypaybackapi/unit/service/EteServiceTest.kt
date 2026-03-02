@@ -237,7 +237,6 @@ class EteServiceTest {
         pageable,
       )
 
-      assertThat(result.isEmpty).isFalse
       assertThat(result.content).hasSize(5)
     }
   }

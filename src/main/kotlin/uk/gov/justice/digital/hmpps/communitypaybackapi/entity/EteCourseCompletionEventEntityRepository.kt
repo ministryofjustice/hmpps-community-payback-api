@@ -31,14 +31,14 @@ interface EteCourseCompletionEventEntityRepository : JpaRepository<EteCourseComp
     """
     SELECT e FROM EteCourseCompletionEventEntity e 
     WHERE e.region = :region
-      AND (:offices IS NULL OR e.office IN :offices)
+      AND e.office IN :offices
       AND (cast(:fromDate as date) IS NULL OR e.completionDate >= :fromDate)
       AND (cast(:toDate as date) IS NULL OR e.completionDate <= :toDate)
   """,
   )
   fun findByRegionDateRangeAndOffices(
     @Param("region") region: String,
-    @Param("offices") offices: List<String>?,
+    @Param("offices") offices: List<String>,
     @Param("fromDate") fromDate: LocalDate?,
     @Param("toDate") toDate: LocalDate?,
     pageable: Pageable,

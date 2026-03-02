@@ -166,21 +166,24 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
         assertThat(pagedCourseCompletions.content.last().id).isEqualTo(inRange2.id)
       }
 
+      @Test
       fun `should apply office filter`() {
         eteCourseCompletionEventEntityRepository.save(
           EteCourseCompletionEventEntity.valid().copy(
-            region = "Norwich",
+            region = "London",
+            office = "Hammersmith",
           ),
         )
 
         val inOffice = eteCourseCompletionEventEntityRepository.save(
           EteCourseCompletionEventEntity.valid().copy(
             region = "London",
+            office = "Whitechapel",
           ),
         )
 
         val pagedCourseCompletions = webTestClient.get()
-          .uri("/admin/providers/N07/course-completions?office=London")
+          .uri("/admin/providers/N07/course-completions?office=Whitechapel")
           .addAdminUiAuthHeader()
           .exchange()
           .expectStatus()
@@ -191,37 +194,41 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
         assertThat(pagedCourseCompletions.content.first().id).isEqualTo(inOffice.id)
       }
 
+      @Test
       fun `should apply multiple office filters`() {
         eteCourseCompletionEventEntityRepository.save(
           EteCourseCompletionEventEntity.valid().copy(
-            region = "Norwich",
+            region = "London",
+            office = "Hammersmith",
           ),
         )
 
         val inOffice1 = eteCourseCompletionEventEntityRepository.save(
           EteCourseCompletionEventEntity.valid().copy(
             region = "London",
+            office = "Whitechapel",
           ),
         )
 
         val inOffice2 = eteCourseCompletionEventEntityRepository.save(
           EteCourseCompletionEventEntity.valid().copy(
-            region = "Manchester",
+            region = "London",
+            office = "Croydon",
           ),
         )
 
         val pagedCourseCompletions = webTestClient.get()
-          .uri("/admin/providers/N07/course-completions?office=London&office=Manchester")
+          .uri("/admin/providers/N07/course-completions?office=Whitechapel&office=Croydon")
           .addAdminUiAuthHeader()
           .exchange()
           .expectStatus()
           .isOk
           .bodyAsObject<PagedModel<EteCourseCompletionEventDto>>()
 
-        assertThat(pagedCourseCompletions.content).hasSize(2)
-        val contentList = pagedCourseCompletions.content.toList()
-        assertThat(contentList[0].id).isEqualTo(inOffice1.id)
-        assertThat(contentList[1].id).isEqualTo(inOffice2.id)
+        assertThat(pagedCourseCompletions.content.map { it.id }).containsExactlyInAnyOrder(
+          inOffice1.id,
+          inOffice2.id,
+        )
       }
 
       @Test
