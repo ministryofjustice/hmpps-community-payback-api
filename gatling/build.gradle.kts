@@ -4,7 +4,7 @@ plugins {
     kotlin("jvm")
     kotlin("plugin.allopen")
 
-    id("io.gatling.gradle") version "3.14.9.8"
+    id("io.gatling.gradle") version "3.15.0"
 }
 
 gatling {
