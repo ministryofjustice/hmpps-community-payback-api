@@ -27,7 +27,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompleti
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventResolutionEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventResolutionRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventStatus
-import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.random
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseCompletionMessage
 import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseCompletionStatus
@@ -41,7 +40,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.EteMappe
 import java.time.LocalDate
 import java.util.Optional.empty
 import java.util.UUID
-import kotlin.random.Random
 
 @ExtendWith(MockKExtension::class)
 class EteServiceTest {
@@ -179,6 +177,7 @@ class EteServiceTest {
     )
     fun `should return course completion events filtered by date range`(providerCode: String, region: String) {
       val pageable = Pageable.unpaged()
+      val offices = listOf("office1", "office2")
       val fromDate = LocalDate.of(2026, 1, 1)
       val toDate = LocalDate.of(2026, 12, 31)
       val entity = EteCourseCompletionEventEntity.valid().copy(
@@ -187,57 +186,21 @@ class EteServiceTest {
       )
 
       every {
-        eteCourseCompletionEventEntityRepository.findByRegionAndDateRange(
+        eteCourseCompletionEventEntityRepository.findAllWithFilters(
           region,
+          officesCount = 2,
+          offices = offices,
           fromDate,
           toDate,
           pageable,
         )
       } returns PageImpl(listOf(entity))
 
-      val result = eteService.getEteCourseCompletionEvents(providerCode, fromDate, toDate, null, pageable)
+      val result = eteService.getEteCourseCompletionEvents(providerCode, fromDate, toDate, offices, pageable)
 
       assertThat(result.isEmpty).isFalse
       assertThat(result.content).hasSize(1)
       assertThat(result.content[0].completionDate).isEqualTo("2026-06-15")
-    }
-
-    fun `should return course completion events filtered by office`() {
-      val pageable = Pageable.unpaged()
-      val providerCode = "N07"
-      val office = "The Office"
-      val startDate = LocalDate.of(2026, 1, 1)
-      val endDate = LocalDate.of(2026, 12, 31)
-
-      (1..5).forEach {
-        eteCourseCompletionEventEntityRepository.save(
-          EteCourseCompletionEventEntity.valid().copy(
-            office = office,
-            provider = providerCode,
-            completionDate = endDate.minusDays(Random.nextLong(21)),
-          ),
-        )
-      }
-
-      (1..3).forEach {
-        eteCourseCompletionEventEntityRepository.save(
-          EteCourseCompletionEventEntity.valid().copy(
-            office = String.random(21),
-            provider = providerCode,
-            completionDate = endDate.minusDays(Random.nextLong(21)),
-          ),
-        )
-      }
-
-      val result = eteService.getEteCourseCompletionEvents(
-        providerCode,
-        startDate,
-        endDate,
-        null,
-        pageable,
-      )
-
-      assertThat(result.content).hasSize(5)
     }
   }
 

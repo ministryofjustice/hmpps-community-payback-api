@@ -77,22 +77,17 @@ class EteService(
     pageable: Pageable,
   ): Page<EteCourseCompletionEventDto> {
     val region = providerCodeToRegionName[providerCode] ?: return Page.empty()
-    val page = if (offices.isNullOrEmpty()) {
-      eteCourseCompletionEventEntityRepository.findByRegionAndDateRange(
-        region,
-        fromDate,
-        toDate,
-        pageable,
-      )
-    } else {
-      eteCourseCompletionEventEntityRepository.findByRegionDateRangeAndOffices(
-        region,
-        offices,
-        fromDate,
-        toDate,
-        pageable,
-      )
-    }
+    val officesNormalised = offices ?: emptyList()
+
+    val page = eteCourseCompletionEventEntityRepository.findAllWithFilters(
+      region,
+      officesNormalised.size,
+      officesNormalised,
+      fromDate,
+      toDate,
+      pageable,
+    )
+
     return page.map { it.toDto() }
   }
 
