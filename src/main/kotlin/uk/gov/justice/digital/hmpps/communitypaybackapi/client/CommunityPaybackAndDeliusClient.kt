@@ -108,7 +108,7 @@ interface CommunityPaybackAndDeliusClient {
   fun getProjects(
     @PathVariable providerCode: String,
     @PathVariable teamCode: String,
-    @RequestParam projectTypeCodes: List<String>?,
+    @RequestParam typeCode: List<String>?,
     @RequestParam params: Map<String, String>,
   ): PageResponse<NDProjectOutcomeStats>
 
