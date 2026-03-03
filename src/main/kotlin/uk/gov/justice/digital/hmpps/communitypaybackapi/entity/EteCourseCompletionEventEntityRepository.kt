@@ -48,6 +48,6 @@ interface EteCourseCompletionEventEntityRepository : JpaRepository<EteCourseComp
 
   fun findByEmailAndStatus(
     @Param("email") email: String,
-    @Param("status") status: EteCourseEventCompletionMessageStatus,
+    @Param("status") status: EteCourseCompletionEventStatus,
   ): List<EteCourseCompletionEventEntity>
 }

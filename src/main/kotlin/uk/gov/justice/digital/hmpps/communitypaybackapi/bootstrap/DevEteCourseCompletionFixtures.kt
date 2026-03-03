@@ -5,7 +5,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.stereotype.Component
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntityRepository
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseEventCompletionMessageStatus
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventStatus
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.random.Random
@@ -55,7 +55,7 @@ class DevEteCourseCompletionFixtures(
       courseType = "Online",
       provider = "Megan Excess",
       completionDate = LocalDate.now().minusDays(seededRandom.nextLong(1, 8)),
-      status = EteCourseEventCompletionMessageStatus.COMPLETED,
+      status = EteCourseCompletionEventStatus.COMPLETED,
       totalTimeMinutes = totalTime,
       expectedTimeMinutes = totalTime + seededRandom.nextLong(-10, 10),
       attempts = 1,

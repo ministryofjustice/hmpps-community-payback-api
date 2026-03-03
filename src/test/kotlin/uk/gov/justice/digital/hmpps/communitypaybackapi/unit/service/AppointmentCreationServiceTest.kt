@@ -5,6 +5,7 @@ import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.verify
+import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -51,10 +52,12 @@ class AppointmentCreationServiceTest {
   private companion object {
     const val PROJECT_CODE: String = "PROJ25"
     val TRIGGER: AppointmentEventTrigger = AppointmentEventTrigger.valid()
+    const val ND_APPT1_ID: Long = 15
+    const val ND_APPT2_ID: Long = 153
   }
 
   @Nested
-  inner class CreateAppointment {
+  inner class CreateAppointments {
 
     @Test
     fun `ensure at least one appointment provided`() {
@@ -113,14 +116,16 @@ class AppointmentCreationServiceTest {
       every {
         communityPaybackAndDeliusClient.createAppointments(any(), any())
       } returns listOf(
-        NDCreatedAppointment(id = 15, reference = createAppointment1Dto.id),
-        NDCreatedAppointment(id = 153, reference = createAppointment2Dto.id),
+        NDCreatedAppointment(id = ND_APPT1_ID, reference = createAppointment1Dto.id),
+        NDCreatedAppointment(id = ND_APPT2_ID, reference = createAppointment2Dto.id),
       )
 
-      service.createAppointmentsForProject(
+      val result = service.createAppointmentsForProject(
         appointments = listOf(createAppointment1Dto, createAppointment2Dto),
         trigger = TRIGGER,
       )
+
+      assertThat(result).containsExactlyInAnyOrder(ND_APPT1_ID, ND_APPT2_ID)
 
       verify {
         communityPaybackAndDeliusClient.createAppointments(
@@ -130,21 +135,21 @@ class AppointmentCreationServiceTest {
 
         appointmentEventEntityRepository.saveAll(
           listOf(
-            creationEvent1.copy(deliusAppointmentId = 15L),
-            creationEvent2.copy(deliusAppointmentId = 153L),
+            creationEvent1.copy(deliusAppointmentId = ND_APPT1_ID),
+            creationEvent2.copy(deliusAppointmentId = ND_APPT2_ID),
           ),
         )
 
         domainEventService.publishOnTransactionCommit(
           id = creationEvent1.id,
           type = DomainEventType.APPOINTMENT_CREATED,
-          additionalInformation = mapOf(AdditionalInformationType.APPOINTMENT_ID to 15L),
+          additionalInformation = mapOf(AdditionalInformationType.APPOINTMENT_ID to ND_APPT1_ID),
           personReferences = mapOf(PersonReferenceType.CRN to creationEvent1.crn),
         )
         domainEventService.publishOnTransactionCommit(
           id = creationEvent2.id,
           type = DomainEventType.APPOINTMENT_CREATED,
-          additionalInformation = mapOf(AdditionalInformationType.APPOINTMENT_ID to 153L),
+          additionalInformation = mapOf(AdditionalInformationType.APPOINTMENT_ID to ND_APPT2_ID),
           personReferences = mapOf(PersonReferenceType.CRN to creationEvent2.crn),
         )
       }

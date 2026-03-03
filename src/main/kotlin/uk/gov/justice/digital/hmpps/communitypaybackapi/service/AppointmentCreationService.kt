@@ -21,16 +21,16 @@ class AppointmentCreationService(
   fun createAppointment(
     appointment: CreateAppointmentDto,
     trigger: AppointmentEventTrigger,
-  ) = createAppointmentsForProject(
+  ): Long = createAppointmentsForProject(
     listOf(appointment),
     trigger,
-  )
+  ).first()
 
   @Transactional
   fun createAppointmentsForProject(
     appointments: List<CreateAppointmentDto>,
     trigger: AppointmentEventTrigger,
-  ) {
+  ): List<Long> {
     require(appointments.isNotEmpty()) { "At least one appointment must be provided" }
     require(appointments.map { it.projectCode }.toSet().size == 1) { "All appointments must be for the same project code" }
 
@@ -68,5 +68,7 @@ class AppointmentCreationService(
         personReferences = mapOf(PersonReferenceType.CRN to event.crn),
       )
     }
+
+    return creationResponse.map { it.id }
   }
 }

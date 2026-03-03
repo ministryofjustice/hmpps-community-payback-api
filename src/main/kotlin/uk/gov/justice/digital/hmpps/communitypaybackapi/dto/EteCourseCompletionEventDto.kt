@@ -3,7 +3,7 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.dto
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseEventCompletionMessageStatus
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventStatus
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
@@ -45,7 +45,7 @@ data class EteCourseCompletionEventDto(
 
   @param:Schema(description = "Status of the course completion", example = "COMPLETED")
   @Enumerated(EnumType.STRING)
-  val status: EteCourseEventCompletionMessageStatus,
+  val status: EteCourseCompletionEventStatus,
 
   @param:Schema(description = "Total time spent on the course in minutes", example = "180")
   val totalTimeMinutes: Long,

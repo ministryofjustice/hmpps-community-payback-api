@@ -9,8 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired
 import software.amazon.awssdk.services.sqs.model.SendMessageRequest
 import tools.jackson.databind.json.JsonMapper
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntityRepository
-import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
+import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.DatabasePurgeUtils
 import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseCompletionMessage
 import uk.gov.justice.hmpps.sqs.HmppsQueueService
 import uk.gov.justice.hmpps.sqs.MissingQueueException
@@ -27,6 +27,9 @@ class EducationCourseCompletionListenerIT : IntegrationTestBase() {
   @Autowired
   lateinit var eteCourseCompletionEventEntityRepository: EteCourseCompletionEventEntityRepository
 
+  @Autowired
+  lateinit var databasePurgeUtils: DatabasePurgeUtils
+
   companion object {
     const val QUEUE_NAME = "educationcoursecompletionevents"
   }
@@ -36,7 +39,7 @@ class EducationCourseCompletionListenerIT : IntegrationTestBase() {
 
     @BeforeEach
     fun before() {
-      eteCourseCompletionEventEntityRepository.deleteAll()
+      databasePurgeUtils.deleteAllEteData()
     }
 
     @Test

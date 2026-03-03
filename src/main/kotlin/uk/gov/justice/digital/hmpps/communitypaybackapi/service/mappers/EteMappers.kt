@@ -9,13 +9,21 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionOutc
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EteCourseCompletionEventDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventResolutionEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionResolution
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ContextService
 import java.time.LocalTime
+import java.time.OffsetDateTime
 import java.time.temporal.ChronoUnit
 import java.util.UUID
 
 @Service
-class EducationCourseCompletionMapper {
+class EteMappers(
+  private val contextService: ContextService,
+  private val contactOutcomeEntityRepository: ContactOutcomeEntityRepository,
+) {
 
   companion object {
     val APPOINTMENT_START_TIME: LocalTime = LocalTime.of(0, 0)
@@ -86,6 +94,26 @@ class EducationCourseCompletionMapper {
     penaltyMinutes = null,
     workQuality = AppointmentWorkQualityDto.NOT_APPLICABLE,
     behaviour = AppointmentBehaviourDto.NOT_APPLICABLE,
+  )
+
+  fun toResolutionEntity(
+    courseCompletionEvent: EteCourseCompletionEventEntity,
+    courseCompletionOutcome: CourseCompletionOutcomeDto,
+    deliusAppointmentId: Long,
+    deliusAppointmentCreated: Boolean,
+  ) = EteCourseCompletionEventResolutionEntity(
+    id = UUID.randomUUID(),
+    eteCourseCompletionEvent = courseCompletionEvent,
+    resolution = EteCourseCompletionResolution.CREDIT_TIME,
+    createdAt = OffsetDateTime.now(),
+    createdByUsername = contextService.getUserName(),
+    crn = courseCompletionOutcome.crn,
+    deliusEventNumber = courseCompletionOutcome.deliusEventNumber,
+    deliusAppointmentId = deliusAppointmentId,
+    deliusAppointmentCreated = deliusAppointmentCreated,
+    projectCode = courseCompletionOutcome.projectCode,
+    minutesCredited = courseCompletionOutcome.minutesToCredit,
+    contactOutcome = contactOutcomeEntityRepository.findByCode(courseCompletionOutcome.contactOutcomeCode),
   )
 }
 

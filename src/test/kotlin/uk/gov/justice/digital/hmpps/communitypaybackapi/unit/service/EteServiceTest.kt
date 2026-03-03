@@ -5,6 +5,7 @@ import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.slot
+import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -23,7 +24,9 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.NotFoundE
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntityRepository
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseEventCompletionMessageStatus
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventResolutionEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventResolutionRepository
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventStatus
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.random
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseCompletionMessage
@@ -33,9 +36,9 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ContextService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.EteService
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.EducationCourseCompletionMapper
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.EteValidationService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.EteMappers
 import java.time.LocalDate
-import java.util.Optional
 import java.util.Optional.empty
 import java.util.UUID
 import kotlin.random.Random
@@ -47,13 +50,19 @@ class EteServiceTest {
   lateinit var eteCourseCompletionEventEntityRepository: EteCourseCompletionEventEntityRepository
 
   @RelaxedMockK
+  lateinit var eteCourseCompletionEventResolutionRepository: EteCourseCompletionEventResolutionRepository
+
+  @RelaxedMockK
   lateinit var appointmentService: AppointmentService
 
   @RelaxedMockK
-  lateinit var educationCourseCompletionMapper: EducationCourseCompletionMapper
+  lateinit var eteMappers: EteMappers
 
   @RelaxedMockK
   lateinit var contextService: ContextService
+
+  @RelaxedMockK
+  lateinit var eteValidationService: EteValidationService
 
   @InjectMockKs
   private lateinit var eteService: EteService
@@ -104,7 +113,7 @@ class EteServiceTest {
       assertThat(persistedEntity.provider).isEqualTo("Training Provider Inc.")
       assertThat(persistedEntity.totalTimeMinutes).isEqualTo(70)
       assertThat(persistedEntity.expectedTimeMinutes).isEqualTo(120)
-      assertThat(persistedEntity.status).isEqualTo(EteCourseEventCompletionMessageStatus.FAILED)
+      assertThat(persistedEntity.status).isEqualTo(EteCourseCompletionEventStatus.FAILED)
       assertThat(persistedEntity.completionDate).isEqualTo("2026-01-01")
 
       // External ID assertion
@@ -133,7 +142,7 @@ class EteServiceTest {
       assertThat(entityCaptor.isCaptured).isTrue
       val persistedEntity = entityCaptor.captured
 
-      assertThat(persistedEntity.status).isEqualTo(EteCourseEventCompletionMessageStatus.COMPLETED)
+      assertThat(persistedEntity.status).isEqualTo(EteCourseCompletionEventStatus.COMPLETED)
       assertThat(persistedEntity.totalTimeMinutes).isEqualTo(150) // 2 hours 30 minutes = 150 minutes
       assertThat(persistedEntity.expectedTimeMinutes).isEqualTo(150)
       assertThat(persistedEntity.externalReference).isEqualTo("EXT456")
@@ -251,7 +260,7 @@ class EteServiceTest {
         courseType = "Online",
         provider = "Test Provider",
         completionDate = LocalDate.of(2026, 1, 1),
-        status = EteCourseEventCompletionMessageStatus.COMPLETED,
+        status = EteCourseCompletionEventStatus.COMPLETED,
         totalTimeMinutes = 120,
         expectedTimeMinutes = 120,
         externalReference = "EXT123",
@@ -266,7 +275,7 @@ class EteServiceTest {
       assertThat(result.firstName).isEqualTo("John")
       assertThat(result.lastName).isEqualTo("Doe")
       assertThat(result.courseName).isEqualTo("Test Course")
-      assertThat(result.status).isEqualTo(EteCourseEventCompletionMessageStatus.COMPLETED)
+      assertThat(result.status).isEqualTo(EteCourseCompletionEventStatus.COMPLETED)
     }
 
     @Test
@@ -295,16 +304,35 @@ class EteServiceTest {
 
       val appointmentToCreate = CreateAppointmentDto.valid()
       every {
-        educationCourseCompletionMapper.toCreateAppointmentDto(event, outcome)
+        eteMappers.toCreateAppointmentDto(event, outcome)
       } returns appointmentToCreate
       every { contextService.getUserName() } returns "admin-ui"
+
+      every {
+        appointmentService.createAppointment(appointmentToCreate, any())
+      } returns 25L
+
+      val eteResolutionEntity = EteCourseCompletionEventResolutionEntity.valid()
+      every {
+        eteMappers.toResolutionEntity(
+          courseCompletionEvent = event,
+          courseCompletionOutcome = outcome,
+          deliusAppointmentId = 25L,
+          deliusAppointmentCreated = true,
+        )
+      } returns eteResolutionEntity
+
+      every {
+        eteCourseCompletionEventResolutionRepository.save(any())
+      } returnsArgument 0
 
       eteService.processCourseCompletionOutcome(event.id, outcome)
 
       val triggerSlot = slot<AppointmentEventTrigger>()
 
-      io.mockk.verify {
+      verify {
         appointmentService.createAppointment(appointmentToCreate, capture(triggerSlot))
+        eteCourseCompletionEventResolutionRepository.save(eteResolutionEntity)
       }
 
       assertThat(triggerSlot.captured.triggerType).isEqualTo(AppointmentEventTriggerType.ETE_COURSE_COMPLETION)
@@ -332,7 +360,7 @@ class EteServiceTest {
 
       val updateAppointmentDto = UpdateAppointmentOutcomeDto.valid()
       every {
-        educationCourseCompletionMapper.toUpdateAppointmentDto(
+        eteMappers.toUpdateAppointmentDto(
           eteCourseCompletionEventEntity = event,
           courseCompletionOutcome = outcome,
           existingAppointment = existingAppointment,
@@ -340,16 +368,31 @@ class EteServiceTest {
       } returns updateAppointmentDto
       every { contextService.getUserName() } returns "admin-ui"
 
+      val eteResolutionEntity = EteCourseCompletionEventResolutionEntity.valid()
+      every {
+        eteMappers.toResolutionEntity(
+          courseCompletionEvent = event,
+          courseCompletionOutcome = outcome,
+          deliusAppointmentId = appointmentId,
+          deliusAppointmentCreated = false,
+        )
+      } returns eteResolutionEntity
+
+      every {
+        eteCourseCompletionEventResolutionRepository.save(any())
+      } returnsArgument 0
+
       eteService.processCourseCompletionOutcome(eventId, outcome)
 
       val triggerSlot = slot<AppointmentEventTrigger>()
 
-      io.mockk.verify {
+      verify {
         appointmentService.updateAppointmentOutcome(
           projectCode = projectCode,
           update = updateAppointmentDto,
           trigger = capture(triggerSlot),
         )
+        eteCourseCompletionEventResolutionRepository.save(eteResolutionEntity)
       }
 
       assertThat(triggerSlot.captured.triggerType).isEqualTo(AppointmentEventTriggerType.ETE_COURSE_COMPLETION)

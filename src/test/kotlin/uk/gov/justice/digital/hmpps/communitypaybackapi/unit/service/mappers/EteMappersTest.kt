@@ -1,21 +1,30 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.unit.service.mappers
 
+import io.mockk.every
+import io.mockk.impl.annotations.InjectMockKs
+import io.mockk.impl.annotations.RelaxedMockK
+import io.mockk.junit5.MockKExtension
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.provider.ValueSource
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentBehaviourDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentWorkQualityDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionOutcomeDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntity
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseEventCompletionMessageStatus
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventStatus
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionResolution
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.EducationCourseCompletionMapper
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ContextService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.EteMappers
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -23,32 +32,36 @@ import java.time.LocalTime
 import java.time.OffsetDateTime
 import java.util.UUID
 
-@DisplayName("EducationCourseCompletionMapper")
-class EducationCourseCompletionMapperTest {
+@ExtendWith(MockKExtension::class)
+class EteMappersTest {
 
-  private lateinit var mapper: EducationCourseCompletionMapper
+  @RelaxedMockK
+  private lateinit var contextService: ContextService
+
+  @RelaxedMockK
+  private lateinit var contactOutcomeEntityRepository: ContactOutcomeEntityRepository
+
+  @InjectMockKs
+  private lateinit var mapper: EteMappers
 
   companion object {
     const val CONTACT_OUTCOME_CODE = "OUTCOME1"
     const val CRN = "CRN1234"
     const val PROJECT_CODE = "PROJ123"
+    const val DELIUS_APPOINTMENT_ID = 5L
     const val DELIUS_EVENT_NUMBER = 52L
-  }
-
-  val baselineCourseCompletionOutcome = CourseCompletionOutcomeDto.valid().copy(
-    crn = CRN,
-    projectCode = PROJECT_CODE,
-    deliusEventNumber = DELIUS_EVENT_NUMBER,
-    contactOutcomeCode = CONTACT_OUTCOME_CODE,
-  )
-
-  @BeforeEach
-  fun setUp() {
-    mapper = EducationCourseCompletionMapper()
   }
 
   @Nested
   inner class EntityToCreateAppointmentDto {
+
+    val baselineCourseCompletionOutcome = CourseCompletionOutcomeDto.valid().copy(
+      crn = CRN,
+      projectCode = PROJECT_CODE,
+      deliusEventNumber = DELIUS_EVENT_NUMBER,
+      contactOutcomeCode = CONTACT_OUTCOME_CODE,
+    )
+
     @Test
     fun `should map all fields correctly`() {
       val entity = EteCourseCompletionEventEntity.valid().copy(courseName = "the course name")
@@ -143,6 +156,13 @@ class EducationCourseCompletionMapperTest {
   @Nested
   inner class EntityToUpdateAppointmentDto {
 
+    val baselineCourseCompletionOutcome = CourseCompletionOutcomeDto.valid().copy(
+      crn = CRN,
+      projectCode = PROJECT_CODE,
+      deliusEventNumber = DELIUS_EVENT_NUMBER,
+      contactOutcomeCode = CONTACT_OUTCOME_CODE,
+    )
+
     @Test
     fun `should map all fields correctly`() {
       val entity = EteCourseCompletionEventEntity.valid().copy(courseName = "the course name")
@@ -232,7 +252,7 @@ class EducationCourseCompletionMapperTest {
       val courseType = "ONLINE"
       val provider = "Skills for Life"
       val completionDate = LocalDate.of(2024, 2, 20)
-      val status = EteCourseEventCompletionMessageStatus.COMPLETED
+      val status = EteCourseCompletionEventStatus.COMPLETED
       val totalTimeMinutes = 120L
       val expectedTimeMinutes = 120L
       val attempts = 1
@@ -277,6 +297,44 @@ class EducationCourseCompletionMapperTest {
       assertThat(result.attempts).isEqualTo(attempts)
       assertThat(result.externalReference).isEqualTo(externalReference)
       assertThat(result.importedOn).isEqualTo(LocalDateTime.parse("2007-06-03T10:15:30"))
+    }
+  }
+
+  @Nested
+  inner class ToResolutionEntity {
+
+    @ParameterizedTest
+    @CsvSource("true", "false")
+    fun success(appointmentCreated: Boolean) {
+      every { contextService.getUserName() } returns "jeff"
+      val contactOutcome = ContactOutcomeEntity.valid()
+      every { contactOutcomeEntityRepository.findByCode(CONTACT_OUTCOME_CODE) } returns contactOutcome
+
+      val courseCompletionEvent = EteCourseCompletionEventEntity.valid()
+
+      val result = mapper.toResolutionEntity(
+        courseCompletionEvent = courseCompletionEvent,
+        courseCompletionOutcome = CourseCompletionOutcomeDto.valid().copy(
+          crn = CRN,
+          deliusEventNumber = DELIUS_EVENT_NUMBER,
+          projectCode = PROJECT_CODE,
+          minutesToCredit = 97,
+          contactOutcomeCode = CONTACT_OUTCOME_CODE,
+        ),
+        deliusAppointmentId = DELIUS_APPOINTMENT_ID,
+        deliusAppointmentCreated = appointmentCreated,
+      )
+
+      assertThat(result.eteCourseCompletionEvent).isEqualTo(courseCompletionEvent)
+      assertThat(result.resolution).isEqualTo(EteCourseCompletionResolution.CREDIT_TIME)
+      assertThat(result.createdByUsername).isEqualTo("jeff")
+      assertThat(result.crn).isEqualTo(CRN)
+      assertThat(result.deliusEventNumber).isEqualTo(DELIUS_EVENT_NUMBER)
+      assertThat(result.deliusAppointmentId).isEqualTo(DELIUS_APPOINTMENT_ID)
+      assertThat(result.deliusAppointmentCreated).isEqualTo(appointmentCreated)
+      assertThat(result.projectCode).isEqualTo(PROJECT_CODE)
+      assertThat(result.minutesCredited).isEqualTo(97)
+      assertThat(result.contactOutcome).isEqualTo(contactOutcome)
     }
   }
 
