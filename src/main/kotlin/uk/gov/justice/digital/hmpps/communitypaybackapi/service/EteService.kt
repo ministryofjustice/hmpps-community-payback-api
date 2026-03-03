@@ -142,16 +142,14 @@ class EteService(
       appointmentId = courseCompletionOutcome.appointmentIdToUpdate!!,
     )
 
-    val update = eteMapper.toUpdateAppointmentDto(
-      eteCourseCompletionEventEntity = courseCompletionEvent,
-      courseCompletionOutcome = courseCompletionOutcome,
-      existingAppointment = existingAppointment,
-    )
-
     appointmentService.updateAppointmentOutcome(
       projectCode = courseCompletionOutcome.projectCode,
-      update = update,
-      trigger = buildEventTrigger(),
+      update = eteMapper.toUpdateAppointmentDto(
+        eteCourseCompletionEventEntity = courseCompletionEvent,
+        courseCompletionOutcome = courseCompletionOutcome,
+        existingAppointment = existingAppointment,
+      ),
+      trigger = buildAppointmentEventTrigger(),
     )
 
     return existingAppointment.id
@@ -160,19 +158,15 @@ class EteService(
   private fun createAppointment(
     courseCompletionEvent: EteCourseCompletionEventEntity,
     courseCompletionOutcome: CourseCompletionOutcomeDto,
-  ): Long {
-    val appointment = eteMapper.toCreateAppointmentDto(
+  ): Long = appointmentService.createAppointment(
+    appointment = eteMapper.toCreateAppointmentDto(
       eteCourseCompletionEventEntity = courseCompletionEvent,
       courseCompletionOutcome = courseCompletionOutcome,
-    )
+    ),
+    trigger = buildAppointmentEventTrigger(),
+  )
 
-    return appointmentService.createAppointment(
-      appointment = appointment,
-      trigger = buildEventTrigger(),
-    )
-  }
-
-  private fun buildEventTrigger() = AppointmentEventTrigger(
+  private fun buildAppointmentEventTrigger() = AppointmentEventTrigger(
     triggeredAt = OffsetDateTime.now(),
     triggerType = AppointmentEventTriggerType.ETE_COURSE_COMPLETION,
     triggeredBy = contextService.getUserName(),

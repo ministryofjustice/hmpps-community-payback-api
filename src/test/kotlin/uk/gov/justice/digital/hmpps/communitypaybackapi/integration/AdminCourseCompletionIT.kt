@@ -6,6 +6,7 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.hateoas.PagedModel
 import org.springframework.http.MediaType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointment
@@ -48,7 +49,9 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
   lateinit var databasePurgeUtils: DatabasePurgeUtils
 
   companion object {
+    const val CRN = "X12345"
     const val DELIUS_EVENT_NUMBER = 5L
+    const val PROJECT_CODE = "PRJ001"
   }
 
   @Nested
@@ -476,29 +479,55 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
     }
 
     @Test
-    fun `should create appointment when appointmentIdToUpdate is null`() {
-      val projectCode = "PRJ001"
-      val crn = "X999999"
-      val minutesToCredit = 90L
+    fun `should return 404 if course completion not found`() {
+      webTestClient.post()
+        .uri("/admin/course-completions/${UUID.randomUUID()}")
+        .addAdminUiAuthHeader("theusername")
+        .contentType(MediaType.APPLICATION_JSON)
+        .bodyValue(CourseCompletionOutcomeDto.valid(ctx))
+        .exchange()
+        .expectStatus()
+        .isNotFound
+    }
 
+    @Test
+    fun `should error if validation fails`() {
+      val eventEntity = eteCourseCompletionEventEntityRepository.save(EteCourseCompletionEventEntity.valid())
+
+      val outcome = CourseCompletionOutcomeDto.valid().copy(
+        contactOutcomeCode = "WRONG",
+      )
+
+      webTestClient.post()
+        .uri("/admin/course-completions/${eventEntity.id}")
+        .addAdminUiAuthHeader("theusername")
+        .contentType(MediaType.APPLICATION_JSON)
+        .bodyValue(outcome)
+        .exchange()
+        .expectStatus()
+        .isBadRequest
+    }
+
+    @Test
+    fun `should create appointment when appointmentIdToUpdate is null`() {
       val eventEntity = eteCourseCompletionEventEntityRepository.save(
         EteCourseCompletionEventEntity.valid().copy(
           completionDate = LocalDate.now().minusDays(1),
         ),
       )
-      val outcome = CourseCompletionOutcomeDto.valid().copy(
-        crn = crn,
+
+      val outcome = CourseCompletionOutcomeDto.valid(ctx).copy(
+        crn = CRN,
         deliusEventNumber = DELIUS_EVENT_NUMBER,
         appointmentIdToUpdate = null,
-        minutesToCredit = minutesToCredit,
-        contactOutcomeCode = "ATTC",
-        projectCode = projectCode,
+        projectCode = PROJECT_CODE,
+        minutesToCredit = 90,
       )
 
-      val project = NDProject.valid(ctx).copy(code = projectCode, actualEndDateExclusive = null)
+      val project = NDProject.valid(ctx).copy(code = PROJECT_CODE, actualEndDateExclusive = null)
       CommunityPaybackAndDeliusMockServer.getProject(project)
       CommunityPaybackAndDeliusMockServer.getUpwDetailsSummary(
-        crn = crn,
+        crn = CRN,
         unpaidWorkDetails = listOf(
           NDCaseDetail.valid().copy(
             eventNumber = DELIUS_EVENT_NUMBER,
@@ -510,7 +539,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
         forProject = project,
         supervisorSummaries = NDSupervisorSummaries(listOf(NDSupervisorSummary.unallocated())),
       )
-      CommunityPaybackAndDeliusMockServer.postAppointments(projectCode = projectCode, appointmentCount = 1)
+      CommunityPaybackAndDeliusMockServer.postAppointments(projectCode = PROJECT_CODE, appointmentCount = 1)
 
       webTestClient.post()
         .uri("/admin/course-completions/${eventEntity.id}")
@@ -522,7 +551,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
         .isNoContent
 
       val expectedAppointment = ExpectedAppointmentCreate(
-        crn = crn,
+        crn = CRN,
         eventNumber = DELIUS_EVENT_NUMBER,
         date = eventEntity.completionDate,
         startTime = LocalTime.of(0, 0),
@@ -530,33 +559,30 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
       )
 
       CommunityPaybackAndDeliusMockServer.postAppointmentVerify(
-        projectCode = projectCode,
+        projectCode = PROJECT_CODE,
         expectedAppointments = listOf(expectedAppointment),
       )
+
+      assertThat(eteCourseCompletionEventEntityRepository.findByIdOrNull(eventEntity.id)!!.resolution).isNotNull
     }
 
     @Test
     fun `should update appointment when appointmentIdToUpdate is present`() {
-      val projectCode = "PRJ001"
-      val crn = "X999999"
-      val minutesToCredit = 90L
       val appointmentId = 12345L
 
       val eventEntity = eteCourseCompletionEventEntityRepository.save(
         EteCourseCompletionEventEntity.valid(),
       )
-      val outcome = CourseCompletionOutcomeDto.valid().copy(
-        crn = crn,
+      val outcome = CourseCompletionOutcomeDto.valid(ctx).copy(
+        crn = CRN,
         appointmentIdToUpdate = appointmentId,
-        minutesToCredit = minutesToCredit,
-        contactOutcomeCode = "ATTC",
-        projectCode = projectCode,
+        projectCode = PROJECT_CODE,
       )
 
       val upstreamAppointment = NDAppointment.validNoOutcome(ctx).copy(
         id = appointmentId,
         project = NDProjectAndLocation.valid().copy(
-          code = projectCode,
+          code = PROJECT_CODE,
         ),
         date = LocalDate.now().minusDays(5),
       )
@@ -564,14 +590,14 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
         appointment = upstreamAppointment,
         username = "theusername",
       )
-      val project = NDProject.valid(ctx).copy(code = projectCode, actualEndDateExclusive = null)
+      val project = NDProject.valid(ctx).copy(code = PROJECT_CODE, actualEndDateExclusive = null)
       CommunityPaybackAndDeliusMockServer.getProject(project)
       CommunityPaybackAndDeliusMockServer.getTeamSupervisors(
         forProject = project,
         supervisorSummaries = NDSupervisorSummaries(listOf(NDSupervisorSummary.unallocated())),
       )
       CommunityPaybackAndDeliusMockServer.putAppointment(
-        projectCode = projectCode,
+        projectCode = PROJECT_CODE,
         appointmentId = appointmentId,
       )
 
@@ -585,9 +611,11 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
         .isNoContent
 
       CommunityPaybackAndDeliusMockServer.putAppointmentVerify(
-        projectCode = projectCode,
+        projectCode = PROJECT_CODE,
         appointmentId = appointmentId,
       )
+
+      assertThat(eteCourseCompletionEventEntityRepository.findByIdOrNull(eventEntity.id)!!.resolution).isNotNull
     }
 
     @Test
