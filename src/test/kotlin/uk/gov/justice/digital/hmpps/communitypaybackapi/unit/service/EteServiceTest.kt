@@ -5,7 +5,6 @@ import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.slot
-import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -16,30 +15,22 @@ import org.junit.jupiter.params.provider.CsvSource
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionOutcomeDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.NotFoundException
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntityRepository.ResolutionStatus
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventResolutionEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventResolutionRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventStatus
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseCompletionMessage
 import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseCompletionStatus
 import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseMessageAttributes
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventTrigger
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ContextService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.EteService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.EteValidationService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.EteMappers
 import java.time.LocalDate
-import java.util.Optional.empty
 import java.util.UUID
 
 @ExtendWith(MockKExtension::class)
@@ -93,7 +84,7 @@ class EteServiceTest {
         ),
       )
 
-      eteService.handleEducationCourseCompletionMessage(entity)
+      eteService.recordCourseCompletionEvent(entity)
 
       assertThat(entityCaptor.isCaptured).isTrue
       val persistedEntity = entityCaptor.captured
@@ -127,7 +118,7 @@ class EteServiceTest {
       val entityCaptor = slot<EteCourseCompletionEventEntity>()
       every { eteCourseCompletionEventEntityRepository.save(capture(entityCaptor)) } returnsArgument 0
 
-      eteService.handleEducationCourseCompletionMessage(
+      eteService.recordCourseCompletionEvent(
         EducationCourseCompletionMessage.valid().copy(
           messageAttributes = EducationCourseMessageAttributes.valid().copy(
             externalReference = "EXT456",
@@ -156,7 +147,7 @@ class EteServiceTest {
     @Test
     fun `should return empty page when provider code not found`() {
       val pageable = Pageable.unpaged()
-      val result = eteService.getEteCourseCompletionEvents("INVALID", null, null, null, null, pageable)
+      val result = eteService.getCourseCompletionEvents("INVALID", null, null, null, null, pageable)
 
       assertThat(result.isEmpty).isTrue
     }
@@ -198,7 +189,7 @@ class EteServiceTest {
         )
       } returns PageImpl(listOf(entity))
 
-      val result = eteService.getEteCourseCompletionEvents(
+      val result = eteService.getCourseCompletionEvents(
         providerCode,
         fromDate,
         toDate,
@@ -238,7 +229,7 @@ class EteServiceTest {
         attempts = 1,
       )
 
-      every { eteCourseCompletionEventEntityRepository.findById(eventId) } returns java.util.Optional.of(entity)
+      every { eteCourseCompletionEventEntityRepository.findByIdOrNull(eventId) } returns entity
 
       val result = eteService.getCourseCompletionEvent(eventId)
 
@@ -253,138 +244,13 @@ class EteServiceTest {
     fun `throws NotFoundException when event not found`() {
       val eventId = UUID.randomUUID()
 
-      every { eteCourseCompletionEventEntityRepository.findById(eventId) } returns empty()
+      every { eteCourseCompletionEventEntityRepository.findByIdOrNull(eventId) } returns null
 
       assertThrows<NotFoundException> {
         eteService.getCourseCompletionEvent(eventId)
       }.also {
         assertThat(it.message).contains("Course completion event")
         assertThat(it.message).contains(eventId.toString())
-      }
-    }
-  }
-
-  @Nested
-  inner class ProcessCourseCompletionOutcome {
-    @Test
-    fun `should create new appointment when appointmentIdToUpdate is null`() {
-      val event = EteCourseCompletionEventEntity.valid()
-      val outcome = CourseCompletionOutcomeDto.valid()
-
-      every { eteCourseCompletionEventEntityRepository.findByIdOrNull(event.id) } returns event
-
-      val appointmentToCreate = CreateAppointmentDto.valid()
-      every {
-        eteMappers.toCreateAppointmentDto(event, outcome)
-      } returns appointmentToCreate
-      every { contextService.getUserName() } returns "admin-ui"
-
-      every {
-        appointmentService.createAppointment(appointmentToCreate, any())
-      } returns 25L
-
-      val eteResolutionEntity = EteCourseCompletionEventResolutionEntity.valid()
-      every {
-        eteMappers.toResolutionEntity(
-          courseCompletionEvent = event,
-          courseCompletionOutcome = outcome,
-          deliusAppointmentId = 25L,
-          deliusAppointmentCreated = true,
-        )
-      } returns eteResolutionEntity
-
-      every {
-        eteCourseCompletionEventResolutionRepository.save(any())
-      } returnsArgument 0
-
-      eteService.processCourseCompletionOutcome(event.id, outcome)
-
-      val triggerSlot = slot<AppointmentEventTrigger>()
-
-      verify {
-        appointmentService.createAppointment(appointmentToCreate, capture(triggerSlot))
-        eteCourseCompletionEventResolutionRepository.save(eteResolutionEntity)
-      }
-
-      assertThat(triggerSlot.captured.triggerType).isEqualTo(AppointmentEventTriggerType.ETE_COURSE_COMPLETION)
-      assertThat(triggerSlot.captured.triggeredBy).isEqualTo("admin-ui")
-    }
-
-    @Test
-    fun `should update existing appointment when appointmentIdToUpdate is present`() {
-      val eventId = UUID.randomUUID()
-      val appointmentId = 12345L
-      val projectCode = "PRJ001"
-      val event = EteCourseCompletionEventEntity.valid()
-
-      val existingAppointment = AppointmentDto.valid()
-
-      val outcome = CourseCompletionOutcomeDto.valid().copy(
-        appointmentIdToUpdate = appointmentId,
-        minutesToCredit = 90,
-        contactOutcomeCode = "COMP",
-        projectCode = projectCode,
-      )
-
-      every { eteCourseCompletionEventEntityRepository.findByIdOrNull(eventId) } returns event
-      every { appointmentService.getAppointment(projectCode, appointmentId) } returns existingAppointment
-
-      val updateAppointmentDto = UpdateAppointmentOutcomeDto.valid()
-      every {
-        eteMappers.toUpdateAppointmentDto(
-          eteCourseCompletionEventEntity = event,
-          courseCompletionOutcome = outcome,
-          existingAppointment = existingAppointment,
-        )
-      } returns updateAppointmentDto
-      every { contextService.getUserName() } returns "admin-ui"
-
-      val eteResolutionEntity = EteCourseCompletionEventResolutionEntity.valid()
-      every {
-        eteMappers.toResolutionEntity(
-          courseCompletionEvent = event,
-          courseCompletionOutcome = outcome,
-          deliusAppointmentId = appointmentId,
-          deliusAppointmentCreated = false,
-        )
-      } returns eteResolutionEntity
-
-      every {
-        eteCourseCompletionEventResolutionRepository.save(any())
-      } returnsArgument 0
-
-      eteService.processCourseCompletionOutcome(eventId, outcome)
-
-      val triggerSlot = slot<AppointmentEventTrigger>()
-
-      verify {
-        appointmentService.updateAppointmentOutcome(
-          projectCode = projectCode,
-          update = updateAppointmentDto,
-          trigger = capture(triggerSlot),
-        )
-        eteCourseCompletionEventResolutionRepository.save(eteResolutionEntity)
-      }
-
-      assertThat(triggerSlot.captured.triggerType).isEqualTo(AppointmentEventTriggerType.ETE_COURSE_COMPLETION)
-    }
-
-    @Test
-    fun `throws NotFoundException when event not found in processCourseCompletionOutcome`() {
-      val eventId = UUID.randomUUID()
-      val outcome = CourseCompletionOutcomeDto(
-        crn = "X123456",
-        deliusEventNumber = 10L,
-        appointmentIdToUpdate = null,
-        minutesToCredit = 120,
-        contactOutcomeCode = "COMP",
-        projectCode = "PRJ001",
-      )
-
-      every { eteCourseCompletionEventEntityRepository.findById(eventId) } returns empty()
-
-      assertThrows<NotFoundException> {
-        eteService.processCourseCompletionOutcome(eventId, outcome)
       }
     }
   }

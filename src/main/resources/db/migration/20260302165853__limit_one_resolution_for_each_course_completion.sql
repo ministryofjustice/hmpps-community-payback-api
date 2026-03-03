@@ -1,0 +1,1 @@
+ALTER TABLE ete_course_completion_event_resolutions ADD CONSTRAINT ete_course_completion_event_resolutions_unique UNIQUE (ete_course_completion_event_id);

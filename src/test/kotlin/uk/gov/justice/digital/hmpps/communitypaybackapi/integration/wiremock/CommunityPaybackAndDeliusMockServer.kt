@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.equalTo
+import com.github.tomakehurst.wiremock.client.WireMock.exactly
 import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.matchingJsonPath
 import com.github.tomakehurst.wiremock.client.WireMock.post
@@ -186,7 +187,6 @@ object CommunityPaybackAndDeliusMockServer {
     )
   }
 
-  @SuppressWarnings("LongParameterList")
   fun postAppointmentVerify(
     projectCode: String,
     expectedAppointments: List<ExpectedAppointmentCreate>,
@@ -203,6 +203,16 @@ object CommunityPaybackAndDeliusMockServer {
     }
 
     WireMock.verify(assertion)
+  }
+
+  fun postAppointmentVerify(
+    projectCode: String,
+    totalExpectedCalls: Int,
+  ) {
+    WireMock.verify(
+      exactly(totalExpectedCalls),
+      postRequestedFor(urlEqualTo("/community-payback-and-delius/projects/$projectCode/appointments")),
+    )
   }
 
   data class ExpectedAppointmentCreate(

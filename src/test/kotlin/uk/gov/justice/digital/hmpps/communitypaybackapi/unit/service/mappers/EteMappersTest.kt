@@ -329,9 +329,13 @@ class EteMappersTest {
           projectCode = PROJECT_CODE,
           minutesToCredit = 97,
           contactOutcomeCode = CONTACT_OUTCOME_CODE,
+          appointmentIdToUpdate = if (appointmentCreated) {
+            null
+          } else {
+            DELIUS_APPOINTMENT_ID
+          },
         ),
         deliusAppointmentId = DELIUS_APPOINTMENT_ID,
-        deliusAppointmentCreated = appointmentCreated,
       )
 
       assertThat(result.eteCourseCompletionEvent).isEqualTo(courseCompletionEvent)
