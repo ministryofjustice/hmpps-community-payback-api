@@ -14,10 +14,10 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompleti
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntityRepository.ResolutionStatus
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventResolutionRepository
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventStatus
 import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseCompletionMessage
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.EteMappers
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toEntity
 import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.UUID
@@ -46,29 +46,8 @@ class EteService(
     "N55" to "Yorks & Humber",
   )
 
-  @Transactional
   fun recordCourseCompletionEvent(message: EducationCourseCompletionMessage) {
-    val attributes = message.messageAttributes
-    eteCourseCompletionEventEntityRepository.save(
-      EteCourseCompletionEventEntity(
-        id = UUID.randomUUID(),
-        firstName = attributes.firstName,
-        lastName = attributes.lastName,
-        dateOfBirth = attributes.dateOfBirth,
-        region = attributes.region,
-        office = attributes.office,
-        email = attributes.email,
-        courseName = attributes.courseName,
-        courseType = attributes.courseType,
-        provider = attributes.provider,
-        completionDate = attributes.completionDate,
-        status = EteCourseCompletionEventStatus.fromMessage(attributes.status),
-        totalTimeMinutes = attributes.totalTimeMinutes,
-        expectedTimeMinutes = attributes.expectedTimeMinutes,
-        externalReference = attributes.externalReference,
-        attempts = attributes.attempts,
-      ),
-    )
+    eteCourseCompletionEventEntityRepository.save(message.toEntity())
   }
 
   fun getCourseCompletionEvents(

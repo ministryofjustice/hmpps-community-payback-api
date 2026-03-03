@@ -61,59 +61,6 @@ class EteServiceTest {
   inner class HandleEducationCourseMessage {
 
     @Test
-    fun `create ete course event entry`() {
-      val entityCaptor = slot<EteCourseCompletionEventEntity>()
-      every { eteCourseCompletionEventEntityRepository.save(capture(entityCaptor)) } returnsArgument 0
-
-      val entity = EducationCourseCompletionMessage.valid().copy(
-        messageAttributes = EducationCourseMessageAttributes.valid().copy(
-          externalReference = "EXT123",
-          firstName = "John",
-          lastName = "Doe",
-          dateOfBirth = LocalDate.of(1990, 5, 15),
-          region = "London",
-          office = "The Office",
-          email = "john.doe@example.com",
-          courseName = "The course name",
-          courseType = "Online",
-          provider = "Training Provider Inc.",
-          totalTimeMinutes = 70,
-          expectedTimeMinutes = 120,
-          status = EducationCourseCompletionStatus.Failed,
-          completionDate = LocalDate.of(2026, 1, 1),
-        ),
-      )
-
-      eteService.recordCourseCompletionEvent(entity)
-
-      assertThat(entityCaptor.isCaptured).isTrue
-      val persistedEntity = entityCaptor.captured
-
-      // Person data assertions
-      assertThat(persistedEntity.firstName).isEqualTo("John")
-      assertThat(persistedEntity.lastName).isEqualTo("Doe")
-      assertThat(persistedEntity.dateOfBirth).isEqualTo(LocalDate.of(1990, 5, 15))
-      assertThat(persistedEntity.region).isEqualTo("London")
-      assertThat(persistedEntity.office).isEqualTo("The Office")
-      assertThat(persistedEntity.email).isEqualTo("john.doe@example.com")
-
-      // Course data assertions
-      assertThat(persistedEntity.courseName).isEqualTo("The course name")
-      assertThat(persistedEntity.courseType).isEqualTo("Online")
-      assertThat(persistedEntity.provider).isEqualTo("Training Provider Inc.")
-      assertThat(persistedEntity.totalTimeMinutes).isEqualTo(70)
-      assertThat(persistedEntity.expectedTimeMinutes).isEqualTo(120)
-      assertThat(persistedEntity.status).isEqualTo(EteCourseCompletionEventStatus.FAILED)
-      assertThat(persistedEntity.completionDate).isEqualTo("2026-01-01")
-
-      // External ID assertion
-      assertThat(persistedEntity.externalReference).isEqualTo("EXT123")
-
-      // Verify UUID is generated
-      assertThat(persistedEntity.id).isNotNull
-    }
-
-    @Test
     fun `create ete course event entry with completed status`() {
       val entityCaptor = slot<EteCourseCompletionEventEntity>()
       every { eteCourseCompletionEventEntityRepository.save(capture(entityCaptor)) } returnsArgument 0
