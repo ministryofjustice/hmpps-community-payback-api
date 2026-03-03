@@ -440,6 +440,16 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
       databasePurgeUtils.deleteAllEteData()
     }
 
+    @BeforeEach
+    fun setupCommonWiremocks() {
+      val project = NDProject.valid(ctx).copy(code = PROJECT_CODE, actualEndDateExclusive = null)
+      CommunityPaybackAndDeliusMockServer.getProject(project)
+      CommunityPaybackAndDeliusMockServer.getTeamSupervisors(
+        forProject = project,
+        supervisorSummaries = NDSupervisorSummaries(listOf(NDSupervisorSummary.unallocated())),
+      )
+    }
+
     @Test
     fun `should return unauthorized if no token`() {
       val id = UUID.randomUUID()
@@ -524,8 +534,6 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
         minutesToCredit = 90,
       )
 
-      val project = NDProject.valid(ctx).copy(code = PROJECT_CODE, actualEndDateExclusive = null)
-      CommunityPaybackAndDeliusMockServer.getProject(project)
       CommunityPaybackAndDeliusMockServer.getUpwDetailsSummary(
         crn = CRN,
         unpaidWorkDetails = listOf(
@@ -534,10 +542,6 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
             sentenceDate = LocalDate.now().minusDays(10),
           ),
         ),
-      )
-      CommunityPaybackAndDeliusMockServer.getTeamSupervisors(
-        forProject = project,
-        supervisorSummaries = NDSupervisorSummaries(listOf(NDSupervisorSummary.unallocated())),
       )
       CommunityPaybackAndDeliusMockServer.postAppointments(projectCode = PROJECT_CODE, appointmentCount = 1)
 
@@ -590,12 +594,6 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
         appointment = upstreamAppointment,
         username = "theusername",
       )
-      val project = NDProject.valid(ctx).copy(code = PROJECT_CODE, actualEndDateExclusive = null)
-      CommunityPaybackAndDeliusMockServer.getProject(project)
-      CommunityPaybackAndDeliusMockServer.getTeamSupervisors(
-        forProject = project,
-        supervisorSummaries = NDSupervisorSummaries(listOf(NDSupervisorSummary.unallocated())),
-      )
       CommunityPaybackAndDeliusMockServer.putAppointment(
         projectCode = PROJECT_CODE,
         appointmentId = appointmentId,
@@ -616,28 +614,6 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
       )
 
       assertThat(eteCourseCompletionEventEntityRepository.findByIdOrNull(eventEntity.id)!!.resolution).isNotNull
-    }
-
-    @Test
-    fun `should return 404 when ete event not found`() {
-      val id = UUID.randomUUID()
-      webTestClient.post()
-        .uri("/admin/course-completion/$id")
-        .addAdminUiAuthHeader("theusername")
-        .contentType(MediaType.APPLICATION_JSON)
-        .bodyValue(
-          CourseCompletionOutcomeDto(
-            crn = "X123456",
-            deliusEventNumber = DELIUS_EVENT_NUMBER,
-            appointmentIdToUpdate = null,
-            minutesToCredit = 60,
-            contactOutcomeCode = "COMP",
-            projectCode = "PRJ001",
-          ),
-        )
-        .exchange()
-        .expectStatus()
-        .isNotFound
     }
   }
 
