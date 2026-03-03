@@ -11,6 +11,7 @@ import jakarta.persistence.OneToOne
 import jakarta.persistence.PreUpdate
 import jakarta.persistence.Table
 import org.hibernate.annotations.CreationTimestamp
+import org.hibernate.proxy.HibernateProxy
 import java.time.OffsetDateTime
 import java.util.UUID
 
@@ -19,6 +20,7 @@ import java.util.UUID
 data class EteCourseCompletionEventResolutionEntity(
   @Id
   val id: UUID,
+
   @OneToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "ete_course_completion_event_id", referencedColumnName = "id")
   val eteCourseCompletionEvent: EteCourseCompletionEventEntity,
@@ -46,13 +48,22 @@ data class EteCourseCompletionEventResolutionEntity(
   @PreUpdate
   fun preUpdate(): Unit = throw UnsupportedOperationException("This entity can't be updated")
 
+  @Suppress("USELESS_IS_CHECK")
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
-    if (other !is EteCourseCompletionEventResolutionEntity) return false
+    if (other == null) return false
+    val oEffectiveClass =
+      if (other is HibernateProxy) other.hibernateLazyInitializer.persistentClass else other.javaClass
+    val thisEffectiveClass =
+      this.asHibernateProxy()?.hibernateLazyInitializer?.persistentClass ?: this.javaClass
+    if (thisEffectiveClass != oEffectiveClass) return false
+    other as EteCourseCompletionEventEntity
+
     return id == other.id
   }
 
-  override fun hashCode(): Int = id.hashCode()
+  @Suppress("USELESS_IS_CHECK")
+  override fun hashCode(): Int = this.asHibernateProxy()?.hibernateLazyInitializer?.persistentClass?.hashCode() ?: javaClass.hashCode()
 
   override fun toString(): String = "EteCourseCompletionEventResolutionEntity(id=$id)"
 

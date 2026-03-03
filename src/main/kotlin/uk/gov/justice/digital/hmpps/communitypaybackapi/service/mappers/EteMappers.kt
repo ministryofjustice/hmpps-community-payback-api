@@ -135,4 +135,5 @@ fun EteCourseCompletionEventEntity.toDto() = EteCourseCompletionEventDto(
   attempts = attempts,
   externalReference = externalReference,
   importedOn = createdAt.toLocalDateTime(),
+  resolved = resolution != null,
 )

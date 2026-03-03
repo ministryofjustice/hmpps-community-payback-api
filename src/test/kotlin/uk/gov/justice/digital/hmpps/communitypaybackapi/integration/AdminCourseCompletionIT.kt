@@ -18,6 +18,8 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionOutc
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EteCourseCompletionEventDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntityRepository
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventResolutionEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventResolutionRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.unallocated
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.validNoOutcome
@@ -35,6 +37,9 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
 
   @Autowired
   lateinit var eteCourseCompletionEventEntityRepository: EteCourseCompletionEventEntityRepository
+
+  @Autowired
+  lateinit var eteCourseCompletionEventResolutionRepository: EteCourseCompletionEventResolutionRepository
 
   @Autowired
   lateinit var domainEventAsserter: DomainEventAsserter
@@ -166,21 +171,117 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
         assertThat(pagedCourseCompletions.content.last().id).isEqualTo(inRange2.id)
       }
 
+      @Test
+      fun `should return resolved and unresolved if no resolution filter defined`() {
+        val resolved = eteCourseCompletionEventEntityRepository.save(
+          EteCourseCompletionEventEntity.valid().copy(
+            region = "London",
+          ),
+        )
+        eteCourseCompletionEventResolutionRepository.save(
+          EteCourseCompletionEventResolutionEntity.valid(ctx).copy(
+            eteCourseCompletionEvent = resolved,
+          ),
+        )
+
+        val unresolved = eteCourseCompletionEventEntityRepository.save(
+          EteCourseCompletionEventEntity.valid().copy(
+            region = "London",
+          ),
+        )
+
+        val result = webTestClient.get()
+          .uri("/admin/providers/N07/course-completions")
+          .addAdminUiAuthHeader()
+          .exchange()
+          .expectStatus()
+          .isOk
+          .bodyAsObject<PagedModel<EteCourseCompletionEventDto>>()
+
+        assertThat(result.content.map { it.id }).containsExactlyInAnyOrder(resolved.id, unresolved.id)
+      }
+
+      @Test
+      fun `should only return resolved if resolved requested`() {
+        val resolved = eteCourseCompletionEventEntityRepository.save(
+          EteCourseCompletionEventEntity.valid().copy(
+            region = "London",
+          ),
+        )
+
+        eteCourseCompletionEventResolutionRepository.save(
+          EteCourseCompletionEventResolutionEntity.valid(ctx).copy(
+            eteCourseCompletionEvent = resolved,
+          ),
+        )
+
+        // unresolved
+        eteCourseCompletionEventEntityRepository.save(
+          EteCourseCompletionEventEntity.valid().copy(
+            region = "London",
+          ),
+        )
+
+        val result = webTestClient.get()
+          .uri("/admin/providers/N07/course-completions?resolutionStatus=Resolved")
+          .addAdminUiAuthHeader()
+          .exchange()
+          .expectStatus()
+          .isOk
+          .bodyAsObject<PagedModel<EteCourseCompletionEventDto>>()
+
+        assertThat(result.content.map { it.id }).containsExactlyInAnyOrder(resolved.id)
+      }
+
+      @Test
+      fun `should only return unresolved if unresolved requested`() {
+        val resolved = eteCourseCompletionEventEntityRepository.save(
+          EteCourseCompletionEventEntity.valid().copy(
+            region = "London",
+          ),
+        )
+
+        eteCourseCompletionEventResolutionRepository.save(
+          EteCourseCompletionEventResolutionEntity.valid(ctx).copy(
+            eteCourseCompletionEvent = resolved,
+          ),
+        )
+
+        val unresolved = eteCourseCompletionEventEntityRepository.save(
+          EteCourseCompletionEventEntity.valid().copy(
+            region = "London",
+          ),
+        )
+
+        val result = webTestClient.get()
+          .uri("/admin/providers/N07/course-completions?resolutionStatus=Unresolved")
+          .addAdminUiAuthHeader()
+          .exchange()
+          .expectStatus()
+          .isOk
+          .bodyAsObject<PagedModel<EteCourseCompletionEventDto>>()
+
+        assertThat(result.content.map { it.id }).containsExactlyInAnyOrder(unresolved.id)
+      }
+
+      @Test
       fun `should apply office filter`() {
         eteCourseCompletionEventEntityRepository.save(
           EteCourseCompletionEventEntity.valid().copy(
-            region = "Norwich",
+            region = "London",
+            office = "Hammersmith",
           ),
         )
 
         val inOffice = eteCourseCompletionEventEntityRepository.save(
           EteCourseCompletionEventEntity.valid().copy(
             region = "London",
+            office = "Whitechapel",
           ),
         )
 
         val pagedCourseCompletions = webTestClient.get()
-          .uri("/admin/providers/N07/course-completions?office=London")
+          .uri("/admin/providers/N07/course-completions?office=Whitechapel")
           .addAdminUiAuthHeader()
           .exchange()
           .expectStatus()
@@ -191,37 +292,41 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
         assertThat(pagedCourseCompletions.content.first().id).isEqualTo(inOffice.id)
       }
 
+      @Test
       fun `should apply multiple office filters`() {
         eteCourseCompletionEventEntityRepository.save(
           EteCourseCompletionEventEntity.valid().copy(
-            region = "Norwich",
+            region = "London",
+            office = "Hammersmith",
           ),
         )
 
         val inOffice1 = eteCourseCompletionEventEntityRepository.save(
           EteCourseCompletionEventEntity.valid().copy(
             region = "London",
+            office = "Whitechapel",
           ),
         )
 
         val inOffice2 = eteCourseCompletionEventEntityRepository.save(
           EteCourseCompletionEventEntity.valid().copy(
-            region = "Manchester",
+            region = "London",
+            office = "Croydon",
           ),
         )
 
         val pagedCourseCompletions = webTestClient.get()
-          .uri("/admin/providers/N07/course-completions?office=London&office=Manchester")
+          .uri("/admin/providers/N07/course-completions?office=Whitechapel&office=Croydon")
           .addAdminUiAuthHeader()
           .exchange()
           .expectStatus()
           .isOk
           .bodyAsObject<PagedModel<EteCourseCompletionEventDto>>()
 
-        assertThat(pagedCourseCompletions.content).hasSize(2)
-        val contentList = pagedCourseCompletions.content.toList()
-        assertThat(contentList[0].id).isEqualTo(inOffice1.id)
-        assertThat(contentList[1].id).isEqualTo(inOffice2.id)
+        assertThat(pagedCourseCompletions.content.map { it.id }).containsExactlyInAnyOrder(
+          inOffice1.id,
+          inOffice2.id,
+        )
       }
 
       @Test

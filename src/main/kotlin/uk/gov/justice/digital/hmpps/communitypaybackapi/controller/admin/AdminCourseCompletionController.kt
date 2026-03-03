@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EteCourseCompletionEventDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EteCourseCompletionResolutionStatusDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.EteService
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 import java.time.LocalDate
@@ -67,6 +68,9 @@ class AdminCourseCompletionController(val eteService: EteService) {
     @PageableDefault(size = 50, sort = ["firstName", "lastName"], direction = Sort.Direction.DESC) pageable: Pageable,
     @PathVariable providerCode: String,
     @RequestParam
+    @Parameter(description = "If not defined both resolved and unresolved completions will be returned")
+    resolutionStatus: EteCourseCompletionResolutionStatusDto?,
+    @RequestParam
     @Parameter(description = "From date, inclusive", example = "2025-09-01")
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) dateFrom: LocalDate?,
     @RequestParam
@@ -80,7 +84,7 @@ class AdminCourseCompletionController(val eteService: EteService) {
     dateFrom,
     dateTo,
     office,
-
+    resolutionStatus = resolutionStatus,
     pageable,
   )
 

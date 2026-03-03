@@ -1,9 +1,11 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.entity
 
+import jakarta.persistence.CascadeType
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
 import jakarta.persistence.Id
+import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
 import jakarta.persistence.Version
 import org.hibernate.annotations.CreationTimestamp
@@ -46,6 +48,9 @@ data class EteCourseCompletionEventEntity(
   val attempts: Int?,
 
   val externalReference: String,
+
+  @OneToOne(mappedBy = "eteCourseCompletionEvent", cascade = [CascadeType.REMOVE])
+  val resolution: EteCourseCompletionEventResolutionEntity? = null,
 
   @CreationTimestamp
   val createdAt: OffsetDateTime = OffsetDateTime.now(),

@@ -1,6 +1,9 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.factory
 
+import org.springframework.beans.factory.getBean
+import org.springframework.context.ApplicationContext
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventResolutionEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionResolution
@@ -20,4 +23,8 @@ fun EteCourseCompletionEventResolutionEntity.Companion.valid() = EteCourseComple
   projectCode = String.random(5),
   minutesCredited = Long.random(600),
   contactOutcome = ContactOutcomeEntity.valid(),
+)
+
+fun EteCourseCompletionEventResolutionEntity.Companion.valid(ctx: ApplicationContext) = EteCourseCompletionEventResolutionEntity.valid().copy(
+  contactOutcome = ctx.getBean<ContactOutcomeEntityRepository>().findAll().minByOrNull { it.name }!!,
 )

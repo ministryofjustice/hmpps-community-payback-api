@@ -20,6 +20,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionOutc
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventResolutionEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventStatus
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionResolution
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
@@ -240,8 +241,10 @@ class EteMappersTest {
 
   @Nested
   inner class EntityToEteCourseCompletionEventDto {
-    @Test
-    fun `should map all entity fields to DTO`() {
+
+    @ParameterizedTest
+    @CsvSource("true", "false")
+    fun `should map all entity fields to DTO`(resolved: Boolean) {
       val id = UUID.randomUUID()
       val firstName = "John"
       val lastName = "Smith"
@@ -277,6 +280,11 @@ class EteMappersTest {
         attempts = attempts,
         externalReference = externalReference,
         createdAt = createdAt,
+        resolution = if (resolved) {
+          EteCourseCompletionEventResolutionEntity.valid()
+        } else {
+          null
+        },
       )
 
       val result = entity.toDto()
@@ -297,6 +305,7 @@ class EteMappersTest {
       assertThat(result.attempts).isEqualTo(attempts)
       assertThat(result.externalReference).isEqualTo(externalReference)
       assertThat(result.importedOn).isEqualTo(LocalDateTime.parse("2007-06-03T10:15:30"))
+      assertThat(result.resolved).isEqualTo(resolved)
     }
   }
 

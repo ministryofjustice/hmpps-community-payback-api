@@ -4,7 +4,6 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
-import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
 import java.time.LocalDate
 import java.util.UUID
@@ -14,40 +13,28 @@ interface EteCourseCompletionEventEntityRepository : JpaRepository<EteCourseComp
 
   @Query(
     """
-    SELECT e FROM EteCourseCompletionEventEntity e 
+    SELECT e FROM EteCourseCompletionEventEntity e
+    LEFT JOIN e.resolution r
     WHERE e.region = :region 
+    AND (:officesCount = 0 OR e.office IN :offices)
+    AND ((:#{#resolutionStatus.name()} = 'ANY') OR (:#{#resolutionStatus.name()} = 'RESOLVED' AND r IS NOT NULL) OR (:#{#resolutionStatus.name()} = 'UNRESOLVED' AND r IS NULL))
     AND (cast(:fromDate as date) IS NULL OR e.completionDate >= :fromDate)
     AND (cast(:toDate as date) IS NULL OR e.completionDate <= :toDate)
   """,
   )
-  fun findByRegionAndDateRange(
-    @Param("region") region: String,
-    @Param("fromDate") fromDate: LocalDate?,
-    @Param("toDate") toDate: LocalDate?,
+  fun findAllWithFilters(
+    region: String,
+    officesCount: Int,
+    offices: List<String>,
+    resolutionStatus: ResolutionStatus,
+    fromDate: LocalDate?,
+    toDate: LocalDate?,
     pageable: Pageable,
   ): Page<EteCourseCompletionEventEntity>
 
-  @Query(
-    """
-    SELECT e FROM EteCourseCompletionEventEntity e 
-    WHERE e.region = :region
-      AND (:offices IS NULL OR e.office IN :offices)
-      AND (cast(:fromDate as date) IS NULL OR e.completionDate >= :fromDate)
-      AND (cast(:toDate as date) IS NULL OR e.completionDate <= :toDate)
-  """,
-  )
-  fun findByRegionDateRangeAndOffices(
-    @Param("region") region: String,
-    @Param("offices") offices: List<String>?,
-    @Param("fromDate") fromDate: LocalDate?,
-    @Param("toDate") toDate: LocalDate?,
-    pageable: Pageable,
-  ): Page<EteCourseCompletionEventEntity>
-
-  fun findByEmail(@Param("email") email: String): List<EteCourseCompletionEventEntity>
-
-  fun findByEmailAndStatus(
-    @Param("email") email: String,
-    @Param("status") status: EteCourseCompletionEventStatus,
-  ): List<EteCourseCompletionEventEntity>
+  enum class ResolutionStatus {
+    ANY,
+    RESOLVED,
+    UNRESOLVED,
+  }
 }
