@@ -534,6 +534,8 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
         minutesToCredit = 90,
       )
 
+      val project = NDProject.valid(ctx).copy(code = PROJECT_CODE, actualEndDateExclusive = null)
+      CommunityPaybackAndDeliusMockServer.getProject(project)
       CommunityPaybackAndDeliusMockServer.getUpwDetailsSummary(
         crn = CRN,
         unpaidWorkDetails = listOf(
@@ -542,6 +544,10 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
             sentenceDate = LocalDate.now().minusDays(10),
           ),
         ),
+      )
+      CommunityPaybackAndDeliusMockServer.getTeamSupervisors(
+        forProject = project,
+        supervisorSummaries = NDSupervisorSummaries(listOf(NDSupervisorSummary.unallocated())),
       )
       CommunityPaybackAndDeliusMockServer.postAppointments(projectCode = PROJECT_CODE, appointmentCount = 1)
 
@@ -614,6 +620,111 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
       )
 
       assertThat(eteCourseCompletionEventEntityRepository.findByIdOrNull(eventEntity.id)!!.resolution).isNotNull
+    }
+
+    @Test
+    fun `should return success but do nothing if an identical resolution has already been applied`() {
+      val eventEntity = eteCourseCompletionEventEntityRepository.save(
+        EteCourseCompletionEventEntity.valid().copy(
+          completionDate = LocalDate.now().minusDays(1),
+        ),
+      )
+
+      val outcome = CourseCompletionOutcomeDto.valid(ctx).copy(
+        crn = CRN,
+        deliusEventNumber = DELIUS_EVENT_NUMBER,
+        appointmentIdToUpdate = null,
+        projectCode = PROJECT_CODE,
+        minutesToCredit = 90,
+      )
+
+      CommunityPaybackAndDeliusMockServer.getUpwDetailsSummary(
+        crn = CRN,
+        unpaidWorkDetails = listOf(
+          NDCaseDetail.valid().copy(
+            eventNumber = DELIUS_EVENT_NUMBER,
+            sentenceDate = LocalDate.now().minusDays(10),
+          ),
+        ),
+      )
+      CommunityPaybackAndDeliusMockServer.postAppointments(projectCode = PROJECT_CODE, appointmentCount = 1)
+
+      webTestClient.post()
+        .uri("/admin/course-completions/${eventEntity.id}")
+        .addAdminUiAuthHeader("theusername")
+        .contentType(MediaType.APPLICATION_JSON)
+        .bodyValue(outcome)
+        .exchange()
+        .expectStatus()
+        .isNoContent
+
+      webTestClient.post()
+        .uri("/admin/course-completions/${eventEntity.id}")
+        .addAdminUiAuthHeader("theusername")
+        .contentType(MediaType.APPLICATION_JSON)
+        .bodyValue(outcome)
+        .exchange()
+        .expectStatus()
+        .isNoContent
+
+      CommunityPaybackAndDeliusMockServer.postAppointmentVerify(
+        projectCode = PROJECT_CODE,
+        totalExpectedCalls = 1,
+      )
+
+      assertThat(eteCourseCompletionEventEntityRepository.findByIdOrNull(eventEntity.id)!!.resolution).isNotNull
+    }
+
+    @Test
+    fun `should error if a differing resolution has already been applied`() {
+      val eventEntity = eteCourseCompletionEventEntityRepository.save(
+        EteCourseCompletionEventEntity.valid().copy(
+          completionDate = LocalDate.now().minusDays(1),
+        ),
+      )
+
+      val outcome = CourseCompletionOutcomeDto.valid(ctx).copy(
+        crn = CRN,
+        deliusEventNumber = DELIUS_EVENT_NUMBER,
+        appointmentIdToUpdate = null,
+        projectCode = PROJECT_CODE,
+        minutesToCredit = 90,
+      )
+
+      CommunityPaybackAndDeliusMockServer.getUpwDetailsSummary(
+        crn = CRN,
+        unpaidWorkDetails = listOf(
+          NDCaseDetail.valid().copy(
+            eventNumber = DELIUS_EVENT_NUMBER,
+            sentenceDate = LocalDate.now().minusDays(10),
+          ),
+        ),
+      )
+      CommunityPaybackAndDeliusMockServer.postAppointments(projectCode = PROJECT_CODE, appointmentCount = 1)
+
+      webTestClient.post()
+        .uri("/admin/course-completions/${eventEntity.id}")
+        .addAdminUiAuthHeader("theusername")
+        .contentType(MediaType.APPLICATION_JSON)
+        .bodyValue(outcome)
+        .exchange()
+        .expectStatus()
+        .isNoContent
+
+      webTestClient.post()
+        .uri("/admin/course-completions/${eventEntity.id}")
+        .addAdminUiAuthHeader("theusername")
+        .contentType(MediaType.APPLICATION_JSON)
+        .bodyValue(
+          outcome.copy(
+            minutesToCredit = outcome.minutesToCredit + 1,
+          ),
+        )
+        .exchange()
+        .expectStatus()
+        .isBadRequest
+        .expectBody()
+        .jsonPath("$.userMessage").isEqualTo("Validation failure: A resolution has already been defined for this course completion record")
     }
   }
 

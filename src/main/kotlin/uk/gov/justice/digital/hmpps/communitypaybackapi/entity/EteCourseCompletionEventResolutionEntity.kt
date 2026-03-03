@@ -10,6 +10,7 @@ import jakarta.persistence.ManyToOne
 import jakarta.persistence.OneToOne
 import jakarta.persistence.PreUpdate
 import jakarta.persistence.Table
+import org.apache.commons.lang3.builder.CompareToBuilder.reflectionCompare
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.proxy.HibernateProxy
 import java.time.OffsetDateTime
@@ -45,6 +46,36 @@ data class EteCourseCompletionEventResolutionEntity(
   @JoinColumn(name = "contact_outcome_id", referencedColumnName = "id")
   val contactOutcome: ContactOutcomeEntity?,
 ) {
+  /**
+   * Used when determining if a resolution has already been applied
+   *
+   * This function should be updated if a new JPA relationship is added to this entity,
+   * adding an explicit comparison and excluding it from the call to [reflectionCompare].
+   * For an example see contactOutcome
+   */
+  fun isLogicallyIdentical(other: EteCourseCompletionEventResolutionEntity): Boolean {
+    if (this.eteCourseCompletionEvent.id != other.eteCourseCompletionEvent.id) return false
+    if (this.contactOutcome?.id != other.contactOutcome?.id) return false
+
+    val excludeFields = buildList {
+      add("id")
+      add("createdAt")
+      add("createdByUsername")
+      if (other.deliusAppointmentCreated == true) {
+        add("deliusAppointmentId")
+      }
+      // ignore because we check relationships manually
+      add("eteCourseCompletionEvent")
+      add("contactOutcome")
+    }
+
+    return reflectionCompare(
+      this,
+      other,
+      excludeFields,
+    ) == 0
+  }
+
   @PreUpdate
   fun preUpdate(): Unit = throw UnsupportedOperationException("This entity can't be updated")
 

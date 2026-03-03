@@ -100,7 +100,6 @@ class EteMappers(
     courseCompletionEvent: EteCourseCompletionEventEntity,
     courseCompletionOutcome: CourseCompletionOutcomeDto,
     deliusAppointmentId: Long,
-    deliusAppointmentCreated: Boolean,
   ) = EteCourseCompletionEventResolutionEntity(
     id = UUID.randomUUID(),
     eteCourseCompletionEvent = courseCompletionEvent,
@@ -110,7 +109,7 @@ class EteMappers(
     crn = courseCompletionOutcome.crn,
     deliusEventNumber = courseCompletionOutcome.deliusEventNumber,
     deliusAppointmentId = deliusAppointmentId,
-    deliusAppointmentCreated = deliusAppointmentCreated,
+    deliusAppointmentCreated = courseCompletionOutcome.appointmentIdToUpdate == null,
     projectCode = courseCompletionOutcome.projectCode,
     minutesCredited = courseCompletionOutcome.minutesToCredit,
     contactOutcome = contactOutcomeEntityRepository.findByCode(courseCompletionOutcome.contactOutcomeCode),

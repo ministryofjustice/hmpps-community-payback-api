@@ -9,7 +9,7 @@ import kotlin.random.Random
 fun CourseCompletionOutcomeDto.Companion.valid() = CourseCompletionOutcomeDto(
   crn = String.random(1).uppercase() + Random.nextInt(0, 99999),
   deliusEventNumber = Long.random(50),
-  appointmentIdToUpdate = null,
+  appointmentIdToUpdate = Long.random(),
   minutesToCredit = Long.random(0, 181),
   contactOutcomeCode = String.random(20),
   projectCode = String.random(20),

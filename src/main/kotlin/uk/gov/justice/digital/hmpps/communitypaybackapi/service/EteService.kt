@@ -106,12 +106,14 @@ class EteService(
     eteCourseCompletionEventId: UUID,
     courseCompletionOutcome: CourseCompletionOutcomeDto,
   ) {
-    eteValidationService.validateCourseCompletionOutcome(courseCompletionOutcome)
-
     val courseCompletionEvent = getEventOrError(eteCourseCompletionEventId)
 
-    val createAppointment = courseCompletionOutcome.appointmentIdToUpdate == null
-    val deliusAppointmentId = if (createAppointment) {
+    when (eteValidationService.validateCourseCompletionOutcome(courseCompletionOutcome, courseCompletionEvent)) {
+      EteValidationService.ValidationResult.EXISTING_IDENTICAL_RESOLUTION -> return
+      EteValidationService.ValidationResult.VALID -> Unit
+    }
+
+    val deliusAppointmentId = if (courseCompletionOutcome.appointmentIdToUpdate == null) {
       createAppointment(
         courseCompletionEvent = courseCompletionEvent,
         courseCompletionOutcome = courseCompletionOutcome,
@@ -128,7 +130,6 @@ class EteService(
         courseCompletionEvent = courseCompletionEvent,
         courseCompletionOutcome = courseCompletionOutcome,
         deliusAppointmentId = deliusAppointmentId,
-        deliusAppointmentCreated = createAppointment,
       ),
     )
   }
