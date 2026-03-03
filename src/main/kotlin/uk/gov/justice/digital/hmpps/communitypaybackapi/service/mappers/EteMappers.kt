@@ -99,11 +99,12 @@ class EteMappers(
   )
 
   fun toResolutionEntity(
+    id: UUID,
     courseCompletionEvent: EteCourseCompletionEventEntity,
     courseCompletionOutcome: CourseCompletionOutcomeDto,
     deliusAppointmentId: Long,
   ) = EteCourseCompletionEventResolutionEntity(
-    id = UUID.randomUUID(),
+    id = id,
     eteCourseCompletionEvent = courseCompletionEvent,
     resolution = EteCourseCompletionResolution.CREDIT_TIME,
     createdAt = OffsetDateTime.now(),

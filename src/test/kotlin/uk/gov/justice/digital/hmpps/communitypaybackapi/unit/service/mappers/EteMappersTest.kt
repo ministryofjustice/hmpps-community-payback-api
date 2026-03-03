@@ -319,6 +319,8 @@ class EteMappersTest {
     @ParameterizedTest
     @CsvSource("true", "false")
     fun success(appointmentCreated: Boolean) {
+      val resolutionId = UUID.randomUUID()
+
       every { contextService.getUserName() } returns "jeff"
       val contactOutcome = ContactOutcomeEntity.valid()
       every { contactOutcomeEntityRepository.findByCode(CONTACT_OUTCOME_CODE) } returns contactOutcome
@@ -326,6 +328,7 @@ class EteMappersTest {
       val courseCompletionEvent = EteCourseCompletionEventEntity.valid()
 
       val result = mapper.toResolutionEntity(
+        id = resolutionId,
         courseCompletionEvent = courseCompletionEvent,
         courseCompletionOutcome = CourseCompletionOutcomeDto.valid().copy(
           crn = CRN,
@@ -342,6 +345,7 @@ class EteMappersTest {
         deliusAppointmentId = DELIUS_APPOINTMENT_ID,
       )
 
+      assertThat(result.id).isEqualTo(resolutionId)
       assertThat(result.eteCourseCompletionEvent).isEqualTo(courseCompletionEvent)
       assertThat(result.resolution).isEqualTo(EteCourseCompletionResolution.CREDIT_TIME)
       assertThat(result.createdByUsername).isEqualTo("jeff")

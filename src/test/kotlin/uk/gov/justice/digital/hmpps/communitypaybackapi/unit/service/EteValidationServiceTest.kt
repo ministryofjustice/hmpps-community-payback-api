@@ -105,6 +105,7 @@ class EteValidationServiceTest {
 
         every {
           eteMappers.toResolutionEntity(
+            id = any(),
             courseCompletionEvent = courseCompletionEvent,
             courseCompletionOutcome = baselineCourseCompletionOutcome,
             deliusAppointmentId = baselineCourseCompletionOutcome.appointmentIdToUpdate!!,
@@ -127,6 +128,7 @@ class EteValidationServiceTest {
 
         every {
           eteMappers.toResolutionEntity(
+            id = any(),
             courseCompletionEvent = courseCompletionEvent,
             courseCompletionOutcome = baselineCourseCompletionOutcome,
             deliusAppointmentId = baselineCourseCompletionOutcome.appointmentIdToUpdate!!,
