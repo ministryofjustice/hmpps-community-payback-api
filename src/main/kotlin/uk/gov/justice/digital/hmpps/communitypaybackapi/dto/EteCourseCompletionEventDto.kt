@@ -62,3 +62,8 @@ data class EteCourseCompletionEventDto(
   @param:Schema(description = "The Date/Time that the record was imported into the CAS database")
   val importedOn: LocalDateTime,
 )
+
+enum class EteCourseCompletionResolutionStatusDto {
+  Resolved,
+  Unresolved,
+}

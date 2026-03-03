@@ -13,9 +13,11 @@ interface EteCourseCompletionEventEntityRepository : JpaRepository<EteCourseComp
 
   @Query(
     """
-    SELECT e FROM EteCourseCompletionEventEntity e 
+    SELECT e FROM EteCourseCompletionEventEntity e
+    LEFT JOIN e.resolution r
     WHERE e.region = :region 
     AND (:officesCount = 0 OR e.office IN :offices)
+    AND ((:#{#resolutionStatus.name()} = 'ANY') OR (:#{#resolutionStatus.name()} = 'RESOLVED' AND r IS NOT NULL) OR (:#{#resolutionStatus.name()} = 'UNRESOLVED' AND r IS NULL))
     AND (cast(:fromDate as date) IS NULL OR e.completionDate >= :fromDate)
     AND (cast(:toDate as date) IS NULL OR e.completionDate <= :toDate)
   """,
@@ -24,8 +26,15 @@ interface EteCourseCompletionEventEntityRepository : JpaRepository<EteCourseComp
     region: String,
     officesCount: Int,
     offices: List<String>,
+    resolutionStatus: ResolutionStatus,
     fromDate: LocalDate?,
     toDate: LocalDate?,
     pageable: Pageable,
   ): Page<EteCourseCompletionEventEntity>
+
+  enum class ResolutionStatus {
+    ANY,
+    RESOLVED,
+    UNRESOLVED,
+  }
 }

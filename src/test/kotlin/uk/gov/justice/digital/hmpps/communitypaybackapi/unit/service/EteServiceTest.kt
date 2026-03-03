@@ -24,6 +24,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.NotFoundE
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntityRepository
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntityRepository.ResolutionStatus
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventResolutionEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventResolutionRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventStatus
@@ -155,7 +156,7 @@ class EteServiceTest {
     @Test
     fun `should return empty page when provider code not found`() {
       val pageable = Pageable.unpaged()
-      val result = eteService.getEteCourseCompletionEvents("INVALID", null, null, null, pageable)
+      val result = eteService.getEteCourseCompletionEvents("INVALID", null, null, null, null, pageable)
 
       assertThat(result.isEmpty).isTrue
     }
@@ -175,7 +176,7 @@ class EteServiceTest {
       "N03, Wales",
       "N55, Yorks & Humber",
     )
-    fun `should return course completion events filtered by date range`(providerCode: String, region: String) {
+    fun `use correct region code mapping`(providerCode: String, region: String) {
       val pageable = Pageable.unpaged()
       val offices = listOf("office1", "office2")
       val fromDate = LocalDate.of(2026, 1, 1)
@@ -190,13 +191,21 @@ class EteServiceTest {
           region,
           officesCount = 2,
           offices = offices,
+          resolutionStatus = ResolutionStatus.ANY,
           fromDate,
           toDate,
           pageable,
         )
       } returns PageImpl(listOf(entity))
 
-      val result = eteService.getEteCourseCompletionEvents(providerCode, fromDate, toDate, offices, pageable)
+      val result = eteService.getEteCourseCompletionEvents(
+        providerCode,
+        fromDate,
+        toDate,
+        offices,
+        resolutionStatus = null,
+        pageable,
+      )
 
       assertThat(result.isEmpty).isFalse
       assertThat(result.content).hasSize(1)

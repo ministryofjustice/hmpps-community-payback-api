@@ -7,10 +7,12 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EteCourseCompletionEventDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EteCourseCompletionResolutionStatusDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.NotFoundException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntityRepository
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntityRepository.ResolutionStatus
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventResolutionRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventStatus
 import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseCompletionMessage
@@ -74,6 +76,7 @@ class EteService(
     fromDate: LocalDate?,
     toDate: LocalDate?,
     offices: List<String>?,
+    resolutionStatus: EteCourseCompletionResolutionStatusDto?,
     pageable: Pageable,
   ): Page<EteCourseCompletionEventDto> {
     val region = providerCodeToRegionName[providerCode] ?: return Page.empty()
@@ -83,6 +86,11 @@ class EteService(
       region,
       officesNormalised.size,
       officesNormalised,
+      resolutionStatus = when (resolutionStatus) {
+        EteCourseCompletionResolutionStatusDto.Resolved -> ResolutionStatus.RESOLVED
+        EteCourseCompletionResolutionStatusDto.Unresolved -> ResolutionStatus.UNRESOLVED
+        null -> ResolutionStatus.ANY
+      },
       fromDate,
       toDate,
       pageable,

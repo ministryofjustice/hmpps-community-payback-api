@@ -15,7 +15,6 @@ class DatabasePurgeUtils {
   lateinit var eteCourseCompletionEventResolutionRepository: EteCourseCompletionEventResolutionRepository
 
   fun deleteAllEteData() {
-    eteCourseCompletionEventResolutionRepository.deleteAll()
     eteCourseCompletionEventEntityRepository.deleteAll()
   }
 }
