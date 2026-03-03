@@ -20,12 +20,12 @@ configurations {
 }
 
 dependencies {
-  implementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter:2.0.1")
+  implementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter:2.0.2")
   implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:7.0.1")
 
   implementation("org.springframework.boot:spring-boot-starter-webflux")
   implementation("org.springframework.boot:spring-boot-starter-webclient")
-  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.1")
+  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.2")
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
   implementation("org.springframework.boot:spring-boot-starter-hateoas")
   implementation("org.springframework.boot:spring-boot-starter-cache")
@@ -33,14 +33,14 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-flyway")
   implementation("org.postgresql:postgresql")
 
-  implementation("org.redisson:redisson-spring-boot-starter:4.2.0")
+  implementation("org.redisson:redisson-spring-boot-starter:4.3.0")
   implementation("com.github.ben-manes.caffeine:caffeine:3.2.3")
   implementation("net.javacrumbs.shedlock:shedlock-spring:7.6.0")
   implementation("net.javacrumbs.shedlock:shedlock-provider-redis-spring:7.6.0")
 
   runtimeOnly("org.flywaydb:flyway-database-postgresql")
 
-  testImplementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter-test:2.0.1")
+  testImplementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter-test:2.0.2")
   testImplementation("org.springframework.boot:spring-boot-starter-webflux-test")
   testImplementation("org.wiremock:wiremock-standalone:3.13.2")
   testImplementation("io.swagger.parser.v3:swagger-parser:2.1.38") {
@@ -50,10 +50,10 @@ dependencies {
   testImplementation("org.testcontainers:testcontainers-postgresql:2.0.3")
   testImplementation("com.redis:testcontainers-redis:2.2.4")
   testImplementation("org.awaitility:awaitility-kotlin:4.3.0")
-  testImplementation("org.wiremock.integrations:wiremock-spring-boot:4.1.0")
+  testImplementation("org.wiremock.integrations:wiremock-spring-boot:4.2.0")
   testImplementation("io.mockk:mockk:1.14.9")
   testImplementation("com.lemonappdev:konsist:0.17.3")
-  testImplementation("uk.gov.justice.service.hmpps:hmpps-subject-access-request-test-support:2.0.2")
+  testImplementation("uk.gov.justice.service.hmpps:hmpps-subject-access-request-test-support:2.0.3")
   // if we don't force this version of kotlin-mockito we use a newer version that's not compatible
   // with hmpps-subject-access-request-test-support. It's not clear what's pulling in that newer version
   testImplementation("org.mockito.kotlin:mockito-kotlin:6.1.0")
