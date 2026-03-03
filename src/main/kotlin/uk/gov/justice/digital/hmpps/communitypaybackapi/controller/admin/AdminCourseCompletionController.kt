@@ -79,7 +79,7 @@ class AdminCourseCompletionController(val eteService: EteService) {
     @RequestParam(required = false)
     @Parameter(description = "Filter by one or more office codes. Example: ?office=London&office=Norwich", example = "London")
     office: List<String>?,
-  ): Page<EteCourseCompletionEventDto> = eteService.getEteCourseCompletionEvents(
+  ): Page<EteCourseCompletionEventDto> = eteService.getCourseCompletionEvents(
     providerCode,
     dateFrom,
     dateTo,
@@ -123,7 +123,7 @@ class AdminCourseCompletionController(val eteService: EteService) {
     @PathVariable eteCourseCompletionEventId: UUID,
     @RequestBody @Valid courseCompletionOutcome: CourseCompletionOutcomeDto,
   ): ResponseEntity<Unit> {
-    eteService.processCourseCompletionOutcome(eteCourseCompletionEventId, courseCompletionOutcome)
+    eteService.recordCourseCompletionOutcome(eteCourseCompletionEventId, courseCompletionOutcome)
     return ResponseEntity.status(HttpStatus.NO_CONTENT).build()
   }
 }

@@ -39,7 +39,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.EteService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.EteValidationService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.EteMappers
 import java.time.LocalDate
-import java.util.Optional.empty
 import java.util.UUID
 
 @ExtendWith(MockKExtension::class)
@@ -93,7 +92,7 @@ class EteServiceTest {
         ),
       )
 
-      eteService.handleEducationCourseCompletionMessage(entity)
+      eteService.recordCourseCompletionEvent(entity)
 
       assertThat(entityCaptor.isCaptured).isTrue
       val persistedEntity = entityCaptor.captured
@@ -127,7 +126,7 @@ class EteServiceTest {
       val entityCaptor = slot<EteCourseCompletionEventEntity>()
       every { eteCourseCompletionEventEntityRepository.save(capture(entityCaptor)) } returnsArgument 0
 
-      eteService.handleEducationCourseCompletionMessage(
+      eteService.recordCourseCompletionEvent(
         EducationCourseCompletionMessage.valid().copy(
           messageAttributes = EducationCourseMessageAttributes.valid().copy(
             externalReference = "EXT456",
@@ -156,7 +155,7 @@ class EteServiceTest {
     @Test
     fun `should return empty page when provider code not found`() {
       val pageable = Pageable.unpaged()
-      val result = eteService.getEteCourseCompletionEvents("INVALID", null, null, null, null, pageable)
+      val result = eteService.getCourseCompletionEvents("INVALID", null, null, null, null, pageable)
 
       assertThat(result.isEmpty).isTrue
     }
@@ -198,7 +197,7 @@ class EteServiceTest {
         )
       } returns PageImpl(listOf(entity))
 
-      val result = eteService.getEteCourseCompletionEvents(
+      val result = eteService.getCourseCompletionEvents(
         providerCode,
         fromDate,
         toDate,
@@ -238,7 +237,7 @@ class EteServiceTest {
         attempts = 1,
       )
 
-      every { eteCourseCompletionEventEntityRepository.findById(eventId) } returns java.util.Optional.of(entity)
+      every { eteCourseCompletionEventEntityRepository.findByIdOrNull(eventId) } returns entity
 
       val result = eteService.getCourseCompletionEvent(eventId)
 
@@ -253,7 +252,7 @@ class EteServiceTest {
     fun `throws NotFoundException when event not found`() {
       val eventId = UUID.randomUUID()
 
-      every { eteCourseCompletionEventEntityRepository.findById(eventId) } returns empty()
+      every { eteCourseCompletionEventEntityRepository.findByIdOrNull(eventId) } returns null
 
       assertThrows<NotFoundException> {
         eteService.getCourseCompletionEvent(eventId)
@@ -265,7 +264,7 @@ class EteServiceTest {
   }
 
   @Nested
-  inner class ProcessCourseCompletionOutcome {
+  inner class RecordCourseCompletionOutcome {
     @Test
     fun `should create new appointment when appointmentIdToUpdate is null`() {
       val event = EteCourseCompletionEventEntity.valid()
@@ -297,7 +296,7 @@ class EteServiceTest {
         eteCourseCompletionEventResolutionRepository.save(any())
       } returnsArgument 0
 
-      eteService.processCourseCompletionOutcome(event.id, outcome)
+      eteService.recordCourseCompletionOutcome(event.id, outcome)
 
       val triggerSlot = slot<AppointmentEventTrigger>()
 
@@ -317,7 +316,7 @@ class EteServiceTest {
       val projectCode = "PRJ001"
       val event = EteCourseCompletionEventEntity.valid()
 
-      val existingAppointment = AppointmentDto.valid()
+      val existingAppointment = AppointmentDto.valid().copy(id = appointmentId)
 
       val outcome = CourseCompletionOutcomeDto.valid().copy(
         appointmentIdToUpdate = appointmentId,
@@ -353,7 +352,7 @@ class EteServiceTest {
         eteCourseCompletionEventResolutionRepository.save(any())
       } returnsArgument 0
 
-      eteService.processCourseCompletionOutcome(eventId, outcome)
+      eteService.recordCourseCompletionOutcome(eventId, outcome)
 
       val triggerSlot = slot<AppointmentEventTrigger>()
 
@@ -381,10 +380,10 @@ class EteServiceTest {
         projectCode = "PRJ001",
       )
 
-      every { eteCourseCompletionEventEntityRepository.findById(eventId) } returns empty()
+      every { eteCourseCompletionEventEntityRepository.findByIdOrNull(eventId) } returns null
 
       assertThrows<NotFoundException> {
-        eteService.processCourseCompletionOutcome(eventId, outcome)
+        eteService.recordCourseCompletionOutcome(eventId, outcome)
       }
     }
   }

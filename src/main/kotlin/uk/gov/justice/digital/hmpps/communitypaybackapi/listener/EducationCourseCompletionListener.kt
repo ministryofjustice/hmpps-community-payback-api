@@ -33,7 +33,7 @@ class EducationCourseCompletionListener(
     log.debug("Have received education course course completion message '$messageString'")
     sqsListenerErrorHandler.withErrorHandler(headers) {
       val message = jsonMapper.readValue(messageString, EducationCourseCompletionMessage::class.java)
-      eteService.handleEducationCourseCompletionMessage(message)
+      eteService.recordCourseCompletionEvent(message)
     }
   }
 }
