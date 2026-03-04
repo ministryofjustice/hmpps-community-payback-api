@@ -110,7 +110,7 @@ data class AppointmentEventEntity(
 enum class AppointmentEventTriggerType {
   USER,
   SCHEDULING,
-  ETE_COURSE_COMPLETION,
+  ETE_COURSE_COMPLETION_RESOLUTION,
 }
 
 enum class AppointmentEventType {

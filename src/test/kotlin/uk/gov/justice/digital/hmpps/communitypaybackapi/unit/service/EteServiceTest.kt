@@ -26,7 +26,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourse
 import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseCompletionStatus
 import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseMessageAttributes
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentService
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ContextService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.EteService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.EteValidationService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.EteMappers
@@ -47,9 +46,6 @@ class EteServiceTest {
 
   @RelaxedMockK
   lateinit var eteMappers: EteMappers
-
-  @RelaxedMockK
-  lateinit var contextService: ContextService
 
   @RelaxedMockK
   lateinit var eteValidationService: EteValidationService

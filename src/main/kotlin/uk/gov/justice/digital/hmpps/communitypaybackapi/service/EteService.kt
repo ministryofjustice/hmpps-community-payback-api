@@ -19,7 +19,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.EteMappe
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toEntity
 import java.time.LocalDate
-import java.time.OffsetDateTime
 import java.util.UUID
 
 @Service
@@ -27,7 +26,6 @@ class EteService(
   private val eteMapper: EteMappers,
   private val eteCourseCompletionEventEntityRepository: EteCourseCompletionEventEntityRepository,
   private val eteCourseCompletionEventResolutionRepository: EteCourseCompletionEventResolutionRepository,
-  private val contextService: ContextService,
   private val appointmentService: AppointmentService,
   private val eteValidationService: EteValidationService,
 ) {
@@ -85,6 +83,7 @@ class EteService(
     eteCourseCompletionEventId: UUID,
     courseCompletionOutcome: CourseCompletionOutcomeDto,
   ) {
+    val resolutionId = UUID.randomUUID()
     val courseCompletionEvent = getEventOrError(eteCourseCompletionEventId)
 
     when (eteValidationService.validateCourseCompletionOutcome(courseCompletionOutcome, courseCompletionEvent)) {
@@ -92,13 +91,20 @@ class EteService(
       EteValidationService.ValidationResult.VALID -> Unit
     }
 
+    val appointmentEventTrigger = AppointmentEventTrigger(
+      triggerType = AppointmentEventTriggerType.ETE_COURSE_COMPLETION_RESOLUTION,
+      triggeredBy = resolutionId.toString(),
+    )
+
     val deliusAppointmentId = if (courseCompletionOutcome.appointmentIdToUpdate == null) {
       createAppointment(
+        trigger = appointmentEventTrigger,
         courseCompletionEvent = courseCompletionEvent,
         courseCompletionOutcome = courseCompletionOutcome,
       )
     } else {
       updateExistingAppointment(
+        trigger = appointmentEventTrigger,
         courseCompletionEvent = courseCompletionEvent,
         courseCompletionOutcome = courseCompletionOutcome,
       )
@@ -106,6 +112,7 @@ class EteService(
 
     eteCourseCompletionEventResolutionRepository.save(
       eteMapper.toResolutionEntity(
+        id = resolutionId,
         courseCompletionEvent = courseCompletionEvent,
         courseCompletionOutcome = courseCompletionOutcome,
         deliusAppointmentId = deliusAppointmentId,
@@ -114,6 +121,7 @@ class EteService(
   }
 
   private fun updateExistingAppointment(
+    trigger: AppointmentEventTrigger,
     courseCompletionEvent: EteCourseCompletionEventEntity,
     courseCompletionOutcome: CourseCompletionOutcomeDto,
   ): Long {
@@ -123,19 +131,20 @@ class EteService(
     )
 
     appointmentService.updateAppointmentOutcome(
-      projectCode = courseCompletionOutcome.projectCode,
+      projectCode = existingAppointment.projectCode,
       update = eteMapper.toUpdateAppointmentDto(
         eteCourseCompletionEventEntity = courseCompletionEvent,
         courseCompletionOutcome = courseCompletionOutcome,
         existingAppointment = existingAppointment,
       ),
-      trigger = buildAppointmentEventTrigger(),
+      trigger = trigger,
     )
 
-    return existingAppointment.id
+    return courseCompletionOutcome.appointmentIdToUpdate
   }
 
   private fun createAppointment(
+    trigger: AppointmentEventTrigger,
     courseCompletionEvent: EteCourseCompletionEventEntity,
     courseCompletionOutcome: CourseCompletionOutcomeDto,
   ): Long = appointmentService.createAppointment(
@@ -143,13 +152,7 @@ class EteService(
       eteCourseCompletionEventEntity = courseCompletionEvent,
       courseCompletionOutcome = courseCompletionOutcome,
     ),
-    trigger = buildAppointmentEventTrigger(),
-  )
-
-  private fun buildAppointmentEventTrigger() = AppointmentEventTrigger(
-    triggeredAt = OffsetDateTime.now(),
-    triggerType = AppointmentEventTriggerType.ETE_COURSE_COMPLETION,
-    triggeredBy = contextService.getUserName(),
+    trigger = trigger,
   )
 
   private fun getEventOrError(id: UUID) = eteCourseCompletionEventEntityRepository.findByIdOrNull(id)

@@ -6,6 +6,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.BadReques
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.EteMappers
+import java.util.UUID
 
 @Service
 class EteValidationService(
@@ -38,6 +39,7 @@ class EteValidationService(
       return ValidationResult.VALID
     } else {
       val proposedResolutionEntity = eteMapper.toResolutionEntity(
+        id = UUID.randomUUID(),
         courseCompletionEvent = courseCompletionEvent,
         courseCompletionOutcome = outcome,
         // setting to 0L is fine here because isLogicallyIdentical() only checks this value when

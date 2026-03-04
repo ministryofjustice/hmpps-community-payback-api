@@ -257,7 +257,7 @@ class SarRequestIT : IntegrationTestBase() {
         baselineAppointmentEvent.copy(
           id = UUID.randomUUID(),
           triggeredAt = RANGE_TEST_TO_DATE.atLastSecondOfDay(),
-          triggerType = AppointmentEventTriggerType.ETE_COURSE_COMPLETION,
+          triggerType = AppointmentEventTriggerType.ETE_COURSE_COMPLETION_RESOLUTION,
           deliusEventNumber = 3,
         ),
         baselineAppointmentEvent.copy(
