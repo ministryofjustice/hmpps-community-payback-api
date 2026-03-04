@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.dto
 
 import io.swagger.v3.oas.annotations.media.Schema
+import jakarta.validation.constraints.Min
 import java.time.LocalDate
 
 data class CourseCompletionResolutionDto(
@@ -16,6 +17,7 @@ data class CourseCompletionCreditTimeDetailsDto(
   val deliusEventNumber: Long,
   val appointmentIdToUpdate: Long?,
   val date: LocalDate,
+  @field:Min(value = 1)
   val minutesToCredit: Long,
   val contactOutcomeCode: String,
   val projectCode: String,
