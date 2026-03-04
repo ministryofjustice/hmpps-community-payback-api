@@ -20,7 +20,6 @@ data class UpdateAppointmentOutcomeDto(
   val enforcementData: EnforcementDto?,
   val supervisorOfficerCode: String,
   override val notes: String? = null,
-  @param:Schema(description = "If provided, the corresponding form data will be deleted")
   val alertActive: Boolean?,
   @param:Schema(description = "If the corresponding delius contact should be marked as sensitive")
   val sensitive: Boolean?,

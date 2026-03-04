@@ -110,7 +110,6 @@ class EteService(
     } else {
       updateExistingAppointment(
         trigger = appointmentEventTrigger,
-        courseCompletionEvent = courseCompletionEvent,
         courseCompletionOutcome = courseCompletionOutcome,
       )
     }
@@ -149,7 +148,6 @@ class EteService(
 
   private fun updateExistingAppointment(
     trigger: AppointmentEventTrigger,
-    courseCompletionEvent: EteCourseCompletionEventEntity,
     courseCompletionOutcome: CourseCompletionOutcomeDto,
   ): Long {
     val existingAppointment = appointmentService.getAppointment(
@@ -160,7 +158,6 @@ class EteService(
     appointmentService.updateAppointmentOutcome(
       projectCode = existingAppointment.projectCode,
       update = eteMapper.toUpdateAppointmentDto(
-        eteCourseCompletionEventEntity = courseCompletionEvent,
         courseCompletionOutcome = courseCompletionOutcome,
         existingAppointment = existingAppointment,
       ),

@@ -67,14 +67,24 @@ class EteMappersTest {
       contactOutcomeCode = CONTACT_OUTCOME_CODE,
     )
 
-    @Test
-    fun `should map all fields correctly`() {
+    @ParameterizedTest
+    @CsvSource(
+      nullValues = ["null"],
+      value = ["true,true", "true,false", "false,true", "null,null"],
+    )
+    fun `should map all fields correctly`(
+      sensitive: Boolean?,
+      alertActive: Boolean?,
+    ) {
       val entity = EteCourseCompletionEventEntity.valid().copy(courseName = "the course name")
 
       val result = mapper.toCreateAppointmentDto(
         eteCourseCompletionEventEntity = entity,
         baselineCourseCompletionOutcome.copy(
           minutesToCredit = 60L,
+          notes = "the provided notes",
+          sensitive = sensitive,
+          alertActive = alertActive,
         ),
       )
 
@@ -84,13 +94,13 @@ class EteMappersTest {
       assertThat(result.deliusEventNumber).isEqualTo(DELIUS_EVENT_NUMBER)
       assertThat(result.allocationId).isNull()
       assertThat(result.date).isEqualTo(entity.completionDate)
-      assertThat(result.notes).isEqualTo("Ete course completed: the course name")
+      assertThat(result.notes).isEqualTo("the provided notes")
       assertThat(result.contactOutcomeCode).isEqualTo(CONTACT_OUTCOME_CODE)
       assertThat(result.pickUpLocationCode).isNull()
       assertThat(result.pickUpTime).isNull()
       assertThat(result.supervisorOfficerCode).isNull()
-      assertThat(result.alertActive).isNull()
-      assertThat(result.sensitive).isNull()
+      assertThat(result.alertActive).isEqualTo(alertActive)
+      assertThat(result.sensitive).isEqualTo(sensitive)
     }
 
     @Test
@@ -168,15 +178,23 @@ class EteMappersTest {
       contactOutcomeCode = CONTACT_OUTCOME_CODE,
     )
 
-    @Test
-    fun `should map all fields correctly`() {
-      val entity = EteCourseCompletionEventEntity.valid().copy(courseName = "the course name")
+    @ParameterizedTest
+    @CsvSource(
+      nullValues = ["null"],
+      value = ["true,true", "true,false", "false,true", "null,null"],
+    )
+    fun `should map all fields correctly`(
+      sensitive: Boolean?,
+      alertActive: Boolean?,
+    ) {
       val existingAppointment = AppointmentDto.valid()
 
       val result = mapper.toUpdateAppointmentDto(
-        eteCourseCompletionEventEntity = entity,
         courseCompletionOutcome = baselineCourseCompletionOutcome.copy(
           minutesToCredit = 60L,
+          notes = "the provided notes",
+          sensitive = sensitive,
+          alertActive = alertActive,
         ),
         existingAppointment = existingAppointment,
       )
@@ -186,18 +204,16 @@ class EteMappersTest {
       assertThat(result.contactOutcomeCode).isEqualTo(CONTACT_OUTCOME_CODE)
       assertThat(result.enforcementData).isNull()
       assertThat(result.supervisorOfficerCode).isEqualTo(existingAppointment.supervisorOfficerCode)
-      assertThat(result.notes).isEqualTo("Ete course completed: the course name")
-      assertThat(result.alertActive).isEqualTo(existingAppointment.alertActive)
-      assertThat(result.sensitive).isEqualTo(existingAppointment.sensitive)
+      assertThat(result.notes).isEqualTo("the provided notes")
+      assertThat(result.alertActive).isEqualTo(alertActive)
+      assertThat(result.sensitive).isEqualTo(sensitive)
     }
 
     @Test
     fun `should set start time to first minute of the day`() {
-      val entity = EteCourseCompletionEventEntity.valid()
       val existingAppointment = AppointmentDto.valid()
 
       val result = mapper.toUpdateAppointmentDto(
-        eteCourseCompletionEventEntity = entity,
         courseCompletionOutcome = baselineCourseCompletionOutcome.copy(
           minutesToCredit = 60L,
         ),
@@ -212,11 +228,9 @@ class EteMappersTest {
     fun `should calculate end time as start time plus total time minutes`(
       minutesToCredit: Long,
     ) {
-      val entity = EteCourseCompletionEventEntity.valid()
       val existingAppointment = AppointmentDto.valid()
 
       val result = mapper.toUpdateAppointmentDto(
-        eteCourseCompletionEventEntity = entity,
         courseCompletionOutcome = baselineCourseCompletionOutcome.copy(
           minutesToCredit = minutesToCredit,
         ),
@@ -229,11 +243,9 @@ class EteMappersTest {
     @Test
     fun `should error if crediting minutes that would roll into next day`() {
       assertThatThrownBy {
-        val entity = EteCourseCompletionEventEntity.valid()
         val existingAppointment = AppointmentDto.valid()
 
         mapper.toUpdateAppointmentDto(
-          eteCourseCompletionEventEntity = entity,
           courseCompletionOutcome = baselineCourseCompletionOutcome.copy(
             minutesToCredit = 60L * 24,
           ),

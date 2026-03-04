@@ -52,14 +52,13 @@ class EteMappers(
       contactOutcomeCode = courseCompletionOutcome.contactOutcomeCode,
       attendanceData = createAttendanceData(),
       supervisorOfficerCode = null,
-      notes = buildNote(eteCourseCompletionEventEntity),
-      alertActive = null,
-      sensitive = null,
+      notes = courseCompletionOutcome.notes,
+      alertActive = courseCompletionOutcome.alertActive,
+      sensitive = courseCompletionOutcome.sensitive,
     )
   }
 
   fun toUpdateAppointmentDto(
-    eteCourseCompletionEventEntity: EteCourseCompletionEventEntity,
     courseCompletionOutcome: CourseCompletionOutcomeDto,
     existingAppointment: AppointmentDto,
   ) = UpdateAppointmentOutcomeDto(
@@ -71,9 +70,9 @@ class EteMappers(
     attendanceData = createAttendanceData(),
     enforcementData = null,
     supervisorOfficerCode = existingAppointment.supervisorOfficerCode,
-    notes = buildNote(eteCourseCompletionEventEntity),
-    alertActive = existingAppointment.alertActive,
-    sensitive = existingAppointment.sensitive,
+    notes = courseCompletionOutcome.notes,
+    alertActive = courseCompletionOutcome.alertActive,
+    sensitive = courseCompletionOutcome.sensitive,
   )
 
   private fun calculateEndTime(
@@ -86,8 +85,6 @@ class EteMappers(
 
     return APPOINTMENT_START_TIME.plusMinutes(minutesToCredit)
   }
-
-  private fun buildNote(eteCourseCompletionEventEntity: EteCourseCompletionEventEntity) = "Ete course completed: ${eteCourseCompletionEventEntity.courseName}"
 
   fun createAttendanceData() = AttendanceDataDto(
     hiVisWorn = false,
