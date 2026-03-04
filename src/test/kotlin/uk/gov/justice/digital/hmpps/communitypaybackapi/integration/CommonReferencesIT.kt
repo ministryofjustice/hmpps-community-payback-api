@@ -200,15 +200,12 @@ class CommonReferencesIT : IntegrationTestBase() {
         .bodyAsObject<EnforcementActionsDto>()
 
       assertThat(enforementActions.enforcementActions).hasSize(19)
-      assertThat(enforementActions.enforcementActions[0].id).isNotNull
-      assertThat(enforementActions.enforcementActions[0].name).isEqualTo("Breach / Recall Initiated")
-      assertThat(enforementActions.enforcementActions[0].code).isEqualTo("IBR")
-      assertThat(enforementActions.enforcementActions[1].id).isNotNull
-      assertThat(enforementActions.enforcementActions[1].name).isEqualTo("Breach Confirmation Sent")
-      assertThat(enforementActions.enforcementActions[1].code).isEqualTo("EA10")
-      assertThat(enforementActions.enforcementActions[2].id).isNotNull
-      assertThat(enforementActions.enforcementActions[2].name).isEqualTo("Breach Letter Sent")
-      assertThat(enforementActions.enforcementActions[2].code).isEqualTo("EA08")
+      assertThat(enforementActions.enforcementActions[0].name).isEqualTo("Breach Confirmation Sent")
+      assertThat(enforementActions.enforcementActions[0].code).isEqualTo("EA10")
+      assertThat(enforementActions.enforcementActions[1].name).isEqualTo("Breach Letter Sent")
+      assertThat(enforementActions.enforcementActions[1].code).isEqualTo("EA08")
+      assertThat(enforementActions.enforcementActions[2].name).isEqualTo("Breach / Recall Initiated")
+      assertThat(enforementActions.enforcementActions[2].code).isEqualTo("IBR")
     }
   }
 

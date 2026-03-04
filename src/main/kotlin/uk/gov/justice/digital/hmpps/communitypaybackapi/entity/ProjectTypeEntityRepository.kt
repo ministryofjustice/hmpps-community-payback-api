@@ -8,4 +8,5 @@ import java.util.UUID
 interface ProjectTypeEntityRepository : JpaRepository<ProjectTypeEntity, UUID> {
   fun getByCode(code: String): ProjectTypeEntity?
   fun findByProjectTypeGroupOrderByCodeAsc(projectTypeGroup: ProjectTypeGroup): List<ProjectTypeEntity>
+  fun findAllByOrderByNameAsc(): List<ProjectTypeEntity>
 }
