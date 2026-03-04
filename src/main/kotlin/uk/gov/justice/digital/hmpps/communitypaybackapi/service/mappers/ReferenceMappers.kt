@@ -1,5 +1,7 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers
 
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CommunityCampusPduDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CommunityCampusPdusDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ContactOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ContactOutcomesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EnforcementActionDto
@@ -7,6 +9,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EnforcementActionsDt
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeGroupDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypesDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.CommunityCampusPduEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EnforcementActionEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ProjectTypeEntity
@@ -39,3 +42,6 @@ fun ProjectTypeGroup.toDto() = when (this) {
   ProjectTypeGroup.INDIVIDUAL -> ProjectTypeGroupDto.INDIVIDUAL
   ProjectTypeGroup.INDUCTION -> ProjectTypeGroupDto.INDUCTION
 }
+
+fun List<CommunityCampusPduEntity>.toDto() = CommunityCampusPdusDto(this.map { it.toDto() })
+fun CommunityCampusPduEntity.toDto() = CommunityCampusPduDto(id, name)
