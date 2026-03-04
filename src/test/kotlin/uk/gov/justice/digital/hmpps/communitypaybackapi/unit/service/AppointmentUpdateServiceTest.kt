@@ -16,22 +16,16 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.ConflictE
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.InternalServerErrorException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.NotFoundException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntity
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdditionalInformationType
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventEntityFactory
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventTrigger
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentRetrievalService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentUpdateService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.DomainEventService
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.DomainEventType
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.PersonReferenceType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.Validated
 import uk.gov.justice.digital.hmpps.communitypaybackapi.unit.util.WebClientResponseExceptionFactory
 
-@SuppressWarnings("UnusedPrivateProperty")
 @ExtendWith(MockKExtension::class)
 class AppointmentUpdateServiceTest {
 
@@ -39,19 +33,13 @@ class AppointmentUpdateServiceTest {
   lateinit var appointmentRetrievalService: AppointmentRetrievalService
 
   @RelaxedMockK
-  lateinit var appointmentEventEntityRepository: AppointmentEventEntityRepository
+  lateinit var appointmentEventService: AppointmentEventService
 
   @RelaxedMockK
   lateinit var communityPaybackAndDeliusClient: CommunityPaybackAndDeliusClient
 
   @RelaxedMockK
   private lateinit var appointmentOutcomeValidationService: AppointmentValidationService
-
-  @RelaxedMockK
-  private lateinit var appointmentEventEntityFactory: AppointmentEventEntityFactory
-
-  @RelaxedMockK
-  private lateinit var domainEventService: DomainEventService
 
   @InjectMockKs
   private lateinit var service: AppointmentUpdateService
@@ -85,9 +73,10 @@ class AppointmentUpdateServiceTest {
     @Test
     fun `if appointment not found on update, throw not found exception`() {
       every { appointmentRetrievalService.getAppointment(PROJECT_CODE, APPOINTMENT_ID) } returns existingAppointment
-      every { appointmentEventEntityRepository.findTopByDeliusAppointmentIdOrderByCreatedAtDesc(APPOINTMENT_ID) } returns null
-      every { appointmentEventEntityFactory.buildUpdatedEvent(any(), any(), any(), any()) } returns AppointmentEventEntity.fromUpdateRequest(updateRequest)
-      every { appointmentEventEntityRepository.save(any()) } returnsArgument 0
+      val proposedEvent = AppointmentEventEntity.fromUpdateRequest(updateRequest)
+      every { appointmentEventService.buildUpdatedEvent(any(), any(), any(), any()) } returns proposedEvent
+      every { appointmentEventService.hasUpdateAlreadyBeenSent(proposedEvent) } returns false
+      every { appointmentEventService.saveAndPublishOnTransactionCommit(proposedEvent) } returnsArgument 0
 
       every {
         communityPaybackAndDeliusClient.updateAppointment(any(), any(), any())
@@ -106,11 +95,11 @@ class AppointmentUpdateServiceTest {
     fun `if there's no existing entries for the delius appointment ids, persist new entry, raise domain event and invoke update endpoint`() {
       every { appointmentRetrievalService.getAppointment(PROJECT_CODE, APPOINTMENT_ID) } returns existingAppointment
       every { appointmentOutcomeValidationService.validateUpdate(any(), any()) } returns Validated(updateRequest)
-      every { appointmentEventEntityRepository.findTopByDeliusAppointmentIdOrderByCreatedAtDesc(APPOINTMENT_ID) } returns null
 
-      val entityReturnedByFactory = AppointmentEventEntity.fromUpdateRequest(updateRequest)
-      every { appointmentEventEntityFactory.buildUpdatedEvent(Validated(updateRequest), existingAppointment, TRIGGER, PROJECT_CODE) } returns entityReturnedByFactory
-      every { appointmentEventEntityRepository.save(any()) } returnsArgument 0
+      val proposedEvent = AppointmentEventEntity.fromUpdateRequest(updateRequest)
+      every { appointmentEventService.buildUpdatedEvent(Validated(updateRequest), existingAppointment, TRIGGER, PROJECT_CODE) } returns proposedEvent
+      every { appointmentEventService.hasUpdateAlreadyBeenSent(proposedEvent) } returns false
+      every { appointmentEventService.saveAndPublishOnTransactionCommit(proposedEvent) } returnsArgument 0
 
       service.updateAppointmentOutcome(
         projectCode = PROJECT_CODE,
@@ -119,13 +108,7 @@ class AppointmentUpdateServiceTest {
       )
 
       verify {
-        appointmentEventEntityRepository.save(entityReturnedByFactory)
-        domainEventService.publishOnTransactionCommit(
-          id = entityReturnedByFactory.id,
-          type = DomainEventType.APPOINTMENT_UPDATED,
-          additionalInformation = mapOf(AdditionalInformationType.APPOINTMENT_ID to updateRequest.deliusId),
-          personReferences = mapOf(PersonReferenceType.CRN to existingAppointment.offender.crn),
-        )
+        appointmentEventService.saveAndPublishOnTransactionCommit(proposedEvent)
         communityPaybackAndDeliusClient.updateAppointment(
           projectCode = PROJECT_CODE,
           appointmentId = APPOINTMENT_ID,
@@ -135,13 +118,13 @@ class AppointmentUpdateServiceTest {
     }
 
     @Test
-    fun `if there's an existing entry for the delius appointment id and it's logically identical, do send an update`() {
-      val existingIdenticalEntity = AppointmentEventEntity.fromUpdateRequest(updateRequest)
-
+    fun `if there's an existing entry for the delius appointment id and it's logically identical, do not send an update`() {
       every { appointmentRetrievalService.getAppointment(PROJECT_CODE, APPOINTMENT_ID) } returns existingAppointment
       every { appointmentOutcomeValidationService.validateUpdate(any(), any()) } returns Validated(updateRequest)
-      every { appointmentEventEntityRepository.findTopByDeliusAppointmentIdOrderByCreatedAtDesc(APPOINTMENT_ID) } returns existingIdenticalEntity
-      every { appointmentEventEntityFactory.buildUpdatedEvent(Validated(updateRequest), existingAppointment, TRIGGER, PROJECT_CODE) } returns existingIdenticalEntity
+
+      val proposedEvent = AppointmentEventEntity.fromUpdateRequest(updateRequest)
+      every { appointmentEventService.buildUpdatedEvent(Validated(updateRequest), existingAppointment, TRIGGER, PROJECT_CODE) } returns proposedEvent
+      every { appointmentEventService.hasUpdateAlreadyBeenSent(proposedEvent) } returns true
 
       service.updateAppointmentOutcome(
         projectCode = PROJECT_CODE,
@@ -150,40 +133,20 @@ class AppointmentUpdateServiceTest {
       )
 
       verify(exactly = 0) {
-        appointmentEventEntityRepository.save(any())
+        appointmentEventService.saveAndPublishOnTransactionCommit(proposedEvent)
         communityPaybackAndDeliusClient.updateAppointment(any(), any(), any())
       }
-    }
-
-    @Test
-    fun `if there's an existing entry for the delius appointment id but it's not logically identical, persist new entry send an update`() {
-      val existingOutcomeEntity = AppointmentEventEntity.fromUpdateRequest(updateRequest)
-
-      every { appointmentRetrievalService.getAppointment(PROJECT_CODE, APPOINTMENT_ID) } returns existingAppointment
-      every { appointmentOutcomeValidationService.validateUpdate(any(), any()) } returns Validated(updateRequest)
-      every { appointmentEventEntityRepository.findTopByDeliusAppointmentIdOrderByCreatedAtDesc(APPOINTMENT_ID) } returns existingOutcomeEntity
-      every {
-        appointmentEventEntityFactory.buildUpdatedEvent(Validated(updateRequest), existingAppointment, TRIGGER, PROJECT_CODE)
-      } returns AppointmentEventEntity.fromUpdateRequest(updateRequest).copy(deliusAppointmentId = APPOINTMENT_ID)
-      every { appointmentEventEntityRepository.save(any()) } returnsArgument 0
-
-      service.updateAppointmentOutcome(
-        projectCode = PROJECT_CODE,
-        update = updateRequest,
-        trigger = TRIGGER,
-      )
-
-      verify { appointmentEventEntityRepository.save(any()) }
-      verify { communityPaybackAndDeliusClient.updateAppointment(PROJECT_CODE, APPOINTMENT_ID, any()) }
     }
 
     @Test
     fun `if appointment has newer version on update, throw conflict exception`() {
       every { appointmentRetrievalService.getAppointment(PROJECT_CODE, APPOINTMENT_ID) } returns existingAppointment
       every { appointmentOutcomeValidationService.validateUpdate(any(), any()) } returns Validated(updateRequest)
-      every { appointmentEventEntityRepository.findTopByDeliusAppointmentIdOrderByCreatedAtDesc(APPOINTMENT_ID) } returns null
-      every { appointmentEventEntityFactory.buildUpdatedEvent(any(), any(), any(), any()) } returns AppointmentEventEntity.fromUpdateRequest(updateRequest)
-      every { appointmentEventEntityRepository.save(any()) } returnsArgument 0
+
+      val proposedEvent = AppointmentEventEntity.fromUpdateRequest(updateRequest)
+      every { appointmentEventService.buildUpdatedEvent(any(), any(), any(), any()) } returns proposedEvent
+      every { appointmentEventService.hasUpdateAlreadyBeenSent(proposedEvent) } returns false
+      every { appointmentEventService.saveAndPublishOnTransactionCommit(proposedEvent) } returnsArgument 0
 
       every {
         communityPaybackAndDeliusClient.updateAppointment(any(), any(), any())
@@ -200,10 +163,13 @@ class AppointmentUpdateServiceTest {
 
     @Test
     fun `if bad request returned throw internal server error`() {
-      every { appointmentEventEntityRepository.findTopByDeliusAppointmentIdOrderByCreatedAtDesc(APPOINTMENT_ID) } returns null
+      every { appointmentRetrievalService.getAppointment(PROJECT_CODE, APPOINTMENT_ID) } returns existingAppointment
       every { appointmentOutcomeValidationService.validateUpdate(any(), any()) } returns Validated(updateRequest)
-      every { appointmentEventEntityFactory.buildUpdatedEvent(any(), any(), any(), any()) } returns AppointmentEventEntity.fromUpdateRequest(updateRequest)
-      every { appointmentEventEntityRepository.save(any()) } returnsArgument 0
+
+      val proposedEvent = AppointmentEventEntity.fromUpdateRequest(updateRequest)
+      every { appointmentEventService.buildUpdatedEvent(any(), any(), any(), any()) } returns proposedEvent
+      every { appointmentEventService.hasUpdateAlreadyBeenSent(proposedEvent) } returns false
+      every { appointmentEventService.saveAndPublishOnTransactionCommit(proposedEvent) } returnsArgument 0
 
       every {
         communityPaybackAndDeliusClient.updateAppointment(any(), any(), any())

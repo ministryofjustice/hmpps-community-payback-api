@@ -10,19 +10,14 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.ConflictE
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.InternalServerErrorException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.NotFoundException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntity
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toNDUpdateAppointment
 
-// This is an orchestration service so the number of dependencies is acceptable
-@SuppressWarnings("LongParameterList")
 @Service
 class AppointmentUpdateService(
   private val appointmentRetrievalService: AppointmentRetrievalService,
-  private val appointmentEventEntityRepository: AppointmentEventEntityRepository,
+  private val appointmentEventService: AppointmentEventService,
   private val communityPaybackAndDeliusClient: CommunityPaybackAndDeliusClient,
   private val appointmentUpdateValidationService: AppointmentValidationService,
-  private val appointmentEventEntityFactory: AppointmentEventEntityFactory,
-  private val domainEventService: DomainEventService,
 ) {
   private companion object {
     private val log = LoggerFactory.getLogger(this::class.java)
@@ -36,34 +31,22 @@ class AppointmentUpdateService(
   ) {
     val existingAppointment = appointmentRetrievalService.getAppointment(projectCode, update.deliusId)
 
-    val proposedEntity = appointmentEventEntityFactory.buildUpdatedEvent(
+    val proposedEntity = appointmentEventService.buildUpdatedEvent(
       validatedUpdate = appointmentUpdateValidationService.validateUpdate(existingAppointment, update),
       existingAppointment = existingAppointment,
       trigger = trigger,
       projectCode = projectCode,
     )
 
-    if (hasUpdateAlreadyBeenSent(proposedEntity)) {
+    if (appointmentEventService.hasUpdateAlreadyBeenSent(proposedEntity)) {
       log.debug("Not applying update for appointment ${update.deliusId} because the most recent update is logically identical")
       return
     }
 
-    val persistedEntity = appointmentEventEntityRepository.save(proposedEntity)
-
-    domainEventService.publishOnTransactionCommit(
-      id = persistedEntity.id,
-      type = DomainEventType.APPOINTMENT_UPDATED,
-      additionalInformation = mapOf(AdditionalInformationType.APPOINTMENT_ID to update.deliusId),
-      personReferences = mapOf(PersonReferenceType.CRN to existingAppointment.offender.crn),
-    )
+    val persistedEntity = appointmentEventService.saveAndPublishOnTransactionCommit(proposedEntity)
 
     updateDelius(projectCode, persistedEntity)
   }
-
-  private fun hasUpdateAlreadyBeenSent(proposedEntity: AppointmentEventEntity) = appointmentEventEntityRepository
-    .findTopByDeliusAppointmentIdOrderByCreatedAtDesc(proposedEntity.deliusAppointmentId)
-    ?.isLogicallyIdentical(proposedEntity)
-    ?: false
 
   @SuppressWarnings("SwallowedException", "ThrowsCount")
   private fun updateDelius(

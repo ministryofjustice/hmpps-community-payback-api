@@ -5,16 +5,13 @@ import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCreateAppointments
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toNDCreateAppointment
 
 @Service
 class AppointmentCreationService(
-  private val appointmentEventEntityFactory: AppointmentEventEntityFactory,
+  private val appointmentEventService: AppointmentEventService,
   private val appointmentValidationService: AppointmentValidationService,
   private val communityPaybackAndDeliusClient: CommunityPaybackAndDeliusClient,
-  private val appointmentEventEntityRepository: AppointmentEventEntityRepository,
-  private val domainEventService: DomainEventService,
 ) {
 
   @Transactional
@@ -37,7 +34,7 @@ class AppointmentCreationService(
     val projectCode = appointments[0].projectCode
 
     val appointmentCreationEvents = appointments.map { createAppointment ->
-      appointmentEventEntityFactory.buildCreatedEvent(
+      appointmentEventService.buildCreatedEvent(
         // the ID will be provided by the upstream response and set on the event before persistence
         deliusId = 0L,
         trigger = trigger,
@@ -58,16 +55,7 @@ class AppointmentCreationService(
       event.copy(deliusAppointmentId = creationResponse.first { it.reference == event.communityPaybackAppointmentId!! }.id)
     }
 
-    appointmentEventEntityRepository.saveAll(appointmentCreationEventsWithIds)
-
-    appointmentCreationEventsWithIds.forEach { event ->
-      domainEventService.publishOnTransactionCommit(
-        id = event.id,
-        type = DomainEventType.APPOINTMENT_CREATED,
-        additionalInformation = mapOf(AdditionalInformationType.APPOINTMENT_ID to event.deliusAppointmentId),
-        personReferences = mapOf(PersonReferenceType.CRN to event.crn),
-      )
-    }
+    appointmentEventService.saveAndPublishOnTransactionCommit(appointmentCreationEventsWithIds)
 
     return creationResponse.map { it.id }
   }
