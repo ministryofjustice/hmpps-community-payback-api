@@ -337,7 +337,7 @@ object CommunityPaybackAndDeliusMockServer {
     val url = buildString {
       append("/community-payback-and-delius/providers/$providerCode/teams/$teamCode/projects?")
       projectTypeCodes.forEach {
-        append("projectTypeCodes=$it&")
+        append("typeCode=$it&")
       }
       append("page=$pageNumber&size=$pageSize&sort=${URLEncoder.encode(sortString, "UTF-8")}")
     }
