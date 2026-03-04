@@ -426,7 +426,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
   @DisplayName("POST /course-completion/{eteCourseCompletionEventId}")
   inner class PostCourseCompletionOutcomeEndpoint {
 
-    val courseCompletionOutcomeDto = CourseCompletionOutcomeDto(
+    val courseCompletionOutcomeDto = CourseCompletionOutcomeDto.valid().copy(
       crn = "X123456",
       deliusEventNumber = DELIUS_EVENT_NUMBER,
       appointmentIdToUpdate = null,

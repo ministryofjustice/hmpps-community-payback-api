@@ -13,6 +13,9 @@ fun CourseCompletionOutcomeDto.Companion.valid() = CourseCompletionOutcomeDto(
   minutesToCredit = Long.random(0, 181),
   contactOutcomeCode = String.random(20),
   projectCode = String.random(20),
+  notes = String.random(50),
+  alertActive = Boolean.random(),
+  sensitive = Boolean.random(),
 )
 
 fun CourseCompletionOutcomeDto.Companion.valid(ctx: ApplicationContext) = CourseCompletionOutcomeDto.valid().copy(

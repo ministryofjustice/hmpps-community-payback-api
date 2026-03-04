@@ -7,6 +7,9 @@ data class CourseCompletionOutcomeDto(
   val minutesToCredit: Long,
   val contactOutcomeCode: String,
   val projectCode: String,
+  val notes: String?,
+  val alertActive: Boolean?,
+  val sensitive: Boolean?,
 ) {
   companion object
 }
