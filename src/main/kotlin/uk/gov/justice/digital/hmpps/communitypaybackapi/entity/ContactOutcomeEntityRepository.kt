@@ -7,5 +7,6 @@ import java.util.UUID
 @Repository
 interface ContactOutcomeEntityRepository : JpaRepository<ContactOutcomeEntity, UUID> {
   fun findByCode(code: String): ContactOutcomeEntity?
-  fun findByGroupsContains(group: ContactOutcomeGroup): List<ContactOutcomeEntity>
+  fun findByGroupsContainsOrderByNameAsc(group: ContactOutcomeGroup): List<ContactOutcomeEntity>
+  fun findAllByOrderByNameAsc(): List<ContactOutcomeEntity>
 }

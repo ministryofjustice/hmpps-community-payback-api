@@ -2,7 +2,6 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.service
 
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ContactOutcomeGroupDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ContactOutcomesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.CommunityCampusPduEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeGroup
@@ -17,21 +16,17 @@ class ReferenceService(
   val communityCampusPduEntityRepository: CommunityCampusPduEntityRepository,
   val enforcementActionEntityRepository: EnforcementActionEntityRepository,
 ) {
-  fun getProjectTypes() = projectTypeEntityRepository.findAll().sortedBy { it.name }.toDto()
+  fun getProjectTypes() = projectTypeEntityRepository.findAllByOrderByNameAsc().toDto()
 
   fun getContactOutcomes(
     group: ContactOutcomeGroupDto?,
-  ): ContactOutcomesDto {
-    val outcomes = if (group != null) {
-      contactOutcomeEntityRepository.findByGroupsContains(ContactOutcomeGroup.fromDto(group))
-    } else {
-      contactOutcomeEntityRepository.findAll()
-    }
+  ) = if (group != null) {
+    contactOutcomeEntityRepository.findByGroupsContainsOrderByNameAsc(ContactOutcomeGroup.fromDto(group))
+  } else {
+    contactOutcomeEntityRepository.findAllByOrderByNameAsc()
+  }.toDto()
 
-    return outcomes.sortedBy { it.name }.toDto()
-  }
-
-  fun getEnforcementActions() = enforcementActionEntityRepository.findAll().sortedBy { it.name }.toDto()
+  fun getEnforcementActions() = enforcementActionEntityRepository.findAllByOrderByNameAsc().toDto()
 
   fun getCommunityCampusPdus() = communityCampusPduEntityRepository.findAllByOrderByNameAsc().toDto()
 }
