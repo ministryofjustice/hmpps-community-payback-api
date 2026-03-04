@@ -63,7 +63,7 @@ class ProjectServiceTest {
         communityPaybackAndDeliusClient.getProjects(
           providerCode = providerCode,
           teamCode = teamCode,
-          projectTypeCodes = listOf("PJ01"),
+          typeCode = listOf("PJ01"),
           params = mapOf("page" to pageNumber.toString(), "size" to pageSize.toString(), "sort" to "projectName,desc"),
         )
       } returns PageResponse(
