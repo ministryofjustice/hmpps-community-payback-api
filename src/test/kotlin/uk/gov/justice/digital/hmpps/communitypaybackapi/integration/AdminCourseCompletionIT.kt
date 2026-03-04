@@ -683,4 +683,118 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
       assertThat(courseCompletionEvent.firstName).isEqualTo(entity.firstName)
     }
   }
+
+  @Nested
+  @DisplayName("GET /course-completions/{id}/recommended-selection")
+  inner class GetCourseCompletionRecommendationEndpoint {
+
+    @BeforeEach
+    fun setUp() {
+      databasePurgeUtils.deleteAllEteData()
+    }
+
+    @Test
+    fun `should return unauthorized if no token`() {
+      val id = UUID.randomUUID()
+      webTestClient.get()
+        .uri("/admin/course-completions/$id/recommended-selection")
+        .exchange()
+        .expectStatus()
+        .isUnauthorized
+    }
+
+    @Test
+    fun `should return forbidden if no role`() {
+      val id = UUID.randomUUID()
+      webTestClient.get()
+        .uri("/admin/course-completions/$id/recommended-selection")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .isForbidden
+    }
+
+    @Test
+    fun `should return 404 when course completion not found`() {
+      val id = UUID.randomUUID()
+      webTestClient.get()
+        .uri("/admin/course-completions/$id/recommended-selection")
+        .addAdminUiAuthHeader()
+        .exchange()
+        .expectStatus()
+        .isNotFound
+    }
+
+    @Test
+    fun `should return recommendation with all fields when available`() {
+      val email = "matched@example.com"
+      val eventWithCrn = eteCourseCompletionEventEntityRepository.save(
+        EteCourseCompletionEventEntity.valid().copy(email = email),
+      )
+      val crn = "X123456"
+      eteCourseCompletionEventResolutionRepository.save(
+        EteCourseCompletionEventResolutionEntity.valid(ctx).copy(
+          eteCourseCompletionEvent = eventWithCrn,
+          crn = crn,
+        ),
+      )
+
+      val office = "Office A"
+      val courseName = "Course B"
+      val projectCode = "PRJ001"
+      val eventWithProject = eteCourseCompletionEventEntityRepository.save(
+        EteCourseCompletionEventEntity.valid().copy(office = office, courseName = courseName),
+      )
+      eteCourseCompletionEventResolutionRepository.save(
+        EteCourseCompletionEventResolutionEntity.valid(ctx).copy(
+          eteCourseCompletionEvent = eventWithProject,
+          projectCode = projectCode,
+        ),
+      )
+
+      val targetEvent = eteCourseCompletionEventEntityRepository.save(
+        EteCourseCompletionEventEntity.valid().copy(
+          email = email,
+          office = office,
+          courseName = courseName,
+        ),
+      )
+
+      val teamCode = "TEAM1"
+      val project = NDProject.valid(ctx).copy(
+        code = projectCode,
+        team = uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCode(teamCode),
+      )
+      CommunityPaybackAndDeliusMockServer.getProject(project)
+
+      val recommendation = webTestClient.get()
+        .uri("/admin/course-completions/${targetEvent.id}/recommended-selection")
+        .addAdminUiAuthHeader()
+        .exchange()
+        .expectStatus()
+        .isOk
+        .bodyAsObject<uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionRecommendationDto>()
+
+      assertThat(recommendation.crn).isEqualTo(crn)
+      assertThat(recommendation.projectCode).isEqualTo(projectCode)
+      assertThat(recommendation.upwTeamCode).isEqualTo(teamCode)
+    }
+
+    @Test
+    fun `should return recommendation with nulls when no previous resolutions exist`() {
+      val targetEvent = eteCourseCompletionEventEntityRepository.save(EteCourseCompletionEventEntity.valid())
+
+      val recommendation = webTestClient.get()
+        .uri("/admin/course-completions/${targetEvent.id}/recommended-selection")
+        .addAdminUiAuthHeader()
+        .exchange()
+        .expectStatus()
+        .isOk
+        .bodyAsObject<uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionRecommendationDto>()
+
+      assertThat(recommendation.crn).isNull()
+      assertThat(recommendation.projectCode).isNull()
+      assertThat(recommendation.upwTeamCode).isNull()
+    }
+  }
 }

@@ -4,6 +4,7 @@ import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.junit5.MockKExtension
+import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
@@ -16,6 +17,10 @@ import org.junit.jupiter.params.provider.CsvSource
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCode
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProject
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
@@ -62,6 +67,9 @@ class EteServiceTest {
 
   @RelaxedMockK
   lateinit var eteValidationService: EteValidationService
+
+  @RelaxedMockK
+  lateinit var communityPaybackAndDeliusClient: CommunityPaybackAndDeliusClient
 
   @InjectMockKs
   private lateinit var eteService: EteService
@@ -303,7 +311,7 @@ class EteServiceTest {
 
       verify {
         appointmentService.createAppointment(appointmentToCreate, capture(triggerSlot))
-        eteCourseCompletionEventResolutionRepository.save(eteResolutionEntity)
+        eteCourseCompletionEventResolutionRepository.save(any())
       }
 
       assertThat(triggerSlot.captured.triggerType).isEqualTo(AppointmentEventTriggerType.ETE_COURSE_COMPLETION)
@@ -363,7 +371,7 @@ class EteServiceTest {
           update = updateAppointmentDto,
           trigger = capture(triggerSlot),
         )
-        eteCourseCompletionEventResolutionRepository.save(eteResolutionEntity)
+        eteCourseCompletionEventResolutionRepository.save(any())
       }
 
       assertThat(triggerSlot.captured.triggerType).isEqualTo(AppointmentEventTriggerType.ETE_COURSE_COMPLETION)
@@ -385,6 +393,121 @@ class EteServiceTest {
 
       assertThrows<NotFoundException> {
         eteService.processCourseCompletionOutcome(eventId, outcome)
+      }
+    }
+  }
+
+  @Nested
+  inner class GetCourseCompletionRecommendation {
+    @Test
+    fun `should return recommendation with all fields when available`() {
+      val eventId = UUID.randomUUID()
+      val event = EteCourseCompletionEventEntity.valid().copy(
+        id = eventId,
+        email = "test@example.com",
+        office = "Office 1",
+        courseName = "Course 1",
+      )
+      val crnResolution = EteCourseCompletionEventResolutionEntity.valid().copy(crn = "X123456")
+      val projectResolution = EteCourseCompletionEventResolutionEntity.valid().copy(projectCode = "PRJ001")
+
+      every { eteCourseCompletionEventEntityRepository.findByIdOrNull(eventId) } returns event
+      every {
+        eteCourseCompletionEventResolutionRepository.findAllByEteCourseCompletionEventEmailOrderByCreatedAtDesc("test@example.com")
+      } returns listOf(crnResolution)
+      every {
+        eteCourseCompletionEventResolutionRepository.findAllByEteCourseCompletionEventOfficeAndEteCourseCompletionEventCourseNameOrderByCreatedAtDesc("Office 1", "Course 1")
+      } returns listOf(projectResolution)
+
+      val project = NDProject(
+        name = "Project 1",
+        code = "PRJ001",
+        type = NDProjectType("Type 1", "T1"),
+        team = NDCode("TEAM1"),
+        provider = NDCode("PROV1"),
+        location = mockk(),
+        beneficiary = mockk(),
+        hiVisRequired = false,
+        expectedEndDateExclusive = null,
+        actualEndDateExclusive = null,
+        availability = emptyList(),
+      )
+      every { communityPaybackAndDeliusClient.getProject("PRJ001") } returns project
+
+      val result = eteService.getCourseCompletionRecommendation(eventId)
+
+      assertThat(result.crn).isEqualTo("X123456")
+      assertThat(result.projectCode).isEqualTo("PRJ001")
+      assertThat(result.upwTeamCode).isEqualTo("TEAM1")
+    }
+
+    @Test
+    fun `should return recommendation with null CRN when no previous resolution exists for email`() {
+      val eventId = UUID.randomUUID()
+      val event = EteCourseCompletionEventEntity.valid().copy(id = eventId, email = "new@example.com")
+
+      every { eteCourseCompletionEventEntityRepository.findByIdOrNull(eventId) } returns event
+      every {
+        eteCourseCompletionEventResolutionRepository.findAllByEteCourseCompletionEventEmailOrderByCreatedAtDesc("new@example.com")
+      } returns emptyList()
+      every {
+        eteCourseCompletionEventResolutionRepository.findAllByEteCourseCompletionEventOfficeAndEteCourseCompletionEventCourseNameOrderByCreatedAtDesc(any(), any())
+      } returns emptyList()
+
+      val result = eteService.getCourseCompletionRecommendation(eventId)
+
+      assertThat(result.crn).isNull()
+    }
+
+    @Test
+    fun `should return recommendation with null projectCode and upwTeamCode when no previous resolution exists for office and course`() {
+      val eventId = UUID.randomUUID()
+      val event = EteCourseCompletionEventEntity.valid().copy(id = eventId, office = "New Office", courseName = "New Course")
+
+      every { eteCourseCompletionEventEntityRepository.findByIdOrNull(eventId) } returns event
+      every {
+        eteCourseCompletionEventResolutionRepository.findAllByEteCourseCompletionEventEmailOrderByCreatedAtDesc(any())
+      } returns emptyList()
+      every {
+        eteCourseCompletionEventResolutionRepository.findAllByEteCourseCompletionEventOfficeAndEteCourseCompletionEventCourseNameOrderByCreatedAtDesc("New Office", "New Course")
+      } returns emptyList()
+
+      val result = eteService.getCourseCompletionRecommendation(eventId)
+
+      assertThat(result.projectCode).isNull()
+      assertThat(result.upwTeamCode).isNull()
+    }
+
+    @Test
+    fun `should return recommendation with null upwTeamCode when project not found in delius`() {
+      val eventId = UUID.randomUUID()
+      val event = EteCourseCompletionEventEntity.valid().copy(id = eventId, office = "Office 1", courseName = "Course 1")
+      val projectResolution = EteCourseCompletionEventResolutionEntity.valid().copy(projectCode = "GONE")
+
+      every { eteCourseCompletionEventEntityRepository.findByIdOrNull(eventId) } returns event
+      every {
+        eteCourseCompletionEventResolutionRepository.findAllByEteCourseCompletionEventEmailOrderByCreatedAtDesc(any())
+      } returns emptyList()
+      every {
+        eteCourseCompletionEventResolutionRepository.findAllByEteCourseCompletionEventOfficeAndEteCourseCompletionEventCourseNameOrderByCreatedAtDesc("Office 1", "Course 1")
+      } returns listOf(projectResolution)
+
+      every { communityPaybackAndDeliusClient.getProject("GONE") } throws NotFoundException("Project", "GONE")
+
+      val result = eteService.getCourseCompletionRecommendation(eventId)
+
+      assertThat(result.projectCode).isEqualTo("GONE")
+      assertThat(result.upwTeamCode).isNull()
+    }
+
+    @Test
+    fun `should throw NotFoundException when event not found`() {
+      val eventId = UUID.randomUUID()
+
+      every { eteCourseCompletionEventEntityRepository.findByIdOrNull(eventId) } returns null
+
+      assertThrows<NotFoundException> {
+        eteService.getCourseCompletionRecommendation(eventId)
       }
     }
   }
