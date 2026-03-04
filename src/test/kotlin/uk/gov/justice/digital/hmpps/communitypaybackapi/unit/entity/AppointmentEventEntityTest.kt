@@ -9,7 +9,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.randomOffsetDate
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import java.util.UUID
 
-class AppointmentOutcomeEntityTest {
+class AppointmentEventEntityTest {
 
   @Nested
   inner class IsLogicallyIdentical {

@@ -12,7 +12,9 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOut
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventResolutionEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventStatus
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionResolution
+import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseCompletionMessage
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ContextService
 import java.time.LocalTime
 import java.time.OffsetDateTime
@@ -97,12 +99,12 @@ class EteMappers(
   )
 
   fun toResolutionEntity(
+    id: UUID,
     courseCompletionEvent: EteCourseCompletionEventEntity,
     courseCompletionOutcome: CourseCompletionOutcomeDto,
     deliusAppointmentId: Long,
-    deliusAppointmentCreated: Boolean,
   ) = EteCourseCompletionEventResolutionEntity(
-    id = UUID.randomUUID(),
+    id = id,
     eteCourseCompletionEvent = courseCompletionEvent,
     resolution = EteCourseCompletionResolution.CREDIT_TIME,
     createdAt = OffsetDateTime.now(),
@@ -110,12 +112,31 @@ class EteMappers(
     crn = courseCompletionOutcome.crn,
     deliusEventNumber = courseCompletionOutcome.deliusEventNumber,
     deliusAppointmentId = deliusAppointmentId,
-    deliusAppointmentCreated = deliusAppointmentCreated,
+    deliusAppointmentCreated = courseCompletionOutcome.appointmentIdToUpdate == null,
     projectCode = courseCompletionOutcome.projectCode,
     minutesCredited = courseCompletionOutcome.minutesToCredit,
     contactOutcome = contactOutcomeEntityRepository.findByCode(courseCompletionOutcome.contactOutcomeCode),
   )
 }
+
+fun EducationCourseCompletionMessage.toEntity() = EteCourseCompletionEventEntity(
+  id = UUID.randomUUID(),
+  firstName = messageAttributes.firstName,
+  lastName = messageAttributes.lastName,
+  dateOfBirth = messageAttributes.dateOfBirth,
+  region = messageAttributes.region,
+  office = messageAttributes.office,
+  email = messageAttributes.email,
+  courseName = messageAttributes.courseName,
+  courseType = messageAttributes.courseType,
+  provider = messageAttributes.provider,
+  completionDate = messageAttributes.completionDate,
+  status = EteCourseCompletionEventStatus.fromMessage(messageAttributes.status),
+  totalTimeMinutes = messageAttributes.totalTimeMinutes,
+  expectedTimeMinutes = messageAttributes.expectedTimeMinutes,
+  externalReference = messageAttributes.externalReference,
+  attempts = messageAttributes.attempts,
+)
 
 fun EteCourseCompletionEventEntity.toDto() = EteCourseCompletionEventDto(
   id = id,

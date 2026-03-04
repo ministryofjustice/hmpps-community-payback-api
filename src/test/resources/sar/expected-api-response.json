@@ -25,7 +25,7 @@
     },
     {
       "triggeredAt": "2025-02-15T23:59:59Z",
-      "triggerType": "ETE_COURSE_COMPLETION",
+      "triggerType": "ETE_COURSE_COMPLETION_RESOLUTION",
       "triggeredByUsername": null,
       "deliusEventNumber": 3,
       "eventType": "CREATE",

@@ -15,17 +15,12 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCreateAppointme
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCreatedAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntity
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdditionalInformationType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentCreationService
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventEntityFactory
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventTrigger
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.DomainEventService
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.DomainEventType
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.PersonReferenceType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.Validated
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toNDCreateAppointment
 
@@ -35,16 +30,10 @@ class AppointmentCreationServiceTest {
   lateinit var appointmentValidationService: AppointmentValidationService
 
   @RelaxedMockK
-  lateinit var appointmentEventEntityFactory: AppointmentEventEntityFactory
-
-  @RelaxedMockK
   lateinit var communityPaybackAndDeliusClient: CommunityPaybackAndDeliusClient
 
   @RelaxedMockK
-  lateinit var appointmentEventEntityRepository: AppointmentEventEntityRepository
-
-  @RelaxedMockK
-  lateinit var domainEventService: DomainEventService
+  lateinit var appointmentEventService: AppointmentEventService
 
   @InjectMockKs
   private lateinit var service: AppointmentCreationService
@@ -93,7 +82,7 @@ class AppointmentCreationServiceTest {
       )
       every { appointmentValidationService.validateCreate(createAppointment1Dto) } returns Validated(createAppointment1Dto)
       every {
-        appointmentEventEntityFactory.buildCreatedEvent(
+        appointmentEventService.buildCreatedEvent(
           deliusId = 0,
           trigger = TRIGGER,
           validatedCreateAppointmentDto = Validated(createAppointment1Dto),
@@ -106,7 +95,7 @@ class AppointmentCreationServiceTest {
       )
       every { appointmentValidationService.validateCreate(createAppointment2Dto) } returns Validated(createAppointment2Dto)
       every {
-        appointmentEventEntityFactory.buildCreatedEvent(
+        appointmentEventService.buildCreatedEvent(
           deliusId = 0,
           trigger = TRIGGER,
           validatedCreateAppointmentDto = Validated(createAppointment2Dto),
@@ -133,24 +122,11 @@ class AppointmentCreationServiceTest {
           appointments = NDCreateAppointments(listOf(creationEvent1.toNDCreateAppointment(), creationEvent2.toNDCreateAppointment())),
         )
 
-        appointmentEventEntityRepository.saveAll(
+        appointmentEventService.saveAndPublishOnTransactionCommit(
           listOf(
             creationEvent1.copy(deliusAppointmentId = ND_APPT1_ID),
             creationEvent2.copy(deliusAppointmentId = ND_APPT2_ID),
           ),
-        )
-
-        domainEventService.publishOnTransactionCommit(
-          id = creationEvent1.id,
-          type = DomainEventType.APPOINTMENT_CREATED,
-          additionalInformation = mapOf(AdditionalInformationType.APPOINTMENT_ID to ND_APPT1_ID),
-          personReferences = mapOf(PersonReferenceType.CRN to creationEvent1.crn),
-        )
-        domainEventService.publishOnTransactionCommit(
-          id = creationEvent2.id,
-          type = DomainEventType.APPOINTMENT_CREATED,
-          additionalInformation = mapOf(AdditionalInformationType.APPOINTMENT_ID to ND_APPT2_ID),
-          personReferences = mapOf(PersonReferenceType.CRN to creationEvent2.crn),
         )
       }
     }

@@ -3,6 +3,9 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.service
 import jakarta.transaction.Transactional
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventType
@@ -14,11 +17,38 @@ import java.util.UUID
 @Service
 class AppointmentEventService(
   private val appointmentEventEntityRepository: AppointmentEventEntityRepository,
+  private val appointmentEventEntityFactory: AppointmentEventEntityFactory,
+  private val domainEventService: DomainEventService,
 ) {
+  fun buildCreatedEvent(
+    deliusId: Long,
+    trigger: AppointmentEventTrigger,
+    validatedCreateAppointmentDto: Validated<CreateAppointmentDto>,
+  ) = appointmentEventEntityFactory.buildCreatedEvent(deliusId, trigger, validatedCreateAppointmentDto)
+
+  fun buildUpdatedEvent(
+    validatedUpdate: Validated<UpdateAppointmentOutcomeDto>,
+    existingAppointment: AppointmentDto,
+    trigger: AppointmentEventTrigger,
+    projectCode: String,
+  ) = appointmentEventEntityFactory.buildUpdatedEvent(validatedUpdate, existingAppointment, trigger, projectCode)
+
   fun getCreatedDomainEventDetails(id: UUID) = appointmentEventEntityRepository.findByIdOrNullForDomainEventDetails(id, AppointmentEventType.CREATE)?.toAppointmentCreatedDomainEvent()
+
   fun getUpdateDomainEventDetails(id: UUID) = appointmentEventEntityRepository.findByIdOrNullForDomainEventDetails(id, AppointmentEventType.UPDATE)?.toAppointmentUpdatedDomainEvent()
 
   fun getEvent(eventId: UUID): AppointmentEventEntity? = appointmentEventEntityRepository.findByIdOrNull(eventId)
+
+  fun hasUpdateAlreadyBeenSent(proposedUpdate: AppointmentEventEntity): Boolean {
+    if (proposedUpdate.eventType != AppointmentEventType.UPDATE) {
+      error("Can only check if an update has already been sent for events of type UPDATE")
+    }
+
+    return appointmentEventEntityRepository
+      .findTopByDeliusAppointmentIdOrderByCreatedAtDesc(proposedUpdate.deliusAppointmentId)
+      ?.isLogicallyIdentical(proposedUpdate)
+      ?: false
+  }
 
   @Transactional
   fun recordSchedulingRan(
@@ -29,4 +59,30 @@ class AppointmentEventService(
     schedulingId = schedulingId,
     now = OffsetDateTime.now(),
   )
+
+  @Transactional(Transactional.TxType.REQUIRED)
+  fun saveAndPublishOnTransactionCommit(
+    event: AppointmentEventEntity,
+  ): AppointmentEventEntity = saveAndPublishOnTransactionCommit(listOf(event)).first()
+
+  @Transactional(Transactional.TxType.REQUIRED)
+  fun saveAndPublishOnTransactionCommit(
+    events: List<AppointmentEventEntity>,
+  ): List<AppointmentEventEntity> {
+    val persistedEvents = appointmentEventEntityRepository.saveAll(events)
+
+    persistedEvents.forEach { event ->
+      domainEventService.publishOnTransactionCommit(
+        id = event.id,
+        type = when (event.eventType) {
+          AppointmentEventType.CREATE -> DomainEventType.APPOINTMENT_CREATED
+          AppointmentEventType.UPDATE -> DomainEventType.APPOINTMENT_UPDATED
+        },
+        additionalInformation = mapOf(AdditionalInformationType.APPOINTMENT_ID to event.deliusAppointmentId),
+        personReferences = mapOf(PersonReferenceType.CRN to event.crn),
+      )
+    }
+
+    return persistedEvents
+  }
 }

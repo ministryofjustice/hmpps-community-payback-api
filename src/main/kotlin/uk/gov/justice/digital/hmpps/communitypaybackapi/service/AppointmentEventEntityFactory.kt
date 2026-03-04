@@ -150,7 +150,7 @@ class AppointmentEventEntityFactory(
 fun AttendanceDataDto.derivePenaltyMinutesDuration() = penaltyMinutes?.let { Duration.ofMinutes(it) } ?: penaltyTime?.duration
 
 data class AppointmentEventTrigger(
-  val triggeredAt: OffsetDateTime,
+  val triggeredAt: OffsetDateTime = OffsetDateTime.now(),
   val triggerType: AppointmentEventTriggerType,
   val triggeredBy: String,
 ) {

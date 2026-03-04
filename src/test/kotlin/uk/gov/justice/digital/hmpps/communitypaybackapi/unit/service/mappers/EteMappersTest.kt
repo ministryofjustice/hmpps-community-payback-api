@@ -24,9 +24,13 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompleti
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventStatus
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionResolution
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
+import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseCompletionMessage
+import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseCompletionStatus
+import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseMessageAttributes
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ContextService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.EteMappers
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toEntity
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -315,6 +319,8 @@ class EteMappersTest {
     @ParameterizedTest
     @CsvSource("true", "false")
     fun success(appointmentCreated: Boolean) {
+      val resolutionId = UUID.randomUUID()
+
       every { contextService.getUserName() } returns "jeff"
       val contactOutcome = ContactOutcomeEntity.valid()
       every { contactOutcomeEntityRepository.findByCode(CONTACT_OUTCOME_CODE) } returns contactOutcome
@@ -322,6 +328,7 @@ class EteMappersTest {
       val courseCompletionEvent = EteCourseCompletionEventEntity.valid()
 
       val result = mapper.toResolutionEntity(
+        id = resolutionId,
         courseCompletionEvent = courseCompletionEvent,
         courseCompletionOutcome = CourseCompletionOutcomeDto.valid().copy(
           crn = CRN,
@@ -329,11 +336,16 @@ class EteMappersTest {
           projectCode = PROJECT_CODE,
           minutesToCredit = 97,
           contactOutcomeCode = CONTACT_OUTCOME_CODE,
+          appointmentIdToUpdate = if (appointmentCreated) {
+            null
+          } else {
+            DELIUS_APPOINTMENT_ID
+          },
         ),
         deliusAppointmentId = DELIUS_APPOINTMENT_ID,
-        deliusAppointmentCreated = appointmentCreated,
       )
 
+      assertThat(result.id).isEqualTo(resolutionId)
       assertThat(result.eteCourseCompletionEvent).isEqualTo(courseCompletionEvent)
       assertThat(result.resolution).isEqualTo(EteCourseCompletionResolution.CREDIT_TIME)
       assertThat(result.createdByUsername).isEqualTo("jeff")
@@ -368,6 +380,49 @@ class EteMappersTest {
       val result2 = mapper.createAttendanceData()
 
       assertThat(result1).isNotSameAs(result2)
+    }
+  }
+
+  @Nested
+  inner class EducationCourseCompletionMessageToEntity {
+
+    @Test
+    fun `map all fields`() {
+      val result = EducationCourseCompletionMessage.valid().copy(
+        messageAttributes = EducationCourseMessageAttributes(
+          externalReference = "EXT123",
+          firstName = "John",
+          lastName = "Doe",
+          dateOfBirth = LocalDate.of(1990, 5, 15),
+          region = "London",
+          office = "The Office",
+          email = "john.doe@example.com",
+          courseName = "The course name",
+          courseType = "Online",
+          provider = "Training Provider Inc.",
+          totalTimeMinutes = 70,
+          expectedTimeMinutes = 120,
+          status = EducationCourseCompletionStatus.Failed,
+          completionDate = LocalDate.of(2026, 1, 1),
+          attempts = 5,
+        ),
+      ).toEntity()
+
+      assertThat(result.firstName).isEqualTo("John")
+      assertThat(result.lastName).isEqualTo("Doe")
+      assertThat(result.dateOfBirth).isEqualTo(LocalDate.of(1990, 5, 15))
+      assertThat(result.region).isEqualTo("London")
+      assertThat(result.office).isEqualTo("The Office")
+      assertThat(result.email).isEqualTo("john.doe@example.com")
+      assertThat(result.courseName).isEqualTo("The course name")
+      assertThat(result.courseType).isEqualTo("Online")
+      assertThat(result.provider).isEqualTo("Training Provider Inc.")
+      assertThat(result.totalTimeMinutes).isEqualTo(70)
+      assertThat(result.expectedTimeMinutes).isEqualTo(120)
+      assertThat(result.status).isEqualTo(EteCourseCompletionEventStatus.FAILED)
+      assertThat(result.completionDate).isEqualTo("2026-01-01")
+      assertThat(result.externalReference).isEqualTo("EXT123")
+      assertThat(result.id).isNotNull
     }
   }
 }

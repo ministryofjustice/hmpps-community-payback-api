@@ -1,0 +1,1 @@
+UPDATE appointment_events set trigger_type = 'ETE_COURSE_COMPLETION_RESOLUTION' WHERE trigger_type = 'ETE_COURSE_COMPLETION';

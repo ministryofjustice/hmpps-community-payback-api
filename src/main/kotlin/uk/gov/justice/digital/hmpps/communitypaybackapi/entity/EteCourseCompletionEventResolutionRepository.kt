@@ -6,10 +6,10 @@ import java.util.UUID
 
 @Repository
 interface EteCourseCompletionEventResolutionRepository : JpaRepository<EteCourseCompletionEventResolutionEntity, UUID> {
-  fun findAllByEteCourseCompletionEventEmailOrderByCreatedAtDesc(email: String): List<EteCourseCompletionEventResolutionEntity>
+  fun findFirstByEteCourseCompletionEventEmailOrderByCreatedAtDesc(email: String): EteCourseCompletionEventResolutionEntity?
 
-  fun findAllByEteCourseCompletionEventOfficeAndEteCourseCompletionEventCourseNameOrderByCreatedAtDesc(
+  fun findFirstByEteCourseCompletionEventOfficeAndEteCourseCompletionEventCourseNameOrderByCreatedAtDesc(
     office: String,
     courseName: String,
-  ): List<EteCourseCompletionEventResolutionEntity>
+  ): EteCourseCompletionEventResolutionEntity?
 }

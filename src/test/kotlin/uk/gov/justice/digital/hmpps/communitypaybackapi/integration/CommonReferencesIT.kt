@@ -5,6 +5,7 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CommunityCampusPdusDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ContactOutcomesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EnforcementActionsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypesDto
@@ -208,6 +209,55 @@ class CommonReferencesIT : IntegrationTestBase() {
       assertThat(enforementActions.enforcementActions[2].id).isNotNull
       assertThat(enforementActions.enforcementActions[2].name).isEqualTo("Breach Letter Sent")
       assertThat(enforementActions.enforcementActions[2].code).isEqualTo("EA08")
+    }
+  }
+
+  @Nested
+  @DisplayName("GET /common/references/community-campus-pdus")
+  inner class CommunityCampusPdusEndpoint {
+
+    @Test
+    fun `should return unauthorized if no token`() {
+      webTestClient.get()
+        .uri("/common/references/community-campus-pdus")
+        .exchange()
+        .expectStatus()
+        .isUnauthorized
+    }
+
+    @Test
+    fun `should return forbidden if no role`() {
+      webTestClient.get()
+        .uri("/common/references/community-campus-pdus")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .isForbidden
+    }
+
+    @Test
+    fun `should return forbidden if wrong role`() {
+      webTestClient.get()
+        .uri("/common/references/community-campus-pdus")
+        .headers(setAuthorisation(roles = listOf("ROLE_WRONG")))
+        .exchange()
+        .expectStatus()
+        .isForbidden
+    }
+
+    @Test
+    fun `should return OK with enforcement actions`() {
+      val result = webTestClient.get()
+        .uri("/common/references/community-campus-pdus")
+        .addAdminUiAuthHeader()
+        .exchange()
+        .expectStatus()
+        .isOk
+        .bodyAsObject<CommunityCampusPdusDto>()
+
+      assertThat(result.pdus).hasSize(12)
+      assertThat(result.pdus[0].id).isNotNull
+      assertThat(result.pdus[0].name).isEqualTo("East Midlands")
     }
   }
 }
