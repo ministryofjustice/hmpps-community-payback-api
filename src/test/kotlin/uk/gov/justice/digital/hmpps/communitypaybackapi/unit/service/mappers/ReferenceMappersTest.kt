@@ -7,6 +7,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ContactOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EnforcementActionDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeGroupDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.CommunityCampusPduEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EnforcementActionEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ProjectTypeEntity
@@ -245,6 +246,46 @@ class ReferenceMappersTest {
           respondByDateRequired = true,
         ),
       )
+    }
+  }
+
+  @Nested
+  inner class CommunityCampusPduMapper {
+
+    @Test
+    fun `should map empty list correctly`() {
+      val pdus = listOf<CommunityCampusPduEntity>()
+      val result = pdus.toDto()
+
+      assertThat(result.pdus).isEmpty()
+    }
+
+    @Test
+    fun `should map ProjectTypes to DTO correctly`() {
+      val pdus = listOf(
+        CommunityCampusPduEntity(
+          id = UUID.fromString("e68f2cd5-c6f2-4ed8-af66-cd9a46d5fe77"),
+          name = "PDU1",
+          providerCode = "PC1",
+        ),
+        CommunityCampusPduEntity(
+          id = UUID.fromString("ea55e70e-c1ca-45b9-9001-18af7a907b25"),
+          name = "PDU2",
+          providerCode = "PC2",
+        ),
+      )
+
+      val result = pdus.toDto()
+
+      assertThat(result.pdus).hasSize(2)
+
+      assertThat(result.pdus[0].id.toString()).isEqualTo("e68f2cd5-c6f2-4ed8-af66-cd9a46d5fe77")
+      assertThat(result.pdus[0].name).isEqualTo("PDU1")
+      assertThat(result.pdus[0].providerCode).isEqualTo("PC1")
+
+      assertThat(result.pdus[1].id.toString()).isEqualTo("ea55e70e-c1ca-45b9-9001-18af7a907b25")
+      assertThat(result.pdus[1].name).isEqualTo("PDU2")
+      assertThat(result.pdus[1].providerCode).isEqualTo("PC2")
     }
   }
 }
