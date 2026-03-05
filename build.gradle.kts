@@ -56,7 +56,7 @@ dependencies {
   testImplementation("uk.gov.justice.service.hmpps:hmpps-subject-access-request-test-support:2.0.3")
   // if we don't force this version of kotlin-mockito we use a newer version that's not compatible
   // with hmpps-subject-access-request-test-support. It's not clear what's pulling in that newer version
-  testImplementation("org.mockito.kotlin:mockito-kotlin:6.1.0")
+  testImplementation("org.mockito.kotlin:mockito-kotlin:6.2.3")
   testImplementation("org.zalando:logbook-spring-boot-starter:4.0.2")
 }
 
