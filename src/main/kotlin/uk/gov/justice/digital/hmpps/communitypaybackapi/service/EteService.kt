@@ -12,7 +12,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EteCourseCompletionE
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EteCourseCompletionResolutionStatusDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.NotFoundException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventTriggerType
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntityRepository.ResolutionStatus
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventResolutionRepository
@@ -104,7 +103,6 @@ class EteService(
     val deliusAppointmentId = if (courseCompletionOutcome.appointmentIdToUpdate == null) {
       createAppointment(
         trigger = appointmentEventTrigger,
-        courseCompletionEvent = courseCompletionEvent,
         courseCompletionOutcome = courseCompletionOutcome,
       )
     } else {
@@ -169,13 +167,9 @@ class EteService(
 
   private fun createAppointment(
     trigger: AppointmentEventTrigger,
-    courseCompletionEvent: EteCourseCompletionEventEntity,
     courseCompletionOutcome: CourseCompletionOutcomeDto,
   ): Long = appointmentService.createAppointment(
-    appointment = eteMapper.toCreateAppointmentDto(
-      eteCourseCompletionEventEntity = courseCompletionEvent,
-      courseCompletionOutcome = courseCompletionOutcome,
-    ),
+    appointment = eteMapper.toCreateAppointmentDto(courseCompletionOutcome),
     trigger = trigger,
   )
 

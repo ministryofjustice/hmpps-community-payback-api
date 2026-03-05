@@ -523,13 +523,12 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
     @Test
     fun `should create appointment when appointmentIdToUpdate is null`() {
       val eventEntity = eteCourseCompletionEventEntityRepository.save(
-        EteCourseCompletionEventEntity.valid().copy(
-          completionDate = LocalDate.now().minusDays(1),
-        ),
+        EteCourseCompletionEventEntity.valid(),
       )
 
       val outcome = CourseCompletionOutcomeDto.valid(ctx).copy(
         crn = CRN,
+        date = LocalDate.of(2021, 1, 30),
         deliusEventNumber = DELIUS_EVENT_NUMBER,
         appointmentIdToUpdate = null,
         projectCode = PROJECT_CODE,
@@ -543,7 +542,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
         unpaidWorkDetails = listOf(
           NDCaseDetail.valid().copy(
             eventNumber = DELIUS_EVENT_NUMBER,
-            sentenceDate = LocalDate.now().minusDays(10),
+            sentenceDate = LocalDate.of(2021, 1, 10),
           ),
         ),
       )
@@ -565,7 +564,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
       val expectedAppointment = ExpectedAppointmentCreate(
         crn = CRN,
         eventNumber = DELIUS_EVENT_NUMBER,
-        date = eventEntity.completionDate,
+        date = LocalDate.of(2021, 1, 30),
         startTime = LocalTime.of(0, 0),
         endTime = LocalTime.of(1, 30),
       )
@@ -587,6 +586,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
       )
       val outcome = CourseCompletionOutcomeDto.valid(ctx).copy(
         crn = CRN,
+        date = LocalDate.now().minusDays(5),
         appointmentIdToUpdate = appointmentId,
         projectCode = PROJECT_CODE,
       )
