@@ -12,11 +12,13 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import org.springframework.data.repository.findByIdOrNull
 import tools.jackson.core.exc.UnexpectedEndOfInputException
 import tools.jackson.databind.json.JsonMapper
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.FormKeyDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.FormCacheEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.FormCacheEntityRepository
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.FormCacheId
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.FormService
 
 @ExtendWith(MockKExtension::class)
@@ -40,7 +42,7 @@ class FormServiceTest {
     @Test
     fun `returns stored json when found`() {
       val json = """{"key":"value"}"""
-      every { repository.findByFormIdAndFormType(id, formType) } returns FormCacheEntity(
+      every { repository.findByIdOrNull(FormCacheId(id, formType)) } returns FormCacheEntity(
         formId = id,
         formType = formType,
         formData = json,
@@ -49,12 +51,11 @@ class FormServiceTest {
       val result = service.get(FormKeyDto(formType, id))
 
       assertThat(result).isEqualTo(json)
-      verify(exactly = 1) { repository.findByFormIdAndFormType(id, formType) }
     }
 
     @Test
     fun `throws NotFoundException when missing`() {
-      every { repository.findByFormIdAndFormType(id, formType) } returns null
+      every { repository.findByIdOrNull(FormCacheId(id, formType)) } returns null
 
       assertThatThrownBy {
         service.get(FormKeyDto(formType, id))

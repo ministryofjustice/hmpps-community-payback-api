@@ -8,8 +8,6 @@ import java.time.OffsetDateTime
 
 @Repository
 interface FormCacheEntityRepository : JpaRepository<FormCacheEntity, FormCacheId> {
-  fun findByFormIdAndFormType(formId: String, formType: String): FormCacheEntity?
-
   @Modifying
   @Query("DELETE FROM FormCacheEntity WHERE updatedAt < :threshold ")
   fun deleteByLastUpdatedAtBefore(threshold: OffsetDateTime): Long
