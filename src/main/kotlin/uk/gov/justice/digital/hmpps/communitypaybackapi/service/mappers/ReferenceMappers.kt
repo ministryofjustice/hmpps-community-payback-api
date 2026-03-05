@@ -44,4 +44,4 @@ fun ProjectTypeGroup.toDto() = when (this) {
 }
 
 fun List<CommunityCampusPduEntity>.toDto() = CommunityCampusPdusDto(this.map { it.toDto() })
-fun CommunityCampusPduEntity.toDto() = CommunityCampusPduDto(id, name)
+fun CommunityCampusPduEntity.toDto() = CommunityCampusPduDto(id, name, providerCode)
