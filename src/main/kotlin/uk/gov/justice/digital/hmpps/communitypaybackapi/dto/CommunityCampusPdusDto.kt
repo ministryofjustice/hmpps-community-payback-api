@@ -9,4 +9,5 @@ data class CommunityCampusPdusDto(
 data class CommunityCampusPduDto(
   val id: UUID,
   val name: String,
+  val providerCode: String,
 )

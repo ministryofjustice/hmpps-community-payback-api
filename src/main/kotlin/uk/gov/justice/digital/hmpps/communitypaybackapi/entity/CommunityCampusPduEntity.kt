@@ -14,6 +14,7 @@ data class CommunityCampusPduEntity(
   @Id
   val id: UUID,
   val name: String,
+  val providerCode: String,
 ) {
   @Suppress("USELESS_IS_CHECK")
   override fun equals(other: Any?): Boolean {

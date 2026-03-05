@@ -255,9 +255,9 @@ class CommonReferencesIT : IntegrationTestBase() {
         .isOk
         .bodyAsObject<CommunityCampusPdusDto>()
 
-      assertThat(result.pdus).hasSize(12)
+      assertThat(result.pdus).hasSize(100)
       assertThat(result.pdus[0].id).isNotNull
-      assertThat(result.pdus[0].name).isEqualTo("East Midlands")
+      assertThat(result.pdus[0].name).isEqualTo("Barnet, Enfield and Brent")
     }
   }
 }
