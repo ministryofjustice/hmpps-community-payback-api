@@ -10,6 +10,7 @@ fun CourseCompletionOutcomeDto.Companion.valid() = CourseCompletionOutcomeDto(
   crn = String.random(1).uppercase() + Random.nextInt(0, 99999),
   deliusEventNumber = Long.random(50),
   appointmentIdToUpdate = Long.random(),
+  date = randomLocalDate(),
   minutesToCredit = Long.random(0, 181),
   contactOutcomeCode = String.random(20),
   projectCode = String.random(20),

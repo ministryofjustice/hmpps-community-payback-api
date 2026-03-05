@@ -32,48 +32,49 @@ class EteMappers(
   }
 
   fun toCreateAppointmentDto(
-    eteCourseCompletionEventEntity: EteCourseCompletionEventEntity,
     courseCompletionOutcome: CourseCompletionOutcomeDto,
-  ): CreateAppointmentDto {
-    val completionDate = eteCourseCompletionEventEntity.completionDate
+  ): CreateAppointmentDto = CreateAppointmentDto(
+    id = UUID.randomUUID(),
+    crn = courseCompletionOutcome.crn,
+    deliusEventNumber = courseCompletionOutcome.deliusEventNumber,
+    allocationId = null,
+    projectCode = courseCompletionOutcome.projectCode,
+    date = courseCompletionOutcome.date,
+    startTime = APPOINTMENT_START_TIME,
+    endTime = calculateEndTime(courseCompletionOutcome.minutesToCredit),
+    pickUpLocationCode = null,
+    pickUpLocationDescription = null,
+    pickUpTime = null,
+    contactOutcomeCode = courseCompletionOutcome.contactOutcomeCode,
+    attendanceData = createAttendanceData(),
+    supervisorOfficerCode = null,
+    notes = courseCompletionOutcome.notes,
+    alertActive = courseCompletionOutcome.alertActive,
+    sensitive = courseCompletionOutcome.sensitive,
+  )
 
-    return CreateAppointmentDto(
-      id = UUID.randomUUID(),
-      crn = courseCompletionOutcome.crn,
-      deliusEventNumber = courseCompletionOutcome.deliusEventNumber,
-      allocationId = null,
-      projectCode = courseCompletionOutcome.projectCode,
-      date = completionDate,
+  fun toUpdateAppointmentDto(
+    courseCompletionOutcome: CourseCompletionOutcomeDto,
+    existingAppointment: AppointmentDto,
+  ): UpdateAppointmentOutcomeDto {
+    if (existingAppointment.date != courseCompletionOutcome.date) {
+      error("Changing an existing appointment's date is not currently supported")
+    }
+
+    return UpdateAppointmentOutcomeDto(
+      deliusId = existingAppointment.id,
+      deliusVersionToUpdate = existingAppointment.version,
       startTime = APPOINTMENT_START_TIME,
       endTime = calculateEndTime(courseCompletionOutcome.minutesToCredit),
-      pickUpLocationCode = null,
-      pickUpLocationDescription = null,
-      pickUpTime = null,
       contactOutcomeCode = courseCompletionOutcome.contactOutcomeCode,
       attendanceData = createAttendanceData(),
-      supervisorOfficerCode = null,
+      enforcementData = null,
+      supervisorOfficerCode = existingAppointment.supervisorOfficerCode,
       notes = courseCompletionOutcome.notes,
       alertActive = courseCompletionOutcome.alertActive,
       sensitive = courseCompletionOutcome.sensitive,
     )
   }
-
-  fun toUpdateAppointmentDto(
-    courseCompletionOutcome: CourseCompletionOutcomeDto,
-    existingAppointment: AppointmentDto,
-  ) = UpdateAppointmentOutcomeDto(
-    deliusId = existingAppointment.id,
-    deliusVersionToUpdate = existingAppointment.version,
-    startTime = APPOINTMENT_START_TIME,
-    endTime = calculateEndTime(courseCompletionOutcome.minutesToCredit),
-    contactOutcomeCode = courseCompletionOutcome.contactOutcomeCode,
-    attendanceData = createAttendanceData(),
-    enforcementData = null,
-    supervisorOfficerCode = existingAppointment.supervisorOfficerCode,
-    notes = courseCompletionOutcome.notes,
-    alertActive = courseCompletionOutcome.alertActive,
-    sensitive = courseCompletionOutcome.sensitive,
-  )
 
   private fun calculateEndTime(
     minutesToCredit: Long,
