@@ -1,0 +1,1 @@
+UPDATE project_types SET project_type_group = 'ETE' WHERE code IN('ET1', 'ET3', 'ET5', 'UP06');

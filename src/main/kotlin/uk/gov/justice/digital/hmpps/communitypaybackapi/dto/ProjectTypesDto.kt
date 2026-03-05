@@ -21,6 +21,7 @@ data class ProjectTypesDto(
 )
 
 enum class ProjectTypeGroupDto {
+  ETE,
   GROUP,
   INDIVIDUAL,
   INDUCTION,
