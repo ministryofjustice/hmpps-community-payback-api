@@ -9,6 +9,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionOutc
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EteCourseCompletionEventDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.CommunityCampusPduEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventResolutionEntity
@@ -25,6 +26,7 @@ import java.util.UUID
 class EteMappers(
   private val contextService: ContextService,
   private val contactOutcomeEntityRepository: ContactOutcomeEntityRepository,
+  private val communityCampusPduEntityRepository: CommunityCampusPduEntityRepository,
 ) {
 
   companion object {
@@ -118,12 +120,14 @@ class EteMappers(
 
   fun toCourseCompletionEventEntity(message: EducationCourseCompletionMessage): EteCourseCompletionEventEntity {
     val messageAttributes = message.messageAttributes
+    val pdu = messageAttributes.pdu
     return EteCourseCompletionEventEntity(
       id = UUID.randomUUID(),
       firstName = messageAttributes.firstName,
       lastName = messageAttributes.lastName,
       dateOfBirth = messageAttributes.dateOfBirth,
       region = messageAttributes.region,
+      pdu = communityCampusPduEntityRepository.findByNameIgnoreCase(pdu.trim()) ?: error("Cannot find PDU for name $pdu"),
       office = messageAttributes.office,
       email = messageAttributes.email,
       courseName = messageAttributes.courseName,

@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.bootstrap
 import org.slf4j.LoggerFactory
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.stereotype.Component
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.CommunityCampusPduEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventStatus
@@ -14,6 +15,7 @@ import kotlin.random.Random
 @ConditionalOnProperty(name = ["community-payback.bootstrap.enabled"], havingValue = "true")
 class DevEteCourseCompletionFixtures(
   private val repository: EteCourseCompletionEventEntityRepository,
+  private val communityCampusPduEntityRepository: CommunityCampusPduEntityRepository,
 ) : AutoSeeder {
   private val log = LoggerFactory.getLogger(javaClass)
   val seededRandom = Random(SEED)
@@ -49,6 +51,7 @@ class DevEteCourseCompletionFixtures(
       lastName = lastName,
       dateOfBirth = randDOB(),
       region = "East of England",
+      pdu = communityCampusPduEntityRepository.findAll().first(),
       office = "The Lighthouse",
       email = "$firstName.$lastName@example.test",
       courseName = randomCourseName(),

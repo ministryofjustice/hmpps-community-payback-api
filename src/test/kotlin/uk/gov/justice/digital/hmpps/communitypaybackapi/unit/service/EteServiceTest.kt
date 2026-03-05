@@ -20,13 +20,13 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompleti
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntityRepository.ResolutionStatus
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventResolutionRepository
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventStatus
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseCompletionMessage
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.EteService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.EteValidationService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.EteMappers
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
 import java.time.LocalDate
 import java.util.UUID
 
@@ -137,34 +137,13 @@ class EteServiceTest {
     @Test
     fun `should return course completion event when found`() {
       val eventId = UUID.randomUUID()
-      val entity = EteCourseCompletionEventEntity(
-        id = eventId,
-        firstName = "John",
-        lastName = "Doe",
-        dateOfBirth = LocalDate.of(1990, 5, 15),
-        region = "London",
-        office = "Office 123",
-        email = "john.doe@example.com",
-        courseName = "Test Course",
-        courseType = "Online",
-        provider = "Test Provider",
-        completionDate = LocalDate.of(2026, 1, 1),
-        status = EteCourseCompletionEventStatus.COMPLETED,
-        totalTimeMinutes = 120,
-        expectedTimeMinutes = 120,
-        externalReference = "EXT123",
-        attempts = 1,
-      )
+      val entity = EteCourseCompletionEventEntity.valid()
 
       every { eteCourseCompletionEventEntityRepository.findByIdOrNull(eventId) } returns entity
 
       val result = eteService.getCourseCompletionEvent(eventId)
 
-      assertThat(result.id).isEqualTo(eventId)
-      assertThat(result.firstName).isEqualTo("John")
-      assertThat(result.lastName).isEqualTo("Doe")
-      assertThat(result.courseName).isEqualTo("Test Course")
-      assertThat(result.status).isEqualTo(EteCourseCompletionEventStatus.COMPLETED)
+      assertThat(result).isEqualTo(entity.toDto())
     }
 
     @Test

@@ -6,6 +6,7 @@
       "lastName": "Doe",
       "dateOfBirth": "1990-01-01",
       "region": "East of England",
+      "pdu": "Cambridgeshire",
       "office": "Cambridge",
       "email": "john.doe@example.com"
     },

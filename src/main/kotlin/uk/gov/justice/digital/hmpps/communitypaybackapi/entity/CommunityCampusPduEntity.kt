@@ -25,7 +25,7 @@ data class CommunityCampusPduEntity(
     val thisEffectiveClass =
       this.asHibernateProxy()?.hibernateLazyInitializer?.persistentClass ?: this.javaClass
     if (thisEffectiveClass != oEffectiveClass) return false
-    other as EteCourseCompletionEventEntity
+    other as CommunityCampusPduEntity
 
     return id == other.id
   }

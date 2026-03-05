@@ -17,6 +17,8 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentBehaviour
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentWorkQualityDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionOutcomeDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.CommunityCampusPduEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.CommunityCampusPduEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntity
@@ -44,6 +46,9 @@ class EteMappersTest {
 
   @RelaxedMockK
   private lateinit var contactOutcomeEntityRepository: ContactOutcomeEntityRepository
+
+  @RelaxedMockK
+  private lateinit var communityCampusPduEntityRepository: CommunityCampusPduEntityRepository
 
   @InjectMockKs
   private lateinit var mapper: EteMappers
@@ -286,6 +291,7 @@ class EteMappersTest {
         lastName = lastName,
         dateOfBirth = dateOfBirth,
         region = region,
+        pdu = CommunityCampusPduEntity.valid(),
         office = "Office 1",
         email = email,
         courseName = courseName,
@@ -401,7 +407,25 @@ class EteMappersTest {
   inner class EducationCourseCompletionMessageToEntity {
 
     @Test
+    fun `error if PDU can't be found`() {
+      every { communityCampusPduEntityRepository.findByNameIgnoreCase("invalid pdu name") } returns null
+
+      assertThatThrownBy {
+        mapper.toCourseCompletionEventEntity(
+          EducationCourseCompletionMessage.valid().copy(
+            messageAttributes = EducationCourseMessageAttributes.valid().copy(
+              pdu = "invalid pdu name",
+            ),
+          ),
+        )
+      }.hasMessage("Cannot find PDU for name invalid pdu name")
+    }
+
+    @Test
     fun `map all fields`() {
+      val pdu = CommunityCampusPduEntity.valid()
+      every { communityCampusPduEntityRepository.findByNameIgnoreCase("The PDU name") } returns pdu
+
       val result = mapper.toCourseCompletionEventEntity(
         EducationCourseCompletionMessage.valid().copy(
           messageAttributes = EducationCourseMessageAttributes(
@@ -411,6 +435,7 @@ class EteMappersTest {
             dateOfBirth = LocalDate.of(1990, 5, 15),
             region = "London",
             office = "The Office",
+            pdu = " The PDU name ",
             email = "john.doe@example.com",
             courseName = "The course name",
             courseType = "Online",
@@ -428,6 +453,7 @@ class EteMappersTest {
       assertThat(result.lastName).isEqualTo("Doe")
       assertThat(result.dateOfBirth).isEqualTo(LocalDate.of(1990, 5, 15))
       assertThat(result.region).isEqualTo("London")
+      assertThat(result.pdu).isEqualTo(pdu)
       assertThat(result.office).isEqualTo("The Office")
       assertThat(result.email).isEqualTo("john.doe@example.com")
       assertThat(result.courseName).isEqualTo("The course name")
