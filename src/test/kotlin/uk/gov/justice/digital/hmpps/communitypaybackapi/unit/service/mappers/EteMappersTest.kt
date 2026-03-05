@@ -76,10 +76,7 @@ class EteMappersTest {
       sensitive: Boolean?,
       alertActive: Boolean?,
     ) {
-      val entity = EteCourseCompletionEventEntity.valid().copy(courseName = "the course name")
-
       val result = mapper.toCreateAppointmentDto(
-        eteCourseCompletionEventEntity = entity,
         baselineCourseCompletionOutcome.copy(
           minutesToCredit = 60L,
           notes = "the provided notes",
@@ -93,7 +90,7 @@ class EteMappersTest {
       assertThat(result.crn).isEqualTo(CRN)
       assertThat(result.deliusEventNumber).isEqualTo(DELIUS_EVENT_NUMBER)
       assertThat(result.allocationId).isNull()
-      assertThat(result.date).isEqualTo(entity.completionDate)
+      assertThat(result.date).isEqualTo(baselineCourseCompletionOutcome.date)
       assertThat(result.notes).isEqualTo("the provided notes")
       assertThat(result.contactOutcomeCode).isEqualTo(CONTACT_OUTCOME_CODE)
       assertThat(result.pickUpLocationCode).isNull()
@@ -105,10 +102,7 @@ class EteMappersTest {
 
     @Test
     fun `should set start time to 9am`() {
-      val entity = EteCourseCompletionEventEntity.valid()
-
       val result = mapper.toCreateAppointmentDto(
-        eteCourseCompletionEventEntity = entity,
         baselineCourseCompletionOutcome.copy(
           minutesToCredit = 60L,
         ),
@@ -122,10 +116,7 @@ class EteMappersTest {
     fun `should calculate end time as start time plus total time minutes`(
       minutesToCredit: Long,
     ) {
-      val entity = EteCourseCompletionEventEntity.valid()
-
       val result = mapper.toCreateAppointmentDto(
-        eteCourseCompletionEventEntity = entity,
         baselineCourseCompletionOutcome.copy(
           minutesToCredit = minutesToCredit,
         ),
@@ -136,10 +127,7 @@ class EteMappersTest {
 
     @Test
     fun `should set attendance data with default values`() {
-      val entity = EteCourseCompletionEventEntity.valid()
-
       val result = mapper.toCreateAppointmentDto(
-        eteCourseCompletionEventEntity = entity,
         baselineCourseCompletionOutcome.copy(
           minutesToCredit = 60L,
         ),
@@ -155,11 +143,8 @@ class EteMappersTest {
 
     @Test
     fun `should error if crediting minutes that would roll into next day`() {
-      val entity = EteCourseCompletionEventEntity.valid()
-
       assertThatThrownBy {
         mapper.toCreateAppointmentDto(
-          eteCourseCompletionEventEntity = entity,
           baselineCourseCompletionOutcome.copy(
             minutesToCredit = 60L * 24,
           ),
@@ -178,6 +163,10 @@ class EteMappersTest {
       contactOutcomeCode = CONTACT_OUTCOME_CODE,
     )
 
+    val baselineExistingAppointment = AppointmentDto.valid().copy(
+      date = baselineCourseCompletionOutcome.date,
+    )
+
     @ParameterizedTest
     @CsvSource(
       nullValues = ["null"],
@@ -187,7 +176,7 @@ class EteMappersTest {
       sensitive: Boolean?,
       alertActive: Boolean?,
     ) {
-      val existingAppointment = AppointmentDto.valid()
+      val existingAppointment = baselineExistingAppointment.copy()
 
       val result = mapper.toUpdateAppointmentDto(
         courseCompletionOutcome = baselineCourseCompletionOutcome.copy(
@@ -211,7 +200,7 @@ class EteMappersTest {
 
     @Test
     fun `should set start time to first minute of the day`() {
-      val existingAppointment = AppointmentDto.valid()
+      val existingAppointment = baselineExistingAppointment.copy()
 
       val result = mapper.toUpdateAppointmentDto(
         courseCompletionOutcome = baselineCourseCompletionOutcome.copy(
@@ -228,7 +217,7 @@ class EteMappersTest {
     fun `should calculate end time as start time plus total time minutes`(
       minutesToCredit: Long,
     ) {
-      val existingAppointment = AppointmentDto.valid()
+      val existingAppointment = baselineExistingAppointment.copy()
 
       val result = mapper.toUpdateAppointmentDto(
         courseCompletionOutcome = baselineCourseCompletionOutcome.copy(
@@ -243,7 +232,7 @@ class EteMappersTest {
     @Test
     fun `should error if crediting minutes that would roll into next day`() {
       assertThatThrownBy {
-        val existingAppointment = AppointmentDto.valid()
+        val existingAppointment = baselineExistingAppointment.copy()
 
         mapper.toUpdateAppointmentDto(
           courseCompletionOutcome = baselineCourseCompletionOutcome.copy(
@@ -252,6 +241,20 @@ class EteMappersTest {
           existingAppointment = existingAppointment,
         )
       }.hasMessage("Cannot credit more than 1439 minutes")
+    }
+
+    @Test
+    fun `error if attempting to change date`() {
+      assertThatThrownBy {
+        val existingAppointment = baselineExistingAppointment.copy()
+
+        mapper.toUpdateAppointmentDto(
+          courseCompletionOutcome = baselineCourseCompletionOutcome.copy(
+            date = baselineExistingAppointment.date.plusDays(1),
+          ),
+          existingAppointment = existingAppointment,
+        )
+      }.hasMessage("Changing an existing appointment's date is not currently supported")
     }
   }
 
