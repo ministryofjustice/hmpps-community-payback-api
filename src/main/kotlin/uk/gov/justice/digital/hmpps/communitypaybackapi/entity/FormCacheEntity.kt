@@ -18,12 +18,12 @@ data class FormCacheEntity(
   @Id
   val formType: String,
 
-  val formData: String,
+  var formData: String,
 
   @CreationTimestamp
   val createdAt: OffsetDateTime = OffsetDateTime.now(),
 
-  val updatedAt: OffsetDateTime = OffsetDateTime.now(),
+  var updatedAt: OffsetDateTime = OffsetDateTime.now(),
 ) {
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
