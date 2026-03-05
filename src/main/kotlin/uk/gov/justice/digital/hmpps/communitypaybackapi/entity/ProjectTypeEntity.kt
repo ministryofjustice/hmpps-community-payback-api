@@ -41,6 +41,7 @@ data class ProjectTypeEntity(
 }
 
 enum class ProjectTypeGroup {
+  ETE,
   GROUP,
   INDIVIDUAL,
   INDUCTION,
@@ -48,6 +49,7 @@ enum class ProjectTypeGroup {
 
   companion object {
     fun fromDto(projectTypeGroupDto: ProjectTypeGroupDto) = when (projectTypeGroupDto) {
+      ProjectTypeGroupDto.ETE -> ETE
       ProjectTypeGroupDto.GROUP -> GROUP
       ProjectTypeGroupDto.INDIVIDUAL -> INDIVIDUAL
       ProjectTypeGroupDto.INDUCTION -> INDUCTION
