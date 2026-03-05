@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.service
 
 import jakarta.transaction.Transactional
 import org.slf4j.LoggerFactory
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import tools.jackson.databind.json.JsonMapper
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.FormKeyDto
@@ -24,7 +25,7 @@ class FormService(
   }
 
   fun get(key: FormKeyDto): String {
-    val existing = repository.findByFormIdAndFormType(key.id, key.type)
+    val existing = repository.findByIdOrNull(key.toJpaId())
       ?: throw NotFoundException("Form data", "${key.type}/${key.id}")
 
     return existing.formData
@@ -60,4 +61,9 @@ class FormService(
     val deletedCount = repository.deleteByLastUpdatedAtBefore(threshold)
     log.info("Have removed $deletedCount form cache entries")
   }
+
+  private fun FormKeyDto.toJpaId() = FormCacheId(
+    formId = id,
+    formType = type,
+  )
 }
