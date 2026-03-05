@@ -111,6 +111,7 @@ class AppointmentRetrievalServiceTest {
 
       every {
         communityPaybackAndDeliusClient.getAppointments(
+          username = USERNAME,
           crn = crn,
           fromDate = null,
           toDate = null,
@@ -150,6 +151,7 @@ class AppointmentRetrievalServiceTest {
 
       every {
         communityPaybackAndDeliusClient.getAppointments(
+          username = USERNAME,
           crn = null,
           fromDate = fromDate,
           toDate = toDate,

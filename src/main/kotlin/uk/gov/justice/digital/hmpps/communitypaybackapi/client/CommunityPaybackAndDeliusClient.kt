@@ -108,12 +108,13 @@ interface CommunityPaybackAndDeliusClient {
   fun getProjects(
     @PathVariable providerCode: String,
     @PathVariable teamCode: String,
-    @RequestParam projectTypeCodes: List<String>?,
+    @RequestParam typeCode: List<String>?,
     @RequestParam params: Map<String, String>,
   ): PageResponse<NDProjectOutcomeStats>
 
   @GetExchange("/appointments")
   fun getAppointments(
+    @RequestParam username: String,
     @RequestParam crn: String?,
     @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) fromDate: LocalDate?,
     @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) toDate: LocalDate?,
@@ -261,7 +262,7 @@ data class NDBeneficiaryDetails(
   val contactName: String?,
   val emailAddress: String?,
   val website: String?,
-  val telephoneNumber: String,
+  val telephoneNumber: String?,
   val location: NDAddress?,
 ) {
   companion object

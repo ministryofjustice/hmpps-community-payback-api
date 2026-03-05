@@ -50,6 +50,7 @@ class AppointmentRetrievalService(
     pageable: Pageable,
   ): Page<AppointmentSummaryDto> {
     val pageResponse = communityPaybackAndDeliusClient.getAppointments(
+      username = contextService.getUserName(),
       crn = crn,
       fromDate = fromDate,
       toDate = toDate,
