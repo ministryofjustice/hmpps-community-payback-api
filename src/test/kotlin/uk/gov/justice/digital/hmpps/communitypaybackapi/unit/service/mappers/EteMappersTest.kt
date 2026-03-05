@@ -30,7 +30,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourse
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ContextService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.EteMappers
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toEntity
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -403,25 +402,27 @@ class EteMappersTest {
 
     @Test
     fun `map all fields`() {
-      val result = EducationCourseCompletionMessage.valid().copy(
-        messageAttributes = EducationCourseMessageAttributes(
-          externalReference = "EXT123",
-          firstName = "John",
-          lastName = "Doe",
-          dateOfBirth = LocalDate.of(1990, 5, 15),
-          region = "London",
-          office = "The Office",
-          email = "john.doe@example.com",
-          courseName = "The course name",
-          courseType = "Online",
-          provider = "Training Provider Inc.",
-          totalTimeMinutes = 70,
-          expectedTimeMinutes = 120,
-          status = EducationCourseCompletionStatus.Failed,
-          completionDate = LocalDate.of(2026, 1, 1),
-          attempts = 5,
+      val result = mapper.toCourseCompletionEventEntity(
+        EducationCourseCompletionMessage.valid().copy(
+          messageAttributes = EducationCourseMessageAttributes(
+            externalReference = "EXT123",
+            firstName = "John",
+            lastName = "Doe",
+            dateOfBirth = LocalDate.of(1990, 5, 15),
+            region = "London",
+            office = "The Office",
+            email = "john.doe@example.com",
+            courseName = "The course name",
+            courseType = "Online",
+            provider = "Training Provider Inc.",
+            totalTimeMinutes = 70,
+            expectedTimeMinutes = 120,
+            status = EducationCourseCompletionStatus.Failed,
+            completionDate = LocalDate.of(2026, 1, 1),
+            attempts = 5,
+          ),
         ),
-      ).toEntity()
+      )
 
       assertThat(result.firstName).isEqualTo("John")
       assertThat(result.lastName).isEqualTo("Doe")

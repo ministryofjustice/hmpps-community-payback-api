@@ -4,7 +4,7 @@ import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.junit5.MockKExtension
-import io.mockk.slot
+import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -23,8 +23,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompleti
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventStatus
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseCompletionMessage
-import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseCompletionStatus
-import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseMessageAttributes
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.EteService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.EteValidationService
@@ -58,29 +56,15 @@ class EteServiceTest {
 
     @Test
     fun `create ete course event entry with completed status`() {
-      val entityCaptor = slot<EteCourseCompletionEventEntity>()
-      every { eteCourseCompletionEventEntityRepository.save(capture(entityCaptor)) } returnsArgument 0
+      val message = EducationCourseCompletionMessage.valid()
 
-      eteService.recordCourseCompletionEvent(
-        EducationCourseCompletionMessage.valid().copy(
-          messageAttributes = EducationCourseMessageAttributes.valid().copy(
-            externalReference = "EXT456",
-            totalTimeMinutes = 150,
-            expectedTimeMinutes = 150,
-            status = EducationCourseCompletionStatus.Completed,
-          ),
-        ),
-      )
+      val mappingResult = EteCourseCompletionEventEntity.valid()
+      every { eteMappers.toCourseCompletionEventEntity(message) } returns mappingResult
+      every { eteCourseCompletionEventEntityRepository.save(any()) } returnsArgument 0
 
-      assertThat(entityCaptor.isCaptured).isTrue
-      val persistedEntity = entityCaptor.captured
+      eteService.recordCourseCompletionEvent(message)
 
-      assertThat(persistedEntity.status).isEqualTo(EteCourseCompletionEventStatus.COMPLETED)
-      assertThat(persistedEntity.totalTimeMinutes).isEqualTo(150) // 2 hours 30 minutes = 150 minutes
-      assertThat(persistedEntity.expectedTimeMinutes).isEqualTo(150)
-      assertThat(persistedEntity.externalReference).isEqualTo("EXT456")
-
-      // ensure appointment is created
+      verify { eteCourseCompletionEventEntityRepository.save(mappingResult) }
     }
   }
 

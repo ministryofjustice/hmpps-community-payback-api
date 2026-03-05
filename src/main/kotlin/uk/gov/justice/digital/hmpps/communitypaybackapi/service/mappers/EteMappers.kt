@@ -115,26 +115,29 @@ class EteMappers(
     minutesCredited = courseCompletionOutcome.minutesToCredit,
     contactOutcome = contactOutcomeEntityRepository.findByCode(courseCompletionOutcome.contactOutcomeCode),
   )
-}
 
-fun EducationCourseCompletionMessage.toEntity() = EteCourseCompletionEventEntity(
-  id = UUID.randomUUID(),
-  firstName = messageAttributes.firstName,
-  lastName = messageAttributes.lastName,
-  dateOfBirth = messageAttributes.dateOfBirth,
-  region = messageAttributes.region,
-  office = messageAttributes.office,
-  email = messageAttributes.email,
-  courseName = messageAttributes.courseName,
-  courseType = messageAttributes.courseType,
-  provider = messageAttributes.provider,
-  completionDate = messageAttributes.completionDate,
-  status = EteCourseCompletionEventStatus.fromMessage(messageAttributes.status),
-  totalTimeMinutes = messageAttributes.totalTimeMinutes,
-  expectedTimeMinutes = messageAttributes.expectedTimeMinutes,
-  externalReference = messageAttributes.externalReference,
-  attempts = messageAttributes.attempts,
-)
+  fun toCourseCompletionEventEntity(message: EducationCourseCompletionMessage): EteCourseCompletionEventEntity {
+    val messageAttributes = message.messageAttributes
+    return EteCourseCompletionEventEntity(
+      id = UUID.randomUUID(),
+      firstName = messageAttributes.firstName,
+      lastName = messageAttributes.lastName,
+      dateOfBirth = messageAttributes.dateOfBirth,
+      region = messageAttributes.region,
+      office = messageAttributes.office,
+      email = messageAttributes.email,
+      courseName = messageAttributes.courseName,
+      courseType = messageAttributes.courseType,
+      provider = messageAttributes.provider,
+      completionDate = messageAttributes.completionDate,
+      status = EteCourseCompletionEventStatus.fromMessage(messageAttributes.status),
+      totalTimeMinutes = messageAttributes.totalTimeMinutes,
+      expectedTimeMinutes = messageAttributes.expectedTimeMinutes,
+      externalReference = messageAttributes.externalReference,
+      attempts = messageAttributes.attempts,
+    )
+  }
+}
 
 fun EteCourseCompletionEventEntity.toDto() = EteCourseCompletionEventDto(
   id = id,
