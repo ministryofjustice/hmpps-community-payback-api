@@ -2,7 +2,7 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.unit.service
 
 import io.mockk.CapturingSlot
 import io.mockk.every
-import io.mockk.impl.annotations.MockK
+import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.slot
 import io.mockk.verify
@@ -24,7 +24,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.FormService
 @ExtendWith(MockKExtension::class)
 class FormServiceTest {
 
-  @MockK
+  @RelaxedMockK
   lateinit var repository: FormCacheEntityRepository
 
   lateinit var service: FormService
@@ -65,19 +65,40 @@ class FormServiceTest {
 
   @Nested
   inner class FormPut {
-    @Test
-    fun `valid json is saved`() {
-      val json = """{"a":1}"""
-      val slotEntity: CapturingSlot<FormCacheEntity> = slot()
-      every { repository.save(capture(slotEntity)) } answers { slotEntity.captured }
 
+    @Test
+    fun `create entry if it doesn't exist`() {
+      every { repository.findByIdOrNull(FormCacheId(id, formType)) } returns null
+
+      val slotEntity: CapturingSlot<FormCacheEntity> = slot()
+      every { repository.save(capture(slotEntity)) } returnsArgument 0
+
+      val json = """{"a":1}"""
       service.put(FormKeyDto(formType, id), json)
 
-      verify(exactly = 1) { repository.save(any()) }
       val saved = slotEntity.captured
       assertThat(saved.formId).isEqualTo(id)
       assertThat(saved.formType).isEqualTo(formType)
       assertThat(saved.formData).isEqualTo(json)
+    }
+
+    @Test
+    fun `update entry if it does exist`() {
+      val existingEntry = FormCacheEntity(
+        formId = id,
+        formType = formType,
+        formData = "{ }",
+      )
+
+      every { repository.findByIdOrNull(FormCacheId(id, formType)) } returns existingEntry
+      every { repository.save(existingEntry) } returnsArgument 0
+
+      val updatedJson = """{"a":1}"""
+      service.put(FormKeyDto(formType, id), updatedJson)
+
+      verify { repository.save(existingEntry) }
+
+      assertThat(existingEntry.formData).isEqualTo(updatedJson)
     }
 
     @Test

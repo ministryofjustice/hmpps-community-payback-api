@@ -35,14 +35,17 @@ class FormService(
     // Validate JSON is well-formed
     jsonMapper.readTree(json)
 
-    val entity = FormCacheEntity(
-      formId = key.id,
-      formType = key.type,
-      formData = json,
-      updatedAt = OffsetDateTime.now(),
+    repository.save(
+      repository.findByIdOrNull(key.toJpaId())?.apply {
+        formData = json
+        updatedAt = OffsetDateTime.now()
+      }
+        ?: FormCacheEntity(
+          formId = key.id,
+          formType = key.type,
+          formData = json,
+        ),
     )
-
-    repository.save(entity)
   }
 
   fun deleteIfExists(key: FormKeyDto) {
