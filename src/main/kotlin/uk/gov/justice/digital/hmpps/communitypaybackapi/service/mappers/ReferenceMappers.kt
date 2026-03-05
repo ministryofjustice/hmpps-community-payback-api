@@ -38,6 +38,7 @@ fun List<EnforcementActionEntity>.toDto() = EnforcementActionsDto(this.map { it.
 fun EnforcementActionEntity.toDto() = EnforcementActionDto(this.id, this.name, this.code, this.respondByDateRequired)
 
 fun ProjectTypeGroup.toDto() = when (this) {
+  ProjectTypeGroup.ETE -> ProjectTypeGroupDto.ETE
   ProjectTypeGroup.GROUP -> ProjectTypeGroupDto.GROUP
   ProjectTypeGroup.INDIVIDUAL -> ProjectTypeGroupDto.INDIVIDUAL
   ProjectTypeGroup.INDUCTION -> ProjectTypeGroupDto.INDUCTION
