@@ -17,6 +17,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSupervisorSumma
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSupervisorSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EteCourseCompletionEventDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.CommunityCampusPduEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventResolutionEntity
@@ -35,6 +36,9 @@ import java.time.LocalTime
 import java.util.UUID
 
 class AdminCourseCompletionIT : IntegrationTestBase() {
+
+  @Autowired
+  lateinit var communityCampusPduEntityRepository: CommunityCampusPduEntityRepository
 
   @Autowired
   lateinit var eteCourseCompletionEventEntityRepository: EteCourseCompletionEventEntityRepository
@@ -56,7 +60,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
 
   @Nested
   @DisplayName("GET /providers/N07/course-completions")
-  inner class CourseCompletionsEndpoint {
+  inner class GetCourseCompletionsEndpoint {
 
     @BeforeEach
     fun setUp() {
@@ -93,28 +97,45 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
     }
 
     @Test
-    fun `should return empty results for invalid provider code`() {
+    fun `should return results for requested provider only`() {
+      val walesProviderEvent1 = eteCourseCompletionEventEntityRepository.save(
+        EteCourseCompletionEventEntity.valid(ctx).copy(
+          pdu = communityCampusPduEntityRepository.findByNameIgnoreCase("Dyfed Powys")!!,
+        ),
+      )
+
+      val walesProviderEvent2 = eteCourseCompletionEventEntityRepository.save(
+        EteCourseCompletionEventEntity.valid(ctx).copy(
+          pdu = communityCampusPduEntityRepository.findByNameIgnoreCase("Cwm Taf Morgannwg")!!,
+        ),
+      )
+
+      // london
+      eteCourseCompletionEventEntityRepository.save(
+        EteCourseCompletionEventEntity.valid(ctx).copy(
+          pdu = communityCampusPduEntityRepository.findByNameIgnoreCase("Enfield and Haringey")!!,
+        ),
+      )
+
       val pagedCourseCompletions = webTestClient.get()
-        .uri("/admin/providers/INVALID/course-completions")
+        .uri("/admin/providers/N03/course-completions")
         .addAdminUiAuthHeader()
         .exchange()
         .expectStatus()
         .isOk
         .bodyAsObject<PagedModel<EteCourseCompletionEventDto>>()
 
-      assertThat(pagedCourseCompletions.content).isEmpty()
+      assertThat(pagedCourseCompletions.content.map { it.id }).containsExactlyInAnyOrder(walesProviderEvent1.id, walesProviderEvent2.id)
     }
 
     @Test
     fun `should return OK for one course completion`() {
       val entity = eteCourseCompletionEventEntityRepository.save(
-        EteCourseCompletionEventEntity.valid(ctx).copy(
-          region = "London",
-        ),
+        EteCourseCompletionEventEntity.valid(ctx),
       )
 
       val pagedCourseCompletions = webTestClient.get()
-        .uri("/admin/providers/N07/course-completions")
+        .uri("/admin/providers/${entity.pdu.providerCode}/course-completions")
         .addAdminUiAuthHeader()
         .exchange()
         .expectStatus()
@@ -127,24 +148,26 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
 
     @Test
     fun `should apply date range`() {
+      val pdu = communityCampusPduEntityRepository.findAll().first()
+
       // before range
       eteCourseCompletionEventEntityRepository.save(
         EteCourseCompletionEventEntity.valid(ctx).copy(
-          region = "London",
+          pdu = pdu,
           completionDate = LocalDate.of(2025, 5, 9),
         ),
       )
 
       val inRange1 = eteCourseCompletionEventEntityRepository.save(
         EteCourseCompletionEventEntity.valid(ctx).copy(
-          region = "London",
+          pdu = pdu,
           completionDate = LocalDate.of(2025, 5, 10),
         ),
       )
 
       val inRange2 = eteCourseCompletionEventEntityRepository.save(
         EteCourseCompletionEventEntity.valid(ctx).copy(
-          region = "London",
+          pdu = pdu,
           completionDate = LocalDate.of(2025, 6, 20),
         ),
       )
@@ -152,13 +175,13 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
       // after range
       eteCourseCompletionEventEntityRepository.save(
         EteCourseCompletionEventEntity.valid(ctx).copy(
-          region = "London",
+          pdu = pdu,
           completionDate = LocalDate.of(2025, 6, 21),
         ),
       )
 
       val pagedCourseCompletions = webTestClient.get()
-        .uri("/admin/providers/N07/course-completions?dateFrom=2025-05-10&dateTo=2025-06-20&sort=completionDate,asc")
+        .uri("/admin/providers/${pdu.providerCode}/course-completions?dateFrom=2025-05-10&dateTo=2025-06-20&sort=completionDate,asc")
         .addAdminUiAuthHeader()
         .exchange()
         .expectStatus()
@@ -172,9 +195,11 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
 
     @Test
     fun `should return resolved and unresolved if no resolution filter defined`() {
+      val pdu = communityCampusPduEntityRepository.findAll().first()
+
       val resolved = eteCourseCompletionEventEntityRepository.save(
         EteCourseCompletionEventEntity.valid(ctx).copy(
-          region = "London",
+          pdu = pdu,
         ),
       )
       eteCourseCompletionEventResolutionRepository.save(
@@ -185,12 +210,12 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
 
       val unresolved = eteCourseCompletionEventEntityRepository.save(
         EteCourseCompletionEventEntity.valid(ctx).copy(
-          region = "London",
+          pdu = pdu,
         ),
       )
 
       val result = webTestClient.get()
-        .uri("/admin/providers/N07/course-completions")
+        .uri("/admin/providers/${pdu.providerCode}/course-completions")
         .addAdminUiAuthHeader()
         .exchange()
         .expectStatus()
@@ -202,9 +227,11 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
 
     @Test
     fun `should only return resolved if resolved requested`() {
+      val pdu = communityCampusPduEntityRepository.findAll().first()
+
       val resolved = eteCourseCompletionEventEntityRepository.save(
         EteCourseCompletionEventEntity.valid(ctx).copy(
-          region = "London",
+          pdu = pdu,
         ),
       )
 
@@ -217,12 +244,12 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
       // unresolved
       eteCourseCompletionEventEntityRepository.save(
         EteCourseCompletionEventEntity.valid(ctx).copy(
-          region = "London",
+          pdu = pdu,
         ),
       )
 
       val result = webTestClient.get()
-        .uri("/admin/providers/N07/course-completions?resolutionStatus=Resolved")
+        .uri("/admin/providers/${pdu.providerCode}/course-completions?resolutionStatus=Resolved")
         .addAdminUiAuthHeader()
         .exchange()
         .expectStatus()
@@ -234,9 +261,11 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
 
     @Test
     fun `should only return unresolved if unresolved requested`() {
+      val pdu = communityCampusPduEntityRepository.findAll().first()
+
       val resolved = eteCourseCompletionEventEntityRepository.save(
         EteCourseCompletionEventEntity.valid(ctx).copy(
-          region = "London",
+          pdu = pdu,
         ),
       )
 
@@ -248,12 +277,12 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
 
       val unresolved = eteCourseCompletionEventEntityRepository.save(
         EteCourseCompletionEventEntity.valid(ctx).copy(
-          region = "London",
+          pdu = pdu,
         ),
       )
 
       val result = webTestClient.get()
-        .uri("/admin/providers/N07/course-completions?resolutionStatus=Unresolved")
+        .uri("/admin/providers/${pdu.providerCode}/course-completions?resolutionStatus=Unresolved")
         .addAdminUiAuthHeader()
         .exchange()
         .expectStatus()
@@ -265,22 +294,24 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
 
     @Test
     fun `should apply office filter`() {
+      val pdu = communityCampusPduEntityRepository.findAll().first()
+
       eteCourseCompletionEventEntityRepository.save(
         EteCourseCompletionEventEntity.valid(ctx).copy(
-          region = "London",
+          pdu = pdu,
           office = "Hammersmith",
         ),
       )
 
       val inOffice = eteCourseCompletionEventEntityRepository.save(
         EteCourseCompletionEventEntity.valid(ctx).copy(
-          region = "London",
+          pdu = pdu,
           office = "Whitechapel",
         ),
       )
 
       val pagedCourseCompletions = webTestClient.get()
-        .uri("/admin/providers/N07/course-completions?office=Whitechapel")
+        .uri("/admin/providers/${pdu.providerCode}/course-completions?office=Whitechapel")
         .addAdminUiAuthHeader()
         .exchange()
         .expectStatus()
@@ -293,29 +324,31 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
 
     @Test
     fun `should apply multiple office filters`() {
+      val pdu = communityCampusPduEntityRepository.findAll().first()
+
       eteCourseCompletionEventEntityRepository.save(
         EteCourseCompletionEventEntity.valid(ctx).copy(
-          region = "London",
+          pdu = pdu,
           office = "Hammersmith",
         ),
       )
 
       val inOffice1 = eteCourseCompletionEventEntityRepository.save(
         EteCourseCompletionEventEntity.valid(ctx).copy(
-          region = "London",
+          pdu = pdu,
           office = "Whitechapel",
         ),
       )
 
       val inOffice2 = eteCourseCompletionEventEntityRepository.save(
         EteCourseCompletionEventEntity.valid(ctx).copy(
-          region = "London",
+          pdu = pdu,
           office = "Croydon",
         ),
       )
 
       val pagedCourseCompletions = webTestClient.get()
-        .uri("/admin/providers/N07/course-completions?office=Whitechapel&office=Croydon")
+        .uri("/admin/providers/${pdu.providerCode}/course-completions?office=Whitechapel&office=Croydon")
         .addAdminUiAuthHeader()
         .exchange()
         .expectStatus()
@@ -330,16 +363,18 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
 
     @Test
     fun `should return OK for multiple course completions with pagination`() {
+      val pdu = communityCampusPduEntityRepository.findAll().first()
+
       repeat(10) {
         eteCourseCompletionEventEntityRepository.save(
           EteCourseCompletionEventEntity.valid(ctx).copy(
-            region = "London",
+            pdu = pdu,
           ),
         )
       }
 
       val pagedCourseCompletionsPage1 = webTestClient.get()
-        .uri("/admin/providers/N07/course-completions?page=0&size=5")
+        .uri("/admin/providers/${pdu.providerCode}/course-completions?page=0&size=5")
         .addAdminUiAuthHeader()
         .exchange()
         .expectStatus()
@@ -352,7 +387,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
       assertThat(pagedCourseCompletionsPage1.content).hasSize(5)
 
       val pagedCourseCompletionsPage2 = webTestClient.get()
-        .uri("/admin/providers/N07/course-completions?page=1&size=5")
+        .uri("/admin/providers/${pdu.providerCode}/course-completions?page=1&size=5")
         .addAdminUiAuthHeader()
         .exchange()
         .expectStatus()
@@ -367,37 +402,39 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
 
     @Test
     fun `should return OK for multiple course completions with sorting`() {
+      val pdu = communityCampusPduEntityRepository.findAll().first()
+
       eteCourseCompletionEventEntityRepository.save(
         EteCourseCompletionEventEntity.valid(ctx).copy(
           firstName = "John",
           lastName = "Smith",
-          region = "London",
+          pdu = pdu,
         ),
       )
       eteCourseCompletionEventEntityRepository.save(
         EteCourseCompletionEventEntity.valid(ctx).copy(
           firstName = "John",
           lastName = "Doe",
-          region = "London",
+          pdu = pdu,
         ),
       )
       eteCourseCompletionEventEntityRepository.save(
         EteCourseCompletionEventEntity.valid(ctx).copy(
           firstName = "Pi",
           lastName = "Patel",
-          region = "London",
+          pdu = pdu,
         ),
       )
       eteCourseCompletionEventEntityRepository.save(
         EteCourseCompletionEventEntity.valid(ctx).copy(
           firstName = "Zack",
           lastName = "Jones",
-          region = "London",
+          pdu = pdu,
         ),
       )
 
       val pagedCourseCompletionsPage = webTestClient.get()
-        .uri("/admin/providers/N07/course-completions?&sort=firstName,lastName,desc")
+        .uri("/admin/providers/${pdu.providerCode}/course-completions?&sort=firstName,lastName,desc")
         .addAdminUiAuthHeader()
         .exchange()
         .expectStatus()
@@ -725,7 +762,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
 
   @Nested
   @DisplayName("GET /course-completions/{id}")
-  inner class CourseCompletionEndpoint {
+  inner class GetCourseCompletionEndpoint {
 
     val id: UUID = UUID.randomUUID()
 

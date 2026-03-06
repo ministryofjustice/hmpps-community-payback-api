@@ -10,8 +10,6 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
-import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.CsvSource
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
@@ -72,41 +70,17 @@ class EteServiceTest {
   inner class GetEteCourseCompletionEvents {
 
     @Test
-    fun `should return empty page when provider code not found`() {
+    fun `pass through to repository`() {
       val pageable = Pageable.unpaged()
-      val result = eteService.getCourseCompletionEvents("INVALID", null, null, null, null, pageable)
 
-      assertThat(result.isEmpty).isTrue
-    }
-
-    @ParameterizedTest
-    @CsvSource(
-      "N07, London",
-      "N56, East of England",
-      "N53, East Midlands",
-      "N52, West Midlands",
-      "N50, Greater Manchester",
-      "N57, 'Kent, Surrey and Sussex'",
-      "N54, North East",
-      "N51, North West",
-      "N59, South Central",
-      "N58, South West",
-      "N03, Wales",
-      "N55, Yorks & Humber",
-    )
-    fun `use correct region code mapping`(providerCode: String, region: String) {
-      val pageable = Pageable.unpaged()
+      val providerCode = "PC01"
       val offices = listOf("office1", "office2")
       val fromDate = LocalDate.of(2026, 1, 1)
       val toDate = LocalDate.of(2026, 12, 31)
-      val entity = EteCourseCompletionEventEntity.valid().copy(
-        region = region,
-        completionDate = LocalDate.of(2026, 6, 15),
-      )
 
       every {
         eteCourseCompletionEventEntityRepository.findAllWithFilters(
-          region,
+          providerCode = providerCode,
           officesCount = 2,
           offices = offices,
           resolutionStatus = ResolutionStatus.ANY,
@@ -114,15 +88,21 @@ class EteServiceTest {
           toDate,
           pageable,
         )
-      } returns PageImpl(listOf(entity))
+      } returns PageImpl(
+        listOf(
+          EteCourseCompletionEventEntity.valid().copy(
+            completionDate = LocalDate.of(2026, 6, 15),
+          ),
+        ),
+      )
 
       val result = eteService.getCourseCompletionEvents(
-        providerCode,
-        fromDate,
-        toDate,
-        offices,
+        providerCode = providerCode,
+        fromDate = fromDate,
+        toDate = toDate,
+        offices = offices,
         resolutionStatus = null,
-        pageable,
+        pageable = pageable,
       )
 
       assertThat(result.isEmpty).isFalse
