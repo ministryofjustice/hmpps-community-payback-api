@@ -10,6 +10,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionCreditTimeDetailsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionResolutionDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
@@ -37,7 +38,9 @@ class EteValidationServiceTest {
   }
 
   val baselineCourseCompletionOutcome = CourseCompletionResolutionDto.valid().copy(
-    contactOutcomeCode = CONTACT_OUTCOME_CODE,
+    creditTimeDetails = CourseCompletionCreditTimeDetailsDto.valid().copy(
+      contactOutcomeCode = CONTACT_OUTCOME_CODE,
+    ),
   )
 
   val baselineCourseCompletionEvent = EteCourseCompletionEventEntity.valid().copy(
@@ -108,7 +111,7 @@ class EteValidationServiceTest {
             id = any(),
             courseCompletionEvent = courseCompletionEvent,
             courseCompletionResolution = baselineCourseCompletionOutcome,
-            deliusAppointmentId = baselineCourseCompletionOutcome.appointmentIdToUpdate!!,
+            deliusAppointmentId = baselineCourseCompletionOutcome.creditTimeDetails.appointmentIdToUpdate!!,
           )
         } returns courseCompletionEvent.resolution!!.copy()
 
@@ -131,7 +134,7 @@ class EteValidationServiceTest {
             id = any(),
             courseCompletionEvent = courseCompletionEvent,
             courseCompletionResolution = baselineCourseCompletionOutcome,
-            deliusAppointmentId = baselineCourseCompletionOutcome.appointmentIdToUpdate!!,
+            deliusAppointmentId = baselineCourseCompletionOutcome.creditTimeDetails.appointmentIdToUpdate!!,
           )
         } returns courseCompletionEvent.resolution!!.copy(
           projectCode = "some other project code",

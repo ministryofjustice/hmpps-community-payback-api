@@ -16,9 +16,10 @@ import org.junit.jupiter.params.provider.ValueSource
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentBehaviourDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentWorkQualityDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionCreditTimeDetailsDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionResolutionDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.CommunityCampusPduEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.CommunityCampusPduEntityRepository
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionResolutionDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntity
@@ -64,11 +65,15 @@ class EteMappersTest {
   @Nested
   inner class EntityToCreateAppointmentDto {
 
-    val baselineCourseCompletionOutcome = CourseCompletionResolutionDto.valid().copy(
-      crn = CRN,
+    val baselineCreditTimeDetailsDto = CourseCompletionCreditTimeDetailsDto.valid().copy(
       projectCode = PROJECT_CODE,
       deliusEventNumber = DELIUS_EVENT_NUMBER,
       contactOutcomeCode = CONTACT_OUTCOME_CODE,
+    )
+
+    val baselineCourseCompletionResolution = CourseCompletionResolutionDto.valid().copy(
+      crn = CRN,
+      creditTimeDetails = baselineCreditTimeDetailsDto,
     )
 
     @ParameterizedTest
@@ -81,11 +86,13 @@ class EteMappersTest {
       alertActive: Boolean?,
     ) {
       val result = mapper.toCreateAppointmentDto(
-        baselineCourseCompletionOutcome.copy(
-          minutesToCredit = 60L,
-          notes = "the provided notes",
-          sensitive = sensitive,
-          alertActive = alertActive,
+        baselineCourseCompletionResolution.copy(
+          creditTimeDetails = baselineCourseCompletionResolution.creditTimeDetails.copy(
+            minutesToCredit = 60L,
+            notes = "the provided notes",
+            sensitive = sensitive,
+            alertActive = alertActive,
+          ),
         ),
       )
 
@@ -94,7 +101,7 @@ class EteMappersTest {
       assertThat(result.crn).isEqualTo(CRN)
       assertThat(result.deliusEventNumber).isEqualTo(DELIUS_EVENT_NUMBER)
       assertThat(result.allocationId).isNull()
-      assertThat(result.date).isEqualTo(baselineCourseCompletionOutcome.date)
+      assertThat(result.date).isEqualTo(baselineCourseCompletionResolution.creditTimeDetails.date)
       assertThat(result.notes).isEqualTo("the provided notes")
       assertThat(result.contactOutcomeCode).isEqualTo(CONTACT_OUTCOME_CODE)
       assertThat(result.pickUpLocationCode).isNull()
@@ -107,8 +114,11 @@ class EteMappersTest {
     @Test
     fun `should set start time to 9am`() {
       val result = mapper.toCreateAppointmentDto(
-        baselineCourseCompletionOutcome.copy(
-          minutesToCredit = 60L,
+        baselineCourseCompletionResolution.copy(
+
+          creditTimeDetails = CourseCompletionCreditTimeDetailsDto.valid().copy(
+            minutesToCredit = 60L,
+          ),
         ),
       )
 
@@ -121,8 +131,11 @@ class EteMappersTest {
       minutesToCredit: Long,
     ) {
       val result = mapper.toCreateAppointmentDto(
-        baselineCourseCompletionOutcome.copy(
-          minutesToCredit = minutesToCredit,
+        baselineCourseCompletionResolution.copy(
+
+          creditTimeDetails = CourseCompletionCreditTimeDetailsDto.valid().copy(
+            minutesToCredit = minutesToCredit,
+          ),
         ),
       )
 
@@ -132,8 +145,11 @@ class EteMappersTest {
     @Test
     fun `should set attendance data with default values`() {
       val result = mapper.toCreateAppointmentDto(
-        baselineCourseCompletionOutcome.copy(
-          minutesToCredit = 60L,
+        baselineCourseCompletionResolution.copy(
+
+          creditTimeDetails = CourseCompletionCreditTimeDetailsDto.valid().copy(
+            minutesToCredit = 60L,
+          ),
         ),
       )
 
@@ -149,8 +165,10 @@ class EteMappersTest {
     fun `should error if crediting minutes that would roll into next day`() {
       assertThatThrownBy {
         mapper.toCreateAppointmentDto(
-          baselineCourseCompletionOutcome.copy(
-            minutesToCredit = 60L * 24,
+          baselineCourseCompletionResolution.copy(
+            creditTimeDetails = CourseCompletionCreditTimeDetailsDto.valid().copy(
+              minutesToCredit = 60L * 24,
+            ),
           ),
         )
       }.hasMessage("Cannot credit more than 1439 minutes")
@@ -162,13 +180,15 @@ class EteMappersTest {
 
     val baselineCourseCompletionOutcome = CourseCompletionResolutionDto.valid().copy(
       crn = CRN,
-      projectCode = PROJECT_CODE,
-      deliusEventNumber = DELIUS_EVENT_NUMBER,
-      contactOutcomeCode = CONTACT_OUTCOME_CODE,
+      creditTimeDetails = CourseCompletionCreditTimeDetailsDto.valid().copy(
+        projectCode = PROJECT_CODE,
+        deliusEventNumber = DELIUS_EVENT_NUMBER,
+        contactOutcomeCode = CONTACT_OUTCOME_CODE,
+      ),
     )
 
     val baselineExistingAppointment = AppointmentDto.valid().copy(
-      date = baselineCourseCompletionOutcome.date,
+      date = baselineCourseCompletionOutcome.creditTimeDetails.date,
     )
 
     @ParameterizedTest
@@ -184,10 +204,13 @@ class EteMappersTest {
 
       val result = mapper.toUpdateAppointmentDto(
         courseCompletionResolution = baselineCourseCompletionOutcome.copy(
-          minutesToCredit = 60L,
-          notes = "the provided notes",
-          sensitive = sensitive,
-          alertActive = alertActive,
+
+          creditTimeDetails = baselineCourseCompletionOutcome.creditTimeDetails.copy(
+            minutesToCredit = 60L,
+            notes = "the provided notes",
+            sensitive = sensitive,
+            alertActive = alertActive,
+          ),
         ),
         existingAppointment = existingAppointment,
       )
@@ -208,7 +231,9 @@ class EteMappersTest {
 
       val result = mapper.toUpdateAppointmentDto(
         courseCompletionResolution = baselineCourseCompletionOutcome.copy(
-          minutesToCredit = 60L,
+          creditTimeDetails = baselineCourseCompletionOutcome.creditTimeDetails.copy(
+            minutesToCredit = 60L,
+          ),
         ),
         existingAppointment = existingAppointment,
       )
@@ -225,7 +250,9 @@ class EteMappersTest {
 
       val result = mapper.toUpdateAppointmentDto(
         courseCompletionResolution = baselineCourseCompletionOutcome.copy(
-          minutesToCredit = minutesToCredit,
+          creditTimeDetails = baselineCourseCompletionOutcome.creditTimeDetails.copy(
+            minutesToCredit = minutesToCredit,
+          ),
         ),
         existingAppointment = existingAppointment,
       )
@@ -240,7 +267,9 @@ class EteMappersTest {
 
         mapper.toUpdateAppointmentDto(
           courseCompletionResolution = baselineCourseCompletionOutcome.copy(
-            minutesToCredit = 60L * 24,
+            creditTimeDetails = baselineCourseCompletionOutcome.creditTimeDetails.copy(
+              minutesToCredit = 60L * 24,
+            ),
           ),
           existingAppointment = existingAppointment,
         )
@@ -254,7 +283,9 @@ class EteMappersTest {
 
         mapper.toUpdateAppointmentDto(
           courseCompletionResolution = baselineCourseCompletionOutcome.copy(
-            date = baselineExistingAppointment.date.plusDays(1),
+            creditTimeDetails = baselineCourseCompletionOutcome.creditTimeDetails.copy(
+              date = baselineExistingAppointment.date.plusDays(1),
+            ),
           ),
           existingAppointment = existingAppointment,
         )
@@ -352,15 +383,17 @@ class EteMappersTest {
         courseCompletionEvent = courseCompletionEvent,
         courseCompletionResolution = CourseCompletionResolutionDto.valid().copy(
           crn = CRN,
-          deliusEventNumber = DELIUS_EVENT_NUMBER,
-          projectCode = PROJECT_CODE,
-          minutesToCredit = 97,
-          contactOutcomeCode = CONTACT_OUTCOME_CODE,
-          appointmentIdToUpdate = if (appointmentCreated) {
-            null
-          } else {
-            DELIUS_APPOINTMENT_ID
-          },
+          creditTimeDetails = CourseCompletionCreditTimeDetailsDto.valid().copy(
+            deliusEventNumber = DELIUS_EVENT_NUMBER,
+            projectCode = PROJECT_CODE,
+            minutesToCredit = 97,
+            contactOutcomeCode = CONTACT_OUTCOME_CODE,
+            appointmentIdToUpdate = if (appointmentCreated) {
+              null
+            } else {
+              DELIUS_APPOINTMENT_ID
+            },
+          ),
         ),
         deliusAppointmentId = DELIUS_APPOINTMENT_ID,
       )
