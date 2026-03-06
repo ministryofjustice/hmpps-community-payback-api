@@ -28,4 +28,5 @@ data class CourseCompletionCreditTimeDetailsDto(
 
 enum class CourseCompletionResolutionTypeDto {
   CREDIT_TIME,
+  COURSE_ALREADY_COMPLETED_WITHIN_THRESHOLD,
 }
