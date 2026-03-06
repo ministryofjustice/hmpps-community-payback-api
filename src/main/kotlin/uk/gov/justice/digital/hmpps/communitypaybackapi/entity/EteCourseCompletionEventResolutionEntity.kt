@@ -33,18 +33,18 @@ data class EteCourseCompletionEventResolutionEntity(
   val createdAt: OffsetDateTime = OffsetDateTime.now(),
   val createdByUsername: String,
 
+  val crn: String?,
   /**
    * The following fields are set when resolution is [EteCourseCompletionResolution.CREDIT_TIME]
    */
-  val crn: String?,
-  val deliusEventNumber: Long?,
-  val deliusAppointmentId: Long?,
-  val deliusAppointmentCreated: Boolean?,
-  val projectCode: String?,
-  val minutesCredited: Long?,
+  val deliusEventNumber: Long? = null,
+  val deliusAppointmentId: Long? = null,
+  val deliusAppointmentCreated: Boolean? = null,
+  val projectCode: String? = null,
+  val minutesCredited: Long? = null,
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "contact_outcome_id", referencedColumnName = "id")
-  val contactOutcome: ContactOutcomeEntity?,
+  val contactOutcome: ContactOutcomeEntity? = null,
 ) {
   /**
    * Used when determining if a resolution has already been applied
@@ -103,4 +103,5 @@ data class EteCourseCompletionEventResolutionEntity(
 
 enum class EteCourseCompletionResolution {
   CREDIT_TIME,
+  COURSE_ALREADY_COMPLETED_WITHIN_THRESHOLD,
 }

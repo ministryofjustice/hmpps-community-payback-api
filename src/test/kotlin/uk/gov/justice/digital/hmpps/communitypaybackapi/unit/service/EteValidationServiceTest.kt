@@ -98,6 +98,39 @@ class EteValidationServiceTest {
     }
 
     @Nested
+    inner class CourseAlreadyCompletedWithinThreshold {
+
+      val baselineCourseCompletionResolution = CourseCompletionResolutionDto.valid().copy(
+        type = CourseCompletionResolutionTypeDto.COURSE_ALREADY_COMPLETED_WITHIN_THRESHOLD,
+        creditTimeDetails = null,
+      )
+
+      val baselineCourseCompletionEvent = EteCourseCompletionEventEntity.valid().copy(
+        resolution = null,
+      )
+
+      @Test
+      fun success() {
+        eteValidationService.validateCourseCompletionResolution(
+          baselineCourseCompletionResolution,
+          baselineCourseCompletionEvent,
+        )
+      }
+
+      @Test
+      fun `error if credit time details are provided`() {
+        assertThatThrownBy {
+          eteValidationService.validateCourseCompletionResolution(
+            baselineCourseCompletionResolution.copy(
+              creditTimeDetails = CourseCompletionCreditTimeDetailsDto.valid(),
+            ),
+            baselineCourseCompletionEvent,
+          )
+        }.hasMessage("Credit Time Details should not be provided for type COURSE_ALREADY_COMPLETED_WITHIN_THRESHOLD")
+      }
+    }
+
+    @Nested
     inner class ExistingResolution {
 
       @BeforeEach
@@ -108,6 +141,7 @@ class EteValidationServiceTest {
       }
 
       val baselineCourseCompletionOutcome = CourseCompletionResolutionDto.valid().copy(
+        type = CourseCompletionResolutionTypeDto.CREDIT_TIME,
         creditTimeDetails = CourseCompletionCreditTimeDetailsDto.valid().copy(
           contactOutcomeCode = CONTACT_OUTCOME_CODE,
         ),
@@ -134,7 +168,7 @@ class EteValidationServiceTest {
         )
 
         every {
-          eteMappers.toResolutionEntity(
+          eteMappers.toResolutionEntityForCreditTime(
             id = any(),
             courseCompletionEvent = courseCompletionEvent,
             courseCompletionResolution = baselineCourseCompletionOutcome,
@@ -157,7 +191,7 @@ class EteValidationServiceTest {
         )
 
         every {
-          eteMappers.toResolutionEntity(
+          eteMappers.toResolutionEntityForCreditTime(
             id = any(),
             courseCompletionEvent = courseCompletionEvent,
             courseCompletionResolution = baselineCourseCompletionOutcome,

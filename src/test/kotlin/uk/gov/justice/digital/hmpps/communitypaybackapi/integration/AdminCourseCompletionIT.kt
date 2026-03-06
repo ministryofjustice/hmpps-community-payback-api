@@ -23,6 +23,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompleti
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventResolutionEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventResolutionRepository
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionResolution
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.unallocated
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.validNoOutcome
@@ -428,18 +429,6 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
   @DisplayName("POST /course-completion/{eteCourseCompletionEventId}/resolution")
   inner class PostCourseCompletionResolution {
 
-    val resolution = CourseCompletionResolutionDto.valid().copy(
-      type = CourseCompletionResolutionTypeDto.CREDIT_TIME,
-      crn = "X123456",
-      creditTimeDetails = CourseCompletionCreditTimeDetailsDto.valid().copy(
-        deliusEventNumber = DELIUS_EVENT_NUMBER,
-        appointmentIdToUpdate = null,
-        minutesToCredit = 60,
-        contactOutcomeCode = "COMP",
-        projectCode = "PRJ001",
-      ),
-    )
-
     @BeforeEach
     fun setUp() {
       databasePurgeUtils.deleteAllEteData()
@@ -461,7 +450,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
       webTestClient.post()
         .uri("/admin/course-completion/$id/resolution")
         .contentType(MediaType.APPLICATION_JSON)
-        .bodyValue(resolution)
+        .bodyValue(CourseCompletionResolutionDto.valid())
         .exchange()
         .expectStatus()
         .isUnauthorized
@@ -474,7 +463,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
         .uri("/admin/course-completions/$id/resolution")
         .headers(setAuthorisation())
         .contentType(MediaType.APPLICATION_JSON)
-        .bodyValue(resolution)
+        .bodyValue(CourseCompletionResolutionDto.valid())
         .exchange()
         .expectStatus()
         .isForbidden
@@ -487,7 +476,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
         .uri("/admin/course-completions/$id/resolution")
         .headers(setAuthorisation(roles = listOf("ROLE_WRONG")))
         .contentType(MediaType.APPLICATION_JSON)
-        .bodyValue(resolution)
+        .bodyValue(CourseCompletionResolutionDto.valid())
         .exchange()
         .expectStatus()
         .isForbidden
@@ -526,12 +515,38 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
     }
 
     @Test
+    fun `if type is COURSE_ALREADY_COMPLETED_WITHIN_THRESHOLD, just record resolution`() {
+      val eventEntity = eteCourseCompletionEventEntityRepository.save(
+        EteCourseCompletionEventEntity.valid(ctx),
+      )
+
+      val resolutionDto = CourseCompletionResolutionDto.valid(ctx).copy(
+        type = CourseCompletionResolutionTypeDto.COURSE_ALREADY_COMPLETED_WITHIN_THRESHOLD,
+        crn = CRN,
+        creditTimeDetails = null,
+      )
+
+      webTestClient.post()
+        .uri("/admin/course-completions/${eventEntity.id}/resolution")
+        .addAdminUiAuthHeader("theusername")
+        .contentType(MediaType.APPLICATION_JSON)
+        .bodyValue(resolutionDto)
+        .exchange()
+        .expectStatus()
+        .isNoContent
+
+      val resolutionEntity = eteCourseCompletionEventEntityRepository.findByIdOrNull(eventEntity.id)!!.resolution!!
+      assertThat(resolutionEntity.resolution == EteCourseCompletionResolution.COURSE_ALREADY_COMPLETED_WITHIN_THRESHOLD)
+    }
+
+    @Test
     fun `if type is CREDIT_TIME, should create appointment when appointmentIdToUpdate is null`() {
       val eventEntity = eteCourseCompletionEventEntityRepository.save(
         EteCourseCompletionEventEntity.valid(ctx),
       )
 
       val resolution = CourseCompletionResolutionDto.valid(ctx).copy(
+        type = CourseCompletionResolutionTypeDto.CREDIT_TIME,
         crn = CRN,
         creditTimeDetails = CourseCompletionCreditTimeDetailsDto.valid(ctx).copy(
           date = LocalDate.of(2021, 1, 30),
@@ -592,6 +607,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
         EteCourseCompletionEventEntity.valid(ctx),
       )
       val resolution = CourseCompletionResolutionDto.valid(ctx).copy(
+        type = CourseCompletionResolutionTypeDto.CREDIT_TIME,
         crn = CRN,
         creditTimeDetails = CourseCompletionCreditTimeDetailsDto.valid(ctx).copy(
           date = LocalDate.now().minusDays(5),
@@ -642,6 +658,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
       )
 
       val resolution = CourseCompletionResolutionDto.valid(ctx).copy(
+        type = CourseCompletionResolutionTypeDto.CREDIT_TIME,
         crn = CRN,
         creditTimeDetails = CourseCompletionCreditTimeDetailsDto.valid(ctx).copy(
           deliusEventNumber = DELIUS_EVENT_NUMBER,
@@ -697,6 +714,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
       )
 
       val resolution = CourseCompletionResolutionDto.valid(ctx).copy(
+        type = CourseCompletionResolutionTypeDto.CREDIT_TIME,
         crn = CRN,
         creditTimeDetails = CourseCompletionCreditTimeDetailsDto.valid(ctx).copy(
           deliusEventNumber = DELIUS_EVENT_NUMBER,

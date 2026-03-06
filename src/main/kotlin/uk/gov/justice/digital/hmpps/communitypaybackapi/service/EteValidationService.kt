@@ -20,6 +20,7 @@ class EteValidationService(
   ): ValidationResult {
     when (resolution.type) {
       CourseCompletionResolutionTypeDto.CREDIT_TIME -> validateCreditTime(resolution)
+      CourseCompletionResolutionTypeDto.COURSE_ALREADY_COMPLETED_WITHIN_THRESHOLD -> validateCourseAlreadyCompletedWithinThreshold(resolution)
     }
 
     return validateExistingResolution(resolution, courseCompletionEvent)
@@ -36,6 +37,12 @@ class EteValidationService(
     }
   }
 
+  private fun validateCourseAlreadyCompletedWithinThreshold(resolution: CourseCompletionResolutionDto) {
+    if (resolution.creditTimeDetails != null) {
+      throw BadRequestException("Credit Time Details should not be provided for type ${CourseCompletionResolutionTypeDto.COURSE_ALREADY_COMPLETED_WITHIN_THRESHOLD}")
+    }
+  }
+
   private fun validateExistingResolution(
     resolution: CourseCompletionResolutionDto,
     courseCompletionEvent: EteCourseCompletionEventEntity,
@@ -44,7 +51,7 @@ class EteValidationService(
     if (existingResolution == null) {
       return ValidationResult.VALID
     } else {
-      val proposedResolutionEntity = eteMapper.toResolutionEntity(
+      val proposedResolutionEntity = eteMapper.toResolutionEntityForCreditTime(
         id = UUID.randomUUID(),
         courseCompletionEvent = courseCompletionEvent,
         courseCompletionResolution = resolution,
