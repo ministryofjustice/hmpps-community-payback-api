@@ -15,6 +15,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectAndLocation
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSupervisorSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSupervisorSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionCreditTimeDetailsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionResolutionDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EteCourseCompletionEventDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntity
@@ -428,11 +429,13 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
 
     val resolution = CourseCompletionResolutionDto.valid().copy(
       crn = "X123456",
-      deliusEventNumber = DELIUS_EVENT_NUMBER,
-      appointmentIdToUpdate = null,
-      minutesToCredit = 60,
-      contactOutcomeCode = "COMP",
-      projectCode = "PRJ001",
+      creditTimeDetails = CourseCompletionCreditTimeDetailsDto.valid().copy(
+        deliusEventNumber = DELIUS_EVENT_NUMBER,
+        appointmentIdToUpdate = null,
+        minutesToCredit = 60,
+        contactOutcomeCode = "COMP",
+        projectCode = "PRJ001",
+      ),
     )
 
     @BeforeEach
@@ -505,7 +508,9 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
       val eventEntity = eteCourseCompletionEventEntityRepository.save(EteCourseCompletionEventEntity.valid(ctx))
 
       val resolution = CourseCompletionResolutionDto.valid().copy(
-        contactOutcomeCode = "WRONG",
+        creditTimeDetails = CourseCompletionCreditTimeDetailsDto.valid().copy(
+          contactOutcomeCode = "WRONG",
+        ),
       )
 
       webTestClient.post()
@@ -526,11 +531,13 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
 
       val resolution = CourseCompletionResolutionDto.valid(ctx).copy(
         crn = CRN,
-        date = LocalDate.of(2021, 1, 30),
-        deliusEventNumber = DELIUS_EVENT_NUMBER,
-        appointmentIdToUpdate = null,
-        projectCode = PROJECT_CODE,
-        minutesToCredit = 90,
+        creditTimeDetails = CourseCompletionCreditTimeDetailsDto.valid(ctx).copy(
+          date = LocalDate.of(2021, 1, 30),
+          deliusEventNumber = DELIUS_EVENT_NUMBER,
+          appointmentIdToUpdate = null,
+          projectCode = PROJECT_CODE,
+          minutesToCredit = 90,
+        ),
       )
 
       val project = NDProject.valid(ctx).copy(code = PROJECT_CODE, actualEndDateExclusive = null)
@@ -584,9 +591,11 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
       )
       val resolution = CourseCompletionResolutionDto.valid(ctx).copy(
         crn = CRN,
-        date = LocalDate.now().minusDays(5),
-        appointmentIdToUpdate = appointmentId,
-        projectCode = PROJECT_CODE,
+        creditTimeDetails = CourseCompletionCreditTimeDetailsDto.valid(ctx).copy(
+          date = LocalDate.now().minusDays(5),
+          appointmentIdToUpdate = appointmentId,
+          projectCode = PROJECT_CODE,
+        ),
       )
 
       val upstreamAppointment = NDAppointment.validNoOutcome(ctx).copy(
@@ -632,10 +641,12 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
 
       val resolution = CourseCompletionResolutionDto.valid(ctx).copy(
         crn = CRN,
-        deliusEventNumber = DELIUS_EVENT_NUMBER,
-        appointmentIdToUpdate = null,
-        projectCode = PROJECT_CODE,
-        minutesToCredit = 90,
+        creditTimeDetails = CourseCompletionCreditTimeDetailsDto.valid(ctx).copy(
+          deliusEventNumber = DELIUS_EVENT_NUMBER,
+          appointmentIdToUpdate = null,
+          projectCode = PROJECT_CODE,
+          minutesToCredit = 90,
+        ),
       )
 
       CommunityPaybackAndDeliusMockServer.getUpwDetailsSummary(
@@ -685,10 +696,12 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
 
       val resolution = CourseCompletionResolutionDto.valid(ctx).copy(
         crn = CRN,
-        deliusEventNumber = DELIUS_EVENT_NUMBER,
-        appointmentIdToUpdate = null,
-        projectCode = PROJECT_CODE,
-        minutesToCredit = 90,
+        creditTimeDetails = CourseCompletionCreditTimeDetailsDto.valid(ctx).copy(
+          deliusEventNumber = DELIUS_EVENT_NUMBER,
+          appointmentIdToUpdate = null,
+          projectCode = PROJECT_CODE,
+          minutesToCredit = 90,
+        ),
       )
 
       CommunityPaybackAndDeliusMockServer.getUpwDetailsSummary(
@@ -717,7 +730,9 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
         .contentType(MediaType.APPLICATION_JSON)
         .bodyValue(
           resolution.copy(
-            minutesToCredit = resolution.minutesToCredit + 1,
+            creditTimeDetails = CourseCompletionCreditTimeDetailsDto.valid(ctx).copy(
+              minutesToCredit = resolution.creditTimeDetails.minutesToCredit + 1,
+            ),
           ),
         )
         .exchange()

@@ -4,6 +4,12 @@ import java.time.LocalDate
 
 data class CourseCompletionResolutionDto(
   val crn: String,
+  val creditTimeDetails: CourseCompletionCreditTimeDetailsDto,
+) {
+  companion object
+}
+
+data class CourseCompletionCreditTimeDetailsDto(
   val deliusEventNumber: Long,
   val appointmentIdToUpdate: Long?,
   val date: LocalDate,

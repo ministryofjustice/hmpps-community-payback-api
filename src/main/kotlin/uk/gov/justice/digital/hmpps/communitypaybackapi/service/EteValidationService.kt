@@ -24,8 +24,8 @@ class EteValidationService(
   private fun validateContactOutcomeCode(
     resolution: CourseCompletionResolutionDto,
   ) {
-    val contactOutcomeCode = resolution.contactOutcomeCode
-    if (contactOutcomeEntityRepository.findByCode(resolution.contactOutcomeCode) == null) {
+    val contactOutcomeCode = resolution.creditTimeDetails.contactOutcomeCode
+    if (contactOutcomeEntityRepository.findByCode(resolution.creditTimeDetails.contactOutcomeCode) == null) {
       throw BadRequestException("Cannot find contact outcome with code $contactOutcomeCode")
     }
   }
@@ -44,7 +44,7 @@ class EteValidationService(
         courseCompletionResolution = resolution,
         // setting to 0L is fine here because isLogicallyIdentical() only checks this value when
         // the resolution indicates that an existing appointment is being updated
-        deliusAppointmentId = resolution.appointmentIdToUpdate ?: 0L,
+        deliusAppointmentId = resolution.creditTimeDetails.appointmentIdToUpdate ?: 0L,
       )
 
       if (existingResolution.isLogicallyIdentical(proposedResolutionEntity)) {
