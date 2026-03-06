@@ -31,6 +31,10 @@ data class EteCourseCompletionEventEntity(
   val firstName: String,
   val lastName: String,
   val dateOfBirth: LocalDate,
+  /**
+   * The region entered in community campus. Note that for filtering on region the
+   * provider code on the associated pdu will be used instead.
+   */
   val region: String,
   @ManyToOne(fetch = FetchType.EAGER)
   @JoinColumn("community_campus_pdu_id")
