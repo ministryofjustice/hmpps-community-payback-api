@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionOutcomeDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionResolutionDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EteCourseCompletionEventDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EteCourseCompletionResolutionStatusDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.EteService
@@ -111,19 +111,19 @@ class AdminCourseCompletionController(val eteService: EteService) {
     @PathVariable id: UUID,
   ): EteCourseCompletionEventDto = eteService.getCourseCompletionEvent(id)
 
-  @PostMapping("/course-completions/{eteCourseCompletionEventId}", consumes = [MediaType.APPLICATION_JSON_VALUE])
+  @PostMapping("/course-completions/{id}/resolution", consumes = [MediaType.APPLICATION_JSON_VALUE])
   @Operation(
-    description = "Create or updates an appointment to record the course completion outcome.",
+    description = "Records a resolution for the course completion, potentially creating or updating an appointment.",
     responses = [
-      ApiResponse(responseCode = "204", description = "Outcome processed"),
+      ApiResponse(responseCode = "204", description = "Processed"),
       ApiResponse(responseCode = "404", description = "Course completion not found", content = [Content(schema = Schema(implementation = ErrorResponse::class))]),
     ],
   )
-  fun postCourseCompletionOutcome(
-    @PathVariable eteCourseCompletionEventId: UUID,
-    @RequestBody @Valid courseCompletionOutcome: CourseCompletionOutcomeDto,
+  fun postCourseCompletionResolution(
+    @PathVariable id: UUID,
+    @RequestBody @Valid courseCompletionResolution: CourseCompletionResolutionDto,
   ): ResponseEntity<Unit> {
-    eteService.recordCourseCompletionOutcome(eteCourseCompletionEventId, courseCompletionOutcome)
+    eteService.recordCourseCompletionResolution(id, courseCompletionResolution)
     return ResponseEntity.status(HttpStatus.NO_CONTENT).build()
   }
 }

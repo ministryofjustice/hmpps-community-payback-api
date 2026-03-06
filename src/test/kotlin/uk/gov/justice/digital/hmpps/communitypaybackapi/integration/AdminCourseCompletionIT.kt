@@ -15,12 +15,15 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectAndLocation
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSupervisorSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSupervisorSummary
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionOutcomeDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionCreditTimeDetailsDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionResolutionDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionResolutionTypeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EteCourseCompletionEventDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventResolutionEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventResolutionRepository
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionResolution
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.unallocated
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.validNoOutcome
@@ -423,17 +426,8 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
   }
 
   @Nested
-  @DisplayName("POST /course-completion/{eteCourseCompletionEventId}")
-  inner class PostCourseCompletionOutcomeEndpoint {
-
-    val courseCompletionOutcomeDto = CourseCompletionOutcomeDto.valid().copy(
-      crn = "X123456",
-      deliusEventNumber = DELIUS_EVENT_NUMBER,
-      appointmentIdToUpdate = null,
-      minutesToCredit = 60,
-      contactOutcomeCode = "COMP",
-      projectCode = "PRJ001",
-    )
+  @DisplayName("POST /course-completion/{eteCourseCompletionEventId}/resolution")
+  inner class PostCourseCompletionResolution {
 
     @BeforeEach
     fun setUp() {
@@ -454,9 +448,9 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
     fun `should return unauthorized if no token`() {
       val id = UUID.randomUUID()
       webTestClient.post()
-        .uri("/admin/course-completion/$id")
+        .uri("/admin/course-completion/$id/resolution")
         .contentType(MediaType.APPLICATION_JSON)
-        .bodyValue(courseCompletionOutcomeDto)
+        .bodyValue(CourseCompletionResolutionDto.valid())
         .exchange()
         .expectStatus()
         .isUnauthorized
@@ -466,10 +460,10 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
     fun `should return forbidden if no role`() {
       val id = UUID.randomUUID()
       webTestClient.post()
-        .uri("/admin/course-completions/$id")
+        .uri("/admin/course-completions/$id/resolution")
         .headers(setAuthorisation())
         .contentType(MediaType.APPLICATION_JSON)
-        .bodyValue(courseCompletionOutcomeDto)
+        .bodyValue(CourseCompletionResolutionDto.valid())
         .exchange()
         .expectStatus()
         .isForbidden
@@ -479,10 +473,10 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
     fun `should return forbidden if wrong role`() {
       val id = UUID.randomUUID()
       webTestClient.post()
-        .uri("/admin/course-completions/$id")
+        .uri("/admin/course-completions/$id/resolution")
         .headers(setAuthorisation(roles = listOf("ROLE_WRONG")))
         .contentType(MediaType.APPLICATION_JSON)
-        .bodyValue(courseCompletionOutcomeDto)
+        .bodyValue(CourseCompletionResolutionDto.valid())
         .exchange()
         .expectStatus()
         .isForbidden
@@ -491,10 +485,10 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
     @Test
     fun `should return 404 if course completion not found`() {
       webTestClient.post()
-        .uri("/admin/course-completions/${UUID.randomUUID()}")
+        .uri("/admin/course-completions/${UUID.randomUUID()}/resolution")
         .addAdminUiAuthHeader("theusername")
         .contentType(MediaType.APPLICATION_JSON)
-        .bodyValue(CourseCompletionOutcomeDto.valid(ctx))
+        .bodyValue(CourseCompletionResolutionDto.valid(ctx))
         .exchange()
         .expectStatus()
         .isNotFound
@@ -504,33 +498,63 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
     fun `should error if validation fails`() {
       val eventEntity = eteCourseCompletionEventEntityRepository.save(EteCourseCompletionEventEntity.valid(ctx))
 
-      val outcome = CourseCompletionOutcomeDto.valid().copy(
-        contactOutcomeCode = "WRONG",
+      val resolution = CourseCompletionResolutionDto.valid().copy(
+        creditTimeDetails = CourseCompletionCreditTimeDetailsDto.valid().copy(
+          contactOutcomeCode = "WRONG",
+        ),
       )
 
       webTestClient.post()
-        .uri("/admin/course-completions/${eventEntity.id}")
+        .uri("/admin/course-completions/${eventEntity.id}/resolution")
         .addAdminUiAuthHeader("theusername")
         .contentType(MediaType.APPLICATION_JSON)
-        .bodyValue(outcome)
+        .bodyValue(resolution)
         .exchange()
         .expectStatus()
         .isBadRequest
     }
 
     @Test
-    fun `should create appointment when appointmentIdToUpdate is null`() {
+    fun `if type is COURSE_ALREADY_COMPLETED_WITHIN_THRESHOLD, just record resolution`() {
       val eventEntity = eteCourseCompletionEventEntityRepository.save(
         EteCourseCompletionEventEntity.valid(ctx),
       )
 
-      val outcome = CourseCompletionOutcomeDto.valid(ctx).copy(
+      val resolutionDto = CourseCompletionResolutionDto.valid(ctx).copy(
+        type = CourseCompletionResolutionTypeDto.COURSE_ALREADY_COMPLETED_WITHIN_THRESHOLD,
         crn = CRN,
-        date = LocalDate.of(2021, 1, 30),
-        deliusEventNumber = DELIUS_EVENT_NUMBER,
-        appointmentIdToUpdate = null,
-        projectCode = PROJECT_CODE,
-        minutesToCredit = 90,
+        creditTimeDetails = null,
+      )
+
+      webTestClient.post()
+        .uri("/admin/course-completions/${eventEntity.id}/resolution")
+        .addAdminUiAuthHeader("theusername")
+        .contentType(MediaType.APPLICATION_JSON)
+        .bodyValue(resolutionDto)
+        .exchange()
+        .expectStatus()
+        .isNoContent
+
+      val resolutionEntity = eteCourseCompletionEventEntityRepository.findByIdOrNull(eventEntity.id)!!.resolution!!
+      assertThat(resolutionEntity.resolution == EteCourseCompletionResolution.COURSE_ALREADY_COMPLETED_WITHIN_THRESHOLD)
+    }
+
+    @Test
+    fun `if type is CREDIT_TIME, should create appointment when appointmentIdToUpdate is null`() {
+      val eventEntity = eteCourseCompletionEventEntityRepository.save(
+        EteCourseCompletionEventEntity.valid(ctx),
+      )
+
+      val resolution = CourseCompletionResolutionDto.valid(ctx).copy(
+        type = CourseCompletionResolutionTypeDto.CREDIT_TIME,
+        crn = CRN,
+        creditTimeDetails = CourseCompletionCreditTimeDetailsDto.valid(ctx).copy(
+          date = LocalDate.of(2021, 1, 30),
+          deliusEventNumber = DELIUS_EVENT_NUMBER,
+          appointmentIdToUpdate = null,
+          projectCode = PROJECT_CODE,
+          minutesToCredit = 90,
+        ),
       )
 
       val project = NDProject.valid(ctx).copy(code = PROJECT_CODE, actualEndDateExclusive = null)
@@ -551,10 +575,10 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
       CommunityPaybackAndDeliusMockServer.postAppointments(projectCode = PROJECT_CODE, appointmentCount = 1)
 
       webTestClient.post()
-        .uri("/admin/course-completions/${eventEntity.id}")
+        .uri("/admin/course-completions/${eventEntity.id}/resolution")
         .addAdminUiAuthHeader("theusername")
         .contentType(MediaType.APPLICATION_JSON)
-        .bodyValue(outcome)
+        .bodyValue(resolution)
         .exchange()
         .expectStatus()
         .isNoContent
@@ -576,17 +600,20 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
     }
 
     @Test
-    fun `should update appointment when appointmentIdToUpdate is present`() {
+    fun `if type is CREDIT_TIME, should update appointment when appointmentIdToUpdate is present`() {
       val appointmentId = 12345L
 
       val eventEntity = eteCourseCompletionEventEntityRepository.save(
         EteCourseCompletionEventEntity.valid(ctx),
       )
-      val outcome = CourseCompletionOutcomeDto.valid(ctx).copy(
+      val resolution = CourseCompletionResolutionDto.valid(ctx).copy(
+        type = CourseCompletionResolutionTypeDto.CREDIT_TIME,
         crn = CRN,
-        date = LocalDate.now().minusDays(5),
-        appointmentIdToUpdate = appointmentId,
-        projectCode = PROJECT_CODE,
+        creditTimeDetails = CourseCompletionCreditTimeDetailsDto.valid(ctx).copy(
+          date = LocalDate.now().minusDays(5),
+          appointmentIdToUpdate = appointmentId,
+          projectCode = PROJECT_CODE,
+        ),
       )
 
       val upstreamAppointment = NDAppointment.validNoOutcome(ctx).copy(
@@ -606,10 +633,10 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
       )
 
       webTestClient.post()
-        .uri("/admin/course-completions/${eventEntity.id}")
+        .uri("/admin/course-completions/${eventEntity.id}/resolution")
         .addAdminUiAuthHeader("theusername")
         .contentType(MediaType.APPLICATION_JSON)
-        .bodyValue(outcome)
+        .bodyValue(resolution)
         .exchange()
         .expectStatus()
         .isNoContent
@@ -630,12 +657,15 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
         ),
       )
 
-      val outcome = CourseCompletionOutcomeDto.valid(ctx).copy(
+      val resolution = CourseCompletionResolutionDto.valid(ctx).copy(
+        type = CourseCompletionResolutionTypeDto.CREDIT_TIME,
         crn = CRN,
-        deliusEventNumber = DELIUS_EVENT_NUMBER,
-        appointmentIdToUpdate = null,
-        projectCode = PROJECT_CODE,
-        minutesToCredit = 90,
+        creditTimeDetails = CourseCompletionCreditTimeDetailsDto.valid(ctx).copy(
+          deliusEventNumber = DELIUS_EVENT_NUMBER,
+          appointmentIdToUpdate = null,
+          projectCode = PROJECT_CODE,
+          minutesToCredit = 90,
+        ),
       )
 
       CommunityPaybackAndDeliusMockServer.getUpwDetailsSummary(
@@ -650,19 +680,19 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
       CommunityPaybackAndDeliusMockServer.postAppointments(projectCode = PROJECT_CODE, appointmentCount = 1)
 
       webTestClient.post()
-        .uri("/admin/course-completions/${eventEntity.id}")
+        .uri("/admin/course-completions/${eventEntity.id}/resolution")
         .addAdminUiAuthHeader("theusername")
         .contentType(MediaType.APPLICATION_JSON)
-        .bodyValue(outcome)
+        .bodyValue(resolution)
         .exchange()
         .expectStatus()
         .isNoContent
 
       webTestClient.post()
-        .uri("/admin/course-completions/${eventEntity.id}")
+        .uri("/admin/course-completions/${eventEntity.id}/resolution")
         .addAdminUiAuthHeader("theusername")
         .contentType(MediaType.APPLICATION_JSON)
-        .bodyValue(outcome)
+        .bodyValue(resolution)
         .exchange()
         .expectStatus()
         .isNoContent
@@ -683,12 +713,15 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
         ),
       )
 
-      val outcome = CourseCompletionOutcomeDto.valid(ctx).copy(
+      val resolution = CourseCompletionResolutionDto.valid(ctx).copy(
+        type = CourseCompletionResolutionTypeDto.CREDIT_TIME,
         crn = CRN,
-        deliusEventNumber = DELIUS_EVENT_NUMBER,
-        appointmentIdToUpdate = null,
-        projectCode = PROJECT_CODE,
-        minutesToCredit = 90,
+        creditTimeDetails = CourseCompletionCreditTimeDetailsDto.valid(ctx).copy(
+          deliusEventNumber = DELIUS_EVENT_NUMBER,
+          appointmentIdToUpdate = null,
+          projectCode = PROJECT_CODE,
+          minutesToCredit = 90,
+        ),
       )
 
       CommunityPaybackAndDeliusMockServer.getUpwDetailsSummary(
@@ -703,21 +736,23 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
       CommunityPaybackAndDeliusMockServer.postAppointments(projectCode = PROJECT_CODE, appointmentCount = 1)
 
       webTestClient.post()
-        .uri("/admin/course-completions/${eventEntity.id}")
+        .uri("/admin/course-completions/${eventEntity.id}/resolution")
         .addAdminUiAuthHeader("theusername")
         .contentType(MediaType.APPLICATION_JSON)
-        .bodyValue(outcome)
+        .bodyValue(resolution)
         .exchange()
         .expectStatus()
         .isNoContent
 
       webTestClient.post()
-        .uri("/admin/course-completions/${eventEntity.id}")
+        .uri("/admin/course-completions/${eventEntity.id}/resolution")
         .addAdminUiAuthHeader("theusername")
         .contentType(MediaType.APPLICATION_JSON)
         .bodyValue(
-          outcome.copy(
-            minutesToCredit = outcome.minutesToCredit + 1,
+          resolution.copy(
+            creditTimeDetails = CourseCompletionCreditTimeDetailsDto.valid(ctx).copy(
+              minutesToCredit = resolution.creditTimeDetails!!.minutesToCredit + 1,
+            ),
           ),
         )
         .exchange()

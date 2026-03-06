@@ -5,7 +5,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentBehaviour
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentWorkQualityDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AttendanceDataDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionOutcomeDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionResolutionDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EteCourseCompletionEventDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
@@ -34,32 +34,36 @@ class EteMappers(
   }
 
   fun toCreateAppointmentDto(
-    courseCompletionOutcome: CourseCompletionOutcomeDto,
-  ): CreateAppointmentDto = CreateAppointmentDto(
-    id = UUID.randomUUID(),
-    crn = courseCompletionOutcome.crn,
-    deliusEventNumber = courseCompletionOutcome.deliusEventNumber,
-    allocationId = null,
-    projectCode = courseCompletionOutcome.projectCode,
-    date = courseCompletionOutcome.date,
-    startTime = APPOINTMENT_START_TIME,
-    endTime = calculateEndTime(courseCompletionOutcome.minutesToCredit),
-    pickUpLocationCode = null,
-    pickUpLocationDescription = null,
-    pickUpTime = null,
-    contactOutcomeCode = courseCompletionOutcome.contactOutcomeCode,
-    attendanceData = createAttendanceData(),
-    supervisorOfficerCode = null,
-    notes = courseCompletionOutcome.notes,
-    alertActive = courseCompletionOutcome.alertActive,
-    sensitive = courseCompletionOutcome.sensitive,
-  )
+    courseCompletionResolution: CourseCompletionResolutionDto,
+  ): CreateAppointmentDto {
+    val creditTime = courseCompletionResolution.creditTimeDetails!!
+    return CreateAppointmentDto(
+      id = UUID.randomUUID(),
+      crn = courseCompletionResolution.crn,
+      deliusEventNumber = creditTime.deliusEventNumber,
+      allocationId = null,
+      projectCode = creditTime.projectCode,
+      date = creditTime.date,
+      startTime = APPOINTMENT_START_TIME,
+      endTime = calculateEndTime(creditTime.minutesToCredit),
+      pickUpLocationCode = null,
+      pickUpLocationDescription = null,
+      pickUpTime = null,
+      contactOutcomeCode = creditTime.contactOutcomeCode,
+      attendanceData = createAttendanceData(),
+      supervisorOfficerCode = null,
+      notes = creditTime.notes,
+      alertActive = creditTime.alertActive,
+      sensitive = creditTime.sensitive,
+    )
+  }
 
   fun toUpdateAppointmentDto(
-    courseCompletionOutcome: CourseCompletionOutcomeDto,
+    courseCompletionResolution: CourseCompletionResolutionDto,
     existingAppointment: AppointmentDto,
   ): UpdateAppointmentOutcomeDto {
-    if (existingAppointment.date != courseCompletionOutcome.date) {
+    val creditTime = courseCompletionResolution.creditTimeDetails!!
+    if (existingAppointment.date != creditTime.date) {
       error("Changing an existing appointment's date is not currently supported")
     }
 
@@ -67,14 +71,14 @@ class EteMappers(
       deliusId = existingAppointment.id,
       deliusVersionToUpdate = existingAppointment.version,
       startTime = APPOINTMENT_START_TIME,
-      endTime = calculateEndTime(courseCompletionOutcome.minutesToCredit),
-      contactOutcomeCode = courseCompletionOutcome.contactOutcomeCode,
+      endTime = calculateEndTime(creditTime.minutesToCredit),
+      contactOutcomeCode = creditTime.contactOutcomeCode,
       attendanceData = createAttendanceData(),
       enforcementData = null,
       supervisorOfficerCode = existingAppointment.supervisorOfficerCode,
-      notes = courseCompletionOutcome.notes,
-      alertActive = courseCompletionOutcome.alertActive,
-      sensitive = courseCompletionOutcome.sensitive,
+      notes = creditTime.notes,
+      alertActive = creditTime.alertActive,
+      sensitive = creditTime.sensitive,
     )
   }
 
@@ -98,24 +102,52 @@ class EteMappers(
     behaviour = AppointmentBehaviourDto.NOT_APPLICABLE,
   )
 
-  fun toResolutionEntity(
+  fun toResolutionEntityForCourseAlreadyCompleted(
     id: UUID,
     courseCompletionEvent: EteCourseCompletionEventEntity,
-    courseCompletionOutcome: CourseCompletionOutcomeDto,
+    courseCompletionResolution: CourseCompletionResolutionDto,
+  ) = toBaselineResolutionEntity(
+    id,
+    courseCompletionEvent,
+    courseCompletionResolution,
+    EteCourseCompletionResolution.COURSE_ALREADY_COMPLETED_WITHIN_THRESHOLD,
+  )
+
+  fun toResolutionEntityForCreditTime(
+    id: UUID,
+    courseCompletionEvent: EteCourseCompletionEventEntity,
+    courseCompletionResolution: CourseCompletionResolutionDto,
     deliusAppointmentId: Long,
+  ): EteCourseCompletionEventResolutionEntity {
+    val creditTime = courseCompletionResolution.creditTimeDetails!!
+
+    return toBaselineResolutionEntity(
+      id,
+      courseCompletionEvent,
+      courseCompletionResolution,
+      EteCourseCompletionResolution.CREDIT_TIME,
+    ).copy(
+      deliusEventNumber = creditTime.deliusEventNumber,
+      deliusAppointmentId = deliusAppointmentId,
+      deliusAppointmentCreated = creditTime.appointmentIdToUpdate == null,
+      projectCode = creditTime.projectCode,
+      minutesCredited = creditTime.minutesToCredit,
+      contactOutcome = contactOutcomeEntityRepository.findByCode(creditTime.contactOutcomeCode),
+    )
+  }
+
+  private fun toBaselineResolutionEntity(
+    id: UUID,
+    courseCompletionEvent: EteCourseCompletionEventEntity,
+    courseCompletionResolution: CourseCompletionResolutionDto,
+    type: EteCourseCompletionResolution,
   ) = EteCourseCompletionEventResolutionEntity(
     id = id,
     eteCourseCompletionEvent = courseCompletionEvent,
-    resolution = EteCourseCompletionResolution.CREDIT_TIME,
+    resolution = type,
     createdAt = OffsetDateTime.now(),
     createdByUsername = contextService.getUserName(),
-    crn = courseCompletionOutcome.crn,
-    deliusEventNumber = courseCompletionOutcome.deliusEventNumber,
-    deliusAppointmentId = deliusAppointmentId,
-    deliusAppointmentCreated = courseCompletionOutcome.appointmentIdToUpdate == null,
-    projectCode = courseCompletionOutcome.projectCode,
-    minutesCredited = courseCompletionOutcome.minutesToCredit,
-    contactOutcome = contactOutcomeEntityRepository.findByCode(courseCompletionOutcome.contactOutcomeCode),
+    crn = courseCompletionResolution.crn,
   )
 
   fun toCourseCompletionEventEntity(message: EducationCourseCompletionMessage): EteCourseCompletionEventEntity {
