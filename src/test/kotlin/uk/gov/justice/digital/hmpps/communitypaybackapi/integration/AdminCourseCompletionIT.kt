@@ -17,6 +17,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSupervisorSumma
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSupervisorSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionCreditTimeDetailsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionResolutionDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionResolutionTypeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EteCourseCompletionEventDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntityRepository
@@ -428,6 +429,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
   inner class PostCourseCompletionResolution {
 
     val resolution = CourseCompletionResolutionDto.valid().copy(
+      type = CourseCompletionResolutionTypeDto.CREDIT_TIME,
       crn = "X123456",
       creditTimeDetails = CourseCompletionCreditTimeDetailsDto.valid().copy(
         deliusEventNumber = DELIUS_EVENT_NUMBER,
@@ -524,7 +526,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
     }
 
     @Test
-    fun `should create appointment when appointmentIdToUpdate is null`() {
+    fun `if type is CREDIT_TIME, should create appointment when appointmentIdToUpdate is null`() {
       val eventEntity = eteCourseCompletionEventEntityRepository.save(
         EteCourseCompletionEventEntity.valid(ctx),
       )
@@ -583,7 +585,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
     }
 
     @Test
-    fun `should update appointment when appointmentIdToUpdate is present`() {
+    fun `if type is CREDIT_TIME, should update appointment when appointmentIdToUpdate is present`() {
       val appointmentId = 12345L
 
       val eventEntity = eteCourseCompletionEventEntityRepository.save(
@@ -731,7 +733,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
         .bodyValue(
           resolution.copy(
             creditTimeDetails = CourseCompletionCreditTimeDetailsDto.valid(ctx).copy(
-              minutesToCredit = resolution.creditTimeDetails.minutesToCredit + 1,
+              minutesToCredit = resolution.creditTimeDetails!!.minutesToCredit + 1,
             ),
           ),
         )

@@ -36,7 +36,7 @@ class EteMappers(
   fun toCreateAppointmentDto(
     courseCompletionResolution: CourseCompletionResolutionDto,
   ): CreateAppointmentDto {
-    val creditTime = courseCompletionResolution.creditTimeDetails
+    val creditTime = courseCompletionResolution.creditTimeDetails!!
     return CreateAppointmentDto(
       id = UUID.randomUUID(),
       crn = courseCompletionResolution.crn,
@@ -62,7 +62,7 @@ class EteMappers(
     courseCompletionResolution: CourseCompletionResolutionDto,
     existingAppointment: AppointmentDto,
   ): UpdateAppointmentOutcomeDto {
-    val creditTime = courseCompletionResolution.creditTimeDetails
+    val creditTime = courseCompletionResolution.creditTimeDetails!!
     if (existingAppointment.date != creditTime.date) {
       error("Changing an existing appointment's date is not currently supported")
     }
@@ -108,7 +108,7 @@ class EteMappers(
     courseCompletionResolution: CourseCompletionResolutionDto,
     deliusAppointmentId: Long,
   ): EteCourseCompletionEventResolutionEntity {
-    val creditTime = courseCompletionResolution.creditTimeDetails
+    val creditTime = courseCompletionResolution.creditTimeDetails!!
 
     return EteCourseCompletionEventResolutionEntity(
       id = id,

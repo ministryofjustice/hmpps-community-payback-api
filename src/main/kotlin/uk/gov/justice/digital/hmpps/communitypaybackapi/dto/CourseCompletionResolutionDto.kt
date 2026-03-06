@@ -1,10 +1,13 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.dto
 
+import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate
 
 data class CourseCompletionResolutionDto(
+  val type: CourseCompletionResolutionTypeDto,
   val crn: String,
-  val creditTimeDetails: CourseCompletionCreditTimeDetailsDto,
+  @param:Schema(description = "Must be provided if type is 'CREDIT_TIME'")
+  val creditTimeDetails: CourseCompletionCreditTimeDetailsDto?,
 ) {
   companion object
 }
@@ -21,4 +24,8 @@ data class CourseCompletionCreditTimeDetailsDto(
   val sensitive: Boolean?,
 ) {
   companion object
+}
+
+enum class CourseCompletionResolutionTypeDto {
+  CREDIT_TIME,
 }
