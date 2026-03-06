@@ -1,7 +1,7 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.service
 
 import org.springframework.stereotype.Service
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionOutcomeDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionResolutionDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.BadRequestException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntity
@@ -13,25 +13,25 @@ class EteValidationService(
   private val contactOutcomeEntityRepository: ContactOutcomeEntityRepository,
   private val eteMapper: EteMappers,
 ) {
-  fun validateCourseCompletionOutcome(
-    outcome: CourseCompletionOutcomeDto,
+  fun validateCourseCompletionResolution(
+    resolution: CourseCompletionResolutionDto,
     courseCompletionEvent: EteCourseCompletionEventEntity,
   ): ValidationResult {
-    validateContactOutcomeCode(outcome)
-    return validateExistingResolution(outcome, courseCompletionEvent)
+    validateContactOutcomeCode(resolution)
+    return validateExistingResolution(resolution, courseCompletionEvent)
   }
 
   private fun validateContactOutcomeCode(
-    outcome: CourseCompletionOutcomeDto,
+    resolution: CourseCompletionResolutionDto,
   ) {
-    val contactOutcomeCode = outcome.contactOutcomeCode
-    if (contactOutcomeEntityRepository.findByCode(outcome.contactOutcomeCode) == null) {
+    val contactOutcomeCode = resolution.contactOutcomeCode
+    if (contactOutcomeEntityRepository.findByCode(resolution.contactOutcomeCode) == null) {
       throw BadRequestException("Cannot find contact outcome with code $contactOutcomeCode")
     }
   }
 
   private fun validateExistingResolution(
-    outcome: CourseCompletionOutcomeDto,
+    resolution: CourseCompletionResolutionDto,
     courseCompletionEvent: EteCourseCompletionEventEntity,
   ): ValidationResult {
     val existingResolution = courseCompletionEvent.resolution
@@ -41,10 +41,10 @@ class EteValidationService(
       val proposedResolutionEntity = eteMapper.toResolutionEntity(
         id = UUID.randomUUID(),
         courseCompletionEvent = courseCompletionEvent,
-        courseCompletionOutcome = outcome,
+        courseCompletionResolution = resolution,
         // setting to 0L is fine here because isLogicallyIdentical() only checks this value when
         // the resolution indicates that an existing appointment is being updated
-        deliusAppointmentId = outcome.appointmentIdToUpdate ?: 0L,
+        deliusAppointmentId = resolution.appointmentIdToUpdate ?: 0L,
       )
 
       if (existingResolution.isLogicallyIdentical(proposedResolutionEntity)) {

@@ -2,7 +2,7 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.dto
 
 import java.time.LocalDate
 
-data class CourseCompletionOutcomeDto(
+data class CourseCompletionResolutionDto(
   val crn: String,
   val deliusEventNumber: Long,
   val appointmentIdToUpdate: Long?,

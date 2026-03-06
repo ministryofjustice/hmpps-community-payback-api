@@ -16,9 +16,9 @@ import org.junit.jupiter.params.provider.ValueSource
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentBehaviourDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentWorkQualityDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.CommunityCampusPduEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.CommunityCampusPduEntityRepository
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionResolutionDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntity
@@ -64,7 +64,7 @@ class EteMappersTest {
   @Nested
   inner class EntityToCreateAppointmentDto {
 
-    val baselineCourseCompletionOutcome = CourseCompletionOutcomeDto.valid().copy(
+    val baselineCourseCompletionOutcome = CourseCompletionResolutionDto.valid().copy(
       crn = CRN,
       projectCode = PROJECT_CODE,
       deliusEventNumber = DELIUS_EVENT_NUMBER,
@@ -160,7 +160,7 @@ class EteMappersTest {
   @Nested
   inner class EntityToUpdateAppointmentDto {
 
-    val baselineCourseCompletionOutcome = CourseCompletionOutcomeDto.valid().copy(
+    val baselineCourseCompletionOutcome = CourseCompletionResolutionDto.valid().copy(
       crn = CRN,
       projectCode = PROJECT_CODE,
       deliusEventNumber = DELIUS_EVENT_NUMBER,
@@ -183,7 +183,7 @@ class EteMappersTest {
       val existingAppointment = baselineExistingAppointment.copy()
 
       val result = mapper.toUpdateAppointmentDto(
-        courseCompletionOutcome = baselineCourseCompletionOutcome.copy(
+        courseCompletionResolution = baselineCourseCompletionOutcome.copy(
           minutesToCredit = 60L,
           notes = "the provided notes",
           sensitive = sensitive,
@@ -207,7 +207,7 @@ class EteMappersTest {
       val existingAppointment = baselineExistingAppointment.copy()
 
       val result = mapper.toUpdateAppointmentDto(
-        courseCompletionOutcome = baselineCourseCompletionOutcome.copy(
+        courseCompletionResolution = baselineCourseCompletionOutcome.copy(
           minutesToCredit = 60L,
         ),
         existingAppointment = existingAppointment,
@@ -224,7 +224,7 @@ class EteMappersTest {
       val existingAppointment = baselineExistingAppointment.copy()
 
       val result = mapper.toUpdateAppointmentDto(
-        courseCompletionOutcome = baselineCourseCompletionOutcome.copy(
+        courseCompletionResolution = baselineCourseCompletionOutcome.copy(
           minutesToCredit = minutesToCredit,
         ),
         existingAppointment = existingAppointment,
@@ -239,7 +239,7 @@ class EteMappersTest {
         val existingAppointment = baselineExistingAppointment.copy()
 
         mapper.toUpdateAppointmentDto(
-          courseCompletionOutcome = baselineCourseCompletionOutcome.copy(
+          courseCompletionResolution = baselineCourseCompletionOutcome.copy(
             minutesToCredit = 60L * 24,
           ),
           existingAppointment = existingAppointment,
@@ -253,7 +253,7 @@ class EteMappersTest {
         val existingAppointment = baselineExistingAppointment.copy()
 
         mapper.toUpdateAppointmentDto(
-          courseCompletionOutcome = baselineCourseCompletionOutcome.copy(
+          courseCompletionResolution = baselineCourseCompletionOutcome.copy(
             date = baselineExistingAppointment.date.plusDays(1),
           ),
           existingAppointment = existingAppointment,
@@ -350,7 +350,7 @@ class EteMappersTest {
       val result = mapper.toResolutionEntity(
         id = resolutionId,
         courseCompletionEvent = courseCompletionEvent,
-        courseCompletionOutcome = CourseCompletionOutcomeDto.valid().copy(
+        courseCompletionResolution = CourseCompletionResolutionDto.valid().copy(
           crn = CRN,
           deliusEventNumber = DELIUS_EVENT_NUMBER,
           projectCode = PROJECT_CODE,
