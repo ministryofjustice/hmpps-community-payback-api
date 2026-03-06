@@ -893,8 +893,8 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
         .bodyAsObject<CourseCompletionRecommendationDto>()
 
       assertThat(recommendation.crn).isEqualTo(crn)
-      assertThat(recommendation.projectCode).isEqualTo(projectCode)
-      assertThat(recommendation.upwTeamCode).isEqualTo(teamCode)
+      assertThat(recommendation.project?.projectCode).isEqualTo(projectCode)
+      assertThat(recommendation.project?.teamCode).isEqualTo(teamCode)
     }
 
     @Test
@@ -910,8 +910,8 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
         .bodyAsObject<uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionRecommendationDto>()
 
       assertThat(recommendation.crn).isNull()
-      assertThat(recommendation.projectCode).isNull()
-      assertThat(recommendation.upwTeamCode).isNull()
+      assertThat(recommendation.project?.projectCode).isNull()
+      assertThat(recommendation.project?.teamCode).isNull()
     }
   }
 }
