@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.service
 
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionResolutionDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionResolutionTypeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.BadRequestException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntity
@@ -17,13 +18,18 @@ class EteValidationService(
     resolution: CourseCompletionResolutionDto,
     courseCompletionEvent: EteCourseCompletionEventEntity,
   ): ValidationResult {
-    validateContactOutcomeCode(resolution)
+    when (resolution.type) {
+      CourseCompletionResolutionTypeDto.CREDIT_TIME -> validateCreditTime(resolution)
+    }
+
     return validateExistingResolution(resolution, courseCompletionEvent)
   }
 
-  private fun validateContactOutcomeCode(
-    resolution: CourseCompletionResolutionDto,
-  ) {
+  private fun validateCreditTime(resolution: CourseCompletionResolutionDto) {
+    if (resolution.creditTimeDetails == null) {
+      throw BadRequestException("Credit Time Details are required for type ${CourseCompletionResolutionTypeDto.CREDIT_TIME}")
+    }
+
     val contactOutcomeCode = resolution.creditTimeDetails.contactOutcomeCode
     if (contactOutcomeEntityRepository.findByCode(resolution.creditTimeDetails.contactOutcomeCode) == null) {
       throw BadRequestException("Cannot find contact outcome with code $contactOutcomeCode")
@@ -44,7 +50,7 @@ class EteValidationService(
         courseCompletionResolution = resolution,
         // setting to 0L is fine here because isLogicallyIdentical() only checks this value when
         // the resolution indicates that an existing appointment is being updated
-        deliusAppointmentId = resolution.creditTimeDetails.appointmentIdToUpdate ?: 0L,
+        deliusAppointmentId = resolution.creditTimeDetails?.appointmentIdToUpdate ?: 0L,
       )
 
       if (existingResolution.isLogicallyIdentical(proposedResolutionEntity)) {

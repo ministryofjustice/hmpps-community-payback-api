@@ -87,7 +87,7 @@ class EteMappersTest {
     ) {
       val result = mapper.toCreateAppointmentDto(
         baselineCourseCompletionResolution.copy(
-          creditTimeDetails = baselineCourseCompletionResolution.creditTimeDetails.copy(
+          creditTimeDetails = baselineCourseCompletionResolution.creditTimeDetails!!.copy(
             minutesToCredit = 60L,
             notes = "the provided notes",
             sensitive = sensitive,
@@ -188,7 +188,7 @@ class EteMappersTest {
     )
 
     val baselineExistingAppointment = AppointmentDto.valid().copy(
-      date = baselineCourseCompletionOutcome.creditTimeDetails.date,
+      date = baselineCourseCompletionOutcome.creditTimeDetails!!.date,
     )
 
     @ParameterizedTest
@@ -205,7 +205,7 @@ class EteMappersTest {
       val result = mapper.toUpdateAppointmentDto(
         courseCompletionResolution = baselineCourseCompletionOutcome.copy(
 
-          creditTimeDetails = baselineCourseCompletionOutcome.creditTimeDetails.copy(
+          creditTimeDetails = baselineCourseCompletionOutcome.creditTimeDetails!!.copy(
             minutesToCredit = 60L,
             notes = "the provided notes",
             sensitive = sensitive,
@@ -231,7 +231,7 @@ class EteMappersTest {
 
       val result = mapper.toUpdateAppointmentDto(
         courseCompletionResolution = baselineCourseCompletionOutcome.copy(
-          creditTimeDetails = baselineCourseCompletionOutcome.creditTimeDetails.copy(
+          creditTimeDetails = baselineCourseCompletionOutcome.creditTimeDetails!!.copy(
             minutesToCredit = 60L,
           ),
         ),
@@ -250,7 +250,7 @@ class EteMappersTest {
 
       val result = mapper.toUpdateAppointmentDto(
         courseCompletionResolution = baselineCourseCompletionOutcome.copy(
-          creditTimeDetails = baselineCourseCompletionOutcome.creditTimeDetails.copy(
+          creditTimeDetails = baselineCourseCompletionOutcome.creditTimeDetails!!.copy(
             minutesToCredit = minutesToCredit,
           ),
         ),
@@ -267,7 +267,7 @@ class EteMappersTest {
 
         mapper.toUpdateAppointmentDto(
           courseCompletionResolution = baselineCourseCompletionOutcome.copy(
-            creditTimeDetails = baselineCourseCompletionOutcome.creditTimeDetails.copy(
+            creditTimeDetails = baselineCourseCompletionOutcome.creditTimeDetails!!.copy(
               minutesToCredit = 60L * 24,
             ),
           ),
@@ -283,7 +283,7 @@ class EteMappersTest {
 
         mapper.toUpdateAppointmentDto(
           courseCompletionResolution = baselineCourseCompletionOutcome.copy(
-            creditTimeDetails = baselineCourseCompletionOutcome.creditTimeDetails.copy(
+            creditTimeDetails = baselineCourseCompletionOutcome.creditTimeDetails!!.copy(
               date = baselineExistingAppointment.date.plusDays(1),
             ),
           ),

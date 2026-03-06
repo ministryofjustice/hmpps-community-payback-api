@@ -99,7 +99,7 @@ class EteService(
       triggeredBy = resolutionId.toString(),
     )
 
-    val deliusAppointmentId = if (courseCompletionResolution.creditTimeDetails.appointmentIdToUpdate == null) {
+    val deliusAppointmentId = if (courseCompletionResolution.creditTimeDetails!!.appointmentIdToUpdate == null) {
       createAppointment(
         trigger = appointmentEventTrigger,
         courseCompletionResolution = courseCompletionResolution,
@@ -148,7 +148,7 @@ class EteService(
     courseCompletionResolution: CourseCompletionResolutionDto,
   ): Long {
     val existingAppointment = appointmentService.getAppointment(
-      projectCode = courseCompletionResolution.creditTimeDetails.projectCode,
+      projectCode = courseCompletionResolution.creditTimeDetails!!.projectCode,
       appointmentId = courseCompletionResolution.creditTimeDetails.appointmentIdToUpdate!!,
     )
 
