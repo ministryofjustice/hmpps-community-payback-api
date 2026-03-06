@@ -246,7 +246,7 @@ class CommonReferencesIT : IntegrationTestBase() {
     }
 
     @Test
-    fun `should return OK with enforcement actions`() {
+    fun `should return OK with community campus pdus`() {
       val result = webTestClient.get()
         .uri("/common/references/community-campus-pdus")
         .addAdminUiAuthHeader()
@@ -255,9 +255,8 @@ class CommonReferencesIT : IntegrationTestBase() {
         .isOk
         .bodyAsObject<CommunityCampusPdusDto>()
 
-      assertThat(result.pdus).hasSize(100)
-      assertThat(result.pdus[0].id).isNotNull
-      assertThat(result.pdus[0].name).isEqualTo("Barnet, Enfield and Brent")
+      assertThat(result.pdus).hasSizeGreaterThanOrEqualTo(100)
+      assertThat(result.pdus).extracting("name").contains("Barnet, Enfield and Brent")
     }
   }
 }

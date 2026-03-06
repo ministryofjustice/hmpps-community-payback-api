@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionOutcomeDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionRecommendationDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EteCourseCompletionEventDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EteCourseCompletionResolutionStatusDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.EteService
@@ -126,4 +127,16 @@ class AdminCourseCompletionController(val eteService: EteService) {
     eteService.recordCourseCompletionOutcome(eteCourseCompletionEventId, courseCompletionOutcome)
     return ResponseEntity.status(HttpStatus.NO_CONTENT).build()
   }
+
+  @GetMapping("/course-completions/{id}/recommended-selection", produces = [MediaType.APPLICATION_JSON_VALUE])
+  @Operation(
+    description = "Get recommendations for course completion detail based on the course completion id.",
+    responses = [
+      ApiResponse(responseCode = "200", description = "Recommendations for CRN, Project Code and UPW Team."),
+      ApiResponse(responseCode = "404", description = "Course completion not found", content = [Content(schema = Schema(implementation = ErrorResponse::class))]),
+    ],
+  )
+  fun getCourseCompletionRecommendation(
+    @PathVariable id: UUID,
+  ): CourseCompletionRecommendationDto = eteService.getCourseCompletionRecommendation(id)
 }

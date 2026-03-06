@@ -5,4 +5,11 @@ import org.springframework.stereotype.Repository
 import java.util.UUID
 
 @Repository
-interface EteCourseCompletionEventResolutionRepository : JpaRepository<EteCourseCompletionEventResolutionEntity, UUID>
+interface EteCourseCompletionEventResolutionRepository : JpaRepository<EteCourseCompletionEventResolutionEntity, UUID> {
+  fun findFirstByEteCourseCompletionEventEmailOrderByCreatedAtDesc(email: String): EteCourseCompletionEventResolutionEntity?
+
+  fun findFirstByEteCourseCompletionEventOfficeAndEteCourseCompletionEventCourseNameOrderByCreatedAtDesc(
+    office: String,
+    courseName: String,
+  ): EteCourseCompletionEventResolutionEntity?
+}
