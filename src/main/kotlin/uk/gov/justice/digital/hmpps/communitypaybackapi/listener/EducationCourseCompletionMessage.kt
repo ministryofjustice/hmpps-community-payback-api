@@ -17,6 +17,7 @@ data class EducationCourseMessageAttributes(
   val lastName: String,
   val dateOfBirth: LocalDate,
   val region: String,
+  val pdu: String,
   val office: String,
   val email: String,
   val courseName: String,

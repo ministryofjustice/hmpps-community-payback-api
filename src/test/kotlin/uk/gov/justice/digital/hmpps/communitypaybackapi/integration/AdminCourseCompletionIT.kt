@@ -112,7 +112,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
       @Test
       fun `should return OK for one course completion`() {
         val entity = eteCourseCompletionEventEntityRepository.save(
-          EteCourseCompletionEventEntity.valid().copy(
+          EteCourseCompletionEventEntity.valid(ctx).copy(
             region = "London",
           ),
         )
@@ -133,21 +133,21 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
       fun `should apply date range`() {
         // before range
         eteCourseCompletionEventEntityRepository.save(
-          EteCourseCompletionEventEntity.valid().copy(
+          EteCourseCompletionEventEntity.valid(ctx).copy(
             region = "London",
             completionDate = LocalDate.of(2025, 5, 9),
           ),
         )
 
         val inRange1 = eteCourseCompletionEventEntityRepository.save(
-          EteCourseCompletionEventEntity.valid().copy(
+          EteCourseCompletionEventEntity.valid(ctx).copy(
             region = "London",
             completionDate = LocalDate.of(2025, 5, 10),
           ),
         )
 
         val inRange2 = eteCourseCompletionEventEntityRepository.save(
-          EteCourseCompletionEventEntity.valid().copy(
+          EteCourseCompletionEventEntity.valid(ctx).copy(
             region = "London",
             completionDate = LocalDate.of(2025, 6, 20),
           ),
@@ -155,7 +155,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
 
         // after range
         eteCourseCompletionEventEntityRepository.save(
-          EteCourseCompletionEventEntity.valid().copy(
+          EteCourseCompletionEventEntity.valid(ctx).copy(
             region = "London",
             completionDate = LocalDate.of(2025, 6, 21),
           ),
@@ -177,7 +177,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
       @Test
       fun `should return resolved and unresolved if no resolution filter defined`() {
         val resolved = eteCourseCompletionEventEntityRepository.save(
-          EteCourseCompletionEventEntity.valid().copy(
+          EteCourseCompletionEventEntity.valid(ctx).copy(
             region = "London",
           ),
         )
@@ -188,7 +188,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
         )
 
         val unresolved = eteCourseCompletionEventEntityRepository.save(
-          EteCourseCompletionEventEntity.valid().copy(
+          EteCourseCompletionEventEntity.valid(ctx).copy(
             region = "London",
           ),
         )
@@ -207,7 +207,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
       @Test
       fun `should only return resolved if resolved requested`() {
         val resolved = eteCourseCompletionEventEntityRepository.save(
-          EteCourseCompletionEventEntity.valid().copy(
+          EteCourseCompletionEventEntity.valid(ctx).copy(
             region = "London",
           ),
         )
@@ -220,7 +220,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
 
         // unresolved
         eteCourseCompletionEventEntityRepository.save(
-          EteCourseCompletionEventEntity.valid().copy(
+          EteCourseCompletionEventEntity.valid(ctx).copy(
             region = "London",
           ),
         )
@@ -239,7 +239,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
       @Test
       fun `should only return unresolved if unresolved requested`() {
         val resolved = eteCourseCompletionEventEntityRepository.save(
-          EteCourseCompletionEventEntity.valid().copy(
+          EteCourseCompletionEventEntity.valid(ctx).copy(
             region = "London",
           ),
         )
@@ -251,7 +251,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
         )
 
         val unresolved = eteCourseCompletionEventEntityRepository.save(
-          EteCourseCompletionEventEntity.valid().copy(
+          EteCourseCompletionEventEntity.valid(ctx).copy(
             region = "London",
           ),
         )
@@ -270,14 +270,14 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
       @Test
       fun `should apply office filter`() {
         eteCourseCompletionEventEntityRepository.save(
-          EteCourseCompletionEventEntity.valid().copy(
+          EteCourseCompletionEventEntity.valid(ctx).copy(
             region = "London",
             office = "Hammersmith",
           ),
         )
 
         val inOffice = eteCourseCompletionEventEntityRepository.save(
-          EteCourseCompletionEventEntity.valid().copy(
+          EteCourseCompletionEventEntity.valid(ctx).copy(
             region = "London",
             office = "Whitechapel",
           ),
@@ -298,21 +298,21 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
       @Test
       fun `should apply multiple office filters`() {
         eteCourseCompletionEventEntityRepository.save(
-          EteCourseCompletionEventEntity.valid().copy(
+          EteCourseCompletionEventEntity.valid(ctx).copy(
             region = "London",
             office = "Hammersmith",
           ),
         )
 
         val inOffice1 = eteCourseCompletionEventEntityRepository.save(
-          EteCourseCompletionEventEntity.valid().copy(
+          EteCourseCompletionEventEntity.valid(ctx).copy(
             region = "London",
             office = "Whitechapel",
           ),
         )
 
         val inOffice2 = eteCourseCompletionEventEntityRepository.save(
-          EteCourseCompletionEventEntity.valid().copy(
+          EteCourseCompletionEventEntity.valid(ctx).copy(
             region = "London",
             office = "Croydon",
           ),
@@ -336,7 +336,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
       fun `should return OK for multiple course completions with pagination`() {
         repeat(10) {
           eteCourseCompletionEventEntityRepository.save(
-            EteCourseCompletionEventEntity.valid().copy(
+            EteCourseCompletionEventEntity.valid(ctx).copy(
               region = "London",
             ),
           )
@@ -372,28 +372,28 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
       @Test
       fun `should return OK for multiple course completions with sorting`() {
         eteCourseCompletionEventEntityRepository.save(
-          EteCourseCompletionEventEntity.valid().copy(
+          EteCourseCompletionEventEntity.valid(ctx).copy(
             firstName = "John",
             lastName = "Smith",
             region = "London",
           ),
         )
         eteCourseCompletionEventEntityRepository.save(
-          EteCourseCompletionEventEntity.valid().copy(
+          EteCourseCompletionEventEntity.valid(ctx).copy(
             firstName = "John",
             lastName = "Doe",
             region = "London",
           ),
         )
         eteCourseCompletionEventEntityRepository.save(
-          EteCourseCompletionEventEntity.valid().copy(
+          EteCourseCompletionEventEntity.valid(ctx).copy(
             firstName = "Pi",
             lastName = "Patel",
             region = "London",
           ),
         )
         eteCourseCompletionEventEntityRepository.save(
-          EteCourseCompletionEventEntity.valid().copy(
+          EteCourseCompletionEventEntity.valid(ctx).copy(
             firstName = "Zack",
             lastName = "Jones",
             region = "London",
@@ -502,7 +502,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
 
     @Test
     fun `should error if validation fails`() {
-      val eventEntity = eteCourseCompletionEventEntityRepository.save(EteCourseCompletionEventEntity.valid())
+      val eventEntity = eteCourseCompletionEventEntityRepository.save(EteCourseCompletionEventEntity.valid(ctx))
 
       val outcome = CourseCompletionOutcomeDto.valid().copy(
         contactOutcomeCode = "WRONG",
@@ -521,7 +521,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
     @Test
     fun `should create appointment when appointmentIdToUpdate is null`() {
       val eventEntity = eteCourseCompletionEventEntityRepository.save(
-        EteCourseCompletionEventEntity.valid(),
+        EteCourseCompletionEventEntity.valid(ctx),
       )
 
       val outcome = CourseCompletionOutcomeDto.valid(ctx).copy(
@@ -580,7 +580,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
       val appointmentId = 12345L
 
       val eventEntity = eteCourseCompletionEventEntityRepository.save(
-        EteCourseCompletionEventEntity.valid(),
+        EteCourseCompletionEventEntity.valid(ctx),
       )
       val outcome = CourseCompletionOutcomeDto.valid(ctx).copy(
         crn = CRN,
@@ -625,7 +625,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
     @Test
     fun `should return success but do nothing if an identical resolution has already been applied`() {
       val eventEntity = eteCourseCompletionEventEntityRepository.save(
-        EteCourseCompletionEventEntity.valid().copy(
+        EteCourseCompletionEventEntity.valid(ctx).copy(
           completionDate = LocalDate.now().minusDays(1),
         ),
       )
@@ -678,7 +678,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
     @Test
     fun `should error if a differing resolution has already been applied`() {
       val eventEntity = eteCourseCompletionEventEntityRepository.save(
-        EteCourseCompletionEventEntity.valid().copy(
+        EteCourseCompletionEventEntity.valid(ctx).copy(
           completionDate = LocalDate.now().minusDays(1),
         ),
       )
@@ -770,7 +770,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
 
     @Test
     fun `should return 404 when course completion not found`() {
-      val pagedCourseCompletions = webTestClient.get()
+      webTestClient.get()
         .uri("/admin/course-completions/$id")
         .addAdminUiAuthHeader()
         .exchange()
@@ -781,7 +781,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
     @Test
     fun `should return OK for a course completion`() {
       val entity = eteCourseCompletionEventEntityRepository.save(
-        EteCourseCompletionEventEntity.valid().copy(
+        EteCourseCompletionEventEntity.valid(ctx).copy(
           region = "London",
         ),
       )

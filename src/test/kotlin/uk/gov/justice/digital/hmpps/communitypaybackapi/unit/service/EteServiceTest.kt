@@ -4,7 +4,7 @@ import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.junit5.MockKExtension
-import io.mockk.slot
+import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -20,15 +20,13 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompleti
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntityRepository.ResolutionStatus
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventResolutionRepository
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventStatus
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseCompletionMessage
-import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseCompletionStatus
-import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseMessageAttributes
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.EteService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.EteValidationService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.EteMappers
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
 import java.time.LocalDate
 import java.util.UUID
 
@@ -58,29 +56,15 @@ class EteServiceTest {
 
     @Test
     fun `create ete course event entry with completed status`() {
-      val entityCaptor = slot<EteCourseCompletionEventEntity>()
-      every { eteCourseCompletionEventEntityRepository.save(capture(entityCaptor)) } returnsArgument 0
+      val message = EducationCourseCompletionMessage.valid()
 
-      eteService.recordCourseCompletionEvent(
-        EducationCourseCompletionMessage.valid().copy(
-          messageAttributes = EducationCourseMessageAttributes.valid().copy(
-            externalReference = "EXT456",
-            totalTimeMinutes = 150,
-            expectedTimeMinutes = 150,
-            status = EducationCourseCompletionStatus.Completed,
-          ),
-        ),
-      )
+      val mappingResult = EteCourseCompletionEventEntity.valid()
+      every { eteMappers.toCourseCompletionEventEntity(message) } returns mappingResult
+      every { eteCourseCompletionEventEntityRepository.save(any()) } returnsArgument 0
 
-      assertThat(entityCaptor.isCaptured).isTrue
-      val persistedEntity = entityCaptor.captured
+      eteService.recordCourseCompletionEvent(message)
 
-      assertThat(persistedEntity.status).isEqualTo(EteCourseCompletionEventStatus.COMPLETED)
-      assertThat(persistedEntity.totalTimeMinutes).isEqualTo(150) // 2 hours 30 minutes = 150 minutes
-      assertThat(persistedEntity.expectedTimeMinutes).isEqualTo(150)
-      assertThat(persistedEntity.externalReference).isEqualTo("EXT456")
-
-      // ensure appointment is created
+      verify { eteCourseCompletionEventEntityRepository.save(mappingResult) }
     }
   }
 
@@ -153,34 +137,13 @@ class EteServiceTest {
     @Test
     fun `should return course completion event when found`() {
       val eventId = UUID.randomUUID()
-      val entity = EteCourseCompletionEventEntity(
-        id = eventId,
-        firstName = "John",
-        lastName = "Doe",
-        dateOfBirth = LocalDate.of(1990, 5, 15),
-        region = "London",
-        office = "Office 123",
-        email = "john.doe@example.com",
-        courseName = "Test Course",
-        courseType = "Online",
-        provider = "Test Provider",
-        completionDate = LocalDate.of(2026, 1, 1),
-        status = EteCourseCompletionEventStatus.COMPLETED,
-        totalTimeMinutes = 120,
-        expectedTimeMinutes = 120,
-        externalReference = "EXT123",
-        attempts = 1,
-      )
+      val entity = EteCourseCompletionEventEntity.valid()
 
       every { eteCourseCompletionEventEntityRepository.findByIdOrNull(eventId) } returns entity
 
       val result = eteService.getCourseCompletionEvent(eventId)
 
-      assertThat(result.id).isEqualTo(eventId)
-      assertThat(result.firstName).isEqualTo("John")
-      assertThat(result.lastName).isEqualTo("Doe")
-      assertThat(result.courseName).isEqualTo("Test Course")
-      assertThat(result.status).isEqualTo(EteCourseCompletionEventStatus.COMPLETED)
+      assertThat(result).isEqualTo(entity.toDto())
     }
 
     @Test

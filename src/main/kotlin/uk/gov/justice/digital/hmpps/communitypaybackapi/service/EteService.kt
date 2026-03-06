@@ -16,7 +16,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompleti
 import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseCompletionMessage
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.EteMappers
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toEntity
 import java.time.LocalDate
 import java.util.UUID
 
@@ -44,7 +43,7 @@ class EteService(
   )
 
   fun recordCourseCompletionEvent(message: EducationCourseCompletionMessage) {
-    eteCourseCompletionEventEntityRepository.save(message.toEntity())
+    eteCourseCompletionEventEntityRepository.save(eteMapper.toCourseCompletionEventEntity(message))
   }
 
   fun getCourseCompletionEvents(
