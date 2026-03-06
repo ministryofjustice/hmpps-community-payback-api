@@ -102,7 +102,18 @@ class EteMappers(
     behaviour = AppointmentBehaviourDto.NOT_APPLICABLE,
   )
 
-  fun toResolutionEntity(
+  fun toResolutionEntityForCourseAlreadyCompleted(
+    id: UUID,
+    courseCompletionEvent: EteCourseCompletionEventEntity,
+    courseCompletionResolution: CourseCompletionResolutionDto,
+  ) = toBaselineResolutionEntity(
+    id,
+    courseCompletionEvent,
+    courseCompletionResolution,
+    EteCourseCompletionResolution.COURSE_ALREADY_COMPLETED_WITHIN_THRESHOLD,
+  )
+
+  fun toResolutionEntityForCreditTime(
     id: UUID,
     courseCompletionEvent: EteCourseCompletionEventEntity,
     courseCompletionResolution: CourseCompletionResolutionDto,
@@ -110,13 +121,12 @@ class EteMappers(
   ): EteCourseCompletionEventResolutionEntity {
     val creditTime = courseCompletionResolution.creditTimeDetails!!
 
-    return EteCourseCompletionEventResolutionEntity(
-      id = id,
-      eteCourseCompletionEvent = courseCompletionEvent,
-      resolution = EteCourseCompletionResolution.CREDIT_TIME,
-      createdAt = OffsetDateTime.now(),
-      createdByUsername = contextService.getUserName(),
-      crn = courseCompletionResolution.crn,
+    return toBaselineResolutionEntity(
+      id,
+      courseCompletionEvent,
+      courseCompletionResolution,
+      EteCourseCompletionResolution.CREDIT_TIME,
+    ).copy(
       deliusEventNumber = creditTime.deliusEventNumber,
       deliusAppointmentId = deliusAppointmentId,
       deliusAppointmentCreated = creditTime.appointmentIdToUpdate == null,
@@ -125,6 +135,20 @@ class EteMappers(
       contactOutcome = contactOutcomeEntityRepository.findByCode(creditTime.contactOutcomeCode),
     )
   }
+
+  private fun toBaselineResolutionEntity(
+    id: UUID,
+    courseCompletionEvent: EteCourseCompletionEventEntity,
+    courseCompletionResolution: CourseCompletionResolutionDto,
+    type: EteCourseCompletionResolution,
+  ) = EteCourseCompletionEventResolutionEntity(
+    id = id,
+    eteCourseCompletionEvent = courseCompletionEvent,
+    resolution = type,
+    createdAt = OffsetDateTime.now(),
+    createdByUsername = contextService.getUserName(),
+    crn = courseCompletionResolution.crn,
+  )
 
   fun toCourseCompletionEventEntity(message: EducationCourseCompletionMessage): EteCourseCompletionEventEntity {
     val messageAttributes = message.messageAttributes

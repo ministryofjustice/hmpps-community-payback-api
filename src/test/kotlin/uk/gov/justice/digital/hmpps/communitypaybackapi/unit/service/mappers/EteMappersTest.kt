@@ -367,18 +367,46 @@ class EteMappersTest {
   @Nested
   inner class ToResolutionEntity {
 
+    val resolutionId: UUID = UUID.randomUUID()
+
+    @Test
+    fun `for course already completed`() {
+      every { contextService.getUserName() } returns "jeff"
+
+      val courseCompletionEvent = EteCourseCompletionEventEntity.valid()
+
+      val result = mapper.toResolutionEntityForCourseAlreadyCompleted(
+        id = resolutionId,
+        courseCompletionEvent = courseCompletionEvent,
+        courseCompletionResolution = CourseCompletionResolutionDto.valid().copy(
+          crn = CRN,
+          creditTimeDetails = null,
+        ),
+      )
+
+      assertThat(result.id).isEqualTo(resolutionId)
+      assertThat(result.eteCourseCompletionEvent).isEqualTo(courseCompletionEvent)
+      assertThat(result.resolution).isEqualTo(EteCourseCompletionResolution.COURSE_ALREADY_COMPLETED_WITHIN_THRESHOLD)
+      assertThat(result.createdByUsername).isEqualTo("jeff")
+      assertThat(result.crn).isEqualTo(CRN)
+      assertThat(result.deliusEventNumber).isNull()
+      assertThat(result.deliusAppointmentId).isNull()
+      assertThat(result.deliusAppointmentCreated).isNull()
+      assertThat(result.projectCode).isNull()
+      assertThat(result.minutesCredited).isNull()
+      assertThat(result.contactOutcome).isNull()
+    }
+
     @ParameterizedTest
     @CsvSource("true", "false")
-    fun success(appointmentCreated: Boolean) {
-      val resolutionId = UUID.randomUUID()
-
+    fun `for credit time`(appointmentCreated: Boolean) {
       every { contextService.getUserName() } returns "jeff"
       val contactOutcome = ContactOutcomeEntity.valid()
       every { contactOutcomeEntityRepository.findByCode(CONTACT_OUTCOME_CODE) } returns contactOutcome
 
       val courseCompletionEvent = EteCourseCompletionEventEntity.valid()
 
-      val result = mapper.toResolutionEntity(
+      val result = mapper.toResolutionEntityForCreditTime(
         id = resolutionId,
         courseCompletionEvent = courseCompletionEvent,
         courseCompletionResolution = CourseCompletionResolutionDto.valid().copy(
