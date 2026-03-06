@@ -1,11 +1,13 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.service
 
+import org.slf4j.LoggerFactory
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionOutcomeDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionRecommendationDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EteCourseCompletionEventDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EteCourseCompletionResolutionStatusDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.NotFoundException
@@ -26,7 +28,10 @@ class EteService(
   private val eteCourseCompletionEventResolutionRepository: EteCourseCompletionEventResolutionRepository,
   private val appointmentService: AppointmentService,
   private val eteValidationService: EteValidationService,
+  private val projectService: ProjectService,
 ) {
+  private val logger = LoggerFactory.getLogger(EteService::class.java)
+
   private val providerCodeToRegionName = mapOf(
     "N53" to "East Midlands",
     "N52" to "West Midlands",
@@ -114,6 +119,28 @@ class EteService(
         deliusAppointmentId = deliusAppointmentId,
       ),
     )
+  }
+
+  fun getCourseCompletionRecommendation(id: UUID): CourseCompletionRecommendationDto {
+    val courseCompletionEvent = getEventOrError(id)
+
+    val email = courseCompletionEvent.email
+    val courseName = courseCompletionEvent.courseName
+    val office = courseCompletionEvent.office
+
+    val crn: String? =
+      eteCourseCompletionEventResolutionRepository
+        .findFirstByEteCourseCompletionEventEmailOrderByCreatedAtDesc(email)
+        ?.crn
+
+    val projectCode: String? =
+      eteCourseCompletionEventResolutionRepository
+        .findFirstByEteCourseCompletionEventOfficeAndEteCourseCompletionEventCourseNameOrderByCreatedAtDesc(office, courseName)
+        ?.projectCode
+
+    val project = projectCode?.let { projectService.getProject(it) }
+
+    return CourseCompletionRecommendationDto(crn, project)
   }
 
   private fun updateExistingAppointment(

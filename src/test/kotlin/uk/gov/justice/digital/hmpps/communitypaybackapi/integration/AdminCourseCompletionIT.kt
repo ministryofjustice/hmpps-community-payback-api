@@ -11,12 +11,16 @@ import org.springframework.hateoas.PagedModel
 import org.springframework.http.MediaType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseDetail
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCode
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectAndLocation
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSupervisorSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSupervisorSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionOutcomeDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionRecommendationDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EteCourseCompletionEventDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.CommunityCampusPduEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.CommunityCampusPduEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventResolutionEntity
@@ -43,10 +47,26 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
   lateinit var eteCourseCompletionEventResolutionRepository: EteCourseCompletionEventResolutionRepository
 
   @Autowired
+  lateinit var communityCampusPduEntityRepository: CommunityCampusPduEntityRepository
+
+  @Autowired
   lateinit var domainEventAsserter: DomainEventAsserter
 
   @Autowired
   lateinit var databasePurgeUtils: DatabasePurgeUtils
+
+  lateinit var testPdu: CommunityCampusPduEntity
+
+  @BeforeEach
+  fun setupPdu() {
+    testPdu = communityCampusPduEntityRepository.save(
+      CommunityCampusPduEntity(
+        id = UUID.randomUUID(),
+        name = "Test PDU ${UUID.randomUUID()}",
+        providerCode = "N07",
+      ),
+    )
+  }
 
   companion object {
     const val CRN = "X12345"
@@ -114,6 +134,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
         val entity = eteCourseCompletionEventEntityRepository.save(
           EteCourseCompletionEventEntity.valid(ctx).copy(
             region = "London",
+            pdu = testPdu,
           ),
         )
 
@@ -136,6 +157,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
           EteCourseCompletionEventEntity.valid(ctx).copy(
             region = "London",
             completionDate = LocalDate.of(2025, 5, 9),
+            pdu = testPdu,
           ),
         )
 
@@ -143,6 +165,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
           EteCourseCompletionEventEntity.valid(ctx).copy(
             region = "London",
             completionDate = LocalDate.of(2025, 5, 10),
+            pdu = testPdu,
           ),
         )
 
@@ -150,6 +173,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
           EteCourseCompletionEventEntity.valid(ctx).copy(
             region = "London",
             completionDate = LocalDate.of(2025, 6, 20),
+            pdu = testPdu,
           ),
         )
 
@@ -158,6 +182,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
           EteCourseCompletionEventEntity.valid(ctx).copy(
             region = "London",
             completionDate = LocalDate.of(2025, 6, 21),
+            pdu = testPdu,
           ),
         )
 
@@ -179,6 +204,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
         val resolved = eteCourseCompletionEventEntityRepository.save(
           EteCourseCompletionEventEntity.valid(ctx).copy(
             region = "London",
+            pdu = testPdu,
           ),
         )
         eteCourseCompletionEventResolutionRepository.save(
@@ -190,6 +216,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
         val unresolved = eteCourseCompletionEventEntityRepository.save(
           EteCourseCompletionEventEntity.valid(ctx).copy(
             region = "London",
+            pdu = testPdu,
           ),
         )
 
@@ -209,6 +236,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
         val resolved = eteCourseCompletionEventEntityRepository.save(
           EteCourseCompletionEventEntity.valid(ctx).copy(
             region = "London",
+            pdu = testPdu,
           ),
         )
 
@@ -222,6 +250,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
         eteCourseCompletionEventEntityRepository.save(
           EteCourseCompletionEventEntity.valid(ctx).copy(
             region = "London",
+            pdu = testPdu,
           ),
         )
 
@@ -241,6 +270,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
         val resolved = eteCourseCompletionEventEntityRepository.save(
           EteCourseCompletionEventEntity.valid(ctx).copy(
             region = "London",
+            pdu = testPdu,
           ),
         )
 
@@ -253,6 +283,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
         val unresolved = eteCourseCompletionEventEntityRepository.save(
           EteCourseCompletionEventEntity.valid(ctx).copy(
             region = "London",
+            pdu = testPdu,
           ),
         )
 
@@ -272,6 +303,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
         eteCourseCompletionEventEntityRepository.save(
           EteCourseCompletionEventEntity.valid(ctx).copy(
             region = "London",
+            pdu = testPdu,
             office = "Hammersmith",
           ),
         )
@@ -279,6 +311,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
         val inOffice = eteCourseCompletionEventEntityRepository.save(
           EteCourseCompletionEventEntity.valid(ctx).copy(
             region = "London",
+            pdu = testPdu,
             office = "Whitechapel",
           ),
         )
@@ -300,6 +333,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
         eteCourseCompletionEventEntityRepository.save(
           EteCourseCompletionEventEntity.valid(ctx).copy(
             region = "London",
+            pdu = testPdu,
             office = "Hammersmith",
           ),
         )
@@ -307,6 +341,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
         val inOffice1 = eteCourseCompletionEventEntityRepository.save(
           EteCourseCompletionEventEntity.valid(ctx).copy(
             region = "London",
+            pdu = testPdu,
             office = "Whitechapel",
           ),
         )
@@ -314,6 +349,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
         val inOffice2 = eteCourseCompletionEventEntityRepository.save(
           EteCourseCompletionEventEntity.valid(ctx).copy(
             region = "London",
+            pdu = testPdu,
             office = "Croydon",
           ),
         )
@@ -338,6 +374,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
           eteCourseCompletionEventEntityRepository.save(
             EteCourseCompletionEventEntity.valid(ctx).copy(
               region = "London",
+              pdu = testPdu,
             ),
           )
         }
@@ -376,6 +413,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
             firstName = "John",
             lastName = "Smith",
             region = "London",
+            pdu = testPdu,
           ),
         )
         eteCourseCompletionEventEntityRepository.save(
@@ -383,6 +421,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
             firstName = "John",
             lastName = "Doe",
             region = "London",
+            pdu = testPdu,
           ),
         )
         eteCourseCompletionEventEntityRepository.save(
@@ -390,6 +429,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
             firstName = "Pi",
             lastName = "Patel",
             region = "London",
+            pdu = testPdu,
           ),
         )
         eteCourseCompletionEventEntityRepository.save(
@@ -397,6 +437,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
             firstName = "Zack",
             lastName = "Jones",
             region = "London",
+            pdu = testPdu,
           ),
         )
 
@@ -502,7 +543,11 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
 
     @Test
     fun `should error if validation fails`() {
-      val eventEntity = eteCourseCompletionEventEntityRepository.save(EteCourseCompletionEventEntity.valid(ctx))
+      val eventEntity = eteCourseCompletionEventEntityRepository.save(
+        EteCourseCompletionEventEntity.valid(ctx).copy(
+          pdu = testPdu,
+        ),
+      )
 
       val outcome = CourseCompletionOutcomeDto.valid().copy(
         contactOutcomeCode = "WRONG",
@@ -521,7 +566,9 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
     @Test
     fun `should create appointment when appointmentIdToUpdate is null`() {
       val eventEntity = eteCourseCompletionEventEntityRepository.save(
-        EteCourseCompletionEventEntity.valid(ctx),
+        EteCourseCompletionEventEntity.valid(ctx).copy(
+          pdu = testPdu,
+        ),
       )
 
       val outcome = CourseCompletionOutcomeDto.valid(ctx).copy(
@@ -580,7 +627,9 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
       val appointmentId = 12345L
 
       val eventEntity = eteCourseCompletionEventEntityRepository.save(
-        EteCourseCompletionEventEntity.valid(ctx),
+        EteCourseCompletionEventEntity.valid(ctx).copy(
+          pdu = testPdu,
+        ),
       )
       val outcome = CourseCompletionOutcomeDto.valid(ctx).copy(
         crn = CRN,
@@ -627,6 +676,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
       val eventEntity = eteCourseCompletionEventEntityRepository.save(
         EteCourseCompletionEventEntity.valid(ctx).copy(
           completionDate = LocalDate.now().minusDays(1),
+          pdu = testPdu,
         ),
       )
 
@@ -680,6 +730,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
       val eventEntity = eteCourseCompletionEventEntityRepository.save(
         EteCourseCompletionEventEntity.valid(ctx).copy(
           completionDate = LocalDate.now().minusDays(1),
+          pdu = testPdu,
         ),
       )
 
@@ -783,6 +834,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
       val entity = eteCourseCompletionEventEntityRepository.save(
         EteCourseCompletionEventEntity.valid(ctx).copy(
           region = "London",
+          pdu = testPdu,
         ),
       )
 
@@ -796,6 +848,136 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
 
       assertThat(courseCompletionEvent.id).isEqualTo(entity.id)
       assertThat(courseCompletionEvent.firstName).isEqualTo(entity.firstName)
+    }
+  }
+
+  @Nested
+  @DisplayName("GET /course-completions/{id}/recommended-selection")
+  open inner class GetCourseCompletionRecommendationEndpoint {
+
+    @BeforeEach
+    fun setUp() {
+      databasePurgeUtils.deleteAllEteData()
+    }
+
+    @Test
+    fun `should return unauthorized if no token`() {
+      val id = UUID.randomUUID()
+      webTestClient.get()
+        .uri("/admin/course-completions/$id/recommended-selection")
+        .exchange()
+        .expectStatus()
+        .isUnauthorized
+    }
+
+    @Test
+    fun `should return forbidden if no role`() {
+      val id = UUID.randomUUID()
+      webTestClient.get()
+        .uri("/admin/course-completions/$id/recommended-selection")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .isForbidden
+    }
+
+    @Test
+    fun `should return 404 when course completion not found`() {
+      val id = UUID.randomUUID()
+      webTestClient.get()
+        .uri("/admin/course-completions/$id/recommended-selection")
+        .addAdminUiAuthHeader()
+        .exchange()
+        .expectStatus()
+        .isNotFound
+    }
+
+    @Test
+    fun `should return recommendation with all fields when available`() {
+      val pduEntity = testPdu
+
+      val email = "matched@example.com"
+      val eventWithCrn = eteCourseCompletionEventEntityRepository.save(
+        EteCourseCompletionEventEntity.valid().copy(
+          email = email,
+          pdu = pduEntity,
+        ),
+      )
+      val crn = "X123456"
+      eteCourseCompletionEventResolutionRepository.save(
+        EteCourseCompletionEventResolutionEntity.valid(ctx).copy(
+          eteCourseCompletionEvent = eventWithCrn,
+          crn = crn,
+        ),
+      )
+
+      val office = "Office A"
+      val courseName = "Course B"
+      val projectCode = "PRJ001"
+      val eventWithProject = eteCourseCompletionEventEntityRepository.save(
+        EteCourseCompletionEventEntity.valid().copy(
+          office = office,
+          courseName = courseName,
+          pdu = pduEntity,
+        ),
+      )
+      eteCourseCompletionEventResolutionRepository.save(
+        EteCourseCompletionEventResolutionEntity.valid(ctx).copy(
+          eteCourseCompletionEvent = eventWithProject,
+          projectCode = projectCode,
+        ),
+      )
+
+      val targetEvent = eteCourseCompletionEventEntityRepository.save(
+        EteCourseCompletionEventEntity.valid().copy(
+          email = email,
+          office = office,
+          courseName = courseName,
+          pdu = pduEntity,
+        ),
+      )
+
+      val teamCode = "TEAM1"
+      val project = NDProject.valid(ctx).copy(
+        code = projectCode,
+        team = NDCode(teamCode),
+      )
+      CommunityPaybackAndDeliusMockServer.getProject(project)
+
+      val recommendation = webTestClient.get()
+        .uri("/admin/course-completions/${targetEvent.id}/recommended-selection")
+        .addAdminUiAuthHeader()
+        .exchange()
+        .expectStatus()
+        .isOk
+        .bodyAsObject<CourseCompletionRecommendationDto>()
+
+      assertThat(recommendation.crn).isEqualTo(crn)
+      assertThat(recommendation.project?.projectCode).isEqualTo(projectCode)
+      assertThat(recommendation.project?.teamCode).isEqualTo(teamCode)
+    }
+
+    @Test
+    fun `should return recommendation with nulls when no previous resolutions exist`() {
+      val pduEntity = testPdu
+
+      val targetEvent = eteCourseCompletionEventEntityRepository.save(
+        EteCourseCompletionEventEntity.valid().copy(
+          pdu = pduEntity,
+        ),
+      )
+
+      val recommendation = webTestClient.get()
+        .uri("/admin/course-completions/${targetEvent.id}/recommended-selection")
+        .addAdminUiAuthHeader()
+        .exchange()
+        .expectStatus()
+        .isOk
+        .bodyAsObject<uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionRecommendationDto>()
+
+      assertThat(recommendation.crn).isNull()
+      assertThat(recommendation.project?.projectCode).isNull()
+      assertThat(recommendation.project?.teamCode).isNull()
     }
   }
 }
