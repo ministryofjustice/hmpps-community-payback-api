@@ -5,7 +5,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionOutcomeDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionResolutionDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EteCourseCompletionEventDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EteCourseCompletionResolutionStatusDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.NotFoundException
@@ -77,14 +77,14 @@ class EteService(
   fun getCourseCompletionEvent(id: UUID) = getEventOrError(id).toDto()
 
   @Transactional
-  fun recordCourseCompletionOutcome(
+  fun recordCourseCompletionResolution(
     eteCourseCompletionEventId: UUID,
-    courseCompletionOutcome: CourseCompletionOutcomeDto,
+    courseCompletionResolution: CourseCompletionResolutionDto,
   ) {
     val resolutionId = UUID.randomUUID()
     val courseCompletionEvent = getEventOrError(eteCourseCompletionEventId)
 
-    when (eteValidationService.validateCourseCompletionOutcome(courseCompletionOutcome, courseCompletionEvent)) {
+    when (eteValidationService.validateCourseCompletionResolution(courseCompletionResolution, courseCompletionEvent)) {
       EteValidationService.ValidationResult.EXISTING_IDENTICAL_RESOLUTION -> return
       EteValidationService.ValidationResult.VALID -> Unit
     }
@@ -94,15 +94,15 @@ class EteService(
       triggeredBy = resolutionId.toString(),
     )
 
-    val deliusAppointmentId = if (courseCompletionOutcome.appointmentIdToUpdate == null) {
+    val deliusAppointmentId = if (courseCompletionResolution.appointmentIdToUpdate == null) {
       createAppointment(
         trigger = appointmentEventTrigger,
-        courseCompletionOutcome = courseCompletionOutcome,
+        courseCompletionResolution = courseCompletionResolution,
       )
     } else {
       updateExistingAppointment(
         trigger = appointmentEventTrigger,
-        courseCompletionOutcome = courseCompletionOutcome,
+        courseCompletionResolution = courseCompletionResolution,
       )
     }
 
@@ -110,7 +110,7 @@ class EteService(
       eteMapper.toResolutionEntity(
         id = resolutionId,
         courseCompletionEvent = courseCompletionEvent,
-        courseCompletionOutcome = courseCompletionOutcome,
+        courseCompletionResolution = courseCompletionResolution,
         deliusAppointmentId = deliusAppointmentId,
       ),
     )
@@ -118,30 +118,30 @@ class EteService(
 
   private fun updateExistingAppointment(
     trigger: AppointmentEventTrigger,
-    courseCompletionOutcome: CourseCompletionOutcomeDto,
+    courseCompletionResolution: CourseCompletionResolutionDto,
   ): Long {
     val existingAppointment = appointmentService.getAppointment(
-      projectCode = courseCompletionOutcome.projectCode,
-      appointmentId = courseCompletionOutcome.appointmentIdToUpdate!!,
+      projectCode = courseCompletionResolution.projectCode,
+      appointmentId = courseCompletionResolution.appointmentIdToUpdate!!,
     )
 
     appointmentService.updateAppointmentOutcome(
       projectCode = existingAppointment.projectCode,
       update = eteMapper.toUpdateAppointmentDto(
-        courseCompletionOutcome = courseCompletionOutcome,
+        courseCompletionResolution = courseCompletionResolution,
         existingAppointment = existingAppointment,
       ),
       trigger = trigger,
     )
 
-    return courseCompletionOutcome.appointmentIdToUpdate
+    return courseCompletionResolution.appointmentIdToUpdate
   }
 
   private fun createAppointment(
     trigger: AppointmentEventTrigger,
-    courseCompletionOutcome: CourseCompletionOutcomeDto,
+    courseCompletionResolution: CourseCompletionResolutionDto,
   ): Long = appointmentService.createAppointment(
-    appointment = eteMapper.toCreateAppointmentDto(courseCompletionOutcome),
+    appointment = eteMapper.toCreateAppointmentDto(courseCompletionResolution),
     trigger = trigger,
   )
 

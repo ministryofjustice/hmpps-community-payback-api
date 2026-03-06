@@ -2,11 +2,11 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.factory
 
 import org.springframework.beans.factory.getBean
 import org.springframework.context.ApplicationContext
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionOutcomeDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionResolutionDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
 import kotlin.random.Random
 
-fun CourseCompletionOutcomeDto.Companion.valid() = CourseCompletionOutcomeDto(
+fun CourseCompletionResolutionDto.Companion.valid() = CourseCompletionResolutionDto(
   crn = String.random(1).uppercase() + Random.nextInt(0, 99999),
   deliusEventNumber = Long.random(50),
   appointmentIdToUpdate = Long.random(),
@@ -19,6 +19,6 @@ fun CourseCompletionOutcomeDto.Companion.valid() = CourseCompletionOutcomeDto(
   sensitive = Boolean.random(),
 )
 
-fun CourseCompletionOutcomeDto.Companion.valid(ctx: ApplicationContext) = CourseCompletionOutcomeDto.valid().copy(
+fun CourseCompletionResolutionDto.Companion.valid(ctx: ApplicationContext) = CourseCompletionResolutionDto.valid().copy(
   contactOutcomeCode = ctx.getBean<ContactOutcomeEntityRepository>().findAll().minByOrNull { it.name }!!.code,
 )

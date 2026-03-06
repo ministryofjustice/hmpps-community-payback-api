@@ -10,7 +10,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionOutcomeDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionResolutionDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntity
@@ -36,7 +36,7 @@ class EteValidationServiceTest {
     const val CONTACT_OUTCOME_CODE = "CTC01"
   }
 
-  val baselineCourseCompletionOutcome = CourseCompletionOutcomeDto.valid().copy(
+  val baselineCourseCompletionOutcome = CourseCompletionResolutionDto.valid().copy(
     contactOutcomeCode = CONTACT_OUTCOME_CODE,
   )
 
@@ -45,7 +45,7 @@ class EteValidationServiceTest {
   )
 
   @Nested
-  inner class ValidateCourseCompletionOutcome {
+  inner class ValidateCourseCompletionResolution {
 
     @BeforeEach
     fun baselineMocks() {
@@ -59,7 +59,7 @@ class EteValidationServiceTest {
 
       @Test
       fun success() {
-        eteValidationService.validateCourseCompletionOutcome(
+        eteValidationService.validateCourseCompletionResolution(
           baselineCourseCompletionOutcome,
           baselineCourseCompletionEvent,
         )
@@ -76,7 +76,7 @@ class EteValidationServiceTest {
         } returns null
 
         assertThatThrownBy {
-          eteValidationService.validateCourseCompletionOutcome(
+          eteValidationService.validateCourseCompletionResolution(
             baselineCourseCompletionOutcome,
             baselineCourseCompletionEvent,
           )
@@ -89,7 +89,7 @@ class EteValidationServiceTest {
 
       @Test
       fun `if no existing resolution, is valid`() {
-        eteValidationService.validateCourseCompletionOutcome(
+        eteValidationService.validateCourseCompletionResolution(
           baselineCourseCompletionOutcome,
           baselineCourseCompletionEvent.copy(
             resolution = null,
@@ -107,13 +107,13 @@ class EteValidationServiceTest {
           eteMappers.toResolutionEntity(
             id = any(),
             courseCompletionEvent = courseCompletionEvent,
-            courseCompletionOutcome = baselineCourseCompletionOutcome,
+            courseCompletionResolution = baselineCourseCompletionOutcome,
             deliusAppointmentId = baselineCourseCompletionOutcome.appointmentIdToUpdate!!,
           )
         } returns courseCompletionEvent.resolution!!.copy()
 
-        val result = eteValidationService.validateCourseCompletionOutcome(
-          outcome = baselineCourseCompletionOutcome,
+        val result = eteValidationService.validateCourseCompletionResolution(
+          resolution = baselineCourseCompletionOutcome,
           courseCompletionEvent = courseCompletionEvent,
         )
 
@@ -130,16 +130,16 @@ class EteValidationServiceTest {
           eteMappers.toResolutionEntity(
             id = any(),
             courseCompletionEvent = courseCompletionEvent,
-            courseCompletionOutcome = baselineCourseCompletionOutcome,
+            courseCompletionResolution = baselineCourseCompletionOutcome,
             deliusAppointmentId = baselineCourseCompletionOutcome.appointmentIdToUpdate!!,
           )
         } returns courseCompletionEvent.resolution!!.copy(
           projectCode = "some other project code",
         )
-
+        "pd"
         assertThatThrownBy {
-          eteValidationService.validateCourseCompletionOutcome(
-            outcome = baselineCourseCompletionOutcome,
+          eteValidationService.validateCourseCompletionResolution(
+            resolution = baselineCourseCompletionOutcome,
             courseCompletionEvent = courseCompletionEvent,
           )
         }.hasMessage("A resolution has already been defined for this course completion record")
