@@ -34,21 +34,6 @@ class EteService(
 ) {
   private val logger = LoggerFactory.getLogger(EteService::class.java)
 
-  private val providerCodeToRegionName = mapOf(
-    "N53" to "East Midlands",
-    "N52" to "West Midlands",
-    "N56" to "East of England",
-    "N50" to "Greater Manchester",
-    "N57" to "Kent, Surrey and Sussex",
-    "N07" to "London",
-    "N54" to "North East",
-    "N51" to "North West",
-    "N59" to "South Central",
-    "N58" to "South West",
-    "N03" to "Wales",
-    "N55" to "Yorks & Humber",
-  )
-
   fun recordCourseCompletionEvent(message: EducationCourseCompletionMessage) {
     eteCourseCompletionEventEntityRepository.save(eteMapper.toCourseCompletionEventEntity(message))
   }
@@ -61,11 +46,10 @@ class EteService(
     resolutionStatus: EteCourseCompletionResolutionStatusDto?,
     pageable: Pageable,
   ): Page<EteCourseCompletionEventDto> {
-    val region = providerCodeToRegionName[providerCode] ?: return Page.empty()
     val officesNormalised = offices ?: emptyList()
 
     val page = eteCourseCompletionEventEntityRepository.findAllWithFilters(
-      region,
+      providerCode,
       officesNormalised.size,
       officesNormalised,
       resolutionStatus = when (resolutionStatus) {
