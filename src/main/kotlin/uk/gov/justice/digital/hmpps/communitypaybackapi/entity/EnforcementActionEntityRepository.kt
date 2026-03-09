@@ -7,4 +7,5 @@ import java.util.UUID
 @Repository
 interface EnforcementActionEntityRepository : JpaRepository<EnforcementActionEntity, UUID> {
   fun findByCode(code: String): EnforcementActionEntity?
+  fun findAllByOrderByNameAsc(): List<EnforcementActionEntity>
 }
