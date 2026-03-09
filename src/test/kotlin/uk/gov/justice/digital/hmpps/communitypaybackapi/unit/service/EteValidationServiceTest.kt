@@ -10,7 +10,9 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionOutcomeDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionCreditTimeDetailsDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionResolutionDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionResolutionTypeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntity
@@ -36,38 +38,49 @@ class EteValidationServiceTest {
     const val CONTACT_OUTCOME_CODE = "CTC01"
   }
 
-  val baselineCourseCompletionOutcome = CourseCompletionOutcomeDto.valid().copy(
-    contactOutcomeCode = CONTACT_OUTCOME_CODE,
-  )
-
-  val baselineCourseCompletionEvent = EteCourseCompletionEventEntity.valid().copy(
-    resolution = null,
-  )
-
   @Nested
-  inner class ValidateCourseCompletionOutcome {
-
-    @BeforeEach
-    fun baselineMocks() {
-      every {
-        contactOutcomeEntityRepository.findByCode(CONTACT_OUTCOME_CODE)
-      } returns ContactOutcomeEntity.valid()
-    }
+  inner class ValidateCourseCompletionResolution {
 
     @Nested
-    inner class Success {
+    inner class CreditTime {
+
+      val baselineCourseCompletionResolution = CourseCompletionResolutionDto.valid().copy(
+        type = CourseCompletionResolutionTypeDto.CREDIT_TIME,
+        creditTimeDetails = CourseCompletionCreditTimeDetailsDto.valid().copy(
+          contactOutcomeCode = CONTACT_OUTCOME_CODE,
+        ),
+      )
+
+      val baselineCourseCompletionEvent = EteCourseCompletionEventEntity.valid().copy(
+        resolution = null,
+      )
+
+      @BeforeEach
+      fun baselineMocks() {
+        every {
+          contactOutcomeEntityRepository.findByCode(CONTACT_OUTCOME_CODE)
+        } returns ContactOutcomeEntity.valid()
+      }
 
       @Test
       fun success() {
-        eteValidationService.validateCourseCompletionOutcome(
-          baselineCourseCompletionOutcome,
+        eteValidationService.validateCourseCompletionResolution(
+          baselineCourseCompletionResolution,
           baselineCourseCompletionEvent,
         )
       }
-    }
 
-    @Nested
-    inner class ContactOutcome {
+      @Test
+      fun `error if credit time details not provided`() {
+        assertThatThrownBy {
+          eteValidationService.validateCourseCompletionResolution(
+            baselineCourseCompletionResolution.copy(
+              creditTimeDetails = null,
+            ),
+            baselineCourseCompletionEvent,
+          )
+        }.hasMessage("Credit Time Details are required for type CREDIT_TIME")
+      }
 
       @Test
       fun `error if invalid contact outcome code`() {
@@ -76,8 +89,8 @@ class EteValidationServiceTest {
         } returns null
 
         assertThatThrownBy {
-          eteValidationService.validateCourseCompletionOutcome(
-            baselineCourseCompletionOutcome,
+          eteValidationService.validateCourseCompletionResolution(
+            baselineCourseCompletionResolution,
             baselineCourseCompletionEvent,
           )
         }.hasMessage("Cannot find contact outcome with code CTC01")
@@ -85,11 +98,62 @@ class EteValidationServiceTest {
     }
 
     @Nested
+    inner class CourseAlreadyCompletedWithinThreshold {
+
+      val baselineCourseCompletionResolution = CourseCompletionResolutionDto.valid().copy(
+        type = CourseCompletionResolutionTypeDto.COURSE_ALREADY_COMPLETED_WITHIN_THRESHOLD,
+        creditTimeDetails = null,
+      )
+
+      val baselineCourseCompletionEvent = EteCourseCompletionEventEntity.valid().copy(
+        resolution = null,
+      )
+
+      @Test
+      fun success() {
+        eteValidationService.validateCourseCompletionResolution(
+          baselineCourseCompletionResolution,
+          baselineCourseCompletionEvent,
+        )
+      }
+
+      @Test
+      fun `error if credit time details are provided`() {
+        assertThatThrownBy {
+          eteValidationService.validateCourseCompletionResolution(
+            baselineCourseCompletionResolution.copy(
+              creditTimeDetails = CourseCompletionCreditTimeDetailsDto.valid(),
+            ),
+            baselineCourseCompletionEvent,
+          )
+        }.hasMessage("Credit Time Details should not be provided for type COURSE_ALREADY_COMPLETED_WITHIN_THRESHOLD")
+      }
+    }
+
+    @Nested
     inner class ExistingResolution {
+
+      @BeforeEach
+      fun baselineMocks() {
+        every {
+          contactOutcomeEntityRepository.findByCode(CONTACT_OUTCOME_CODE)
+        } returns ContactOutcomeEntity.valid()
+      }
+
+      val baselineCourseCompletionOutcome = CourseCompletionResolutionDto.valid().copy(
+        type = CourseCompletionResolutionTypeDto.CREDIT_TIME,
+        creditTimeDetails = CourseCompletionCreditTimeDetailsDto.valid().copy(
+          contactOutcomeCode = CONTACT_OUTCOME_CODE,
+        ),
+      )
+
+      val baselineCourseCompletionEvent = EteCourseCompletionEventEntity.valid().copy(
+        resolution = null,
+      )
 
       @Test
       fun `if no existing resolution, is valid`() {
-        eteValidationService.validateCourseCompletionOutcome(
+        eteValidationService.validateCourseCompletionResolution(
           baselineCourseCompletionOutcome,
           baselineCourseCompletionEvent.copy(
             resolution = null,
@@ -104,16 +168,16 @@ class EteValidationServiceTest {
         )
 
         every {
-          eteMappers.toResolutionEntity(
+          eteMappers.toResolutionEntityForCreditTime(
             id = any(),
             courseCompletionEvent = courseCompletionEvent,
-            courseCompletionOutcome = baselineCourseCompletionOutcome,
-            deliusAppointmentId = baselineCourseCompletionOutcome.appointmentIdToUpdate!!,
+            courseCompletionResolution = baselineCourseCompletionOutcome,
+            deliusAppointmentId = baselineCourseCompletionOutcome.creditTimeDetails!!.appointmentIdToUpdate!!,
           )
         } returns courseCompletionEvent.resolution!!.copy()
 
-        val result = eteValidationService.validateCourseCompletionOutcome(
-          outcome = baselineCourseCompletionOutcome,
+        val result = eteValidationService.validateCourseCompletionResolution(
+          resolution = baselineCourseCompletionOutcome,
           courseCompletionEvent = courseCompletionEvent,
         )
 
@@ -127,19 +191,19 @@ class EteValidationServiceTest {
         )
 
         every {
-          eteMappers.toResolutionEntity(
+          eteMappers.toResolutionEntityForCreditTime(
             id = any(),
             courseCompletionEvent = courseCompletionEvent,
-            courseCompletionOutcome = baselineCourseCompletionOutcome,
-            deliusAppointmentId = baselineCourseCompletionOutcome.appointmentIdToUpdate!!,
+            courseCompletionResolution = baselineCourseCompletionOutcome,
+            deliusAppointmentId = baselineCourseCompletionOutcome.creditTimeDetails!!.appointmentIdToUpdate!!,
           )
         } returns courseCompletionEvent.resolution!!.copy(
           projectCode = "some other project code",
         )
 
         assertThatThrownBy {
-          eteValidationService.validateCourseCompletionOutcome(
-            outcome = baselineCourseCompletionOutcome,
+          eteValidationService.validateCourseCompletionResolution(
+            resolution = baselineCourseCompletionOutcome,
             courseCompletionEvent = courseCompletionEvent,
           )
         }.hasMessage("A resolution has already been defined for this course completion record")

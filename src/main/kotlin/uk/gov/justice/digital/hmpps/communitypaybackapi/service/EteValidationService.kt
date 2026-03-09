@@ -1,7 +1,8 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.service
 
 import org.springframework.stereotype.Service
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionOutcomeDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionResolutionDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionResolutionTypeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.BadRequestException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntity
@@ -13,38 +14,50 @@ class EteValidationService(
   private val contactOutcomeEntityRepository: ContactOutcomeEntityRepository,
   private val eteMapper: EteMappers,
 ) {
-  fun validateCourseCompletionOutcome(
-    outcome: CourseCompletionOutcomeDto,
+  fun validateCourseCompletionResolution(
+    resolution: CourseCompletionResolutionDto,
     courseCompletionEvent: EteCourseCompletionEventEntity,
   ): ValidationResult {
-    validateContactOutcomeCode(outcome)
-    return validateExistingResolution(outcome, courseCompletionEvent)
+    when (resolution.type) {
+      CourseCompletionResolutionTypeDto.CREDIT_TIME -> validateCreditTime(resolution)
+      CourseCompletionResolutionTypeDto.COURSE_ALREADY_COMPLETED_WITHIN_THRESHOLD -> validateCourseAlreadyCompletedWithinThreshold(resolution)
+    }
+
+    return validateExistingResolution(resolution, courseCompletionEvent)
   }
 
-  private fun validateContactOutcomeCode(
-    outcome: CourseCompletionOutcomeDto,
-  ) {
-    val contactOutcomeCode = outcome.contactOutcomeCode
-    if (contactOutcomeEntityRepository.findByCode(outcome.contactOutcomeCode) == null) {
+  private fun validateCreditTime(resolution: CourseCompletionResolutionDto) {
+    if (resolution.creditTimeDetails == null) {
+      throw BadRequestException("Credit Time Details are required for type ${CourseCompletionResolutionTypeDto.CREDIT_TIME}")
+    }
+
+    val contactOutcomeCode = resolution.creditTimeDetails.contactOutcomeCode
+    if (contactOutcomeEntityRepository.findByCode(resolution.creditTimeDetails.contactOutcomeCode) == null) {
       throw BadRequestException("Cannot find contact outcome with code $contactOutcomeCode")
     }
   }
 
+  private fun validateCourseAlreadyCompletedWithinThreshold(resolution: CourseCompletionResolutionDto) {
+    if (resolution.creditTimeDetails != null) {
+      throw BadRequestException("Credit Time Details should not be provided for type ${CourseCompletionResolutionTypeDto.COURSE_ALREADY_COMPLETED_WITHIN_THRESHOLD}")
+    }
+  }
+
   private fun validateExistingResolution(
-    outcome: CourseCompletionOutcomeDto,
+    resolution: CourseCompletionResolutionDto,
     courseCompletionEvent: EteCourseCompletionEventEntity,
   ): ValidationResult {
     val existingResolution = courseCompletionEvent.resolution
     if (existingResolution == null) {
       return ValidationResult.VALID
     } else {
-      val proposedResolutionEntity = eteMapper.toResolutionEntity(
+      val proposedResolutionEntity = eteMapper.toResolutionEntityForCreditTime(
         id = UUID.randomUUID(),
         courseCompletionEvent = courseCompletionEvent,
-        courseCompletionOutcome = outcome,
+        courseCompletionResolution = resolution,
         // setting to 0L is fine here because isLogicallyIdentical() only checks this value when
         // the resolution indicates that an existing appointment is being updated
-        deliusAppointmentId = outcome.appointmentIdToUpdate ?: 0L,
+        deliusAppointmentId = resolution.creditTimeDetails?.appointmentIdToUpdate ?: 0L,
       )
 
       if (existingResolution.isLogicallyIdentical(proposedResolutionEntity)) {
