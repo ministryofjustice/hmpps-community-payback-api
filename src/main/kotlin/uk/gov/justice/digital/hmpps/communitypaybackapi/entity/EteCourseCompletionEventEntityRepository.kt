@@ -15,7 +15,8 @@ interface EteCourseCompletionEventEntityRepository : JpaRepository<EteCourseComp
     """
     SELECT e FROM EteCourseCompletionEventEntity e
     LEFT JOIN e.resolution r
-    WHERE e.pdu.providerCode = :providerCode 
+    WHERE e.pdu.providerCode = :providerCode
+    AND ((CAST(:pduId AS uuid) IS NULL) OR (e.pdu.id = :pduId))
     AND (:officesCount = 0 OR e.office IN :offices)
     AND ((:#{#resolutionStatus.name()} = 'ANY') OR (:#{#resolutionStatus.name()} = 'RESOLVED' AND r IS NOT NULL) OR (:#{#resolutionStatus.name()} = 'UNRESOLVED' AND r IS NULL))
     AND (cast(:fromDate as date) IS NULL OR e.completionDate >= :fromDate)
@@ -24,6 +25,7 @@ interface EteCourseCompletionEventEntityRepository : JpaRepository<EteCourseComp
   )
   fun findAllWithFilters(
     providerCode: String,
+    pduId: UUID?,
     officesCount: Int,
     offices: List<String>,
     resolutionStatus: ResolutionStatus,

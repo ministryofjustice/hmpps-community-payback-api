@@ -40,16 +40,18 @@ class EteService(
 
   fun getCourseCompletionEvents(
     providerCode: String,
-    fromDate: LocalDate?,
-    toDate: LocalDate?,
+    pduId: UUID?,
     offices: List<String>?,
     resolutionStatus: EteCourseCompletionResolutionStatusDto?,
+    fromDate: LocalDate?,
+    toDate: LocalDate?,
     pageable: Pageable,
   ): Page<EteCourseCompletionEventDto> {
     val officesNormalised = offices ?: emptyList()
 
     val page = eteCourseCompletionEventEntityRepository.findAllWithFilters(
       providerCode,
+      pduId,
       officesNormalised.size,
       officesNormalised,
       resolutionStatus = when (resolutionStatus) {
