@@ -122,7 +122,7 @@ class AdminCourseCompletionController(val eteService: EteService) {
   )
   fun postCourseCompletionResolution(
     @PathVariable id: UUID,
-    @RequestBody @Valid courseCompletionResolution: CourseCompletionResolutionDto,
+    @Valid @RequestBody courseCompletionResolution: CourseCompletionResolutionDto,
   ): ResponseEntity<Unit> {
     eteService.recordCourseCompletionResolution(id, courseCompletionResolution)
     return ResponseEntity.status(HttpStatus.NO_CONTENT).build()
