@@ -69,6 +69,11 @@ class AdminCourseCompletionController(val eteService: EteService) {
     @PageableDefault(size = 50, sort = ["firstName", "lastName"], direction = Sort.Direction.DESC) pageable: Pageable,
     @PathVariable providerCode: String,
     @RequestParam
+    pduId: UUID?,
+    @RequestParam(required = false)
+    @Parameter(description = "Filter by one or more office codes. Example: ?office=London&office=Norwich", example = "London")
+    office: List<String>?,
+    @RequestParam
     @Parameter(description = "If not defined both resolved and unresolved completions will be returned")
     resolutionStatus: EteCourseCompletionResolutionStatusDto?,
     @RequestParam
@@ -77,15 +82,13 @@ class AdminCourseCompletionController(val eteService: EteService) {
     @RequestParam
     @Parameter(description = "To date, inclusive", example = "2025-09-01")
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) dateTo: LocalDate?,
-    @RequestParam(required = false)
-    @Parameter(description = "Filter by one or more office codes. Example: ?office=London&office=Norwich", example = "London")
-    office: List<String>?,
   ): Page<EteCourseCompletionEventDto> = eteService.getCourseCompletionEvents(
     providerCode,
-    dateFrom,
-    dateTo,
+    pduId,
     office,
     resolutionStatus = resolutionStatus,
+    dateFrom,
+    dateTo,
     pageable,
   )
 

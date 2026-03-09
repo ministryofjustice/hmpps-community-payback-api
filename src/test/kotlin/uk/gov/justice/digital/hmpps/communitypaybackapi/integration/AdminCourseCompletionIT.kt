@@ -134,6 +134,26 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
     }
 
     @Test
+    fun `should return results for requested pdu only`() {
+      val walesPdu1 = communityCampusPduEntityRepository.findByNameIgnoreCase("Dyfed Powys")!!
+      val walesPdu2 = communityCampusPduEntityRepository.findByNameIgnoreCase("Cwm Taf Morgannwg")!!
+
+      val walesPdu1Completion1 = eteCourseCompletionEventEntityRepository.save(EteCourseCompletionEventEntity.valid(ctx).copy(pdu = walesPdu1))
+      val walesPdu1Completion2 = eteCourseCompletionEventEntityRepository.save(EteCourseCompletionEventEntity.valid(ctx).copy(pdu = walesPdu1))
+      eteCourseCompletionEventEntityRepository.save(EteCourseCompletionEventEntity.valid(ctx).copy(pdu = walesPdu2))
+
+      val pagedCourseCompletions = webTestClient.get()
+        .uri("/admin/providers/N03/course-completions?pduId=${walesPdu1.id}")
+        .addAdminUiAuthHeader()
+        .exchange()
+        .expectStatus()
+        .isOk
+        .bodyAsObject<PagedModel<EteCourseCompletionEventDto>>()
+
+      assertThat(pagedCourseCompletions.content.map { it.id }).containsExactlyInAnyOrder(walesPdu1Completion1.id, walesPdu1Completion2.id)
+    }
+
+    @Test
     fun `should return OK for one course completion`() {
       val entity = eteCourseCompletionEventEntityRepository.save(
         EteCourseCompletionEventEntity.valid(ctx),

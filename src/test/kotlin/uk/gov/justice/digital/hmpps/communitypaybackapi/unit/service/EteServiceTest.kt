@@ -13,9 +13,7 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.NotFoundException
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntityRepository.ResolutionStatus
@@ -41,9 +39,6 @@ class EteServiceTest {
   lateinit var eteCourseCompletionEventResolutionRepository: EteCourseCompletionEventResolutionRepository
 
   @RelaxedMockK
-  lateinit var contactOutcomeEntityRepository: ContactOutcomeEntityRepository
-
-  @RelaxedMockK
   lateinit var appointmentService: AppointmentService
 
   @RelaxedMockK
@@ -55,15 +50,8 @@ class EteServiceTest {
   @RelaxedMockK
   lateinit var eteValidationService: EteValidationService
 
-  @RelaxedMockK
-  lateinit var communityPaybackAndDeliusClient: CommunityPaybackAndDeliusClient
-
   @InjectMockKs
   private lateinit var eteService: EteService
-
-  companion object {
-    const val CONTACT_OUTCOME_CODE = "CTC01"
-  }
 
   @Nested
   inner class HandleEducationCourseMessage {
@@ -89,6 +77,7 @@ class EteServiceTest {
     fun `pass through to repository`() {
       val pageable = Pageable.unpaged()
 
+      val pduId = UUID.randomUUID()
       val providerCode = "PC01"
       val offices = listOf("office1", "office2")
       val fromDate = LocalDate.of(2026, 1, 1)
@@ -97,6 +86,7 @@ class EteServiceTest {
       every {
         eteCourseCompletionEventEntityRepository.findAllWithFilters(
           providerCode = providerCode,
+          pduId = pduId,
           officesCount = 2,
           offices = offices,
           resolutionStatus = ResolutionStatus.ANY,
@@ -114,10 +104,11 @@ class EteServiceTest {
 
       val result = eteService.getCourseCompletionEvents(
         providerCode = providerCode,
-        fromDate = fromDate,
-        toDate = toDate,
+        pduId = pduId,
         offices = offices,
         resolutionStatus = null,
+        fromDate = fromDate,
+        toDate = toDate,
         pageable = pageable,
       )
 
