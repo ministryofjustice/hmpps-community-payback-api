@@ -1,0 +1,1 @@
+UPDATE ete_course_completion_events SET status = 'PASSED' WHERE status = 'COMPLETED';
