@@ -22,7 +22,8 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
-import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.valid
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.AppointmentMappers
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.SessionMappers
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto

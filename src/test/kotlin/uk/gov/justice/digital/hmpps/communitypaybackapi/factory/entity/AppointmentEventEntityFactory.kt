@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.communitypaybackapi.factory
+package uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity
 
 import org.springframework.beans.factory.getBean
 import org.springframework.context.ApplicationContext
@@ -9,6 +9,10 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.Behaviour
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.WorkQuality
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.random
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.randomLocalDate
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.randomLocalTime
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.randomOffsetDateTime
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventTrigger
 import java.time.OffsetDateTime
 import java.util.UUID
@@ -20,7 +24,7 @@ fun AppointmentEventEntity.Companion.valid(
   id = UUID.randomUUID(),
   communityPaybackAppointmentId = UUID.randomUUID(),
   eventType = AppointmentEventType.entries.toTypedArray().random(),
-  deliusAppointmentId = Long.random(),
+  deliusAppointmentId = Long.Companion.random(),
   priorDeliusVersion = UUID.randomUUID(),
   crn = String.random(5),
   deliusEventNumber = Int.random(0, 50),

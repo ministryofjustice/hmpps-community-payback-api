@@ -18,7 +18,8 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.SessionSupervisorEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.SessionSupervisorEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
-import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.valid
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.bodyAsObject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.CommunityPaybackAndDeliusMockServer
 import java.time.LocalDate

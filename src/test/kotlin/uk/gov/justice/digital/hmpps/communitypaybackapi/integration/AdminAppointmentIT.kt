@@ -21,7 +21,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOut
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.validNoOutcome
-import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.DomainEventAsserter
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.bodyAsObject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.CommunityPaybackAndDeliusMockServer

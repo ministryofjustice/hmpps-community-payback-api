@@ -5,8 +5,9 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.valid
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.randomOffsetDateTime
-import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import java.util.UUID
 
 class AppointmentEventEntityTest {

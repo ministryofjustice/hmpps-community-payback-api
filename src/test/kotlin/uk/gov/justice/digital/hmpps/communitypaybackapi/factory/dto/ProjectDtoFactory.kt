@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.communitypaybackapi.factory
+package uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto
 
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.BeneficiaryDetailsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.LocationDto
@@ -7,10 +7,12 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SchedulingDayOfWeekDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SchedulingFrequencyDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.random
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.randomLocalDate
 import kotlin.String
 
 fun ProjectDto.Companion.valid() = ProjectDto(
-  projectName = String.random(50),
+  projectName = String.Companion.random(50),
   projectCode = String.random(5),
   projectType = ProjectTypeDto.valid(),
   providerCode = String.random(5),

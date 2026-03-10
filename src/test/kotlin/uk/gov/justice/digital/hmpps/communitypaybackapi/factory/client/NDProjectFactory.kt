@@ -12,7 +12,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingDayOfWeek
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.random
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.randomLocalDate
-import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 
 fun NDProjectAndLocation.Companion.valid() = NDProjectAndLocation(
   code = String.random(),

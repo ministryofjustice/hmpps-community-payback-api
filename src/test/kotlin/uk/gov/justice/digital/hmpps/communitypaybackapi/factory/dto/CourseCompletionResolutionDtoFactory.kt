@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.communitypaybackapi.factory
+package uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto
 
 import org.springframework.beans.factory.getBean
 import org.springframework.context.ApplicationContext
@@ -6,10 +6,12 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionCred
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionResolutionDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionResolutionTypeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.random
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.randomLocalDate
 import kotlin.random.Random
 
 fun CourseCompletionResolutionDto.Companion.valid() = CourseCompletionResolutionDto(
-  crn = String.random(1).uppercase() + Random.nextInt(0, 99999),
+  crn = String.Companion.random(1).uppercase() + Random.nextInt(0, 99999),
   type = CourseCompletionResolutionTypeDto.entries.random(),
   creditTimeDetails = CourseCompletionCreditTimeDetailsDto.valid(),
 )

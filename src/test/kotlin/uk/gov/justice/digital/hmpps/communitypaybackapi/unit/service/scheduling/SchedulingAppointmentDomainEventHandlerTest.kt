@@ -12,7 +12,8 @@ import org.junit.jupiter.params.provider.CsvSource
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventType
-import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.valid
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.LockService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingAppointmentDomainEventHandler

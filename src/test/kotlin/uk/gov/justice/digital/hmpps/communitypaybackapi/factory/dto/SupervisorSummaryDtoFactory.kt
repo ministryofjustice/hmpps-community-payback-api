@@ -1,12 +1,13 @@
-package uk.gov.justice.digital.hmpps.communitypaybackapi.factory
+package uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto
 
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.GradeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.NameDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SupervisorSummaryDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.random
 import kotlin.String
 
 fun SupervisorSummaryDto.Companion.valid() = SupervisorSummaryDto(
-  code = String.random(5),
+  code = String.Companion.random(5),
   name = NameDto.valid(),
   fullName = String.random(30),
   grade = GradeDto(

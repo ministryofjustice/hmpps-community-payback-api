@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.communitypaybackapi.factory
+package uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity
 
 import org.springframework.beans.factory.getBean
 import org.springframework.context.ApplicationContext
@@ -6,13 +6,15 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.CommunityCampusPd
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.CommunityCampusPduEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventStatus
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.random
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.randomLocalDate
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.random.Random
 
 fun EteCourseCompletionEventEntity.Companion.valid() = EteCourseCompletionEventEntity(
   id = UUID.randomUUID(),
-  firstName = String.random(20),
+  firstName = String.Companion.random(20),
   lastName = String.random(20),
   dateOfBirth = randomLocalDate(),
   region = String.random(10),

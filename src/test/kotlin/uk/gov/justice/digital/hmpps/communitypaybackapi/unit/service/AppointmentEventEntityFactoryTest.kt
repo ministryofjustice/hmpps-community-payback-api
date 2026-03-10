@@ -30,7 +30,8 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEnt
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.WorkQuality
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
-import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.valid
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventEntityFactory
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventTrigger
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ProjectService

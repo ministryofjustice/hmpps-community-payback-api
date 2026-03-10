@@ -11,7 +11,8 @@ import tools.jackson.databind.json.JsonMapper
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.CommunityCampusPduEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.CommunityCampusPduEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntityRepository
-import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.listener.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.DatabasePurgeUtils
 import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseCompletionMessage
 import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseMessageAttributes

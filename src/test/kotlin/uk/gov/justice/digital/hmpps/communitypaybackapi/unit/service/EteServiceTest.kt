@@ -18,7 +18,8 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompleti
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntityRepository.ResolutionStatus
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventResolutionRepository
-import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.listener.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseCompletionMessage
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.EteService
