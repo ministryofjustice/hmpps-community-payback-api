@@ -46,7 +46,7 @@ class SessionService(
       teamCode = teamCode,
       startDate = startDate,
       endDate = endDate,
-      projectTypeCodes = projectTypeGroup?.let { projectTypeGroup ->
+      typeCode = projectTypeGroup?.let { projectTypeGroup ->
         projectService.projectTypesForGroup(projectTypeGroup).map { it.code }
       },
     ).toDto()

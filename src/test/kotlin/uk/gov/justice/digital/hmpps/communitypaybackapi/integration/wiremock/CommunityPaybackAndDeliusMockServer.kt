@@ -92,12 +92,12 @@ object CommunityPaybackAndDeliusMockServer {
     startDate: LocalDate,
     endDate: LocalDate,
     projectSessions: NDSessionSummaries,
-    projectTypeCodes: List<String> = emptyList(),
+    typeCode: List<String> = emptyList(),
   ) {
     val url = buildString {
       append("/community-payback-and-delius/providers/$providerCode/teams/$teamCode/sessions?startDate=${startDate.toIsoDateString()}&endDate=${endDate.toIsoDateString()}")
-      projectTypeCodes.forEach {
-        append("&projectTypeCodes=$it")
+      typeCode.forEach {
+        append("&typeCode=$it")
       }
     }
 
