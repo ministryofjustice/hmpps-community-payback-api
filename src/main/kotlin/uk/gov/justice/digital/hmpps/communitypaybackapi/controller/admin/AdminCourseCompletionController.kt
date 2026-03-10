@@ -39,7 +39,7 @@ class AdminCourseCompletionController(val eteService: EteService) {
 
   @GetMapping("/providers/{providerCode}/course-completions", produces = [MediaType.APPLICATION_JSON_VALUE])
   @Operation(
-    description = "Get course completions within a date range for a specific provider",
+    description = "Get course completions for a specific provider (region) where the course status is 'Passed'",
     responses = [
       ApiResponse(
         responseCode = "200",
@@ -82,7 +82,7 @@ class AdminCourseCompletionController(val eteService: EteService) {
     @RequestParam
     @Parameter(description = "To date, inclusive", example = "2025-09-01")
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) dateTo: LocalDate?,
-  ): Page<EteCourseCompletionEventDto> = eteService.getCourseCompletionEvents(
+  ): Page<EteCourseCompletionEventDto> = eteService.getPassedCourseCompletionEvents(
     providerCode,
     pduId,
     office,

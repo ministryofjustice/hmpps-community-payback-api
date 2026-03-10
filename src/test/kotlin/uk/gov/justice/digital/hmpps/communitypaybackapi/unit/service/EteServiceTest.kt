@@ -71,7 +71,7 @@ class EteServiceTest {
   }
 
   @Nested
-  inner class GetEteCourseCompletionEvents {
+  inner class GetPassedEteCourseCompletionEvents {
 
     @Test
     fun `pass through to repository`() {
@@ -84,7 +84,7 @@ class EteServiceTest {
       val toDate = LocalDate.of(2026, 12, 31)
 
       every {
-        eteCourseCompletionEventEntityRepository.findAllWithFilters(
+        eteCourseCompletionEventEntityRepository.findAllPassedWithFilters(
           providerCode = providerCode,
           pduId = pduId,
           officesCount = 2,
@@ -102,7 +102,7 @@ class EteServiceTest {
         ),
       )
 
-      val result = eteService.getCourseCompletionEvents(
+      val result = eteService.getPassedCourseCompletionEvents(
         providerCode = providerCode,
         pduId = pduId,
         offices = offices,

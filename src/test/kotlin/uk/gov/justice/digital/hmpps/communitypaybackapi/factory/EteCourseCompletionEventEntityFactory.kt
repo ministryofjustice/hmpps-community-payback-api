@@ -33,3 +33,11 @@ fun EteCourseCompletionEventEntity.Companion.valid() = EteCourseCompletionEventE
 fun EteCourseCompletionEventEntity.Companion.valid(ctx: ApplicationContext) = EteCourseCompletionEventEntity.valid().copy(
   pdu = ctx.getBean<CommunityCampusPduEntityRepository>().findAll().minByOrNull { it.name }!!,
 )
+
+fun EteCourseCompletionEventEntity.Companion.failed(ctx: ApplicationContext) = EteCourseCompletionEventEntity.valid(ctx).copy(
+  status = EteCourseCompletionEventStatus.FAILED,
+)
+
+fun EteCourseCompletionEventEntity.Companion.passed(ctx: ApplicationContext) = EteCourseCompletionEventEntity.valid(ctx).copy(
+  status = EteCourseCompletionEventStatus.PASSED,
+)

@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.service
 
-import org.slf4j.LoggerFactory
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
@@ -32,13 +31,11 @@ class EteService(
   private val eteValidationService: EteValidationService,
   private val projectService: ProjectService,
 ) {
-  private val logger = LoggerFactory.getLogger(EteService::class.java)
-
   fun recordCourseCompletionEvent(message: EducationCourseCompletionMessage) {
     eteCourseCompletionEventEntityRepository.save(eteMapper.toCourseCompletionEventEntity(message))
   }
 
-  fun getCourseCompletionEvents(
+  fun getPassedCourseCompletionEvents(
     providerCode: String,
     pduId: UUID?,
     offices: List<String>?,
@@ -49,7 +46,7 @@ class EteService(
   ): Page<EteCourseCompletionEventDto> {
     val officesNormalised = offices ?: emptyList()
 
-    val page = eteCourseCompletionEventEntityRepository.findAllWithFilters(
+    val page = eteCourseCompletionEventEntityRepository.findAllPassedWithFilters(
       providerCode,
       pduId,
       officesNormalised.size,
