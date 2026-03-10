@@ -31,6 +31,10 @@ class EteService(
   private val eteValidationService: EteValidationService,
   private val projectService: ProjectService,
 ) {
+  companion object {
+    const val ETE_ALLOWANCE_OF_TOTAL_REQUIREMENT = 0.3
+  }
+
   fun recordCourseCompletionEvent(message: EducationCourseCompletionMessage) {
     eteCourseCompletionEventEntityRepository.save(eteMapper.toCourseCompletionEventEntity(message))
   }
