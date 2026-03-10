@@ -18,6 +18,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentWorkQualityDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionCreditTimeDetailsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionResolutionDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EteCourseCompletionEventStatusDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.CommunityCampusPduEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.CommunityCampusPduEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
@@ -309,7 +310,7 @@ class EteMappersTest {
       val courseType = "ONLINE"
       val provider = "Skills for Life"
       val completionDate = LocalDate.of(2024, 2, 20)
-      val status = EteCourseCompletionEventStatus.COMPLETED
+      val status = EteCourseCompletionEventStatus.PASSED
       val totalTimeMinutes = 120L
       val expectedTimeMinutes = 120L
       val attempts = 1
@@ -356,7 +357,7 @@ class EteMappersTest {
       assertThat(result.courseType).isEqualTo(courseType)
       assertThat(result.provider).isEqualTo(provider)
       assertThat(result.completionDate).isEqualTo(completionDate)
-      assertThat(result.status).isEqualTo(status)
+      assertThat(result.status).isEqualTo(EteCourseCompletionEventStatusDto.Passed)
       assertThat(result.totalTimeMinutes).isEqualTo(totalTimeMinutes)
       assertThat(result.expectedTimeMinutes).isEqualTo(expectedTimeMinutes)
       assertThat(result.attempts).isEqualTo(attempts)

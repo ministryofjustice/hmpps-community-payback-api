@@ -14,6 +14,7 @@ import jakarta.persistence.Version
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.UpdateTimestamp
 import org.hibernate.proxy.HibernateProxy
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EteCourseCompletionEventStatusDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseCompletionStatus
 import java.time.LocalDate
 import java.time.OffsetDateTime
@@ -93,9 +94,16 @@ data class EteCourseCompletionEventEntity(
 
 enum class EteCourseCompletionEventStatus(
   val messageType: EducationCourseCompletionStatus,
+  val dtoType: EteCourseCompletionEventStatusDto,
 ) {
-  COMPLETED(EducationCourseCompletionStatus.Completed),
-  FAILED(EducationCourseCompletionStatus.Failed),
+  PASSED(
+    messageType = EducationCourseCompletionStatus.Completed,
+    dtoType = EteCourseCompletionEventStatusDto.Passed,
+  ),
+  FAILED(
+    messageType = EducationCourseCompletionStatus.Failed,
+    dtoType = EteCourseCompletionEventStatusDto.Failed,
+  ),
   ;
 
   companion object {
