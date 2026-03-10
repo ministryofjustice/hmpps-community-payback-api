@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util
 
+import org.assertj.core.api.Assertions.assertThat
 import org.awaitility.Awaitility.await
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -22,12 +23,23 @@ class MockSentryService : SentryService {
     capturedExceptions.add(throwable)
   }
 
-  fun getRaisedException(): Throwable {
+  fun getRaisedExceptions(): List<Throwable> {
     await()
       .atMost(1, TimeUnit.SECONDS)
       .until { capturedExceptions.isNotEmpty() }
 
-    return capturedExceptions[0]
+    return capturedExceptions
+  }
+
+  fun assertExceptionRaisedWithMessage(regex: String) {
+    await()
+      .atMost(1, TimeUnit.SECONDS)
+      .untilAsserted {
+        assertThat(capturedExceptions)
+          .anySatisfy {
+            assertThat(it.message).matches(regex)
+          }
+      }
   }
 
   @BeforeTestMethod

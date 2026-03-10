@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.integration
 
-import org.assertj.core.api.Assertions.assertThat
 import org.awaitility.Awaitility.await
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -31,7 +30,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.DomainEventAsserter
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.MockSentryService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.CommunityPaybackAndDeliusMockServer
-import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.SqsListenerException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdditionalInformationType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.DomainEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.DomainEventPublisher
@@ -77,9 +75,7 @@ class SchedulingIT : IntegrationTestBase() {
 
       publishEvent(eventId)
 
-      assertThat(mockSentryService.getRaisedException())
-        .isInstanceOf(SqsListenerException::class.java)
-        .hasMessageMatching("Error occurred handling message with ID '.*' - Can't find event with id '$eventId'")
+      mockSentryService.assertExceptionRaisedWithMessage("Error occurred handling message with ID '.*' - Can't find event with id '$eventId'")
     }
 
     @Test
@@ -134,9 +130,7 @@ class SchedulingIT : IntegrationTestBase() {
 
       publishEvent(eventId)
 
-      assertThat(mockSentryService.getRaisedException())
-        .isInstanceOf(SqsListenerException::class.java)
-        .hasMessageMatching("Error occurred handling message with ID '.*' - Can't find event with id '$eventId'")
+      mockSentryService.assertExceptionRaisedWithMessage("Error occurred handling message with ID '.*' - Can't find event with id '$eventId'")
     }
 
     @Test
