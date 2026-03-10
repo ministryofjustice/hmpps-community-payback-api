@@ -261,7 +261,7 @@ class AdminProvidersIT : IntegrationTestBase() {
         teamCode = "999",
         startDate = LocalDate.of(2025, 1, 9),
         endDate = LocalDate.of(2025, 1, 12),
-        projectTypeCodes = listOf("NP1", "NP2", "PL"),
+        typeCode = listOf("NP1", "NP2", "PL"),
         projectSessions = NDSessionSummaries(
           listOf(
             NDSessionSummary.valid().copy(project = NDProjectSummary.valid().copy(description = "Community Garden Maintenance")),
@@ -290,7 +290,7 @@ class AdminProvidersIT : IntegrationTestBase() {
         teamCode = "999",
         startDate = LocalDate.of(2025, 1, 9),
         endDate = LocalDate.of(2025, 1, 11),
-        projectTypeCodes = listOf("NP1", "NP2", "PL"),
+        typeCode = listOf("NP1", "NP2", "PL"),
         projectSessions = NDSessionSummaries(emptyList()),
       )
 

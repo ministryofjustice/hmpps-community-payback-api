@@ -231,7 +231,7 @@ class SupervisorSessionsIT : IntegrationTestBase() {
         teamCode = "T456",
         startDate = LocalDate.now(),
         endDate = LocalDate.now().plusDays(7),
-        projectTypeCodes = listOf("NP1", "NP2", "PL"),
+        typeCode = listOf("NP1", "NP2", "PL"),
         projectSessions = NDSessionSummaries(
           listOf(
             NDSessionSummary.valid().copy(project = NDProjectSummary.valid().copy(description = "Community Garden Maintenance")),

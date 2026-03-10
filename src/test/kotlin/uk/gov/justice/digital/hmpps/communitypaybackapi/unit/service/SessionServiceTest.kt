@@ -73,7 +73,7 @@ class SessionServiceTest {
           teamCode = "team code 1",
           startDate = LocalDate.of(2025, 1, 1),
           endDate = LocalDate.of(2025, 1, 5),
-          projectTypeCodes = listOf("PT1"),
+          typeCode = listOf("PT1"),
         )
       } returns NDSessionSummaries.valid().copy(
         sessions = listOf(
