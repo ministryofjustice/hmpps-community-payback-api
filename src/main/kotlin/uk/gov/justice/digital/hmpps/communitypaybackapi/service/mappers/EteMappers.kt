@@ -184,6 +184,7 @@ fun EteCourseCompletionEventEntity.toDto() = EteCourseCompletionEventDto(
   lastName = lastName,
   dateOfBirth = dateOfBirth,
   region = region,
+  pdu = pdu.toDto(),
   office = office,
   email = email,
   courseName = courseName,

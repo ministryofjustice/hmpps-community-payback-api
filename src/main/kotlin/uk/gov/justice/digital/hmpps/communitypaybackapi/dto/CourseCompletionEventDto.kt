@@ -25,6 +25,8 @@ data class EteCourseCompletionEventDto(
   @param:Schema(description = "Region where the course was completed", example = "North West")
   val region: String,
 
+  val pdu: CommunityCampusPduDto,
+
   @param:Schema(description = "The office that the Person on Probation (PoP) is associated with", example = "The Office")
   val office: String,
 

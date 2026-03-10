@@ -294,7 +294,7 @@ class EteMappersTest {
   }
 
   @Nested
-  inner class EntityToEteCourseCompletionEventDto {
+  inner class EntityToCourseCompletionEventDto {
 
     @ParameterizedTest
     @CsvSource("true", "false")
@@ -322,7 +322,7 @@ class EteMappersTest {
         lastName = lastName,
         dateOfBirth = dateOfBirth,
         region = region,
-        pdu = CommunityCampusPduEntity.valid(),
+        pdu = CommunityCampusPduEntity.valid().copy(name = "test pdu"),
         office = "Office 1",
         email = email,
         courseName = courseName,
@@ -349,6 +349,8 @@ class EteMappersTest {
       assertThat(result.lastName).isEqualTo(lastName)
       assertThat(result.dateOfBirth).isEqualTo(dateOfBirth)
       assertThat(result.region).isEqualTo(region)
+      assertThat(result.pdu.name).isEqualTo("test pdu")
+      assertThat(result.office).isEqualTo("Office 1")
       assertThat(result.email).isEqualTo(email)
       assertThat(result.courseName).isEqualTo(courseName)
       assertThat(result.courseType).isEqualTo(courseType)
@@ -365,7 +367,7 @@ class EteMappersTest {
   }
 
   @Nested
-  inner class ToResolutionEntity {
+  inner class DtoToResolutionEntity {
 
     val resolutionId: UUID = UUID.randomUUID()
 
