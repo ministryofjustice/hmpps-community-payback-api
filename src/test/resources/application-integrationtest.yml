@@ -24,6 +24,12 @@ spring:
     redis:
       host: localhost
 
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+
 community-payback:
   cache:
     enabled: false
