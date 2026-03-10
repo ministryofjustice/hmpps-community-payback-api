@@ -30,6 +30,8 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompleti
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.unallocated
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.validNoOutcome
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.failed
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.passed
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.DatabasePurgeUtils
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.DomainEventAsserter
@@ -104,20 +106,20 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
     @Test
     fun `should return results for requested provider only`() {
       val walesProviderEvent1 = eteCourseCompletionEventEntityRepository.save(
-        EteCourseCompletionEventEntity.valid(ctx).copy(
+        EteCourseCompletionEventEntity.passed(ctx).copy(
           pdu = communityCampusPduEntityRepository.findByNameIgnoreCase("Dyfed Powys")!!,
         ),
       )
 
       val walesProviderEvent2 = eteCourseCompletionEventEntityRepository.save(
-        EteCourseCompletionEventEntity.valid(ctx).copy(
+        EteCourseCompletionEventEntity.passed(ctx).copy(
           pdu = communityCampusPduEntityRepository.findByNameIgnoreCase("Cwm Taf Morgannwg")!!,
         ),
       )
 
       // london
       eteCourseCompletionEventEntityRepository.save(
-        EteCourseCompletionEventEntity.valid(ctx).copy(
+        EteCourseCompletionEventEntity.passed(ctx).copy(
           pdu = communityCampusPduEntityRepository.findByNameIgnoreCase("Enfield and Haringey")!!,
         ),
       )
@@ -138,9 +140,9 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
       val walesPdu1 = communityCampusPduEntityRepository.findByNameIgnoreCase("Dyfed Powys")!!
       val walesPdu2 = communityCampusPduEntityRepository.findByNameIgnoreCase("Cwm Taf Morgannwg")!!
 
-      val walesPdu1Completion1 = eteCourseCompletionEventEntityRepository.save(EteCourseCompletionEventEntity.valid(ctx).copy(pdu = walesPdu1))
-      val walesPdu1Completion2 = eteCourseCompletionEventEntityRepository.save(EteCourseCompletionEventEntity.valid(ctx).copy(pdu = walesPdu1))
-      eteCourseCompletionEventEntityRepository.save(EteCourseCompletionEventEntity.valid(ctx).copy(pdu = walesPdu2))
+      val walesPdu1Completion1 = eteCourseCompletionEventEntityRepository.save(EteCourseCompletionEventEntity.passed(ctx).copy(pdu = walesPdu1))
+      val walesPdu1Completion2 = eteCourseCompletionEventEntityRepository.save(EteCourseCompletionEventEntity.passed(ctx).copy(pdu = walesPdu1))
+      eteCourseCompletionEventEntityRepository.save(EteCourseCompletionEventEntity.passed(ctx).copy(pdu = walesPdu2))
 
       val pagedCourseCompletions = webTestClient.get()
         .uri("/admin/providers/N03/course-completions?pduId=${walesPdu1.id}")
@@ -156,7 +158,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
     @Test
     fun `should return OK for one course completion`() {
       val entity = eteCourseCompletionEventEntityRepository.save(
-        EteCourseCompletionEventEntity.valid(ctx),
+        EteCourseCompletionEventEntity.passed(ctx),
       )
 
       val pagedCourseCompletions = webTestClient.get()
@@ -172,26 +174,44 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
     }
 
     @Test
+    fun `should exclude failed completions`() {
+      val pdu = communityCampusPduEntityRepository.findByNameIgnoreCase("Dyfed Powys")!!
+
+      val completionPassed = eteCourseCompletionEventEntityRepository.save(EteCourseCompletionEventEntity.passed(ctx).copy(pdu = pdu))
+      eteCourseCompletionEventEntityRepository.save(EteCourseCompletionEventEntity.failed(ctx).copy(pdu = pdu))
+
+      val pagedCourseCompletions = webTestClient.get()
+        .uri("/admin/providers/${pdu.providerCode}/course-completions")
+        .addAdminUiAuthHeader()
+        .exchange()
+        .expectStatus()
+        .isOk
+        .bodyAsObject<PagedModel<EteCourseCompletionEventDto>>()
+
+      assertThat(pagedCourseCompletions.content.map { it.id }).containsExactly(completionPassed.id)
+    }
+
+    @Test
     fun `should apply date range`() {
       val pdu = communityCampusPduEntityRepository.findAll().first()
 
       // before range
       eteCourseCompletionEventEntityRepository.save(
-        EteCourseCompletionEventEntity.valid(ctx).copy(
+        EteCourseCompletionEventEntity.passed(ctx).copy(
           pdu = pdu,
           completionDate = LocalDate.of(2025, 5, 9),
         ),
       )
 
       val inRange1 = eteCourseCompletionEventEntityRepository.save(
-        EteCourseCompletionEventEntity.valid(ctx).copy(
+        EteCourseCompletionEventEntity.passed(ctx).copy(
           pdu = pdu,
           completionDate = LocalDate.of(2025, 5, 10),
         ),
       )
 
       val inRange2 = eteCourseCompletionEventEntityRepository.save(
-        EteCourseCompletionEventEntity.valid(ctx).copy(
+        EteCourseCompletionEventEntity.passed(ctx).copy(
           pdu = pdu,
           completionDate = LocalDate.of(2025, 6, 20),
         ),
@@ -199,7 +219,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
 
       // after range
       eteCourseCompletionEventEntityRepository.save(
-        EteCourseCompletionEventEntity.valid(ctx).copy(
+        EteCourseCompletionEventEntity.passed(ctx).copy(
           pdu = pdu,
           completionDate = LocalDate.of(2025, 6, 21),
         ),
@@ -223,7 +243,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
       val pdu = communityCampusPduEntityRepository.findAll().first()
 
       val resolved = eteCourseCompletionEventEntityRepository.save(
-        EteCourseCompletionEventEntity.valid(ctx).copy(
+        EteCourseCompletionEventEntity.passed(ctx).copy(
           pdu = pdu,
         ),
       )
@@ -234,7 +254,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
       )
 
       val unresolved = eteCourseCompletionEventEntityRepository.save(
-        EteCourseCompletionEventEntity.valid(ctx).copy(
+        EteCourseCompletionEventEntity.passed(ctx).copy(
           pdu = pdu,
         ),
       )
@@ -255,7 +275,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
       val pdu = communityCampusPduEntityRepository.findAll().first()
 
       val resolved = eteCourseCompletionEventEntityRepository.save(
-        EteCourseCompletionEventEntity.valid(ctx).copy(
+        EteCourseCompletionEventEntity.passed(ctx).copy(
           pdu = pdu,
         ),
       )
@@ -268,7 +288,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
 
       // unresolved
       eteCourseCompletionEventEntityRepository.save(
-        EteCourseCompletionEventEntity.valid(ctx).copy(
+        EteCourseCompletionEventEntity.passed(ctx).copy(
           pdu = pdu,
         ),
       )
@@ -289,7 +309,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
       val pdu = communityCampusPduEntityRepository.findAll().first()
 
       val resolved = eteCourseCompletionEventEntityRepository.save(
-        EteCourseCompletionEventEntity.valid(ctx).copy(
+        EteCourseCompletionEventEntity.passed(ctx).copy(
           pdu = pdu,
         ),
       )
@@ -301,7 +321,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
       )
 
       val unresolved = eteCourseCompletionEventEntityRepository.save(
-        EteCourseCompletionEventEntity.valid(ctx).copy(
+        EteCourseCompletionEventEntity.passed(ctx).copy(
           pdu = pdu,
         ),
       )
@@ -322,14 +342,14 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
       val pdu = communityCampusPduEntityRepository.findAll().first()
 
       eteCourseCompletionEventEntityRepository.save(
-        EteCourseCompletionEventEntity.valid(ctx).copy(
+        EteCourseCompletionEventEntity.passed(ctx).copy(
           pdu = pdu,
           office = "Hammersmith",
         ),
       )
 
       val inOffice = eteCourseCompletionEventEntityRepository.save(
-        EteCourseCompletionEventEntity.valid(ctx).copy(
+        EteCourseCompletionEventEntity.passed(ctx).copy(
           pdu = pdu,
           office = "Whitechapel",
         ),
@@ -352,21 +372,21 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
       val pdu = communityCampusPduEntityRepository.findAll().first()
 
       eteCourseCompletionEventEntityRepository.save(
-        EteCourseCompletionEventEntity.valid(ctx).copy(
+        EteCourseCompletionEventEntity.passed(ctx).copy(
           pdu = pdu,
           office = "Hammersmith",
         ),
       )
 
       val inOffice1 = eteCourseCompletionEventEntityRepository.save(
-        EteCourseCompletionEventEntity.valid(ctx).copy(
+        EteCourseCompletionEventEntity.passed(ctx).copy(
           pdu = pdu,
           office = "Whitechapel",
         ),
       )
 
       val inOffice2 = eteCourseCompletionEventEntityRepository.save(
-        EteCourseCompletionEventEntity.valid(ctx).copy(
+        EteCourseCompletionEventEntity.passed(ctx).copy(
           pdu = pdu,
           office = "Croydon",
         ),
@@ -392,7 +412,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
 
       repeat(10) {
         eteCourseCompletionEventEntityRepository.save(
-          EteCourseCompletionEventEntity.valid(ctx).copy(
+          EteCourseCompletionEventEntity.passed(ctx).copy(
             pdu = pdu,
           ),
         )
@@ -430,28 +450,28 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
       val pdu = communityCampusPduEntityRepository.findAll().first()
 
       eteCourseCompletionEventEntityRepository.save(
-        EteCourseCompletionEventEntity.valid(ctx).copy(
+        EteCourseCompletionEventEntity.passed(ctx).copy(
           firstName = "John",
           lastName = "Smith",
           pdu = pdu,
         ),
       )
       eteCourseCompletionEventEntityRepository.save(
-        EteCourseCompletionEventEntity.valid(ctx).copy(
+        EteCourseCompletionEventEntity.passed(ctx).copy(
           firstName = "John",
           lastName = "Doe",
           pdu = pdu,
         ),
       )
       eteCourseCompletionEventEntityRepository.save(
-        EteCourseCompletionEventEntity.valid(ctx).copy(
+        EteCourseCompletionEventEntity.passed(ctx).copy(
           firstName = "Pi",
           lastName = "Patel",
           pdu = pdu,
         ),
       )
       eteCourseCompletionEventEntityRepository.save(
-        EteCourseCompletionEventEntity.valid(ctx).copy(
+        EteCourseCompletionEventEntity.passed(ctx).copy(
           firstName = "Zack",
           lastName = "Jones",
           pdu = pdu,

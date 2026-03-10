@@ -58,7 +58,7 @@ class DevEteCourseCompletionFixtures(
       courseType = "Online",
       provider = "Megan Excess",
       completionDate = LocalDate.now().minusDays(seededRandom.nextLong(1, 8)),
-      status = EteCourseCompletionEventStatus.COMPLETED,
+      status = EteCourseCompletionEventStatus.PASSED,
       totalTimeMinutes = totalTime,
       expectedTimeMinutes = totalTime + seededRandom.nextLong(-10, 10),
       attempts = 1,
