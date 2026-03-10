@@ -22,6 +22,9 @@ generic-service:
     CLIENT_COMMUNITY_PAYBACK_AND_DELIUS_URL: http://hmpps-community-payback-api-stubs
     CLIENT_ARNS_URL: https://assess-risks-and-needs-dev.hmpps.service.justice.gov.uk
 
+    SPRINGDOC_API_DOCS_ENABLED: true
+    SPRINGDOC_SWAGGER_UI_ENABLED: true
+
 # CloudPlatform AlertManager receiver to route prometheus alerts to slack
 # See https://user-guide.cloud-platform.service.justice.gov.uk/documentation/monitoring-an-app/how-to-create-alarms.html#creating-your-own-custom-alerts
 generic-prometheus-alerts:
