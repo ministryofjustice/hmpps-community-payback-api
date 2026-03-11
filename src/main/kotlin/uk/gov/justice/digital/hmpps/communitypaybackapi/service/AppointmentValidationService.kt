@@ -12,6 +12,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEnt
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.validateLengthLessThan
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.validateNotNull
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.derivePenaltyMinutesDuration
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDayOfWeek
 import java.time.Duration
 import java.time.LocalDate
