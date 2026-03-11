@@ -12,7 +12,7 @@ import kotlin.Long
 import kotlin.String
 
 fun AppointmentDto.Companion.valid() = AppointmentDto(
-  id = Long.Companion.random(),
+  id = Long.random(),
   communityPaybackId = UUID.randomUUID(),
   version = UUID.randomUUID(),
   deliusEventNumber = Int.random(0, 50),
@@ -21,7 +21,7 @@ fun AppointmentDto.Companion.valid() = AppointmentDto(
   projectTypeName = String.random(),
   projectTypeCode = String.random(),
   projectType = ProjectTypeDto.valid(),
-  offender = OffenderDto.OffenderLimitedDto(crn = String.random()),
+  offender = OffenderDto.validFull(),
   supervisingTeam = String.random(),
   supervisingTeamCode = String.random(),
   providerCode = String.random(),
