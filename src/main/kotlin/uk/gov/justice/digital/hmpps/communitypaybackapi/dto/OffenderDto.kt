@@ -55,6 +55,7 @@ sealed interface OffenderDto {
   ) : OffenderDto {
     override val objectType = OffenderType.FULL
   }
+  companion object
 }
 
 enum class OffenderType(@get:JsonValue val value: String) {

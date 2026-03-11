@@ -7,9 +7,11 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointment
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseDetail
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDContactOutcome
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDEnforcementAction
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectAndLocation
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
@@ -22,6 +24,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventE
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.validNoOutcome
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.valid
+import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.SchedulingIT.Companion.EVENT_NUMBER
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.DomainEventAsserter
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.bodyAsObject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.CommunityPaybackAndDeliusMockServer
@@ -186,6 +189,8 @@ class SupervisorAppointmentsIT : IntegrationTestBase() {
           id = 1234L,
           project = NDProjectAndLocation.valid().copy(code = "PC01"),
           date = LocalDate.now(),
+          event = NDEvent.valid().copy(number = EVENT_NUMBER.toInt()),
+          case = NDCaseSummary.valid().copy(crn = SchedulingIT.CRN),
         ),
         username = "theusername",
       )
@@ -193,6 +198,15 @@ class SupervisorAppointmentsIT : IntegrationTestBase() {
       CommunityPaybackAndDeliusMockServer.putAppointment(
         projectCode = "PC01",
         appointmentId = 1234L,
+      )
+      CommunityPaybackAndDeliusMockServer.getUpwDetailsSummary(
+        crn = SchedulingIT.CRN,
+        unpaidWorkDetails = listOf(
+          NDCaseDetail.valid().copy(
+            eventNumber = EVENT_NUMBER,
+            sentenceDate = LocalDate.now().minusYears(1),
+          ),
+        ),
       )
 
       webTestClient.post()
@@ -260,11 +274,23 @@ class SupervisorAppointmentsIT : IntegrationTestBase() {
 
     @Test
     fun `succeeds and calls upstream endpoint`() {
+      CommunityPaybackAndDeliusMockServer.getUpwDetailsSummary(
+        crn = SchedulingIT.CRN,
+        unpaidWorkDetails = listOf(
+          NDCaseDetail.valid().copy(
+            eventNumber = EVENT_NUMBER,
+            sentenceDate = LocalDate.now().minusYears(1),
+          ),
+        ),
+      )
+
       CommunityPaybackAndDeliusMockServer.getAppointment(
         appointment = NDAppointment.validNoOutcome(ctx).copy(
           id = 1234L,
           project = NDProjectAndLocation.valid().copy(code = "PC01"),
           date = LocalDate.now(),
+          event = NDEvent.valid().copy(number = EVENT_NUMBER.toInt()),
+          case = NDCaseSummary.valid().copy(crn = SchedulingIT.CRN),
         ),
         username = "theusername",
       )
@@ -279,6 +305,8 @@ class SupervisorAppointmentsIT : IntegrationTestBase() {
           id = 5678L,
           project = NDProjectAndLocation.valid().copy(code = "PC01"),
           date = LocalDate.now(),
+          event = NDEvent.valid().copy(number = EVENT_NUMBER.toInt()),
+          case = NDCaseSummary.valid().copy(crn = SchedulingIT.CRN),
         ),
         username = "theusername",
       )

@@ -1,12 +1,15 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.service
+
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.onOrAfter
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentCommandDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.BadRequestException
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.validateLengthLessThan
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.validateNotNull
@@ -26,17 +29,20 @@ class AppointmentValidationService(
   fun validateCreate(
     create: CreateAppointmentDto,
   ): Validated<CreateAppointmentDto> {
-    val project = projectService.getProject(create.projectCode)
-
-    validateDate(project, create)
-    validateAvailability(project, create)
-    validateOutcome(
-      appointmentDate = create.date,
+    val ctx = ValidationContext(
       command = create,
+      project = projectService.getProject(create.projectCode),
+      contactOutcome = loadContactOutcome(create.contactOutcomeCode),
+      unpaidWorkDetails = offenderService.getUnpaidWorkDetails(create.crn, create.deliusEventNumber),
+      appointmentDate = create.date,
     )
-    validateDuration(create)
-    validatePenaltyTime(create)
-    validateNotes(create)
+
+    ctx.validateDate()
+    ctx.validateAvailability()
+    ctx.validateOutcome()
+    ctx.validateDuration()
+    ctx.validatePenaltyTime()
+    ctx.validateNotes()
 
     return Validated(create)
   }
@@ -45,22 +51,23 @@ class AppointmentValidationService(
     appointment: AppointmentDto,
     update: UpdateAppointmentOutcomeDto,
   ): Validated<UpdateAppointmentOutcomeDto> {
-    validateOutcome(
-      appointmentDate = appointment.date,
+    val ctx = ValidationContext(
       command = update,
+      project = projectService.getProject(appointment.projectCode),
+      contactOutcome = loadContactOutcome(update.contactOutcomeCode),
+      unpaidWorkDetails = offenderService.getUnpaidWorkDetails(appointment.offender.crn, appointment.deliusEventNumber.toLong()),
+      appointmentDate = appointment.date,
     )
-    validateDuration(update)
-    validatePenaltyTime(update)
-    validateNotes(update)
+
+    ctx.validateOutcome()
+    ctx.validateDuration()
+    ctx.validatePenaltyTime()
+    ctx.validateNotes()
 
     return Validated(update)
   }
 
-  private fun validateDate(
-    project: ProjectDto,
-    appointment: CreateAppointmentDto,
-  ) {
-    val appointmentDate = appointment.date
+  private fun ValidationContext.validateDate() {
     val projectEndDateExclusive = project.actualEndDateExclusive
 
     projectEndDateExclusive?.let {
@@ -69,18 +76,14 @@ class AppointmentValidationService(
       }
     }
 
-    val unpaidWorkDetails = offenderService.getUnpaidWorkDetails(appointment.crn, appointment.deliusEventNumber)
     val sentenceDate = unpaidWorkDetails.sentenceDate
     if (appointmentDate.isBefore(sentenceDate)) {
       throw BadRequestException("Appointment Date of $appointmentDate must be on or after sentence date of $sentenceDate")
     }
   }
 
-  private fun validateAvailability(
-    project: ProjectDto,
-    appointment: CreateAppointmentDto,
-  ) {
-    val appointmentDayOfWeek = appointment.date.dayOfWeek
+  private fun ValidationContext.validateAvailability() {
+    val appointmentDayOfWeek = appointmentDate.dayOfWeek
 
     if (project.availability.none { it.dayOfWeek.toDayOfWeek() == appointmentDayOfWeek }) {
       val availableDays = project.availability.map { it.dayOfWeek }.toSet()
@@ -88,14 +91,10 @@ class AppointmentValidationService(
     }
   }
 
-  private fun validateOutcome(
-    appointmentDate: LocalDate,
-    command: AppointmentCommandDto,
-  ) {
-    val code = command.contactOutcomeCode ?: return
-
-    val contactOutcome = contactOutcomeEntityRepository.findByCode(code)
-      ?: throw BadRequestException("Contact outcome not found for code $code")
+  private fun ValidationContext.validateOutcome() {
+    if (contactOutcome == null) {
+      return
+    }
 
     val appointmentIsInFuture = appointmentDate.atTime(command.startTime).isAfter(LocalDateTime.now())
     val attendanceOrEnforcementRecorded = contactOutcome.attended || contactOutcome.enforceable
@@ -110,13 +109,13 @@ class AppointmentValidationService(
     }
   }
 
-  private fun validateDuration(command: AppointmentCommandDto) {
+  private fun ValidationContext.validateDuration() {
     if (command.endTime <= command.startTime) {
       throw BadRequestException("End Time '${command.endTime}' must be after Start Time '${command.startTime}'")
     }
   }
 
-  private fun validatePenaltyTime(command: AppointmentCommandDto) {
+  private fun ValidationContext.validatePenaltyTime() {
     command.attendanceData?.derivePenaltyMinutesDuration()?.let { penaltyDuration ->
       val appointmentDuration = Duration.between(command.startTime, command.endTime)
       if (penaltyDuration > appointmentDuration) {
@@ -125,11 +124,24 @@ class AppointmentValidationService(
     }
   }
 
-  private fun validateNotes(command: AppointmentCommandDto) {
+  private fun ValidationContext.validateNotes() {
     validateLengthLessThan(command.notes, 4000) { _, _ ->
       "Outcome notes must be fewer than 4000 characters"
     }
   }
+
+  private fun loadContactOutcome(code: String?) = code?.let {
+    contactOutcomeEntityRepository.findByCode(it)
+      ?: throw BadRequestException("Contact outcome not found for code $code")
+  }
+
+  private data class ValidationContext(
+    val project: ProjectDto,
+    val command: AppointmentCommandDto,
+    val contactOutcome: ContactOutcomeEntity?,
+    val unpaidWorkDetails: UnpaidWorkDetailsDto,
+    val appointmentDate: LocalDate,
+  )
 }
 
 data class Validated<T>(val value: T)
