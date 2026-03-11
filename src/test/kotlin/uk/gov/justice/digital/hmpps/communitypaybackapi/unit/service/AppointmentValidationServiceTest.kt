@@ -14,7 +14,6 @@ import org.junit.jupiter.api.extension.ExtendWith
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.HourMinuteDuration
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AttendanceDataDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CaseDetailsSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectAvailabilityDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectDto
@@ -75,20 +74,16 @@ class AppointmentValidationServiceTest {
         ProjectAvailabilityDto.valid().copy(dayOfWeek = dayOfWeek)
       },
     )
-    val baselineCaseSummary = CaseDetailsSummaryDto.valid().copy(
-      unpaidWorkDetails = listOf(
-        UnpaidWorkDetailsDto.valid().copy(
-          eventNumber = EVENT_NUMBER,
-          sentenceDate = baselineCreate.date,
-        ),
-      ),
+    val baselineUnpaidWorkDetails = UnpaidWorkDetailsDto.valid().copy(
+      eventNumber = EVENT_NUMBER,
+      sentenceDate = baselineCreate.date,
     )
 
     @BeforeEach
     fun setupBaselineMockResponses() {
       every { projectService.getProject(PROJECT_CODE) } returns baselineProject
       every { contactOutcomeEntityRepository.findByCode(baselineOutcome.code) } returns baselineOutcome
-      every { offenderService.getOffenderSummaryByCrn(CRN) } returns baselineCaseSummary
+      every { offenderService.getUnpaidWorkDetails(CRN, EVENT_NUMBER) } returns baselineUnpaidWorkDetails
     }
 
     @Nested
@@ -153,35 +148,10 @@ class AppointmentValidationServiceTest {
       }
 
       @Test
-      fun `throws BadRequestException if can't find delius event`() {
-        every { offenderService.getOffenderSummaryByCrn(CRN) } returns CaseDetailsSummaryDto.valid().copy(
-          unpaidWorkDetails = listOf(
-            UnpaidWorkDetailsDto.valid().copy(
-              eventNumber = 52,
-              sentenceDate = LocalDate.of(2025, 1, 2),
-            ),
-          ),
-        )
-
-        assertThatThrownBy {
-          service.validateCreate(
-            baselineCreate.copy(
-              deliusEventNumber = 53,
-            ),
-          )
-        }.isInstanceOf(BadRequestException::class.java)
-          .hasMessage("Cannot find unpaid work details for event number 53")
-      }
-
-      @Test
       fun `throws BadRequestException if date is before sentencing date`() {
-        every { offenderService.getOffenderSummaryByCrn(CRN) } returns CaseDetailsSummaryDto.valid().copy(
-          unpaidWorkDetails = listOf(
-            UnpaidWorkDetailsDto.valid().copy(
-              eventNumber = EVENT_NUMBER,
-              sentenceDate = LocalDate.of(2025, 1, 2),
-            ),
-          ),
+        every { offenderService.getUnpaidWorkDetails(CRN, EVENT_NUMBER) } returns UnpaidWorkDetailsDto.valid().copy(
+          eventNumber = EVENT_NUMBER,
+          sentenceDate = LocalDate.of(2025, 1, 2),
         )
 
         assertThatThrownBy {

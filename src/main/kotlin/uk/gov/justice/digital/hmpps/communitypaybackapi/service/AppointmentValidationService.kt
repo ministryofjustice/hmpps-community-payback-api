@@ -56,7 +56,7 @@ class AppointmentValidationService(
     return Validated(update)
   }
 
-  fun validateDate(
+  private fun validateDate(
     project: ProjectDto,
     appointment: CreateAppointmentDto,
   ) {
@@ -69,19 +69,14 @@ class AppointmentValidationService(
       }
     }
 
-    val offenderSummary = offenderService.getOffenderSummaryByCrn(appointment.crn)
-    val eventNumber = appointment.deliusEventNumber
-    val unpaidWorkDetails = offenderSummary.unpaidWorkDetails.firstOrNull {
-      it.eventNumber == appointment.deliusEventNumber
-    } ?: throw BadRequestException("Cannot find unpaid work details for event number $eventNumber")
-
+    val unpaidWorkDetails = offenderService.getUnpaidWorkDetails(appointment.crn, appointment.deliusEventNumber)
     val sentenceDate = unpaidWorkDetails.sentenceDate
     if (appointmentDate.isBefore(sentenceDate)) {
       throw BadRequestException("Appointment Date of $appointmentDate must be on or after sentence date of $sentenceDate")
     }
   }
 
-  fun validateAvailability(
+  private fun validateAvailability(
     project: ProjectDto,
     appointment: CreateAppointmentDto,
   ) {
