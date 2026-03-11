@@ -60,6 +60,7 @@ fun NDAppointment.Companion.valid() = NDAppointment(
   startTime = randomLocalTime(),
   endTime = randomLocalTime(),
   penaltyHours = randomHourMinuteDuration(),
+  minutesCredited = Long.random(20000),
   supervisor = NDAppointmentSupervisor.valid(),
   outcome = NDContactOutcome.valid(),
   enforcementAction = NDEnforcementAction.valid(),
