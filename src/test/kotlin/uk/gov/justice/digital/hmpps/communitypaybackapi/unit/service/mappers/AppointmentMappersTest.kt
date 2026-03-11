@@ -31,6 +31,8 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDTeam
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.HourMinuteDuration
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentBehaviourDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentWorkQualityDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AttendanceDataDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.OffenderDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventType
@@ -65,6 +67,10 @@ class AppointmentMappersTest {
 
   @InjectMockKs
   private lateinit var service: AppointmentMappers
+
+  companion object {
+    const val CONTACT_OUTCOME_CODE: String = "CONTACT-1"
+  }
 
   @Nested
   inner class AppointmentEventEntityToNDCreateAppointment {
@@ -391,6 +397,7 @@ class AppointmentMappersTest {
         startTime = startTime,
         endTime = endTime,
         penaltyHours = penaltyTime,
+        minutesCredited = 25L,
         supervisor = NDAppointmentSupervisor(
           code = supervisorOfficerCode,
           name = NDName.valid(),
@@ -420,6 +427,7 @@ class AppointmentMappersTest {
       assertThat(result.projectName).isEqualTo(projectName)
       assertThat(result.projectCode).isEqualTo(projectCode)
       assertThat(result.date).isEqualTo(date)
+      assertThat(result.minutesCredited).isEqualTo(25L)
       assertThat(result.supervisingTeam).isEqualTo(supervisingTeam)
       assertThat(result.supervisingTeamCode).isEqualTo(supervisingTeamCode)
       assertThat(result.providerCode).isEqualTo(providerCode)
@@ -498,7 +506,7 @@ class AppointmentMappersTest {
       val result = service.toSummaryDto(
         appointmentSummary = NDAppointmentSummary(
           id = 1L,
-          case = NDCaseSummary.Companion.valid().copy(crn = "CRN1"),
+          case = NDCaseSummary.valid().copy(crn = "CRN1"),
           outcome = NDContactOutcome.valid().copy(code = "OUTCOME1"),
           requirementProgress = NDRequirementProgress(
             requiredMinutes = 520,
@@ -559,6 +567,81 @@ class AppointmentMappersTest {
       expectedValue: Behaviour,
     ) {
       assertThat(Behaviour.fromDto(sourceValue)).isEqualTo(expectedValue)
+    }
+  }
+
+  @Nested
+  inner class CalculateMinutesCredited {
+    @Test
+    fun `minutes credited is null if no outcome`() {
+      val result = service.calculateMinutesCredited(
+        appointmentCommand = CreateAppointmentDto.valid().copy(
+          startTime = LocalTime.of(10, 0),
+          endTime = LocalTime.of(12, 0),
+          contactOutcomeCode = null,
+        ),
+      )
+
+      assertThat(result).isNull()
+    }
+
+    @Test
+    fun `minutes credited is null if outcome indicates no attendance`() {
+      every {
+        contactOutcomeEntityRepository.findByCode(CONTACT_OUTCOME_CODE)
+      } returns ContactOutcomeEntity.valid().copy(attended = false)
+
+      val result = service.calculateMinutesCredited(
+        appointmentCommand = CreateAppointmentDto.valid().copy(
+          startTime = LocalTime.of(10, 0),
+          endTime = LocalTime.of(12, 0),
+          contactOutcomeCode = CONTACT_OUTCOME_CODE,
+        ),
+      )
+
+      assertThat(result).isNull()
+    }
+
+    @ParameterizedTest
+    @CsvSource(
+      nullValues = ["null"],
+      value = [
+        "00:00,00:01,null,null,1",
+        "00:00,23:59,null,null,1439",
+        "00:00,23:59,PT23H55M,null,4",
+        "00:00,23:59,null,PT23H55M,4",
+        "00:00,23:59,PT1H,PT23H55M,4",
+        "10:00,11:00,null,null,60",
+        "10:00,11:00,PT59M,null,1",
+        "10:00,11:00,null,PT59M,1",
+        "10:00,11:00,PT60M,null,null",
+        "10:00,11:00,null,PT60M,null",
+      ],
+    )
+    fun `minutes credited is added if outcome indicates attendance`(
+      startTime: LocalTime,
+      endTime: LocalTime,
+      penaltyTime: Duration?,
+      penaltyMinutes: Duration?,
+      expectedTimeCredited: Long?,
+    ) {
+      every {
+        contactOutcomeEntityRepository.findByCode(CONTACT_OUTCOME_CODE)
+      } returns ContactOutcomeEntity.valid().copy(attended = true)
+
+      val result = service.calculateMinutesCredited(
+        appointmentCommand = CreateAppointmentDto.valid().copy(
+          contactOutcomeCode = CONTACT_OUTCOME_CODE,
+          startTime = startTime,
+          endTime = endTime,
+          attendanceData = AttendanceDataDto.valid().copy(
+            penaltyMinutes = penaltyMinutes?.toMinutes(),
+            penaltyTime = penaltyTime?.let { HourMinuteDuration(it) },
+          ),
+        ),
+      )
+
+      assertThat(result).isEqualTo(expectedTimeCredited)
     }
   }
 }

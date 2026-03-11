@@ -11,6 +11,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCreateAppointme
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCreateAppointmentPickUpData
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDUpdateAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentBehaviourDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentCommandDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentWorkQualityDto
@@ -27,6 +28,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEnt
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EnforcementActionEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ProjectTypeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.WorkQuality
+import java.time.Duration
 
 @Service
 class AppointmentMappers(
@@ -38,9 +40,7 @@ class AppointmentMappers(
     appointment: NDAppointment,
     projectType: ProjectTypeEntity,
   ): AppointmentDto {
-    val contactOutcomeEntity = appointment.outcome?.code?.let {
-      contactOutcomeEntityRepository.findByCode(it) ?: error("Can't find outcome for code $it")
-    }
+    val contactOutcomeEntity = getContactOutcome(appointment.outcome?.code)
 
     return AppointmentDto(
       id = appointment.id,
@@ -60,6 +60,7 @@ class AppointmentMappers(
       date = appointment.date,
       startTime = appointment.startTime,
       endTime = appointment.endTime,
+      minutesCredited = appointment.minutesCredited,
       contactOutcomeCode = contactOutcomeEntity?.code,
       attendanceData = if (contactOutcomeEntity?.attended == true) {
         AttendanceDataDto(
@@ -102,6 +103,25 @@ class AppointmentMappers(
     endTime = appointmentSummary.endTime,
     daysOverdue = appointmentSummary.daysOverdue,
   )
+
+  fun calculateMinutesCredited(
+    appointmentCommand: AppointmentCommandDto,
+  ): Long? {
+    val contactOutcome = getContactOutcome(appointmentCommand.contactOutcomeCode)
+
+    if (contactOutcome?.attended != true) return null
+
+    val startTime = appointmentCommand.startTime
+    val endTime = appointmentCommand.endTime
+    val penaltyMinutes = appointmentCommand.attendanceData?.derivePenaltyMinutesDuration()?.toMinutes()
+
+    val minutesCredited = Duration.between(startTime, endTime).toMinutes() - (penaltyMinutes ?: 0L)
+    return minutesCredited.takeIf { it != 0L }
+  }
+
+  private fun getContactOutcome(code: String?) = code?.let {
+    contactOutcomeEntityRepository.findByCode(it) ?: error("Can't find outcome for code $it")
+  }
 }
 
 fun AppointmentEventEntity.toAppointmentCreatedDomainEvent() = AppointmentCreatedDomainEventDetailDto(
@@ -204,3 +224,5 @@ fun NDAppointmentBehaviour.toDto() = when (this) {
   NDAppointmentBehaviour.SATISFACTORY -> AppointmentBehaviourDto.SATISFACTORY
   NDAppointmentBehaviour.UNSATISFACTORY -> AppointmentBehaviourDto.UNSATISFACTORY
 }
+
+fun AttendanceDataDto.derivePenaltyMinutesDuration() = penaltyMinutes?.let { Duration.ofMinutes(it) } ?: penaltyTime?.duration

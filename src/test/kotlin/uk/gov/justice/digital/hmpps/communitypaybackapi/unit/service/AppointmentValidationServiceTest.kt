@@ -15,6 +15,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.common.HourMinuteDuratio
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AttendanceDataDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.OffenderDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectAvailabilityDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SchedulingDayOfWeekDto
@@ -24,6 +25,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.BadReques
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.valid
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.validFull
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.OffenderService
@@ -517,12 +519,28 @@ class AppointmentValidationServiceTest {
   @Nested
   inner class Update {
 
+    val baselineExistingAppointment = AppointmentDto.valid().copy(
+      projectCode = PROJECT_CODE,
+      deliusEventNumber = EVENT_NUMBER.toInt(),
+      offender = OffenderDto.validFull().copy(crn = CRN),
+    )
     val baselineUpdate = UpdateAppointmentOutcomeDto.valid().copy(
       contactOutcomeCode = OUTCOME_CODE,
       startTime = LocalTime.MIN,
       endTime = LocalTime.MAX,
     )
     val baselineOutcome = ContactOutcomeEntity.valid().copy(code = OUTCOME_CODE)
+    val baselineProject = ProjectDto.valid().copy()
+    val baselineUnpaidWorkDetails = UnpaidWorkDetailsDto.valid().copy(
+      eventNumber = EVENT_NUMBER,
+    )
+
+    @BeforeEach
+    fun setupBaselineMockResponses() {
+      every { projectService.getProject(PROJECT_CODE) } returns baselineProject
+      every { contactOutcomeEntityRepository.findByCode(OUTCOME_CODE) } returns baselineOutcome
+      every { offenderService.getUnpaidWorkDetails(CRN, EVENT_NUMBER) } returns baselineUnpaidWorkDetails
+    }
 
     @Nested
     inner class Success {
@@ -532,7 +550,7 @@ class AppointmentValidationServiceTest {
         every { contactOutcomeEntityRepository.findByCode(OUTCOME_CODE) } returns baselineOutcome
 
         val result = service.validateUpdate(
-          appointment = AppointmentDto.valid(),
+          appointment = baselineExistingAppointment,
           update = baselineUpdate,
         )
 
@@ -549,7 +567,7 @@ class AppointmentValidationServiceTest {
 
         assertThatThrownBy {
           service.validateUpdate(
-            appointment = AppointmentDto.valid(),
+            appointment = baselineExistingAppointment,
             update = baselineUpdate,
           )
         }.isInstanceOf(BadRequestException::class.java)
@@ -562,7 +580,7 @@ class AppointmentValidationServiceTest {
         every { contactOutcomeEntityRepository.findByCode(OUTCOME_CODE) } returns outcome
 
         service.validateUpdate(
-          appointment = AppointmentDto.valid().copy(date = LocalDate.now()),
+          appointment = baselineExistingAppointment.copy(date = LocalDate.now()),
           update = baselineUpdate.copy(
             startTime = LocalTime.now().minusMinutes(1),
           ),
@@ -575,7 +593,7 @@ class AppointmentValidationServiceTest {
         every { contactOutcomeEntityRepository.findByCode(OUTCOME_CODE) } returns outcome
 
         service.validateUpdate(
-          appointment = AppointmentDto.valid().copy(date = LocalDate.now()),
+          appointment = baselineExistingAppointment.copy(date = LocalDate.now()),
           update = baselineUpdate.copy(
             startTime = LocalTime.now().minusMinutes(1),
           ),
@@ -588,7 +606,7 @@ class AppointmentValidationServiceTest {
         every { contactOutcomeEntityRepository.findByCode(OUTCOME_CODE) } returns outcome
 
         service.validateUpdate(
-          appointment = AppointmentDto.valid().copy(date = LocalDate.now()),
+          appointment = baselineExistingAppointment.copy(date = LocalDate.now()),
           update = baselineUpdate.copy(
             startTime = LocalTime.now().minusMinutes(1),
           ),
@@ -602,7 +620,7 @@ class AppointmentValidationServiceTest {
 
         assertThatThrownBy {
           service.validateUpdate(
-            appointment = AppointmentDto.valid().copy(date = LocalDate.now()),
+            appointment = baselineExistingAppointment.copy(date = LocalDate.now()),
             update = baselineUpdate.copy(
               startTime = LocalTime.now().plusMinutes(1),
             ),
@@ -618,7 +636,7 @@ class AppointmentValidationServiceTest {
 
         assertThatThrownBy {
           service.validateUpdate(
-            appointment = AppointmentDto.valid().copy(date = LocalDate.now()),
+            appointment = baselineExistingAppointment.copy(date = LocalDate.now()),
             update = baselineUpdate.copy(
               startTime = LocalTime.now().plusMinutes(1),
             ),
@@ -633,7 +651,7 @@ class AppointmentValidationServiceTest {
         every { contactOutcomeEntityRepository.findByCode(outcome.code) } returns outcome
 
         service.validateUpdate(
-          appointment = AppointmentDto.valid().copy(date = LocalDate.now()),
+          appointment = baselineExistingAppointment.copy(date = LocalDate.now()),
           update = baselineUpdate.copy(
             startTime = LocalTime.now().plusMinutes(1),
           ),
@@ -646,7 +664,7 @@ class AppointmentValidationServiceTest {
         every { contactOutcomeEntityRepository.findByCode(outcome.code) } returns outcome
 
         service.validateUpdate(
-          appointment = AppointmentDto.valid().copy(date = LocalDate.now()),
+          appointment = baselineExistingAppointment.copy(date = LocalDate.now()),
           update = baselineUpdate,
         )
       }
@@ -658,7 +676,7 @@ class AppointmentValidationServiceTest {
 
         assertThatThrownBy {
           service.validateUpdate(
-            appointment = AppointmentDto.valid().copy(date = LocalDate.now()),
+            appointment = baselineExistingAppointment.copy(date = LocalDate.now()),
             update = baselineUpdate.copy(
               attendanceData = null,
             ),
@@ -673,7 +691,7 @@ class AppointmentValidationServiceTest {
         every { contactOutcomeEntityRepository.findByCode(outcome.code) } returns outcome
 
         service.validateUpdate(
-          appointment = AppointmentDto.valid().copy(date = LocalDate.now()),
+          appointment = baselineExistingAppointment.copy(date = LocalDate.now()),
           update = baselineUpdate.copy(
             attendanceData = AttendanceDataDto.valid(),
           ),
@@ -693,7 +711,7 @@ class AppointmentValidationServiceTest {
       fun `if end time same as start time, throw exception`() {
         assertThatThrownBy {
           service.validateUpdate(
-            appointment = AppointmentDto.valid(),
+            appointment = baselineExistingAppointment,
             baselineUpdate.copy(
               startTime = LocalTime.of(10, 0),
               endTime = LocalTime.of(10, 0),
@@ -706,7 +724,7 @@ class AppointmentValidationServiceTest {
       @Test
       fun `if end time after start time, do nothing`() {
         service.validateUpdate(
-          appointment = AppointmentDto.valid(),
+          appointment = baselineExistingAppointment,
           baselineUpdate.copy(
             startTime = LocalTime.of(10, 0),
             endTime = LocalTime.of(10, 1),
@@ -718,7 +736,7 @@ class AppointmentValidationServiceTest {
       fun `if end time before start time, throw exception`() {
         assertThatThrownBy {
           service.validateUpdate(
-            appointment = AppointmentDto.valid(),
+            appointment = baselineExistingAppointment,
             baselineUpdate.copy(
               startTime = LocalTime.of(10, 1),
               endTime = LocalTime.of(10, 0),
@@ -740,7 +758,7 @@ class AppointmentValidationServiceTest {
       @Test
       fun `if no penalty minutes, do nothing`() {
         service.validateUpdate(
-          appointment = AppointmentDto.valid(),
+          appointment = baselineExistingAppointment,
           baselineUpdate.copy(
             attendanceData = AttendanceDataDto.valid().copy(
               penaltyMinutes = null,
@@ -753,7 +771,7 @@ class AppointmentValidationServiceTest {
       @Test
       fun `if penalty time is less than duration, do nothing`() {
         service.validateUpdate(
-          appointment = AppointmentDto.valid(),
+          appointment = baselineExistingAppointment,
           baselineUpdate.copy(
             startTime = LocalTime.of(10, 0),
             endTime = LocalTime.of(16, 35),
@@ -768,7 +786,7 @@ class AppointmentValidationServiceTest {
       @Test
       fun `if penalty minutes is less than duration, do nothing`() {
         service.validateUpdate(
-          appointment = AppointmentDto.valid(),
+          appointment = baselineExistingAppointment,
           baselineUpdate.copy(
             startTime = LocalTime.of(10, 0),
             endTime = LocalTime.of(16, 35),
@@ -783,7 +801,7 @@ class AppointmentValidationServiceTest {
       @Test
       fun `if penalty time is same as duration, do nothing`() {
         service.validateUpdate(
-          appointment = AppointmentDto.valid(),
+          appointment = baselineExistingAppointment,
           baselineUpdate.copy(
             startTime = LocalTime.of(10, 0),
             endTime = LocalTime.of(16, 35),
@@ -798,7 +816,7 @@ class AppointmentValidationServiceTest {
       @Test
       fun `if penalty minutes is same as duration, do nothing`() {
         service.validateUpdate(
-          appointment = AppointmentDto.valid(),
+          appointment = baselineExistingAppointment,
           baselineUpdate.copy(
             startTime = LocalTime.of(10, 0),
             endTime = LocalTime.of(16, 35),
@@ -814,7 +832,7 @@ class AppointmentValidationServiceTest {
       fun `if penalty time is greater than as duration, throw exception`() {
         assertThatThrownBy {
           service.validateUpdate(
-            appointment = AppointmentDto.valid(),
+            appointment = baselineExistingAppointment,
             baselineUpdate.copy(
               startTime = LocalTime.of(10, 0),
               endTime = LocalTime.of(16, 35),
@@ -832,7 +850,7 @@ class AppointmentValidationServiceTest {
       fun `if penalty minutes is greater than as duration, throw exception`() {
         assertThatThrownBy {
           service.validateUpdate(
-            appointment = AppointmentDto.valid(),
+            appointment = baselineExistingAppointment,
             baselineUpdate.copy(
               startTime = LocalTime.of(10, 0),
               endTime = LocalTime.of(16, 35),
@@ -859,7 +877,7 @@ class AppointmentValidationServiceTest {
       fun `null notes is accepted`() {
         assertThatCode {
           service.validateUpdate(
-            appointment = AppointmentDto.valid(),
+            appointment = baselineExistingAppointment,
             baselineUpdate.copy(notes = null),
           )
         }.doesNotThrowAnyException()
@@ -869,7 +887,7 @@ class AppointmentValidationServiceTest {
       fun `empty notes is accepted`() {
         assertThatCode {
           service.validateUpdate(
-            appointment = AppointmentDto.valid(),
+            appointment = baselineExistingAppointment,
             baselineUpdate.copy(notes = ""),
           )
         }.doesNotThrowAnyException()
@@ -880,7 +898,7 @@ class AppointmentValidationServiceTest {
         val notes = "a".repeat(4000)
         assertThatCode {
           service.validateUpdate(
-            appointment = AppointmentDto.valid(),
+            appointment = baselineExistingAppointment,
             baselineUpdate.copy(notes = notes),
           )
         }.doesNotThrowAnyException()
@@ -891,7 +909,7 @@ class AppointmentValidationServiceTest {
         val notes = "a".repeat(4001)
         assertThatThrownBy {
           service.validateUpdate(
-            appointment = AppointmentDto.valid(),
+            appointment = baselineExistingAppointment,
             baselineUpdate.copy(notes = notes),
           )
         }.isInstanceOf(BadRequestException::class.java)

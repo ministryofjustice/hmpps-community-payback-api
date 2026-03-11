@@ -217,6 +217,7 @@ data class NDAppointment(
   val startTime: LocalTime,
   val endTime: LocalTime,
   val penaltyHours: HourMinuteDuration?,
+  val minutesCredited: Long?,
   val supervisor: NDAppointmentSupervisor,
   val outcome: NDContactOutcome?,
   val enforcementAction: NDEnforcementAction?,

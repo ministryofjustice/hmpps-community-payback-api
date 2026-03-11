@@ -11,7 +11,9 @@ import org.springframework.hateoas.PagedModel
 import org.springframework.http.MediaType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseDetail
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCode
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectAndLocation
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSupervisorSummaries
@@ -34,6 +36,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.failed
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.passed
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
+import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.SchedulingIT.Companion.EVENT_NUMBER
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.DatabasePurgeUtils
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.DomainEventAsserter
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.bodyAsObject
@@ -699,11 +702,24 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
           code = PROJECT_CODE,
         ),
         date = LocalDate.now().minusDays(5),
+        event = NDEvent.valid().copy(number = EVENT_NUMBER.toInt()),
+        case = NDCaseSummary.valid().copy(crn = SchedulingIT.CRN),
       )
       CommunityPaybackAndDeliusMockServer.getAppointment(
         appointment = upstreamAppointment,
         username = "theusername",
       )
+      CommunityPaybackAndDeliusMockServer.getProject(NDProject.valid(ctx).copy(code = "proj123"))
+      CommunityPaybackAndDeliusMockServer.getUpwDetailsSummary(
+        crn = SchedulingIT.CRN,
+        unpaidWorkDetails = listOf(
+          NDCaseDetail.valid().copy(
+            eventNumber = EVENT_NUMBER,
+            sentenceDate = LocalDate.now().minusYears(1),
+          ),
+        ),
+      )
+
       CommunityPaybackAndDeliusMockServer.putAppointment(
         projectCode = PROJECT_CODE,
         appointmentId = appointmentId,
