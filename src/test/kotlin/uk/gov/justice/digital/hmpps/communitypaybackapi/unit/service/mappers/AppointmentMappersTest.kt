@@ -391,6 +391,7 @@ class AppointmentMappersTest {
         startTime = startTime,
         endTime = endTime,
         penaltyHours = penaltyTime,
+        minutesCredited = 25L,
         supervisor = NDAppointmentSupervisor(
           code = supervisorOfficerCode,
           name = NDName.valid(),
@@ -420,6 +421,7 @@ class AppointmentMappersTest {
       assertThat(result.projectName).isEqualTo(projectName)
       assertThat(result.projectCode).isEqualTo(projectCode)
       assertThat(result.date).isEqualTo(date)
+      assertThat(result.minutesCredited).isEqualTo(25L)
       assertThat(result.supervisingTeam).isEqualTo(supervisingTeam)
       assertThat(result.supervisingTeamCode).isEqualTo(supervisingTeamCode)
       assertThat(result.providerCode).isEqualTo(providerCode)
