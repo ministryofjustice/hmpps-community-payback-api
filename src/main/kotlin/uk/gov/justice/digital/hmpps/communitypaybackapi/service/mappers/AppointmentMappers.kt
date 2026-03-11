@@ -60,6 +60,7 @@ class AppointmentMappers(
       date = appointment.date,
       startTime = appointment.startTime,
       endTime = appointment.endTime,
+      minutesCredited = appointment.minutesCredited,
       contactOutcomeCode = contactOutcomeEntity?.code,
       attendanceData = if (contactOutcomeEntity?.attended == true) {
         AttendanceDataDto(
