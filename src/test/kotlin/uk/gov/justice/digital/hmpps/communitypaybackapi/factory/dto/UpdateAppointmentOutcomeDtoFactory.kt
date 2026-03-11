@@ -1,16 +1,19 @@
-package uk.gov.justice.digital.hmpps.communitypaybackapi.factory
+package uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto
 
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AttendanceDataDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EnforcementDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.random
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.randomLocalDate
 import java.time.LocalTime
+import java.util.UUID
 
 fun UpdateAppointmentOutcomeDto.Companion.valid(
   contactOutcomeCode: String = "OUTCOME1",
-  enforcementActionId: java.util.UUID = java.util.UUID.randomUUID(),
+  enforcementActionId: UUID = UUID.randomUUID(),
 ) = UpdateAppointmentOutcomeDto(
-  deliusId = Long.random(),
-  deliusVersionToUpdate = java.util.UUID.randomUUID(),
+  deliusId = Long.Companion.random(),
+  deliusVersionToUpdate = UUID.randomUUID(),
   startTime = LocalTime.of(10, 0),
   endTime = LocalTime.of(16, 0),
   contactOutcomeCode = contactOutcomeCode,

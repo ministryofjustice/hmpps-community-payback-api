@@ -1,6 +1,8 @@
-package uk.gov.justice.digital.hmpps.communitypaybackapi.factory
+package uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity
 
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.SessionSupervisorEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.random
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.randomLocalDate
 
 fun SessionSupervisorEntity.Companion.valid() = SessionSupervisorEntity(
   projectCode = String.random(5),

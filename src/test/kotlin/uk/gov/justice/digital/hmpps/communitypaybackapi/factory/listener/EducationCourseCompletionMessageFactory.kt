@@ -1,15 +1,17 @@
-package uk.gov.justice.digital.hmpps.communitypaybackapi.factory
+package uk.gov.justice.digital.hmpps.communitypaybackapi.factory.listener
 
 import org.springframework.beans.factory.getBean
 import org.springframework.context.ApplicationContext
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.CommunityCampusPduEntityRepository
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.random
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.randomLocalDate
 import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseCompletionMessage
 import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseCompletionStatus
 import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseMessageAttributes
 import kotlin.random.Random
 
 fun EducationCourseCompletionMessage.Companion.valid() = EducationCourseCompletionMessage(
-  messageId = String.random(),
+  messageId = String.Companion.random(),
   eventType = "educationCourseCompletionCreated",
   description = null,
   messageAttributes = EducationCourseMessageAttributes.valid(),

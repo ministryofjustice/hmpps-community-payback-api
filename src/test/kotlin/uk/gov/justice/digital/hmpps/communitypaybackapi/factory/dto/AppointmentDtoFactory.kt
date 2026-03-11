@@ -1,15 +1,18 @@
-package uk.gov.justice.digital.hmpps.communitypaybackapi.factory
+package uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto
 
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.OffenderDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.PickUpDataDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.random
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.randomLocalDate
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.randomLocalTime
 import java.util.UUID
 import kotlin.Long
 import kotlin.String
 
 fun AppointmentDto.Companion.valid() = AppointmentDto(
-  id = Long.random(),
+  id = Long.Companion.random(),
   communityPaybackId = UUID.randomUUID(),
   version = UUID.randomUUID(),
   deliusEventNumber = Int.random(0, 50),

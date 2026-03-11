@@ -16,7 +16,8 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SchedulingDayOfWeekD
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SchedulingFrequencyDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ProjectTypeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
-import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.valid
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.valid
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
 import java.time.LocalDate
 
