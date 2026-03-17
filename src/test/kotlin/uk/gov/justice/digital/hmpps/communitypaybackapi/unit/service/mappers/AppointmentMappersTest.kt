@@ -510,8 +510,11 @@ class AppointmentMappersTest {
           startTime = LocalTime.of(10, 0),
           endTime = LocalTime.of(11, 0),
           daysOverdue = 0,
-          project = NDProjectAppointmentSummary(name = "PROJ1", code = "P1",
-            NDCodeDescription( description = "PROJECTYPE1", code = "PT1" )),
+          project = NDProjectAppointmentSummary(
+            name = "PROJ1",
+            code = "P1",
+            NDCodeDescription(description = "PROJECTYPE1", code = "PT1"),
+          ),
           notes = "The notes",
         ),
       )
