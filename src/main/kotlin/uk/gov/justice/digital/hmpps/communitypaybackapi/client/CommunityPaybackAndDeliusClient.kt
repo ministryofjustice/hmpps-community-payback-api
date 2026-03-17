@@ -172,12 +172,14 @@ data class NDSession(
 data class NDAppointmentSummary(
   val id: Long,
   val case: NDCaseSummary,
+  val project: NDProjectAppointmentSummary,
   val outcome: NDContactOutcome?,
   val requirementProgress: NDRequirementProgress,
   val date: LocalDate? = null, // Remove this nullability when session search changes to new endpoints
   val startTime: LocalTime? = null, // Remove this nullability when session search changes to new endpoints
   val endTime: LocalTime? = null, // Remove this nullability when session search changes to new endpoints
   val daysOverdue: Int? = null, // Remove this nullability when session search changes to new endpoints
+  val notes: String?,
 ) {
   fun hasOutcome() = outcome != null
 
@@ -286,6 +288,9 @@ data class NDProjectSummary(val description: String, val code: String) {
 data class NDProjectType(val name: String, val code: String) {
   companion object
 }
+data class NDProjectAppointmentSummary(val name: String, val code: String, val projectType: NDCodeDescription) {
+  companion object
+}
 data class NDTeam(val name: String, val code: String) {
   companion object
 }
@@ -384,7 +389,9 @@ data class NDSupervisorTeam(
 data class NDCodeDescription(
   val code: String,
   val description: String,
-)
+) {
+  companion object
+}
 
 data class NDNameCode(
   val name: String,
