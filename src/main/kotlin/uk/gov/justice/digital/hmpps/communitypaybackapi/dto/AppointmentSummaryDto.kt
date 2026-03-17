@@ -21,7 +21,12 @@ data class AppointmentSummaryDto(
   val date: LocalDate?, // Remove this nullability when session search changes to new endpoints
   val startTime: LocalTime?, // Remove this nullability when session search changes to new endpoints
   val endTime: LocalTime?, // Remove this nullability when session search changes to new endpoints
-  val daysOverdue: Int?, // Remove this nullability when session search changes to new endpoints
+  val daysOverdue: Int?, // Remove this nullability when session search changes to new endpoints],
+  val projectName: String,
+  val projectCode: String,
+  val projectTypeName: String,
+  val projectTypeCode: String,
+  val notes: String?,
 ) {
   companion object
 }

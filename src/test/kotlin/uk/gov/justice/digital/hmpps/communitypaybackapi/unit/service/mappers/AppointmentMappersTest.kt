@@ -18,12 +18,14 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointmentSumm
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointmentSupervisor
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointmentWorkQuality
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCodeDescription
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDContactOutcome
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDEnforcementAction
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDName
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDPickUpLocation
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectAndLocation
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectAppointmentSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProvider
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDRequirementProgress
@@ -42,7 +44,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EnforcementAction
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ProjectTypeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.WorkQuality
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
-import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.AppointmentMappers
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.fromDto
@@ -509,6 +510,12 @@ class AppointmentMappersTest {
           startTime = LocalTime.of(10, 0),
           endTime = LocalTime.of(11, 0),
           daysOverdue = 0,
+          project = NDProjectAppointmentSummary(
+            name = "PROJ1",
+            code = "P1",
+            NDCodeDescription(description = "PROJECTYPE1", code = "PT1"),
+          ),
+          notes = "The notes",
         ),
       )
 
@@ -521,6 +528,11 @@ class AppointmentMappersTest {
       assertThat(result.date).isEqualTo(LocalDate.of(2025, 9, 1))
       assertThat(result.startTime).isEqualTo(LocalTime.of(10, 0))
       assertThat(result.endTime).isEqualTo(LocalTime.of(11, 0))
+      assertThat(result.projectName).isEqualTo("PROJ1")
+      assertThat(result.projectCode).isEqualTo("P1")
+      assertThat(result.projectTypeName).isEqualTo("PROJECTYPE1")
+      assertThat(result.projectTypeCode).isEqualTo("PT1")
+      assertThat(result.notes).isEqualTo("The notes")
     }
   }
 

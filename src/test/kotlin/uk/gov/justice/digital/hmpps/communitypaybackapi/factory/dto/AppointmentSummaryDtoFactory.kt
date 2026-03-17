@@ -19,4 +19,9 @@ fun AppointmentSummaryDto.Companion.valid() = AppointmentSummaryDto(
   startTime = LocalTime.of(10, 0),
   endTime = LocalTime.of(16, 0),
   daysOverdue = Int.random(),
+  projectName = String.random(),
+  projectCode = String.random(),
+  projectTypeName = String.random(),
+  projectTypeCode = String.random(),
+  notes = String.random(),
 )

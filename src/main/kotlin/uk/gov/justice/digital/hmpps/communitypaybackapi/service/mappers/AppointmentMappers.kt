@@ -101,6 +101,11 @@ class AppointmentMappers(
     startTime = appointmentSummary.startTime,
     endTime = appointmentSummary.endTime,
     daysOverdue = appointmentSummary.daysOverdue,
+    notes = appointmentSummary.notes,
+    projectCode = appointmentSummary.project.code,
+    projectName = appointmentSummary.project.name,
+    projectTypeCode = appointmentSummary.project.projectType.code,
+    projectTypeName = appointmentSummary.project.projectType.description,
   )
 }
 
