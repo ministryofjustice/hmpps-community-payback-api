@@ -101,6 +101,7 @@ class AppointmentMappers(
     date = appointmentSummary.date,
     startTime = appointmentSummary.startTime,
     endTime = appointmentSummary.endTime,
+    minutesCredited = appointmentSummary.minutesCredited,
     daysOverdue = appointmentSummary.daysOverdue,
     notes = appointmentSummary.notes,
     projectCode = appointmentSummary.project?.code,

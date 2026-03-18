@@ -9,7 +9,7 @@ import java.time.LocalTime
 import kotlin.Long
 
 fun AppointmentSummaryDto.Companion.valid() = AppointmentSummaryDto(
-  id = Long.Companion.random(),
+  id = Long.random(),
   contactOutcome = ContactOutcomeDto.valid(),
   requirementMinutes = Int.random(),
   adjustmentMinutes = Int.random(),
@@ -18,6 +18,7 @@ fun AppointmentSummaryDto.Companion.valid() = AppointmentSummaryDto(
   date = randomLocalDate(),
   startTime = LocalTime.of(10, 0),
   endTime = LocalTime.of(16, 0),
+  minutesCredited = Long.random(),
   daysOverdue = Int.random(),
   projectName = String.random(),
   projectCode = String.random(),

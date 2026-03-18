@@ -21,6 +21,7 @@ data class AppointmentSummaryDto(
   val date: LocalDate?, // Remove this nullability when session search changes to new endpoints
   val startTime: LocalTime?, // Remove this nullability when session search changes to new endpoints
   val endTime: LocalTime?, // Remove this nullability when session search changes to new endpoints
+  val minutesCredited: Long?,
   val daysOverdue: Int?, // Remove this nullability when session search changes to new endpoints],
   val projectName: String?, // Remove this nullability when session search changes to new endpoints
   val projectCode: String?, // Remove this nullability when session search changes to new endpoints
