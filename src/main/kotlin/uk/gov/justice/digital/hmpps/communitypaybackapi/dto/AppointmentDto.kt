@@ -31,6 +31,7 @@ data class AppointmentDto(
   val date: LocalDate,
   val startTime: LocalTime,
   val endTime: LocalTime,
+  val minutesCredited: Long?,
   val contactOutcomeCode: String? = null,
   val attendanceData: AttendanceDataDto?,
   val enforcementData: EnforcementDto?,
