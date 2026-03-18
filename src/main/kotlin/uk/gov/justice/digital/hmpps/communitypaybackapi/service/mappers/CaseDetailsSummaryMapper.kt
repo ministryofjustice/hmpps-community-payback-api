@@ -2,7 +2,11 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers
 
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseDetail
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseDetailsSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCodeDescription
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDMainOffence
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CaseDetailsSummaryDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourtDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.MainOffenceDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.EteService.Companion.ETE_ALLOWANCE_OF_TOTAL_REQUIREMENT
 
@@ -25,5 +29,23 @@ fun NDCaseDetail.toDto(): UnpaidWorkDetailsDto {
     allowedEteMinutes = allowedEteMinutes,
     completedEteMinutes = completedEteMinutes,
     remainingEteMinutes = remainingEteMinutes,
+    eventOutcome = this.eventOutcome,
+    upwStatus = this.upwStatus,
+    referralDate = this.referralDate,
+    convictionDate = this.convictionDate,
+    court = this.court.toDto(),
+    mainOffence = this.mainOffence.toDto(),
   )
 }
+
+fun NDCodeDescription.toDto() = CourtDto(
+  code = this.code,
+  description = this.description,
+)
+
+fun NDMainOffence.toDto() = MainOffenceDto(
+  date = this.date,
+  count = this.count,
+  code = this.code,
+  description = this.description,
+)

@@ -21,6 +21,28 @@ data class UnpaidWorkDetailsDto(
   val completedEteMinutes: Long,
   @param:Schema(description = "The total number of remaining minutes that can be credited to ETE appointments", example = "80")
   val remainingEteMinutes: Long,
+  val eventOutcome: String,
+  val upwStatus: String,
+  val referralDate: LocalDate,
+  val convictionDate: LocalDate,
+  val court: CourtDto,
+  val mainOffence: MainOffenceDto,
+) {
+  companion object
+}
+
+data class MainOffenceDto(
+  val date: LocalDate,
+  val count: Int,
+  val code: String,
+  val description: String,
+) {
+  companion object
+}
+
+data class CourtDto(
+  val code: String,
+  val description: String,
 ) {
   companion object
 }

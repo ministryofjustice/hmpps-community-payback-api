@@ -641,6 +641,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
       CommunityPaybackAndDeliusMockServer.getProject(project)
       CommunityPaybackAndDeliusMockServer.getUpwDetailsSummary(
         crn = CRN,
+        case = NDCaseSummary.Companion.valid(),
         unpaidWorkDetails = listOf(
           NDCaseDetail.valid().copy(
             eventNumber = DELIUS_EVENT_NUMBER,
@@ -763,6 +764,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
 
       CommunityPaybackAndDeliusMockServer.getUpwDetailsSummary(
         crn = CRN,
+        case = NDCaseSummary.Companion.valid(),
         unpaidWorkDetails = listOf(
           NDCaseDetail.valid().copy(
             eventNumber = DELIUS_EVENT_NUMBER,
@@ -819,6 +821,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
 
       CommunityPaybackAndDeliusMockServer.getUpwDetailsSummary(
         crn = CRN,
+        case = NDCaseSummary.Companion.valid(),
         unpaidWorkDetails = listOf(
           NDCaseDetail.valid().copy(
             eventNumber = DELIUS_EVENT_NUMBER,

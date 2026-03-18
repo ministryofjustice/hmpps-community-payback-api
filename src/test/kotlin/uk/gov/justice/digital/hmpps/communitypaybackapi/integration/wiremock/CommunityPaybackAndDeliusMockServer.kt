@@ -17,6 +17,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointmentSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseDetail
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseDetailsSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectOutcomeStats
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProviderSummaries
@@ -376,8 +377,8 @@ object CommunityPaybackAndDeliusMockServer {
     )
   }
 
-  fun getUpwDetailsSummary(crn: String, unpaidWorkDetails: List<NDCaseDetail>) {
-    val ndCaseDetailsSummary = NDCaseDetailsSummary(unpaidWorkDetails)
+  fun getUpwDetailsSummary(crn: String, case: NDCaseSummary, unpaidWorkDetails: List<NDCaseDetail>) {
+    val ndCaseDetailsSummary = NDCaseDetailsSummary(case, unpaidWorkDetails)
 
     WireMock.stubFor(
       get("/community-payback-and-delius/case/$crn/summary")
