@@ -501,7 +501,7 @@ class AppointmentMappersTest {
       val result = service.toSummaryDto(
         appointmentSummary = NDAppointmentSummary(
           id = 1L,
-          case = NDCaseSummary.Companion.valid().copy(crn = "CRN1"),
+          case = NDCaseSummary.valid().copy(crn = "CRN1"),
           outcome = NDContactOutcome.valid().copy(code = "OUTCOME1"),
           requirementProgress = NDRequirementProgress(
             requiredMinutes = 520,
@@ -511,6 +511,7 @@ class AppointmentMappersTest {
           date = LocalDate.of(2025, 9, 1),
           startTime = LocalTime.of(10, 0),
           endTime = LocalTime.of(11, 0),
+          minutesCredited = 576,
           daysOverdue = 0,
           project = NDProjectAppointmentSummary(
             name = "PROJ1",
@@ -530,6 +531,7 @@ class AppointmentMappersTest {
       assertThat(result.date).isEqualTo(LocalDate.of(2025, 9, 1))
       assertThat(result.startTime).isEqualTo(LocalTime.of(10, 0))
       assertThat(result.endTime).isEqualTo(LocalTime.of(11, 0))
+      assertThat(result.minutesCredited).isEqualTo(576)
       assertThat(result.projectName).isEqualTo("PROJ1")
       assertThat(result.projectCode).isEqualTo("P1")
       assertThat(result.projectTypeName).isEqualTo("PROJECTYPE1")

@@ -178,6 +178,7 @@ data class NDAppointmentSummary(
   val date: LocalDate? = null, // Remove this nullability when session search changes to new endpoints
   val startTime: LocalTime? = null, // Remove this nullability when session search changes to new endpoints
   val endTime: LocalTime? = null, // Remove this nullability when session search changes to new endpoints
+  val minutesCredited: Long? = null, // Remove this nullability when session search changes to new endpoints
   val daysOverdue: Int? = null, // Remove this nullability when session search changes to new endpoints
   val notes: String?,
 ) {
