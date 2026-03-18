@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.dto
 
 import io.swagger.v3.oas.annotations.media.Schema
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.HourMinuteDuration
+import java.time.Duration
 
 data class AttendanceDataDto(
   val hiVisWorn: Boolean,
@@ -33,3 +34,5 @@ enum class AppointmentBehaviourDto {
   SATISFACTORY,
   UNSATISFACTORY,
 }
+
+fun AttendanceDataDto.derivePenaltyMinutesDuration() = penaltyMinutes?.let { Duration.ofMinutes(it) } ?: penaltyTime?.duration

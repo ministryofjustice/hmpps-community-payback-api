@@ -27,6 +27,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEnt
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.validFull
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentCalculationService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.OffenderService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ProjectService
@@ -46,6 +47,9 @@ class AppointmentValidationServiceTest {
 
   @MockK
   lateinit var projectService: ProjectService
+
+  @MockK
+  lateinit var appointmentCalculationService: AppointmentCalculationService
 
   @InjectMockKs
   lateinit var service: AppointmentValidationService
@@ -86,6 +90,7 @@ class AppointmentValidationServiceTest {
       every { projectService.getProject(PROJECT_CODE) } returns baselineProject
       every { contactOutcomeEntityRepository.findByCode(baselineOutcome.code) } returns baselineOutcome
       every { offenderService.getUnpaidWorkDetails(CRN, EVENT_NUMBER) } returns baselineUnpaidWorkDetails
+      every { appointmentCalculationService.minutesToCredit(any(), any(), any(), any()) } returns Duration.ofMinutes(60)
     }
 
     @Nested
@@ -97,7 +102,12 @@ class AppointmentValidationServiceTest {
           create = baselineCreate,
         )
 
-        assertThat(result).isEqualTo(Validated(baselineCreate))
+        assertThat(result).isEqualTo(
+          Validated(
+            value = baselineCreate,
+            minutesToCredit = Duration.ofMinutes(60),
+          ),
+        )
       }
     }
 
@@ -540,6 +550,7 @@ class AppointmentValidationServiceTest {
       every { projectService.getProject(PROJECT_CODE) } returns baselineProject
       every { contactOutcomeEntityRepository.findByCode(OUTCOME_CODE) } returns baselineOutcome
       every { offenderService.getUnpaidWorkDetails(CRN, EVENT_NUMBER) } returns baselineUnpaidWorkDetails
+      every { appointmentCalculationService.minutesToCredit(any(), any(), any(), any()) } returns Duration.ofMinutes(60)
     }
 
     @Nested
@@ -554,7 +565,12 @@ class AppointmentValidationServiceTest {
           update = baselineUpdate,
         )
 
-        assertThat(result).isEqualTo(Validated(baselineUpdate))
+        assertThat(result).isEqualTo(
+          Validated(
+            value = baselineUpdate,
+            minutesToCredit = Duration.ofMinutes(60),
+          ),
+        )
       }
     }
 
