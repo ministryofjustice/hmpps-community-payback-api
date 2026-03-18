@@ -588,7 +588,7 @@ data class NDCaseDetail(
   val adjustments: Long,
   val completedEteMinutes: Long,
   val eventOutcome: String,
-  val upwStatus: String,
+  val upwStatus: String?,
   val referralDate: LocalDate,
   val convictionDate: LocalDate,
   val court: NDCodeDescription,
