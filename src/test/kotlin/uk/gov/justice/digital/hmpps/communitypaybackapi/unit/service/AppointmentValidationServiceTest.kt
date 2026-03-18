@@ -11,6 +11,8 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.HourMinuteDuration
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AttendanceDataDto
@@ -98,6 +100,80 @@ class AppointmentValidationServiceTest {
         )
 
         assertThat(result).isEqualTo(Validated(baselineCreate))
+      }
+    }
+
+    @Nested
+    inner class CalculateMinutesCredited {
+
+      @Test
+      fun `minutes credited is null if no outcome`() {
+        val result = service.validateCreate(
+          create = baselineCreate.copy(
+            contactOutcomeCode = null,
+            startTime = LocalTime.of(10, 0),
+            endTime = LocalTime.of(12, 0),
+            attendanceData = baselineCreate.attendanceData!!.copy(
+              penaltyMinutes = null,
+            ),
+          ),
+        )
+
+        assertThat(result.minutesToCredit).isNull()
+      }
+
+      @Test
+      fun `minutes credited is null if outcome indicates no attendance`() {
+        every { contactOutcomeEntityRepository.findByCode(baselineOutcome.code) } returns baselineOutcome.copy(
+          attended = false,
+        )
+
+        val result = service.validateCreate(
+          create = baselineCreate.copy(
+            startTime = LocalTime.of(10, 0),
+            endTime = LocalTime.of(12, 0),
+            attendanceData = baselineCreate.attendanceData!!.copy(
+              penaltyMinutes = null,
+            ),
+          ),
+        )
+
+        assertThat(result.minutesToCredit).isNull()
+      }
+
+      @ParameterizedTest
+      @CsvSource(
+        nullValues = ["null"],
+        value = [
+          "00:00,00:01,null,1",
+          "00:00,23:59,null,1439",
+          "00:00,23:59,PT23H55M,4",
+          "10:00,11:00,null,60",
+          "10:00,11:00,PT59M,1",
+          "10:00,11:00,PT60M,null",
+        ],
+      )
+      fun `minutes credited is added if outcome indicates attendance`(
+        startTime: LocalTime,
+        endTime: LocalTime,
+        penaltyMinutes: Duration?,
+        expectedTimeCredited: Long?,
+      ) {
+        every { contactOutcomeEntityRepository.findByCode(baselineOutcome.code) } returns baselineOutcome.copy(
+          attended = true,
+        )
+
+        val result = service.validateCreate(
+          create = baselineCreate.copy(
+            startTime = startTime,
+            endTime = endTime,
+            attendanceData = baselineCreate.attendanceData!!.copy(
+              penaltyMinutes = penaltyMinutes?.toMinutes(),
+            ),
+          ),
+        )
+
+        assertThat(result.minutesToCredit).isEqualTo(expectedTimeCredited)
       }
     }
 
@@ -555,6 +631,85 @@ class AppointmentValidationServiceTest {
         )
 
         assertThat(result).isEqualTo(Validated(baselineUpdate))
+      }
+    }
+
+    @Nested
+    inner class CalculateMinutesCredited {
+
+      @Test
+      fun `minutes credited is null if no outcome`() {
+        val result = service.validateUpdate(
+          appointment = baselineExistingAppointment,
+          update = baselineUpdate.copy(
+            contactOutcomeCode = null,
+            startTime = LocalTime.of(10, 0),
+            endTime = LocalTime.of(12, 0),
+            attendanceData = baselineUpdate.attendanceData!!.copy(
+              penaltyMinutes = null,
+            ),
+          ),
+        )
+
+        assertThat(result.minutesToCredit).isNull()
+      }
+
+      @Test
+      fun `minutes credited is null if outcome indicates no attendance`() {
+        every { contactOutcomeEntityRepository.findByCode(baselineOutcome.code) } returns baselineOutcome.copy(
+          attended = false,
+        )
+
+        val result = service.validateUpdate(
+          appointment = baselineExistingAppointment,
+          update = baselineUpdate.copy(
+            startTime = LocalTime.of(10, 0),
+            endTime = LocalTime.of(12, 0),
+            attendanceData = baselineUpdate.attendanceData!!.copy(
+              penaltyMinutes = null,
+            ),
+          ),
+        )
+
+        assertThat(result.minutesToCredit).isNull()
+      }
+
+      @ParameterizedTest
+      @CsvSource(
+        nullValues = ["null"],
+        value = [
+          "00:00,00:01,null,1",
+          "00:00,23:59,null,1439",
+          "00:00,23:59,PT23H55M,4",
+          "10:00,11:00,null,60",
+          "10:00,11:00,PT59M,1",
+          "10:00,11:00,PT60M,null",
+        ],
+      )
+      fun `minutes credited is added if outcome indicates attendance`(
+        startTime: LocalTime,
+        endTime: LocalTime,
+        penaltyMinutes: Duration?,
+        expectedTimeCredited: Long?,
+      ) {
+        every { contactOutcomeEntityRepository.findByCode(baselineOutcome.code) } returns baselineOutcome.copy(
+          attended = true,
+        )
+
+        val result = service.validateUpdate(
+          appointment = baselineExistingAppointment.copy(
+            date = LocalDate.now(),
+          ),
+          update = baselineUpdate.copy(
+            startTime = startTime,
+            endTime = endTime,
+            attendanceData = baselineUpdate.attendanceData!!.copy(
+              penaltyMinutes = penaltyMinutes?.toMinutes(),
+            ),
+          ),
+        )
+
+        assertThat(result.minutesToCredit).isEqualTo(expectedTimeCredited)
       }
     }
 

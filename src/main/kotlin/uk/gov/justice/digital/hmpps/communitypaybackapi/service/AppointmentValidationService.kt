@@ -8,6 +8,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.derivePenaltyMinutesDuration
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.BadRequestException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
@@ -44,7 +45,7 @@ class AppointmentValidationService(
     ctx.validatePenaltyTime()
     ctx.validateNotes()
 
-    return Validated(create)
+    return Validated(create, ctx.calculateMinutesCredited())
   }
 
   fun validateUpdate(
@@ -64,7 +65,7 @@ class AppointmentValidationService(
     ctx.validatePenaltyTime()
     ctx.validateNotes()
 
-    return Validated(update)
+    return Validated(update, ctx.calculateMinutesCredited())
   }
 
   private fun ValidationContext.validateDate() {
@@ -130,6 +131,15 @@ class AppointmentValidationService(
     }
   }
 
+  private fun ValidationContext.calculateMinutesCredited(): Long? {
+    if (contactOutcome?.attended != true) return null
+
+    val penaltyMinutes = command.attendanceData?.derivePenaltyMinutesDuration()?.toMinutes()
+
+    val minutesCredited = Duration.between(command.startTime, command.endTime).toMinutes() - (penaltyMinutes ?: 0L)
+    return minutesCredited.takeIf { it != 0L }
+  }
+
   private fun loadContactOutcome(code: String?) = code?.let {
     contactOutcomeEntityRepository.findByCode(it)
       ?: throw BadRequestException("Contact outcome not found for code $code")
@@ -144,4 +154,7 @@ class AppointmentValidationService(
   )
 }
 
-data class Validated<T>(val value: T)
+data class Validated<T>(
+  val value: T,
+  val minutesToCredit: Long? = null,
+)

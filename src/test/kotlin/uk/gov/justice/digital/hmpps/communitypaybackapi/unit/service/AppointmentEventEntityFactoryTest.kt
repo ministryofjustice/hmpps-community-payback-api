@@ -9,8 +9,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
-import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.CsvSource
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.HourMinuteDuration
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentBehaviourDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
@@ -104,7 +102,7 @@ class AppointmentEventEntityFactoryTest {
           triggeredBy = TRIGGERED_BY,
         ),
         validatedCreateAppointmentDto = Validated(
-          CreateAppointmentDto(
+          value = CreateAppointmentDto(
             id = ID,
             crn = "X12345",
             deliusEventNumber = 48,
@@ -130,6 +128,7 @@ class AppointmentEventEntityFactoryTest {
             alertActive = false,
             sensitive = true,
           ),
+          minutesToCredit = 66,
         ),
       )
 
@@ -154,7 +153,7 @@ class AppointmentEventEntityFactoryTest {
       assertThat(result.hiVisWorn).isEqualTo(false)
       assertThat(result.workedIntensively).isEqualTo(true)
       assertThat(result.penaltyMinutes).isEqualTo(300L)
-      assertThat(result.minutesCredited).isEqualTo(62L)
+      assertThat(result.minutesCredited).isEqualTo(66)
       assertThat(result.workQuality).isEqualTo(WorkQuality.SATISFACTORY)
       assertThat(result.behaviour).isEqualTo(Behaviour.UNSATISFACTORY)
       assertThat(result.alertActive).isEqualTo(false)
@@ -175,7 +174,7 @@ class AppointmentEventEntityFactoryTest {
           triggeredBy = TRIGGERED_BY,
         ),
         validatedCreateAppointmentDto = Validated(
-          CreateAppointmentDto(
+          value = CreateAppointmentDto(
             id = ID,
             crn = "X12345",
             deliusEventNumber = 48,
@@ -194,6 +193,7 @@ class AppointmentEventEntityFactoryTest {
             alertActive = null,
             sensitive = null,
           ),
+          minutesToCredit = null,
         ),
       )
 
@@ -227,100 +227,6 @@ class AppointmentEventEntityFactoryTest {
       assertThat(result.triggeredAt).isEqualTo(TRIGGERED_AT)
       assertThat(result.triggerType).isEqualTo(AppointmentEventTriggerType.SCHEDULING)
       assertThat(result.triggeredBy).isEqualTo(TRIGGERED_BY)
-    }
-
-    @Test
-    fun `minutes credited is null if no outcome`() {
-      val result = factory.buildCreatedEvent(
-        deliusId = 101L,
-        trigger = AppointmentEventTrigger(
-          triggeredAt = TRIGGERED_AT,
-          triggerType = AppointmentEventTriggerType.SCHEDULING,
-          triggeredBy = TRIGGERED_BY,
-        ),
-        validatedCreateAppointmentDto =
-        Validated(
-          CreateAppointmentDto.valid().copy(
-            contactOutcomeCode = null,
-          ),
-        ),
-      )
-
-      assertThat(result.minutesCredited).isNull()
-    }
-
-    @Test
-    fun `minutes credited is null if outcome indicates no attendance`() {
-      every { contactOutcomeEntityRepository.findByCode(CONTACT_OUTCOME_CODE) } returns ContactOutcomeEntity.valid().copy(attended = false)
-
-      val result = factory.buildCreatedEvent(
-        deliusId = 101L,
-        trigger = AppointmentEventTrigger(
-          triggeredAt = TRIGGERED_AT,
-          triggerType = AppointmentEventTriggerType.SCHEDULING,
-          triggeredBy = TRIGGERED_BY,
-        ),
-
-        validatedCreateAppointmentDto = Validated(
-          CreateAppointmentDto.valid().copy(
-            contactOutcomeCode = null,
-            startTime = LocalTime.of(10, 0),
-            endTime = LocalTime.of(12, 0),
-            attendanceData = AttendanceDataDto.valid().copy(penaltyTime = null),
-          ),
-        ),
-      )
-
-      assertThat(result.minutesCredited).isNull()
-    }
-
-    @ParameterizedTest
-    @CsvSource(
-      nullValues = ["null"],
-      value = [
-        "00:00,00:01,null,null,1",
-        "00:00,23:59,null,null,1439",
-        "00:00,23:59,PT23H55M,null,4",
-        "00:00,23:59,null,PT23H55M,4",
-        "00:00,23:59,PT1H,PT23H55M,4",
-        "10:00,11:00,null,null,60",
-        "10:00,11:00,PT59M,null,1",
-        "10:00,11:00,null,PT59M,1",
-        "10:00,11:00,PT60M,null,null",
-        "10:00,11:00,null,PT60M,null",
-      ],
-    )
-    fun `minutes credited is added if outcome indicates attendance`(
-      startTime: LocalTime,
-      endTime: LocalTime,
-      penaltyTime: Duration?,
-      penaltyMinutes: Duration?,
-      expectedTimeCredited: Long?,
-    ) {
-      every { contactOutcomeEntityRepository.findByCode(CONTACT_OUTCOME_CODE) } returns ContactOutcomeEntity.valid().copy(attended = true)
-
-      val result = factory.buildCreatedEvent(
-        deliusId = 101L,
-        trigger = AppointmentEventTrigger(
-          triggeredAt = TRIGGERED_AT,
-          triggerType = AppointmentEventTriggerType.SCHEDULING,
-          triggeredBy = TRIGGERED_BY,
-        ),
-
-        validatedCreateAppointmentDto = Validated(
-          CreateAppointmentDto.valid().copy(
-            contactOutcomeCode = CONTACT_OUTCOME_CODE,
-            startTime = startTime,
-            endTime = endTime,
-            attendanceData = AttendanceDataDto.valid().copy(
-              penaltyMinutes = penaltyMinutes?.toMinutes(),
-              penaltyTime = penaltyTime?.let { HourMinuteDuration(it) },
-            ),
-          ),
-        ),
-      )
-
-      assertThat(result.minutesCredited).isEqualTo(expectedTimeCredited)
     }
 
     @Test
@@ -371,7 +277,7 @@ class AppointmentEventEntityFactoryTest {
 
       val result = factory.buildUpdatedEvent(
         validatedUpdate = Validated(
-          UpdateAppointmentOutcomeDto(
+          value = UpdateAppointmentOutcomeDto(
             deliusId = 101L,
             deliusVersionToUpdate = deliusVersion,
             startTime = LocalTime.of(10, 1),
@@ -394,6 +300,7 @@ class AppointmentEventEntityFactoryTest {
             alertActive = false,
             sensitive = true,
           ),
+          minutesToCredit = 334,
         ),
         existingAppointment = AppointmentDto.valid().copy(
           communityPaybackId = communityPaybackId,
@@ -434,8 +341,8 @@ class AppointmentEventEntityFactoryTest {
       assertThat(result.notes).isEqualTo("some notes")
       assertThat(result.hiVisWorn).isEqualTo(false)
       assertThat(result.workedIntensively).isEqualTo(true)
-      assertThat(result.penaltyMinutes).isEqualTo(300L)
-      assertThat(result.minutesCredited).isEqualTo(62L)
+      assertThat(result.penaltyMinutes).isEqualTo(300)
+      assertThat(result.minutesCredited).isEqualTo(334)
       assertThat(result.workQuality).isEqualTo(WorkQuality.SATISFACTORY)
       assertThat(result.behaviour).isEqualTo(Behaviour.UNSATISFACTORY)
       assertThat(result.alertActive).isEqualTo(false)
@@ -452,7 +359,7 @@ class AppointmentEventEntityFactoryTest {
 
       val result = factory.buildUpdatedEvent(
         validatedUpdate = Validated(
-          UpdateAppointmentOutcomeDto(
+          value = UpdateAppointmentOutcomeDto(
             deliusId = 101L,
             deliusVersionToUpdate = deliusVersion,
             startTime = LocalTime.of(10, 1, 2),
@@ -465,6 +372,7 @@ class AppointmentEventEntityFactoryTest {
             alertActive = null,
             sensitive = null,
           ),
+          minutesToCredit = null,
         ),
         existingAppointment = AppointmentDto.valid().copy(
           offender = OffenderDto.OffenderLimitedDto(crn = "X12345"),
@@ -512,100 +420,6 @@ class AppointmentEventEntityFactoryTest {
       assertThat(result.triggeredAt).isEqualTo(TRIGGERED_AT)
       assertThat(result.triggerType).isEqualTo(AppointmentEventTriggerType.USER)
       assertThat(result.triggeredBy).isEqualTo(TRIGGERED_BY)
-    }
-
-    @Test
-    fun `minutes credited is null if no outcome`() {
-      val result = factory.buildUpdatedEvent(
-        validatedUpdate = Validated(
-          UpdateAppointmentOutcomeDto.valid().copy(
-            contactOutcomeCode = null,
-          ),
-        ),
-        existingAppointment = AppointmentDto.valid(),
-        trigger = AppointmentEventTrigger(
-          triggeredAt = TRIGGERED_AT,
-          triggerType = AppointmentEventTriggerType.USER,
-          triggeredBy = TRIGGERED_BY,
-        ),
-        projectCode = PROJECT_CODE,
-      )
-
-      assertThat(result.minutesCredited).isNull()
-    }
-
-    @Test
-    fun `minutes credited is null if outcome indicates no attendance`() {
-      every { contactOutcomeEntityRepository.findByCode(CONTACT_OUTCOME_CODE) } returns ContactOutcomeEntity.valid().copy(attended = false)
-
-      val result = factory.buildUpdatedEvent(
-        validatedUpdate = Validated(
-          UpdateAppointmentOutcomeDto.valid().copy(
-            contactOutcomeCode = null,
-            startTime = LocalTime.of(10, 0),
-            endTime = LocalTime.of(12, 0),
-            attendanceData = AttendanceDataDto.valid().copy(penaltyTime = null),
-          ),
-        ),
-        existingAppointment = AppointmentDto.valid(),
-        trigger = AppointmentEventTrigger(
-          triggeredAt = TRIGGERED_AT,
-          triggerType = AppointmentEventTriggerType.USER,
-          triggeredBy = TRIGGERED_BY,
-        ),
-        projectCode = PROJECT_CODE,
-      )
-
-      assertThat(result.minutesCredited).isNull()
-    }
-
-    @ParameterizedTest
-    @CsvSource(
-      nullValues = ["null"],
-      value = [
-        "00:00,00:01,null,null,1",
-        "00:00,23:59,null,null,1439",
-        "00:00,23:59,PT23H55M,null,4",
-        "00:00,23:59,null,PT23H55M,4",
-        "00:00,23:59,PT1H,PT23H55M,4",
-        "10:00,11:00,null,null,60",
-        "10:00,11:00,PT59M,null,1",
-        "10:00,11:00,null,PT59M,1",
-        "10:00,11:00,PT60M,null,null",
-        "10:00,11:00,null,PT60M,null",
-      ],
-    )
-    fun `minutes credited is added if outcome indicates attendance`(
-      startTime: LocalTime,
-      endTime: LocalTime,
-      penaltyTime: Duration?,
-      penaltyMinutes: Duration?,
-      expectedTimeCredited: Long?,
-    ) {
-      every { contactOutcomeEntityRepository.findByCode(CONTACT_OUTCOME_CODE) } returns ContactOutcomeEntity.valid().copy(attended = true)
-
-      val result = factory.buildUpdatedEvent(
-        validatedUpdate = Validated(
-          UpdateAppointmentOutcomeDto.valid().copy(
-            contactOutcomeCode = CONTACT_OUTCOME_CODE,
-            startTime = startTime,
-            endTime = endTime,
-            attendanceData = AttendanceDataDto.valid().copy(
-              penaltyMinutes = penaltyMinutes?.toMinutes(),
-              penaltyTime = penaltyTime?.let { HourMinuteDuration(it) },
-            ),
-          ),
-        ),
-        existingAppointment = AppointmentDto.valid(),
-        trigger = AppointmentEventTrigger(
-          triggeredAt = TRIGGERED_AT,
-          triggerType = AppointmentEventTriggerType.USER,
-          triggeredBy = TRIGGERED_BY,
-        ),
-        projectCode = PROJECT_CODE,
-      )
-
-      assertThat(result.minutesCredited).isEqualTo(expectedTimeCredited)
     }
 
     @Test
