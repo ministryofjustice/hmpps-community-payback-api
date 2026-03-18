@@ -31,7 +31,9 @@ class AdminSessionController(val sessionService: SessionService) {
     produces = [MediaType.APPLICATION_JSON_VALUE],
   )
   @Operation(
-    description = "Get project allocations within date range for a specific team",
+    deprecated = true,
+    description = """Get project allocations within date range for a specific team. 
+      |Deprecated, should instead use /admin/projects/{projectCode} and /admin/appointments""",
     responses = [
       ApiResponse(
         responseCode = "200",

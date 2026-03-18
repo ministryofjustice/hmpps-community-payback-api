@@ -172,7 +172,7 @@ data class NDSession(
 data class NDAppointmentSummary(
   val id: Long,
   val case: NDCaseSummary,
-  val project: NDProjectAppointmentSummary,
+  val project: NDProjectAppointmentSummary?, // Remove this nullability when session search changes to new endpoints
   val outcome: NDContactOutcome?,
   val requirementProgress: NDRequirementProgress,
   val date: LocalDate? = null, // Remove this nullability when session search changes to new endpoints
