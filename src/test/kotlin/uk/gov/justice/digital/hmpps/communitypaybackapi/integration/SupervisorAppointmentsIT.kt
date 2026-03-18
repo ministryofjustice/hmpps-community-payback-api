@@ -201,6 +201,7 @@ class SupervisorAppointmentsIT : IntegrationTestBase() {
       )
       CommunityPaybackAndDeliusMockServer.getUpwDetailsSummary(
         crn = SchedulingIT.CRN,
+        case = NDCaseSummary.Companion.valid(),
         unpaidWorkDetails = listOf(
           NDCaseDetail.valid().copy(
             eventNumber = EVENT_NUMBER,
@@ -276,6 +277,7 @@ class SupervisorAppointmentsIT : IntegrationTestBase() {
     fun `succeeds and calls upstream endpoint`() {
       CommunityPaybackAndDeliusMockServer.getUpwDetailsSummary(
         crn = SchedulingIT.CRN,
+        case = NDCaseSummary.Companion.valid(),
         unpaidWorkDetails = listOf(
           NDCaseDetail.valid().copy(
             eventNumber = EVENT_NUMBER,

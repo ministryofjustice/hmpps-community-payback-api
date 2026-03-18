@@ -713,6 +713,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
       CommunityPaybackAndDeliusMockServer.getProject(NDProject.valid(ctx).copy(code = "proj123"))
       CommunityPaybackAndDeliusMockServer.getUpwDetailsSummary(
         crn = SchedulingIT.CRN,
+        case = NDCaseSummary.Companion.valid(),
         unpaidWorkDetails = listOf(
           NDCaseDetail.valid().copy(
             eventNumber = EVENT_NUMBER,
