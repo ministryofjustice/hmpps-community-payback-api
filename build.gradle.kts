@@ -3,11 +3,11 @@ import java.net.Socket
 
 plugins {
   id("uk.gov.justice.hmpps.gradle-spring-boot") version "10.0.4"
-  kotlin("plugin.spring") version "2.3.10"
-  kotlin("plugin.jpa") version "2.3.10"
+  kotlin("plugin.spring") version "2.3.20"
+  kotlin("plugin.jpa") version "2.3.20"
   id("dev.detekt") version "2.0.0-alpha.2"
   jacoco
-  id("io.sentry.jvm.gradle") version "6.1.0"
+  id("io.sentry.jvm.gradle") version "6.2.0"
 }
 
 configurations {
@@ -35,8 +35,8 @@ dependencies {
 
   implementation("org.redisson:redisson-spring-boot-starter:4.3.0")
   implementation("com.github.ben-manes.caffeine:caffeine:3.2.3")
-  implementation("net.javacrumbs.shedlock:shedlock-spring:7.6.0")
-  implementation("net.javacrumbs.shedlock:shedlock-provider-redis-spring:7.6.0")
+  implementation("net.javacrumbs.shedlock:shedlock-spring:7.7.0")
+  implementation("net.javacrumbs.shedlock:shedlock-provider-redis-spring:7.7.0")
 
   runtimeOnly("org.flywaydb:flyway-database-postgresql")
 
@@ -50,7 +50,7 @@ dependencies {
   testImplementation("org.testcontainers:testcontainers-postgresql:2.0.3")
   testImplementation("com.redis:testcontainers-redis:2.2.4")
   testImplementation("org.awaitility:awaitility-kotlin:4.3.0")
-  testImplementation("org.wiremock.integrations:wiremock-spring-boot:4.2.0")
+  testImplementation("org.wiremock.integrations:wiremock-spring-boot:4.2.1")
   testImplementation("io.mockk:mockk:1.14.9")
   testImplementation("com.lemonappdev:konsist:0.17.3")
   testImplementation("uk.gov.justice.service.hmpps:hmpps-subject-access-request-test-support:2.0.3")
@@ -58,7 +58,7 @@ dependencies {
   // so we have to force the version here. Otherwise, the hmpps gradle-spring-boot plugin
   // pulls in a newer version
   testImplementation("org.mockito.kotlin:mockito-kotlin:6.1.0")
-  testImplementation("org.zalando:logbook-spring-boot-starter:4.0.2")
+  testImplementation("org.zalando:logbook-spring-boot-starter:4.0.3")
 }
 
 kotlin {
