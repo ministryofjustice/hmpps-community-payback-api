@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.ApplicationContext
 import org.springframework.data.repository.findByIdOrNull
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseDetail
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCode
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDRequirementProgress
@@ -382,6 +383,7 @@ class SchedulingIT : IntegrationTestBase() {
 
     CommunityPaybackAndDeliusMockServer.getUpwDetailsSummary(
       crn = CRN,
+      case = NDCaseSummary.Companion.valid(),
       unpaidWorkDetails = listOf(
         NDCaseDetail.valid().copy(
           eventNumber = EVENT_NUMBER,

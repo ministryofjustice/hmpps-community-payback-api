@@ -574,6 +574,7 @@ data class PageResponse<T>(
 }
 
 data class NDCaseDetailsSummary(
+  val case: NDCaseSummary,
   val unpaidWorkDetails: List<NDCaseDetail> = emptyList(),
 ) {
   companion object
@@ -586,6 +587,21 @@ data class NDCaseDetail(
   val completedMinutes: Long,
   val adjustments: Long,
   val completedEteMinutes: Long,
+  val eventOutcome: String,
+  val upwStatus: String?,
+  val referralDate: LocalDate,
+  val convictionDate: LocalDate,
+  val court: NDCodeDescription,
+  val mainOffence: NDMainOffence,
+) {
+  companion object
+}
+
+data class NDMainOffence(
+  val date: LocalDate,
+  val count: Int,
+  val code: String,
+  val description: String,
 ) {
   companion object
 }

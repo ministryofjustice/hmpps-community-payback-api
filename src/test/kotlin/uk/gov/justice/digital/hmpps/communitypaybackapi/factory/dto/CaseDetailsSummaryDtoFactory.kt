@@ -1,6 +1,8 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto
 
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CaseDetailsSummaryDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourtDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.MainOffenceDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.random
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.randomLocalDate
@@ -21,4 +23,23 @@ fun UnpaidWorkDetailsDto.Companion.valid() = UnpaidWorkDetailsDto(
   allowedEteMinutes = Long.random(),
   completedEteMinutes = Long.random(),
   remainingEteMinutes = Long.random(),
+  eventOutcome = String.random(),
+  upwStatus = String.random(),
+  referralDate = randomLocalDate(),
+  convictionDate = randomLocalDate(),
+  court = CourtDto.valid(),
+  mainOffence = MainOffenceDto.valid(),
+
+)
+
+fun CourtDto.Companion.valid() = CourtDto(
+  code = String.random(),
+  description = String.random(),
+)
+
+fun MainOffenceDto.Companion.valid() = MainOffenceDto(
+  code = String.random(),
+  description = String.random(),
+  date = randomLocalDate(),
+  count = Int.random(),
 )
