@@ -6,6 +6,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentCommandDt
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeGroupDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.derivePenaltyMinutesDuration
@@ -45,8 +46,9 @@ class AppointmentValidationService(
     ctx.validateDuration()
     ctx.validatePenaltyTime()
     ctx.validateNotes()
+    ctx.validateEteAllowanceRemaining()
 
-    return Validated(create, ctx.calculateMinutesCredited())
+    return Validated(create, ctx.calculateMinutesToCredit())
   }
 
   fun validateUpdate(
@@ -59,14 +61,16 @@ class AppointmentValidationService(
       contactOutcome = loadContactOutcome(update.contactOutcomeCode),
       unpaidWorkDetails = offenderService.getUnpaidWorkDetails(appointment.offender.crn, appointment.deliusEventNumber.toLong()),
       appointmentDate = appointment.date,
+      appointmentMinutesAlreadyCredited = appointment.minutesCredited?.let { Duration.ofMinutes(it) } ?: Duration.ZERO,
     )
 
     ctx.validateOutcome()
     ctx.validateDuration()
     ctx.validatePenaltyTime()
     ctx.validateNotes()
+    ctx.validateEteAllowanceRemaining()
 
-    return Validated(update, ctx.calculateMinutesCredited())
+    return Validated(update, ctx.calculateMinutesToCredit())
   }
 
   private fun ValidationContext.validateDate() {
@@ -132,7 +136,18 @@ class AppointmentValidationService(
     }
   }
 
-  private fun ValidationContext.calculateMinutesCredited() = appointmentCalculationService.minutesToCredit(
+  private fun ValidationContext.validateEteAllowanceRemaining() {
+    val minutesToCredit = calculateMinutesToCredit()
+    if (project.projectType.group == ProjectTypeGroupDto.ETE && minutesToCredit != null) {
+      val remainingEteMinutesAllowance = Duration.ofMinutes(unpaidWorkDetails.remainingEteMinutes) + appointmentMinutesAlreadyCredited
+
+      if (minutesToCredit > remainingEteMinutesAllowance) {
+        throw BadRequestException("Credited minutes of $minutesToCredit exceeds remaining allowed ETE minutes of $remainingEteMinutesAllowance")
+      }
+    }
+  }
+
+  private fun ValidationContext.calculateMinutesToCredit() = appointmentCalculationService.minutesToCredit(
     contactOutcome = contactOutcome,
     startTime = command.startTime,
     endTime = command.endTime,
@@ -150,6 +165,7 @@ class AppointmentValidationService(
     val contactOutcome: ContactOutcomeEntity?,
     val unpaidWorkDetails: UnpaidWorkDetailsDto,
     val appointmentDate: LocalDate,
+    val appointmentMinutesAlreadyCredited: Duration = Duration.ZERO,
   )
 }
 
