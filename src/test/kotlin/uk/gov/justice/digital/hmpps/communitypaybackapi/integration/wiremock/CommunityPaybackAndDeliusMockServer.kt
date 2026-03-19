@@ -22,7 +22,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectOutcomeStats
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProviderSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProviderTeamSummaries
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSession
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSessionSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSupervisor
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSupervisorSummaries
@@ -259,24 +258,6 @@ object CommunityPaybackAndDeliusMockServer {
     WireMock.verify(putRequestedFor(urlEqualTo("/community-payback-and-delius/projects/$projectCode/appointments/$appointmentId/outcome")))
   }
 
-  fun getProjectSession(
-    username: String,
-    date: LocalDate,
-    session: NDSession,
-  ) {
-    WireMock.stubFor(
-      get(
-        "/community-payback-and-delius/projects/${session.project.code}/appointments" +
-          "?date=${date.toIsoDateString()}&username=$username",
-      )
-        .willReturn(
-          aResponse()
-            .withHeader("Content-Type", "application/json")
-            .withBody(jsonMapper.writeValueAsString(session)),
-        ),
-    )
-  }
-
   fun getTeamSupervisors(forProject: NDProject, supervisorSummaries: NDSupervisorSummaries) = getTeamSupervisors(
     providerCode = forProject.provider.code,
     teamCode = forProject.team.code,
@@ -356,14 +337,30 @@ object CommunityPaybackAndDeliusMockServer {
   }
 
   fun getAppointments(
-    crn: String,
+    crn: String? = null,
     username: String,
-    appointments: List<NDAppointmentSummary>,
+    fromDate: LocalDate? = null,
+    toDate: LocalDate? = null,
+    projectCodes: List<String> = emptyList(),
     pageNumber: Int = 0,
     pageSize: Int = 50,
     sortString: String = "name,desc",
+    appointments: List<NDAppointmentSummary>,
   ) {
-    val url = "/community-payback-and-delius/appointments?username=$username&crn=$crn&page=$pageNumber&size=$pageSize&sort=${URLEncoder.encode(sortString, "UTF-8")}"
+    val url = buildString {
+      append("/community-payback-and-delius/appointments")
+
+      append("?username=$username")
+      crn?.let { append("&crn=$it") }
+      fromDate?.let { append("&fromDate=$it") }
+      toDate?.let { append("&toDate=$it") }
+      projectCodes.forEach {
+        append("&projectCodes=$it")
+      }
+      append("&page=$pageNumber")
+      append("&size=$pageSize")
+      append("&sort=${URLEncoder.encode(sortString, "UTF-8")}")
+    }
 
     val pageResponse = PageResponse(appointments, PageResponse.PageMeta(pageSize, pageNumber, appointments.size.toLong(), 1))
 

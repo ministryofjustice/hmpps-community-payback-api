@@ -18,16 +18,18 @@ data class AppointmentSummaryDto(
   @param:Schema(description = "How many community payback minutes the offender has completed to date. >= 0", example = "280")
   val completedMinutes: Int,
   val offender: OffenderDto,
-  val date: LocalDate?, // Remove this nullability when session search changes to new endpoints
-  val startTime: LocalTime?, // Remove this nullability when session search changes to new endpoints
-  val endTime: LocalTime?, // Remove this nullability when session search changes to new endpoints
+  val date: LocalDate,
+  val startTime: LocalTime,
+  val endTime: LocalTime,
   val minutesCredited: Long?,
-  val daysOverdue: Int?, // Remove this nullability when session search changes to new endpoints],
-  val projectName: String?, // Remove this nullability when session search changes to new endpoints
-  val projectCode: String?, // Remove this nullability when session search changes to new endpoints
-  val projectTypeName: String?, // Remove this nullability when session search changes to new endpoints
-  val projectTypeCode: String?, // Remove this nullability when session search changes to new endpoints
+  val daysOverdue: Int?,
+  val projectName: String,
+  val projectCode: String,
+  val projectTypeName: String,
+  val projectTypeCode: String,
   val notes: String?,
 ) {
+  fun hasOutcome() = contactOutcome != null
+
   companion object
 }

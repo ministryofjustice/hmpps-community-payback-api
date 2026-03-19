@@ -18,6 +18,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.BadReques
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.SessionSupervisorEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.valid
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ContextService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ProjectService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.SessionService
@@ -41,6 +42,9 @@ class SessionServiceTest {
 
   @RelaxedMockK
   lateinit var projectService: ProjectService
+
+  @RelaxedMockK
+  lateinit var appointmentService: AppointmentService
 
   @InjectMockKs
   private lateinit var service: SessionService
