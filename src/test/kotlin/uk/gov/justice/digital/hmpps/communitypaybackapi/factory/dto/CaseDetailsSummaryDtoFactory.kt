@@ -3,12 +3,14 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CaseDetailsSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourtDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.MainOffenceDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.OffenderDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.random
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.randomLocalDate
 import kotlin.Long
 
 fun CaseDetailsSummaryDto.Companion.valid() = CaseDetailsSummaryDto(
+  offender = OffenderDto.validFull(),
   unpaidWorkDetails = listOf(
     UnpaidWorkDetailsDto.valid(),
   ),
@@ -29,7 +31,6 @@ fun UnpaidWorkDetailsDto.Companion.valid() = UnpaidWorkDetailsDto(
   convictionDate = randomLocalDate(),
   court = CourtDto.valid(),
   mainOffence = MainOffenceDto.valid(),
-
 )
 
 fun CourtDto.Companion.valid() = CourtDto(

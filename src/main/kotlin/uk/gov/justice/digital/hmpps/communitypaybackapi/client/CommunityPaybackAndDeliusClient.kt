@@ -125,7 +125,7 @@ interface CommunityPaybackAndDeliusClient {
   ): PageResponse<NDAppointmentSummary>
 
   @GetExchange("/case/{crn}/summary")
-  fun getUpwDetailsSummary(@PathVariable crn: String): NDCaseDetailsSummary
+  fun getUpwDetailsSummary(@PathVariable crn: String, @RequestParam username: String?): NDCaseDetailsSummary
 }
 
 data class NDProviderSummaries(

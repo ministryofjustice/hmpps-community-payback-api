@@ -56,7 +56,7 @@ class AdminOffenderIT : IntegrationTestBase() {
     fun `should return OK with offender summary`() {
       val ndCaseDetail = NDCaseDetail.valid()
       val ndCaseSummary = NDCaseSummary.Companion.valid()
-      CommunityPaybackAndDeliusMockServer.getUpwDetailsSummary(CRN, ndCaseSummary, listOf(ndCaseDetail))
+      CommunityPaybackAndDeliusMockServer.getUpwDetailsSummary(CRN, ndCaseSummary, listOf(ndCaseDetail), "AUTH_ADM")
 
       val result = webTestClient.get()
         .uri("/admin/offenders/$CRN/summary")
@@ -130,6 +130,7 @@ class AdminOffenderIT : IntegrationTestBase() {
         unpaidWorkDetails = listOf(
           NDCaseDetail.valid().copy(eventNumber = DELIUS_EVENT_NUMBER),
         ),
+        username = "AUTH_ADM",
       )
 
       val result = webTestClient.get()

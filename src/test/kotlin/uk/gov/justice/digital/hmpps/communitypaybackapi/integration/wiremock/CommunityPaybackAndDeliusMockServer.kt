@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock
 
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
+import com.github.tomakehurst.wiremock.client.WireMock.absent
 import com.github.tomakehurst.wiremock.client.WireMock.equalTo
 import com.github.tomakehurst.wiremock.client.WireMock.exactly
 import com.github.tomakehurst.wiremock.client.WireMock.get
@@ -12,6 +13,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.put
 import com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor
 import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
 import com.github.tomakehurst.wiremock.client.WireMock.urlMatching
+import com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo
 import tools.jackson.databind.json.JsonMapper
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointmentSummary
@@ -377,16 +379,28 @@ object CommunityPaybackAndDeliusMockServer {
     )
   }
 
-  fun getUpwDetailsSummary(crn: String, case: NDCaseSummary, unpaidWorkDetails: List<NDCaseDetail>) {
+  fun getUpwDetailsSummary(
+    crn: String,
+    case: NDCaseSummary,
+    unpaidWorkDetails: List<NDCaseDetail>,
+    username: String? = null,
+  ) {
     val ndCaseDetailsSummary = NDCaseDetailsSummary(case, unpaidWorkDetails)
 
+    var builder = get(urlPathEqualTo("/community-payback-and-delius/case/$crn/summary"))
+
+    builder = if (username != null) {
+      builder.withQueryParam("username", equalTo(username))
+    } else {
+      builder.withQueryParam("username", absent())
+    }
+
     WireMock.stubFor(
-      get("/community-payback-and-delius/case/$crn/summary")
-        .willReturn(
-          aResponse()
-            .withHeader("Content-Type", "application/json")
-            .withBody(jsonMapper.writeValueAsString(ndCaseDetailsSummary)),
-        ),
+      builder.willReturn(
+        aResponse()
+          .withHeader("Content-Type", "application/json")
+          .withBody(jsonMapper.writeValueAsString(ndCaseDetailsSummary)),
+      ),
     )
   }
 
