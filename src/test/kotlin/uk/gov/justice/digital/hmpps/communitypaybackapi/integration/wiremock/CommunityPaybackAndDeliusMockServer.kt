@@ -356,14 +356,30 @@ object CommunityPaybackAndDeliusMockServer {
   }
 
   fun getAppointments(
-    crn: String,
+    crn: String? = null,
     username: String,
-    appointments: List<NDAppointmentSummary>,
+    fromDate: LocalDate? = null,
+    toDate: LocalDate? = null,
+    projectCodes: List<String> = emptyList(),
     pageNumber: Int = 0,
     pageSize: Int = 50,
     sortString: String = "name,desc",
+    appointments: List<NDAppointmentSummary>,
   ) {
-    val url = "/community-payback-and-delius/appointments?username=$username&crn=$crn&page=$pageNumber&size=$pageSize&sort=${URLEncoder.encode(sortString, "UTF-8")}"
+    val url = buildString {
+      append("/community-payback-and-delius/appointments")
+
+      append("?username=$username")
+      crn?.let { append("&crn=$it") }
+      fromDate?.let { append("&fromDate=$it") }
+      toDate?.let { append("&toDate=$it") }
+      projectCodes.forEach {
+        append("&projectCodes=$it")
+      }
+      append("&page=$pageNumber")
+      append("&size=$pageSize")
+      append("&sort=${URLEncoder.encode(sortString, "UTF-8")}")
+    }
 
     val pageResponse = PageResponse(appointments, PageResponse.PageMeta(pageSize, pageNumber, appointments.size.toLong(), 1))
 

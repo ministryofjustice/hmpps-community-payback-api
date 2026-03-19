@@ -32,12 +32,12 @@ class AppointmentService(
   ) = appointmentRetrievalService.getAppointment(projectCode, appointmentId)
 
   fun getAppointments(
-    crn: String?,
-    fromDate: LocalDate?,
-    toDate: LocalDate?,
-    outcomeCodes: List<String>?,
-    projectCodes: List<String>?,
-    projectTypeGroup: ProjectTypeGroupDto?,
+    crn: String? = null,
+    fromDate: LocalDate? = null,
+    toDate: LocalDate? = null,
+    outcomeCodes: List<String>? = null,
+    projectCodes: List<String>? = null,
+    projectTypeGroup: ProjectTypeGroupDto? = null,
     pageable: Pageable,
   ) = appointmentRetrievalService.getAppointments(crn, fromDate, toDate, outcomeCodes, projectCodes, projectTypeGroup, pageable)
 

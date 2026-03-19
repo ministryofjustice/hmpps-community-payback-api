@@ -1,6 +1,8 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.service
 
 import org.slf4j.LoggerFactory
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Sort
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
@@ -20,11 +22,12 @@ import java.time.temporal.ChronoUnit
 
 @Service
 class SessionService(
-  val communityPaybackAndDeliusClient: CommunityPaybackAndDeliusClient,
-  val sessionMappers: SessionMappers,
-  val sessionSupervisorEntityRepository: SessionSupervisorEntityRepository,
-  val contextService: ContextService,
-  val projectService: ProjectService,
+  private val communityPaybackAndDeliusClient: CommunityPaybackAndDeliusClient,
+  private val sessionMappers: SessionMappers,
+  private val sessionSupervisorEntityRepository: SessionSupervisorEntityRepository,
+  private val contextService: ContextService,
+  private val projectService: ProjectService,
+  private val appointmentService: AppointmentService,
 ) {
   private companion object {
     private val log = LoggerFactory.getLogger(this::class.java)
@@ -56,14 +59,18 @@ class SessionService(
     projectCode: String,
     date: LocalDate,
   ): SessionDto {
-    val projectSession = communityPaybackAndDeliusClient.getSession(
-      projectCode = projectCode,
-      date = date,
-      username = contextService.getUserName(),
+    val project = projectService.getProject(projectCode)
+    val appointments = appointmentService.getAppointments(
+      fromDate = date,
+      toDate = date,
+      projectCodes = listOf(projectCode),
+      pageable = PageRequest.of(0, Int.MAX_VALUE, Sort.by("name").descending()),
     )
-    return sessionMappers.toDto(
+
+    return sessionMappers.toSessionDto(
       date = date,
-      session = projectSession,
+      project = project,
+      appointments = appointments.content,
     )
   }
 
