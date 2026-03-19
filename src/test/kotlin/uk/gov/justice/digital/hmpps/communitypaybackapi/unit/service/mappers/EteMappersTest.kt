@@ -6,6 +6,7 @@ import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.junit5.MockKExtension
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
+import org.assertj.core.api.Assertions.within
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -40,6 +41,7 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.OffsetDateTime
+import java.time.temporal.ChronoUnit
 import java.util.UUID
 
 @ExtendWith(MockKExtension::class)
@@ -317,7 +319,7 @@ class EteMappersTest {
       val expectedTimeMinutes = 120L
       val attempts = 1
       val externalReference = "REF-123-ABC"
-      val createdAt = OffsetDateTime.parse("2007-06-03T10:15:30+01:00")
+      val receivedOn = OffsetDateTime.parse("2007-06-03T10:15:30+01:00")
 
       val entity = EteCourseCompletionEventEntity(
         id = id,
@@ -337,7 +339,8 @@ class EteMappersTest {
         expectedTimeMinutes = expectedTimeMinutes,
         attempts = attempts,
         externalReference = externalReference,
-        createdAt = createdAt,
+        receivedAt = receivedOn,
+        createdAt = OffsetDateTime.now(),
         resolution = if (resolved) {
           EteCourseCompletionEventResolutionEntity.valid()
         } else {
@@ -530,7 +533,7 @@ class EteMappersTest {
       assertThat(result.status).isEqualTo(EteCourseCompletionEventStatus.FAILED)
       assertThat(result.completionDate).isEqualTo("2026-01-01")
       assertThat(result.externalReference).isEqualTo("EXT123")
-      assertThat(result.id).isNotNull
+      assertThat(result.receivedAt).isCloseTo(OffsetDateTime.now(), within(1, ChronoUnit.SECONDS))
     }
   }
 }

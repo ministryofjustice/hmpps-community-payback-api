@@ -8,6 +8,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompleti
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventStatus
 import java.time.LocalDate
+import java.time.OffsetDateTime
 import java.util.UUID
 import kotlin.random.Random
 
@@ -63,6 +64,7 @@ class DevEteCourseCompletionFixtures(
       expectedTimeMinutes = totalTime + seededRandom.nextLong(-10, 10),
       attempts = 1,
       externalReference = "EXT-DEV-" + offset.toString().padStart(6, '0'),
+      receivedAt = OffsetDateTime.now(),
     )
   }
 

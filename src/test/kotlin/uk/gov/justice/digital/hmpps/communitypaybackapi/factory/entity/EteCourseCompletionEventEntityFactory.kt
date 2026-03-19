@@ -8,6 +8,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompleti
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventStatus
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.random
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.randomLocalDate
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.randomOffsetDateTime
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.random.Random
@@ -30,6 +31,7 @@ fun EteCourseCompletionEventEntity.Companion.valid() = EteCourseCompletionEventE
   attempts = 1,
   expectedTimeMinutes = Random.nextLong(30, 240),
   externalReference = String.random(),
+  receivedAt = randomOffsetDateTime(),
 )
 
 fun EteCourseCompletionEventEntity.Companion.valid(ctx: ApplicationContext) = EteCourseCompletionEventEntity.valid().copy(

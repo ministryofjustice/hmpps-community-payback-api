@@ -63,6 +63,8 @@ data class EteCourseCompletionEventEntity(
   @OneToOne(mappedBy = "eteCourseCompletionEvent", cascade = [CascadeType.REMOVE])
   val resolution: EteCourseCompletionEventResolutionEntity? = null,
 
+  val receivedAt: OffsetDateTime,
+
   @CreationTimestamp
   val createdAt: OffsetDateTime = OffsetDateTime.now(),
 
