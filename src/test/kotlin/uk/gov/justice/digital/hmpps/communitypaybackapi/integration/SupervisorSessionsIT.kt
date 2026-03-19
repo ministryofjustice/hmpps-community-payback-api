@@ -8,9 +8,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointmentSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProject
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectAndLocation
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectSummary
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSession
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSessionSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSessionSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionDto
@@ -171,11 +169,17 @@ class SupervisorSessionsIT : IntegrationTestBase() {
       val today = LocalDate.now()
       allocateSessionToSupervisor1("PROJ1", today)
 
-      CommunityPaybackAndDeliusMockServer.getProjectSession(
+      CommunityPaybackAndDeliusMockServer.getProject(NDProject.valid(ctx).copy(code = "PROJ1"))
+
+      CommunityPaybackAndDeliusMockServer.getAppointments(
         username = "USER1",
-        date = today,
-        session = NDSession.valid(ctx).copy(
-          project = NDProjectAndLocation.valid().copy(code = "PROJ1"),
+        pageSize = Int.MAX_VALUE,
+        fromDate = today,
+        toDate = today,
+        projectCodes = listOf("PROJ1"),
+        appointments = listOf(
+          NDAppointmentSummary.valid(ctx).copy(),
+          NDAppointmentSummary.valid(ctx).copy(),
         ),
       )
 

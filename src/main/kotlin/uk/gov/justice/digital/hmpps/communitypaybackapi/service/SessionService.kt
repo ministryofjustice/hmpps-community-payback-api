@@ -60,17 +60,12 @@ class SessionService(
     date: LocalDate,
   ): SessionDto {
     val project = projectService.getProject(projectCode)
-    val appointments = appointmentService.getAppointments(
-      fromDate = date,
-      toDate = date,
-      projectCodes = listOf(projectCode),
-      pageable = PageRequest.of(0, Int.MAX_VALUE, Sort.by("name").descending()),
-    )
+    val appointments = getSessionAppointments(projectCode, date)
 
     return sessionMappers.toSessionDto(
       date = date,
       project = project,
-      appointments = appointments.content,
+      appointments = appointments,
     )
   }
 
@@ -119,10 +114,17 @@ class SessionService(
 
   private fun SessionSupervisorEntity.toDto() = sessionMappers.toSummaryDto(
     date = day,
-    communityPaybackAndDeliusClient.getSession(
-      projectCode = projectCode,
-      date = day,
-      username = contextService.getUserName(),
-    ),
+    project = projectService.getProject(projectCode),
+    appointments = getSessionAppointments(projectCode, day),
   )
+
+  private fun getSessionAppointments(
+    projectCode: String,
+    date: LocalDate,
+  ) = appointmentService.getAppointments(
+    fromDate = date,
+    toDate = date,
+    projectCodes = listOf(projectCode),
+    pageable = PageRequest.of(0, Int.MAX_VALUE, Sort.by("name").descending()),
+  ).content
 }

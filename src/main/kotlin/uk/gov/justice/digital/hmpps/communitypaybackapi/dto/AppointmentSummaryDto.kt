@@ -29,5 +29,7 @@ data class AppointmentSummaryDto(
   val projectTypeCode: String?, // Remove this nullability when session search changes to new endpoints
   val notes: String?,
 ) {
+  fun hasOutcome() = contactOutcome != null
+
   companion object
 }

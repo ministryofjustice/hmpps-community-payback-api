@@ -2,7 +2,6 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers
 
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAddress
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSession
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSessionSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSessionSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentSummaryDto
@@ -38,16 +37,17 @@ class SessionMappers(
 
   fun toSummaryDto(
     date: LocalDate,
-    session: NDSession,
+    project: ProjectDto,
+    appointments: List<AppointmentSummaryDto>,
   ) = SessionSummaryDto(
-    projectName = session.project.name,
-    projectCode = session.project.code,
+    projectName = project.projectName,
+    projectCode = project.projectCode,
     date = date,
     startTime = LocalTime.of(0, 0),
     endTime = LocalTime.of(0, 0),
-    numberOfOffendersAllocated = session.appointmentSummaries.size,
-    numberOfOffendersWithEA = session.appointmentSummaries.count { it.hasOutcome() && findOutcome(it.outcome!!.code).enforceable },
-    numberOfOffendersWithOutcomes = session.appointmentSummaries.count { it.hasOutcome() },
+    numberOfOffendersAllocated = appointments.size,
+    numberOfOffendersWithEA = appointments.count { it.hasOutcome() && findOutcome(it.contactOutcome!!.code).enforceable },
+    numberOfOffendersWithOutcomes = appointments.count { it.hasOutcome() },
   )
 
   private fun findOutcome(deliusCode: String) = contactOutcomeEntityRepository.findByCode(deliusCode) ?: error("Can't find outcome for code $deliusCode")

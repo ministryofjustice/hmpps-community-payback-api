@@ -9,14 +9,11 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAddress
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointmentSummary
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDContactOutcome
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectAndLocation
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectSummary
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSession
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSessionSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSessionSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentSummaryDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ContactOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
@@ -163,21 +160,18 @@ class SessionMappersTest {
 
     @Test
     fun `Should map correctly`() {
-      val session = NDSession(
-        project = NDProjectAndLocation(
-          name = "Park Cleanup",
-          code = "N987654321",
-          location = NDAddress.valid(),
-        ),
-        appointmentSummaries = listOf(
-          NDAppointmentSummary.valid().copy(outcome = NDContactOutcome.valid().copy(code = "ATTEND-1")),
-          NDAppointmentSummary.valid().copy(outcome = NDContactOutcome.valid().copy(code = "ATTEND-1")),
-          NDAppointmentSummary.valid().copy(outcome = NDContactOutcome.valid().copy(code = "ATTEND-2")),
-          NDAppointmentSummary.valid().copy(outcome = NDContactOutcome.valid().copy(code = "ENFORCE-1")),
-          NDAppointmentSummary.valid().copy(outcome = NDContactOutcome.valid().copy(code = "ENFORCE-2")),
-          NDAppointmentSummary.valid().copy(outcome = null),
-          NDAppointmentSummary.valid().copy(outcome = null),
-        ),
+      val project = ProjectDto.valid().copy(
+        projectCode = "N987654321",
+        projectName = "Park Cleanup",
+      )
+      val appointments = listOf(
+        AppointmentSummaryDto.valid().copy(contactOutcome = ContactOutcomeDto.valid().copy(code = "ATTEND-1")),
+        AppointmentSummaryDto.valid().copy(contactOutcome = ContactOutcomeDto.valid().copy(code = "ATTEND-1")),
+        AppointmentSummaryDto.valid().copy(contactOutcome = ContactOutcomeDto.valid().copy(code = "ATTEND-2")),
+        AppointmentSummaryDto.valid().copy(contactOutcome = ContactOutcomeDto.valid().copy(code = "ENFORCE-1")),
+        AppointmentSummaryDto.valid().copy(contactOutcome = ContactOutcomeDto.valid().copy(code = "ENFORCE-1")),
+        AppointmentSummaryDto.valid().copy(contactOutcome = null),
+        AppointmentSummaryDto.valid().copy(contactOutcome = null),
       )
 
       every { contactOutcomeEntityRepository.findByCode("ATTEND-1") } returns ContactOutcomeEntity.valid().copy(attended = true, enforceable = false)
@@ -187,7 +181,8 @@ class SessionMappersTest {
 
       val result = service.toSummaryDto(
         date = LocalDate.of(2025, 9, 8),
-        session = session,
+        project = project,
+        appointments = appointments,
       )
 
       assertThat(result.projectCode).isEqualTo("N987654321")
