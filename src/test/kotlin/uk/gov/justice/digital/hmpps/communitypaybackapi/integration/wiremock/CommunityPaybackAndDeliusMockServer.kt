@@ -22,7 +22,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectOutcomeStats
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProviderSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProviderTeamSummaries
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSession
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSessionSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSupervisor
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSupervisorSummaries
@@ -257,24 +256,6 @@ object CommunityPaybackAndDeliusMockServer {
     appointmentId: Long,
   ) {
     WireMock.verify(putRequestedFor(urlEqualTo("/community-payback-and-delius/projects/$projectCode/appointments/$appointmentId/outcome")))
-  }
-
-  fun getProjectSession(
-    username: String,
-    date: LocalDate,
-    session: NDSession,
-  ) {
-    WireMock.stubFor(
-      get(
-        "/community-payback-and-delius/projects/${session.project.code}/appointments" +
-          "?date=${date.toIsoDateString()}&username=$username",
-      )
-        .willReturn(
-          aResponse()
-            .withHeader("Content-Type", "application/json")
-            .withBody(jsonMapper.writeValueAsString(session)),
-        ),
-    )
   }
 
   fun getTeamSupervisors(forProject: NDProject, supervisorSummaries: NDSupervisorSummaries) = getTeamSupervisors(

@@ -54,13 +54,6 @@ interface CommunityPaybackAndDeliusClient {
     @PathVariable projectCode: String,
   ): NDProject
 
-  @GetExchange("/projects/{projectCode}/appointments")
-  fun getSession(
-    @PathVariable projectCode: String,
-    @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate,
-    @RequestParam username: String,
-  ): NDSession
-
   @Cacheable(CacheKey.Delius.GET_SUPERVISORS)
   @GetExchange("/supervisors")
   fun getSupervisor(
@@ -158,13 +151,6 @@ data class NDSessionSummary(
   val allocatedCount: Int,
   val outcomeCount: Int,
   val enforcementActionCount: Int,
-) {
-  companion object
-}
-
-data class NDSession(
-  val project: NDProjectAndLocation,
-  val appointmentSummaries: List<NDAppointmentSummary>,
 ) {
   companion object
 }
