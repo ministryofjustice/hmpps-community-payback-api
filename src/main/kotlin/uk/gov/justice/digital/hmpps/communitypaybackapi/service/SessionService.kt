@@ -1,6 +1,8 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.service
 
 import org.slf4j.LoggerFactory
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Sort
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
@@ -20,11 +22,12 @@ import java.time.temporal.ChronoUnit
 
 @Service
 class SessionService(
-  val communityPaybackAndDeliusClient: CommunityPaybackAndDeliusClient,
-  val sessionMappers: SessionMappers,
-  val sessionSupervisorEntityRepository: SessionSupervisorEntityRepository,
-  val contextService: ContextService,
-  val projectService: ProjectService,
+  private val communityPaybackAndDeliusClient: CommunityPaybackAndDeliusClient,
+  private val sessionMappers: SessionMappers,
+  private val sessionSupervisorEntityRepository: SessionSupervisorEntityRepository,
+  private val contextService: ContextService,
+  private val projectService: ProjectService,
+  private val appointmentService: AppointmentService,
 ) {
   private companion object {
     private val log = LoggerFactory.getLogger(this::class.java)
@@ -56,14 +59,13 @@ class SessionService(
     projectCode: String,
     date: LocalDate,
   ): SessionDto {
-    val projectSession = communityPaybackAndDeliusClient.getSession(
-      projectCode = projectCode,
+    val project = projectService.getProject(projectCode)
+    val appointments = getSessionAppointments(projectCode, date)
+
+    return sessionMappers.toSessionDto(
       date = date,
-      username = contextService.getUserName(),
-    )
-    return sessionMappers.toDto(
-      date = date,
-      session = projectSession,
+      project = project,
+      appointments = appointments,
     )
   }
 
@@ -112,10 +114,17 @@ class SessionService(
 
   private fun SessionSupervisorEntity.toDto() = sessionMappers.toSummaryDto(
     date = day,
-    communityPaybackAndDeliusClient.getSession(
-      projectCode = projectCode,
-      date = day,
-      username = contextService.getUserName(),
-    ),
+    project = projectService.getProject(projectCode),
+    appointments = getSessionAppointments(projectCode, day),
   )
+
+  private fun getSessionAppointments(
+    projectCode: String,
+    date: LocalDate,
+  ) = appointmentService.getAppointments(
+    fromDate = date,
+    toDate = date,
+    projectCodes = listOf(projectCode),
+    pageable = PageRequest.of(0, Int.MAX_VALUE, Sort.by("name").descending()),
+  ).content
 }

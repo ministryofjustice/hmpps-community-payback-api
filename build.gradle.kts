@@ -53,11 +53,7 @@ dependencies {
   testImplementation("org.wiremock.integrations:wiremock-spring-boot:4.2.1")
   testImplementation("io.mockk:mockk:1.14.9")
   testImplementation("com.lemonappdev:konsist:0.17.3")
-  testImplementation("uk.gov.justice.service.hmpps:hmpps-subject-access-request-test-support:2.0.3")
-  // hmpps-subject-access-request-test-support requires an older version of mockito-kotlin
-  // so we have to force the version here. Otherwise, the hmpps gradle-spring-boot plugin
-  // pulls in a newer version
-  testImplementation("org.mockito.kotlin:mockito-kotlin:6.1.0")
+  testImplementation("uk.gov.justice.service.hmpps:hmpps-subject-access-request-test-support:2.1.0")
   testImplementation("org.zalando:logbook-spring-boot-starter:4.0.3")
 }
 

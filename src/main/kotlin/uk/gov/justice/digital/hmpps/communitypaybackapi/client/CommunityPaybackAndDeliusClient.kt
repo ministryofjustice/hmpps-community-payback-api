@@ -54,13 +54,6 @@ interface CommunityPaybackAndDeliusClient {
     @PathVariable projectCode: String,
   ): NDProject
 
-  @GetExchange("/projects/{projectCode}/appointments")
-  fun getSession(
-    @PathVariable projectCode: String,
-    @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate,
-    @RequestParam username: String,
-  ): NDSession
-
   @Cacheable(CacheKey.Delius.GET_SUPERVISORS)
   @GetExchange("/supervisors")
   fun getSupervisor(
@@ -162,24 +155,17 @@ data class NDSessionSummary(
   companion object
 }
 
-data class NDSession(
-  val project: NDProjectAndLocation,
-  val appointmentSummaries: List<NDAppointmentSummary>,
-) {
-  companion object
-}
-
 data class NDAppointmentSummary(
   val id: Long,
   val case: NDCaseSummary,
-  val project: NDProjectAppointmentSummary?, // Remove this nullability when session search changes to new endpoints
+  val project: NDProjectAppointmentSummary,
   val outcome: NDContactOutcome?,
   val requirementProgress: NDRequirementProgress,
-  val date: LocalDate? = null, // Remove this nullability when session search changes to new endpoints
-  val startTime: LocalTime? = null, // Remove this nullability when session search changes to new endpoints
-  val endTime: LocalTime? = null, // Remove this nullability when session search changes to new endpoints
-  val minutesCredited: Long? = null, // Remove this nullability when session search changes to new endpoints
-  val daysOverdue: Int? = null, // Remove this nullability when session search changes to new endpoints
+  val date: LocalDate,
+  val startTime: LocalTime,
+  val endTime: LocalTime,
+  val minutesCredited: Long?,
+  val daysOverdue: Int?,
   val notes: String?,
 ) {
   fun hasOutcome() = outcome != null

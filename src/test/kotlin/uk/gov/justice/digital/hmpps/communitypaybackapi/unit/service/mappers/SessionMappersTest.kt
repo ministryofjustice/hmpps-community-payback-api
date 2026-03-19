@@ -9,15 +9,12 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAddress
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointmentSummary
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseSummary
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDContactOutcome
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectAndLocation
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectSummary
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSession
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSessionSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSessionSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentSummaryDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ContactOutcomeDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
@@ -128,50 +125,33 @@ class SessionMappersTest {
   }
 
   @Nested
-  inner class SessionToSessionDto {
+  inner class ProjectAndAppointmentsToSessionDto {
     @Test
-    fun `should map ProjectSession to DTO correctly`() {
-      val appointmentSummary1 = NDAppointmentSummary.valid().copy(case = NDCaseSummary.valid().copy(crn = "CRN1"))
-      val appointmentSummary2 = NDAppointmentSummary.valid().copy(case = NDCaseSummary.valid().copy(crn = "CRN2"))
-
-      val appointmentSummaryDto1 = AppointmentSummaryDto.valid()
-      val appointmentSummaryDto2 = AppointmentSummaryDto.valid()
-      every { appointmentMappers.toSummaryDto(appointmentSummary1) } returns appointmentSummaryDto1
-      every { appointmentMappers.toSummaryDto(appointmentSummary2) } returns appointmentSummaryDto2
-
-      val session = NDSession(
-        project = NDProjectAndLocation(
-          name = "Park Cleanup",
-          code = "N987654321",
-          location = NDAddress(
-            buildingName = "The Tower",
-            addressNumber = "1a",
-            streetName = "Somewhere Lane",
-            townCity = "Guildford",
-            county = "Surrey",
-            postCode = "AA11 234",
-          ),
-        ),
-        appointmentSummaries = listOf(appointmentSummary1, appointmentSummary2),
+    fun `should map project and appointments to sessions correctly`() {
+      val project = ProjectDto.valid().copy(
+        projectCode = "PC1",
+        projectName = "Project Name 1",
+      )
+      val appointments = listOf(
+        AppointmentSummaryDto.valid(),
+        AppointmentSummaryDto.valid(),
       )
 
-      val result = service.toDto(
-        date = LocalDate.of(2025, 9, 8),
-        session = session,
+      val result = service.toSessionDto(
+        date = LocalDate.of(2025, 9, 1),
+        project = project,
+        appointments = appointments,
       )
 
-      assertThat(result.projectName).isEqualTo("Park Cleanup")
-      assertThat(result.projectCode).isEqualTo("N987654321")
-      assertThat(result.projectLocation).isEqualTo("The Tower, 1a Somewhere Lane, Guildford, Surrey, AA11 234")
-      assertThat(result.location.buildingName).isEqualTo("The Tower")
-      assertThat(result.location.buildingNumber).isEqualTo("1a")
-      assertThat(result.location.streetName).isEqualTo("Somewhere Lane")
-      assertThat(result.location.townCity).isEqualTo("Guildford")
-      assertThat(result.location.county).isEqualTo("Surrey")
-      assertThat(result.location.postCode).isEqualTo("AA11 234")
+      assertThat(result.projectCode).isEqualTo("PC1")
+      assertThat(result.projectName).isEqualTo("Project Name 1")
+      assertThat(result.location).isEqualTo(project.location)
+      assertThat(result.date).isEqualTo(LocalDate.of(2025, 9, 1))
+      assertThat(result.appointmentSummaries).isEqualTo(appointments)
 
-      assertThat(result.date).isEqualTo(LocalDate.of(2025, 9, 8))
-      assertThat(result.appointmentSummaries).isEqualTo(listOf(appointmentSummaryDto1, appointmentSummaryDto2))
+      assertThat(result.projectLocation).isEqualTo("")
+      assertThat(result.startTime).isEqualTo(LocalTime.of(0, 0))
+      assertThat(result.endTime).isEqualTo(LocalTime.of(0, 0))
     }
   }
 
@@ -180,21 +160,18 @@ class SessionMappersTest {
 
     @Test
     fun `Should map correctly`() {
-      val session = NDSession(
-        project = NDProjectAndLocation(
-          name = "Park Cleanup",
-          code = "N987654321",
-          location = NDAddress.valid(),
-        ),
-        appointmentSummaries = listOf(
-          NDAppointmentSummary.valid().copy(outcome = NDContactOutcome.valid().copy(code = "ATTEND-1")),
-          NDAppointmentSummary.valid().copy(outcome = NDContactOutcome.valid().copy(code = "ATTEND-1")),
-          NDAppointmentSummary.valid().copy(outcome = NDContactOutcome.valid().copy(code = "ATTEND-2")),
-          NDAppointmentSummary.valid().copy(outcome = NDContactOutcome.valid().copy(code = "ENFORCE-1")),
-          NDAppointmentSummary.valid().copy(outcome = NDContactOutcome.valid().copy(code = "ENFORCE-2")),
-          NDAppointmentSummary.valid().copy(outcome = null),
-          NDAppointmentSummary.valid().copy(outcome = null),
-        ),
+      val project = ProjectDto.valid().copy(
+        projectCode = "N987654321",
+        projectName = "Park Cleanup",
+      )
+      val appointments = listOf(
+        AppointmentSummaryDto.valid().copy(contactOutcome = ContactOutcomeDto.valid().copy(code = "ATTEND-1")),
+        AppointmentSummaryDto.valid().copy(contactOutcome = ContactOutcomeDto.valid().copy(code = "ATTEND-1")),
+        AppointmentSummaryDto.valid().copy(contactOutcome = ContactOutcomeDto.valid().copy(code = "ATTEND-2")),
+        AppointmentSummaryDto.valid().copy(contactOutcome = ContactOutcomeDto.valid().copy(code = "ENFORCE-1")),
+        AppointmentSummaryDto.valid().copy(contactOutcome = ContactOutcomeDto.valid().copy(code = "ENFORCE-1")),
+        AppointmentSummaryDto.valid().copy(contactOutcome = null),
+        AppointmentSummaryDto.valid().copy(contactOutcome = null),
       )
 
       every { contactOutcomeEntityRepository.findByCode("ATTEND-1") } returns ContactOutcomeEntity.valid().copy(attended = true, enforceable = false)
@@ -204,7 +181,8 @@ class SessionMappersTest {
 
       val result = service.toSummaryDto(
         date = LocalDate.of(2025, 9, 8),
-        session = session,
+        project = project,
+        appointments = appointments,
       )
 
       assertThat(result.projectCode).isEqualTo("N987654321")
