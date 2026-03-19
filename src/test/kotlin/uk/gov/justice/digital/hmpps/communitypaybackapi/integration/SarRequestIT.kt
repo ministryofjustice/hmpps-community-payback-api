@@ -31,6 +31,17 @@ import javax.sql.DataSource
  * The default tests will check the expected response is returned for Subject Access Requests (SARs), and also act as a
  * prompt to review the SAR returned whenever the entities or databases change.
  *
+ * # After making a content change or upstream formatting changes:
+ *
+ * Either fix the expected SAR response files in `/src/test/resources/sar` by hand, or if the change is related to
+ * upstream formatting you can grab a copy of the generated files using
+ *
+ *    SAR_GENERATE_ACTUAL=true ./gradlew test --tests "uk.gov.justice.digital.hmpps.communitypaybackapi.integration.SarRequestIT"
+ *
+ * And copy the contents generated in `/src/test/resources` into `/src/test/resources/sar` (renaming as required).
+ *
+ * # After making a database change:
+ *
  * Once you are happy that the SAR response is sufficient following a database change do the following
  *
  * 1. Update the expected flyway schema version
