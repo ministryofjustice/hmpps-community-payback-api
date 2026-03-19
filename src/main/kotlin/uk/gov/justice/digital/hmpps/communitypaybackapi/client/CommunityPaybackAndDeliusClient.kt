@@ -158,14 +158,14 @@ data class NDSessionSummary(
 data class NDAppointmentSummary(
   val id: Long,
   val case: NDCaseSummary,
-  val project: NDProjectAppointmentSummary?, // Remove this nullability when session search changes to new endpoints
+  val project: NDProjectAppointmentSummary,
   val outcome: NDContactOutcome?,
   val requirementProgress: NDRequirementProgress,
-  val date: LocalDate? = null, // Remove this nullability when session search changes to new endpoints
-  val startTime: LocalTime? = null, // Remove this nullability when session search changes to new endpoints
-  val endTime: LocalTime? = null, // Remove this nullability when session search changes to new endpoints
-  val minutesCredited: Long? = null, // Remove this nullability when session search changes to new endpoints
-  val daysOverdue: Int? = null, // Remove this nullability when session search changes to new endpoints
+  val date: LocalDate,
+  val startTime: LocalTime,
+  val endTime: LocalTime,
+  val minutesCredited: Long?,
+  val daysOverdue: Int?,
   val notes: String?,
 ) {
   fun hasOutcome() = outcome != null
