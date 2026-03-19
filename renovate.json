@@ -14,5 +14,5 @@
       "fileMatch": ["^\\.github/workflows/.*\\.yml$"]
     }
   ],
-  "ignoreDeps": ["postgres", "redis", "org.mockito.kotlin:mockito-kotlin"]
+  "ignoreDeps": ["postgres", "redis"]
 }
