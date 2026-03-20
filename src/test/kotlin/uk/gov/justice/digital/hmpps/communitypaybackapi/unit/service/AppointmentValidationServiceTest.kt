@@ -18,6 +18,8 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.OffenderDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectAvailabilityDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeGroupDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SchedulingDayOfWeekDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
@@ -79,6 +81,7 @@ class AppointmentValidationServiceTest {
       availability = SchedulingDayOfWeekDto.entries.map { dayOfWeek ->
         ProjectAvailabilityDto.valid().copy(dayOfWeek = dayOfWeek)
       },
+      projectType = ProjectTypeDto.valid().copy(group = ProjectTypeGroupDto.INDIVIDUAL),
     )
     val baselineUnpaidWorkDetails = UnpaidWorkDetailsDto.valid().copy(
       eventNumber = EVENT_NUMBER,
@@ -97,15 +100,37 @@ class AppointmentValidationServiceTest {
     inner class Success {
 
       @Test
-      fun success() {
-        val result = service.validateCreate(
-          create = baselineCreate,
-        )
+      fun `baseline request passes`() {
+        val result = service.validateCreate(baselineCreate)
 
         assertThat(result).isEqualTo(
           Validated(
             value = baselineCreate,
             minutesToCredit = Duration.ofMinutes(60),
+          ),
+        )
+      }
+
+      @Test
+      fun `minutes to credit correctly calculated`() {
+        every {
+          appointmentCalculationService.minutesToCredit(
+            contactOutcome = baselineOutcome,
+            startTime = baselineCreate.startTime,
+            endTime = baselineCreate.endTime,
+            penaltyMinutes = Duration.ofMinutes(55),
+          )
+        } returns Duration.ofMinutes(125)
+
+        val create = baselineCreate.copy(
+          attendanceData = AttendanceDataDto.valid().copy(penaltyMinutes = 55L),
+        )
+        val result = service.validateCreate(create)
+
+        assertThat(result).isEqualTo(
+          Validated(
+            value = create,
+            minutesToCredit = Duration.ofMinutes(125),
           ),
         )
       }
@@ -524,6 +549,55 @@ class AppointmentValidationServiceTest {
           .hasMessage("Outcome notes must be fewer than 4000 characters")
       }
     }
+
+    @Nested
+    inner class EteAllowanceRemaining {
+
+      val eteProject = baselineProject.copy(
+        projectType = ProjectTypeDto.valid().copy(
+          group = ProjectTypeGroupDto.ETE,
+        ),
+      )
+
+      val notEteProject = baselineProject.copy(
+        projectType = ProjectTypeDto.valid().copy(
+          group = ProjectTypeGroupDto.INDIVIDUAL,
+        ),
+      )
+
+      @Test
+      fun `Not ETE project, ignore remaining ETE allowance`() {
+        every { projectService.getProject(PROJECT_CODE) } returns notEteProject
+        every { appointmentCalculationService.minutesToCredit(any(), any(), any(), any()) } returns Duration.ofMinutes(120)
+
+        service.validateCreate(baselineCreate)
+      }
+
+      @Test
+      fun `ETE project with sufficient remaining ETE allowance for appointment`() {
+        every { appointmentCalculationService.minutesToCredit(any(), any(), any(), any()) } returns Duration.ofMinutes(60)
+        every { projectService.getProject(PROJECT_CODE) } returns eteProject
+        every { offenderService.getUnpaidWorkDetails(CRN, EVENT_NUMBER) } returns baselineUnpaidWorkDetails.copy(
+          remainingEteMinutes = 60,
+        )
+
+        service.validateCreate(baselineCreate)
+      }
+
+      @Test
+      fun `ETE project with insufficient remaining ETE allowance for appointment, throw exception`() {
+        every { appointmentCalculationService.minutesToCredit(any(), any(), any(), any()) } returns Duration.ofMinutes(61)
+        every { projectService.getProject(PROJECT_CODE) } returns eteProject
+        every { offenderService.getUnpaidWorkDetails(CRN, EVENT_NUMBER) } returns baselineUnpaidWorkDetails.copy(
+          remainingEteMinutes = 60,
+        )
+
+        assertThatThrownBy {
+          service.validateCreate(baselineCreate)
+        }.isInstanceOf(BadRequestException::class.java)
+          .hasMessage("Credited minutes of PT1H1M exceeds remaining allowed ETE minutes of PT1H")
+      }
+    }
   }
 
   @Nested
@@ -540,7 +614,7 @@ class AppointmentValidationServiceTest {
       endTime = LocalTime.MAX,
     )
     val baselineOutcome = ContactOutcomeEntity.valid().copy(code = OUTCOME_CODE)
-    val baselineProject = ProjectDto.valid().copy()
+    val baselineProject = ProjectDto.valid().copy(projectType = ProjectTypeDto.valid().copy(group = ProjectTypeGroupDto.INDIVIDUAL))
     val baselineUnpaidWorkDetails = UnpaidWorkDetailsDto.valid().copy(
       eventNumber = EVENT_NUMBER,
     )
@@ -557,9 +631,7 @@ class AppointmentValidationServiceTest {
     inner class Success {
 
       @Test
-      fun success() {
-        every { contactOutcomeEntityRepository.findByCode(OUTCOME_CODE) } returns baselineOutcome
-
+      fun `baseline request passes`() {
         val result = service.validateUpdate(
           appointment = baselineExistingAppointment,
           update = baselineUpdate,
@@ -569,6 +641,34 @@ class AppointmentValidationServiceTest {
           Validated(
             value = baselineUpdate,
             minutesToCredit = Duration.ofMinutes(60),
+          ),
+        )
+      }
+
+      @Test
+      fun `minutes to credit correctly calculated`() {
+        every {
+          appointmentCalculationService.minutesToCredit(
+            contactOutcome = baselineOutcome,
+            startTime = baselineUpdate.startTime,
+            endTime = baselineUpdate.endTime,
+            penaltyMinutes = Duration.ofMinutes(55),
+          )
+        } returns Duration.ofMinutes(125)
+
+        val update = baselineUpdate.copy(
+          attendanceData = AttendanceDataDto.valid().copy(penaltyMinutes = 55L),
+        )
+
+        val result = service.validateUpdate(
+          appointment = baselineExistingAppointment,
+          update = update,
+        )
+
+        assertThat(result).isEqualTo(
+          Validated(
+            value = update,
+            minutesToCredit = Duration.ofMinutes(125),
           ),
         )
       }
@@ -930,6 +1030,84 @@ class AppointmentValidationServiceTest {
           )
         }.isInstanceOf(BadRequestException::class.java)
           .hasMessage("Outcome notes must be fewer than 4000 characters")
+      }
+    }
+
+    @Nested
+    inner class EteAllowanceRemaining {
+
+      val eteProject = baselineProject.copy(
+        projectType = ProjectTypeDto.valid().copy(
+          group = ProjectTypeGroupDto.ETE,
+        ),
+      )
+
+      val notEteProject = baselineProject.copy(
+        projectType = ProjectTypeDto.valid().copy(
+          group = ProjectTypeGroupDto.INDIVIDUAL,
+        ),
+      )
+
+      @Test
+      fun `Not ETE project, ignore remaining ETE allowance`() {
+        every { projectService.getProject(PROJECT_CODE) } returns notEteProject
+        every { appointmentCalculationService.minutesToCredit(any(), any(), any(), any()) } returns Duration.ofMinutes(120)
+
+        service.validateUpdate(
+          appointment = baselineExistingAppointment,
+          update = baselineUpdate,
+        )
+      }
+
+      @Test
+      fun `ETE project with sufficient remaining ETE allowance for appointment`() {
+        every { projectService.getProject(PROJECT_CODE) } returns eteProject
+        every { appointmentCalculationService.minutesToCredit(any(), any(), any(), any()) } returns Duration.ofMinutes(60)
+        every { offenderService.getUnpaidWorkDetails(CRN, EVENT_NUMBER) } returns baselineUnpaidWorkDetails.copy(
+          remainingEteMinutes = 60,
+        )
+
+        service.validateUpdate(
+          appointment = baselineExistingAppointment.copy(
+            minutesCredited = null,
+          ),
+          update = baselineUpdate,
+        )
+      }
+
+      @Test
+      fun `ETE project with insufficient remaining ETE allowance for appointment, throw exception`() {
+        every { projectService.getProject(PROJECT_CODE) } returns eteProject
+        every { appointmentCalculationService.minutesToCredit(any(), any(), any(), any()) } returns Duration.ofMinutes(61)
+        every { offenderService.getUnpaidWorkDetails(CRN, EVENT_NUMBER) } returns baselineUnpaidWorkDetails.copy(
+          remainingEteMinutes = 60,
+        )
+
+        assertThatThrownBy {
+          service.validateUpdate(
+            appointment = baselineExistingAppointment.copy(
+              minutesCredited = null,
+            ),
+            update = baselineUpdate,
+          )
+        }.isInstanceOf(BadRequestException::class.java)
+          .hasMessage("Credited minutes of PT1H1M exceeds remaining allowed ETE minutes of PT1H")
+      }
+
+      @Test
+      fun `Ensure existing minutes credited aren't 'double counted' when updating minutes credited`() {
+        every { projectService.getProject(PROJECT_CODE) } returns eteProject
+        every { appointmentCalculationService.minutesToCredit(any(), any(), any(), any()) } returns Duration.ofMinutes(120)
+        every { offenderService.getUnpaidWorkDetails(CRN, EVENT_NUMBER) } returns baselineUnpaidWorkDetails.copy(
+          remainingEteMinutes = 20,
+        )
+
+        service.validateUpdate(
+          appointment = baselineExistingAppointment.copy(
+            minutesCredited = 100,
+          ),
+          update = baselineUpdate,
+        )
       }
     }
   }
