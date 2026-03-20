@@ -174,6 +174,7 @@ class EteMappers(
       expectedTimeMinutes = messageAttributes.expectedTimeMinutes,
       externalReference = messageAttributes.externalReference,
       attempts = messageAttributes.attempts,
+      receivedAt = OffsetDateTime.now(),
     )
   }
 }
@@ -196,6 +197,6 @@ fun EteCourseCompletionEventEntity.toDto() = EteCourseCompletionEventDto(
   expectedTimeMinutes = expectedTimeMinutes,
   attempts = attempts,
   externalReference = externalReference,
-  importedOn = createdAt.toLocalDateTime(),
+  importedOn = receivedAt.toLocalDateTime(),
   resolved = resolution != null,
 )

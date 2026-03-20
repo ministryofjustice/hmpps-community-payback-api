@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.stereotype.Repository
 import java.time.LocalDate
+import java.time.OffsetDateTime
 import java.util.UUID
 
 @Repository
@@ -34,6 +35,19 @@ interface EteCourseCompletionEventEntityRepository : JpaRepository<EteCourseComp
     toDate: LocalDate?,
     pageable: Pageable,
   ): Page<EteCourseCompletionEventEntity>
+
+  @Query(
+    """SELECT e FROM EteCourseCompletionEventEntity e
+    WHERE e.resolution.crn = :crn AND 
+    ((cast(:fromDateInclusive as timestamp) IS NULL) OR ((e.receivedAt >= :fromDateInclusive) OR (e.resolution.createdAt >= :fromDateInclusive))) AND 
+    ((cast(:toDateTimeExclusive as timestamp) IS NULL) OR ((e.receivedAt < :toDateTimeExclusive) OR (e.resolution.createdAt < :toDateTimeExclusive)))
+    ORDER BY e.createdAt DESC""",
+  )
+  fun findByCrnAndReceivedAt(
+    crn: String,
+    fromDateInclusive: OffsetDateTime?,
+    toDateTimeExclusive: OffsetDateTime?,
+  ): List<EteCourseCompletionEventEntity>
 
   enum class ResolutionStatus {
     ANY,

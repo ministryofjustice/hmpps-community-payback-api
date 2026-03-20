@@ -54,7 +54,7 @@ data class AppointmentEventEntity(
   val supervisorOfficerCode: String?,
   val notes: String?,
 
-  @ManyToOne(fetch = FetchType.LAZY)
+  @ManyToOne(fetch = FetchType.EAGER)
   @JoinColumn(name = "contact_outcome_id", referencedColumnName = "id")
   val contactOutcome: ContactOutcomeEntity?,
   val hiVisWorn: Boolean?,

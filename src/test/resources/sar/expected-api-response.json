@@ -1,6 +1,29 @@
 {
   "appointmentEvents": [
     {
+      "triggeredAt": "2025-01-02T23:59:59Z",
+      "triggerType": "ETE_COURSE_COMPLETION_RESOLUTION",
+      "triggeredByUsername": null,
+      "deliusEventNumber": 1,
+      "eventType": "CREATE",
+      "projectName": "project 2",
+      "date": "2025-05-01",
+      "startTime": "00:00:00",
+      "endTime": "01:00:00",
+      "pickupLocation": "The pickup location",
+      "pickupTime": "09:35:00",
+      "notes": "The notes",
+      "contactOutcome": "Acceptable Absence - Court/Legal",
+      "minutesCredited": 50,
+      "penaltyMinutes": 20,
+      "hiVisWorn": false,
+      "workedIntensively": false,
+      "workQuality": "SATISFACTORY",
+      "behaviour": "UNSATISFACTORY",
+      "alertActive": false,
+      "sensitive": true
+    },
+    {
       "triggeredAt": "2025-02-16T00:00:00Z",
       "triggerType": "USER",
       "triggeredByUsername": "username1",
@@ -91,6 +114,84 @@
       "behaviour": "UNSATISFACTORY",
       "alertActive": false,
       "sensitive": true
+    }
+  ],
+  "eteCourseCompletionEvents": [
+    {
+      "receivedAt": "2025-02-15T00:00:00Z",
+      "firstName": "has no",
+      "lastName": "appointment",
+      "dateOfBirth": "2020-01-02",
+      "region": "region two",
+      "pdu": "Cwm Taf Morgannwg",
+      "office": "office two",
+      "email": "email two",
+      "courseName": "course two",
+      "courseType": "course type two",
+      "provider": "provider two",
+      "completionDate": "2025-06-02",
+      "status": "PASSED",
+      "totalTimeMinutes": 30,
+      "expectedTimeMinutes": 40,
+      "attempts": null,
+      "resolution": {
+        "decision": "COURSE_ALREADY_COMPLETED_WITHIN_THRESHOLD",
+        "recordedAt": "2025-02-15T23:59:59Z",
+        "recordedByUsername": "user2",
+        "appointmentCreated": false,
+        "appointmentUpdated": false,
+        "minutesCredited": null,
+        "appointment": null
+      }
+    },
+    {
+      "receivedAt": "2025-01-02T00:00:00Z",
+      "firstName": "has",
+      "lastName": "appointment",
+      "dateOfBirth": "2020-01-01",
+      "region": "region one",
+      "pdu": "Cardiff and Vale",
+      "office": "office one",
+      "email": "email one",
+      "courseName": "course one",
+      "courseType": "course type one",
+      "provider": "provider one",
+      "completionDate": "2025-06-01",
+      "status": "PASSED",
+      "totalTimeMinutes": 10,
+      "expectedTimeMinutes": 20,
+      "attempts": 2,
+      "resolution": {
+        "decision": "CREDIT_TIME",
+        "recordedAt": "2025-01-02T23:59:59Z",
+        "recordedByUsername": "user1",
+        "appointmentCreated": true,
+        "appointmentUpdated": false,
+        "minutesCredited": 101,
+        "appointment": {
+          "triggeredAt": "2025-01-02T23:59:59Z",
+          "triggerType": "ETE_COURSE_COMPLETION_RESOLUTION",
+          "triggeredByUsername": null,
+          "deliusEventNumber": 1,
+          "eventType": "CREATE",
+          "projectName": "project 2",
+          "date": "2025-05-01",
+          "startTime": "00:00:00",
+          "endTime": "01:00:00",
+          "pickupLocation": "The pickup location",
+          "pickupTime": "09:35:00",
+          "notes": "The notes",
+          "contactOutcome": "Acceptable Absence - Court/Legal",
+          "minutesCredited": 50,
+          "penaltyMinutes": 20,
+          "hiVisWorn": false,
+          "workedIntensively": false,
+          "workQuality": "SATISFACTORY",
+          "behaviour": "UNSATISFACTORY",
+          "alertActive": false,
+          "sensitive": true
+        }
+      }
     }
   ]
 }

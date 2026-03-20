@@ -1,0 +1,5 @@
+CREATE INDEX appointment_events_trigger_type_idx ON appointment_events (trigger_type,triggered_by);
+
+CREATE INDEX ete_course_completion_events_received_at_idx ON ete_course_completion_events (received_at);
+
+CREATE INDEX ete_course_completion_event_resolutions_created_at_idx ON ete_course_completion_event_resolutions (created_at);

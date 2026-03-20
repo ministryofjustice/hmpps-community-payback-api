@@ -2,7 +2,7 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.integration.sar
 
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.getBean
 import org.springframework.context.ApplicationContext
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntityRepository
@@ -19,7 +19,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.sar.SarReque
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.sar.SarRequestIT.Companion.RANGE_TEST_TO_DATE
 import java.time.LocalDate
 import java.time.LocalTime
-import java.util.UUID
 
 /**
  * Top level SAR tests are defined in [SarRequestIT]
@@ -29,20 +28,17 @@ import java.util.UUID
  */
 class SarRequestAppointmentEventIT : IntegrationTestBase() {
 
-  @Autowired
-  lateinit var appointmentEventEntityRepository: AppointmentEventEntityRepository
-
   @BeforeEach
   fun clearTestData() {
-    SarRequestAppointmentEventFixtureFactory(ctx, appointmentEventEntityRepository).clearTestData()
+    FixtureFactory(ctx).clearTestData()
   }
 
   fun setupTestData() {
-    SarRequestAppointmentEventFixtureFactory(ctx, appointmentEventEntityRepository).setupTestData()
+    FixtureFactory(ctx).setupTestData()
   }
 
   @Test
-  fun `filter on no dates`() {
+  fun `filter with no dates`() {
     setupTestData()
 
     webTestClient.get().uri("/subject-access-request?crn=$CRN")
@@ -61,7 +57,8 @@ class SarRequestAppointmentEventIT : IntegrationTestBase() {
   fun `filter on from and to date`() {
     setupTestData()
 
-    webTestClient.get().uri("/subject-access-request?crn=$CRN&fromDate=$RANGE_TEST_FROM_DATE&toDate=$RANGE_TEST_TO_DATE")
+    webTestClient.get()
+      .uri("/subject-access-request?crn=$CRN&fromDate=$RANGE_TEST_FROM_DATE&toDate=$RANGE_TEST_TO_DATE")
       .headers(setAuthorisation(roles = listOf("ROLE_SAR_DATA_ACCESS")))
       .exchange()
       .expectStatus()
@@ -100,19 +97,61 @@ class SarRequestAppointmentEventIT : IntegrationTestBase() {
       .jsonPath("$.content.appointmentEvents[1].deliusEventNumber").isEqualTo(2)
       .jsonPath("$.content.appointmentEvents[2].deliusEventNumber").isEqualTo(1)
   }
-}
 
-class SarRequestAppointmentEventFixtureFactory(
-  private val ctx: ApplicationContext,
-  private val appointmentEventEntityRepository: AppointmentEventEntityRepository,
-) {
+  class FixtureFactory(
+    private val ctx: ApplicationContext,
+  ) {
 
-  fun clearTestData() {
-    appointmentEventEntityRepository.deleteAll()
-  }
+    val appointmentEventEntityRepository = ctx.getBean<AppointmentEventEntityRepository>()
 
-  fun setupTestData() {
-    val baselineAppointmentEvent = AppointmentEventEntity.valid(ctx).copy(
+    fun clearTestData() {
+      appointmentEventEntityRepository.deleteAll()
+    }
+
+    fun setupTestData() {
+      appointmentEventEntityRepository.saveAll(
+        listOf(
+          baselineAppointmentEvent().copy(
+            triggeredAt = RANGE_TEST_FROM_DATE.minusDays(1).atLastSecondOfDay(),
+            deliusEventNumber = 1,
+            eventType = AppointmentEventType.CREATE,
+          ),
+          baselineAppointmentEvent().copy(
+            triggeredAt = RANGE_TEST_FROM_DATE.atFirstSecondOfDay(),
+            triggerType = AppointmentEventTriggerType.SCHEDULING,
+            deliusEventNumber = 2,
+            eventType = AppointmentEventType.UPDATE,
+            projectName = "Some other project name",
+            date = LocalDate.of(2026, 3, 4),
+            startTime = LocalTime.of(23, 0),
+            endTime = LocalTime.of(23, 59),
+            pickupLocationDescription = "Some other pickup location",
+            pickupTime = LocalTime.of(22, 0),
+            notes = "Some different notes",
+            contactOutcome = null,
+            minutesCredited = null,
+            penaltyMinutes = null,
+            hiVisWorn = null,
+            workedIntensively = null,
+            workQuality = null,
+            behaviour = null,
+            alertActive = null,
+            sensitive = null,
+          ),
+          baselineAppointmentEvent().copy(
+            triggeredAt = RANGE_TEST_TO_DATE.atLastSecondOfDay(),
+            triggerType = AppointmentEventTriggerType.ETE_COURSE_COMPLETION_RESOLUTION,
+            deliusEventNumber = 3,
+          ),
+          baselineAppointmentEvent().copy(
+            triggeredAt = RANGE_TEST_TO_DATE.plusDays(1).atFirstSecondOfDay(),
+            deliusEventNumber = 4,
+          ),
+        ),
+      )
+    }
+
+    fun baselineAppointmentEvent() = AppointmentEventEntity.valid(ctx).copy(
       crn = CRN,
       triggerType = AppointmentEventTriggerType.USER,
       triggeredBy = "username1",
@@ -133,51 +172,6 @@ class SarRequestAppointmentEventFixtureFactory(
       behaviour = Behaviour.UNSATISFACTORY,
       alertActive = false,
       sensitive = true,
-    )
-
-    appointmentEventEntityRepository.saveAll(
-      listOf(
-        baselineAppointmentEvent.copy(
-          id = UUID.randomUUID(),
-          triggeredAt = RANGE_TEST_FROM_DATE.minusDays(1).atLastSecondOfDay(),
-          deliusEventNumber = 1,
-          eventType = AppointmentEventType.CREATE,
-        ),
-        baselineAppointmentEvent.copy(
-          id = UUID.randomUUID(),
-          triggeredAt = RANGE_TEST_FROM_DATE.atFirstSecondOfDay(),
-          triggerType = AppointmentEventTriggerType.SCHEDULING,
-          deliusEventNumber = 2,
-          eventType = AppointmentEventType.UPDATE,
-          projectName = "Some other project name",
-          date = LocalDate.of(2026, 3, 4),
-          startTime = LocalTime.of(23, 0),
-          endTime = LocalTime.of(23, 59),
-          pickupLocationDescription = "Some other pickup location",
-          pickupTime = LocalTime.of(22, 0),
-          notes = "Some different notes",
-          contactOutcome = null,
-          minutesCredited = null,
-          penaltyMinutes = null,
-          hiVisWorn = null,
-          workedIntensively = null,
-          workQuality = null,
-          behaviour = null,
-          alertActive = null,
-          sensitive = null,
-        ),
-        baselineAppointmentEvent.copy(
-          id = UUID.randomUUID(),
-          triggeredAt = RANGE_TEST_TO_DATE.atLastSecondOfDay(),
-          triggerType = AppointmentEventTriggerType.ETE_COURSE_COMPLETION_RESOLUTION,
-          deliusEventNumber = 3,
-        ),
-        baselineAppointmentEvent.copy(
-          id = UUID.randomUUID(),
-          triggeredAt = RANGE_TEST_TO_DATE.plusDays(1).atFirstSecondOfDay(),
-          deliusEventNumber = 4,
-        ),
-      ),
     )
   }
 }
