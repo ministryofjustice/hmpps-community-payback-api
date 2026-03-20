@@ -11,7 +11,6 @@ import jakarta.persistence.OneToOne
 import jakarta.persistence.PreUpdate
 import jakarta.persistence.Table
 import org.apache.commons.lang3.builder.CompareToBuilder.reflectionCompare
-import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.proxy.HibernateProxy
 import java.time.OffsetDateTime
 import java.util.UUID
@@ -29,7 +28,6 @@ data class EteCourseCompletionEventResolutionEntity(
   @Enumerated(EnumType.STRING)
   val resolution: EteCourseCompletionResolution,
 
-  @CreationTimestamp
   val createdAt: OffsetDateTime = OffsetDateTime.now(),
   val createdByUsername: String,
 
@@ -39,6 +37,11 @@ data class EteCourseCompletionEventResolutionEntity(
    */
   val deliusEventNumber: Long? = null,
   val deliusAppointmentId: Long? = null,
+  /**
+   * true = project created
+   * false = project updated
+   * null = project not created or updated
+   */
   val deliusAppointmentCreated: Boolean? = null,
   val projectCode: String? = null,
   val minutesCredited: Long? = null,

@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.subjectaccessrequest.SarApiDataTest
 import uk.gov.justice.digital.hmpps.subjectaccessrequest.SarFlywaySchemaTest
@@ -64,9 +63,6 @@ class SarRequestIT : IntegrationTestBase() {
 
   @Autowired
   lateinit var dataSource: DataSource
-
-  @Autowired
-  lateinit var appointmentEventEntityRepository: AppointmentEventEntityRepository
 
   /**
    * Delegates to a test defined in the superclass to check the api response content
@@ -142,10 +138,12 @@ class SarRequestIT : IntegrationTestBase() {
   }
 
   private fun clearTestData() {
-    SarRequestAppointmentEventFixtureFactory(ctx, appointmentEventEntityRepository).clearTestData()
+    SarRequestAppointmentEventIT.FixtureFactory(ctx).clearTestData()
+    SarRequestCourseCompletionEventIT.FixtureFactory(ctx).clearTestData()
   }
 
   private fun setupTestData() {
-    SarRequestAppointmentEventFixtureFactory(ctx, appointmentEventEntityRepository).setupTestData()
+    SarRequestAppointmentEventIT.FixtureFactory(ctx).setupTestData()
+    SarRequestCourseCompletionEventIT.FixtureFactory(ctx).setupReportTestData()
   }
 }

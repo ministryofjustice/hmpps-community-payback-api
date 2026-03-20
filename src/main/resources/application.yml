@@ -85,7 +85,7 @@ management:
 hmpps:
   sar:
     template:
-      path: /sar-template.mustache
+      path: /sar/sar-template.mustache
       enabled: true
   sqs:
     # this sets a backoff for retries on when errors occur consuming messages

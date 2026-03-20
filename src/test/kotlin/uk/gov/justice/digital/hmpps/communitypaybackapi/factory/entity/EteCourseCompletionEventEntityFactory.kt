@@ -15,7 +15,7 @@ import kotlin.random.Random
 
 fun EteCourseCompletionEventEntity.Companion.valid() = EteCourseCompletionEventEntity(
   id = UUID.randomUUID(),
-  firstName = String.Companion.random(20),
+  firstName = String.random(20),
   lastName = String.random(20),
   dateOfBirth = randomLocalDate(),
   region = String.random(10),

@@ -60,8 +60,8 @@ data class EteCourseCompletionEventEntity(
 
   val externalReference: String,
 
-  @OneToOne(mappedBy = "eteCourseCompletionEvent", cascade = [CascadeType.REMOVE])
-  val resolution: EteCourseCompletionEventResolutionEntity? = null,
+  @OneToOne(mappedBy = "eteCourseCompletionEvent", cascade = [CascadeType.ALL])
+  var resolution: EteCourseCompletionEventResolutionEntity? = null,
 
   val receivedAt: OffsetDateTime,
 

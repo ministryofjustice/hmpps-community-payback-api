@@ -7,5 +7,6 @@ import java.util.UUID
 @Repository
 interface CommunityCampusPduEntityRepository : JpaRepository<CommunityCampusPduEntity, UUID> {
   fun findAllByOrderByNameAsc(): List<CommunityCampusPduEntity>
+  fun findByName(name: String): CommunityCampusPduEntity?
   fun findByNameIgnoreCase(name: String): CommunityCampusPduEntity?
 }

@@ -29,6 +29,8 @@ interface AppointmentEventEntityRepository : JpaRepository<AppointmentEventEntit
 
   fun findTopByDeliusAppointmentIdOrderByCreatedAtDesc(deliusAppointmentId: Long): AppointmentEventEntity?
 
+  fun findByTriggerTypeAndTriggeredBy(triggerType: AppointmentEventTriggerType, triggeredBy: String): AppointmentEventEntity?
+
   @Modifying
   @Query("update AppointmentEventEntity set triggeredSchedulingAt = :now, triggeredSchedulingId = :schedulingId where id = :eventId")
   fun setSchedulingRanAt(eventId: UUID, schedulingId: UUID, now: OffsetDateTime)
