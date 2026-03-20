@@ -27,6 +27,7 @@ class OffenderServiceTest {
 
   companion object {
     const val CRN = "CRN1"
+    const val USER_NAME = "USERNAME"
   }
 
   @MockK
@@ -74,9 +75,9 @@ class OffenderServiceTest {
         ),
       )
 
-      every { communityPaybackAndDeliusClient.getUpwDetailsSummary(CRN) } returns caseDetailsSummary
+      every { communityPaybackAndDeliusClient.getUpwDetailsSummary(CRN, USER_NAME) } returns caseDetailsSummary
 
-      val result = service.getOffenderSummaryByCrn(CRN)
+      val result = service.getOffenderSummaryByCrn(CRN, USER_NAME)
 
       result.unpaidWorkDetails.forEachIndexed { index, detail ->
         assertThat(detail.eventNumber).isEqualTo(caseDetailsSummary.unpaidWorkDetails[index].eventNumber)
@@ -84,15 +85,27 @@ class OffenderServiceTest {
         assertThat(detail.completedEteMinutes).isEqualTo(caseDetailsSummary.unpaidWorkDetails[index].completedEteMinutes)
         assertThat(detail.adjustments).isEqualTo(caseDetailsSummary.unpaidWorkDetails[index].adjustments)
       }
-      verify(exactly = 1) { communityPaybackAndDeliusClient.getUpwDetailsSummary(CRN) }
+      verify(exactly = 1) { communityPaybackAndDeliusClient.getUpwDetailsSummary(CRN, USER_NAME) }
+    }
+
+    @Test
+    fun `returns offender summary when username is null`() {
+      val caseDetailsSummary = NDCaseDetailsSummary.valid()
+
+      every { communityPaybackAndDeliusClient.getUpwDetailsSummary(CRN, null) } returns caseDetailsSummary
+
+      val result = service.getOffenderSummaryByCrn(CRN, null)
+
+      assertThat(result.unpaidWorkDetails).hasSize(caseDetailsSummary.unpaidWorkDetails.size)
+      verify(exactly = 1) { communityPaybackAndDeliusClient.getUpwDetailsSummary(CRN, null) }
     }
 
     @Test
     fun `throws NotFoundException when offender not found`() {
-      every { communityPaybackAndDeliusClient.getUpwDetailsSummary(CRN) } throws WebClientResponseExceptionFactory.notFound()
+      every { communityPaybackAndDeliusClient.getUpwDetailsSummary(CRN, USER_NAME) } throws WebClientResponseExceptionFactory.notFound()
 
       assertThatThrownBy {
-        service.getOffenderSummaryByCrn(CRN)
+        service.getOffenderSummaryByCrn(CRN, USER_NAME)
       }
         .isInstanceOf(NotFoundException::class.java)
         .hasMessage("Offender Summary not found for ID '$CRN'")
@@ -121,21 +134,39 @@ class OffenderServiceTest {
         ),
       )
 
-      every { communityPaybackAndDeliusClient.getUpwDetailsSummary(CRN) } returns caseDetailsSummary
+      every { communityPaybackAndDeliusClient.getUpwDetailsSummary(CRN, USER_NAME) } returns caseDetailsSummary
+
+      val result = service.getUnpaidWorkDetails(CRN, 5L, USER_NAME)
+
+      assertThat(result.eventNumber).isEqualTo(5L)
+      assertThat(result.requiredMinutes).isEqualTo(2L)
+    }
+
+    @Test
+    fun `return details when username is not passed`() {
+      val caseDetailsSummary = NDCaseDetailsSummary.valid().copy(
+        unpaidWorkDetails = listOf(
+          NDCaseDetail.valid().copy(
+            eventNumber = 5L,
+          ),
+        ),
+      )
+
+      every { communityPaybackAndDeliusClient.getUpwDetailsSummary(CRN, null) } returns caseDetailsSummary
 
       val result = service.getUnpaidWorkDetails(CRN, 5L)
 
       assertThat(result.eventNumber).isEqualTo(5L)
-      assertThat(result.requiredMinutes).isEqualTo(2L)
+      verify(exactly = 1) { communityPaybackAndDeliusClient.getUpwDetailsSummary(CRN, null) }
     }
   }
 
   @Test
   fun `throws NotFoundException when offender not found`() {
-    every { communityPaybackAndDeliusClient.getUpwDetailsSummary(CRN) } throws WebClientResponseExceptionFactory.notFound()
+    every { communityPaybackAndDeliusClient.getUpwDetailsSummary(CRN, USER_NAME) } throws WebClientResponseExceptionFactory.notFound()
 
     assertThatThrownBy {
-      service.getUnpaidWorkDetails(CRN, 1L)
+      service.getUnpaidWorkDetails(CRN, 1L, USER_NAME)
     }
       .isInstanceOf(NotFoundException::class.java)
       .hasMessage("Offender Summary not found for ID '$CRN'")
@@ -152,10 +183,10 @@ class OffenderServiceTest {
       ),
     )
 
-    every { communityPaybackAndDeliusClient.getUpwDetailsSummary(CRN) } returns caseDetailsSummary
+    every { communityPaybackAndDeliusClient.getUpwDetailsSummary(CRN, USER_NAME) } returns caseDetailsSummary
 
     assertThatThrownBy {
-      service.getUnpaidWorkDetails(CRN, 5L)
+      service.getUnpaidWorkDetails(CRN, 5L, USER_NAME)
     }
       .isInstanceOf(NotFoundException::class.java)
       .hasMessage("Unpaid Work Details not found for ID 'CRN CRN1, Event Number 5'")

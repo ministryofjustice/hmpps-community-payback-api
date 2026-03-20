@@ -11,6 +11,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.EteService.Companion.ETE_ALLOWANCE_OF_TOTAL_REQUIREMENT
 
 fun NDCaseDetailsSummary.toDto() = CaseDetailsSummaryDto(
+  offender = this.case.toDto(),
   unpaidWorkDetails = this.unpaidWorkDetails.map { it.toDto() },
 )
 
