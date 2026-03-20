@@ -24,6 +24,9 @@ fun AppointmentEventEntity.Companion.valid(
   id = UUID.randomUUID(),
   communityPaybackAppointmentId = UUID.randomUUID(),
   eventType = AppointmentEventType.entries.toTypedArray().random(),
+  triggeredAt = OffsetDateTime.now(),
+  triggerType = AppointmentEventTriggerType.USER,
+  triggeredBy = String.random(20),
   deliusAppointmentId = Long.Companion.random(),
   priorDeliusVersion = UUID.randomUUID(),
   crn = String.random(5),
@@ -48,8 +51,6 @@ fun AppointmentEventEntity.Companion.valid(
   alertActive = Boolean.random(),
   sensitive = Boolean.random(),
   deliusAllocationId = null,
-  triggeredAt = OffsetDateTime.now(),
-  triggeredBy = null,
 )
 
 fun AppointmentEventEntity.Companion.valid(ctx: ApplicationContext) = AppointmentEventEntity.valid().copy(
