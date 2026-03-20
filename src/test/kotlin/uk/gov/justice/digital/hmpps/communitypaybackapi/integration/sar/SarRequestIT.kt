@@ -18,34 +18,19 @@ import javax.sql.DataSource
 /**
  * This test file implements the default SAR test framework defined by https://github.com/ministryofjustice/hmpps-subject-access-request-lib
  *
- * There are tests for specific data types defined in standalone classes to keep the size of test classes manageable
+ * The tests will call the SAR endpoint, render the data using the custom template, and compare these two outputs to the expected values
+ * defined in /src/test/resource/sar
  *
- * # After making a content change or upstream formatting changes:
+ * We've currently disabled the database schema checks which are intended to catch database changes to act as a prompt for the user to consider SAR
+ * report updates on data model changes. These will need enabling closer to project go-live and once the formal SAR change control process
+ * has begun
  *
- * Either fix the expected SAR response files in `/src/test/resources/sar` by hand, or if the change is related to
- * upstream formatting you can grab a copy of the generated files using
- *
- *    SAR_GENERATE_ACTUAL=true ./gradlew test --tests "uk.gov.justice.digital.hmpps.communitypaybackapi.integration.sar.SarRequestIT"
- *
- * And copy the contents generated in `/src/test/resources` into `/src/test/resources/sar` (renaming as required).
- *
- * # After making a database change:
- *
- * Once you are happy that the SAR response is sufficient following a database change do the following
- *
- * 1. Update the expected flyway schema version
- *
- * This is defined by `expected-flyway-schema-version` in `application-integrationtest.yml`
- *
- * 2. Regenerate the expected-jpa-schema file
- *
- * Run the following
+ * To quickly regenerate the expected SAR JSON and HTML, run the following:
  *
  *    SAR_GENERATE_ACTUAL=true ./gradlew test --tests "uk.gov.justice.digital.hmpps.communitypaybackapi.integration.sar.SarRequestIT"
  *
- * And copy the contents of `/src/test/resources/entity-schema.json.log`  into `/src/test/resources/expected-jpa-schema.json`.
- *
- * Then delete the generated files '.log' files
+ * And then copy the contents generated in `/src/test/resources` into `/src/test/resources/sar`, renaming as required. Check the diff on
+ * these new files carefully to ensure they are as expected. Then remove the generated files
  */
 class SarRequestIT : IntegrationTestBase() {
 
@@ -143,7 +128,7 @@ class SarRequestIT : IntegrationTestBase() {
   }
 
   private fun setupTestData() {
-    SarRequestAppointmentEventIT.FixtureFactory(ctx).setupTestData()
+    SarRequestAppointmentEventIT.FixtureFactory(ctx).setupReportTestData()
     SarRequestCourseCompletionEventIT.FixtureFactory(ctx).setupReportTestData()
   }
 }
