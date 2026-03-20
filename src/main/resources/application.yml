@@ -40,12 +40,13 @@ spring:
       repositories:
         enabled: false
 
-# this is selectively enabled via environment-specific config
+# swagger is selectively enabled via environment-specific config
 springdoc:
   api-docs:
     enabled: false
   swagger-ui:
     enabled: false
+    version: 5.32.1
     operations-sorter: alpha
     tags-sorter: alpha
 
