@@ -59,7 +59,7 @@ jobs:
       postgres-db: 'community_payback'
       postgres-username: 'community_payback'
       postgres-password: 'community_payback'
-      localstack-tag: 'latest'
+      localstack-tag: 'community-archive'
       localstack-services: 'sqs,sns'
     needs:
       - app_version

@@ -36,7 +36,7 @@ object LocalStackContainer {
     log.info("Starting localstack via test containers")
     val logConsumer = Slf4jLogConsumer(log).withPrefix("localstack")
     return LocalStackContainer(
-      DockerImageName.parse("localstack/localstack"),
+      DockerImageName.parse("localstack/localstack:community-archive"),
     ).apply {
       withServices("sqs", "sns")
       withEnv("DEFAULT_REGION", "eu-west-2")

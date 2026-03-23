@@ -53,7 +53,7 @@ services:
     entrypoint: "node dist/server.js | bunyan"
 
   localstack:
-    image: localstack/localstack:latest
+    image: localstack/localstack:community-archive
     container_name: cp-stack-localstack
     ports:
       - "4566:4566"
