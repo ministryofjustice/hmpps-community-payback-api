@@ -637,21 +637,10 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
         ),
       )
 
-      val project = NDProject.valid(ctx).copy(code = PROJECT_CODE, actualEndDateExclusive = null)
-      CommunityPaybackAndDeliusMockServer.getProject(project)
-      CommunityPaybackAndDeliusMockServer.getUpwDetailsSummary(
+      CommunityPaybackAndDeliusMockServer.setupGetDataMocksForCreateAppointment(
         crn = CRN,
-        case = NDCaseSummary.Companion.valid(),
-        unpaidWorkDetails = listOf(
-          NDCaseDetail.valid().copy(
-            eventNumber = DELIUS_EVENT_NUMBER,
-            sentenceDate = LocalDate.of(2021, 1, 10),
-          ),
-        ),
-      )
-      CommunityPaybackAndDeliusMockServer.getTeamSupervisors(
-        forProject = project,
-        supervisorSummaries = NDSupervisorSummaries(listOf(NDSupervisorSummary.unallocated())),
+        eventNumber = DELIUS_EVENT_NUMBER,
+        project = NDProject.valid(ctx).copy(code = PROJECT_CODE, actualEndDateExclusive = null),
       )
       CommunityPaybackAndDeliusMockServer.postAppointments(projectCode = PROJECT_CODE, appointmentCount = 1)
 
@@ -697,29 +686,18 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
         ),
       )
 
-      val upstreamAppointment = NDAppointment.validNoOutcome(ctx).copy(
-        id = appointmentId,
-        project = NDProjectAndLocation.valid().copy(
-          code = PROJECT_CODE,
-        ),
-        date = LocalDate.now().minusDays(5),
-        event = NDEvent.valid().copy(number = EVENT_NUMBER.toInt()),
-        case = NDCaseSummary.valid().copy(crn = SchedulingIT.CRN),
-      )
-      CommunityPaybackAndDeliusMockServer.getAppointment(
-        appointment = upstreamAppointment,
-        username = "theusername",
-      )
-      CommunityPaybackAndDeliusMockServer.getProject(NDProject.valid(ctx).copy(code = "proj123"))
-      CommunityPaybackAndDeliusMockServer.getUpwDetailsSummary(
-        crn = SchedulingIT.CRN,
-        case = NDCaseSummary.Companion.valid(),
-        unpaidWorkDetails = listOf(
-          NDCaseDetail.valid().copy(
-            eventNumber = EVENT_NUMBER,
-            sentenceDate = LocalDate.now().minusYears(1),
+      CommunityPaybackAndDeliusMockServer.setupGetDataMocksForUpdateAppointment(
+        existingAppointment = NDAppointment.validNoOutcome(ctx).copy(
+          id = appointmentId,
+          project = NDProjectAndLocation.valid().copy(
+            code = PROJECT_CODE,
           ),
+          date = LocalDate.now().minusDays(5),
+          event = NDEvent.valid().copy(number = EVENT_NUMBER.toInt()),
+          case = NDCaseSummary.valid().copy(crn = SchedulingIT.CRN),
         ),
+        username = "theusername",
+        project = NDProject.valid(ctx).copy(code = "proj123"),
       )
 
       CommunityPaybackAndDeliusMockServer.putAppointment(
@@ -822,7 +800,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
 
       CommunityPaybackAndDeliusMockServer.getUpwDetailsSummary(
         crn = CRN,
-        case = NDCaseSummary.Companion.valid(),
+        case = NDCaseSummary.valid(),
         unpaidWorkDetails = listOf(
           NDCaseDetail.valid().copy(
             eventNumber = DELIUS_EVENT_NUMBER,

@@ -27,8 +27,11 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProviderTeamSum
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSessionSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSupervisor
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSupervisorSummaries
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSupervisorSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDUnpaidWorkRequirement
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.PageResponse
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.unallocated
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import java.net.URLEncoder
 import java.time.LocalDate
 import java.time.LocalTime
@@ -408,6 +411,44 @@ object CommunityPaybackAndDeliusMockServer {
           aResponse()
             .withStatus(404),
         ),
+    )
+  }
+
+  fun setupGetDataMocksForUpdateAppointment(
+    existingAppointment: NDAppointment,
+    project: NDProject,
+    username: String,
+  ) {
+    getAppointment(
+      appointment = existingAppointment,
+      username = username,
+    )
+    setupGetDataMocksForCreateAppointment(
+      crn = existingAppointment.case.crn,
+      eventNumber = existingAppointment.event.number.toLong(),
+      project = project,
+    )
+  }
+
+  fun setupGetDataMocksForCreateAppointment(
+    crn: String,
+    eventNumber: Long,
+    project: NDProject,
+  ) {
+    getProject(project)
+    getTeamSupervisors(
+      forProject = project,
+      supervisorSummaries = NDSupervisorSummaries(listOf(NDSupervisorSummary.unallocated())),
+    )
+    getUpwDetailsSummary(
+      crn = crn,
+      case = NDCaseSummary.valid(),
+      unpaidWorkDetails = listOf(
+        NDCaseDetail.valid().copy(
+          eventNumber = eventNumber,
+          sentenceDate = LocalDate.now().minusYears(10),
+        ),
+      ),
     )
   }
 

@@ -24,6 +24,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventE
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.validNoOutcome
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.valid
+import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.SchedulingIT.Companion.CRN
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.SchedulingIT.Companion.EVENT_NUMBER
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.DomainEventAsserter
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.bodyAsObject
@@ -184,30 +185,21 @@ class SupervisorAppointmentsIT : IntegrationTestBase() {
 
     @Test
     fun `Should send update upstream and delete corresponding form data`() {
-      CommunityPaybackAndDeliusMockServer.getAppointment(
-        appointment = NDAppointment.validNoOutcome(ctx).copy(
+      CommunityPaybackAndDeliusMockServer.setupGetDataMocksForUpdateAppointment(
+        existingAppointment = NDAppointment.validNoOutcome(ctx).copy(
           id = 1234L,
           project = NDProjectAndLocation.valid().copy(code = "PC01"),
           date = LocalDate.now(),
           event = NDEvent.valid().copy(number = EVENT_NUMBER.toInt()),
-          case = NDCaseSummary.valid().copy(crn = SchedulingIT.CRN),
+          case = NDCaseSummary.valid().copy(crn = CRN),
         ),
         username = "theusername",
+        project = NDProject.valid(ctx).copy(code = "PC01"),
       )
-      CommunityPaybackAndDeliusMockServer.getProject(NDProject.valid(ctx).copy(code = "PC01"))
+
       CommunityPaybackAndDeliusMockServer.putAppointment(
         projectCode = "PC01",
         appointmentId = 1234L,
-      )
-      CommunityPaybackAndDeliusMockServer.getUpwDetailsSummary(
-        crn = SchedulingIT.CRN,
-        case = NDCaseSummary.Companion.valid(),
-        unpaidWorkDetails = listOf(
-          NDCaseDetail.valid().copy(
-            eventNumber = EVENT_NUMBER,
-            sentenceDate = LocalDate.now().minusYears(1),
-          ),
-        ),
       )
 
       webTestClient.post()
