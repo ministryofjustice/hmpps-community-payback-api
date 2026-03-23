@@ -1,0 +1,30 @@
+<h3>Received at {{ formatDate receivedAt }}</h3>
+
+<table class="summary-list">
+    <tr><td>First Name</td><td>{{ firstName }}</td></tr>
+    <tr><td>Last Name</td><td>{{ lastName }}</td></tr>
+    <tr><td>Date of Birth</td><td>{{ formatDate dateOfBirth }}</td></tr>
+    <tr><td>Region</td><td>{{ region }}</td></tr>
+    <tr><td>PDU</td><td>{{ pdu }}</td></tr>
+    <tr><td>Office</td><td>{{ office }}</td></tr>
+    <tr><td>Email</td><td>{{ email }}</td></tr>
+    <tr><td>Course Name</td><td>{{ courseName }}</td></tr>
+    <tr><td>Course Type</td><td>{{ courseType }}</td></tr>
+    <tr><td>Provider</td><td>{{ provider }}</td></tr>
+    <tr><td>Completion Date</td><td>{{ formatDate completionDate }}</td></tr>
+    <tr><td>Status</td><td>{{ status }}</td></tr>
+    <tr><td>Total Time Minutes</td><td>{{ totalTimeMinutes }}</td></tr>
+    <tr><td>Expected Time Minutes</td><td>{{ expectedTimeMinutes }}</td></tr>
+    <tr><td>Attempts</td><td>{{ optionalValue attempts }}</td></tr>
+    <tr><td>Decision</td><td>{{ resolution.decision }}</td></tr>
+    <tr><td>Recorded At</td><td>{{ formatDate resolution.recoredAt }}</td></tr>
+    <tr><td>Recorded By</td><td>{{ getUserLastName resolution.recordedByUsername }}</td></tr>
+    <tr><td>Appointment Created</td><td>{{ resolution.appointmentCreated }}</td></tr>
+    <tr><td>Appointment Updated</td><td>{{ resolution.appointmentUpdated }}</td></tr>
+    <tr><td>Minutes Credited</td><td>{{ optionalValue resolution.minutesCredited }}</td></tr>
+</table>
+
+{{#resolution.appointment}}
+    <h4>Related Appointment Event</h4>
+    {{> sar/appointment-event-table}}
+{{/resolution.appointment}}
