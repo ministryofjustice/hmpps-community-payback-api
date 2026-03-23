@@ -414,6 +414,22 @@ object CommunityPaybackAndDeliusMockServer {
     )
   }
 
+  fun setupGetDataMocksForUpdateAppointment(
+    existingAppointment: NDAppointment,
+    project: NDProject,
+    username: String,
+  ) {
+    getAppointment(
+      appointment = existingAppointment,
+      username = username,
+    )
+    setupGetDataMocksForCreateAppointment(
+      crn = existingAppointment.case.crn,
+      eventNumber = existingAppointment.event.number.toLong(),
+      project = project,
+    )
+  }
+
   fun setupGetDataMocksForCreateAppointment(
     crn: String,
     eventNumber: Long,

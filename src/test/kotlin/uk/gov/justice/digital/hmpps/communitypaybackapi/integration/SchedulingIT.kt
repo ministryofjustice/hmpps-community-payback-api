@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.ApplicationContext
 import org.springframework.data.repository.findByIdOrNull
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCode
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDRequirementProgress
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingAllocation
@@ -378,13 +377,13 @@ class SchedulingIT : IntegrationTestBase() {
     CommunityPaybackAndDeliusMockServer.setupGetDataMocksForCreateAppointment(
       crn = CRN,
       eventNumber = EVENT_NUMBER,
-      project = NDProject.valid(ctx).copy(code = "PROJ1", provider = NDCode("PROV1"), team = NDCode("TEAM1"), actualEndDateExclusive = null),
+      project = NDProject.valid(ctx).copy(code = "PROJ1", actualEndDateExclusive = null),
     )
 
     CommunityPaybackAndDeliusMockServer.setupGetDataMocksForCreateAppointment(
       crn = CRN,
       eventNumber = EVENT_NUMBER,
-      project = NDProject.valid(ctx).copy(code = "PROJ2", provider = NDCode("PROV2"), team = NDCode("TEAM2"), actualEndDateExclusive = null),
+      project = NDProject.valid(ctx).copy(code = "PROJ2", actualEndDateExclusive = null),
     )
 
     CommunityPaybackAndDeliusMockServer.postAppointments(projectCode = "PROJ1", appointmentCount = 1)

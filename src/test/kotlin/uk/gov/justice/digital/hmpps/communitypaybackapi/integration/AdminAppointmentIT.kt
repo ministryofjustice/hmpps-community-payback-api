@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointmentSummary
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseDetail
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDContactOutcome
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDEnforcementAction
@@ -190,8 +189,8 @@ class AdminAppointmentIT : IntegrationTestBase() {
 
     @Test
     fun `Should send update upstream, raise domain event and delete corresponding form data`() {
-      CommunityPaybackAndDeliusMockServer.getAppointment(
-        appointment = NDAppointment.validNoOutcome(ctx).copy(
+      CommunityPaybackAndDeliusMockServer.setupGetDataMocksForUpdateAppointment(
+        existingAppointment = NDAppointment.validNoOutcome(ctx).copy(
           id = 1234L,
           project = NDProjectAndLocation.valid().copy(code = "proj123"),
           date = LocalDate.now(),
@@ -199,17 +198,7 @@ class AdminAppointmentIT : IntegrationTestBase() {
           case = NDCaseSummary.valid().copy(crn = CRN),
         ),
         username = "theusername",
-      )
-      CommunityPaybackAndDeliusMockServer.getProject(NDProject.valid(ctx).copy(code = "proj123"))
-      CommunityPaybackAndDeliusMockServer.getUpwDetailsSummary(
-        crn = CRN,
-        case = NDCaseSummary.Companion.valid(),
-        unpaidWorkDetails = listOf(
-          NDCaseDetail.valid().copy(
-            eventNumber = EVENT_NUMBER,
-            sentenceDate = LocalDate.now().minusYears(1),
-          ),
-        ),
+        project = NDProject.valid(ctx).copy(code = "proj123"),
       )
 
       CommunityPaybackAndDeliusMockServer.putAppointment(
