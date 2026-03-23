@@ -6,8 +6,6 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.ApplicationContext
 import org.springframework.data.repository.findByIdOrNull
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseDetail
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCode
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDRequirementProgress
@@ -16,18 +14,14 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingDayOf
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingExistingAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingFrequency
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingProject
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSupervisorSummaries
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSupervisorSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDUnpaidWorkRequirement
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.findNextOrSameDateForDayOfWeek
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventType
-import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.unallocated
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.validNoEndDate
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.validWithOutcome
-import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.DomainEventAsserter
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.MockSentryService
@@ -381,29 +375,16 @@ class SchedulingIT : IntegrationTestBase() {
       ),
     )
 
-    CommunityPaybackAndDeliusMockServer.getUpwDetailsSummary(
+    CommunityPaybackAndDeliusMockServer.setupGetDataMocksForCreateAppointment(
       crn = CRN,
-      case = NDCaseSummary.Companion.valid(),
-      unpaidWorkDetails = listOf(
-        NDCaseDetail.valid().copy(
-          eventNumber = EVENT_NUMBER,
-          sentenceDate = LocalDate.now().minusYears(1),
-        ),
-      ),
+      eventNumber = EVENT_NUMBER,
+      project = NDProject.valid(ctx).copy(code = "PROJ1", provider = NDCode("PROV1"), team = NDCode("TEAM1"), actualEndDateExclusive = null),
     )
 
-    val project1 = NDProject.valid(ctx).copy(code = "PROJ1", provider = NDCode("PROV1"), team = NDCode("TEAM1"), actualEndDateExclusive = null)
-    CommunityPaybackAndDeliusMockServer.getProject(project1)
-    CommunityPaybackAndDeliusMockServer.getTeamSupervisors(
-      forProject = project1,
-      supervisorSummaries = NDSupervisorSummaries(listOf(NDSupervisorSummary.unallocated())),
-    )
-
-    val project2 = NDProject.valid(ctx).copy(code = "PROJ2", provider = NDCode("PROV2"), team = NDCode("TEAM2"), actualEndDateExclusive = null)
-    CommunityPaybackAndDeliusMockServer.getProject(project2)
-    CommunityPaybackAndDeliusMockServer.getTeamSupervisors(
-      forProject = project2,
-      supervisorSummaries = NDSupervisorSummaries(listOf(NDSupervisorSummary.unallocated())),
+    CommunityPaybackAndDeliusMockServer.setupGetDataMocksForCreateAppointment(
+      crn = CRN,
+      eventNumber = EVENT_NUMBER,
+      project = NDProject.valid(ctx).copy(code = "PROJ2", provider = NDCode("PROV2"), team = NDCode("TEAM2"), actualEndDateExclusive = null),
     )
 
     CommunityPaybackAndDeliusMockServer.postAppointments(projectCode = "PROJ1", appointmentCount = 1)
