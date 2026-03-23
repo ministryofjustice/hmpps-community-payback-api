@@ -34,7 +34,7 @@ class SarRequestAppointmentEventIT : IntegrationTestBase() {
   }
 
   fun setupTestData() {
-    FixtureFactory(ctx).setupTestData()
+    FixtureFactory(ctx).setupRangeTestData()
   }
 
   @Test
@@ -108,7 +108,33 @@ class SarRequestAppointmentEventIT : IntegrationTestBase() {
       appointmentEventEntityRepository.deleteAll()
     }
 
-    fun setupTestData() {
+    fun setupRangeTestData() {
+      appointmentEventEntityRepository.saveAll(
+        listOf(
+          baselineAppointmentEvent().copy(
+            triggeredAt = RANGE_TEST_FROM_DATE.minusDays(1).atLastSecondOfDay(),
+            deliusEventNumber = 1,
+            eventType = AppointmentEventType.CREATE,
+          ),
+          baselineAppointmentEvent().copy(
+            triggeredAt = RANGE_TEST_FROM_DATE.atFirstSecondOfDay(),
+            triggerType = AppointmentEventTriggerType.SCHEDULING,
+            deliusEventNumber = 2,
+          ),
+          baselineAppointmentEvent().copy(
+            triggeredAt = RANGE_TEST_TO_DATE.atLastSecondOfDay(),
+            triggerType = AppointmentEventTriggerType.ETE_COURSE_COMPLETION_RESOLUTION,
+            deliusEventNumber = 3,
+          ),
+          baselineAppointmentEvent().copy(
+            triggeredAt = RANGE_TEST_TO_DATE.plusDays(1).atFirstSecondOfDay(),
+            deliusEventNumber = 4,
+          ),
+        ),
+      )
+    }
+
+    fun setupReportTestData() {
       appointmentEventEntityRepository.saveAll(
         listOf(
           baselineAppointmentEvent().copy(
@@ -137,15 +163,6 @@ class SarRequestAppointmentEventIT : IntegrationTestBase() {
             behaviour = null,
             alertActive = null,
             sensitive = null,
-          ),
-          baselineAppointmentEvent().copy(
-            triggeredAt = RANGE_TEST_TO_DATE.atLastSecondOfDay(),
-            triggerType = AppointmentEventTriggerType.ETE_COURSE_COMPLETION_RESOLUTION,
-            deliusEventNumber = 3,
-          ),
-          baselineAppointmentEvent().copy(
-            triggeredAt = RANGE_TEST_TO_DATE.plusDays(1).atFirstSecondOfDay(),
-            deliusEventNumber = 4,
           ),
         ),
       )
