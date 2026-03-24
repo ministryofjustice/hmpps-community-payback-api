@@ -28,6 +28,8 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEnt
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.WorkQuality
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.valid
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.validCreateAppointment
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.validUpdateAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventEntityFactory
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventTrigger
@@ -100,7 +102,7 @@ class AppointmentEventEntityFactoryTest {
           triggerType = AppointmentEventTriggerType.SCHEDULING,
           triggeredBy = TRIGGERED_BY,
         ),
-        validatedCreateAppointmentDto = Validated(
+        validatedCreateAppointmentDto = Validated.validCreateAppointment().copy(
           value = CreateAppointmentDto(
             id = ID,
             crn = "X12345",
@@ -172,7 +174,7 @@ class AppointmentEventEntityFactoryTest {
           triggerType = AppointmentEventTriggerType.SCHEDULING,
           triggeredBy = TRIGGERED_BY,
         ),
-        validatedCreateAppointmentDto = Validated(
+        validatedCreateAppointmentDto = Validated.validCreateAppointment().copy(
           value = CreateAppointmentDto(
             id = ID,
             crn = "X12345",
@@ -239,8 +241,8 @@ class AppointmentEventEntityFactoryTest {
           triggerType = AppointmentEventTriggerType.SCHEDULING,
           triggeredBy = TRIGGERED_BY,
         ),
-        validatedCreateAppointmentDto = Validated(
-          CreateAppointmentDto.valid().copy(
+        validatedCreateAppointmentDto = Validated.validCreateAppointment().copy(
+          value = CreateAppointmentDto.valid().copy(
             contactOutcomeCode = null,
             attendanceData = AttendanceDataDto.valid().copy(
               penaltyMinutes = 150,
@@ -275,7 +277,7 @@ class AppointmentEventEntityFactoryTest {
       every { contactOutcomeEntityRepository.findByCode(CONTACT_OUTCOME_CODE) } returns contactOutcomeEntity
 
       val result = factory.buildUpdatedEvent(
-        validatedUpdate = Validated(
+        validatedUpdate = Validated.validUpdateAppointment().copy(
           value = UpdateAppointmentOutcomeDto(
             deliusId = 101L,
             deliusVersionToUpdate = deliusVersion,
@@ -357,7 +359,7 @@ class AppointmentEventEntityFactoryTest {
       val deliusVersion = UUID.randomUUID()
 
       val result = factory.buildUpdatedEvent(
-        validatedUpdate = Validated(
+        validatedUpdate = Validated.validUpdateAppointment().copy(
           value = UpdateAppointmentOutcomeDto(
             deliusId = 101L,
             deliusVersionToUpdate = deliusVersion,
@@ -426,7 +428,7 @@ class AppointmentEventEntityFactoryTest {
       every { contactOutcomeEntityRepository.findByCode(CONTACT_OUTCOME_CODE) } returns ContactOutcomeEntity.valid()
 
       val result = factory.buildUpdatedEvent(
-        validatedUpdate = Validated(
+        validatedUpdate = Validated.validUpdateAppointment().copy(
           UpdateAppointmentOutcomeDto.valid().copy(
             contactOutcomeCode = null,
             attendanceData = AttendanceDataDto.valid().copy(
@@ -450,7 +452,7 @@ class AppointmentEventEntityFactoryTest {
     @Test
     fun `use legacy penaltyTime if penaltyMinutes not defined`() {
       val result = factory.buildUpdatedEvent(
-        validatedUpdate = Validated(
+        validatedUpdate = Validated.validUpdateAppointment().copy(
           UpdateAppointmentOutcomeDto.valid().copy(
             contactOutcomeCode = null,
             attendanceData = AttendanceDataDto.valid().copy(

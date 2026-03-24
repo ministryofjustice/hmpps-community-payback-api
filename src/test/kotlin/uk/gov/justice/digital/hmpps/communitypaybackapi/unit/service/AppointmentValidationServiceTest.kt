@@ -107,6 +107,8 @@ class AppointmentValidationServiceTest {
           Validated(
             value = baselineCreate,
             minutesToCredit = Duration.ofMinutes(60),
+            contactOutcome = baselineOutcome,
+            project = baselineProject,
           ),
         )
       }
@@ -131,6 +133,8 @@ class AppointmentValidationServiceTest {
           Validated(
             value = create,
             minutesToCredit = Duration.ofMinutes(125),
+            contactOutcome = baselineOutcome,
+            project = baselineProject,
           ),
         )
       }
@@ -641,6 +645,8 @@ class AppointmentValidationServiceTest {
           Validated(
             value = baselineUpdate,
             minutesToCredit = Duration.ofMinutes(60),
+            contactOutcome = baselineOutcome,
+            project = baselineProject,
           ),
         )
       }
@@ -669,6 +675,8 @@ class AppointmentValidationServiceTest {
           Validated(
             value = update,
             minutesToCredit = Duration.ofMinutes(125),
+            contactOutcome = baselineOutcome,
+            project = baselineProject,
           ),
         )
       }

@@ -19,6 +19,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.valid
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.validCreateAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentCreationService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventService
@@ -88,12 +89,14 @@ class AppointmentCreationServiceTest {
         eventType = AppointmentEventType.CREATE,
         communityPaybackAppointmentId = createAppointment1Dto.id,
       )
-      every { appointmentValidationService.validateCreate(createAppointment1Dto) } returns Validated(createAppointment1Dto)
+
+      val validatedCreateAppointment1 = Validated.validCreateAppointment().copy(value = createAppointment1Dto)
+      every { appointmentValidationService.validateCreate(createAppointment1Dto) } returns validatedCreateAppointment1
       every {
         appointmentEventService.buildCreatedEvent(
           deliusId = 0,
           trigger = TRIGGER,
-          validatedCreateAppointmentDto = Validated(createAppointment1Dto),
+          validatedCreateAppointmentDto = validatedCreateAppointment1,
         )
       } returns creationEvent1
 
@@ -101,12 +104,13 @@ class AppointmentCreationServiceTest {
         eventType = AppointmentEventType.CREATE,
         communityPaybackAppointmentId = createAppointment2Dto.id,
       )
-      every { appointmentValidationService.validateCreate(createAppointment2Dto) } returns Validated(createAppointment2Dto)
+      val validatedCreateAppointment2 = Validated.validCreateAppointment().copy(value = createAppointment1Dto)
+      every { appointmentValidationService.validateCreate(createAppointment2Dto) } returns validatedCreateAppointment2
       every {
         appointmentEventService.buildCreatedEvent(
           deliusId = 0,
           trigger = TRIGGER,
-          validatedCreateAppointmentDto = Validated(createAppointment2Dto),
+          validatedCreateAppointmentDto = validatedCreateAppointment2,
         )
       } returns creationEvent2
 
