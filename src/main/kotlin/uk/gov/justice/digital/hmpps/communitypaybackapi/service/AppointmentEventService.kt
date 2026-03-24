@@ -47,7 +47,7 @@ class AppointmentEventService(
     }
 
     return appointmentEventEntityRepository
-      .findTopByDeliusAppointmentIdOrderByCreatedAtDesc(proposedUpdate.deliusAppointmentId)
+      .findTopByAppointmentIdOrderByCreatedAtDesc(proposedUpdate.appointment.id)
       ?.isLogicallyIdentical(proposedUpdate)
       ?: false
   }
@@ -80,8 +80,11 @@ class AppointmentEventService(
           AppointmentEventType.CREATE -> DomainEventType.APPOINTMENT_CREATED
           AppointmentEventType.UPDATE -> DomainEventType.APPOINTMENT_UPDATED
         },
-        additionalInformation = mapOf(AdditionalInformationType.APPOINTMENT_ID to event.deliusAppointmentId),
-        personReferences = mapOf(PersonReferenceType.CRN to event.crn),
+        additionalInformation = mapOf(
+          AdditionalInformationType.APPOINTMENT_ID to event.appointment.id,
+          AdditionalInformationType.DELIUS_APPOINTMENT_ID to event.appointment.deliusId,
+        ),
+        personReferences = mapOf(PersonReferenceType.CRN to event.appointment.crn),
       )
     }
 

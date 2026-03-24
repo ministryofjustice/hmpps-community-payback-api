@@ -15,6 +15,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOut
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.ConflictException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.InternalServerErrorException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.NotFoundException
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventType
@@ -204,7 +205,7 @@ class AppointmentUpdateServiceTest {
   fun AppointmentEventEntity.Companion.fromUpdateRequest(updateRequest: UpdateAppointmentOutcomeDto) = AppointmentEventEntity.valid()
     .copy(
       eventType = AppointmentEventType.UPDATE,
-      deliusAppointmentId = updateRequest.deliusId,
+      appointment = AppointmentEntity.valid().copy(deliusId = updateRequest.deliusId),
       priorDeliusVersion = updateRequest.deliusVersionToUpdate,
     )
 }

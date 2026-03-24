@@ -90,6 +90,7 @@ enum class DomainEventType(
 
 enum class AdditionalInformationType {
   APPOINTMENT_ID,
+  DELIUS_APPOINTMENT_ID,
   EVENT_ID,
 }
 

@@ -125,9 +125,9 @@ fun AppointmentEventEntity.toAppointmentUpdatedDomainEvent() = AppointmentUpdate
 
 private fun AppointmentEventEntity.toAppointmentDomainEventDetail() = AppointmentDomainEventDetailDto(
   id = this.id,
-  appointmentDeliusId = this.deliusAppointmentId,
-  crn = this.crn,
-  deliusEventNumber = this.deliusEventNumber,
+  appointmentDeliusId = this.appointment.deliusId,
+  crn = this.appointment.crn,
+  deliusEventNumber = this.appointment.deliusEventNumber.toInt(),
   startTime = this.startTime,
   endTime = this.endTime,
   contactOutcomeCode = this.contactOutcome?.code,

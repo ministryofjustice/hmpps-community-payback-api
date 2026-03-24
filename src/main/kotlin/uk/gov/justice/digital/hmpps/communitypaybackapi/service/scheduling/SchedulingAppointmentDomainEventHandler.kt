@@ -42,14 +42,14 @@ class SchedulingAppointmentDomainEventHandler(
     }
 
     val schedulingId = lockService.withDistributedLock(
-      key = appointmentEvent.crn,
+      key = appointmentEvent.appointment.crn,
       leaseTime = maxProcessingTime,
     ) {
       val triggerDescription = "Domain Event $eventId"
 
       scheduleService.scheduleAppointments(
-        crn = appointmentEvent.crn,
-        eventNumber = appointmentEvent.deliusEventNumber.toLong(),
+        crn = appointmentEvent.appointment.crn,
+        eventNumber = appointmentEvent.appointment.deliusEventNumber,
         trigger = when (appointmentEvent.eventType) {
           AppointmentEventType.CREATE -> SchedulingTrigger(
             type = SchedulingTriggerType.AppointmentCreated,

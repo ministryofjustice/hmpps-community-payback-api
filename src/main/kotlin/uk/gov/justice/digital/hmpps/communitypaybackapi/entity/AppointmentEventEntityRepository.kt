@@ -12,7 +12,7 @@ interface AppointmentEventEntityRepository : JpaRepository<AppointmentEventEntit
   @Query(
 """SELECT event FROM AppointmentEventEntity event
     LEFT JOIN FETCH event.contactOutcome
-    WHERE event.crn = :crn AND 
+    WHERE event.appointment.crn = :crn AND 
     ((cast(:fromDateInclusive as timestamp) IS NULL) OR (event.triggeredAt >= :fromDateInclusive)) AND 
     ((cast(:toDateTimeExclusive as timestamp) IS NULL) OR (event.triggeredAt < :toDateTimeExclusive))
     ORDER BY event.createdAt DESC""",
@@ -27,7 +27,7 @@ interface AppointmentEventEntityRepository : JpaRepository<AppointmentEventEntit
   )
   fun findByIdOrNullForDomainEventDetails(id: UUID, eventType: AppointmentEventType): AppointmentEventEntity?
 
-  fun findTopByDeliusAppointmentIdOrderByCreatedAtDesc(deliusAppointmentId: Long): AppointmentEventEntity?
+  fun findTopByAppointmentIdOrderByCreatedAtDesc(appointmentId: UUID): AppointmentEventEntity?
 
   fun findByTriggerTypeAndTriggeredBy(triggerType: AppointmentEventTriggerType, triggeredBy: String): AppointmentEventEntity?
 

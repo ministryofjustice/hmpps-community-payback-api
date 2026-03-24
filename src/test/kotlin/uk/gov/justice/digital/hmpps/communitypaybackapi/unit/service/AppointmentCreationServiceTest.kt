@@ -114,7 +114,7 @@ class AppointmentCreationServiceTest {
 
       val creationEvent1 = AppointmentEventEntity.valid().copy(
         eventType = AppointmentEventType.CREATE,
-        communityPaybackAppointmentId = createAppointment1Dto.id,
+        appointment = appointmentEntity1,
       )
       every {
         appointmentEventService.buildCreatedEvent(
@@ -126,7 +126,7 @@ class AppointmentCreationServiceTest {
 
       val creationEvent2 = AppointmentEventEntity.valid().copy(
         eventType = AppointmentEventType.CREATE,
-        communityPaybackAppointmentId = createAppointment2Dto.id,
+        appointment = appointmentEntity2,
       )
 
       every {

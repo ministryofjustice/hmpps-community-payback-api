@@ -135,14 +135,10 @@ class AppointmentEventEntityFactoryTest {
       )
 
       assertThat(result.id).isNotNull
-      assertThat(result.communityPaybackAppointmentId).isEqualTo(ID)
       assertThat(result.eventType).isEqualTo(AppointmentEventType.CREATE)
       assertThat(result.priorDeliusVersion).isNull()
-      assertThat(result.crn).isEqualTo("X12345")
-      assertThat(result.deliusEventNumber).isEqualTo(48)
       assertThat(result.projectCode).isEqualTo(PROJECT_CODE)
       assertThat(result.projectName).isEqualTo("The project name")
-      assertThat(result.deliusAppointmentId).isEqualTo(101L)
       assertThat(result.date).isEqualTo(LocalDate.of(2014, 6, 7))
       assertThat(result.startTime).isEqualTo(LocalTime.of(10, 1))
       assertThat(result.endTime).isEqualTo(LocalTime.of(16, 3))
@@ -202,14 +198,10 @@ class AppointmentEventEntityFactoryTest {
       )
 
       assertThat(result.id).isNotNull
-      assertThat(result.communityPaybackAppointmentId).isEqualTo(ID)
       assertThat(result.eventType).isEqualTo(AppointmentEventType.CREATE)
       assertThat(result.priorDeliusVersion).isNull()
-      assertThat(result.crn).isEqualTo("X12345")
-      assertThat(result.deliusEventNumber).isEqualTo(48)
       assertThat(result.projectCode).isEqualTo(PROJECT_CODE)
       assertThat(result.projectName).isEqualTo("The project name")
-      assertThat(result.deliusAppointmentId).isEqualTo(101L)
       assertThat(result.date).isEqualTo(LocalDate.of(2014, 6, 7))
       assertThat(result.startTime).isEqualTo(LocalTime.of(10, 1))
       assertThat(result.endTime).isEqualTo(LocalTime.of(16, 3))
@@ -328,14 +320,10 @@ class AppointmentEventEntityFactoryTest {
       )
 
       assertThat(result.id).isNotNull
-      assertThat(result.communityPaybackAppointmentId).isEqualTo(communityPaybackId)
       assertThat(result.eventType).isEqualTo(AppointmentEventType.UPDATE)
       assertThat(result.priorDeliusVersion).isEqualTo(deliusVersion)
-      assertThat(result.crn).isEqualTo("X12345")
-      assertThat(result.deliusEventNumber).isEqualTo(48)
       assertThat(result.projectCode).isEqualTo(PROJECT_CODE)
       assertThat(result.projectName).isEqualTo("The project name")
-      assertThat(result.deliusAppointmentId).isEqualTo(101L)
       assertThat(result.date).isEqualTo(LocalDate.of(2014, 6, 7))
       assertThat(result.startTime).isEqualTo(LocalTime.of(10, 1))
       assertThat(result.endTime).isEqualTo(LocalTime.of(16, 3))
@@ -398,14 +386,10 @@ class AppointmentEventEntityFactoryTest {
       )
 
       assertThat(result.id).isNotNull
-      assertThat(result.communityPaybackAppointmentId).isNull()
       assertThat(result.eventType).isEqualTo(AppointmentEventType.UPDATE)
       assertThat(result.priorDeliusVersion).isEqualTo(deliusVersion)
-      assertThat(result.crn).isEqualTo("X12345")
-      assertThat(result.deliusEventNumber).isEqualTo(48)
       assertThat(result.projectCode).isEqualTo(PROJECT_CODE)
       assertThat(result.projectName).isEqualTo("The project name")
-      assertThat(result.deliusAppointmentId).isEqualTo(101L)
       assertThat(result.date).isEqualTo(LocalDate.of(2014, 6, 7))
       assertThat(result.startTime).isEqualTo(LocalTime.of(10, 1, 2))
       assertThat(result.endTime).isEqualTo(LocalTime.of(16, 3, 4))
