@@ -131,7 +131,7 @@ class AppointmentEventEntityFactoryTest {
         ),
       )
 
-      assertThat(result.id).isNotNull
+      assertThat(result.id).isEqualTo(ID)
       assertThat(result.communityPaybackAppointmentId).isEqualTo(ID)
       assertThat(result.eventType).isEqualTo(AppointmentEventType.CREATE)
       assertThat(result.priorDeliusVersion).isNull()

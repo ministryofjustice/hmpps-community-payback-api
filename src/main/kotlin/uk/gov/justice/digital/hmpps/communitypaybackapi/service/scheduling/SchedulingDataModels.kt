@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling
 
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
 import java.time.DayOfWeek
 import java.time.Duration
 import java.time.LocalDate
@@ -123,7 +124,7 @@ data class SchedulingExistingAppointment(
 }
 
 data class SchedulingRequiredAppointment(
-  val id: UUID = UUID.randomUUID(),
+  val id: UUID = AppointmentEntity.generateId(),
   val date: LocalDate,
   val startTime: LocalTime,
   val endTime: LocalTime,

@@ -14,6 +14,8 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackA
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCreateAppointments
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCreatedAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.valid
@@ -36,10 +38,15 @@ class AppointmentCreationServiceTest {
   @RelaxedMockK
   lateinit var appointmentEventService: AppointmentEventService
 
+  @RelaxedMockK
+  lateinit var appointmentEntityRepository: AppointmentEntityRepository
+
   @InjectMockKs
   private lateinit var service: AppointmentCreationService
 
   private companion object {
+    const val CRN: String = "CRN567"
+    const val DELIUS_EVENT_NUMBER: Long = 890
     const val PROJECT_CODE: String = "PROJ25"
     val TRIGGER: AppointmentEventTrigger = AppointmentEventTrigger.valid()
     const val ND_APPT1_ID: Long = 15
@@ -73,9 +80,9 @@ class AppointmentCreationServiceTest {
     }
 
     @Test
-    fun `create appointments sends to ND, persists events, raises a domain events`() {
-      val createAppointment1Dto = CreateAppointmentDto.valid().copy(projectCode = PROJECT_CODE)
-      val createAppointment2Dto = CreateAppointmentDto.valid().copy(projectCode = PROJECT_CODE)
+    fun `create appointments sends to ND, persists appointment and events, raises a domain events`() {
+      val createAppointment1Dto = CreateAppointmentDto.valid().copy(crn = CRN, deliusEventNumber = DELIUS_EVENT_NUMBER, projectCode = PROJECT_CODE)
+      val createAppointment2Dto = CreateAppointmentDto.valid().copy(crn = CRN, deliusEventNumber = DELIUS_EVENT_NUMBER, projectCode = PROJECT_CODE)
 
       val creationEvent1 = AppointmentEventEntity.valid().copy(
         eventType = AppointmentEventType.CREATE,
@@ -121,6 +128,25 @@ class AppointmentCreationServiceTest {
         communityPaybackAndDeliusClient.createAppointments(
           projectCode = PROJECT_CODE,
           appointments = NDCreateAppointments(listOf(creationEvent1.toNDCreateAppointment(), creationEvent2.toNDCreateAppointment())),
+        )
+
+        appointmentEntityRepository.saveAll(
+          listOf(
+            AppointmentEntity(
+              id = createAppointment1Dto.id,
+              deliusId = ND_APPT1_ID,
+              crn = CRN,
+              deliusEventNumber = DELIUS_EVENT_NUMBER,
+              createdByCommunityPayback = true,
+            ),
+            AppointmentEntity(
+              id = createAppointment2Dto.id,
+              deliusId = ND_APPT2_ID,
+              crn = CRN,
+              deliusEventNumber = DELIUS_EVENT_NUMBER,
+              createdByCommunityPayback = true,
+            ),
+          ),
         )
 
         appointmentEventService.saveAndPublishOnTransactionCommit(
