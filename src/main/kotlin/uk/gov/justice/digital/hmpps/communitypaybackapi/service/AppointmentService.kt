@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.service
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeGroupDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomesDto
@@ -22,7 +23,7 @@ class AppointmentService(
   ) = appointmentCreationService.createAppointment(appointment, trigger)
 
   fun createAppointmentsForProject(
-    appointments: List<CreateAppointmentDto>,
+    appointments: CreateAppointmentsDto,
     trigger: AppointmentEventTrigger,
   ) = appointmentCreationService.createAppointmentsForProject(appointments, trigger)
 

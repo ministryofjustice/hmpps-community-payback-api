@@ -14,6 +14,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackA
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCreateAppointments
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCreatedAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntity
@@ -62,7 +63,10 @@ class AppointmentCreationServiceTest {
     fun `ensure at least one appointment provided`() {
       assertThatThrownBy {
         service.createAppointmentsForProject(
-          appointments = emptyList(),
+          CreateAppointmentsDto(
+            projectCode = PROJECT_CODE,
+            appointments = emptyList(),
+          ),
           trigger = TRIGGER,
         )
       }.hasMessage("At least one appointment must be provided")
@@ -72,9 +76,12 @@ class AppointmentCreationServiceTest {
     fun `ensure all appointments have the same project code`() {
       assertThatThrownBy {
         service.createAppointmentsForProject(
-          appointments = listOf(
-            CreateAppointmentDto.valid().copy(projectCode = "code1"),
-            CreateAppointmentDto.valid().copy(projectCode = "code2"),
+          CreateAppointmentsDto(
+            projectCode = "code1",
+            appointments = listOf(
+              CreateAppointmentDto.valid().copy(projectCode = "code1"),
+              CreateAppointmentDto.valid().copy(projectCode = "code2"),
+            ),
           ),
           trigger = TRIGGER,
         )
@@ -138,7 +145,10 @@ class AppointmentCreationServiceTest {
       } returns creationEvent2
 
       val result = service.createAppointmentsForProject(
-        appointments = listOf(createAppointment1Dto, createAppointment2Dto),
+        CreateAppointmentsDto(
+          projectCode = PROJECT_CODE,
+          appointments = listOf(createAppointment1Dto, createAppointment2Dto),
+        ),
         trigger = TRIGGER,
       )
 

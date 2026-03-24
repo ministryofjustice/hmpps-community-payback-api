@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.inte
 
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventTrigger
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentService
@@ -43,12 +44,15 @@ class SchedulePlanExecutor(
     log.info("Creating ${toCreate.size} appointments for project $projectCode")
 
     appointmentService.createAppointmentsForProject(
-      toCreate.map {
-        it.toCreateAppointmentDto(
-          crn = plan.crn,
-          eventNumber = plan.eventNumber,
-        )
-      },
+      CreateAppointmentsDto(
+        projectCode = projectCode,
+        appointments = toCreate.map {
+          it.toCreateAppointmentDto(
+            crn = plan.crn,
+            eventNumber = plan.eventNumber,
+          )
+        },
+      ),
       trigger = AppointmentEventTrigger(
         triggeredAt = OffsetDateTime.now(),
         triggerType = AppointmentEventTriggerType.SCHEDULING,

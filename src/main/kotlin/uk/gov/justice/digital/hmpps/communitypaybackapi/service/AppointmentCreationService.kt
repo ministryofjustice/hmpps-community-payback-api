@@ -6,6 +6,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackA
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCreateAppointments
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCreatedAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.ToAppointmentEntity.toAppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toNDCreateAppointment
@@ -24,19 +25,23 @@ class AppointmentCreationService(
     appointment: CreateAppointmentDto,
     trigger: AppointmentEventTrigger,
   ): Long = createAppointmentsForProject(
-    listOf(appointment),
+    CreateAppointmentsDto(
+      projectCode = appointment.projectCode,
+      appointments = listOf(appointment),
+    ),
     trigger,
   ).first()
 
   @Transactional
   fun createAppointmentsForProject(
-    appointments: List<CreateAppointmentDto>,
+    createAppointmentsDto: CreateAppointmentsDto,
     trigger: AppointmentEventTrigger,
   ): List<Long> {
-    require(appointments.isNotEmpty()) { "At least one appointment must be provided" }
-    require(appointments.map { it.projectCode }.toSet().size == 1) { "All appointments must be for the same project code" }
+    val projectCode = createAppointmentsDto.projectCode
+    val appointments = createAppointmentsDto.appointments
 
-    val projectCode = appointments[0].projectCode
+    require(createAppointmentsDto.appointments.isNotEmpty()) { "At least one appointment must be provided" }
+    require(createAppointmentsDto.appointments.count { it.projectCode != createAppointmentsDto.projectCode } == 0) { "All appointments must be for the same project code" }
 
     val validatedAppointments = appointments.map { appointmentValidationService.validateCreate(it) }
 
