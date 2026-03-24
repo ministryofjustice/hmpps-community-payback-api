@@ -4,7 +4,6 @@ import org.awaitility.Awaitility.await
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.context.ApplicationContext
 import org.springframework.data.repository.findByIdOrNull
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDRequirementProgress
@@ -15,12 +14,14 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingFrequ
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingProject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDUnpaidWorkRequirement
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.findNextOrSameDateForDayOfWeek
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.validNoEndDate
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.validWithOutcome
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.persist
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.DomainEventAsserter
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.MockSentryService
@@ -40,9 +41,6 @@ import java.util.UUID
 import java.util.concurrent.TimeUnit
 
 class SchedulingIT : IntegrationTestBase() {
-
-  @Autowired
-  lateinit var applicationContext: ApplicationContext
 
   @Autowired
   lateinit var domainEventPublisher: DomainEventPublisher
@@ -92,9 +90,11 @@ class SchedulingIT : IntegrationTestBase() {
     }
 
     private fun createEvent() = appointmentEventEntityRepository.save(
-      AppointmentEventEntity.valid(applicationContext).copy(
-        crn = CRN,
-        deliusEventNumber = EVENT_NUMBER.toInt(),
+      AppointmentEventEntity.valid(ctx).copy(
+        appointment = AppointmentEntity.valid().copy(
+          crn = CRN,
+          deliusEventNumber = EVENT_NUMBER,
+        ).persist(ctx),
         eventType = AppointmentEventType.CREATE,
       ),
     )
@@ -147,9 +147,11 @@ class SchedulingIT : IntegrationTestBase() {
     }
 
     private fun createEvent() = appointmentEventEntityRepository.save(
-      AppointmentEventEntity.valid(applicationContext).copy(
-        crn = CRN,
-        deliusEventNumber = EVENT_NUMBER.toInt(),
+      AppointmentEventEntity.valid(ctx).copy(
+        appointment = AppointmentEntity.valid().copy(
+          crn = CRN,
+          deliusEventNumber = EVENT_NUMBER,
+        ).persist(ctx),
         eventType = AppointmentEventType.UPDATE,
       ),
     )

@@ -5,6 +5,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.derivePenaltyMinutesDuration
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventType
@@ -23,7 +24,7 @@ class AppointmentEventEntityFactory(
 ) {
 
   fun buildCreatedEvent(
-    deliusId: Long,
+    appointment: AppointmentEntity,
     trigger: AppointmentEventTrigger,
     validatedCreateAppointmentDto: Validated<CreateAppointmentDto>,
   ): AppointmentEventEntity {
@@ -33,12 +34,9 @@ class AppointmentEventEntityFactory(
 
     return AppointmentEventEntity(
       id = createAppointmentDto.id,
-      communityPaybackAppointmentId = createAppointmentDto.id,
+      appointment = appointment,
       eventType = AppointmentEventType.CREATE,
-      crn = createAppointmentDto.crn,
-      deliusAppointmentId = deliusId,
       priorDeliusVersion = null,
-      deliusEventNumber = createAppointmentDto.deliusEventNumber.toInt(),
       projectCode = project.projectCode,
       projectName = project.projectName,
       date = createAppointmentDto.date,
@@ -67,6 +65,7 @@ class AppointmentEventEntityFactory(
 
   fun buildUpdatedEvent(
     validatedUpdate: Validated<UpdateAppointmentOutcomeDto>,
+    appointment: AppointmentEntity,
     existingAppointment: AppointmentDto,
     trigger: AppointmentEventTrigger,
     projectCode: String,
@@ -80,12 +79,9 @@ class AppointmentEventEntityFactory(
 
     return AppointmentEventEntity(
       id = UUID.randomUUID(),
-      communityPaybackAppointmentId = existingAppointment.communityPaybackId,
+      appointment = appointment,
       eventType = AppointmentEventType.UPDATE,
-      crn = existingAppointment.offender.crn,
-      deliusAppointmentId = outcome.deliusId,
       priorDeliusVersion = outcome.deliusVersionToUpdate,
-      deliusEventNumber = existingAppointment.deliusEventNumber,
       projectCode = project.projectCode,
       projectName = project.projectName,
       date = existingAppointment.date,

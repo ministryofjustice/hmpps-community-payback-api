@@ -33,15 +33,14 @@ class AppointmentUpdateService(
   ) {
     val existingAppointment = appointmentRetrievalService.getAppointment(projectCode, update.deliusId)
 
-    appointmentEntityRepository.findByDeliusId(update.deliusId)
-      ?: appointmentEntityRepository.save(
-        existingAppointment.toAppointmentEntity(),
-      )
+    val appointmentEntity = appointmentEntityRepository.findByDeliusId(update.deliusId)
+      ?: appointmentEntityRepository.save(existingAppointment.toAppointmentEntity())
 
     val validatedUpdateDto = appointmentUpdateValidationService.validateUpdate(existingAppointment, update)
 
     val event = appointmentEventService.buildUpdatedEvent(
       validatedUpdate = appointmentUpdateValidationService.validateUpdate(existingAppointment, update),
+      appointment = appointmentEntity,
       existingAppointment = existingAppointment,
       trigger = trigger,
       projectCode = projectCode,

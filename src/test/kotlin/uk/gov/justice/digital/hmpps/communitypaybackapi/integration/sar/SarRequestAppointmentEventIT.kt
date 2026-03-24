@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.getBean
 import org.springframework.context.ApplicationContext
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventTriggerType
@@ -12,6 +13,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.Behaviour
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.WorkQuality
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.atFirstSecondOfDay
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.atLastSecondOfDay
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.persist
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.sar.SarRequestIT.Companion.CRN
@@ -113,22 +115,22 @@ class SarRequestAppointmentEventIT : IntegrationTestBase() {
         listOf(
           baselineAppointmentEvent().copy(
             triggeredAt = RANGE_TEST_FROM_DATE.minusDays(1).atLastSecondOfDay(),
-            deliusEventNumber = 1,
+            appointment = baselineAppointment().copy(deliusEventNumber = 1).persist(ctx),
             eventType = AppointmentEventType.CREATE,
           ),
           baselineAppointmentEvent().copy(
             triggeredAt = RANGE_TEST_FROM_DATE.atFirstSecondOfDay(),
             triggerType = AppointmentEventTriggerType.SCHEDULING,
-            deliusEventNumber = 2,
+            appointment = baselineAppointment().copy(deliusEventNumber = 2).persist(ctx),
           ),
           baselineAppointmentEvent().copy(
             triggeredAt = RANGE_TEST_TO_DATE.atLastSecondOfDay(),
             triggerType = AppointmentEventTriggerType.ETE_COURSE_COMPLETION_RESOLUTION,
-            deliusEventNumber = 3,
+            appointment = baselineAppointment().copy(deliusEventNumber = 3).persist(ctx),
           ),
           baselineAppointmentEvent().copy(
             triggeredAt = RANGE_TEST_TO_DATE.plusDays(1).atFirstSecondOfDay(),
-            deliusEventNumber = 4,
+            appointment = baselineAppointment().copy(deliusEventNumber = 4).persist(ctx),
           ),
         ),
       )
@@ -139,13 +141,13 @@ class SarRequestAppointmentEventIT : IntegrationTestBase() {
         listOf(
           baselineAppointmentEvent().copy(
             triggeredAt = RANGE_TEST_FROM_DATE.minusDays(1).atLastSecondOfDay(),
-            deliusEventNumber = 1,
+            appointment = baselineAppointment().copy(deliusEventNumber = 1).persist(ctx),
             eventType = AppointmentEventType.CREATE,
           ),
           baselineAppointmentEvent().copy(
             triggeredAt = RANGE_TEST_FROM_DATE.atFirstSecondOfDay(),
             triggerType = AppointmentEventTriggerType.SCHEDULING,
-            deliusEventNumber = 2,
+            appointment = baselineAppointment().copy(deliusEventNumber = 2).persist(ctx),
             eventType = AppointmentEventType.UPDATE,
             projectName = "Some other project name",
             date = LocalDate.of(2026, 3, 4),
@@ -168,12 +170,16 @@ class SarRequestAppointmentEventIT : IntegrationTestBase() {
       )
     }
 
+    fun baselineAppointment() = AppointmentEntity.valid().copy(crn = CRN)
+
     fun baselineAppointmentEvent() = AppointmentEventEntity.valid(ctx).copy(
-      crn = CRN,
       triggerType = AppointmentEventTriggerType.USER,
       triggeredBy = "username1",
       eventType = AppointmentEventType.CREATE,
-      deliusEventNumber = 1,
+      appointment = AppointmentEntity.valid().copy(
+        crn = CRN,
+        deliusEventNumber = 1,
+      ).persist(ctx),
       projectName = "The project name",
       date = LocalDate.of(2025, 1, 1),
       startTime = LocalTime.of(10, 0),

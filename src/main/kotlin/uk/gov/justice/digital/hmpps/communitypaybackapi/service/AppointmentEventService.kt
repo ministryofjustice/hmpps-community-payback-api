@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventType
@@ -21,17 +22,18 @@ class AppointmentEventService(
   private val domainEventService: DomainEventService,
 ) {
   fun buildCreatedEvent(
-    deliusId: Long,
+    appointment: AppointmentEntity,
     trigger: AppointmentEventTrigger,
     validatedCreateAppointmentDto: Validated<CreateAppointmentDto>,
-  ) = appointmentEventEntityFactory.buildCreatedEvent(deliusId, trigger, validatedCreateAppointmentDto)
+  ) = appointmentEventEntityFactory.buildCreatedEvent(appointment, trigger, validatedCreateAppointmentDto)
 
   fun buildUpdatedEvent(
     validatedUpdate: Validated<UpdateAppointmentOutcomeDto>,
+    appointment: AppointmentEntity,
     existingAppointment: AppointmentDto,
     trigger: AppointmentEventTrigger,
     projectCode: String,
-  ) = appointmentEventEntityFactory.buildUpdatedEvent(validatedUpdate, existingAppointment, trigger, projectCode)
+  ) = appointmentEventEntityFactory.buildUpdatedEvent(validatedUpdate, appointment, existingAppointment, trigger, projectCode)
 
   fun getCreatedDomainEventDetails(id: UUID) = appointmentEventEntityRepository.findByIdOrNullForDomainEventDetails(id, AppointmentEventType.CREATE)?.toAppointmentCreatedDomainEvent()
 
@@ -45,7 +47,7 @@ class AppointmentEventService(
     }
 
     return appointmentEventEntityRepository
-      .findTopByDeliusAppointmentIdOrderByCreatedAtDesc(proposedUpdate.deliusAppointmentId)
+      .findTopByAppointmentIdOrderByCreatedAtDesc(proposedUpdate.appointment.id)
       ?.isLogicallyIdentical(proposedUpdate)
       ?: false
   }
@@ -78,8 +80,11 @@ class AppointmentEventService(
           AppointmentEventType.CREATE -> DomainEventType.APPOINTMENT_CREATED
           AppointmentEventType.UPDATE -> DomainEventType.APPOINTMENT_UPDATED
         },
-        additionalInformation = mapOf(AdditionalInformationType.APPOINTMENT_ID to event.deliusAppointmentId),
-        personReferences = mapOf(PersonReferenceType.CRN to event.crn),
+        additionalInformation = mapOf(
+          AdditionalInformationType.APPOINTMENT_ID to event.appointment.id,
+          AdditionalInformationType.DELIUS_APPOINTMENT_ID to event.appointment.deliusId,
+        ),
+        personReferences = mapOf(PersonReferenceType.CRN to event.appointment.crn),
       )
     }
 

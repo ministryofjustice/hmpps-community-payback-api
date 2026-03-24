@@ -21,6 +21,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.PickUpDataDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SupervisorSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.Behaviour
@@ -94,7 +95,7 @@ class AppointmentEventEntityFactoryTest {
       )
 
       val result = factory.buildCreatedEvent(
-        deliusId = 101L,
+        appointment = AppointmentEntity.valid().copy(deliusId = 101L, id = ID),
         trigger = AppointmentEventTrigger(
           triggeredAt = TRIGGERED_AT,
           triggerType = AppointmentEventTriggerType.SCHEDULING,
@@ -134,14 +135,10 @@ class AppointmentEventEntityFactoryTest {
       )
 
       assertThat(result.id).isNotNull
-      assertThat(result.communityPaybackAppointmentId).isEqualTo(ID)
       assertThat(result.eventType).isEqualTo(AppointmentEventType.CREATE)
       assertThat(result.priorDeliusVersion).isNull()
-      assertThat(result.crn).isEqualTo("X12345")
-      assertThat(result.deliusEventNumber).isEqualTo(48)
       assertThat(result.projectCode).isEqualTo(PROJECT_CODE)
       assertThat(result.projectName).isEqualTo("The project name")
-      assertThat(result.deliusAppointmentId).isEqualTo(101L)
       assertThat(result.date).isEqualTo(LocalDate.of(2014, 6, 7))
       assertThat(result.startTime).isEqualTo(LocalTime.of(10, 1))
       assertThat(result.endTime).isEqualTo(LocalTime.of(16, 3))
@@ -168,7 +165,7 @@ class AppointmentEventEntityFactoryTest {
     @Test
     fun `mandatory fields only`() {
       val result = factory.buildCreatedEvent(
-        deliusId = 101L,
+        appointment = AppointmentEntity.valid().copy(deliusId = 101L, id = ID),
         trigger = AppointmentEventTrigger(
           triggeredAt = TRIGGERED_AT,
           triggerType = AppointmentEventTriggerType.SCHEDULING,
@@ -201,14 +198,10 @@ class AppointmentEventEntityFactoryTest {
       )
 
       assertThat(result.id).isNotNull
-      assertThat(result.communityPaybackAppointmentId).isEqualTo(ID)
       assertThat(result.eventType).isEqualTo(AppointmentEventType.CREATE)
       assertThat(result.priorDeliusVersion).isNull()
-      assertThat(result.crn).isEqualTo("X12345")
-      assertThat(result.deliusEventNumber).isEqualTo(48)
       assertThat(result.projectCode).isEqualTo(PROJECT_CODE)
       assertThat(result.projectName).isEqualTo("The project name")
-      assertThat(result.deliusAppointmentId).isEqualTo(101L)
       assertThat(result.date).isEqualTo(LocalDate.of(2014, 6, 7))
       assertThat(result.startTime).isEqualTo(LocalTime.of(10, 1))
       assertThat(result.endTime).isEqualTo(LocalTime.of(16, 3))
@@ -237,7 +230,7 @@ class AppointmentEventEntityFactoryTest {
       every { contactOutcomeEntityRepository.findByCode(CONTACT_OUTCOME_CODE) } returns ContactOutcomeEntity.valid()
 
       val result = factory.buildCreatedEvent(
-        deliusId = 101L,
+        appointment = AppointmentEntity.valid().copy(deliusId = 101L),
         trigger = AppointmentEventTrigger(
           triggeredAt = TRIGGERED_AT,
           triggerType = AppointmentEventTriggerType.SCHEDULING,
@@ -305,6 +298,7 @@ class AppointmentEventEntityFactoryTest {
           ),
           minutesToCredit = Duration.ofMinutes(334),
         ),
+        appointment = AppointmentEntity.valid(),
         existingAppointment = AppointmentDto.valid().copy(
           communityPaybackId = communityPaybackId,
           offender = OffenderDto.OffenderLimitedDto(crn = "X12345"),
@@ -326,14 +320,10 @@ class AppointmentEventEntityFactoryTest {
       )
 
       assertThat(result.id).isNotNull
-      assertThat(result.communityPaybackAppointmentId).isEqualTo(communityPaybackId)
       assertThat(result.eventType).isEqualTo(AppointmentEventType.UPDATE)
       assertThat(result.priorDeliusVersion).isEqualTo(deliusVersion)
-      assertThat(result.crn).isEqualTo("X12345")
-      assertThat(result.deliusEventNumber).isEqualTo(48)
       assertThat(result.projectCode).isEqualTo(PROJECT_CODE)
       assertThat(result.projectName).isEqualTo("The project name")
-      assertThat(result.deliusAppointmentId).isEqualTo(101L)
       assertThat(result.date).isEqualTo(LocalDate.of(2014, 6, 7))
       assertThat(result.startTime).isEqualTo(LocalTime.of(10, 1))
       assertThat(result.endTime).isEqualTo(LocalTime.of(16, 3))
@@ -377,6 +367,7 @@ class AppointmentEventEntityFactoryTest {
           ),
           minutesToCredit = null,
         ),
+        appointment = AppointmentEntity.valid(),
         existingAppointment = AppointmentDto.valid().copy(
           offender = OffenderDto.OffenderLimitedDto(crn = "X12345"),
           communityPaybackId = null,
@@ -395,14 +386,10 @@ class AppointmentEventEntityFactoryTest {
       )
 
       assertThat(result.id).isNotNull
-      assertThat(result.communityPaybackAppointmentId).isNull()
       assertThat(result.eventType).isEqualTo(AppointmentEventType.UPDATE)
       assertThat(result.priorDeliusVersion).isEqualTo(deliusVersion)
-      assertThat(result.crn).isEqualTo("X12345")
-      assertThat(result.deliusEventNumber).isEqualTo(48)
       assertThat(result.projectCode).isEqualTo(PROJECT_CODE)
       assertThat(result.projectName).isEqualTo("The project name")
-      assertThat(result.deliusAppointmentId).isEqualTo(101L)
       assertThat(result.date).isEqualTo(LocalDate.of(2014, 6, 7))
       assertThat(result.startTime).isEqualTo(LocalTime.of(10, 1, 2))
       assertThat(result.endTime).isEqualTo(LocalTime.of(16, 3, 4))
@@ -439,6 +426,7 @@ class AppointmentEventEntityFactoryTest {
             ),
           ),
         ),
+        appointment = AppointmentEntity.valid(),
         existingAppointment = AppointmentDto.valid(),
         trigger = AppointmentEventTrigger(
           triggeredAt = TRIGGERED_AT,
@@ -463,6 +451,7 @@ class AppointmentEventEntityFactoryTest {
             ),
           ),
         ),
+        appointment = AppointmentEntity.valid(),
         existingAppointment = AppointmentDto.valid(),
         trigger = AppointmentEventTrigger(
           triggeredAt = TRIGGERED_AT,

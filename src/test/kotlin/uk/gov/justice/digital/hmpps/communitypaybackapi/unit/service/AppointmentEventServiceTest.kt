@@ -10,6 +10,7 @@ import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventType
@@ -51,7 +52,7 @@ class AppointmentEventServiceTest {
     @Test
     fun `No existing event for the appointment id, return false`() {
       every {
-        appointmentEventEntityRepository.findTopByDeliusAppointmentIdOrderByCreatedAtDesc(any())
+        appointmentEventEntityRepository.findTopByAppointmentIdOrderByCreatedAtDesc(any())
       } returns null
 
       val result = service.hasUpdateAlreadyBeenSent(
@@ -66,7 +67,7 @@ class AppointmentEventServiceTest {
       val latestAppliedEvent = AppointmentEventEntity.valid().copy(eventType = AppointmentEventType.CREATE)
 
       every {
-        appointmentEventEntityRepository.findTopByDeliusAppointmentIdOrderByCreatedAtDesc(any())
+        appointmentEventEntityRepository.findTopByAppointmentIdOrderByCreatedAtDesc(any())
       } returns latestAppliedEvent
 
       val result = service.hasUpdateAlreadyBeenSent(
@@ -84,7 +85,7 @@ class AppointmentEventServiceTest {
       )
 
       every {
-        appointmentEventEntityRepository.findTopByDeliusAppointmentIdOrderByCreatedAtDesc(any())
+        appointmentEventEntityRepository.findTopByAppointmentIdOrderByCreatedAtDesc(any())
       } returns latestAppliedEvent
 
       val result = service.hasUpdateAlreadyBeenSent(
@@ -102,7 +103,7 @@ class AppointmentEventServiceTest {
       val latestAppliedEvent = AppointmentEventEntity.valid().copy(eventType = AppointmentEventType.UPDATE)
 
       every {
-        appointmentEventEntityRepository.findTopByDeliusAppointmentIdOrderByCreatedAtDesc(any())
+        appointmentEventEntityRepository.findTopByAppointmentIdOrderByCreatedAtDesc(any())
       } returns latestAppliedEvent
 
       val result = service.hasUpdateAlreadyBeenSent(
@@ -118,16 +119,19 @@ class AppointmentEventServiceTest {
 
     @Test
     fun success() {
+      val appointmentEntity = AppointmentEntity.valid().copy(
+        deliusId = 52L,
+        crn = "CRN1",
+      )
+
       val createEvent = AppointmentEventEntity.valid().copy(
         eventType = AppointmentEventType.CREATE,
-        deliusAppointmentId = 52L,
-        crn = "CRN1",
+        appointment = appointmentEntity,
       )
 
       val updateEvent = AppointmentEventEntity.valid().copy(
         eventType = AppointmentEventType.UPDATE,
-        deliusAppointmentId = 53L,
-        crn = "CRN2",
+        appointment = appointmentEntity,
       )
 
       every {
@@ -144,15 +148,21 @@ class AppointmentEventServiceTest {
         domainEventService.publishOnTransactionCommit(
           id = createEvent.id,
           type = DomainEventType.APPOINTMENT_CREATED,
-          additionalInformation = mapOf(AdditionalInformationType.APPOINTMENT_ID to 52L),
+          additionalInformation = mapOf(
+            AdditionalInformationType.APPOINTMENT_ID to appointmentEntity.id,
+            AdditionalInformationType.DELIUS_APPOINTMENT_ID to 52L,
+          ),
           personReferences = mapOf(PersonReferenceType.CRN to "CRN1"),
         )
 
         domainEventService.publishOnTransactionCommit(
           id = updateEvent.id,
           type = DomainEventType.APPOINTMENT_UPDATED,
-          additionalInformation = mapOf(AdditionalInformationType.APPOINTMENT_ID to 53L),
-          personReferences = mapOf(PersonReferenceType.CRN to "CRN2"),
+          additionalInformation = mapOf(
+            AdditionalInformationType.APPOINTMENT_ID to appointmentEntity.id,
+            AdditionalInformationType.DELIUS_APPOINTMENT_ID to 52L,
+          ),
+          personReferences = mapOf(PersonReferenceType.CRN to "CRN1"),
         )
       }
     }

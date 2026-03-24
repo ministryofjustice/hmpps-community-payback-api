@@ -32,7 +32,7 @@ data class AppointmentEntity(
   @Id
   val id: UUID,
   /**
-   * They key identifier for this appointment in NDelius
+   * The key identifier for this appointment in NDelius
    */
   val deliusId: Long,
   val crn: String,

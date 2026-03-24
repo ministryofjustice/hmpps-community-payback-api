@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventType
@@ -61,8 +62,10 @@ class SchedulingAppointmentDomainEventHandlerTest {
     every {
       appointmentEventService.getEvent(EVENT_ID)
     } returns AppointmentEventEntity.valid().copy(
-      crn = "CRN1",
-      deliusEventNumber = 5,
+      appointment = AppointmentEntity.valid().copy(
+        crn = "CRN1",
+        deliusEventNumber = 5,
+      ),
       eventType = eventType,
       triggerType = AppointmentEventTriggerType.USER,
     )
@@ -96,8 +99,10 @@ class SchedulingAppointmentDomainEventHandlerTest {
     every {
       appointmentEventService.getEvent(EVENT_ID)
     } returns AppointmentEventEntity.valid().copy(
-      crn = "CRN1",
-      deliusEventNumber = 5,
+      appointment = AppointmentEntity.valid().copy(
+        crn = "CRN1",
+        deliusEventNumber = 5,
+      ),
       triggerType = AppointmentEventTriggerType.SCHEDULING,
     )
 

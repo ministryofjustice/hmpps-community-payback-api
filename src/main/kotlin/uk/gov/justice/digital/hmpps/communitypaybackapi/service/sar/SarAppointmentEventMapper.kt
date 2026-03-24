@@ -18,7 +18,7 @@ fun AppointmentEventEntity.toSarEntry() = mapOf(
     else -> null
   },
   // this isn't rendered in the report, but is useful for testing to uniquely identify each record
-  "deliusEventNumber" to deliusEventNumber,
+  "deliusEventNumber" to appointment.deliusEventNumber,
   "eventType" to eventType.name,
   "projectName" to projectName,
   "date" to date,

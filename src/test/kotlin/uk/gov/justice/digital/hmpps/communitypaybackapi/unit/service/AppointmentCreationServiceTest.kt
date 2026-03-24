@@ -14,6 +14,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackA
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCreateAppointments
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCreatedAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventType
@@ -90,6 +91,17 @@ class AppointmentCreationServiceTest {
       val validatedCreateAppointment2 = Validated.validCreateAppointment().copy(value = createAppointment1Dto)
       every { appointmentValidationService.validateCreate(createAppointment2Dto) } returns validatedCreateAppointment2
 
+      val appointmentEntity1 = AppointmentEntity.valid().copy(id = createAppointment1Dto.id)
+      val appointmentEntity2 = AppointmentEntity.valid().copy(id = createAppointment2Dto.id)
+      every {
+        appointmentEntityRepository.saveAll(
+          listOf(
+            createAppointment1Dto.toAppointmentEntity(ND_APPT1_ID),
+            createAppointment2Dto.toAppointmentEntity(ND_APPT2_ID),
+          ),
+        )
+      } returns listOf(appointmentEntity1, appointmentEntity2)
+
       every {
         communityPaybackAndDeliusClient.createAppointments(
           projectCode = PROJECT_CODE,
@@ -102,11 +114,11 @@ class AppointmentCreationServiceTest {
 
       val creationEvent1 = AppointmentEventEntity.valid().copy(
         eventType = AppointmentEventType.CREATE,
-        communityPaybackAppointmentId = createAppointment1Dto.id,
+        appointment = appointmentEntity1,
       )
       every {
         appointmentEventService.buildCreatedEvent(
-          deliusId = ND_APPT1_ID,
+          appointment = appointmentEntity1,
           trigger = TRIGGER,
           validatedCreateAppointmentDto = validatedCreateAppointment1,
         )
@@ -114,12 +126,12 @@ class AppointmentCreationServiceTest {
 
       val creationEvent2 = AppointmentEventEntity.valid().copy(
         eventType = AppointmentEventType.CREATE,
-        communityPaybackAppointmentId = createAppointment2Dto.id,
+        appointment = appointmentEntity2,
       )
 
       every {
         appointmentEventService.buildCreatedEvent(
-          deliusId = ND_APPT2_ID,
+          appointment = appointmentEntity2,
           trigger = TRIGGER,
           validatedCreateAppointmentDto = validatedCreateAppointment2,
         )

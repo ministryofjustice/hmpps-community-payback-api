@@ -39,6 +39,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.OffenderDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.Behaviour
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
@@ -275,9 +276,11 @@ class AppointmentMappersTest {
     fun success() {
       val appointmentEvent = AppointmentEventEntity.valid().copy(
         id = UUID.randomUUID(),
-        deliusAppointmentId = 101L,
-        crn = "CRN123",
-        deliusEventNumber = 52,
+        appointment = AppointmentEntity.valid().copy(
+          crn = "CRN123",
+          deliusId = 101L,
+          deliusEventNumber = 52,
+        ),
         startTime = LocalTime.of(3, 2, 1),
         endTime = LocalTime.of(12, 11, 10),
         contactOutcome = ContactOutcomeEntity.valid().copy(code = "COE1"),

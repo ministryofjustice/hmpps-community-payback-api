@@ -45,7 +45,7 @@ class AppointmentCreationService(
       appointments = NDCreateAppointments(validatedAppointments.map { it.toNDCreateAppointment() }),
     )
 
-    appointmentEntityRepository.saveAll(
+    val appointmentEntities = appointmentEntityRepository.saveAll(
       appointments.map {
         it.toAppointmentEntity(
           creationResponse.findDeliusId(communityPaybackId = it.id),
@@ -56,7 +56,7 @@ class AppointmentCreationService(
     appointmentEventService.saveAndThenPublishOnTransactionCommit(
       appointments.map { createAppointment ->
         appointmentEventService.buildCreatedEvent(
-          deliusId = creationResponse.findDeliusId(communityPaybackId = createAppointment.id),
+          appointment = appointmentEntities.first { it.id == createAppointment.id },
           trigger = trigger,
           validatedCreateAppointmentDto = appointmentValidationService.validateCreate(createAppointment),
         )
