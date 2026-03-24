@@ -29,6 +29,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEnt
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EnforcementActionEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ProjectTypeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.WorkQuality
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.Validated
 
 @Service
 class AppointmentMappers(
@@ -159,29 +160,29 @@ fun AppointmentEventEntity.toNDUpdateAppointment(): NDUpdateAppointment {
   )
 }
 
-fun AppointmentEventEntity.toNDCreateAppointment(): NDCreateAppointment {
-  require(this.eventType == AppointmentEventType.CREATE)
+fun Validated<CreateAppointmentDto>.toNDCreateAppointment(): NDCreateAppointment {
+  val createDto = this.value
   return NDCreateAppointment(
-    reference = this.communityPaybackAppointmentId!!,
-    crn = this.crn,
-    eventNumber = this.deliusEventNumber,
-    date = this.date,
-    startTime = this.startTime,
-    endTime = this.endTime,
-    outcome = this.contactOutcome?.let { NDCode(it.code) },
-    supervisor = this.supervisorOfficerCode?.let { NDCode(it) },
-    notes = this.notes,
-    hiVisWorn = this.hiVisWorn,
-    workedIntensively = workedIntensively,
-    penaltyMinutes = this.penaltyMinutes,
-    minutesCredited = this.minutesCredited,
-    workQuality = this.workQuality?.upstreamType,
-    behaviour = this.behaviour?.upstreamType,
-    sensitive = this.sensitive,
-    alertActive = this.alertActive,
+    reference = createDto.id,
+    crn = createDto.crn,
+    eventNumber = createDto.deliusEventNumber.toInt(),
+    date = createDto.date,
+    startTime = createDto.startTime,
+    endTime = createDto.endTime,
+    outcome = contactOutcome?.let { NDCode(it.code) },
+    supervisor = createDto.supervisorOfficerCode?.let { NDCode(it) },
+    notes = createDto.notes,
+    hiVisWorn = createDto.attendanceData?.hiVisWorn,
+    workedIntensively = createDto.attendanceData?.workedIntensively,
+    penaltyMinutes = createDto.attendanceData?.penaltyMinutes,
+    minutesCredited = minutesToCredit?.toMinutes(),
+    workQuality = createDto.attendanceData?.workQuality?.let { WorkQuality.fromDto(it).upstreamType },
+    behaviour = createDto.attendanceData?.behaviour?.let { Behaviour.fromDto(it).upstreamType },
+    sensitive = createDto.sensitive,
+    alertActive = createDto.alertActive,
     pickUp = NDCreateAppointmentPickUpData(
-      location = this.pickupLocationCode?.let { NDCode(it) },
-      time = this.pickupTime,
+      location = createDto.pickUpLocationCode?.let { NDCode(it) },
+      time = createDto.pickUpTime,
     ),
   )
 }

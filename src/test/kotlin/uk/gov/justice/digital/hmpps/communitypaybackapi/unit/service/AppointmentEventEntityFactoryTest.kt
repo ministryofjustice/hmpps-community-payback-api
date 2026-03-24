@@ -81,7 +81,6 @@ class AppointmentEventEntityFactoryTest {
 
     @BeforeEach
     fun `setup mocks`() {
-      every { projectService.getProject(PROJECT_CODE) } returns PROJECT
       every {
         providerService.getTeamUnallocatedSupervisor(TeamId(PROVIDER_CODE, TEAM_CODE))
       } returns SupervisorSummaryDto.valid().copy(code = UNALLOCATED_SUPERVISOR_CODE)
@@ -93,7 +92,6 @@ class AppointmentEventEntityFactoryTest {
         code = CONTACT_OUTCOME_CODE,
         attended = true,
       )
-      every { contactOutcomeEntityRepository.findByCode(CONTACT_OUTCOME_CODE) } returns contactOutcomeEntity
 
       val result = factory.buildCreatedEvent(
         deliusId = 101L,
@@ -130,10 +128,12 @@ class AppointmentEventEntityFactoryTest {
             sensitive = true,
           ),
           minutesToCredit = Duration.ofMinutes(66),
+          project = PROJECT,
+          contactOutcome = contactOutcomeEntity,
         ),
       )
 
-      assertThat(result.id).isEqualTo(ID)
+      assertThat(result.id).isNotNull
       assertThat(result.communityPaybackAppointmentId).isEqualTo(ID)
       assertThat(result.eventType).isEqualTo(AppointmentEventType.CREATE)
       assertThat(result.priorDeliusVersion).isNull()
@@ -195,6 +195,8 @@ class AppointmentEventEntityFactoryTest {
             sensitive = null,
           ),
           minutesToCredit = null,
+          project = PROJECT,
+          contactOutcome = null,
         ),
       )
 

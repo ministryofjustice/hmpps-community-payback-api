@@ -83,7 +83,7 @@ class AppointmentUpdateServiceTest {
       val proposedEvent = AppointmentEventEntity.fromUpdateRequest(updateRequest)
       every { appointmentEventService.buildUpdatedEvent(any(), any(), any(), any()) } returns proposedEvent
       every { appointmentEventService.hasUpdateAlreadyBeenSent(proposedEvent) } returns false
-      every { appointmentEventService.saveAndPublishOnTransactionCommit(proposedEvent) } returnsArgument 0
+      every { appointmentEventService.saveAndThenPublishOnTransactionCommit(proposedEvent) } returnsArgument 0
 
       every {
         communityPaybackAndDeliusClient.updateAppointment(any(), any(), any())
@@ -109,7 +109,7 @@ class AppointmentUpdateServiceTest {
       val proposedEvent = AppointmentEventEntity.fromUpdateRequest(updateRequest)
       every { appointmentEventService.buildUpdatedEvent(validatedUpdateAppointment, existingAppointment, TRIGGER, PROJECT_CODE) } returns proposedEvent
       every { appointmentEventService.hasUpdateAlreadyBeenSent(proposedEvent) } returns false
-      every { appointmentEventService.saveAndPublishOnTransactionCommit(proposedEvent) } returnsArgument 0
+      every { appointmentEventService.saveAndThenPublishOnTransactionCommit(proposedEvent) } returnsArgument 0
 
       service.updateAppointmentOutcome(
         projectCode = PROJECT_CODE,
@@ -119,7 +119,7 @@ class AppointmentUpdateServiceTest {
 
       verify {
         appointmentEntityRepository.save(existingAppointment.toAppointmentEntity())
-        appointmentEventService.saveAndPublishOnTransactionCommit(proposedEvent)
+        appointmentEventService.saveAndThenPublishOnTransactionCommit(proposedEvent)
         communityPaybackAndDeliusClient.updateAppointment(
           projectCode = PROJECT_CODE,
           appointmentId = DELIUS_APPOINTMENT_ID,
@@ -145,7 +145,7 @@ class AppointmentUpdateServiceTest {
       )
 
       verify(exactly = 0) {
-        appointmentEventService.saveAndPublishOnTransactionCommit(proposedEvent)
+        appointmentEventService.saveAndThenPublishOnTransactionCommit(proposedEvent)
         communityPaybackAndDeliusClient.updateAppointment(any(), any(), any())
       }
     }
@@ -158,7 +158,7 @@ class AppointmentUpdateServiceTest {
       val proposedEvent = AppointmentEventEntity.fromUpdateRequest(updateRequest)
       every { appointmentEventService.buildUpdatedEvent(any(), any(), any(), any()) } returns proposedEvent
       every { appointmentEventService.hasUpdateAlreadyBeenSent(proposedEvent) } returns false
-      every { appointmentEventService.saveAndPublishOnTransactionCommit(proposedEvent) } returnsArgument 0
+      every { appointmentEventService.saveAndThenPublishOnTransactionCommit(proposedEvent) } returnsArgument 0
 
       every {
         communityPaybackAndDeliusClient.updateAppointment(any(), any(), any())
@@ -181,7 +181,7 @@ class AppointmentUpdateServiceTest {
       val proposedEvent = AppointmentEventEntity.fromUpdateRequest(updateRequest)
       every { appointmentEventService.buildUpdatedEvent(any(), any(), any(), any()) } returns proposedEvent
       every { appointmentEventService.hasUpdateAlreadyBeenSent(proposedEvent) } returns false
-      every { appointmentEventService.saveAndPublishOnTransactionCommit(proposedEvent) } returnsArgument 0
+      every { appointmentEventService.saveAndThenPublishOnTransactionCommit(proposedEvent) } returnsArgument 0
 
       every {
         communityPaybackAndDeliusClient.updateAppointment(any(), any(), any())

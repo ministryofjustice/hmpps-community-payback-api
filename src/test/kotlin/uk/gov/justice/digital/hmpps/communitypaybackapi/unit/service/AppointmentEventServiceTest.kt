@@ -13,7 +13,6 @@ import org.junit.jupiter.api.extension.ExtendWith
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventType
-import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdditionalInformationType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventEntityFactory
@@ -135,7 +134,7 @@ class AppointmentEventServiceTest {
         appointmentEventEntityRepository.saveAll(listOf(createEvent, updateEvent))
       } returnsArgument 0
 
-      service.saveAndPublishOnTransactionCommit(
+      service.saveAndThenPublishOnTransactionCommit(
         listOf(createEvent, updateEvent),
       )
 

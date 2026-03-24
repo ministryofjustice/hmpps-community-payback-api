@@ -14,7 +14,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackA
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCreateAppointments
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCreatedAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventType
@@ -26,6 +25,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventTrigger
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.Validated
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.ToAppointmentEntity.toAppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toNDCreateAppointment
 
 @ExtendWith(MockKExtension::class)
@@ -81,20 +81,32 @@ class AppointmentCreationServiceTest {
     }
 
     @Test
-    fun `create appointments sends to ND, persists appointment and events, raises a domain events`() {
+    fun `create appointments persists data, sends to ND and raises a domain events`() {
       val createAppointment1Dto = CreateAppointmentDto.valid().copy(crn = CRN, deliusEventNumber = DELIUS_EVENT_NUMBER, projectCode = PROJECT_CODE)
       val createAppointment2Dto = CreateAppointmentDto.valid().copy(crn = CRN, deliusEventNumber = DELIUS_EVENT_NUMBER, projectCode = PROJECT_CODE)
+
+      val validatedCreateAppointment1 = Validated.validCreateAppointment().copy(value = createAppointment1Dto)
+      every { appointmentValidationService.validateCreate(createAppointment1Dto) } returns validatedCreateAppointment1
+      val validatedCreateAppointment2 = Validated.validCreateAppointment().copy(value = createAppointment1Dto)
+      every { appointmentValidationService.validateCreate(createAppointment2Dto) } returns validatedCreateAppointment2
+
+      every {
+        communityPaybackAndDeliusClient.createAppointments(
+          projectCode = PROJECT_CODE,
+          NDCreateAppointments(listOf(validatedCreateAppointment1.toNDCreateAppointment(), validatedCreateAppointment2.toNDCreateAppointment())),
+        )
+      } returns listOf(
+        NDCreatedAppointment(id = ND_APPT1_ID, reference = createAppointment1Dto.id),
+        NDCreatedAppointment(id = ND_APPT2_ID, reference = createAppointment2Dto.id),
+      )
 
       val creationEvent1 = AppointmentEventEntity.valid().copy(
         eventType = AppointmentEventType.CREATE,
         communityPaybackAppointmentId = createAppointment1Dto.id,
       )
-
-      val validatedCreateAppointment1 = Validated.validCreateAppointment().copy(value = createAppointment1Dto)
-      every { appointmentValidationService.validateCreate(createAppointment1Dto) } returns validatedCreateAppointment1
       every {
         appointmentEventService.buildCreatedEvent(
-          deliusId = 0,
+          deliusId = ND_APPT1_ID,
           trigger = TRIGGER,
           validatedCreateAppointmentDto = validatedCreateAppointment1,
         )
@@ -104,22 +116,14 @@ class AppointmentCreationServiceTest {
         eventType = AppointmentEventType.CREATE,
         communityPaybackAppointmentId = createAppointment2Dto.id,
       )
-      val validatedCreateAppointment2 = Validated.validCreateAppointment().copy(value = createAppointment1Dto)
-      every { appointmentValidationService.validateCreate(createAppointment2Dto) } returns validatedCreateAppointment2
+
       every {
         appointmentEventService.buildCreatedEvent(
-          deliusId = 0,
+          deliusId = ND_APPT2_ID,
           trigger = TRIGGER,
           validatedCreateAppointmentDto = validatedCreateAppointment2,
         )
       } returns creationEvent2
-
-      every {
-        communityPaybackAndDeliusClient.createAppointments(any(), any())
-      } returns listOf(
-        NDCreatedAppointment(id = ND_APPT1_ID, reference = createAppointment1Dto.id),
-        NDCreatedAppointment(id = ND_APPT2_ID, reference = createAppointment2Dto.id),
-      )
 
       val result = service.createAppointmentsForProject(
         appointments = listOf(createAppointment1Dto, createAppointment2Dto),
@@ -129,36 +133,14 @@ class AppointmentCreationServiceTest {
       assertThat(result).containsExactlyInAnyOrder(ND_APPT1_ID, ND_APPT2_ID)
 
       verify {
-        communityPaybackAndDeliusClient.createAppointments(
-          projectCode = PROJECT_CODE,
-          appointments = NDCreateAppointments(listOf(creationEvent1.toNDCreateAppointment(), creationEvent2.toNDCreateAppointment())),
-        )
-
         appointmentEntityRepository.saveAll(
           listOf(
-            AppointmentEntity(
-              id = createAppointment1Dto.id,
-              deliusId = ND_APPT1_ID,
-              crn = CRN,
-              deliusEventNumber = DELIUS_EVENT_NUMBER,
-              createdByCommunityPayback = true,
-            ),
-            AppointmentEntity(
-              id = createAppointment2Dto.id,
-              deliusId = ND_APPT2_ID,
-              crn = CRN,
-              deliusEventNumber = DELIUS_EVENT_NUMBER,
-              createdByCommunityPayback = true,
-            ),
+            createAppointment1Dto.toAppointmentEntity(ND_APPT1_ID),
+            createAppointment2Dto.toAppointmentEntity(ND_APPT2_ID),
           ),
         )
 
-        appointmentEventService.saveAndPublishOnTransactionCommit(
-          listOf(
-            creationEvent1.copy(deliusAppointmentId = ND_APPT1_ID),
-            creationEvent2.copy(deliusAppointmentId = ND_APPT2_ID),
-          ),
-        )
+        appointmentEventService.saveAndThenPublishOnTransactionCommit(listOf(creationEvent1, creationEvent2))
       }
     }
   }

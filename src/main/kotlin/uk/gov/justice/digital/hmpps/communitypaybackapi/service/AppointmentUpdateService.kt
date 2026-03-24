@@ -51,7 +51,7 @@ class AppointmentUpdateService(
       return
     }
 
-    val persistedEntity = appointmentEventService.saveAndPublishOnTransactionCommit(proposedEntity)
+    val persistedEntity = appointmentEventService.saveAndThenPublishOnTransactionCommit(proposedEntity)
 
     updateDelius(projectCode, persistedEntity)
   }
