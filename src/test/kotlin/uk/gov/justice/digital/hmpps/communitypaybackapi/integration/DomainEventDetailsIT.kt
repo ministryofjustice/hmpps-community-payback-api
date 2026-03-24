@@ -14,7 +14,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventE
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
-import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.bodyAsObject
 import java.util.UUID
@@ -22,7 +21,7 @@ import java.util.UUID
 class DomainEventDetailsIT : IntegrationTestBase() {
 
   @Autowired
-  lateinit var appointmentOutcomeEntityRepository: AppointmentEventEntityRepository
+  lateinit var appointmentEventEntityRepository: AppointmentEventEntityRepository
 
   @Autowired
   lateinit var contactOutcomeEntityRepository: ContactOutcomeEntityRepository
@@ -35,7 +34,7 @@ class DomainEventDetailsIT : IntegrationTestBase() {
 
     @BeforeEach
     fun setUp() {
-      appointmentOutcomeEntityRepository.deleteAll()
+      appointmentEventEntityRepository.deleteAll()
     }
 
     @Test
@@ -79,10 +78,8 @@ class DomainEventDetailsIT : IntegrationTestBase() {
 
     @Test
     fun `return domain event detail if entry exists`() {
-      val entity = appointmentOutcomeEntityRepository.save(
-        AppointmentEventEntity.valid(
-          contactOutcomeEntity = contactOutcomeEntityRepository.findAll().first(),
-        ).copy(
+      val entity = appointmentEventEntityRepository.save(
+        AppointmentEventEntity.valid(ctx).copy(
           eventType = AppointmentEventType.CREATE,
         ),
       )
@@ -100,9 +97,9 @@ class DomainEventDetailsIT : IntegrationTestBase() {
 
     @Test
     fun `return domain event detail without outcome`() {
-      val entity = appointmentOutcomeEntityRepository.save(
-        AppointmentEventEntity.valid(
-          contactOutcomeEntity = null,
+      val entity = appointmentEventEntityRepository.save(
+        AppointmentEventEntity.valid(ctx).copy(
+          contactOutcome = null,
         ).copy(
           eventType = AppointmentEventType.CREATE,
         ),
@@ -128,7 +125,7 @@ class DomainEventDetailsIT : IntegrationTestBase() {
 
     @BeforeEach
     fun setUp() {
-      appointmentOutcomeEntityRepository.deleteAll()
+      appointmentEventEntityRepository.deleteAll()
     }
 
     @Test
@@ -172,10 +169,8 @@ class DomainEventDetailsIT : IntegrationTestBase() {
 
     @Test
     fun `return domain event detail if entry exists`() {
-      val entity = appointmentOutcomeEntityRepository.save(
-        AppointmentEventEntity.valid(
-          contactOutcomeEntity = contactOutcomeEntityRepository.findAll().first(),
-        ).copy(
+      val entity = appointmentEventEntityRepository.save(
+        AppointmentEventEntity.valid(ctx).copy(
           eventType = AppointmentEventType.UPDATE,
         ),
       )
@@ -193,9 +188,9 @@ class DomainEventDetailsIT : IntegrationTestBase() {
 
     @Test
     fun `return domain event detail without outcome`() {
-      val entity = appointmentOutcomeEntityRepository.save(
-        AppointmentEventEntity.valid(
-          contactOutcomeEntity = null,
+      val entity = appointmentEventEntityRepository.save(
+        AppointmentEventEntity.valid(ctx).copy(
+          contactOutcome = null,
         ).copy(
           eventType = AppointmentEventType.UPDATE,
         ),

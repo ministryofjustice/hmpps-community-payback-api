@@ -21,6 +21,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.PickUpDataDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SupervisorSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.Behaviour
@@ -94,7 +95,7 @@ class AppointmentEventEntityFactoryTest {
       )
 
       val result = factory.buildCreatedEvent(
-        deliusId = 101L,
+        appointment = AppointmentEntity.valid().copy(deliusId = 101L, id = ID),
         trigger = AppointmentEventTrigger(
           triggeredAt = TRIGGERED_AT,
           triggerType = AppointmentEventTriggerType.SCHEDULING,
@@ -168,7 +169,7 @@ class AppointmentEventEntityFactoryTest {
     @Test
     fun `mandatory fields only`() {
       val result = factory.buildCreatedEvent(
-        deliusId = 101L,
+        appointment = AppointmentEntity.valid().copy(deliusId = 101L, id = ID),
         trigger = AppointmentEventTrigger(
           triggeredAt = TRIGGERED_AT,
           triggerType = AppointmentEventTriggerType.SCHEDULING,
@@ -237,7 +238,7 @@ class AppointmentEventEntityFactoryTest {
       every { contactOutcomeEntityRepository.findByCode(CONTACT_OUTCOME_CODE) } returns ContactOutcomeEntity.valid()
 
       val result = factory.buildCreatedEvent(
-        deliusId = 101L,
+        appointment = AppointmentEntity.valid().copy(deliusId = 101L),
         trigger = AppointmentEventTrigger(
           triggeredAt = TRIGGERED_AT,
           triggerType = AppointmentEventTriggerType.SCHEDULING,
@@ -305,6 +306,7 @@ class AppointmentEventEntityFactoryTest {
           ),
           minutesToCredit = Duration.ofMinutes(334),
         ),
+        appointment = AppointmentEntity.valid(),
         existingAppointment = AppointmentDto.valid().copy(
           communityPaybackId = communityPaybackId,
           offender = OffenderDto.OffenderLimitedDto(crn = "X12345"),
@@ -377,6 +379,7 @@ class AppointmentEventEntityFactoryTest {
           ),
           minutesToCredit = null,
         ),
+        appointment = AppointmentEntity.valid(),
         existingAppointment = AppointmentDto.valid().copy(
           offender = OffenderDto.OffenderLimitedDto(crn = "X12345"),
           communityPaybackId = null,
@@ -439,6 +442,7 @@ class AppointmentEventEntityFactoryTest {
             ),
           ),
         ),
+        appointment = AppointmentEntity.valid(),
         existingAppointment = AppointmentDto.valid(),
         trigger = AppointmentEventTrigger(
           triggeredAt = TRIGGERED_AT,
@@ -463,6 +467,7 @@ class AppointmentEventEntityFactoryTest {
             ),
           ),
         ),
+        appointment = AppointmentEntity.valid(),
         existingAppointment = AppointmentDto.valid(),
         trigger = AppointmentEventTrigger(
           triggeredAt = TRIGGERED_AT,

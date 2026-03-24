@@ -33,10 +33,15 @@ data class AppointmentEventEntity(
   val triggeredSchedulingAt: OffsetDateTime? = null,
   val triggeredSchedulingId: UUID? = null,
 
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn("appointment_id")
+  val appointment: AppointmentEntity,
+
   val crn: String,
   val deliusEventNumber: Int,
   val communityPaybackAppointmentId: UUID?,
   val deliusAppointmentId: Long,
+
   val priorDeliusVersion: UUID?,
   val deliusAllocationId: Long?,
 

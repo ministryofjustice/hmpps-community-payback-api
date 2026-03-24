@@ -2,6 +2,8 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity
 
 import org.springframework.beans.factory.getBean
 import org.springframework.context.ApplicationContext
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventType
@@ -22,6 +24,7 @@ fun AppointmentEventEntity.Companion.valid(
   contactOutcomeEntity: ContactOutcomeEntity? = ContactOutcomeEntity.valid(),
 ) = AppointmentEventEntity(
   id = UUID.randomUUID(),
+  appointment = AppointmentEntity.valid(),
   communityPaybackAppointmentId = UUID.randomUUID(),
   eventType = AppointmentEventType.entries.toTypedArray().random(),
   triggeredAt = OffsetDateTime.now(),
@@ -55,6 +58,7 @@ fun AppointmentEventEntity.Companion.valid(
 
 fun AppointmentEventEntity.Companion.valid(ctx: ApplicationContext) = AppointmentEventEntity.valid().copy(
   contactOutcome = ctx.getBean<ContactOutcomeEntityRepository>().findAll().minByOrNull { it.name }!!,
+  appointment = ctx.getBean<AppointmentEntityRepository>().save(AppointmentEntity.valid()),
 )
 
 fun AppointmentEventTrigger.Companion.valid() = AppointmentEventTrigger(
