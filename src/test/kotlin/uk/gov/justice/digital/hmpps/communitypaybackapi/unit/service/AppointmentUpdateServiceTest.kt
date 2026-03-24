@@ -16,7 +16,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.ConflictE
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.InternalServerErrorException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.NotFoundException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.valid
@@ -45,9 +44,6 @@ class AppointmentUpdateServiceTest {
 
   @RelaxedMockK
   lateinit var appointmentOutcomeValidationService: AppointmentValidationService
-
-  @RelaxedMockK
-  lateinit var appointmentEntityRepository: AppointmentEntityRepository
 
   @InjectMockKs
   lateinit var service: AppointmentUpdateService
@@ -103,11 +99,9 @@ class AppointmentUpdateServiceTest {
 
     @Test
     fun `if there's no existing entries for the delius appointment ids, persist new entry, raise domain event and invoke update endpoint`() {
-      every { appointmentEntityRepository.findByDeliusId(DELIUS_APPOINTMENT_ID) } returns null
-
       val appointmentEntity = existingAppointment.toAppointmentEntity()
-      every { appointmentEntityRepository.save(existingAppointment.toAppointmentEntity()) } returns appointmentEntity
       every { appointmentRetrievalService.getAppointment(PROJECT_CODE, DELIUS_APPOINTMENT_ID) } returns existingAppointment
+      every { appointmentRetrievalService.getOrCreateAppointmentEntity(existingAppointment) } returns appointmentEntity
       val validatedUpdateAppointment = Validated.validUpdateAppointment().copy(value = updateRequest)
       every { appointmentOutcomeValidationService.validateUpdate(any(), any()) } returns validatedUpdateAppointment
 
@@ -123,7 +117,6 @@ class AppointmentUpdateServiceTest {
       )
 
       verify {
-        appointmentEntityRepository.save(existingAppointment.toAppointmentEntity())
         appointmentEventService.saveAndThenPublishOnTransactionCommit(proposedEvent)
         communityPaybackAndDeliusClient.updateAppointment(
           projectCode = PROJECT_CODE,

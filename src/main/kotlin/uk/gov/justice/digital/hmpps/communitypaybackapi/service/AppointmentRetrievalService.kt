@@ -10,8 +10,11 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeGroupDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.NotFoundException
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.toHttpParams
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.AppointmentMappers
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.ToAppointmentEntity.toAppointmentEntity
 import java.time.LocalDate
 
 @Service
@@ -20,6 +23,7 @@ class AppointmentRetrievalService(
   private val appointmentMappers: AppointmentMappers,
   private val contextService: ContextService,
   private val projectService: ProjectService,
+  private val appointmentEntityRepository: AppointmentEntityRepository,
 ) {
 
   fun getAppointment(
@@ -61,4 +65,9 @@ class AppointmentRetrievalService(
     )
     return PageImpl(pageResponse.content.map { appointmentMappers.toSummaryDto(it) }, pageable, pageResponse.page.totalElements)
   }
+
+  fun getOrCreateAppointmentEntity(
+    existingAppointment: AppointmentDto,
+  ): AppointmentEntity = appointmentEntityRepository.findByDeliusId(existingAppointment.id)
+    ?: appointmentEntityRepository.save(existingAppointment.toAppointmentEntity())
 }
