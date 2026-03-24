@@ -48,7 +48,12 @@ class AppointmentValidationService(
     ctx.validateNotes()
     ctx.validateEteAllowanceRemaining()
 
-    return Validated(create, ctx.calculateMinutesToCredit())
+    return Validated(
+      value = create,
+      minutesToCredit = ctx.calculateMinutesToCredit(),
+      contactOutcome = ctx.contactOutcome,
+      project = ctx.project,
+    )
   }
 
   fun validateUpdate(
@@ -70,7 +75,12 @@ class AppointmentValidationService(
     ctx.validateNotes()
     ctx.validateEteAllowanceRemaining()
 
-    return Validated(update, ctx.calculateMinutesToCredit())
+    return Validated(
+      value = update,
+      minutesToCredit = ctx.calculateMinutesToCredit(),
+      contactOutcome = ctx.contactOutcome,
+      project = ctx.project,
+    )
   }
 
   private fun ValidationContext.validateDate() {
@@ -172,4 +182,8 @@ class AppointmentValidationService(
 data class Validated<T>(
   val value: T,
   val minutesToCredit: Duration? = null,
-)
+  val contactOutcome: ContactOutcomeEntity? = null,
+  val project: ProjectDto,
+) {
+  companion object
+}

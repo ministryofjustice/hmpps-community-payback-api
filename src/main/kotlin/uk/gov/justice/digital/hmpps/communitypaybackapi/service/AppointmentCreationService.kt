@@ -4,10 +4,12 @@ import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCreateAppointments
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCreatedAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.ToAppointmentEntity.toAppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toNDCreateAppointment
+import java.util.UUID
 
 @Service
 class AppointmentCreationService(
@@ -36,38 +38,33 @@ class AppointmentCreationService(
 
     val projectCode = appointments[0].projectCode
 
-    val appointmentCreationEvents = appointments.map { createAppointment ->
-      appointmentEventService.buildCreatedEvent(
-        // the ID will be provided by the upstream response and set on the event before persistence
-        deliusId = 0L,
-        trigger = trigger,
-        validatedCreateAppointmentDto = appointmentValidationService.validateCreate(createAppointment),
-      )
-    }
-
-    val appointmentCreateRequests = NDCreateAppointments(
-      appointments = appointmentCreationEvents.map { it.toNDCreateAppointment() },
-    )
+    val validatedAppointments = appointments.map { appointmentValidationService.validateCreate(it) }
 
     val creationResponse = communityPaybackAndDeliusClient.createAppointments(
       projectCode = projectCode,
-      appointments = appointmentCreateRequests,
+      appointments = NDCreateAppointments(validatedAppointments.map { it.toNDCreateAppointment() }),
     )
 
     appointmentEntityRepository.saveAll(
-      appointments.map { appointmentDto ->
-        appointmentDto.toAppointmentEntity(
-          creationResponse.first { it.reference == appointmentDto.id }.id,
+      appointments.map {
+        it.toAppointmentEntity(
+          creationResponse.findDeliusId(communityPaybackId = it.id),
         )
       },
     )
 
-    val appointmentCreationEventsWithIds = appointmentCreationEvents.map { event ->
-      event.copy(deliusAppointmentId = creationResponse.first { it.reference == event.communityPaybackAppointmentId!! }.id)
-    }
-
-    appointmentEventService.saveAndPublishOnTransactionCommit(appointmentCreationEventsWithIds)
+    appointmentEventService.saveAndThenPublishOnTransactionCommit(
+      appointments.map { createAppointment ->
+        appointmentEventService.buildCreatedEvent(
+          deliusId = creationResponse.findDeliusId(communityPaybackId = createAppointment.id),
+          trigger = trigger,
+          validatedCreateAppointmentDto = appointmentValidationService.validateCreate(createAppointment),
+        )
+      },
+    )
 
     return creationResponse.map { it.id }
   }
+
+  private fun List<NDCreatedAppointment>.findDeliusId(communityPaybackId: UUID) = first { it.reference == communityPaybackId }.id
 }

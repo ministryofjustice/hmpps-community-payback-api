@@ -61,12 +61,12 @@ class AppointmentEventService(
   )
 
   @Transactional(Transactional.TxType.REQUIRED)
-  fun saveAndPublishOnTransactionCommit(
+  fun saveAndThenPublishOnTransactionCommit(
     event: AppointmentEventEntity,
-  ): AppointmentEventEntity = saveAndPublishOnTransactionCommit(listOf(event)).first()
+  ): AppointmentEventEntity = saveAndThenPublishOnTransactionCommit(listOf(event)).first()
 
   @Transactional(Transactional.TxType.REQUIRED)
-  fun saveAndPublishOnTransactionCommit(
+  fun saveAndThenPublishOnTransactionCommit(
     events: List<AppointmentEventEntity>,
   ): List<AppointmentEventEntity> {
     val persistedEvents = appointmentEventEntityRepository.saveAll(events)

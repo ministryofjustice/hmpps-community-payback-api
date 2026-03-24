@@ -28,12 +28,7 @@ class AppointmentEventEntityFactory(
     validatedCreateAppointmentDto: Validated<CreateAppointmentDto>,
   ): AppointmentEventEntity {
     val createAppointmentDto = validatedCreateAppointmentDto.value
-    val project = projectService.getProject(createAppointmentDto.projectCode)
-    val startTime = createAppointmentDto.startTime
-    val endTime = createAppointmentDto.endTime
-    val penaltyMinutes = createAppointmentDto.attendanceData?.derivePenaltyMinutesDuration()?.toMinutes()
-    val contactOutcome = loadOutcome(createAppointmentDto.contactOutcomeCode)
-
+    val project = validatedCreateAppointmentDto.project
     val supervisorCode = createAppointmentDto.supervisorOfficerCode ?: providerService.getTeamUnallocatedSupervisor(project.getTeamId()).code
 
     return AppointmentEventEntity(
@@ -47,17 +42,17 @@ class AppointmentEventEntityFactory(
       projectCode = project.projectCode,
       projectName = project.projectName,
       date = createAppointmentDto.date,
-      startTime = startTime,
-      endTime = endTime,
+      startTime = createAppointmentDto.startTime,
+      endTime = createAppointmentDto.endTime,
       pickupLocationCode = createAppointmentDto.pickUpLocationCode,
       pickupLocationDescription = createAppointmentDto.pickUpLocationDescription,
       pickupTime = createAppointmentDto.pickUpTime,
-      contactOutcome = contactOutcome,
+      contactOutcome = validatedCreateAppointmentDto.contactOutcome,
       supervisorOfficerCode = supervisorCode,
       notes = createAppointmentDto.notes,
       hiVisWorn = createAppointmentDto.attendanceData?.hiVisWorn,
       workedIntensively = createAppointmentDto.attendanceData?.workedIntensively,
-      penaltyMinutes = penaltyMinutes,
+      penaltyMinutes = createAppointmentDto.attendanceData?.derivePenaltyMinutesDuration()?.toMinutes(),
       minutesCredited = validatedCreateAppointmentDto.minutesToCredit?.toMinutes(),
       workQuality = createAppointmentDto.attendanceData?.workQuality?.let { WorkQuality.fromDto(it) },
       behaviour = createAppointmentDto.attendanceData?.behaviour?.let { Behaviour.fromDto(it) },
