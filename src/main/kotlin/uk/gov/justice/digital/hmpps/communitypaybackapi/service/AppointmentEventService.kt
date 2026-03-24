@@ -32,8 +32,7 @@ class AppointmentEventService(
     appointment: AppointmentEntity,
     existingAppointment: AppointmentDto,
     trigger: AppointmentEventTrigger,
-    projectCode: String,
-  ) = appointmentEventEntityFactory.buildUpdatedEvent(validatedUpdate, appointment, existingAppointment, trigger, projectCode)
+  ) = appointmentEventEntityFactory.buildUpdatedEvent(validatedUpdate, appointment, existingAppointment, trigger)
 
   fun getCreatedDomainEventDetails(id: UUID) = appointmentEventEntityRepository.findByIdOrNullForDomainEventDetails(id, AppointmentEventType.CREATE)?.toAppointmentCreatedDomainEvent()
 

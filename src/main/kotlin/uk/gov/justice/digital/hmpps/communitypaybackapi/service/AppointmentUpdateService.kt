@@ -38,7 +38,6 @@ class AppointmentUpdateService(
       appointment = appointmentEntity,
       existingAppointment = existingAppointment,
       trigger = trigger,
-      projectCode = projectCode,
     )
 
     if (appointmentEventService.hasUpdateAlreadyBeenSent(event)) {

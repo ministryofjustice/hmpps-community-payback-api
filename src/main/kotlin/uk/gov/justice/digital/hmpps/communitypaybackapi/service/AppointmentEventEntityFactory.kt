@@ -10,7 +10,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventE
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.Behaviour
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.WorkQuality
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.fromDto
 import java.time.OffsetDateTime
@@ -18,8 +17,6 @@ import java.util.UUID
 
 @Service
 class AppointmentEventEntityFactory(
-  private val contactOutcomeEntityRepository: ContactOutcomeEntityRepository,
-  private val projectService: ProjectService,
   private val providerService: ProviderService,
 ) {
 
@@ -68,14 +65,13 @@ class AppointmentEventEntityFactory(
     appointment: AppointmentEntity,
     existingAppointment: AppointmentDto,
     trigger: AppointmentEventTrigger,
-    projectCode: String,
   ): AppointmentEventEntity {
     val outcome = validatedUpdate.value
-    val project = projectService.getProject(projectCode)
+    val project = validatedUpdate.project
     val startTime = outcome.startTime
     val endTime = outcome.endTime
     val penaltyMinutes = outcome.attendanceData?.derivePenaltyMinutesDuration()?.toMinutes()
-    val contactOutcome = loadOutcome(outcome.contactOutcomeCode)
+    val contactOutcome = validatedUpdate.contactOutcome
 
     return AppointmentEventEntity(
       id = UUID.randomUUID(),
@@ -106,10 +102,6 @@ class AppointmentEventEntityFactory(
       triggerType = trigger.triggerType,
       triggeredBy = trigger.triggeredBy,
     )
-  }
-
-  private fun loadOutcome(code: String?) = code?.let {
-    contactOutcomeEntityRepository.findByCode(it) ?: error("ContactOutcome not found for code: $it")
   }
 }
 
