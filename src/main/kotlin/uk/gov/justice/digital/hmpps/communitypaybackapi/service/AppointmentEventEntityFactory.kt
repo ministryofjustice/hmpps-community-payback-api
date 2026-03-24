@@ -37,7 +37,7 @@ class AppointmentEventEntityFactory(
     val supervisorCode = createAppointmentDto.supervisorOfficerCode ?: providerService.getTeamUnallocatedSupervisor(project.getTeamId()).code
 
     return AppointmentEventEntity(
-      id = UUID.randomUUID(),
+      id = createAppointmentDto.id,
       communityPaybackAppointmentId = createAppointmentDto.id,
       eventType = AppointmentEventType.CREATE,
       crn = createAppointmentDto.crn,
