@@ -1,0 +1,1 @@
+ALTER TABLE appointments ADD CONSTRAINT appointments_unique UNIQUE (delius_id);

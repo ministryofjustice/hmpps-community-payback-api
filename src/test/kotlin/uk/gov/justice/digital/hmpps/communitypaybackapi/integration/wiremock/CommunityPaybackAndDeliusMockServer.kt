@@ -32,6 +32,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDUnpaidWorkRequi
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.PageResponse
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.unallocated
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.random
 import java.net.URLEncoder
 import java.time.LocalDate
 import java.time.LocalTime
@@ -176,7 +177,7 @@ object CommunityPaybackAndDeliusMockServer {
   ) {
     val response = (0..<appointmentCount).map { i ->
       mapOf(
-        "id" to i + 1,
+        "id" to Long.random(),
         "reference" to $$"{{jsonPath request.body '$.appointments[$$i].reference'}}",
       )
     }
