@@ -5,6 +5,8 @@ import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCreateAppointments
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntityRepository
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.ToAppointmentEntity.toAppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toNDCreateAppointment
 
 @Service
@@ -12,6 +14,7 @@ class AppointmentCreationService(
   private val appointmentEventService: AppointmentEventService,
   private val appointmentValidationService: AppointmentValidationService,
   private val communityPaybackAndDeliusClient: CommunityPaybackAndDeliusClient,
+  private val appointmentEntityRepository: AppointmentEntityRepository,
 ) {
 
   @Transactional
@@ -49,6 +52,14 @@ class AppointmentCreationService(
     val creationResponse = communityPaybackAndDeliusClient.createAppointments(
       projectCode = projectCode,
       appointments = appointmentCreateRequests,
+    )
+
+    appointmentEntityRepository.saveAll(
+      appointments.map { appointmentDto ->
+        appointmentDto.toAppointmentEntity(
+          creationResponse.first { it.reference == appointmentDto.id }.id,
+        )
+      },
     )
 
     val appointmentCreationEventsWithIds = appointmentCreationEvents.map { event ->

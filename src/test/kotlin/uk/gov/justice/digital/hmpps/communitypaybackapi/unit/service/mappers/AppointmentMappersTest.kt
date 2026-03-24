@@ -32,7 +32,9 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDRequirementProg
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDTeam
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.HourMinuteDuration
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentBehaviourDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentWorkQualityDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.OffenderDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventType
@@ -44,8 +46,11 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EnforcementAction
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ProjectTypeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.WorkQuality
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.valid
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.validFull
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.AppointmentMappers
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.ToAppointmentEntity.toAppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.fromDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toAppointmentUpdatedDomainEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toNDCreateAppointment
@@ -537,6 +542,65 @@ class AppointmentMappersTest {
       assertThat(result.projectTypeName).isEqualTo("PROJECTYPE1")
       assertThat(result.projectTypeCode).isEqualTo("PT1")
       assertThat(result.notes).isEqualTo("The notes")
+    }
+  }
+
+  @Nested
+  inner class CreateAppointmentDtoToAppointmentEntity {
+
+    @Test
+    fun success() {
+      val communityPaybackId = UUID.randomUUID()
+      val result = CreateAppointmentDto.valid().copy(
+        id = communityPaybackId,
+        crn = "CRN777",
+        deliusEventNumber = 90,
+      ).toAppointmentEntity(
+        deliusAppointmentId = 91283,
+      )
+
+      assertThat(result.id).isEqualTo(communityPaybackId)
+      assertThat(result.deliusId).isEqualTo(91283)
+      assertThat(result.crn).isEqualTo("CRN777")
+      assertThat(result.deliusEventNumber).isEqualTo(90)
+      assertThat(result.createdByCommunityPayback).isEqualTo(true)
+    }
+  }
+
+  @Nested
+  inner class AppointmentDtoToAppointmentEntity {
+
+    @Test
+    fun `was created in NDelius`() {
+      val result = AppointmentDto.valid().copy(
+        id = 9090,
+        communityPaybackId = null,
+        offender = OffenderDto.validFull().copy(crn = "CRN777"),
+        deliusEventNumber = 90,
+      ).toAppointmentEntity()
+
+      assertThat(result.id).isNotNull
+      assertThat(result.deliusId).isEqualTo(9090)
+      assertThat(result.crn).isEqualTo("CRN777")
+      assertThat(result.deliusEventNumber).isEqualTo(90)
+      assertThat(result.createdByCommunityPayback).isEqualTo(false)
+    }
+
+    @Test
+    fun `was created in Community Payback`() {
+      val communityPaybackId = UUID.randomUUID()
+      val result = AppointmentDto.valid().copy(
+        id = 9090,
+        communityPaybackId = communityPaybackId,
+        offender = OffenderDto.validFull().copy(crn = "CRN777"),
+        deliusEventNumber = 90,
+      ).toAppointmentEntity()
+
+      assertThat(result.id).isEqualTo(communityPaybackId)
+      assertThat(result.deliusId).isEqualTo(9090)
+      assertThat(result.crn).isEqualTo("CRN777")
+      assertThat(result.deliusEventNumber).isEqualTo(90)
+      assertThat(result.createdByCommunityPayback).isEqualTo(true)
     }
   }
 

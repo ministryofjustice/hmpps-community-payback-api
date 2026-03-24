@@ -9,7 +9,9 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOut
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.ConflictException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.InternalServerErrorException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.NotFoundException
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.ToAppointmentEntity.toAppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toNDUpdateAppointment
 
 @Service
@@ -18,6 +20,7 @@ class AppointmentUpdateService(
   private val appointmentEventService: AppointmentEventService,
   private val communityPaybackAndDeliusClient: CommunityPaybackAndDeliusClient,
   private val appointmentUpdateValidationService: AppointmentValidationService,
+  private val appointmentEntityRepository: AppointmentEntityRepository,
 ) {
   private companion object {
     private val log = LoggerFactory.getLogger(this::class.java)
@@ -30,6 +33,11 @@ class AppointmentUpdateService(
     trigger: AppointmentEventTrigger,
   ) {
     val existingAppointment = appointmentRetrievalService.getAppointment(projectCode, update.deliusId)
+
+    appointmentEntityRepository.findByDeliusId(update.deliusId)
+      ?: appointmentEntityRepository.save(
+        existingAppointment.toAppointmentEntity(),
+      )
 
     val proposedEntity = appointmentEventService.buildUpdatedEvent(
       validatedUpdate = appointmentUpdateValidationService.validateUpdate(existingAppointment, update),

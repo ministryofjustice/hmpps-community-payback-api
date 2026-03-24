@@ -15,11 +15,13 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentWorkQualityDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AttendanceDataDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EnforcementDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.PickUpDataDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.domainevent.AppointmentCreatedDomainEventDetailDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.domainevent.AppointmentDomainEventDetailDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.domainevent.AppointmentUpdatedDomainEventDetailDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.Behaviour
@@ -181,6 +183,27 @@ fun AppointmentEventEntity.toNDCreateAppointment(): NDCreateAppointment {
       location = this.pickupLocationCode?.let { NDCode(it) },
       time = this.pickupTime,
     ),
+  )
+}
+
+object ToAppointmentEntity {
+
+  fun CreateAppointmentDto.toAppointmentEntity(
+    deliusAppointmentId: Long,
+  ): AppointmentEntity = AppointmentEntity(
+    id = this.id,
+    deliusId = deliusAppointmentId,
+    crn = this.crn,
+    deliusEventNumber = this.deliusEventNumber,
+    createdByCommunityPayback = true,
+  )
+
+  fun AppointmentDto.toAppointmentEntity(): AppointmentEntity = AppointmentEntity(
+    id = this.communityPaybackId ?: AppointmentEntity.generateId(),
+    deliusId = this.id,
+    crn = this.offender.crn,
+    deliusEventNumber = this.deliusEventNumber.toLong(),
+    createdByCommunityPayback = this.communityPaybackId != null,
   )
 }
 
