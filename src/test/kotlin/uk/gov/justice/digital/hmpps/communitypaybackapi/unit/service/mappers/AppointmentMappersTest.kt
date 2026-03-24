@@ -38,8 +38,8 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AttendanceDataDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.OffenderDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntity
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.Behaviour
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
@@ -50,6 +50,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.WorkQuality
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.validFull
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.validUpdateAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.Validated
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.AppointmentMappers
@@ -182,35 +183,37 @@ class AppointmentMappersTest {
   }
 
   @Nested
-  inner class AppointmentEventEntityToUpdateAppointment {
+  inner class ValidatedUpdateAppointmentDtoToNDUpdateAppointment {
 
     @Test
     fun success() {
-      val appointmentEvent = AppointmentEventEntity.valid().copy(
-        id = UUID.randomUUID(),
-        eventType = AppointmentEventType.UPDATE,
-        deliusAppointmentId = 101L,
-        priorDeliusVersion = UUID.randomUUID(),
-        crn = "CRN123",
-        deliusEventNumber = 5,
-        startTime = LocalTime.of(3, 2, 1),
-        endTime = LocalTime.of(12, 11, 10),
+      val priorDeliusVersion = UUID.randomUUID()
+
+      val dto = Validated.validUpdateAppointment().copy(
+        value = UpdateAppointmentOutcomeDto.valid().copy(
+          deliusId = 101L,
+          deliusVersionToUpdate = priorDeliusVersion,
+          startTime = LocalTime.of(3, 2, 1),
+          endTime = LocalTime.of(12, 11, 10),
+          attendanceData = AttendanceDataDto.valid().copy(
+            hiVisWorn = true,
+            workedIntensively = false,
+            penaltyMinutes = 105,
+            workQuality = AppointmentWorkQualityDto.NOT_APPLICABLE,
+            behaviour = AppointmentBehaviourDto.UNSATISFACTORY,
+          ),
+          supervisorOfficerCode = "WO3736",
+          notes = "The notes",
+          alertActive = false,
+          sensitive = true,
+        ),
+        minutesToCredit = Duration.ofMinutes(35),
         contactOutcome = ContactOutcomeEntity.valid().copy(code = "COE1"),
-        supervisorOfficerCode = "WO3736",
-        notes = "The notes",
-        hiVisWorn = true,
-        workedIntensively = false,
-        penaltyMinutes = 105,
-        minutesCredited = 35,
-        workQuality = WorkQuality.NOT_APPLICABLE,
-        behaviour = Behaviour.UNSATISFACTORY,
-        alertActive = false,
-        sensitive = true,
       )
 
-      val result = appointmentEvent.toNDUpdateAppointment()
+      val result = dto.toNDUpdateAppointment()
 
-      assertThat(result.version).isEqualTo(appointmentEvent.priorDeliusVersion)
+      assertThat(result.version).isEqualTo(priorDeliusVersion)
       assertThat(result.startTime).isEqualTo(LocalTime.of(3, 2, 1))
       assertThat(result.endTime).isEqualTo(LocalTime.of(12, 11, 10))
       assertThat(result.outcome!!.code).isEqualTo("COE1")
@@ -228,31 +231,27 @@ class AppointmentMappersTest {
 
     @Test
     fun `success with only mandatory fields`() {
-      val event = AppointmentEventEntity.valid().copy(
-        id = UUID.randomUUID(),
-        eventType = AppointmentEventType.UPDATE,
-        deliusAppointmentId = 101L,
-        priorDeliusVersion = UUID.randomUUID(),
-        crn = "CRN123",
-        deliusEventNumber = 5,
-        startTime = LocalTime.of(3, 2, 1),
-        endTime = LocalTime.of(12, 11, 10),
+      val priorDeliusVersion = UUID.randomUUID()
+
+      val dto = Validated.validUpdateAppointment().copy(
+        value = UpdateAppointmentOutcomeDto.valid().copy(
+          deliusId = 101L,
+          deliusVersionToUpdate = priorDeliusVersion,
+          startTime = LocalTime.of(3, 2, 1),
+          endTime = LocalTime.of(12, 11, 10),
+          attendanceData = null,
+          supervisorOfficerCode = "WO3736",
+          notes = null,
+          alertActive = null,
+          sensitive = null,
+        ),
+        minutesToCredit = null,
         contactOutcome = null,
-        supervisorOfficerCode = "WO3736",
-        notes = null,
-        hiVisWorn = null,
-        workedIntensively = null,
-        penaltyMinutes = null,
-        minutesCredited = null,
-        workQuality = null,
-        behaviour = null,
-        alertActive = null,
-        sensitive = null,
       )
 
-      val result = event.toNDUpdateAppointment()
+      val result = dto.toNDUpdateAppointment()
 
-      assertThat(result.version).isEqualTo(event.priorDeliusVersion)
+      assertThat(result.version).isEqualTo(priorDeliusVersion)
       assertThat(result.startTime).isEqualTo(LocalTime.of(3, 2, 1))
       assertThat(result.endTime).isEqualTo(LocalTime.of(12, 11, 10))
       assertThat(result.outcome).isNull()

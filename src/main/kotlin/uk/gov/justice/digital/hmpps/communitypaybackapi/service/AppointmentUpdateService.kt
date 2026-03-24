@@ -10,7 +10,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.ConflictE
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.InternalServerErrorException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.NotFoundException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntityRepository
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.ToAppointmentEntity.toAppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toNDUpdateAppointment
 
@@ -39,38 +38,41 @@ class AppointmentUpdateService(
         existingAppointment.toAppointmentEntity(),
       )
 
-    val proposedEntity = appointmentEventService.buildUpdatedEvent(
+    val validatedUpdateDto = appointmentUpdateValidationService.validateUpdate(existingAppointment, update)
+
+    val event = appointmentEventService.buildUpdatedEvent(
       validatedUpdate = appointmentUpdateValidationService.validateUpdate(existingAppointment, update),
       existingAppointment = existingAppointment,
       trigger = trigger,
       projectCode = projectCode,
     )
 
-    if (appointmentEventService.hasUpdateAlreadyBeenSent(proposedEntity)) {
+    if (appointmentEventService.hasUpdateAlreadyBeenSent(event)) {
       log.debug("Not applying update for appointment ${update.deliusId} because the most recent update is logically identical")
       return
     }
 
-    val persistedEntity = appointmentEventService.saveAndThenPublishOnTransactionCommit(proposedEntity)
+    updateDelius(projectCode, validatedUpdateDto)
 
-    updateDelius(projectCode, persistedEntity)
+    appointmentEventService.saveAndThenPublishOnTransactionCommit(event)
   }
 
   @SuppressWarnings("SwallowedException", "ThrowsCount")
   private fun updateDelius(
     projectCode: String,
-    appointmentEvent: AppointmentEventEntity,
+    validatedUpdateDto: Validated<UpdateAppointmentOutcomeDto>,
   ) {
+    val deliusAppointmentId = validatedUpdateDto.value.deliusId
     try {
       communityPaybackAndDeliusClient.updateAppointment(
         projectCode = projectCode,
-        appointmentId = appointmentEvent.deliusAppointmentId,
-        updateAppointment = appointmentEvent.toNDUpdateAppointment(),
+        appointmentId = deliusAppointmentId,
+        updateAppointment = validatedUpdateDto.toNDUpdateAppointment(),
       )
     } catch (_: WebClientResponseException.NotFound) {
-      throw NotFoundException("Appointment", appointmentEvent.deliusAppointmentId.toString())
+      throw NotFoundException("Appointment", deliusAppointmentId.toString())
     } catch (_: WebClientResponseException.Conflict) {
-      throw ConflictException("A newer version of the appointment exists. Stale version is '${appointmentEvent.priorDeliusVersion}'")
+      throw ConflictException("A newer version of the appointment exists. Stale version is '${validatedUpdateDto.value.deliusVersionToUpdate}'")
     } catch (badRequest: WebClientResponseException.BadRequest) {
       throw InternalServerErrorException("Bad request returned updating an appointment. Upstream response is '${badRequest.responseBodyAsString}'")
     }

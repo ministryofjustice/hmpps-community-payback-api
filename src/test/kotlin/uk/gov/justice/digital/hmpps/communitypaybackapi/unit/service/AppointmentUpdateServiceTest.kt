@@ -78,7 +78,9 @@ class AppointmentUpdateServiceTest {
     }
 
     @Test
-    fun `if appointment not found on update, throw not found exception`() {
+    fun `if appointment not found on call to update, throw not found exception`() {
+      val validatedUpdateAppointment = Validated.validUpdateAppointment().copy(value = updateRequest)
+      every { appointmentOutcomeValidationService.validateUpdate(any(), any()) } returns validatedUpdateAppointment
       every { appointmentRetrievalService.getAppointment(PROJECT_CODE, DELIUS_APPOINTMENT_ID) } returns existingAppointment
       val proposedEvent = AppointmentEventEntity.fromUpdateRequest(updateRequest)
       every { appointmentEventService.buildUpdatedEvent(any(), any(), any(), any()) } returns proposedEvent
