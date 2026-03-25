@@ -40,7 +40,7 @@ class EteMappers(
     val creditTime = courseCompletionResolution.creditTimeDetails!!
     return CreateAppointmentDto(
       id = AppointmentEntity.generateId(),
-      crn = courseCompletionResolution.crn,
+      crn = courseCompletionResolution.crn!!,
       deliusEventNumber = creditTime.deliusEventNumber,
       allocationId = null,
       projectCode = creditTime.projectCode,

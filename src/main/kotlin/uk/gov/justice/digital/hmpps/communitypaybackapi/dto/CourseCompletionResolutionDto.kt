@@ -6,7 +6,7 @@ import java.time.LocalDate
 
 data class CourseCompletionResolutionDto(
   val type: CourseCompletionResolutionTypeDto,
-  val crn: String,
+  val crn: String?,
   @param:Schema(description = "Must be provided if type is 'CREDIT_TIME'")
   val creditTimeDetails: CourseCompletionCreditTimeDetailsDto?,
 ) {
