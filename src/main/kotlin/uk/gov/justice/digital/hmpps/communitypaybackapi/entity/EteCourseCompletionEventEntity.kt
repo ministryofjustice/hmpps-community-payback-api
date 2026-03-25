@@ -48,7 +48,6 @@ data class EteCourseCompletionEventEntity(
   val courseType: String,
   val provider: String,
 
-  @Column(name = "completion_date_time")
   val completionDateTime: OffsetDateTime,
 
   @Enumerated(EnumType.STRING)
