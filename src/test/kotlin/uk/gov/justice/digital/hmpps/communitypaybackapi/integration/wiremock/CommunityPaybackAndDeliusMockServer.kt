@@ -15,6 +15,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
 import com.github.tomakehurst.wiremock.client.WireMock.urlMatching
 import com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo
 import tools.jackson.databind.json.JsonMapper
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAdjustmentPostResponse
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointmentSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseDetail
@@ -413,6 +414,22 @@ object CommunityPaybackAndDeliusMockServer {
             .withStatus(404),
         ),
     )
+  }
+
+  fun postAdjustment(username: String) {
+    WireMock.stubFor(
+      post("/community-payback-and-delius/adjustments?username=$username")
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withBody(jsonMapper.writeValueAsString(listOf(NDAdjustmentPostResponse(1L))))
+            .withTransformers("response-template"),
+        ),
+    )
+  }
+
+  fun postAdjustmentVerify(username: String) {
+    WireMock.verify(postRequestedFor(urlEqualTo("/community-payback-and-delius/adjustments?username=$username")))
   }
 
   fun setupGetDataMocksForUpdateAppointment(

@@ -4,10 +4,15 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
+import jakarta.validation.Valid
 import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAdjustmentDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentsService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ContextService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.OffenderService
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
@@ -17,7 +22,11 @@ import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
   "/admin",
   produces = [MediaType.APPLICATION_JSON_VALUE],
 )
-class AdminUpwDetailsController(private val offenderService: OffenderService, private val contextService: ContextService) {
+class AdminUpwDetailsController(
+  private val adjustmentsService: AdjustmentsService,
+  private val offenderService: OffenderService,
+  private val contextService: ContextService,
+) {
 
   @GetMapping(
     path = ["/offenders/{crn}/unpaid-work-details/{deliusEventNumber}"],
@@ -41,4 +50,36 @@ class AdminUpwDetailsController(private val offenderService: OffenderService, pr
     ],
   )
   fun getEvent(@PathVariable crn: String, @PathVariable deliusEventNumber: Long) = offenderService.getUnpaidWorkDetails(crn, deliusEventNumber, contextService.getUserName())
+
+  @PostMapping(
+    path = ["/offenders/{crn}/unpaid-work-details/{deliusEventNumber}/adjustments"],
+    produces = [MediaType.APPLICATION_JSON_VALUE],
+  )
+  @Operation(
+    responses = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Adjustment has been created",
+      ),
+      ApiResponse(
+        responseCode = "404",
+        description = "Offender and/or Unpaid Work Details not found for the given CRN and Event Number",
+        content = [
+          Content(
+            schema = Schema(implementation = ErrorResponse::class),
+          ),
+        ],
+      ),
+    ],
+  )
+  fun createAdjustment(
+    @PathVariable crn: String,
+    @PathVariable deliusEventNumber: Long,
+    @Valid @RequestBody createAdjustment: CreateAdjustmentDto,
+  ) = adjustmentsService.createAdjustment(
+    crn = crn,
+    deliusEventNumber = deliusEventNumber,
+    createAdjustment = createAdjustment,
+    username = contextService.getUserName(),
+  )
 }
