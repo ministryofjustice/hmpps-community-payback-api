@@ -9,6 +9,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOut
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.ConflictException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.InternalServerErrorException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.NotFoundException
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService.ValidatedAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toNDUpdateAppointment
 
 @Service
@@ -53,9 +54,9 @@ class AppointmentUpdateService(
   @SuppressWarnings("SwallowedException", "ThrowsCount")
   private fun updateDelius(
     projectCode: String,
-    validatedUpdateDto: Validated<UpdateAppointmentOutcomeDto>,
+    validatedUpdateDto: ValidatedAppointment<UpdateAppointmentOutcomeDto>,
   ) {
-    val deliusAppointmentId = validatedUpdateDto.value.deliusId
+    val deliusAppointmentId = validatedUpdateDto.dto.deliusId
     try {
       communityPaybackAndDeliusClient.updateAppointment(
         projectCode = projectCode,
@@ -65,7 +66,7 @@ class AppointmentUpdateService(
     } catch (_: WebClientResponseException.NotFound) {
       throw NotFoundException("Appointment", deliusAppointmentId.toString())
     } catch (_: WebClientResponseException.Conflict) {
-      throw ConflictException("A newer version of the appointment exists. Stale version is '${validatedUpdateDto.value.deliusVersionToUpdate}'")
+      throw ConflictException("A newer version of the appointment exists. Stale version is '${validatedUpdateDto.dto.deliusVersionToUpdate}'")
     } catch (badRequest: WebClientResponseException.BadRequest) {
       throw InternalServerErrorException("Bad request returned updating an appointment. Upstream response is '${badRequest.responseBodyAsString}'")
     }

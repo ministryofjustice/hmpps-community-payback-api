@@ -26,7 +26,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentRetrievalService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentUpdateService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.Validated
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService.ValidatedAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.ToAppointmentEntity.toAppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.unit.util.WebClientResponseExceptionFactory
 
@@ -76,7 +76,7 @@ class AppointmentUpdateServiceTest {
 
     @Test
     fun `if appointment not found on call to update, throw not found exception`() {
-      val validatedUpdateAppointment = Validated.validUpdateAppointment().copy(value = updateRequest)
+      val validatedUpdateAppointment = ValidatedAppointment.validUpdateAppointment().copy(dto = updateRequest)
       every { appointmentOutcomeValidationService.validateUpdate(any(), any()) } returns validatedUpdateAppointment
       every { appointmentRetrievalService.getAppointment(PROJECT_CODE, DELIUS_APPOINTMENT_ID) } returns existingAppointment
       val proposedEvent = AppointmentEventEntity.fromUpdateRequest(updateRequest)
@@ -102,7 +102,7 @@ class AppointmentUpdateServiceTest {
       val appointmentEntity = existingAppointment.toAppointmentEntity()
       every { appointmentRetrievalService.getAppointment(PROJECT_CODE, DELIUS_APPOINTMENT_ID) } returns existingAppointment
       every { appointmentRetrievalService.getOrCreateAppointmentEntity(existingAppointment) } returns appointmentEntity
-      val validatedUpdateAppointment = Validated.validUpdateAppointment().copy(value = updateRequest)
+      val validatedUpdateAppointment = ValidatedAppointment.validUpdateAppointment().copy(dto = updateRequest)
       every { appointmentOutcomeValidationService.validateUpdate(any(), any()) } returns validatedUpdateAppointment
 
       val proposedEvent = AppointmentEventEntity.fromUpdateRequest(updateRequest)
@@ -129,7 +129,7 @@ class AppointmentUpdateServiceTest {
     @Test
     fun `if there's an existing entry for the delius appointment id and it's logically identical, do not send an update`() {
       every { appointmentRetrievalService.getAppointment(PROJECT_CODE, DELIUS_APPOINTMENT_ID) } returns existingAppointment
-      val validatedUpdateAppointment = Validated.validUpdateAppointment().copy(value = updateRequest)
+      val validatedUpdateAppointment = ValidatedAppointment.validUpdateAppointment().copy(dto = updateRequest)
       every { appointmentOutcomeValidationService.validateUpdate(any(), any()) } returns validatedUpdateAppointment
 
       val proposedEvent = AppointmentEventEntity.fromUpdateRequest(updateRequest)
@@ -151,7 +151,7 @@ class AppointmentUpdateServiceTest {
     @Test
     fun `if appointment has newer version on update, throw conflict exception`() {
       every { appointmentRetrievalService.getAppointment(PROJECT_CODE, DELIUS_APPOINTMENT_ID) } returns existingAppointment
-      every { appointmentOutcomeValidationService.validateUpdate(any(), any()) } returns Validated.validUpdateAppointment().copy(value = updateRequest)
+      every { appointmentOutcomeValidationService.validateUpdate(any(), any()) } returns ValidatedAppointment.validUpdateAppointment().copy(dto = updateRequest)
 
       val proposedEvent = AppointmentEventEntity.fromUpdateRequest(updateRequest)
       every { appointmentEventService.buildUpdatedEvent(any(), any(), any(), any()) } returns proposedEvent
@@ -174,7 +174,7 @@ class AppointmentUpdateServiceTest {
     @Test
     fun `if bad request returned throw internal server error`() {
       every { appointmentRetrievalService.getAppointment(PROJECT_CODE, DELIUS_APPOINTMENT_ID) } returns existingAppointment
-      every { appointmentOutcomeValidationService.validateUpdate(any(), any()) } returns Validated.validUpdateAppointment().copy(value = updateRequest)
+      every { appointmentOutcomeValidationService.validateUpdate(any(), any()) } returns ValidatedAppointment.validUpdateAppointment().copy(dto = updateRequest)
 
       val proposedEvent = AppointmentEventEntity.fromUpdateRequest(updateRequest)
       every { appointmentEventService.buildUpdatedEvent(any(), any(), any(), any()) } returns proposedEvent

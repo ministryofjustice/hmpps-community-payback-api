@@ -33,9 +33,9 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.validUpdateA
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventEntityFactory
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventTrigger
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService.ValidatedAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ProviderService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.TeamId
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.Validated
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
@@ -93,8 +93,8 @@ class AppointmentEventEntityFactoryTest {
           triggerType = AppointmentEventTriggerType.SCHEDULING,
           triggeredBy = TRIGGERED_BY,
         ),
-        validatedCreateAppointmentDto = Validated.validCreateAppointment().copy(
-          value = CreateAppointmentDto(
+        validatedCreateAppointmentDto = ValidatedAppointment.validCreateAppointment().copy(
+          dto = CreateAppointmentDto(
             id = ID,
             crn = "X12345",
             deliusEventNumber = 48,
@@ -163,8 +163,8 @@ class AppointmentEventEntityFactoryTest {
           triggerType = AppointmentEventTriggerType.SCHEDULING,
           triggeredBy = TRIGGERED_BY,
         ),
-        validatedCreateAppointmentDto = Validated.validCreateAppointment().copy(
-          value = CreateAppointmentDto(
+        validatedCreateAppointmentDto = ValidatedAppointment.validCreateAppointment().copy(
+          dto = CreateAppointmentDto(
             id = ID,
             crn = "X12345",
             deliusEventNumber = 48,
@@ -226,8 +226,8 @@ class AppointmentEventEntityFactoryTest {
           triggerType = AppointmentEventTriggerType.SCHEDULING,
           triggeredBy = TRIGGERED_BY,
         ),
-        validatedCreateAppointmentDto = Validated.validCreateAppointment().copy(
-          value = CreateAppointmentDto.valid().copy(
+        validatedCreateAppointmentDto = ValidatedAppointment.validCreateAppointment().copy(
+          dto = CreateAppointmentDto.valid().copy(
             contactOutcomeCode = null,
             attendanceData = AttendanceDataDto.valid().copy(
               penaltyMinutes = 150,
@@ -255,8 +255,8 @@ class AppointmentEventEntityFactoryTest {
       )
 
       val result = factory.buildUpdatedEvent(
-        validatedUpdate = Validated.validUpdateAppointment().copy(
-          value = UpdateAppointmentOutcomeDto(
+        validatedUpdate = ValidatedAppointment.validUpdateAppointment().copy(
+          dto = UpdateAppointmentOutcomeDto(
             deliusId = 101L,
             deliusVersionToUpdate = deliusVersion,
             startTime = LocalTime.of(10, 1),
@@ -335,8 +335,8 @@ class AppointmentEventEntityFactoryTest {
       val deliusVersion = UUID.randomUUID()
 
       val result = factory.buildUpdatedEvent(
-        validatedUpdate = Validated.validUpdateAppointment().copy(
-          value = UpdateAppointmentOutcomeDto(
+        validatedUpdate = ValidatedAppointment.validUpdateAppointment().copy(
+          dto = UpdateAppointmentOutcomeDto(
             deliusId = 101L,
             deliusVersionToUpdate = deliusVersion,
             startTime = LocalTime.of(10, 1, 2),
@@ -400,7 +400,7 @@ class AppointmentEventEntityFactoryTest {
     @Test
     fun `use penaltyMinutes instead of penaltyTime if defined`() {
       val result = factory.buildUpdatedEvent(
-        validatedUpdate = Validated.validUpdateAppointment().copy(
+        validatedUpdate = ValidatedAppointment.validUpdateAppointment().copy(
           UpdateAppointmentOutcomeDto.valid().copy(
             contactOutcomeCode = null,
             attendanceData = AttendanceDataDto.valid().copy(
@@ -424,7 +424,7 @@ class AppointmentEventEntityFactoryTest {
     @Test
     fun `use legacy penaltyTime if penaltyMinutes not defined`() {
       val result = factory.buildUpdatedEvent(
-        validatedUpdate = Validated.validUpdateAppointment().copy(
+        validatedUpdate = ValidatedAppointment.validUpdateAppointment().copy(
           UpdateAppointmentOutcomeDto.valid().copy(
             contactOutcomeCode = null,
             attendanceData = AttendanceDataDto.valid().copy(

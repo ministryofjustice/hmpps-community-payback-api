@@ -11,6 +11,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventT
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.Behaviour
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.WorkQuality
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService.ValidatedAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.fromDto
 import java.time.OffsetDateTime
 import java.util.UUID
@@ -23,9 +24,9 @@ class AppointmentEventEntityFactory(
   fun buildCreatedEvent(
     appointment: AppointmentEntity,
     trigger: AppointmentEventTrigger,
-    validatedCreateAppointmentDto: Validated<CreateAppointmentDto>,
+    validatedCreateAppointmentDto: ValidatedAppointment<CreateAppointmentDto>,
   ): AppointmentEventEntity {
-    val createAppointmentDto = validatedCreateAppointmentDto.value
+    val createAppointmentDto = validatedCreateAppointmentDto.dto
     val project = validatedCreateAppointmentDto.project
     val supervisorCode = createAppointmentDto.supervisorOfficerCode ?: providerService.getTeamUnallocatedSupervisor(project.getTeamId()).code
 
@@ -61,12 +62,12 @@ class AppointmentEventEntityFactory(
   }
 
   fun buildUpdatedEvent(
-    validatedUpdate: Validated<UpdateAppointmentOutcomeDto>,
+    validatedUpdate: ValidatedAppointment<UpdateAppointmentOutcomeDto>,
     appointment: AppointmentEntity,
     existingAppointment: AppointmentDto,
     trigger: AppointmentEventTrigger,
   ): AppointmentEventEntity {
-    val outcome = validatedUpdate.value
+    val outcome = validatedUpdate.dto
     val project = validatedUpdate.project
     val startTime = outcome.startTime
     val endTime = outcome.endTime

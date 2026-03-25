@@ -31,9 +31,9 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.validFull
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentCalculationService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService.ValidatedAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.OffenderService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ProjectService
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.Validated
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
@@ -104,8 +104,8 @@ class AppointmentValidationServiceTest {
         val result = service.validateCreate(baselineCreate)
 
         assertThat(result).isEqualTo(
-          Validated(
-            value = baselineCreate,
+          ValidatedAppointment(
+            dto = baselineCreate,
             minutesToCredit = Duration.ofMinutes(60),
             contactOutcome = baselineOutcome,
             project = baselineProject,
@@ -130,8 +130,8 @@ class AppointmentValidationServiceTest {
         val result = service.validateCreate(create)
 
         assertThat(result).isEqualTo(
-          Validated(
-            value = create,
+          ValidatedAppointment(
+            dto = create,
             minutesToCredit = Duration.ofMinutes(125),
             contactOutcome = baselineOutcome,
             project = baselineProject,
@@ -642,8 +642,8 @@ class AppointmentValidationServiceTest {
         )
 
         assertThat(result).isEqualTo(
-          Validated(
-            value = baselineUpdate,
+          ValidatedAppointment(
+            dto = baselineUpdate,
             minutesToCredit = Duration.ofMinutes(60),
             contactOutcome = baselineOutcome,
             project = baselineProject,
@@ -672,8 +672,8 @@ class AppointmentValidationServiceTest {
         )
 
         assertThat(result).isEqualTo(
-          Validated(
-            value = update,
+          ValidatedAppointment(
+            dto = update,
             minutesToCredit = Duration.ofMinutes(125),
             contactOutcome = baselineOutcome,
             project = baselineProject,

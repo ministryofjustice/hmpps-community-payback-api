@@ -31,7 +31,7 @@ class AppointmentValidationService(
 
   fun validateCreate(
     create: CreateAppointmentDto,
-  ): Validated<CreateAppointmentDto> {
+  ): ValidatedAppointment<CreateAppointmentDto> {
     val ctx = ValidationContext(
       command = create,
       project = projectService.getProject(create.projectCode),
@@ -48,8 +48,8 @@ class AppointmentValidationService(
     ctx.validateNotes()
     ctx.validateEteAllowanceRemaining()
 
-    return Validated(
-      value = create,
+    return ValidatedAppointment(
+      dto = create,
       minutesToCredit = ctx.calculateMinutesToCredit(),
       contactOutcome = ctx.contactOutcome,
       project = ctx.project,
@@ -59,7 +59,7 @@ class AppointmentValidationService(
   fun validateUpdate(
     appointment: AppointmentDto,
     update: UpdateAppointmentOutcomeDto,
-  ): Validated<UpdateAppointmentOutcomeDto> {
+  ): ValidatedAppointment<UpdateAppointmentOutcomeDto> {
     val ctx = ValidationContext(
       command = update,
       project = projectService.getProject(appointment.projectCode),
@@ -75,8 +75,8 @@ class AppointmentValidationService(
     ctx.validateNotes()
     ctx.validateEteAllowanceRemaining()
 
-    return Validated(
-      value = update,
+    return ValidatedAppointment(
+      dto = update,
       minutesToCredit = ctx.calculateMinutesToCredit(),
       contactOutcome = ctx.contactOutcome,
       project = ctx.project,
@@ -177,13 +177,13 @@ class AppointmentValidationService(
     val appointmentDate: LocalDate,
     val appointmentMinutesAlreadyCredited: Duration = Duration.ZERO,
   )
-}
 
-data class Validated<T>(
-  val value: T,
-  val minutesToCredit: Duration? = null,
-  val contactOutcome: ContactOutcomeEntity? = null,
-  val project: ProjectDto,
-) {
-  companion object
+  data class ValidatedAppointment<T>(
+    val dto: T,
+    val minutesToCredit: Duration? = null,
+    val contactOutcome: ContactOutcomeEntity? = null,
+    val project: ProjectDto,
+  ) {
+    companion object
+  }
 }

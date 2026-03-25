@@ -10,6 +10,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventType
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService.ValidatedAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toAppointmentCreatedDomainEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toAppointmentUpdatedDomainEvent
 import java.time.OffsetDateTime
@@ -24,11 +25,11 @@ class AppointmentEventService(
   fun buildCreatedEvent(
     appointment: AppointmentEntity,
     trigger: AppointmentEventTrigger,
-    validatedCreateAppointmentDto: Validated<CreateAppointmentDto>,
+    validatedCreateAppointmentDto: ValidatedAppointment<CreateAppointmentDto>,
   ) = appointmentEventEntityFactory.buildCreatedEvent(appointment, trigger, validatedCreateAppointmentDto)
 
   fun buildUpdatedEvent(
-    validatedUpdate: Validated<UpdateAppointmentOutcomeDto>,
+    validatedUpdate: ValidatedAppointment<UpdateAppointmentOutcomeDto>,
     appointment: AppointmentEntity,
     existingAppointment: AppointmentDto,
     trigger: AppointmentEventTrigger,
