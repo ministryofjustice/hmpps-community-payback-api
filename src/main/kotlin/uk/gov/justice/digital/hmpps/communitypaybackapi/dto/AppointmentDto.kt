@@ -6,6 +6,7 @@ import java.time.LocalTime
 import java.util.UUID
 
 data class AppointmentDto(
+  @param:Schema(description = "The NDelius Appointment ID")
   val id: Long,
   val communityPaybackId: UUID?,
   val version: UUID,

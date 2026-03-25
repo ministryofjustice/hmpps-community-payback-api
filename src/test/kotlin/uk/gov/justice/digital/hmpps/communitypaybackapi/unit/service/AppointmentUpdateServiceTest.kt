@@ -16,7 +16,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.ConflictE
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.InternalServerErrorException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.NotFoundException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.valid
@@ -27,7 +26,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentRetrievalService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentUpdateService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.Validated
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService.ValidatedAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.ToAppointmentEntity.toAppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.unit.util.WebClientResponseExceptionFactory
 
@@ -45,9 +44,6 @@ class AppointmentUpdateServiceTest {
 
   @RelaxedMockK
   lateinit var appointmentOutcomeValidationService: AppointmentValidationService
-
-  @RelaxedMockK
-  lateinit var appointmentEntityRepository: AppointmentEntityRepository
 
   @InjectMockKs
   lateinit var service: AppointmentUpdateService
@@ -80,11 +76,11 @@ class AppointmentUpdateServiceTest {
 
     @Test
     fun `if appointment not found on call to update, throw not found exception`() {
-      val validatedUpdateAppointment = Validated.validUpdateAppointment().copy(value = updateRequest)
+      val validatedUpdateAppointment = ValidatedAppointment.validUpdateAppointment().copy(dto = updateRequest)
       every { appointmentOutcomeValidationService.validateUpdate(any(), any()) } returns validatedUpdateAppointment
       every { appointmentRetrievalService.getAppointment(PROJECT_CODE, DELIUS_APPOINTMENT_ID) } returns existingAppointment
       val proposedEvent = AppointmentEventEntity.fromUpdateRequest(updateRequest)
-      every { appointmentEventService.buildUpdatedEvent(any(), any(), any(), any(), any()) } returns proposedEvent
+      every { appointmentEventService.buildUpdatedEvent(any(), any(), any(), any()) } returns proposedEvent
       every { appointmentEventService.hasUpdateAlreadyBeenSent(proposedEvent) } returns false
       every { appointmentEventService.saveAndThenPublishOnTransactionCommit(proposedEvent) } returnsArgument 0
 
@@ -103,16 +99,14 @@ class AppointmentUpdateServiceTest {
 
     @Test
     fun `if there's no existing entries for the delius appointment ids, persist new entry, raise domain event and invoke update endpoint`() {
-      every { appointmentEntityRepository.findByDeliusId(DELIUS_APPOINTMENT_ID) } returns null
-
       val appointmentEntity = existingAppointment.toAppointmentEntity()
-      every { appointmentEntityRepository.save(existingAppointment.toAppointmentEntity()) } returns appointmentEntity
       every { appointmentRetrievalService.getAppointment(PROJECT_CODE, DELIUS_APPOINTMENT_ID) } returns existingAppointment
-      val validatedUpdateAppointment = Validated.validUpdateAppointment().copy(value = updateRequest)
+      every { appointmentRetrievalService.getOrCreateAppointmentEntity(existingAppointment) } returns appointmentEntity
+      val validatedUpdateAppointment = ValidatedAppointment.validUpdateAppointment().copy(dto = updateRequest)
       every { appointmentOutcomeValidationService.validateUpdate(any(), any()) } returns validatedUpdateAppointment
 
       val proposedEvent = AppointmentEventEntity.fromUpdateRequest(updateRequest)
-      every { appointmentEventService.buildUpdatedEvent(validatedUpdateAppointment, appointmentEntity, existingAppointment, TRIGGER, PROJECT_CODE) } returns proposedEvent
+      every { appointmentEventService.buildUpdatedEvent(validatedUpdateAppointment, appointmentEntity, existingAppointment, TRIGGER) } returns proposedEvent
       every { appointmentEventService.hasUpdateAlreadyBeenSent(proposedEvent) } returns false
       every { appointmentEventService.saveAndThenPublishOnTransactionCommit(proposedEvent) } returnsArgument 0
 
@@ -123,7 +117,6 @@ class AppointmentUpdateServiceTest {
       )
 
       verify {
-        appointmentEntityRepository.save(existingAppointment.toAppointmentEntity())
         appointmentEventService.saveAndThenPublishOnTransactionCommit(proposedEvent)
         communityPaybackAndDeliusClient.updateAppointment(
           projectCode = PROJECT_CODE,
@@ -136,11 +129,11 @@ class AppointmentUpdateServiceTest {
     @Test
     fun `if there's an existing entry for the delius appointment id and it's logically identical, do not send an update`() {
       every { appointmentRetrievalService.getAppointment(PROJECT_CODE, DELIUS_APPOINTMENT_ID) } returns existingAppointment
-      val validatedUpdateAppointment = Validated.validUpdateAppointment().copy(value = updateRequest)
+      val validatedUpdateAppointment = ValidatedAppointment.validUpdateAppointment().copy(dto = updateRequest)
       every { appointmentOutcomeValidationService.validateUpdate(any(), any()) } returns validatedUpdateAppointment
 
       val proposedEvent = AppointmentEventEntity.fromUpdateRequest(updateRequest)
-      every { appointmentEventService.buildUpdatedEvent(any(), any(), any(), any(), any()) } returns proposedEvent
+      every { appointmentEventService.buildUpdatedEvent(any(), any(), any(), any()) } returns proposedEvent
       every { appointmentEventService.hasUpdateAlreadyBeenSent(proposedEvent) } returns true
 
       service.updateAppointmentOutcome(
@@ -158,10 +151,10 @@ class AppointmentUpdateServiceTest {
     @Test
     fun `if appointment has newer version on update, throw conflict exception`() {
       every { appointmentRetrievalService.getAppointment(PROJECT_CODE, DELIUS_APPOINTMENT_ID) } returns existingAppointment
-      every { appointmentOutcomeValidationService.validateUpdate(any(), any()) } returns Validated.validUpdateAppointment().copy(value = updateRequest)
+      every { appointmentOutcomeValidationService.validateUpdate(any(), any()) } returns ValidatedAppointment.validUpdateAppointment().copy(dto = updateRequest)
 
       val proposedEvent = AppointmentEventEntity.fromUpdateRequest(updateRequest)
-      every { appointmentEventService.buildUpdatedEvent(any(), any(), any(), any(), any()) } returns proposedEvent
+      every { appointmentEventService.buildUpdatedEvent(any(), any(), any(), any()) } returns proposedEvent
       every { appointmentEventService.hasUpdateAlreadyBeenSent(proposedEvent) } returns false
       every { appointmentEventService.saveAndThenPublishOnTransactionCommit(proposedEvent) } returnsArgument 0
 
@@ -181,10 +174,10 @@ class AppointmentUpdateServiceTest {
     @Test
     fun `if bad request returned throw internal server error`() {
       every { appointmentRetrievalService.getAppointment(PROJECT_CODE, DELIUS_APPOINTMENT_ID) } returns existingAppointment
-      every { appointmentOutcomeValidationService.validateUpdate(any(), any()) } returns Validated.validUpdateAppointment().copy(value = updateRequest)
+      every { appointmentOutcomeValidationService.validateUpdate(any(), any()) } returns ValidatedAppointment.validUpdateAppointment().copy(dto = updateRequest)
 
       val proposedEvent = AppointmentEventEntity.fromUpdateRequest(updateRequest)
-      every { appointmentEventService.buildUpdatedEvent(any(), any(), any(), any(), any()) } returns proposedEvent
+      every { appointmentEventService.buildUpdatedEvent(any(), any(), any(), any()) } returns proposedEvent
       every { appointmentEventService.hasUpdateAlreadyBeenSent(proposedEvent) } returns false
       every { appointmentEventService.saveAndThenPublishOnTransactionCommit(proposedEvent) } returnsArgument 0
 

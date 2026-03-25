@@ -6,17 +6,17 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOut
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.randomDuration
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.Validated
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService.ValidatedAppointment
 
-fun Validated.Companion.validCreateAppointment() = Validated(
-  value = CreateAppointmentDto.valid(),
+fun ValidatedAppointment.Companion.validCreateAppointment() = ValidatedAppointment(
+  dto = CreateAppointmentDto.valid(),
   minutesToCredit = randomDuration(),
   contactOutcome = ContactOutcomeEntity.valid(),
   project = ProjectDto.valid(),
 )
 
-fun Validated.Companion.validUpdateAppointment() = Validated(
-  value = UpdateAppointmentOutcomeDto.valid(),
+fun ValidatedAppointment.Companion.validUpdateAppointment() = ValidatedAppointment(
+  dto = UpdateAppointmentOutcomeDto.valid(),
   minutesToCredit = randomDuration(),
   contactOutcome = ContactOutcomeEntity.valid(),
   project = ProjectDto.valid(),

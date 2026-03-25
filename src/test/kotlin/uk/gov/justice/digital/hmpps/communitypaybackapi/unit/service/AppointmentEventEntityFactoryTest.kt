@@ -26,7 +26,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventT
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.Behaviour
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.WorkQuality
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.validCreateAppointment
@@ -34,10 +33,9 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.validUpdateA
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventEntityFactory
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventTrigger
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ProjectService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService.ValidatedAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ProviderService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.TeamId
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.Validated
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
@@ -46,12 +44,6 @@ import java.util.UUID
 
 @ExtendWith(MockKExtension::class)
 class AppointmentEventEntityFactoryTest {
-
-  @RelaxedMockK
-  lateinit var contactOutcomeEntityRepository: ContactOutcomeEntityRepository
-
-  @RelaxedMockK
-  lateinit var projectService: ProjectService
 
   @RelaxedMockK
   lateinit var providerService: ProviderService
@@ -101,8 +93,8 @@ class AppointmentEventEntityFactoryTest {
           triggerType = AppointmentEventTriggerType.SCHEDULING,
           triggeredBy = TRIGGERED_BY,
         ),
-        validatedCreateAppointmentDto = Validated.validCreateAppointment().copy(
-          value = CreateAppointmentDto(
+        validatedCreateAppointmentDto = ValidatedAppointment.validCreateAppointment().copy(
+          dto = CreateAppointmentDto(
             id = ID,
             crn = "X12345",
             deliusEventNumber = 48,
@@ -171,8 +163,8 @@ class AppointmentEventEntityFactoryTest {
           triggerType = AppointmentEventTriggerType.SCHEDULING,
           triggeredBy = TRIGGERED_BY,
         ),
-        validatedCreateAppointmentDto = Validated.validCreateAppointment().copy(
-          value = CreateAppointmentDto(
+        validatedCreateAppointmentDto = ValidatedAppointment.validCreateAppointment().copy(
+          dto = CreateAppointmentDto(
             id = ID,
             crn = "X12345",
             deliusEventNumber = 48,
@@ -227,8 +219,6 @@ class AppointmentEventEntityFactoryTest {
 
     @Test
     fun `use penaltyMinutes instead of penaltyTime if defined`() {
-      every { contactOutcomeEntityRepository.findByCode(CONTACT_OUTCOME_CODE) } returns ContactOutcomeEntity.valid()
-
       val result = factory.buildCreatedEvent(
         appointment = AppointmentEntity.valid().copy(deliusId = 101L),
         trigger = AppointmentEventTrigger(
@@ -236,8 +226,8 @@ class AppointmentEventEntityFactoryTest {
           triggerType = AppointmentEventTriggerType.SCHEDULING,
           triggeredBy = TRIGGERED_BY,
         ),
-        validatedCreateAppointmentDto = Validated.validCreateAppointment().copy(
-          value = CreateAppointmentDto.valid().copy(
+        validatedCreateAppointmentDto = ValidatedAppointment.validCreateAppointment().copy(
+          dto = CreateAppointmentDto.valid().copy(
             contactOutcomeCode = null,
             attendanceData = AttendanceDataDto.valid().copy(
               penaltyMinutes = 150,
@@ -254,11 +244,6 @@ class AppointmentEventEntityFactoryTest {
   @Nested
   inner class BuildUpdatedEvent {
 
-    @BeforeEach
-    fun `setup get project mock`() {
-      every { projectService.getProject(PROJECT_CODE) } returns PROJECT
-    }
-
     @Test
     fun `all fields populated`() {
       val communityPaybackId = UUID.randomUUID()
@@ -269,11 +254,9 @@ class AppointmentEventEntityFactoryTest {
         attended = true,
       )
 
-      every { contactOutcomeEntityRepository.findByCode(CONTACT_OUTCOME_CODE) } returns contactOutcomeEntity
-
       val result = factory.buildUpdatedEvent(
-        validatedUpdate = Validated.validUpdateAppointment().copy(
-          value = UpdateAppointmentOutcomeDto(
+        validatedUpdate = ValidatedAppointment.validUpdateAppointment().copy(
+          dto = UpdateAppointmentOutcomeDto(
             deliusId = 101L,
             deliusVersionToUpdate = deliusVersion,
             startTime = LocalTime.of(10, 1),
@@ -297,6 +280,8 @@ class AppointmentEventEntityFactoryTest {
             sensitive = true,
           ),
           minutesToCredit = Duration.ofMinutes(334),
+          project = PROJECT,
+          contactOutcome = contactOutcomeEntity,
         ),
         appointment = AppointmentEntity.valid(),
         existingAppointment = AppointmentDto.valid().copy(
@@ -316,7 +301,6 @@ class AppointmentEventEntityFactoryTest {
           triggerType = AppointmentEventTriggerType.USER,
           triggeredBy = TRIGGERED_BY,
         ),
-        projectCode = PROJECT_CODE,
       )
 
       assertThat(result.id).isNotNull
@@ -351,8 +335,8 @@ class AppointmentEventEntityFactoryTest {
       val deliusVersion = UUID.randomUUID()
 
       val result = factory.buildUpdatedEvent(
-        validatedUpdate = Validated.validUpdateAppointment().copy(
-          value = UpdateAppointmentOutcomeDto(
+        validatedUpdate = ValidatedAppointment.validUpdateAppointment().copy(
+          dto = UpdateAppointmentOutcomeDto(
             deliusId = 101L,
             deliusVersionToUpdate = deliusVersion,
             startTime = LocalTime.of(10, 1, 2),
@@ -366,6 +350,8 @@ class AppointmentEventEntityFactoryTest {
             sensitive = null,
           ),
           minutesToCredit = null,
+          project = PROJECT,
+          contactOutcome = null,
         ),
         appointment = AppointmentEntity.valid(),
         existingAppointment = AppointmentDto.valid().copy(
@@ -382,7 +368,6 @@ class AppointmentEventEntityFactoryTest {
           triggerType = AppointmentEventTriggerType.USER,
           triggeredBy = TRIGGERED_BY,
         ),
-        projectCode = PROJECT_CODE,
       )
 
       assertThat(result.id).isNotNull
@@ -414,10 +399,8 @@ class AppointmentEventEntityFactoryTest {
 
     @Test
     fun `use penaltyMinutes instead of penaltyTime if defined`() {
-      every { contactOutcomeEntityRepository.findByCode(CONTACT_OUTCOME_CODE) } returns ContactOutcomeEntity.valid()
-
       val result = factory.buildUpdatedEvent(
-        validatedUpdate = Validated.validUpdateAppointment().copy(
+        validatedUpdate = ValidatedAppointment.validUpdateAppointment().copy(
           UpdateAppointmentOutcomeDto.valid().copy(
             contactOutcomeCode = null,
             attendanceData = AttendanceDataDto.valid().copy(
@@ -433,7 +416,6 @@ class AppointmentEventEntityFactoryTest {
           triggerType = AppointmentEventTriggerType.USER,
           triggeredBy = TRIGGERED_BY,
         ),
-        projectCode = PROJECT_CODE,
       )
 
       assertThat(result.penaltyMinutes).isEqualTo(150L)
@@ -442,7 +424,7 @@ class AppointmentEventEntityFactoryTest {
     @Test
     fun `use legacy penaltyTime if penaltyMinutes not defined`() {
       val result = factory.buildUpdatedEvent(
-        validatedUpdate = Validated.validUpdateAppointment().copy(
+        validatedUpdate = ValidatedAppointment.validUpdateAppointment().copy(
           UpdateAppointmentOutcomeDto.valid().copy(
             contactOutcomeCode = null,
             attendanceData = AttendanceDataDto.valid().copy(
@@ -458,7 +440,6 @@ class AppointmentEventEntityFactoryTest {
           triggerType = AppointmentEventTriggerType.USER,
           triggeredBy = TRIGGERED_BY,
         ),
-        projectCode = PROJECT_CODE,
       )
 
       assertThat(result.penaltyMinutes).isEqualTo(300L)

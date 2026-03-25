@@ -30,7 +30,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEnt
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EnforcementActionEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ProjectTypeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.WorkQuality
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.Validated
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService.ValidatedAppointment
 
 @Service
 class AppointmentMappers(
@@ -141,8 +141,8 @@ private fun AppointmentEventEntity.toAppointmentDomainEventDetail() = Appointmen
   behaviour = this.behaviour?.dtoType,
 )
 
-fun Validated<UpdateAppointmentOutcomeDto>.toNDUpdateAppointment(): NDUpdateAppointment {
-  val updateDto = value
+fun ValidatedAppointment<UpdateAppointmentOutcomeDto>.toNDUpdateAppointment(): NDUpdateAppointment {
+  val updateDto = dto
   return NDUpdateAppointment(
     version = updateDto.deliusVersionToUpdate,
     startTime = updateDto.startTime,
@@ -161,8 +161,8 @@ fun Validated<UpdateAppointmentOutcomeDto>.toNDUpdateAppointment(): NDUpdateAppo
   )
 }
 
-fun Validated<CreateAppointmentDto>.toNDCreateAppointment(): NDCreateAppointment {
-  val createDto = this.value
+fun ValidatedAppointment<CreateAppointmentDto>.toNDCreateAppointment(): NDCreateAppointment {
+  val createDto = this.dto
   return NDCreateAppointment(
     reference = createDto.id,
     crn = createDto.crn,

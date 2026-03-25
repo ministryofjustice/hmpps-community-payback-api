@@ -21,6 +21,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentSummaryDt
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeGroupDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.NotFoundException
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ProjectTypeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.valid
@@ -47,6 +48,9 @@ class AppointmentRetrievalServiceTest {
 
   @RelaxedMockK
   private lateinit var projectService: ProjectService
+
+  @RelaxedMockK
+  private lateinit var appointmentEntityRepository: AppointmentEntityRepository
 
   @InjectMockKs
   private lateinit var service: AppointmentRetrievalService

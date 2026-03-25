@@ -10,25 +10,23 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventE
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.Behaviour
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.WorkQuality
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService.ValidatedAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.fromDto
 import java.time.OffsetDateTime
 import java.util.UUID
 
 @Service
 class AppointmentEventEntityFactory(
-  private val contactOutcomeEntityRepository: ContactOutcomeEntityRepository,
-  private val projectService: ProjectService,
   private val providerService: ProviderService,
 ) {
 
   fun buildCreatedEvent(
     appointment: AppointmentEntity,
     trigger: AppointmentEventTrigger,
-    validatedCreateAppointmentDto: Validated<CreateAppointmentDto>,
+    validatedCreateAppointmentDto: ValidatedAppointment<CreateAppointmentDto>,
   ): AppointmentEventEntity {
-    val createAppointmentDto = validatedCreateAppointmentDto.value
+    val createAppointmentDto = validatedCreateAppointmentDto.dto
     val project = validatedCreateAppointmentDto.project
     val supervisorCode = createAppointmentDto.supervisorOfficerCode ?: providerService.getTeamUnallocatedSupervisor(project.getTeamId()).code
 
@@ -64,18 +62,17 @@ class AppointmentEventEntityFactory(
   }
 
   fun buildUpdatedEvent(
-    validatedUpdate: Validated<UpdateAppointmentOutcomeDto>,
+    validatedUpdate: ValidatedAppointment<UpdateAppointmentOutcomeDto>,
     appointment: AppointmentEntity,
     existingAppointment: AppointmentDto,
     trigger: AppointmentEventTrigger,
-    projectCode: String,
   ): AppointmentEventEntity {
-    val outcome = validatedUpdate.value
-    val project = projectService.getProject(projectCode)
+    val outcome = validatedUpdate.dto
+    val project = validatedUpdate.project
     val startTime = outcome.startTime
     val endTime = outcome.endTime
     val penaltyMinutes = outcome.attendanceData?.derivePenaltyMinutesDuration()?.toMinutes()
-    val contactOutcome = loadOutcome(outcome.contactOutcomeCode)
+    val contactOutcome = validatedUpdate.contactOutcome
 
     return AppointmentEventEntity(
       id = UUID.randomUUID(),
@@ -106,10 +103,6 @@ class AppointmentEventEntityFactory(
       triggerType = trigger.triggerType,
       triggeredBy = trigger.triggeredBy,
     )
-  }
-
-  private fun loadOutcome(code: String?) = code?.let {
-    contactOutcomeEntityRepository.findByCode(it) ?: error("ContactOutcome not found for code: $it")
   }
 }
 

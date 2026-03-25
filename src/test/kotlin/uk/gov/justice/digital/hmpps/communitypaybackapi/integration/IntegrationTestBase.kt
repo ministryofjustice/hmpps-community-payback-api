@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.integration
 
 import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.getBean
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 import org.springframework.boot.test.web.server.LocalServerPort
@@ -14,6 +15,8 @@ import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.wiremock.spring.EnableWireMock
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntityRepository
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.config.ClockConfiguration
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.container.LocalStackContainer
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.container.LocalStackContainer.setLocalStackProperties
@@ -51,6 +54,12 @@ abstract class IntegrationTestBase {
   fun before() {
     // this provides an oauth token for any calls to upstream APIs
     HmppsAuthMockServer.stubGrantToken()
+  }
+
+  @BeforeEach
+  fun clearAppointments() {
+    ctx.getBean<AppointmentEventEntityRepository>().deleteAll()
+    ctx.getBean<AppointmentEntityRepository>().deleteAll()
   }
 
   companion object {

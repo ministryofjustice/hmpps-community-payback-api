@@ -53,7 +53,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.validFull
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.validUpdateAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.Validated
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService.ValidatedAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.AppointmentMappers
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.ToAppointmentEntity.toAppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.fromDto
@@ -84,8 +84,8 @@ class AppointmentMappersTest {
     fun success() {
       val appointmentId = UUID.randomUUID()
 
-      val dto = Validated(
-        value = CreateAppointmentDto.valid().copy(
+      val dto = ValidatedAppointment(
+        dto = CreateAppointmentDto.valid().copy(
           id = appointmentId,
           crn = "CRN123",
           deliusEventNumber = 5,
@@ -138,8 +138,8 @@ class AppointmentMappersTest {
     fun `success only mandatory fields`() {
       val appointmentId = UUID.randomUUID()
 
-      val dto = Validated(
-        value = CreateAppointmentDto.valid().copy(
+      val dto = ValidatedAppointment(
+        dto = CreateAppointmentDto.valid().copy(
           id = appointmentId,
           crn = "CRN123",
           deliusEventNumber = 5,
@@ -190,8 +190,8 @@ class AppointmentMappersTest {
     fun success() {
       val priorDeliusVersion = UUID.randomUUID()
 
-      val dto = Validated.validUpdateAppointment().copy(
-        value = UpdateAppointmentOutcomeDto.valid().copy(
+      val dto = ValidatedAppointment.validUpdateAppointment().copy(
+        dto = UpdateAppointmentOutcomeDto.valid().copy(
           deliusId = 101L,
           deliusVersionToUpdate = priorDeliusVersion,
           startTime = LocalTime.of(3, 2, 1),
@@ -234,8 +234,8 @@ class AppointmentMappersTest {
     fun `success with only mandatory fields`() {
       val priorDeliusVersion = UUID.randomUUID()
 
-      val dto = Validated.validUpdateAppointment().copy(
-        value = UpdateAppointmentOutcomeDto.valid().copy(
+      val dto = ValidatedAppointment.validUpdateAppointment().copy(
+        dto = UpdateAppointmentOutcomeDto.valid().copy(
           deliusId = 101L,
           deliusVersionToUpdate = priorDeliusVersion,
           startTime = LocalTime.of(3, 2, 1),

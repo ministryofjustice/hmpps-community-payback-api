@@ -5,6 +5,11 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
 
+data class CreateAppointmentsDto(
+  val projectCode: String,
+  val appointments: List<CreateAppointmentDto>,
+)
+
 data class CreateAppointmentDto(
   val id: UUID,
   val crn: String,
