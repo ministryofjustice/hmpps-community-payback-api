@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.service
 
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ContactOutcomeGroupDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentReasonEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.CommunityCampusPduEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeGroup
@@ -11,11 +12,14 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
 
 @Service
 class ReferenceService(
+  val adjustmentReasonEntity: AdjustmentReasonEntityRepository,
   val projectTypeEntityRepository: ProjectTypeEntityRepository,
   val contactOutcomeEntityRepository: ContactOutcomeEntityRepository,
   val communityCampusPduEntityRepository: CommunityCampusPduEntityRepository,
   val enforcementActionEntityRepository: EnforcementActionEntityRepository,
 ) {
+  fun getAdjustmentReasons() = adjustmentReasonEntity.findAllByOrderByNameAsc().toDto()
+
   fun getProjectTypes() = projectTypeEntityRepository.findAllByOrderByNameAsc().toDto()
 
   fun getContactOutcomes(

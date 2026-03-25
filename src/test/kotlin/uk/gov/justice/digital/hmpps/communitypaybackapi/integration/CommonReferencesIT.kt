@@ -5,6 +5,7 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AdjustmentReasonsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CommunityCampusPdusDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ContactOutcomesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EnforcementActionsDto
@@ -16,6 +17,54 @@ class CommonReferencesIT : IntegrationTestBase() {
 
   @Autowired
   lateinit var projectTypeEntityRepository: ProjectTypeEntityRepository
+
+  @Nested
+  @DisplayName("GET /common/references/adjustment-reasons")
+  inner class GetAdjustmentReasons {
+
+    @Test
+    fun `should return unauthorized if no token`() {
+      webTestClient.get()
+        .uri("/common/references/adjustment-reasons")
+        .exchange()
+        .expectStatus()
+        .isUnauthorized
+    }
+
+    @Test
+    fun `should return forbidden if no role`() {
+      webTestClient.get()
+        .uri("/common/references/adjustment-reasons")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .isForbidden
+    }
+
+    @Test
+    fun `should return forbidden if wrong role`() {
+      webTestClient.get()
+        .uri("/common/references/adjustment-reasons")
+        .headers(setAuthorisation(roles = listOf("ROLE_WRONG")))
+        .exchange()
+        .expectStatus()
+        .isForbidden
+    }
+
+    @Test
+    fun `should return OK with project types`() {
+      val result = webTestClient.get()
+        .uri("/common/references/adjustment-reasons")
+        .addAdminUiAuthHeader()
+        .exchange()
+        .expectStatus()
+        .isOk
+        .bodyAsObject<AdjustmentReasonsDto>()
+
+      assertThat(result.adjustmentReasons).hasSize(1)
+      assertThat(result.adjustmentReasons[0].name).isEqualTo("Travel Time")
+    }
+  }
 
   @Nested
   @DisplayName("GET /common/references/project-types")

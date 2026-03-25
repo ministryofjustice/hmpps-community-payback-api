@@ -8,7 +8,6 @@ import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CaseDetailsSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ContextService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.OffenderService
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
@@ -18,21 +17,21 @@ import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
   "/admin",
   produces = [MediaType.APPLICATION_JSON_VALUE],
 )
-class AdminOffenderController(private val offenderService: OffenderService, private val contextService: ContextService) {
+class AdminUpwDetailsController(private val offenderService: OffenderService, private val contextService: ContextService) {
+
   @GetMapping(
-    path = ["/offenders/{crn}/summary"],
+    path = ["/offenders/{crn}/unpaid-work-details/{deliusEventNumber}"],
     produces = [MediaType.APPLICATION_JSON_VALUE],
   )
   @Operation(
-    description = "Get offender summary by CRN",
     responses = [
       ApiResponse(
         responseCode = "200",
-        description = "Successful response with offender summary",
+        description = "Successful response with unpaid work details summary",
       ),
       ApiResponse(
         responseCode = "404",
-        description = "Offender not found for the given CRN",
+        description = "Offender and/or Unpaid Work Details not found for the given CRN and Event Number",
         content = [
           Content(
             schema = Schema(implementation = ErrorResponse::class),
@@ -41,5 +40,5 @@ class AdminOffenderController(private val offenderService: OffenderService, priv
       ),
     ],
   )
-  fun getOffenderSummary(@PathVariable crn: String): CaseDetailsSummaryDto = offenderService.getOffenderSummaryByCrn(crn, contextService.getUserName())
+  fun getEvent(@PathVariable crn: String, @PathVariable deliusEventNumber: Long) = offenderService.getUnpaidWorkDetails(crn, deliusEventNumber, contextService.getUserName())
 }

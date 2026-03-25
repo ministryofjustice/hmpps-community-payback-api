@@ -6,6 +6,7 @@ import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AdjustmentReasonsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CommunityCampusPdusDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ContactOutcomeGroupDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ContactOutcomesDto
@@ -19,6 +20,18 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ReferenceService
   produces = [MediaType.APPLICATION_JSON_VALUE],
 )
 class CommonReferenceController(val referenceService: ReferenceService) {
+
+  @GetMapping("/adjustment-reasons")
+  @Operation(
+    description = "Get all adjustment reasons",
+    responses = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Successful adjustment reasons response",
+      ),
+    ],
+  )
+  fun getAdjustmentReasons(): AdjustmentReasonsDto = referenceService.getAdjustmentReasons()
 
   @GetMapping("/project-types")
   @Operation(

@@ -1,5 +1,7 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers
 
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AdjustmentReasonDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AdjustmentReasonsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CommunityCampusPduDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CommunityCampusPdusDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ContactOutcomeDto
@@ -9,11 +11,19 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EnforcementActionsDt
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeGroupDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypesDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentReasonEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.CommunityCampusPduEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EnforcementActionEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ProjectTypeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ProjectTypeGroup
+
+fun List<AdjustmentReasonEntity>.toDto() = AdjustmentReasonsDto(this.map { it.toDto() })
+fun AdjustmentReasonEntity.toDto() = AdjustmentReasonDto(
+  id = this.id,
+  name = this.name,
+  maxMinutesAllowed = this.maxMinutesAllowed,
+)
 
 fun List<ProjectTypeEntity>.toDto() = ProjectTypesDto(this.map { it.toDto() })
 fun ProjectTypeEntity.toDto() = ProjectTypeDto(
