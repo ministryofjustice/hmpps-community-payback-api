@@ -7,6 +7,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ContactOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EnforcementActionDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeGroupDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentReasonEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.CommunityCampusPduEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EnforcementActionEntity
@@ -18,6 +19,46 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
 import java.util.UUID
 
 class ReferenceMappersTest {
+
+  @Nested
+  inner class AdjustmentReasonsMapper {
+
+    @Test
+    fun `should map empty ProjectTypes list correctly`() {
+      val adjustmentReasons = listOf<AdjustmentReasonEntity>()
+      val result = adjustmentReasons.toDto()
+
+      assertThat(result.adjustmentReasons).isEmpty()
+    }
+
+    @Test
+    fun `should map ProjectTypes to DTO correctly`() {
+      val adjustmentReasons = listOf(
+        AdjustmentReasonEntity.valid().copy(
+          id = UUID.fromString("e68f2cd5-c6f2-4ed8-af66-cd9a46d5fe77"),
+          name = "reason 1",
+          maxMinutesAllowed = 25,
+        ),
+        AdjustmentReasonEntity.valid().copy(
+          id = UUID.fromString("ea55e70e-c1ca-45b9-9001-18af7a907b25"),
+          name = "reason 2",
+          maxMinutesAllowed = 50,
+        ),
+      )
+
+      val result = adjustmentReasons.toDto()
+
+      assertThat(result.adjustmentReasons).hasSize(2)
+
+      assertThat(result.adjustmentReasons[0].id.toString()).isEqualTo("e68f2cd5-c6f2-4ed8-af66-cd9a46d5fe77")
+      assertThat(result.adjustmentReasons[0].name).isEqualTo("reason 1")
+      assertThat(result.adjustmentReasons[0].maxMinutesAllowed).isEqualTo(25)
+
+      assertThat(result.adjustmentReasons[1].id.toString()).isEqualTo("ea55e70e-c1ca-45b9-9001-18af7a907b25")
+      assertThat(result.adjustmentReasons[1].name).isEqualTo("reason 2")
+      assertThat(result.adjustmentReasons[1].maxMinutesAllowed).isEqualTo(50)
+    }
+  }
 
   @Nested
   inner class ProjectTypesMapper {
