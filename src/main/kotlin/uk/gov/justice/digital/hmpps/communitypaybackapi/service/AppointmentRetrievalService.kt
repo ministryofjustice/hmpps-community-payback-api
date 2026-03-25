@@ -68,6 +68,22 @@ class AppointmentRetrievalService(
 
   fun getOrCreateAppointmentEntity(
     existingAppointment: AppointmentDto,
-  ): AppointmentEntity = appointmentEntityRepository.findByDeliusId(existingAppointment.id)
-    ?: appointmentEntityRepository.save(existingAppointment.toAppointmentEntity())
+  ): AppointmentEntity {
+    val existing = appointmentEntityRepository.findByDeliusId(existingAppointment.id)
+
+    return if (existing != null) {
+      /**
+       * Whilst this isn't a water tight approach to keep the date synced with
+       * NDelius, it at least ensures the date is correct at the point an appointment
+       * is updated from our service (i.e. the outcome is recorded)
+       *
+       * Ideally we'd instead use domain events or similar to keep this data
+       * in sync with NDelius without relying on user interactions to trigger this check
+       */
+      existing.date = existingAppointment.date
+      appointmentEntityRepository.save(existing)
+    } else {
+      appointmentEntityRepository.save(existingAppointment.toAppointmentEntity())
+    }
+  }
 }

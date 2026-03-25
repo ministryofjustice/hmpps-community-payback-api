@@ -556,6 +556,7 @@ class AppointmentMappersTest {
         id = communityPaybackId,
         crn = "CRN777",
         deliusEventNumber = 90,
+        date = LocalDate.of(2009, 8, 7),
       ).toAppointmentEntity(
         deliusAppointmentId = 91283,
       )
@@ -565,6 +566,7 @@ class AppointmentMappersTest {
       assertThat(result.crn).isEqualTo("CRN777")
       assertThat(result.deliusEventNumber).isEqualTo(90)
       assertThat(result.createdByCommunityPayback).isEqualTo(true)
+      assertThat(result.date).isEqualTo(LocalDate.of(2009, 8, 7))
     }
   }
 
@@ -578,6 +580,7 @@ class AppointmentMappersTest {
         communityPaybackId = null,
         offender = OffenderDto.validFull().copy(crn = "CRN777"),
         deliusEventNumber = 90,
+        date = LocalDate.of(2009, 8, 7),
       ).toAppointmentEntity()
 
       assertThat(result.id).isNotNull
@@ -585,6 +588,7 @@ class AppointmentMappersTest {
       assertThat(result.crn).isEqualTo("CRN777")
       assertThat(result.deliusEventNumber).isEqualTo(90)
       assertThat(result.createdByCommunityPayback).isEqualTo(false)
+      assertThat(result.date).isEqualTo(LocalDate.of(2009, 8, 7))
     }
 
     @Test
@@ -595,6 +599,7 @@ class AppointmentMappersTest {
         communityPaybackId = communityPaybackId,
         offender = OffenderDto.validFull().copy(crn = "CRN777"),
         deliusEventNumber = 90,
+        date = LocalDate.of(2009, 8, 7),
       ).toAppointmentEntity()
 
       assertThat(result.id).isEqualTo(communityPaybackId)
@@ -602,6 +607,7 @@ class AppointmentMappersTest {
       assertThat(result.crn).isEqualTo("CRN777")
       assertThat(result.deliusEventNumber).isEqualTo(90)
       assertThat(result.createdByCommunityPayback).isEqualTo(true)
+      assertThat(result.date).isEqualTo(LocalDate.of(2009, 8, 7))
     }
   }
 

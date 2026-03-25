@@ -21,6 +21,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentSummaryDt
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeGroupDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.NotFoundException
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ProjectTypeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
@@ -31,6 +32,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ContextService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ProjectService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.toHttpParams
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.AppointmentMappers
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.ToAppointmentEntity.toAppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.unit.util.WebClientResponseExceptionFactory
 import java.time.LocalDate
 
@@ -173,6 +175,35 @@ class AppointmentRetrievalServiceTest {
       val result = service.getAppointments(null, fromDate, toDate, outcomeCodes, projectCodes, projectTypeGroup, pageable)
 
       assertThat(result.content).containsExactly(appointmentSummaryDto)
+    }
+  }
+
+  @Nested
+  inner class GetOrCreateAppointmentEntity {
+
+    @Test
+    fun `doesnt exist, save new entity`() {
+      val existingAppointment = AppointmentDto.valid()
+
+      every { appointmentEntityRepository.findByDeliusId(existingAppointment.id) } returns null
+      every { appointmentEntityRepository.save(existingAppointment.toAppointmentEntity()) } returnsArgument 0
+
+      val result = service.getOrCreateAppointmentEntity(existingAppointment)
+
+      assertThat(result).isEqualTo(existingAppointment.toAppointmentEntity())
+    }
+
+    @Test
+    fun `does exist, update date and return updated version`() {
+      val existingAppointment = AppointmentDto.valid().copy(date = LocalDate.of(2022, 2, 2))
+      val existingEntity = AppointmentEntity.valid().copy(date = LocalDate.of(2021, 1, 1))
+
+      every { appointmentEntityRepository.findByDeliusId(existingAppointment.id) } returns existingEntity
+      every { appointmentEntityRepository.save(existingEntity) } returnsArgument 0
+
+      val result = service.getOrCreateAppointmentEntity(existingAppointment)
+
+      assertThat(result.date).isEqualTo(LocalDate.of(2022, 2, 2))
     }
   }
 }

@@ -198,6 +198,7 @@ object ToAppointmentEntity {
     crn = this.crn,
     deliusEventNumber = this.deliusEventNumber,
     createdByCommunityPayback = true,
+    date = this.date,
   )
 
   fun AppointmentDto.toAppointmentEntity(): AppointmentEntity = AppointmentEntity(
@@ -206,6 +207,7 @@ object ToAppointmentEntity {
     crn = this.offender.crn,
     deliusEventNumber = this.deliusEventNumber.toLong(),
     createdByCommunityPayback = this.communityPaybackId != null,
+    date = this.date,
   )
 }
 

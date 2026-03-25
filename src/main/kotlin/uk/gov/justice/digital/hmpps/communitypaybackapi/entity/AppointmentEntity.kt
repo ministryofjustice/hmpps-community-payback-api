@@ -3,8 +3,8 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.entity
 import jakarta.persistence.Entity
 import jakarta.persistence.Id
 import jakarta.persistence.Table
-import org.hibernate.annotations.Immutable
 import org.hibernate.proxy.HibernateProxy
+import java.time.LocalDate
 import java.util.UUID
 
 /**
@@ -22,7 +22,6 @@ import java.util.UUID
  */
 @Entity
 @Table(name = "appointments")
-@Immutable
 data class AppointmentEntity(
   /**
    * The key identifier for this appointment in community payback
@@ -38,6 +37,12 @@ data class AppointmentEntity(
   val crn: String,
   val deliusEventNumber: Long,
   val createdByCommunityPayback: Boolean,
+  /**
+   * If date is updated directly in NDelius (which is allowed in ND after an outcome is set),
+   * this value may be stale. Carefully consider the context of it's usage, and update from
+   * NDelius is absolute accuracy is required.
+   */
+  var date: LocalDate,
 ) {
   @Suppress("USELESS_IS_CHECK")
   override fun equals(other: Any?): Boolean {
