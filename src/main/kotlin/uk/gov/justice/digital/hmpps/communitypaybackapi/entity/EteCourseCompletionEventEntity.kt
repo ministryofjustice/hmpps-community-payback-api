@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.entity
 
 import jakarta.persistence.CascadeType
+import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
@@ -47,7 +48,8 @@ data class EteCourseCompletionEventEntity(
   val courseType: String,
   val provider: String,
 
-  val completionDate: LocalDate,
+  @Column(name = "completion_date_time")
+  val completionDateTime: OffsetDateTime,
 
   @Enumerated(EnumType.STRING)
   val status: EteCourseCompletionEventStatus,

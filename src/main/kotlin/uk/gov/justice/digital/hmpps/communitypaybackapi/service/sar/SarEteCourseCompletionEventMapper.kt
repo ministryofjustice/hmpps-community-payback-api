@@ -17,7 +17,7 @@ fun EteCourseCompletionEventEntity.toSarEntry(
   "courseName" to courseName,
   "courseType" to courseType,
   "provider" to provider,
-  "completionDate" to completionDate,
+  "completionDateTime" to completionDateTime,
   "status" to status.name,
   "totalTimeMinutes" to totalTimeMinutes,
   "expectedTimeMinutes" to expectedTimeMinutes,

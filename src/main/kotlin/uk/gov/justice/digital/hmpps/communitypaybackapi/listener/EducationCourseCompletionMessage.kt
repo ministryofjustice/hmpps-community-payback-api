@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.listener
 
 import java.time.LocalDate
+import java.time.OffsetDateTime
 
 data class EducationCourseCompletionMessage(
   val messageId: String,
@@ -23,7 +24,7 @@ data class EducationCourseMessageAttributes(
   val courseName: String,
   val courseType: String,
   val provider: String,
-  val completionDate: LocalDate,
+  val completionDateTime: OffsetDateTime,
   val status: EducationCourseCompletionStatus,
   val totalTimeMinutes: Long,
   val attempts: Int?,

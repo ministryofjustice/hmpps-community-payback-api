@@ -18,6 +18,8 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectAndLocation
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSupervisorSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSupervisorSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.atFirstSecondOfDay
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.atLastSecondOfDay
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionCreditTimeDetailsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionRecommendationDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionResolutionDto
@@ -44,6 +46,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.Com
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.CommunityPaybackAndDeliusMockServer.ExpectedAppointmentCreate
 import java.time.LocalDate
 import java.time.LocalTime
+import java.time.OffsetDateTime
 import java.util.UUID
 
 class AdminCourseCompletionIT : IntegrationTestBase() {
@@ -203,21 +206,21 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
       eteCourseCompletionEventEntityRepository.save(
         EteCourseCompletionEventEntity.passed(ctx).copy(
           pdu = pdu,
-          completionDate = LocalDate.of(2025, 5, 9),
+          completionDateTime = LocalDate.of(2025, 5, 9).atFirstSecondOfDay(),
         ),
       )
 
       val inRange1 = eteCourseCompletionEventEntityRepository.save(
         EteCourseCompletionEventEntity.passed(ctx).copy(
           pdu = pdu,
-          completionDate = LocalDate.of(2025, 5, 10),
+          completionDateTime = LocalDate.of(2025, 5, 10).atFirstSecondOfDay(),
         ),
       )
 
       val inRange2 = eteCourseCompletionEventEntityRepository.save(
         EteCourseCompletionEventEntity.passed(ctx).copy(
           pdu = pdu,
-          completionDate = LocalDate.of(2025, 6, 20),
+          completionDateTime = LocalDate.of(2025, 6, 20).atLastSecondOfDay(),
         ),
       )
 
@@ -225,12 +228,12 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
       eteCourseCompletionEventEntityRepository.save(
         EteCourseCompletionEventEntity.passed(ctx).copy(
           pdu = pdu,
-          completionDate = LocalDate.of(2025, 6, 21),
+          completionDateTime = LocalDate.of(2025, 6, 21).atFirstSecondOfDay(),
         ),
       )
 
       val pagedCourseCompletions = webTestClient.get()
-        .uri("/admin/providers/${pdu.providerCode}/course-completions?dateFrom=2025-05-10&dateTo=2025-06-20&sort=completionDate,asc")
+        .uri("/admin/providers/${pdu.providerCode}/course-completions?dateFrom=2025-05-10&dateTo=2025-06-20&sort=completionDateTime,asc")
         .addAdminUiAuthHeader()
         .exchange()
         .expectStatus()
@@ -726,7 +729,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
     fun `should return success but do nothing if an identical resolution has already been applied`() {
       val eventEntity = eteCourseCompletionEventEntityRepository.save(
         EteCourseCompletionEventEntity.valid(ctx).copy(
-          completionDate = LocalDate.now().minusDays(1),
+          completionDateTime = OffsetDateTime.now().minusDays(1),
         ),
       )
 
@@ -783,7 +786,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
     fun `should error if a differing resolution has already been applied`() {
       val eventEntity = eteCourseCompletionEventEntityRepository.save(
         EteCourseCompletionEventEntity.valid(ctx).copy(
-          completionDate = LocalDate.now().minusDays(1),
+          completionDateTime = OffsetDateTime.now().minusDays(1),
         ),
       )
 

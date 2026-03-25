@@ -4,6 +4,8 @@ import java.time.DayOfWeek
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
+import java.time.OffsetDateTime
+import java.time.ZoneId
 import java.time.temporal.ChronoUnit
 import java.time.temporal.TemporalAdjusters
 
@@ -18,3 +20,7 @@ fun minutesBetween(start: LocalTime, end: LocalTime): Duration = Duration.ofMinu
 fun daysUntil(start: LocalDate, end: LocalDate): Long = ChronoUnit.DAYS.between(start, end)
 
 fun LocalDate.findNextOrSameDateForDayOfWeek(dayOfWeek: DayOfWeek): LocalDate = with(TemporalAdjusters.nextOrSame(dayOfWeek))
+
+fun LocalDate.atFirstSecondOfDay(): OffsetDateTime = this.atTime(0, 0).atZone(ZoneId.systemDefault()).toOffsetDateTime()
+
+fun LocalDate.atLastSecondOfDay(): OffsetDateTime = this.atTime(23, 59, 59).atZone(ZoneId.systemDefault()).toOffsetDateTime()

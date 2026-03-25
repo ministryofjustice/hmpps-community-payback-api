@@ -9,7 +9,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompleti
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.random
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.randomLocalDate
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.randomOffsetDateTime
-import java.time.LocalDate
 import java.util.UUID
 import kotlin.random.Random
 
@@ -26,7 +25,7 @@ fun EteCourseCompletionEventEntity.Companion.valid() = EteCourseCompletionEventE
   courseType = String.random(20),
   provider = String.random(5),
   status = EteCourseCompletionEventStatus.entries.random(),
-  completionDate = LocalDate.now().minusDays(Long.random(1, 30)),
+  completionDateTime = randomOffsetDateTime(),
   totalTimeMinutes = Random.nextLong(10, 100),
   attempts = 1,
   expectedTimeMinutes = Random.nextLong(30, 240),

@@ -19,7 +19,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompleti
 import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseCompletionMessage
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.EteMappers
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
-import java.time.LocalDate
+import java.time.OffsetDateTime
 import java.util.UUID
 
 @Service
@@ -44,8 +44,8 @@ class EteService(
     pduId: UUID?,
     offices: List<String>?,
     resolutionStatus: EteCourseCompletionResolutionStatusDto?,
-    fromDate: LocalDate?,
-    toDate: LocalDate?,
+    fromDate: OffsetDateTime?,
+    toDate: OffsetDateTime?,
     pageable: Pageable,
   ): Page<EteCourseCompletionEventDto> {
     val officesNormalised = offices ?: emptyList()
