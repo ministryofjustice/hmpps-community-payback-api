@@ -35,7 +35,7 @@ data class AppointmentEntity(
    */
   val deliusId: Long,
   val crn: String,
-  val deliusEventNumber: Long,
+  val deliusEventNumber: Int,
   val createdByCommunityPayback: Boolean,
   /**
    * If date is updated directly in NDelius (which is allowed in ND after an outcome is set),

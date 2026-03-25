@@ -65,7 +65,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
 
   companion object {
     const val CRN = "X12345"
-    const val DELIUS_EVENT_NUMBER = 5L
+    const val DELIUS_EVENT_NUMBER = 5
     const val PROJECT_CODE = "PRJ001"
   }
 
@@ -693,7 +693,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
             code = PROJECT_CODE,
           ),
           date = LocalDate.now().minusDays(5),
-          event = NDEvent.valid().copy(number = EVENT_NUMBER.toInt()),
+          event = NDEvent.valid().copy(number = EVENT_NUMBER),
           case = NDCaseSummary.valid().copy(crn = SchedulingIT.CRN),
         ),
         username = "theusername",

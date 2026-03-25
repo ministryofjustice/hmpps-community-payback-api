@@ -15,7 +15,7 @@ fun NDCaseDetailsSummary.Companion.valid() = NDCaseDetailsSummary(
 )
 
 fun NDCaseDetail.Companion.valid() = NDCaseDetail(
-  eventNumber = Random.nextLong(1, 6),
+  eventNumber = Random.nextInt(1, 6),
   sentenceDate = randomLocalDate(),
   requiredMinutes = Random.nextLong(100, 301),
   completedMinutes = Random.nextLong(150, 250),

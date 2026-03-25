@@ -17,7 +17,7 @@ fun CaseDetailsSummaryDto.Companion.valid() = CaseDetailsSummaryDto(
 )
 
 fun UnpaidWorkDetailsDto.Companion.valid() = UnpaidWorkDetailsDto(
-  eventNumber = Long.random(),
+  eventNumber = Int.random(),
   sentenceDate = randomLocalDate(),
   requiredMinutes = Long.random(),
   completedMinutes = Long.random(),

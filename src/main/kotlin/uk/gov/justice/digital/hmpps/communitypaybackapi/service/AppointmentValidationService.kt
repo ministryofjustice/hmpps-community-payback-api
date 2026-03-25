@@ -64,7 +64,7 @@ class AppointmentValidationService(
       command = update,
       project = projectService.getProject(appointment.projectCode),
       contactOutcome = loadContactOutcome(update.contactOutcomeCode),
-      unpaidWorkDetails = offenderService.getUnpaidWorkDetails(appointment.offender.crn, appointment.deliusEventNumber.toLong()),
+      unpaidWorkDetails = offenderService.getUnpaidWorkDetails(appointment.offender.crn, appointment.deliusEventNumber),
       appointmentDate = appointment.date,
       appointmentMinutesAlreadyCredited = appointment.minutesCredited?.let { Duration.ofMinutes(it) } ?: Duration.ZERO,
     )

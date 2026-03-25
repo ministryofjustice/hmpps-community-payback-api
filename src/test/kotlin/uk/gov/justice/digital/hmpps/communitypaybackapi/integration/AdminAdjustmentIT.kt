@@ -15,7 +15,7 @@ class AdminAdjustmentIT : IntegrationTestBase() {
 
   companion object {
     const val CRN = "X123456"
-    const val DELIUS_EVENT_NUMBER = 92L
+    const val DELIUS_EVENT_NUMBER = 92
   }
 
   @Nested

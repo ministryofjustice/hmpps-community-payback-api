@@ -49,7 +49,7 @@ class AdminUpwDetailsController(
       ),
     ],
   )
-  fun getEvent(@PathVariable crn: String, @PathVariable deliusEventNumber: Long) = offenderService.getUnpaidWorkDetails(crn, deliusEventNumber, contextService.getUserName())
+  fun getEvent(@PathVariable crn: String, @PathVariable deliusEventNumber: Int) = offenderService.getUnpaidWorkDetails(crn, deliusEventNumber, contextService.getUserName())
 
   @PostMapping(
     path = ["/offenders/{crn}/unpaid-work-details/{deliusEventNumber}/adjustments"],
@@ -74,7 +74,7 @@ class AdminUpwDetailsController(
   )
   fun createAdjustment(
     @PathVariable crn: String,
-    @PathVariable deliusEventNumber: Long,
+    @PathVariable deliusEventNumber: Int,
     @Valid @RequestBody createAdjustment: CreateAdjustmentDto,
   ) = adjustmentsService.createAdjustment(
     crn = crn,

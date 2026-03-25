@@ -58,7 +58,7 @@ class AppointmentValidationServiceTest {
 
   companion object {
     const val CRN = "CRN123"
-    const val EVENT_NUMBER = 1234321L
+    const val EVENT_NUMBER = 1234321
     const val OUTCOME_CODE = "OUTCOME1"
     const val PROJECT_CODE = "PROJ123"
   }
@@ -609,7 +609,7 @@ class AppointmentValidationServiceTest {
 
     val baselineExistingAppointment = AppointmentDto.valid().copy(
       projectCode = PROJECT_CODE,
-      deliusEventNumber = EVENT_NUMBER.toInt(),
+      deliusEventNumber = EVENT_NUMBER,
       offender = OffenderDto.validFull().copy(crn = CRN),
     )
     val baselineUpdate = UpdateAppointmentOutcomeDto.valid().copy(

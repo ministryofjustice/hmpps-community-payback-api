@@ -13,7 +13,7 @@ data class CreateAppointmentsDto(
 data class CreateAppointmentDto(
   val id: UUID,
   val crn: String,
-  val deliusEventNumber: Long,
+  val deliusEventNumber: Int,
   val allocationId: Long?,
   val projectCode: String,
   val date: LocalDate,

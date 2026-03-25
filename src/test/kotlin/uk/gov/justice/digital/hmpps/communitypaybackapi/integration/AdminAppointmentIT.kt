@@ -194,7 +194,7 @@ class AdminAppointmentIT : IntegrationTestBase() {
           id = 1234L,
           project = NDProjectAndLocation.valid().copy(code = "proj123"),
           date = LocalDate.now(),
-          event = NDEvent.valid().copy(number = EVENT_NUMBER.toInt()),
+          event = NDEvent.valid().copy(number = EVENT_NUMBER),
           case = NDCaseSummary.valid().copy(crn = CRN),
         ),
         username = "theusername",

@@ -19,9 +19,9 @@ class OffenderService(
     throw NotFoundException("Risk Summary", crn)
   }
 
-  fun ensureUnpaidWorkDetailsExist(crn: String, deliusEventNumber: Long, userName: String? = null) = getUnpaidWorkDetails(crn, deliusEventNumber, userName)
+  fun ensureUnpaidWorkDetailsExist(crn: String, deliusEventNumber: Int, userName: String? = null) = getUnpaidWorkDetails(crn, deliusEventNumber, userName)
 
-  fun getUnpaidWorkDetails(crn: String, deliusEventNumber: Long, userName: String? = null) = getOffenderSummaryByCrn(crn, userName).unpaidWorkDetails.firstOrNull { it.eventNumber == deliusEventNumber }
+  fun getUnpaidWorkDetails(crn: String, deliusEventNumber: Int, userName: String? = null) = getOffenderSummaryByCrn(crn, userName).unpaidWorkDetails.firstOrNull { it.eventNumber == deliusEventNumber }
     ?: throw NotFoundException("Unpaid Work Details", "CRN $crn, Event Number $deliusEventNumber")
 
   fun getOffenderSummaryByCrn(crn: String, userName: String?): CaseDetailsSummaryDto = try {

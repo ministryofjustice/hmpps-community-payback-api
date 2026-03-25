@@ -190,7 +190,7 @@ class SupervisorAppointmentsIT : IntegrationTestBase() {
           id = 1234L,
           project = NDProjectAndLocation.valid().copy(code = "PC01"),
           date = LocalDate.now(),
-          event = NDEvent.valid().copy(number = EVENT_NUMBER.toInt()),
+          event = NDEvent.valid().copy(number = EVENT_NUMBER),
           case = NDCaseSummary.valid().copy(crn = CRN),
         ),
         username = "theusername",
@@ -268,8 +268,8 @@ class SupervisorAppointmentsIT : IntegrationTestBase() {
     @Test
     fun `succeeds and calls upstream endpoint`() {
       CommunityPaybackAndDeliusMockServer.getUpwDetailsSummary(
-        crn = SchedulingIT.CRN,
-        case = NDCaseSummary.Companion.valid(),
+        crn = CRN,
+        case = NDCaseSummary.valid(),
         unpaidWorkDetails = listOf(
           NDCaseDetail.valid().copy(
             eventNumber = EVENT_NUMBER,
@@ -283,8 +283,8 @@ class SupervisorAppointmentsIT : IntegrationTestBase() {
           id = 1234L,
           project = NDProjectAndLocation.valid().copy(code = "PC01"),
           date = LocalDate.now(),
-          event = NDEvent.valid().copy(number = EVENT_NUMBER.toInt()),
-          case = NDCaseSummary.valid().copy(crn = SchedulingIT.CRN),
+          event = NDEvent.valid().copy(number = EVENT_NUMBER),
+          case = NDCaseSummary.valid().copy(crn = CRN),
         ),
         username = "theusername",
       )
@@ -299,8 +299,8 @@ class SupervisorAppointmentsIT : IntegrationTestBase() {
           id = 5678L,
           project = NDProjectAndLocation.valid().copy(code = "PC01"),
           date = LocalDate.now(),
-          event = NDEvent.valid().copy(number = EVENT_NUMBER.toInt()),
-          case = NDCaseSummary.valid().copy(crn = SchedulingIT.CRN),
+          event = NDEvent.valid().copy(number = EVENT_NUMBER),
+          case = NDCaseSummary.valid().copy(crn = CRN),
         ),
         username = "theusername",
       )

@@ -14,7 +14,7 @@ data class CourseCompletionResolutionDto(
 }
 
 data class CourseCompletionCreditTimeDetailsDto(
-  val deliusEventNumber: Long,
+  val deliusEventNumber: Int,
   val appointmentIdToUpdate: Long?,
   val date: LocalDate,
   @field:Min(value = 1)

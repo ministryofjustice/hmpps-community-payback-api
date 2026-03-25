@@ -49,7 +49,7 @@ class AppointmentCreationServiceTest {
 
   private companion object {
     const val CRN: String = "CRN567"
-    const val DELIUS_EVENT_NUMBER: Long = 890
+    const val DELIUS_EVENT_NUMBER: Int = 890
     const val PROJECT_CODE: String = "PROJ25"
     val TRIGGER: AppointmentEventTrigger = AppointmentEventTrigger.valid()
     const val ND_APPT1_ID: Long = 15

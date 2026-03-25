@@ -127,7 +127,7 @@ private fun AppointmentEventEntity.toAppointmentDomainEventDetail() = Appointmen
   id = this.id,
   appointmentDeliusId = this.appointment.deliusId,
   crn = this.appointment.crn,
-  deliusEventNumber = this.appointment.deliusEventNumber.toInt(),
+  deliusEventNumber = this.appointment.deliusEventNumber,
   startTime = this.startTime,
   endTime = this.endTime,
   contactOutcomeCode = this.contactOutcome?.code,
@@ -166,7 +166,7 @@ fun ValidatedAppointment<CreateAppointmentDto>.toNDCreateAppointment(): NDCreate
   return NDCreateAppointment(
     reference = createDto.id,
     crn = createDto.crn,
-    eventNumber = createDto.deliusEventNumber.toInt(),
+    eventNumber = createDto.deliusEventNumber,
     date = createDto.date,
     startTime = createDto.startTime,
     endTime = createDto.endTime,
@@ -205,7 +205,7 @@ object ToAppointmentEntity {
     id = this.communityPaybackId ?: AppointmentEntity.generateId(),
     deliusId = this.id,
     crn = this.offender.crn,
-    deliusEventNumber = this.deliusEventNumber.toLong(),
+    deliusEventNumber = this.deliusEventNumber,
     createdByCommunityPayback = this.communityPaybackId != null,
     date = this.date,
   )

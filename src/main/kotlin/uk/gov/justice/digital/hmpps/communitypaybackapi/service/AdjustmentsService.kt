@@ -18,7 +18,7 @@ class AdjustmentsService(
 
   fun createAdjustment(
     crn: String,
-    deliusEventNumber: Long,
+    deliusEventNumber: Int,
     createAdjustment: CreateAdjustmentDto,
     username: String,
   ) {
@@ -38,7 +38,7 @@ class AdjustmentsService(
       listOf(
         createAdjustment.toNDAdjustmentRequest(
           crn = crn,
-          deliusEventNumber = deliusEventNumber.toInt(),
+          deliusEventNumber = deliusEventNumber,
           reason = reason,
         ),
       ),

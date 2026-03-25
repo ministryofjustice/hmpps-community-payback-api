@@ -120,15 +120,15 @@ class OffenderServiceTest {
       val caseDetailsSummary = NDCaseDetailsSummary.valid().copy(
         unpaidWorkDetails = listOf(
           NDCaseDetail.valid().copy(
-            eventNumber = 4L,
+            eventNumber = 4,
             requiredMinutes = 1L,
           ),
           NDCaseDetail.valid().copy(
-            eventNumber = 5L,
+            eventNumber = 5,
             requiredMinutes = 2L,
           ),
           NDCaseDetail.valid().copy(
-            eventNumber = 6L,
+            eventNumber = 6,
             requiredMinutes = 3L,
           ),
         ),
@@ -136,9 +136,9 @@ class OffenderServiceTest {
 
       every { communityPaybackAndDeliusClient.getUpwDetailsSummary(CRN, USER_NAME) } returns caseDetailsSummary
 
-      val result = service.getUnpaidWorkDetails(CRN, 5L, USER_NAME)
+      val result = service.getUnpaidWorkDetails(CRN, 5, USER_NAME)
 
-      assertThat(result.eventNumber).isEqualTo(5L)
+      assertThat(result.eventNumber).isEqualTo(5)
       assertThat(result.requiredMinutes).isEqualTo(2L)
     }
 
@@ -147,16 +147,16 @@ class OffenderServiceTest {
       val caseDetailsSummary = NDCaseDetailsSummary.valid().copy(
         unpaidWorkDetails = listOf(
           NDCaseDetail.valid().copy(
-            eventNumber = 5L,
+            eventNumber = 5,
           ),
         ),
       )
 
       every { communityPaybackAndDeliusClient.getUpwDetailsSummary(CRN, null) } returns caseDetailsSummary
 
-      val result = service.getUnpaidWorkDetails(CRN, 5L)
+      val result = service.getUnpaidWorkDetails(CRN, 5)
 
-      assertThat(result.eventNumber).isEqualTo(5L)
+      assertThat(result.eventNumber).isEqualTo(5)
       verify(exactly = 1) { communityPaybackAndDeliusClient.getUpwDetailsSummary(CRN, null) }
     }
   }
@@ -166,7 +166,7 @@ class OffenderServiceTest {
     every { communityPaybackAndDeliusClient.getUpwDetailsSummary(CRN, USER_NAME) } throws WebClientResponseExceptionFactory.notFound()
 
     assertThatThrownBy {
-      service.getUnpaidWorkDetails(CRN, 1L, USER_NAME)
+      service.getUnpaidWorkDetails(CRN, 1, USER_NAME)
     }
       .isInstanceOf(NotFoundException::class.java)
       .hasMessage("Offender Summary not found for ID '$CRN'")
@@ -177,7 +177,7 @@ class OffenderServiceTest {
     val caseDetailsSummary = NDCaseDetailsSummary.valid().copy(
       unpaidWorkDetails = listOf(
         NDCaseDetail.valid().copy(
-          eventNumber = 4L,
+          eventNumber = 4,
           requiredMinutes = 1L,
         ),
       ),
@@ -186,7 +186,7 @@ class OffenderServiceTest {
     every { communityPaybackAndDeliusClient.getUpwDetailsSummary(CRN, USER_NAME) } returns caseDetailsSummary
 
     assertThatThrownBy {
-      service.getUnpaidWorkDetails(CRN, 5L, USER_NAME)
+      service.getUnpaidWorkDetails(CRN, 5, USER_NAME)
     }
       .isInstanceOf(NotFoundException::class.java)
       .hasMessage("Unpaid Work Details not found for ID 'CRN CRN1, Event Number 5'")

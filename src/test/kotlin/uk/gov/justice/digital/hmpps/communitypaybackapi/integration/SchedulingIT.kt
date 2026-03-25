@@ -56,7 +56,7 @@ class SchedulingIT : IntegrationTestBase() {
 
   companion object {
     const val CRN: String = "CRN01"
-    const val EVENT_NUMBER: Long = 10
+    const val EVENT_NUMBER: Int = 10
   }
 
   @Nested
@@ -195,7 +195,7 @@ class SchedulingIT : IntegrationTestBase() {
 
     CommunityPaybackAndDeliusMockServer.getUnpaidWorkRequirement(
       crn = CRN,
-      eventNumber = EVENT_NUMBER.toInt(),
+      eventNumber = EVENT_NUMBER,
       NDUnpaidWorkRequirement(
         requirementProgress = NDRequirementProgress(
           requiredMinutes = Duration.ofHours(22).toMinutes().toInt(),
@@ -274,7 +274,7 @@ class SchedulingIT : IntegrationTestBase() {
 
     CommunityPaybackAndDeliusMockServer.getUnpaidWorkRequirement(
       crn = CRN,
-      eventNumber = EVENT_NUMBER.toInt(),
+      eventNumber = EVENT_NUMBER,
       NDUnpaidWorkRequirement(
         requirementProgress = NDRequirementProgress.valid().copy(
           requiredMinutes = Duration.ofHours(52).toMinutes().toInt(),

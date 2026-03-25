@@ -12,7 +12,7 @@ import java.time.Duration
 
 fun NDRequirementProgress.toSchedulingRequirement(
   crn: String,
-  eventNumber: Long,
+  eventNumber: Int,
 ) = SchedulingRequirement(
   crn = crn,
   deliusEventNumber = eventNumber,
@@ -73,7 +73,7 @@ fun NDSchedulingExistingAppointment.toSchedulingExistingAppointment() = Scheduli
 
 fun SchedulingRequiredAppointment.toCreateAppointmentDto(
   crn: String,
-  eventNumber: Long,
+  eventNumber: Int,
 ) = CreateAppointmentDto(
   id = id,
   crn = crn,

@@ -90,7 +90,7 @@ interface CommunityPaybackAndDeliusClient {
   @GetExchange("/case/{crn}/event/{eventNumber}/appointments/schedule")
   fun getUnpaidWorkRequirement(
     @PathVariable crn: String,
-    @PathVariable eventNumber: Long,
+    @PathVariable eventNumber: Int,
   ): NDUnpaidWorkRequirement
 
   @Cacheable(CacheKey.Delius.GET_NON_WORKING_DAYS)
@@ -573,7 +573,7 @@ data class NDCaseDetailsSummary(
 }
 
 data class NDCaseDetail(
-  val eventNumber: Long,
+  val eventNumber: Int,
   val sentenceDate: LocalDate,
   val requiredMinutes: Long,
   val completedMinutes: Long,

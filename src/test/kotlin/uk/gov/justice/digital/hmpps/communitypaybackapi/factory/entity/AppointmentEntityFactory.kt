@@ -12,7 +12,7 @@ fun AppointmentEntity.Companion.valid() = AppointmentEntity(
   id = UUID.randomUUID(),
   deliusId = Long.random(),
   crn = String.random(5),
-  deliusEventNumber = Int.random().toLong(),
+  deliusEventNumber = Int.random(),
   createdByCommunityPayback = Boolean.random(),
   date = randomLocalDate(),
 )
