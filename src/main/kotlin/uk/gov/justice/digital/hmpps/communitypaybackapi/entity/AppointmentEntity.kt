@@ -38,11 +38,12 @@ data class AppointmentEntity(
   val deliusEventNumber: Int,
   val createdByCommunityPayback: Boolean,
   /**
-   * If date is updated directly in NDelius (which is allowed in ND after an outcome is set),
-   * this value may be stale. Carefully consider the context of it's usage, and update from
-   * NDelius is absolute accuracy is required.
+   * If the following mutable fields are updated directly in NDelius (which _is_ allowed in ND
+   * after an outcome is set), these value may be stale. Carefully consider the context of their
+   * usage, and update from NDelius if absolute accuracy is required.
    */
   var date: LocalDate,
+  var providerCode: String,
 ) {
   @Suppress("USELESS_IS_CHECK")
   override fun equals(other: Any?): Boolean {

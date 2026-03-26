@@ -192,6 +192,7 @@ object ToAppointmentEntity {
 
   fun CreateAppointmentDto.toAppointmentEntity(
     deliusAppointmentId: Long,
+    providerCode: String,
   ): AppointmentEntity = AppointmentEntity(
     id = this.id,
     deliusId = deliusAppointmentId,
@@ -199,6 +200,7 @@ object ToAppointmentEntity {
     deliusEventNumber = this.deliusEventNumber,
     createdByCommunityPayback = true,
     date = this.date,
+    providerCode = providerCode,
   )
 
   fun AppointmentDto.toAppointmentEntity(): AppointmentEntity = AppointmentEntity(
@@ -208,6 +210,7 @@ object ToAppointmentEntity {
     deliusEventNumber = this.deliusEventNumber,
     createdByCommunityPayback = this.communityPaybackId != null,
     date = this.date,
+    providerCode = this.providerCode,
   )
 }
 

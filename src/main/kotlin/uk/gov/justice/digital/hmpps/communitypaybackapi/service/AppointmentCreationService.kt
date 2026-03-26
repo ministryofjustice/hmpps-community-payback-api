@@ -51,19 +51,20 @@ class AppointmentCreationService(
     )
 
     val appointmentEntities = appointmentEntityRepository.saveAll(
-      appointments.map {
-        it.toAppointmentEntity(
-          creationResponse.findDeliusId(communityPaybackId = it.id),
+      validatedAppointments.map {
+        it.dto.toAppointmentEntity(
+          deliusAppointmentId = creationResponse.findDeliusId(communityPaybackId = it.dto.id),
+          providerCode = it.project.providerCode,
         )
       },
     )
 
     appointmentEventService.saveAndThenPublishOnTransactionCommit(
-      appointments.map { createAppointment ->
+      validatedAppointments.map { validatedCreateAppointment ->
         appointmentEventService.buildCreatedEvent(
-          appointment = appointmentEntities.first { it.id == createAppointment.id },
+          appointment = appointmentEntities.first { it.id == validatedCreateAppointment.dto.id },
           trigger = trigger,
-          validatedCreateAppointmentDto = appointmentValidationService.validateCreate(createAppointment),
+          validatedCreateAppointmentDto = appointmentValidationService.validateCreate(validatedCreateAppointment.dto),
         )
       },
     )
