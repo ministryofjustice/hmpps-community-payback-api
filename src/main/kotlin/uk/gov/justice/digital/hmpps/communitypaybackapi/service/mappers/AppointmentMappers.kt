@@ -4,11 +4,11 @@ import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointmentBehaviour
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointmentPickUp
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointmentPickUpData
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointmentSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointmentWorkQuality
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCode
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCreateAppointment
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCreateAppointmentPickUpData
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDUpdateAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentBehaviourDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
@@ -141,7 +141,9 @@ private fun AppointmentEventEntity.toAppointmentDomainEventDetail() = Appointmen
   behaviour = this.behaviour?.dtoType,
 )
 
-fun ValidatedAppointment<UpdateAppointmentOutcomeDto>.toNDUpdateAppointment(): NDUpdateAppointment {
+fun ValidatedAppointment<UpdateAppointmentOutcomeDto>.toNDUpdateAppointment(
+  existingAppointment: AppointmentDto,
+): NDUpdateAppointment {
   val updateDto = dto
   return NDUpdateAppointment(
     version = updateDto.deliusVersionToUpdate,
@@ -158,6 +160,12 @@ fun ValidatedAppointment<UpdateAppointmentOutcomeDto>.toNDUpdateAppointment(): N
     behaviour = updateDto.attendanceData?.behaviour?.let { Behaviour.fromDto(it).upstreamType },
     sensitive = updateDto.sensitive,
     alertActive = updateDto.alertActive,
+    pickUp = existingAppointment.pickUpData?.let { pickUpData ->
+      NDAppointmentPickUpData(
+        time = pickUpData.time,
+        location = pickUpData.locationCode?.let { NDCode(it) },
+      )
+    },
   )
 }
 
@@ -181,7 +189,7 @@ fun ValidatedAppointment<CreateAppointmentDto>.toNDCreateAppointment(): NDCreate
     behaviour = createDto.attendanceData?.behaviour?.let { Behaviour.fromDto(it).upstreamType },
     sensitive = createDto.sensitive,
     alertActive = createDto.alertActive,
-    pickUp = NDCreateAppointmentPickUpData(
+    pickUp = NDAppointmentPickUpData(
       location = createDto.pickUpLocationCode?.let { NDCode(it) },
       time = createDto.pickUpTime,
     ),

@@ -443,10 +443,10 @@ data class NDCreateAppointment(
   val sensitive: Boolean? = null,
   val alertActive: Boolean? = null,
   val allocationId: Long? = null,
-  val pickUp: NDCreateAppointmentPickUpData?,
+  val pickUp: NDAppointmentPickUpData?,
 )
 
-data class NDCreateAppointmentPickUpData(val time: LocalTime?, val location: NDCode?)
+data class NDAppointmentPickUpData(val time: LocalTime?, val location: NDCode?)
 
 data class NDCreatedAppointment(
   val id: Long,
@@ -470,6 +470,7 @@ data class NDUpdateAppointment(
   val behaviour: NDAppointmentBehaviour? = null,
   val sensitive: Boolean? = null,
   val alertActive: Boolean? = null,
+  val pickUp: NDAppointmentPickUpData?,
 )
 
 data class NDCode(
