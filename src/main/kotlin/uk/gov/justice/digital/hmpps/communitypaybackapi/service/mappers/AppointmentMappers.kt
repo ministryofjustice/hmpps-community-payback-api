@@ -189,6 +189,7 @@ fun ValidatedAppointment<CreateAppointmentDto>.toNDCreateAppointment(): NDCreate
     behaviour = createDto.attendanceData?.behaviour?.let { Behaviour.fromDto(it).upstreamType },
     sensitive = createDto.sensitive,
     alertActive = createDto.alertActive,
+    allocationId = null,
     pickUp = NDAppointmentPickUpData(
       location = createDto.pickUpLocationCode?.let { NDCode(it) },
       time = createDto.pickUpTime,
