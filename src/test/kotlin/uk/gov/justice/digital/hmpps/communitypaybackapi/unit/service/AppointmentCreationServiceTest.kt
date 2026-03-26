@@ -15,7 +15,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCreateAppointme
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCreatedAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentsDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventType
@@ -54,6 +54,8 @@ class AppointmentCreationServiceTest {
     val TRIGGER: AppointmentEventTrigger = AppointmentEventTrigger.valid()
     const val ND_APPT1_ID: Long = 15
     const val ND_APPT2_ID: Long = 153
+    const val PROVIDER_CODE: String = "PROV1"
+    val PROJECT: ProjectDto = ProjectDto.valid().copy(providerCode = PROVIDER_CODE)
   }
 
   @Nested
@@ -93,21 +95,14 @@ class AppointmentCreationServiceTest {
       val createAppointment1Dto = CreateAppointmentDto.valid().copy(crn = CRN, deliusEventNumber = DELIUS_EVENT_NUMBER, projectCode = PROJECT_CODE)
       val createAppointment2Dto = CreateAppointmentDto.valid().copy(crn = CRN, deliusEventNumber = DELIUS_EVENT_NUMBER, projectCode = PROJECT_CODE)
 
-      val validatedCreateAppointment1 = ValidatedAppointment.validCreateAppointment().copy(dto = createAppointment1Dto)
+      val validatedCreateAppointment1 = ValidatedAppointment.validCreateAppointment().copy(dto = createAppointment1Dto, project = PROJECT)
       every { appointmentValidationService.validateCreate(createAppointment1Dto) } returns validatedCreateAppointment1
-      val validatedCreateAppointment2 = ValidatedAppointment.validCreateAppointment().copy(dto = createAppointment1Dto)
+      val validatedCreateAppointment2 = ValidatedAppointment.validCreateAppointment().copy(dto = createAppointment2Dto, project = PROJECT)
       every { appointmentValidationService.validateCreate(createAppointment2Dto) } returns validatedCreateAppointment2
 
-      val appointmentEntity1 = AppointmentEntity.valid().copy(id = createAppointment1Dto.id)
-      val appointmentEntity2 = AppointmentEntity.valid().copy(id = createAppointment2Dto.id)
-      every {
-        appointmentEntityRepository.saveAll(
-          listOf(
-            createAppointment1Dto.toAppointmentEntity(ND_APPT1_ID),
-            createAppointment2Dto.toAppointmentEntity(ND_APPT2_ID),
-          ),
-        )
-      } returns listOf(appointmentEntity1, appointmentEntity2)
+      val appointmentEntity1 = createAppointment1Dto.toAppointmentEntity(ND_APPT1_ID, PROVIDER_CODE)
+      val appointmentEntity2 = createAppointment2Dto.toAppointmentEntity(ND_APPT2_ID, PROVIDER_CODE)
+      every { appointmentEntityRepository.saveAll(listOf(appointmentEntity1, appointmentEntity2)) } returnsArgument 0
 
       every {
         communityPaybackAndDeliusClient.createAppointments(
@@ -157,8 +152,8 @@ class AppointmentCreationServiceTest {
       verify {
         appointmentEntityRepository.saveAll(
           listOf(
-            createAppointment1Dto.toAppointmentEntity(ND_APPT1_ID),
-            createAppointment2Dto.toAppointmentEntity(ND_APPT2_ID),
+            createAppointment1Dto.toAppointmentEntity(ND_APPT1_ID, PROVIDER_CODE),
+            createAppointment2Dto.toAppointmentEntity(ND_APPT2_ID, PROVIDER_CODE),
           ),
         )
 

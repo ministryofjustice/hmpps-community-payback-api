@@ -15,6 +15,7 @@ fun AppointmentEntity.Companion.valid() = AppointmentEntity(
   deliusEventNumber = Int.random(),
   createdByCommunityPayback = Boolean.random(),
   date = randomLocalDate(),
+  providerCode = String.random(5),
 )
 
 fun AppointmentEntity.persist(ctx: ApplicationContext) = ctx.getBean<AppointmentEntityRepository>().save(this)
