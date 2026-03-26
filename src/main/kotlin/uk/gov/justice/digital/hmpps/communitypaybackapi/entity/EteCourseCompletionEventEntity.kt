@@ -47,7 +47,7 @@ data class EteCourseCompletionEventEntity(
   val courseType: String,
   val provider: String,
 
-  val completionDate: LocalDate,
+  val completionDateTime: OffsetDateTime,
 
   @Enumerated(EnumType.STRING)
   val status: EteCourseCompletionEventStatus,

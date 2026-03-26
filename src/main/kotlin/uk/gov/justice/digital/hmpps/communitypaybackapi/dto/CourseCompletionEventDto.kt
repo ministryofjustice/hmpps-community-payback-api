@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.dto
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.OffsetDateTime
 import java.util.UUID
 
 data class EteCourseCompletionEventDto(
@@ -39,8 +40,8 @@ data class EteCourseCompletionEventDto(
   @param:Schema(description = "Course provider name", example = "Moodle")
   val provider: String,
 
-  @param:Schema(description = "Date the course was completed", example = "2025-01-15")
-  val completionDate: LocalDate,
+  @param:Schema(description = "Date the course was completed", example = "2025-01-15T09:00:00Z")
+  val completionDateTime: OffsetDateTime,
 
   @param:Schema(description = "Status of the course completion", example = "COMPLETED")
   val status: EteCourseCompletionEventStatusDto,

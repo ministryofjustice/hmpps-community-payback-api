@@ -5,6 +5,7 @@ import org.springframework.context.ApplicationContext
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.CommunityCampusPduEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.random
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.randomLocalDate
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.randomOffsetDateTime
 import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseCompletionMessage
 import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseCompletionStatus
 import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseMessageAttributes
@@ -34,7 +35,7 @@ fun EducationCourseMessageAttributes.Companion.valid() = EducationCourseMessageA
   courseType = String.random(20),
   provider = String.random(5),
   status = EducationCourseCompletionStatus.entries.random(),
-  completionDate = randomLocalDate(),
+  completionDateTime = randomOffsetDateTime(),
   totalTimeMinutes = Random.nextLong(10, 100),
   attempts = 1,
   expectedTimeMinutes = Random.nextLong(30, 240),

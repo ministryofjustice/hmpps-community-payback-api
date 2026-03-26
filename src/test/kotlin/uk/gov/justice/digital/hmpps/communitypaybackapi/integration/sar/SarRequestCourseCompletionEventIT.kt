@@ -4,6 +4,8 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.getBean
 import org.springframework.context.ApplicationContext
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.atFirstSecondOfDay
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.atLastSecondOfDay
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.CommunityCampusPduEntityRepository
@@ -12,8 +14,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompleti
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventResolutionEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventStatus
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionResolution
-import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.atFirstSecondOfDay
-import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.atLastSecondOfDay
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.sar.SarRequestIT.Companion.CRN
@@ -231,7 +231,7 @@ class SarRequestCourseCompletionEventIT : IntegrationTestBase() {
           courseName = "course one",
           courseType = "course type one",
           provider = "provider one",
-          completionDate = LocalDate.of(2025, 6, 1),
+          completionDateTime = LocalDate.of(2025, 6, 1).atFirstSecondOfDay(),
           status = EteCourseCompletionEventStatus.PASSED,
           totalTimeMinutes = 10,
           expectedTimeMinutes = 20,
@@ -259,7 +259,7 @@ class SarRequestCourseCompletionEventIT : IntegrationTestBase() {
           courseName = "course two",
           courseType = "course type two",
           provider = "provider two",
-          completionDate = LocalDate.of(2025, 6, 2),
+          completionDateTime = LocalDate.of(2025, 6, 2).atFirstSecondOfDay(),
           status = EteCourseCompletionEventStatus.PASSED,
           totalTimeMinutes = 30,
           expectedTimeMinutes = 40,

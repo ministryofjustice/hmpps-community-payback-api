@@ -313,7 +313,7 @@ class EteMappersTest {
       val courseName = "Digital Skills"
       val courseType = "ONLINE"
       val provider = "Skills for Life"
-      val completionDate = LocalDate.of(2024, 2, 20)
+      val completionDateTime = OffsetDateTime.parse("2024-02-20T09:00:00Z")
       val status = EteCourseCompletionEventStatus.PASSED
       val totalTimeMinutes = 120L
       val expectedTimeMinutes = 120L
@@ -333,7 +333,7 @@ class EteMappersTest {
         courseName = courseName,
         courseType = courseType,
         provider = provider,
-        completionDate = completionDate,
+        completionDateTime = completionDateTime,
         status = status,
         totalTimeMinutes = totalTimeMinutes,
         expectedTimeMinutes = expectedTimeMinutes,
@@ -361,7 +361,7 @@ class EteMappersTest {
       assertThat(result.courseName).isEqualTo(courseName)
       assertThat(result.courseType).isEqualTo(courseType)
       assertThat(result.provider).isEqualTo(provider)
-      assertThat(result.completionDate).isEqualTo(completionDate)
+      assertThat(result.completionDateTime).isEqualTo(completionDateTime)
       assertThat(result.status).isEqualTo(EteCourseCompletionEventStatusDto.Passed)
       assertThat(result.totalTimeMinutes).isEqualTo(totalTimeMinutes)
       assertThat(result.expectedTimeMinutes).isEqualTo(expectedTimeMinutes)
@@ -512,7 +512,7 @@ class EteMappersTest {
             totalTimeMinutes = 70,
             expectedTimeMinutes = 120,
             status = EducationCourseCompletionStatus.Failed,
-            completionDate = LocalDate.of(2026, 1, 1),
+            completionDateTime = OffsetDateTime.parse("2026-01-01T10:00:00Z"),
             attempts = 5,
           ),
         ),
@@ -531,7 +531,7 @@ class EteMappersTest {
       assertThat(result.totalTimeMinutes).isEqualTo(70)
       assertThat(result.expectedTimeMinutes).isEqualTo(120)
       assertThat(result.status).isEqualTo(EteCourseCompletionEventStatus.FAILED)
-      assertThat(result.completionDate).isEqualTo("2026-01-01")
+      assertThat(result.completionDateTime).isEqualTo("2026-01-01T10:00:00Z")
       assertThat(result.externalReference).isEqualTo("EXT123")
       assertThat(result.receivedAt).isCloseTo(OffsetDateTime.now(), within(1, ChronoUnit.SECONDS))
     }

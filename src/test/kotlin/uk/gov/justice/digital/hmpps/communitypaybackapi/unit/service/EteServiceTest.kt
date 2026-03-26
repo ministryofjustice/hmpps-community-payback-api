@@ -13,6 +13,8 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.atFirstSecondOfDay
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.atLastSecondOfDay
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.NotFoundException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntityRepository
@@ -81,8 +83,8 @@ class EteServiceTest {
       val pduId = UUID.randomUUID()
       val providerCode = "PC01"
       val offices = listOf("office1", "office2")
-      val fromDate = LocalDate.of(2026, 1, 1)
-      val toDate = LocalDate.of(2026, 12, 31)
+      val fromDate = LocalDate.of(2026, 1, 1).atFirstSecondOfDay()
+      val toDate = LocalDate.of(2026, 12, 31).atLastSecondOfDay()
 
       every {
         eteCourseCompletionEventEntityRepository.findAllPassedWithFilters(
@@ -91,14 +93,14 @@ class EteServiceTest {
           officesCount = 2,
           offices = offices,
           resolutionStatus = ResolutionStatus.ANY,
-          fromDate,
-          toDate,
-          pageable,
+          fromDate = fromDate,
+          toDate = toDate,
+          pageable = pageable,
         )
       } returns PageImpl(
         listOf(
           EteCourseCompletionEventEntity.valid().copy(
-            completionDate = LocalDate.of(2026, 6, 15),
+            completionDateTime = LocalDate.of(2026, 6, 15).atFirstSecondOfDay(),
           ),
         ),
       )
@@ -115,7 +117,7 @@ class EteServiceTest {
 
       assertThat(result.isEmpty).isFalse
       assertThat(result.content).hasSize(1)
-      assertThat(result.content[0].completionDate).isEqualTo("2026-06-15")
+      assertThat(result.content[0].completionDateTime).isEqualTo(LocalDate.of(2026, 6, 15).atFirstSecondOfDay())
     }
   }
 

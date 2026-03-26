@@ -21,6 +21,8 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.atFirstSecondOfDay
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.atLastSecondOfDay
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionRecommendationDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionResolutionDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EteCourseCompletionEventDto
@@ -60,10 +62,10 @@ class AdminCourseCompletionController(val eteService: EteService) {
   fun getCourseCompletions(
     @Parameter(
       hidden = true,
-      description = "Pagination and sorting parameters. Supported sort fields: courseName, firstName, lastName, completionDate - Default sort: firstname, lastname DESC, size: 50",
+      description = "Pagination and sorting parameters. Supported sort fields: courseName, firstName, lastName, completionDateTime - Default sort: firstname, lastname DESC, size: 50",
       schema = Schema(
         implementation = Pageable::class,
-        description = "courseName, firstName, lastName, completionDate are supported for sorting",
+        description = "courseName, firstName, lastName, completionDateTime are supported for sorting",
       ),
     )
     @PageableDefault(size = 50, sort = ["firstName", "lastName"], direction = Sort.Direction.DESC) pageable: Pageable,
@@ -87,8 +89,8 @@ class AdminCourseCompletionController(val eteService: EteService) {
     pduId,
     office,
     resolutionStatus = resolutionStatus,
-    dateFrom,
-    dateTo,
+    dateFrom?.atFirstSecondOfDay(),
+    dateTo?.atLastSecondOfDay(),
     pageable,
   )
 
