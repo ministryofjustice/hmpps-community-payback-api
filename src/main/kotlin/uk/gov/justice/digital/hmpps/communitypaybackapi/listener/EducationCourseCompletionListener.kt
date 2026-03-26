@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.listener
 import io.awspring.cloud.sqs.annotation.SqsListener
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.messaging.MessageHeaders
 import org.springframework.messaging.handler.annotation.Headers
@@ -16,6 +17,7 @@ class EducationCourseCompletionListener(
   private val jsonMapper: JsonMapper,
   private val eteService: EteService,
   private val sqsListenerErrorHandler: SqsListenerErrorHandler,
+  @param:Value("\${community-payback.education-course-integration.log-messages:false}") private val logMessages: Boolean,
 ) {
   private companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)
@@ -30,7 +32,9 @@ class EducationCourseCompletionListener(
     messageString: String,
     @Headers headers: MessageHeaders,
   ) {
-    log.debug("Have received education course course completion message '$messageString'")
+    if (logMessages) {
+      log.debug("Have received education course course completion message '$messageString'")
+    }
     sqsListenerErrorHandler.withErrorHandler(headers) {
       val message = jsonMapper.readValue(messageString, EducationCourseCompletionMessage::class.java)
       eteService.recordCourseCompletionEvent(message)

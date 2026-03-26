@@ -35,6 +35,7 @@ community-payback:
     enabled: false
   education-course-integration:
     enabled: true
+    log-messages: true
   request-logging-enabled: true
   scheduled-jobs:
     enabled: false
