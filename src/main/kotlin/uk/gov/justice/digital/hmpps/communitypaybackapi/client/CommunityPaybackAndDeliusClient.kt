@@ -119,6 +119,12 @@ interface CommunityPaybackAndDeliusClient {
 
   @GetExchange("/case/{crn}/summary")
   fun getUpwDetailsSummary(@PathVariable crn: String, @RequestParam username: String?): NDCaseDetailsSummary
+
+  @PostExchange("/adjustments")
+  fun postAdjustments(
+    @RequestParam username: String,
+    @RequestBody adjustmentRequests: List<NDAdjustmentRequest>,
+  ): List<NDAdjustmentPostResponse>
 }
 
 data class NDProviderSummaries(
@@ -591,3 +597,21 @@ data class NDMainOffence(
 ) {
   companion object
 }
+
+data class NDAdjustmentRequest(
+  val crn: String,
+  val eventNumber: Int,
+  val type: NDAdjustmentType,
+  val date: LocalDate,
+  val reason: String,
+  val minutes: Int,
+)
+
+enum class NDAdjustmentType(val code: String) {
+  POSITIVE("POSITIVE"),
+  NEGATIVE("NEGATIVE"),
+}
+
+data class NDAdjustmentPostResponse(
+  val id: Long,
+)
