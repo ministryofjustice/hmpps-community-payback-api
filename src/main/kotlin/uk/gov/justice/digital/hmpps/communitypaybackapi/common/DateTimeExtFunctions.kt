@@ -21,6 +21,6 @@ fun daysUntil(start: LocalDate, end: LocalDate): Long = ChronoUnit.DAYS.between(
 
 fun LocalDate.findNextOrSameDateForDayOfWeek(dayOfWeek: DayOfWeek): LocalDate = with(TemporalAdjusters.nextOrSame(dayOfWeek))
 
-fun LocalDate.atFirstSecondOfDay(): OffsetDateTime = this.atTime(0, 0).atZone(ZoneId.systemDefault()).toOffsetDateTime()
+fun LocalDate.atFirstSecondOfDay(): OffsetDateTime = this.atTime(0, 0).atZone(ZoneId.of("UTC")).toOffsetDateTime()
 
-fun LocalDate.atLastSecondOfDay(): OffsetDateTime = this.atTime(23, 59, 59).atZone(ZoneId.systemDefault()).toOffsetDateTime()
+fun LocalDate.atLastSecondOfDay(): OffsetDateTime = this.atTime(23, 59, 59).atZone(ZoneId.of("UTC")).toOffsetDateTime()
