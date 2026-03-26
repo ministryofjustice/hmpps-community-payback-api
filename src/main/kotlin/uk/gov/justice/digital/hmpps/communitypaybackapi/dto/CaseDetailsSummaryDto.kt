@@ -11,7 +11,7 @@ data class CaseDetailsSummaryDto(
 }
 
 data class UnpaidWorkDetailsDto(
-  val eventNumber: Long,
+  val eventNumber: Int,
   val sentenceDate: LocalDate,
   val requiredMinutes: Long,
   val completedMinutes: Long,

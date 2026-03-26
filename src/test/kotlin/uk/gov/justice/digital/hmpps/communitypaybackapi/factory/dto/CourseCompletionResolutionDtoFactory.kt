@@ -21,7 +21,7 @@ fun CourseCompletionResolutionDto.Companion.valid(ctx: ApplicationContext) = Cou
 )
 
 fun CourseCompletionCreditTimeDetailsDto.Companion.valid() = CourseCompletionCreditTimeDetailsDto(
-  deliusEventNumber = Long.random(50),
+  deliusEventNumber = Int.random(50),
   appointmentIdToUpdate = Long.random(),
   date = randomLocalDate(),
   minutesToCredit = Long.random(0, 181),

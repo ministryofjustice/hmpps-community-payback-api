@@ -34,7 +34,7 @@ enum class SchedulingTriggerType {
 
 data class SchedulingRequirement(
   val crn: String,
-  val deliusEventNumber: Long,
+  val deliusEventNumber: Int,
   /**
    * The corresponding community payback requirement length, before any
    * time is credited from attended appointments. This will include adjustments
@@ -155,7 +155,7 @@ data class Schedule(
 data class SchedulePlan(
   val schedulingId: UUID,
   val crn: String,
-  val eventNumber: Long,
+  val eventNumber: Int,
   val actions: List<SchedulingAction>,
   val shortfall: Duration,
 ) {

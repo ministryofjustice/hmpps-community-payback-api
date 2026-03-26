@@ -224,7 +224,7 @@ object CommunityPaybackAndDeliusMockServer {
 
   data class ExpectedAppointmentCreate(
     val crn: String,
-    val eventNumber: Long,
+    val eventNumber: Int,
     val date: LocalDate,
     val startTime: LocalTime,
     val endTime: LocalTime,
@@ -443,14 +443,14 @@ object CommunityPaybackAndDeliusMockServer {
     )
     setupGetDataMocksForCreateAppointment(
       crn = existingAppointment.case.crn,
-      eventNumber = existingAppointment.event.number.toLong(),
+      eventNumber = existingAppointment.event.number,
       project = project,
     )
   }
 
   fun setupGetDataMocksForCreateAppointment(
     crn: String,
-    eventNumber: Long,
+    eventNumber: Int,
     project: NDProject,
   ) {
     getProject(project)

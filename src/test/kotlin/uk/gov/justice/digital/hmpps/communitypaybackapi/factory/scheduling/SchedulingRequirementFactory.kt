@@ -6,6 +6,6 @@ import java.time.Duration
 
 fun SchedulingRequirement.Companion.valid() = SchedulingRequirement(
   crn = String.random(5),
-  deliusEventNumber = Long.random(50),
+  deliusEventNumber = Int.random(50),
   requirementLengthMinutes = Duration.ZERO,
 )

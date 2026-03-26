@@ -38,9 +38,9 @@ class AdjustmentsServiceTest {
 
   companion object {
     const val CRN: String = "CRN123"
-    const val EVENT_NUMBER: Long = 68L
+    const val EVENT_NUMBER: Int = 68
     const val USERNAME = "username"
-    val REASON_ID = UUID.fromString("74f0f62b-bbd4-49a4-9af8-1ce6cd94e3e1")
+    val REASON_ID: UUID = UUID.fromString("74f0f62b-bbd4-49a4-9af8-1ce6cd94e3e1")
   }
 
   @Nested

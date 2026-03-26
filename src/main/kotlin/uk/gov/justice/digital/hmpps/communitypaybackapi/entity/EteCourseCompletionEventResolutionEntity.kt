@@ -35,7 +35,7 @@ data class EteCourseCompletionEventResolutionEntity(
   /**
    * The following fields are set when resolution is [EteCourseCompletionResolution.CREDIT_TIME]
    */
-  val deliusEventNumber: Long? = null,
+  val deliusEventNumber: Int? = null,
   val deliusAppointmentId: Long? = null,
   /**
    * true = project created

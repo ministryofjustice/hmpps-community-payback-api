@@ -64,7 +64,7 @@ class EteMappersTest {
     const val CRN = "CRN1234"
     const val PROJECT_CODE = "PROJ123"
     const val DELIUS_APPOINTMENT_ID = 5L
-    const val DELIUS_EVENT_NUMBER = 52L
+    const val DELIUS_EVENT_NUMBER = 52
   }
 
   @Nested
