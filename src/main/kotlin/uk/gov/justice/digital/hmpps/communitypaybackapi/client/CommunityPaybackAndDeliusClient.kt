@@ -313,12 +313,12 @@ data class NDAppointmentPickUp(
 }
 
 data class NDAddress(
-  val buildingName: String? = null,
-  val addressNumber: String? = null,
-  val streetName: String? = null,
-  val townCity: String? = null,
-  val county: String? = null,
-  val postCode: String? = null,
+  val buildingName: String?,
+  val addressNumber: String?,
+  val streetName: String?,
+  val townCity: String?,
+  val county: String?,
+  val postCode: String?,
 ) {
   companion object
 }
@@ -431,22 +431,22 @@ data class NDCreateAppointment(
   val date: LocalDate,
   val startTime: LocalTime,
   val endTime: LocalTime,
-  val outcome: NDCode? = null,
-  val supervisor: NDCode? = null,
-  val notes: String? = null,
-  val hiVisWorn: Boolean? = null,
-  val workedIntensively: Boolean? = null,
-  val penaltyMinutes: Long? = null,
-  val minutesCredited: Long? = null,
-  val workQuality: NDAppointmentWorkQuality? = null,
-  val behaviour: NDAppointmentBehaviour? = null,
-  val sensitive: Boolean? = null,
-  val alertActive: Boolean? = null,
-  val allocationId: Long? = null,
-  val pickUp: NDCreateAppointmentPickUpData?,
+  val outcome: NDCode?,
+  val supervisor: NDCode?,
+  val notes: String?,
+  val hiVisWorn: Boolean?,
+  val workedIntensively: Boolean?,
+  val penaltyMinutes: Long?,
+  val minutesCredited: Long?,
+  val workQuality: NDAppointmentWorkQuality?,
+  val behaviour: NDAppointmentBehaviour?,
+  val sensitive: Boolean?,
+  val alertActive: Boolean?,
+  val allocationId: Long?,
+  val pickUp: NDAppointmentPickUpData?,
 )
 
-data class NDCreateAppointmentPickUpData(val time: LocalTime?, val location: NDCode?)
+data class NDAppointmentPickUpData(val time: LocalTime?, val location: NDCode?)
 
 data class NDCreatedAppointment(
   val id: Long,
@@ -459,17 +459,18 @@ data class NDUpdateAppointment(
   val startTime: LocalTime,
   @param:Schema(example = "09:00", description = "The end local time of the appointment", pattern = "^([0-1][0-9]|2[0-3]):[0-5][0-9]$")
   val endTime: LocalTime,
-  val outcome: NDCode? = null,
+  val outcome: NDCode?,
   val supervisor: NDCode,
-  val notes: String? = null,
-  val hiVisWorn: Boolean? = null,
-  val workedIntensively: Boolean? = null,
-  val penaltyMinutes: Long? = null,
-  val minutesCredited: Long? = null,
-  val workQuality: NDAppointmentWorkQuality? = null,
-  val behaviour: NDAppointmentBehaviour? = null,
-  val sensitive: Boolean? = null,
-  val alertActive: Boolean? = null,
+  val notes: String?,
+  val hiVisWorn: Boolean?,
+  val workedIntensively: Boolean?,
+  val penaltyMinutes: Long?,
+  val minutesCredited: Long?,
+  val workQuality: NDAppointmentWorkQuality?,
+  val behaviour: NDAppointmentBehaviour?,
+  val sensitive: Boolean?,
+  val alertActive: Boolean?,
+  val pickUp: NDAppointmentPickUpData?,
 )
 
 data class NDCode(

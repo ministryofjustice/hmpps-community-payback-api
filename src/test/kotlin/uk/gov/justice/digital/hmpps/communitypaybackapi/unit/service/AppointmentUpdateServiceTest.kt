@@ -57,7 +57,7 @@ class AppointmentUpdateServiceTest {
   @Nested
   inner class UpdateAppointmentOutcome {
 
-    val existingAppointment = AppointmentDto.valid().copy(id = DELIUS_APPOINTMENT_ID)
+    val existingAppointment = AppointmentDto.valid().copy(id = DELIUS_APPOINTMENT_ID, projectCode = PROJECT_CODE)
     val updateRequest = UpdateAppointmentOutcomeDto.valid().copy(deliusId = DELIUS_APPOINTMENT_ID)
 
     @Test

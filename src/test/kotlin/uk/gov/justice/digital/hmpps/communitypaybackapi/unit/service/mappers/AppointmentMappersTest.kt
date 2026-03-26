@@ -37,6 +37,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentWorkQuali
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AttendanceDataDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.OffenderDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.PickUpDataDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
@@ -212,7 +213,14 @@ class AppointmentMappersTest {
         contactOutcome = ContactOutcomeEntity.valid().copy(code = "COE1"),
       )
 
-      val result = dto.toNDUpdateAppointment()
+      val result = dto.toNDUpdateAppointment(
+        existingAppointment = AppointmentDto.valid().copy(
+          pickUpData = PickUpDataDto.valid().copy(
+            time = LocalTime.of(1, 0, 0),
+            locationCode = "PICKUP1",
+          ),
+        ),
+      )
 
       assertThat(result.version).isEqualTo(priorDeliusVersion)
       assertThat(result.startTime).isEqualTo(LocalTime.of(3, 2, 1))
@@ -228,6 +236,8 @@ class AppointmentMappersTest {
       assertThat(result.behaviour).isEqualTo(NDAppointmentBehaviour.UNSATISFACTORY)
       assertThat(result.alertActive).isFalse
       assertThat(result.sensitive).isTrue
+      assertThat(result.pickUp?.time).isEqualTo(LocalTime.of(1, 0, 0))
+      assertThat(result.pickUp?.location?.code).isEqualTo("PICKUP1")
     }
 
     @Test
@@ -250,7 +260,11 @@ class AppointmentMappersTest {
         contactOutcome = null,
       )
 
-      val result = dto.toNDUpdateAppointment()
+      val result = dto.toNDUpdateAppointment(
+        existingAppointment = AppointmentDto.valid().copy(
+          pickUpData = null,
+        ),
+      )
 
       assertThat(result.version).isEqualTo(priorDeliusVersion)
       assertThat(result.startTime).isEqualTo(LocalTime.of(3, 2, 1))
@@ -266,6 +280,7 @@ class AppointmentMappersTest {
       assertThat(result.behaviour).isNull()
       assertThat(result.alertActive).isNull()
       assertThat(result.sensitive).isNull()
+      assertThat(result.pickUp).isNull()
     }
   }
 

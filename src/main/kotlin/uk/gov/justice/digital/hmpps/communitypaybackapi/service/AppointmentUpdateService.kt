@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.ConflictException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.InternalServerErrorException
@@ -46,22 +47,22 @@ class AppointmentUpdateService(
       return
     }
 
-    updateDelius(projectCode, validatedUpdateDto)
+    updateDelius(existingAppointment, validatedUpdateDto)
 
     appointmentEventService.saveAndThenPublishOnTransactionCommit(event)
   }
 
   @SuppressWarnings("SwallowedException", "ThrowsCount")
   private fun updateDelius(
-    projectCode: String,
+    existingAppointment: AppointmentDto,
     validatedUpdateDto: ValidatedAppointment<UpdateAppointmentOutcomeDto>,
   ) {
     val deliusAppointmentId = validatedUpdateDto.dto.deliusId
     try {
       communityPaybackAndDeliusClient.updateAppointment(
-        projectCode = projectCode,
+        projectCode = existingAppointment.projectCode,
         appointmentId = deliusAppointmentId,
-        updateAppointment = validatedUpdateDto.toNDUpdateAppointment(),
+        updateAppointment = validatedUpdateDto.toNDUpdateAppointment(existingAppointment),
       )
     } catch (_: WebClientResponseException.NotFound) {
       throw NotFoundException("Appointment", deliusAppointmentId.toString())
