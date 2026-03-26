@@ -9,6 +9,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompleti
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.EteMappers
 import java.util.UUID
 
+@SuppressWarnings("ThrowsCount")
 @Service
 class EteValidationService(
   private val contactOutcomeEntityRepository: ContactOutcomeEntityRepository,
@@ -27,6 +28,10 @@ class EteValidationService(
   }
 
   private fun validateCreditTime(resolution: CourseCompletionResolutionDto) {
+    if (resolution.crn == null) {
+      throw BadRequestException("CRN is required for type ${CourseCompletionResolutionTypeDto.CREDIT_TIME}")
+    }
+
     if (resolution.creditTimeDetails == null) {
       throw BadRequestException("Credit Time Details are required for type ${CourseCompletionResolutionTypeDto.CREDIT_TIME}")
     }

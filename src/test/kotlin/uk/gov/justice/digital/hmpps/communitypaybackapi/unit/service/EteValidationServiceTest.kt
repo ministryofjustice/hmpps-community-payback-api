@@ -72,6 +72,18 @@ class EteValidationServiceTest {
       }
 
       @Test
+      fun `error if crn not provided`() {
+        assertThatThrownBy {
+          eteValidationService.validateCourseCompletionResolution(
+            baselineCourseCompletionResolution.copy(
+              crn = null,
+            ),
+            baselineCourseCompletionEvent,
+          )
+        }.hasMessage("CRN is required for type CREDIT_TIME")
+      }
+
+      @Test
       fun `error if credit time details not provided`() {
         assertThatThrownBy {
           eteValidationService.validateCourseCompletionResolution(
