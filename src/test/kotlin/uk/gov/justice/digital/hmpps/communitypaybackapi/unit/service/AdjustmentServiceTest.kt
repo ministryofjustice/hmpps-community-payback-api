@@ -12,6 +12,7 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.data.repository.findByIdOrNull
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAdjustmentDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsIdDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentReasonEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentReasonEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.valid
@@ -39,6 +40,7 @@ class AdjustmentServiceTest {
   companion object {
     const val CRN: String = "CRN123"
     const val EVENT_NUMBER: Int = 68
+    val UNPAID_WORK_DETAILS: UnpaidWorkDetailsIdDto = UnpaidWorkDetailsIdDto(CRN, EVENT_NUMBER)
     const val USERNAME = "username"
     val REASON_ID: UUID = UUID.fromString("74f0f62b-bbd4-49a4-9af8-1ce6cd94e3e1")
   }
@@ -56,8 +58,7 @@ class AdjustmentServiceTest {
 
       assertThatThrownBy {
         service.createAdjustment(
-          crn = CRN,
-          deliusEventNumber = EVENT_NUMBER,
+          upwDetailsId = UNPAID_WORK_DETAILS,
           createAdjustment = request,
           username = USERNAME,
         )
@@ -80,8 +81,7 @@ class AdjustmentServiceTest {
 
       assertThatThrownBy {
         service.createAdjustment(
-          crn = CRN,
-          deliusEventNumber = EVENT_NUMBER,
+          upwDetailsId = UNPAID_WORK_DETAILS,
           createAdjustment = request,
           username = USERNAME,
         )
@@ -102,8 +102,7 @@ class AdjustmentServiceTest {
       )
 
       service.createAdjustment(
-        crn = CRN,
-        deliusEventNumber = EVENT_NUMBER,
+        upwDetailsId = UNPAID_WORK_DETAILS,
         createAdjustment = request,
         username = USERNAME,
       )
@@ -114,7 +113,7 @@ class AdjustmentServiceTest {
           adjustmentRequests = listOf(
             request.toNDAdjustmentRequest(
               crn = CRN,
-              deliusEventNumber = EVENT_NUMBER.toInt(),
+              deliusEventNumber = EVENT_NUMBER,
               reason = reason,
             ),
           ),

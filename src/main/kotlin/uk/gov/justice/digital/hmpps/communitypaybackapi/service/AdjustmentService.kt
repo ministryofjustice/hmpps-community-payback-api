@@ -4,6 +4,7 @@ import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAdjustmentDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsIdDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.BadRequestException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.NotFoundException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentReasonEntityRepository
@@ -17,15 +18,16 @@ class AdjustmentService(
 ) {
 
   fun createAdjustment(
-    crn: String,
-    deliusEventNumber: Int,
+    upwDetailsId: UnpaidWorkDetailsIdDto,
     createAdjustment: CreateAdjustmentDto,
     username: String,
   ) {
+    val (crn, deliusEventNumber) = upwDetailsId
+
     val reason = adjustmentReasonEntityRepository.findByIdOrNull(createAdjustment.adjustmentReasonId)
       ?: throw NotFoundException("Adjustment Reason", createAdjustment.adjustmentReasonId.toString())
 
-    offenderService.ensureUnpaidWorkDetailsExist(crn, deliusEventNumber, username)
+    offenderService.ensureUnpaidWorkDetailsExist(upwDetailsId, username)
     val requestedMinutes = createAdjustment.minutes
 
     val maxMinutesAllowed = reason.maxMinutesAllowed
