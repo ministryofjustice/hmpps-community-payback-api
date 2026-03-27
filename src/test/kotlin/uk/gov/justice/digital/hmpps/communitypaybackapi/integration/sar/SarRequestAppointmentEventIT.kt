@@ -49,10 +49,10 @@ class SarRequestAppointmentEventIT : IntegrationTestBase() {
       .expectStatus()
       .isOk
       .expectBody()
-      .jsonPath("$.content.appointmentEvents[0].deliusEventNumber").isEqualTo(4)
-      .jsonPath("$.content.appointmentEvents[1].deliusEventNumber").isEqualTo(3)
-      .jsonPath("$.content.appointmentEvents[2].deliusEventNumber").isEqualTo(2)
-      .jsonPath("$.content.appointmentEvents[3].deliusEventNumber").isEqualTo(1)
+      .jsonPath("$.content.appointments[0].events[0].deliusEventNumber").isEqualTo(1)
+      .jsonPath("$.content.appointments[1].events[0].deliusEventNumber").isEqualTo(2)
+      .jsonPath("$.content.appointments[2].events[0].deliusEventNumber").isEqualTo(3)
+      .jsonPath("$.content.appointments[3].events[0].deliusEventNumber").isEqualTo(4)
   }
 
   @Test
@@ -66,8 +66,8 @@ class SarRequestAppointmentEventIT : IntegrationTestBase() {
       .expectStatus()
       .isOk
       .expectBody()
-      .jsonPath("$.content.appointmentEvents[0].deliusEventNumber").isEqualTo(3)
-      .jsonPath("$.content.appointmentEvents[1].deliusEventNumber").isEqualTo(2)
+      .jsonPath("$.content.appointments[0].events[0].deliusEventNumber").isEqualTo(2)
+      .jsonPath("$.content.appointments[1].events[0].deliusEventNumber").isEqualTo(3)
   }
 
   @Test
@@ -80,9 +80,9 @@ class SarRequestAppointmentEventIT : IntegrationTestBase() {
       .expectStatus()
       .isOk
       .expectBody()
-      .jsonPath("$.content.appointmentEvents[0].deliusEventNumber").isEqualTo(4)
-      .jsonPath("$.content.appointmentEvents[1].deliusEventNumber").isEqualTo(3)
-      .jsonPath("$.content.appointmentEvents[2].deliusEventNumber").isEqualTo(2)
+      .jsonPath("$.content.appointments[0].events[0].deliusEventNumber").isEqualTo(2)
+      .jsonPath("$.content.appointments[1].events[0].deliusEventNumber").isEqualTo(3)
+      .jsonPath("$.content.appointments[2].events[0].deliusEventNumber").isEqualTo(4)
   }
 
   @Test
@@ -95,9 +95,9 @@ class SarRequestAppointmentEventIT : IntegrationTestBase() {
       .expectStatus()
       .isOk
       .expectBody()
-      .jsonPath("$.content.appointmentEvents[0].deliusEventNumber").isEqualTo(3)
-      .jsonPath("$.content.appointmentEvents[1].deliusEventNumber").isEqualTo(2)
-      .jsonPath("$.content.appointmentEvents[2].deliusEventNumber").isEqualTo(1)
+      .jsonPath("$.content.appointments[0].events[0].deliusEventNumber").isEqualTo(1)
+      .jsonPath("$.content.appointments[1].events[0].deliusEventNumber").isEqualTo(2)
+      .jsonPath("$.content.appointments[2].events[0].deliusEventNumber").isEqualTo(3)
   }
 
   class FixtureFactory(
@@ -115,39 +115,68 @@ class SarRequestAppointmentEventIT : IntegrationTestBase() {
         listOf(
           baselineAppointmentEvent().copy(
             triggeredAt = RANGE_TEST_FROM_DATE.minusDays(1).atLastSecondOfDay(),
-            appointment = baselineAppointment().copy(deliusEventNumber = 1).persist(ctx),
+            appointment = baselineAppointment().copy(
+              deliusEventNumber = 1,
+              date = RANGE_TEST_FROM_DATE.minusDays(1),
+            ).persist(ctx),
             eventType = AppointmentEventType.CREATE,
           ),
           baselineAppointmentEvent().copy(
             triggeredAt = RANGE_TEST_FROM_DATE.atFirstSecondOfDay(),
             triggerType = AppointmentEventTriggerType.SCHEDULING,
-            appointment = baselineAppointment().copy(deliusEventNumber = 2).persist(ctx),
+            appointment = baselineAppointment().copy(
+              deliusEventNumber = 2,
+              date = RANGE_TEST_FROM_DATE,
+            ).persist(ctx),
           ),
           baselineAppointmentEvent().copy(
             triggeredAt = RANGE_TEST_TO_DATE.atLastSecondOfDay(),
             triggerType = AppointmentEventTriggerType.ETE_COURSE_COMPLETION_RESOLUTION,
-            appointment = baselineAppointment().copy(deliusEventNumber = 3).persist(ctx),
+            appointment = baselineAppointment().copy(
+              deliusEventNumber = 3,
+              date = RANGE_TEST_TO_DATE,
+            ).persist(ctx),
           ),
           baselineAppointmentEvent().copy(
             triggeredAt = RANGE_TEST_TO_DATE.plusDays(1).atFirstSecondOfDay(),
-            appointment = baselineAppointment().copy(deliusEventNumber = 4).persist(ctx),
+            appointment = baselineAppointment().copy(
+              deliusEventNumber = 4,
+              date = RANGE_TEST_TO_DATE.plusDays(1),
+            ).persist(ctx),
           ),
         ),
       )
     }
 
     fun setupReportTestData() {
+      val appointment1 = baselineAppointment().copy(
+        deliusEventNumber = 1,
+        date = RANGE_TEST_FROM_DATE.minusDays(1),
+        createdByCommunityPayback = true,
+      ).persist(ctx)
+
+      val appointment2 = baselineAppointment().copy(
+        deliusEventNumber = 2,
+        date = RANGE_TEST_TO_DATE,
+        createdByCommunityPayback = false,
+      ).persist(ctx)
+
       appointmentEventEntityRepository.saveAll(
         listOf(
           baselineAppointmentEvent().copy(
             triggeredAt = RANGE_TEST_FROM_DATE.minusDays(1).atLastSecondOfDay(),
-            appointment = baselineAppointment().copy(deliusEventNumber = 1).persist(ctx),
+            appointment = appointment1,
             eventType = AppointmentEventType.CREATE,
           ),
           baselineAppointmentEvent().copy(
-            triggeredAt = RANGE_TEST_FROM_DATE.atFirstSecondOfDay(),
+            triggeredAt = RANGE_TEST_FROM_DATE.atLastSecondOfDay(),
+            appointment = appointment1,
+            eventType = AppointmentEventType.UPDATE,
+          ),
+          baselineAppointmentEvent().copy(
+            triggeredAt = RANGE_TEST_TO_DATE.atFirstSecondOfDay(),
             triggerType = AppointmentEventTriggerType.SCHEDULING,
-            appointment = baselineAppointment().copy(deliusEventNumber = 2).persist(ctx),
+            appointment = appointment2,
             eventType = AppointmentEventType.UPDATE,
             projectName = "Some other project name",
             date = LocalDate.of(2026, 3, 4),
@@ -170,16 +199,18 @@ class SarRequestAppointmentEventIT : IntegrationTestBase() {
       )
     }
 
-    fun baselineAppointment() = AppointmentEntity.valid().copy(crn = CRN)
+    fun baselineAppointment() = AppointmentEntity.valid().copy(
+      crn = CRN,
+      deliusEventNumber = 1,
+      date = LocalDate.of(2026, 3, 4),
+      createdByCommunityPayback = true,
+    )
 
     fun baselineAppointmentEvent() = AppointmentEventEntity.valid(ctx).copy(
       triggerType = AppointmentEventTriggerType.USER,
       triggeredBy = "username1",
       eventType = AppointmentEventType.CREATE,
-      appointment = AppointmentEntity.valid().copy(
-        crn = CRN,
-        deliusEventNumber = 1,
-      ).persist(ctx),
+      appointment = baselineAppointment().persist(ctx),
       projectName = "The project name",
       date = LocalDate.of(2025, 1, 1),
       startTime = LocalTime.of(10, 0),

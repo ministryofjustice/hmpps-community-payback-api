@@ -1,13 +1,19 @@
 <h1>Community Payback</h1>
 
-<h2>Appointment Events</h2>
+<h2>Appointments</h2>
 
-{{#appointmentEvents}}
-    {{> sar/appointment-event}}
-{{/appointmentEvents}}
-{{^appointmentEvents}}
+<p>This section lists appointments that have been created and/or modified in community payback</p>
+
+<p>If a date range was requested only appointments with events in that range are shown</p>
+
+<p>Appointments are shown in ascending order, by appointment date</p>
+
+{{#appointments}}
+    {{> sar/appointment}}
+{{/appointments}}
+{{^appointments}}
     <p>No Data Held</p>
-{{/appointmentEvents}}
+{{/appointments}}
 
 <h2>Course Completion Events</h2>
 
