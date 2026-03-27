@@ -14,6 +14,8 @@ generic-service:
     SENTRY_ENVIRONMENT: dev
     SPRING_PROFILES_ACTIVE: dev
 
+    # without this e2es will intermittently fail
+    COMMUNITY_PAYBACK_APPOINTMENT_SCHEDULING_DISABLE_NON_WORKING_DAYS: true
     COMMUNITY_PAYBACK_BOOTSTRAP_ENABLED: true
     COMMUNITY_PAYBACK_DOMAIN_EVENTS_ENVIRONMENT: dev
     COMMUNITY_PAYBACK_DOMAIN_EVENTS_DETAILS_URL_PATTERN: https://community-payback-api-dev.hmpps.service.justice.gov.uk/domain-event-details/#type/#id

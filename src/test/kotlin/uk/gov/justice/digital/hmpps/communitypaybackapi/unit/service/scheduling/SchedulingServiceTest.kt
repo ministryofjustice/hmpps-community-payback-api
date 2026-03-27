@@ -2,7 +2,6 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.unit.service.scheduling
 
 import io.mockk.Called
 import io.mockk.every
-import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.verify
@@ -40,8 +39,14 @@ class SchedulingServiceTest {
   @RelaxedMockK
   lateinit var clock: Clock
 
-  @InjectMockKs
-  lateinit var schedulingService: SchedulingService
+  fun schedulingService() = SchedulingService(
+    communityPaybackAndDeliusClient,
+    scheduler,
+    schedulePlanExecutor,
+    scheduleTelemetryPublisher,
+    clock,
+    disableNonWorkingDays = false,
+  )
 
   companion object {
     const val CRN: String = "CRN01"
@@ -53,7 +58,7 @@ class SchedulingServiceTest {
     every { communityPaybackAndDeliusClient.getUnpaidWorkRequirement(CRN, EVENT_NO) } returns NDUnpaidWorkRequirement.valid()
     every { scheduler.producePlan(any()) } returns SchedulerOutcome.ExistingAppointmentsSufficient
 
-    schedulingService.scheduleAppointments(CRN, EVENT_NO, SchedulingTrigger.valid(), dryRun = false)
+    schedulingService().scheduleAppointments(CRN, EVENT_NO, SchedulingTrigger.valid(), dryRun = false)
 
     verify { schedulePlanExecutor wasNot Called }
     verify { scheduleTelemetryPublisher.publish(any(), SchedulerOutcome.ExistingAppointmentsSufficient) }
@@ -64,7 +69,7 @@ class SchedulingServiceTest {
     every { communityPaybackAndDeliusClient.getUnpaidWorkRequirement(CRN, EVENT_NO) } returns NDUnpaidWorkRequirement.valid()
     every { scheduler.producePlan(any()) } returns SchedulerOutcome.RequirementAlreadySatisfied
 
-    schedulingService.scheduleAppointments(CRN, EVENT_NO, SchedulingTrigger.valid(), dryRun = false)
+    schedulingService().scheduleAppointments(CRN, EVENT_NO, SchedulingTrigger.valid(), dryRun = false)
 
     verify { schedulePlanExecutor wasNot Called }
     verify { scheduleTelemetryPublisher.publish(any(), SchedulerOutcome.RequirementAlreadySatisfied) }
@@ -83,7 +88,7 @@ class SchedulingServiceTest {
     val outcome = SchedulerOutcome.ExistingAppointmentsInsufficient(plan)
     every { scheduler.producePlan(any()) } returns outcome
 
-    schedulingService.scheduleAppointments(CRN, EVENT_NO, SchedulingTrigger.valid(), dryRun = false)
+    schedulingService().scheduleAppointments(CRN, EVENT_NO, SchedulingTrigger.valid(), dryRun = false)
 
     verify { schedulePlanExecutor.executePlan(plan) }
     verify { scheduleTelemetryPublisher.publish(any(), outcome) }
@@ -102,7 +107,7 @@ class SchedulingServiceTest {
     val outcome = SchedulerOutcome.ExistingAppointmentsInsufficient(plan)
     every { scheduler.producePlan(any()) } returns outcome
 
-    schedulingService.scheduleAppointments(CRN, EVENT_NO, SchedulingTrigger.valid(), dryRun = true)
+    schedulingService().scheduleAppointments(CRN, EVENT_NO, SchedulingTrigger.valid(), dryRun = true)
 
     verify { schedulePlanExecutor wasNot Called }
     verify { scheduleTelemetryPublisher.publish(any(), outcome) }
