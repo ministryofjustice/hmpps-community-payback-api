@@ -39,8 +39,20 @@ class AppointmentService(
     outcomeCodes: List<String>? = null,
     projectCodes: List<String>? = null,
     projectTypeGroup: ProjectTypeGroupDto? = null,
+    eventNumber: String? = null,
+    appointmentIds: List<Long>? = null,
     pageable: Pageable,
-  ) = appointmentRetrievalService.getAppointments(crn, fromDate, toDate, outcomeCodes, projectCodes, projectTypeGroup, pageable)
+  ) = appointmentRetrievalService.getAppointments(
+    crn = crn,
+    fromDate = fromDate,
+    toDate = toDate,
+    outcomeCodes = outcomeCodes,
+    projectCodes = projectCodes,
+    projectTypeGroup = projectTypeGroup,
+    eventNumber = eventNumber,
+    appointmentIds = appointmentIds,
+    pageable = pageable,
+  )
 
   fun updateAppointmentOutcome(
     projectCode: String,

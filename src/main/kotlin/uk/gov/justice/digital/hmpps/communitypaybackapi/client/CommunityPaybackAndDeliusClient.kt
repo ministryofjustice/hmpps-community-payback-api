@@ -114,6 +114,8 @@ interface CommunityPaybackAndDeliusClient {
     @RequestParam outcomeCodes: List<String>?,
     @RequestParam projectCodes: List<String>?,
     @RequestParam projectTypeCodes: List<String>?,
+    @RequestParam eventNumber: String?,
+    @RequestParam appointmentIds: List<Long>?,
     @RequestParam params: Map<String, String>,
   ): PageResponse<NDAppointmentSummary>
 
