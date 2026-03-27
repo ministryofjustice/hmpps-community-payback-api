@@ -6,19 +6,18 @@ import io.mockk.junit5.MockKExtension
 import io.mockk.verify
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
-import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.scheduling.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.TelemetryService
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulePlan
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingAction
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingExistingAppointment
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingRequest
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingRequiredAppointment
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingRequirement
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingTrigger
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingTriggerType
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.SchedulePlan
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.Scheduler.SchedulerOutcome
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.SchedulingAction
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.SchedulingExistingAppointment
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.SchedulingRequest
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.SchedulingRequiredAppointment
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.SchedulingRequirement
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.SchedulingTelemetryPublisher
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.SchedulingTrigger
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.SchedulingTriggerType
 import java.util.UUID
 
 @ExtendWith(MockKExtension::class)

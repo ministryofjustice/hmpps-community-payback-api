@@ -4,7 +4,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.random
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.randomDuration
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.randomLocalDate
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.randomLocalTime
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingExistingAppointment
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.SchedulingExistingAppointment
 
 fun SchedulingExistingAppointment.Companion.valid() = SchedulingExistingAppointment(
   id = Long.random(),

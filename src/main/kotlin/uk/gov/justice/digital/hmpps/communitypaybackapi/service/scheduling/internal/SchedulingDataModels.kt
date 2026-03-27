@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling
+package uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal
 
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
 import java.time.DayOfWeek

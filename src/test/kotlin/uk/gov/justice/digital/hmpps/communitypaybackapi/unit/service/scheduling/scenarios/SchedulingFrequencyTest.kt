@@ -4,9 +4,9 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingFrequency.FORTNIGHTLY
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingFrequency.ONCE
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingFrequency.WEEKLY
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.SchedulingFrequency.FORTNIGHTLY
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.SchedulingFrequency.ONCE
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.SchedulingFrequency.WEEKLY
 import java.time.DayOfWeek
 import java.time.DayOfWeek.FRIDAY
 import java.time.DayOfWeek.MONDAY

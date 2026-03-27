@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling
 
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.SchedulePlanExecutor
@@ -9,7 +10,13 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.inter
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.Scheduler.SchedulerOutcome.ExistingAppointmentsInsufficient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.Scheduler.SchedulerOutcome.ExistingAppointmentsSufficient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.Scheduler.SchedulerOutcome.RequirementAlreadySatisfied
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.SchedulingNonWorkingDates
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.SchedulingRequest
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.SchedulingTelemetryPublisher
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.SchedulingTrigger
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.toSchedulingAllocations
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.toSchedulingExistingAppointments
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.toSchedulingRequirement
 import java.time.Clock
 import java.time.LocalDate
 import java.util.UUID
@@ -42,6 +49,7 @@ class SchedulingService(
   val schedulePlanExecutor: SchedulePlanExecutor,
   val scheduleTelemetryPublisher: SchedulingTelemetryPublisher,
   val clock: Clock,
+  @param:Value("\${community-payback.appointment-scheduling.disable-non-working-days:false}") private val disableNonWorkingDays: Boolean,
 ) {
 
   private companion object {
@@ -62,7 +70,13 @@ class SchedulingService(
       requirement = requirement.requirementProgress.toSchedulingRequirement(crn, eventNumber),
       allocations = requirement.allocations.toSchedulingAllocations(),
       existingAppointments = requirement.appointments.toSchedulingExistingAppointments(),
-      nonWorkingDates = SchedulingNonWorkingDates(communityPaybackAndDeliusClient.getNonWorkingDays()),
+      nonWorkingDates = SchedulingNonWorkingDates(
+        dates = if (disableNonWorkingDays) {
+          emptyList()
+        } else {
+          communityPaybackAndDeliusClient.getNonWorkingDays()
+        },
+      ),
       dryRun = dryRun,
     )
 

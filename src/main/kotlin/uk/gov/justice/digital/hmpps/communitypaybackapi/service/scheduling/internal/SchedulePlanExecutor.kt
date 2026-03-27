@@ -6,10 +6,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentsDt
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventTrigger
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentService
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulePlan
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingAction
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingRequiredAppointment
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.toCreateAppointmentDto
 import java.time.OffsetDateTime
 
 @Service

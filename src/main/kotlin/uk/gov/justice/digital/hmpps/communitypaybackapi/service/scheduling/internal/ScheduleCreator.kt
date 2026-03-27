@@ -3,13 +3,6 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.inte
 import org.slf4j.LoggerFactory
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.minutesBetween
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.shortestOf
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.Schedule
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingAllocation
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingExistingAppointment
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingNonWorkingDates
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingRequest
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingRequiredAppointment
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingTriggerType
 import java.time.Duration
 import java.time.LocalDate
 

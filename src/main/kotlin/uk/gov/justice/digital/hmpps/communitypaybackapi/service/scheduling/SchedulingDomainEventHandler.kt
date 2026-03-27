@@ -8,11 +8,13 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventT
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.LockService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.SchedulingTrigger
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.SchedulingTriggerType
 import java.time.Duration
 import java.util.UUID
 
 @Service
-class SchedulingAppointmentDomainEventHandler(
+class SchedulingDomainEventHandler(
   private val scheduleService: SchedulingService,
   @param:Value("\${community-payback.appointment-scheduling.dryRun:false}")
   private val schedulingDryRun: Boolean,

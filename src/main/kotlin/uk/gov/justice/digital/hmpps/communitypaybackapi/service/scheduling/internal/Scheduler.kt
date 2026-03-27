@@ -3,9 +3,6 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.inte
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulePlan
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingAction
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingRequest
 import java.time.Duration
 
 @Component

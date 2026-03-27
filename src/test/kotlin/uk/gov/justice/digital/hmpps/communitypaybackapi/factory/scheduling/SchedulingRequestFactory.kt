@@ -1,12 +1,12 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.factory.scheduling
 
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.randomLocalDate
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingAllocations
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingExistingAppointments
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingNonWorkingDates
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingRequest
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingRequirement
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingTrigger
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.SchedulingAllocations
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.SchedulingExistingAppointments
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.SchedulingNonWorkingDates
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.SchedulingRequest
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.SchedulingRequirement
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.SchedulingTrigger
 
 fun SchedulingRequest.Companion.valid() = SchedulingRequest(
   today = randomLocalDate(),

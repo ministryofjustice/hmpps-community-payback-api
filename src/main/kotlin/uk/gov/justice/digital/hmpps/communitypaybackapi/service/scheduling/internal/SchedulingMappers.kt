@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling
+package uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal
 
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDRequirementProgress
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingAllocation
@@ -21,10 +21,10 @@ fun NDRequirementProgress.toSchedulingRequirement(
 
 fun List<NDSchedulingAllocation>.toSchedulingAllocations() = SchedulingAllocations(
   allocations = this
-    /*
-    This matches existing logic in the NDelius scheduling code. Validation in the NDelius UI
-    _should_ ensure the following filters always return true for all appointments
-     */
+      /*
+      This matches existing logic in the NDelius scheduling code. Validation in the NDelius UI
+      _should_ ensure the following filters always return true for all appointments
+       */
     .filter { it.endDateInclusive == null || it.endDateInclusive.isAfter(it.startDateInclusive) }
     .filter { it.startTime.isBefore(it.endTime) }
     .map { it.toSchedulingAllocation() },

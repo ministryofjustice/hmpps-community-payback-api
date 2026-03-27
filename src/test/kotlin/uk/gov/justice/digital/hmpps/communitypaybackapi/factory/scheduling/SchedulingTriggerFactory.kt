@@ -1,8 +1,8 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.factory.scheduling
 
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.random
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingTrigger
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingTriggerType
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.SchedulingTrigger
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.SchedulingTriggerType
 
 fun SchedulingTrigger.Companion.valid() = SchedulingTrigger(
   type = SchedulingTriggerType.AppointmentChange,

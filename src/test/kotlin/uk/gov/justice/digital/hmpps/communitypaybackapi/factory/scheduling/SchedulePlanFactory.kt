@@ -2,7 +2,7 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.factory.scheduling
 
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.random
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.randomDuration
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulePlan
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.SchedulePlan
 import java.util.UUID.randomUUID
 
 fun SchedulePlan.Companion.valid() = SchedulePlan(

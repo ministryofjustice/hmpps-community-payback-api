@@ -13,14 +13,13 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventType
-import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.LockService
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingAppointmentDomainEventHandler
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingDomainEventHandler
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingService
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingTrigger
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingTriggerType
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.SchedulingTrigger
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.SchedulingTriggerType
 import java.time.Duration
 import java.util.UUID
 
@@ -33,7 +32,7 @@ class SchedulingAppointmentDomainEventHandlerTest {
   @RelaxedMockK
   lateinit var appointmentEventService: AppointmentEventService
 
-  lateinit var service: SchedulingAppointmentDomainEventHandler
+  lateinit var service: SchedulingDomainEventHandler
 
   companion object {
     val EVENT_ID: UUID = UUID.randomUUID()
@@ -42,7 +41,7 @@ class SchedulingAppointmentDomainEventHandlerTest {
 
   @BeforeEach
   fun setupService() {
-    service = SchedulingAppointmentDomainEventHandler(
+    service = SchedulingDomainEventHandler(
       scheduleService = scheduleService,
       schedulingDryRun = false,
       lockService = NoLockLockService(),
