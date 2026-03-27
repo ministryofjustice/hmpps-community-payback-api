@@ -6,18 +6,25 @@ import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventType
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.valid
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.validCreateAppointment
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.validUpdateAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdditionalInformationType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventEntityFactory
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventEntityFactory.CreateAppointmentEventDetails
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventEntityFactory.UpdateAppointmentEventDetails
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventTrigger
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService.ValidatedAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.DomainEventService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.DomainEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.PersonReferenceType
@@ -40,39 +47,40 @@ class AppointmentEventServiceTest {
   @Nested
   inner class HasUpdateAlreadyBeenSent {
 
-    @Test
-    fun `Error if proposed update is a create event`() {
-      assertThatThrownBy {
-        service.hasUpdateAlreadyBeenSent(
-          proposedUpdate = AppointmentEventEntity.valid().copy(eventType = AppointmentEventType.CREATE),
-        )
-      }.hasMessage("Can only check if an update has already been sent for events of type UPDATE")
-    }
+    val baselineUpdateDetails = UpdateAppointmentEventDetails(
+      validatedUpdate = ValidatedAppointment.validUpdateAppointment(),
+      appointment = AppointmentEntity.valid(),
+      existingAppointment = AppointmentDto.valid(),
+      trigger = AppointmentEventTrigger.valid(),
+    )
 
     @Test
     fun `No existing event for the appointment id, return false`() {
       every {
+        appointmentEventEntityFactory.buildUpdatedEvent(baselineUpdateDetails)
+      } returns AppointmentEventEntity.valid()
+
+      every {
         appointmentEventEntityRepository.findTopByAppointmentIdOrderByCreatedAtDesc(any())
       } returns null
 
-      val result = service.hasUpdateAlreadyBeenSent(
-        proposedUpdate = AppointmentEventEntity.valid().copy(eventType = AppointmentEventType.UPDATE),
-      )
+      val result = service.hasUpdateAlreadyBeenSent(baselineUpdateDetails)
 
       assertThat(result).isFalse
     }
 
     @Test
     fun `Latest event is creation, return false`() {
-      val latestAppliedEvent = AppointmentEventEntity.valid().copy(eventType = AppointmentEventType.CREATE)
+      every {
+        appointmentEventEntityFactory.buildUpdatedEvent(baselineUpdateDetails)
+      } returns AppointmentEventEntity.valid()
 
+      val latestAppliedEvent = AppointmentEventEntity.valid().copy(eventType = AppointmentEventType.CREATE)
       every {
         appointmentEventEntityRepository.findTopByAppointmentIdOrderByCreatedAtDesc(any())
       } returns latestAppliedEvent
 
-      val result = service.hasUpdateAlreadyBeenSent(
-        proposedUpdate = latestAppliedEvent.copy(eventType = AppointmentEventType.UPDATE),
-      )
+      val result = service.hasUpdateAlreadyBeenSent(baselineUpdateDetails)
 
       assertThat(result).isFalse
     }
@@ -85,15 +93,17 @@ class AppointmentEventServiceTest {
       )
 
       every {
+        appointmentEventEntityFactory.buildUpdatedEvent(baselineUpdateDetails)
+      } returns latestAppliedEvent.copy(
+        eventType = AppointmentEventType.UPDATE,
+        minutesCredited = 2,
+      )
+
+      every {
         appointmentEventEntityRepository.findTopByAppointmentIdOrderByCreatedAtDesc(any())
       } returns latestAppliedEvent
 
-      val result = service.hasUpdateAlreadyBeenSent(
-        proposedUpdate = latestAppliedEvent.copy(
-          eventType = AppointmentEventType.UPDATE,
-          minutesCredited = 2,
-        ),
-      )
+      val result = service.hasUpdateAlreadyBeenSent(baselineUpdateDetails)
 
       assertThat(result).isFalse
     }
@@ -103,19 +113,21 @@ class AppointmentEventServiceTest {
       val latestAppliedEvent = AppointmentEventEntity.valid().copy(eventType = AppointmentEventType.UPDATE)
 
       every {
+        appointmentEventEntityFactory.buildUpdatedEvent(baselineUpdateDetails)
+      } returns latestAppliedEvent
+
+      every {
         appointmentEventEntityRepository.findTopByAppointmentIdOrderByCreatedAtDesc(any())
       } returns latestAppliedEvent
 
-      val result = service.hasUpdateAlreadyBeenSent(
-        proposedUpdate = latestAppliedEvent.copy(eventType = AppointmentEventType.UPDATE),
-      )
+      val result = service.hasUpdateAlreadyBeenSent(baselineUpdateDetails)
 
       assertThat(result).isTrue
     }
   }
 
   @Nested
-  inner class SaveAndPublishOnTransactionCommit {
+  inner class PublishCreateEventOnTransactionCommit {
 
     @Test
     fun success() {
@@ -124,27 +136,27 @@ class AppointmentEventServiceTest {
         crn = "CRN1",
       )
 
+      val createDetails = CreateAppointmentEventDetails(
+        appointment = AppointmentEntity.valid(),
+        trigger = AppointmentEventTrigger.valid(),
+        validatedCreateAppointmentDto = ValidatedAppointment.validCreateAppointment(),
+      )
+
       val createEvent = AppointmentEventEntity.valid().copy(
         eventType = AppointmentEventType.CREATE,
         appointment = appointmentEntity,
       )
-
-      val updateEvent = AppointmentEventEntity.valid().copy(
-        eventType = AppointmentEventType.UPDATE,
-        appointment = appointmentEntity,
-      )
+      every {
+        appointmentEventEntityFactory.buildCreatedEvent(createDetails)
+      } returns createEvent
 
       every {
-        appointmentEventEntityRepository.saveAll(listOf(createEvent, updateEvent))
+        appointmentEventEntityRepository.saveAll(listOf(createEvent))
       } returnsArgument 0
 
-      service.saveAndThenPublishOnTransactionCommit(
-        listOf(createEvent, updateEvent),
-      )
+      service.publishCreateEventsOnTransactionCommit(listOf(createDetails))
 
       verify {
-        appointmentEventEntityRepository.saveAll(listOf(createEvent, updateEvent))
-
         domainEventService.publishOnTransactionCommit(
           id = createEvent.id,
           type = DomainEventType.APPOINTMENT_CREATED,
@@ -154,7 +166,41 @@ class AppointmentEventServiceTest {
           ),
           personReferences = mapOf(PersonReferenceType.CRN to "CRN1"),
         )
+      }
+    }
+  }
 
+  @Nested
+  inner class PublishUpdateEventOnTransactionCommit {
+
+    @Test
+    fun success() {
+      val appointmentEntity = AppointmentEntity.valid().copy(
+        deliusId = 52L,
+        crn = "CRN1",
+      )
+
+      val updateDetails = UpdateAppointmentEventDetails(
+        validatedUpdate = ValidatedAppointment.validUpdateAppointment(),
+        appointment = AppointmentEntity.valid(),
+        existingAppointment = AppointmentDto.valid(),
+        trigger = AppointmentEventTrigger.valid(),
+      )
+
+      val updateEvent = AppointmentEventEntity.valid().copy(
+        eventType = AppointmentEventType.UPDATE,
+        appointment = appointmentEntity,
+      )
+
+      every { appointmentEventEntityFactory.buildUpdatedEvent(updateDetails) } returns updateEvent
+
+      every {
+        appointmentEventEntityRepository.saveAll(listOf(updateEvent))
+      } returnsArgument 0
+
+      service.publishUpdateEventOnTransactionCommit(updateDetails)
+
+      verify {
         domainEventService.publishOnTransactionCommit(
           id = updateEvent.id,
           type = DomainEventType.APPOINTMENT_UPDATED,

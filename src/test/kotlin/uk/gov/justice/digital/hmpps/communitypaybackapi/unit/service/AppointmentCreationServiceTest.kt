@@ -17,12 +17,11 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntityRepository
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntity
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.validCreateAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentCreationService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventEntityFactory.CreateAppointmentEventDetails
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventTrigger
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService
@@ -114,31 +113,6 @@ class AppointmentCreationServiceTest {
         NDCreatedAppointment(id = ND_APPT2_ID, reference = createAppointment2Dto.id),
       )
 
-      val creationEvent1 = AppointmentEventEntity.valid().copy(
-        eventType = AppointmentEventType.CREATE,
-        appointment = appointmentEntity1,
-      )
-      every {
-        appointmentEventService.buildCreatedEvent(
-          appointment = appointmentEntity1,
-          trigger = TRIGGER,
-          validatedCreateAppointmentDto = validatedCreateAppointment1,
-        )
-      } returns creationEvent1
-
-      val creationEvent2 = AppointmentEventEntity.valid().copy(
-        eventType = AppointmentEventType.CREATE,
-        appointment = appointmentEntity2,
-      )
-
-      every {
-        appointmentEventService.buildCreatedEvent(
-          appointment = appointmentEntity2,
-          trigger = TRIGGER,
-          validatedCreateAppointmentDto = validatedCreateAppointment2,
-        )
-      } returns creationEvent2
-
       val result = service.createAppointmentsForProject(
         CreateAppointmentsDto(
           projectCode = PROJECT_CODE,
@@ -157,7 +131,20 @@ class AppointmentCreationServiceTest {
           ),
         )
 
-        appointmentEventService.saveAndThenPublishOnTransactionCommit(listOf(creationEvent1, creationEvent2))
+        appointmentEventService.publishCreateEventsOnTransactionCommit(
+          listOf(
+            CreateAppointmentEventDetails(
+              appointment = appointmentEntity1,
+              trigger = TRIGGER,
+              validatedCreateAppointmentDto = validatedCreateAppointment1,
+            ),
+            CreateAppointmentEventDetails(
+              appointment = appointmentEntity2,
+              trigger = TRIGGER,
+              validatedCreateAppointmentDto = validatedCreateAppointment2,
+            ),
+          ),
+        )
       }
     }
   }

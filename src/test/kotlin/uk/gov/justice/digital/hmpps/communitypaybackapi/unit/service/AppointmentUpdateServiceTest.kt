@@ -15,9 +15,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOut
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.ConflictException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.InternalServerErrorException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.NotFoundException
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntity
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.validUpdateAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
@@ -79,10 +76,7 @@ class AppointmentUpdateServiceTest {
       val validatedUpdateAppointment = ValidatedAppointment.validUpdateAppointment().copy(dto = updateRequest)
       every { appointmentOutcomeValidationService.validateUpdate(any(), any()) } returns validatedUpdateAppointment
       every { appointmentRetrievalService.getAppointment(PROJECT_CODE, DELIUS_APPOINTMENT_ID) } returns existingAppointment
-      val proposedEvent = AppointmentEventEntity.fromUpdateRequest(updateRequest)
-      every { appointmentEventService.buildUpdatedEvent(any(), any(), any(), any()) } returns proposedEvent
-      every { appointmentEventService.hasUpdateAlreadyBeenSent(proposedEvent) } returns false
-      every { appointmentEventService.saveAndThenPublishOnTransactionCommit(proposedEvent) } returnsArgument 0
+      every { appointmentEventService.hasUpdateAlreadyBeenSent(any()) } returns false
 
       every {
         communityPaybackAndDeliusClient.updateAppointment(any(), any(), any())
@@ -105,11 +99,6 @@ class AppointmentUpdateServiceTest {
       val validatedUpdateAppointment = ValidatedAppointment.validUpdateAppointment().copy(dto = updateRequest)
       every { appointmentOutcomeValidationService.validateUpdate(any(), any()) } returns validatedUpdateAppointment
 
-      val proposedEvent = AppointmentEventEntity.fromUpdateRequest(updateRequest)
-      every { appointmentEventService.buildUpdatedEvent(validatedUpdateAppointment, appointmentEntity, existingAppointment, TRIGGER) } returns proposedEvent
-      every { appointmentEventService.hasUpdateAlreadyBeenSent(proposedEvent) } returns false
-      every { appointmentEventService.saveAndThenPublishOnTransactionCommit(proposedEvent) } returnsArgument 0
-
       service.updateAppointmentOutcome(
         projectCode = PROJECT_CODE,
         update = updateRequest,
@@ -117,7 +106,7 @@ class AppointmentUpdateServiceTest {
       )
 
       verify {
-        appointmentEventService.saveAndThenPublishOnTransactionCommit(proposedEvent)
+        appointmentEventService.publishUpdateEventOnTransactionCommit(any())
         communityPaybackAndDeliusClient.updateAppointment(
           projectCode = PROJECT_CODE,
           appointmentId = DELIUS_APPOINTMENT_ID,
@@ -131,10 +120,7 @@ class AppointmentUpdateServiceTest {
       every { appointmentRetrievalService.getAppointment(PROJECT_CODE, DELIUS_APPOINTMENT_ID) } returns existingAppointment
       val validatedUpdateAppointment = ValidatedAppointment.validUpdateAppointment().copy(dto = updateRequest)
       every { appointmentOutcomeValidationService.validateUpdate(any(), any()) } returns validatedUpdateAppointment
-
-      val proposedEvent = AppointmentEventEntity.fromUpdateRequest(updateRequest)
-      every { appointmentEventService.buildUpdatedEvent(any(), any(), any(), any()) } returns proposedEvent
-      every { appointmentEventService.hasUpdateAlreadyBeenSent(proposedEvent) } returns true
+      every { appointmentEventService.hasUpdateAlreadyBeenSent(any()) } returns true
 
       service.updateAppointmentOutcome(
         projectCode = PROJECT_CODE,
@@ -143,7 +129,7 @@ class AppointmentUpdateServiceTest {
       )
 
       verify(exactly = 0) {
-        appointmentEventService.saveAndThenPublishOnTransactionCommit(proposedEvent)
+        appointmentEventService.publishUpdateEventOnTransactionCommit(any())
         communityPaybackAndDeliusClient.updateAppointment(any(), any(), any())
       }
     }
@@ -153,10 +139,7 @@ class AppointmentUpdateServiceTest {
       every { appointmentRetrievalService.getAppointment(PROJECT_CODE, DELIUS_APPOINTMENT_ID) } returns existingAppointment
       every { appointmentOutcomeValidationService.validateUpdate(any(), any()) } returns ValidatedAppointment.validUpdateAppointment().copy(dto = updateRequest)
 
-      val proposedEvent = AppointmentEventEntity.fromUpdateRequest(updateRequest)
-      every { appointmentEventService.buildUpdatedEvent(any(), any(), any(), any()) } returns proposedEvent
-      every { appointmentEventService.hasUpdateAlreadyBeenSent(proposedEvent) } returns false
-      every { appointmentEventService.saveAndThenPublishOnTransactionCommit(proposedEvent) } returnsArgument 0
+      every { appointmentEventService.hasUpdateAlreadyBeenSent(any()) } returns false
 
       every {
         communityPaybackAndDeliusClient.updateAppointment(any(), any(), any())
@@ -175,11 +158,7 @@ class AppointmentUpdateServiceTest {
     fun `if bad request returned throw internal server error`() {
       every { appointmentRetrievalService.getAppointment(PROJECT_CODE, DELIUS_APPOINTMENT_ID) } returns existingAppointment
       every { appointmentOutcomeValidationService.validateUpdate(any(), any()) } returns ValidatedAppointment.validUpdateAppointment().copy(dto = updateRequest)
-
-      val proposedEvent = AppointmentEventEntity.fromUpdateRequest(updateRequest)
-      every { appointmentEventService.buildUpdatedEvent(any(), any(), any(), any()) } returns proposedEvent
-      every { appointmentEventService.hasUpdateAlreadyBeenSent(proposedEvent) } returns false
-      every { appointmentEventService.saveAndThenPublishOnTransactionCommit(proposedEvent) } returnsArgument 0
+      every { appointmentEventService.hasUpdateAlreadyBeenSent(any()) } returns false
 
       every {
         communityPaybackAndDeliusClient.updateAppointment(any(), any(), any())
@@ -194,11 +173,4 @@ class AppointmentUpdateServiceTest {
       }.isInstanceOf(InternalServerErrorException::class.java).hasMessage("Bad request returned updating an appointment. Upstream response is 'didn't look good'")
     }
   }
-
-  fun AppointmentEventEntity.Companion.fromUpdateRequest(updateRequest: UpdateAppointmentOutcomeDto) = AppointmentEventEntity.valid()
-    .copy(
-      eventType = AppointmentEventType.UPDATE,
-      appointment = AppointmentEntity.valid().copy(deliusId = updateRequest.deliusId),
-      priorDeliusVersion = updateRequest.deliusVersionToUpdate,
-    )
 }
