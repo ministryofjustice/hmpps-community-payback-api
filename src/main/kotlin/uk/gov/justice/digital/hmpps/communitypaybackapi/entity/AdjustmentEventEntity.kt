@@ -19,6 +19,8 @@ import java.util.UUID
 data class AdjustmentEventEntity(
   @Id
   val id: UUID,
+  @Enumerated(EnumType.STRING)
+  val eventType: AdjustmentEventType,
   @CreationTimestamp
   val createdAt: OffsetDateTime = OffsetDateTime.now(),
   val triggeredAt: OffsetDateTime,
@@ -60,8 +62,12 @@ data class AdjustmentEventEntity(
   companion object
 }
 
-enum class AdjustmentEventTriggerType {
+enum class AdjustmentEventType {
   CREATE,
+}
+
+enum class AdjustmentEventTriggerType {
+  APPOINTMENT_TASK,
 }
 
 enum class AdjustmentEventAdjustmentType {

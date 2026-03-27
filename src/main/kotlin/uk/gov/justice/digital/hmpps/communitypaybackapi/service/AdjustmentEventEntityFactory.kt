@@ -6,6 +6,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAdjustmentType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventAdjustmentType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventTriggerType
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentReasonEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
 import java.time.OffsetDateTime
@@ -15,25 +16,30 @@ import java.util.UUID
 class AdjustmentEventEntityFactory {
 
   fun buildAdjustmentCreated(
-    createAdjustmentDto: CreateAdjustmentDto,
-    appointment: AppointmentEntity,
-    reason: AdjustmentReasonEntity,
-    deliusAdjustmentId: Long,
-    trigger: AdjustmentEventTrigger,
+    details: CreateAdjustmentEventDetails,
   ) = AdjustmentEventEntity(
     id = UUID.randomUUID(),
-    triggeredAt = trigger.triggeredAt,
-    triggerType = trigger.triggerType,
-    triggeredBy = trigger.triggeredBy,
-    deliusAdjustmentId = deliusAdjustmentId,
-    appointment = appointment,
-    adjustmentType = when (createAdjustmentDto.type) {
+    eventType = AdjustmentEventType.CREATE,
+    triggeredAt = details.trigger.triggeredAt,
+    triggerType = details.trigger.triggerType,
+    triggeredBy = details.trigger.triggeredBy,
+    deliusAdjustmentId = details.deliusAdjustmentId,
+    appointment = details.appointment,
+    adjustmentType = when (details.createAdjustmentDto.type) {
       CreateAdjustmentTypeDto.Positive -> AdjustmentEventAdjustmentType.POSITIVE
       CreateAdjustmentTypeDto.Negative -> AdjustmentEventAdjustmentType.NEGATIVE
     },
-    adjustmentMinutes = createAdjustmentDto.minutes,
-    adjustmentDate = createAdjustmentDto.dateOfAdjustment,
-    adjustmentReason = reason,
+    adjustmentMinutes = details.createAdjustmentDto.minutes,
+    adjustmentDate = details.createAdjustmentDto.dateOfAdjustment,
+    adjustmentReason = details.reason,
+  )
+
+  data class CreateAdjustmentEventDetails(
+    val createAdjustmentDto: CreateAdjustmentDto,
+    val appointment: AppointmentEntity,
+    val reason: AdjustmentReasonEntity,
+    val deliusAdjustmentId: Long,
+    val trigger: AdjustmentEventTrigger,
   )
 }
 

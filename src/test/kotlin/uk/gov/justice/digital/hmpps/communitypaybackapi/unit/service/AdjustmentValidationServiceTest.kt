@@ -5,6 +5,7 @@ import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.junit5.MockKExtension
 import org.assertj.core.api.Assertions.assertThatThrownBy
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -13,6 +14,8 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAdjustmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsIdDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentReasonEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentReasonEntityRepository
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentTaskEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentTaskEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentValidationService
@@ -28,6 +31,9 @@ class AdjustmentValidationServiceTest {
   @RelaxedMockK
   private lateinit var adjustmentReasonEntityRepository: AdjustmentReasonEntityRepository
 
+  @RelaxedMockK
+  private lateinit var appointmentTaskEntityRepository: AppointmentTaskEntityRepository
+
   @InjectMockKs
   private lateinit var service: AdjustmentValidationService
 
@@ -37,26 +43,51 @@ class AdjustmentValidationServiceTest {
     val UNPAID_WORK_DETAILS: UnpaidWorkDetailsIdDto = UnpaidWorkDetailsIdDto(CRN, EVENT_NUMBER)
     const val USERNAME = "username"
     val REASON_ID: UUID = UUID.fromString("74f0f62b-bbd4-49a4-9af8-1ce6cd94e3e1")
+    val TASK_ID: UUID = UUID.fromString("84f0f62b-bbd4-49a4-9af8-1ce6cd94e3e1")
   }
 
   @Nested
   inner class CreateAdjustment {
 
+    val baselineRequest = CreateAdjustmentDto.valid().copy(
+      adjustmentReasonId = REASON_ID,
+      minutes = 50,
+      taskId = TASK_ID,
+    )
+
+    @BeforeEach
+    fun setupBaselineMocks() {
+      every {
+        adjustmentReasonEntityRepository.findByIdOrNull(REASON_ID)
+      } returns AdjustmentReasonEntity.valid().copy(maxMinutesAllowed = 50)
+
+      every { appointmentTaskEntityRepository.findByIdOrNull(TASK_ID) } returns AppointmentTaskEntity.valid()
+    }
+
     @Test
     fun `If adjustment reason not found return bad request exception`() {
       every { adjustmentReasonEntityRepository.findByIdOrNull(REASON_ID) } returns null
 
-      val request = CreateAdjustmentDto.valid().copy(
-        adjustmentReasonId = REASON_ID,
-      )
-
       assertThatThrownBy {
         service.validateCreate(
-          createAdjustment = request,
+          createAdjustment = baselineRequest,
           upwDetailsId = UNPAID_WORK_DETAILS,
           username = USERNAME,
         )
       }.hasMessage("Adjustment Reason not found for ID '74f0f62b-bbd4-49a4-9af8-1ce6cd94e3e1'")
+    }
+
+    @Test
+    fun `If task not found return bad request exception`() {
+      every { appointmentTaskEntityRepository.findByIdOrNull(TASK_ID) } returns null
+
+      assertThatThrownBy {
+        service.validateCreate(
+          createAdjustment = baselineRequest,
+          upwDetailsId = UNPAID_WORK_DETAILS,
+          username = USERNAME,
+        )
+      }.hasMessage("Task not found for ID '84f0f62b-bbd4-49a4-9af8-1ce6cd94e3e1'")
     }
 
     @Test
@@ -68,14 +99,11 @@ class AdjustmentValidationServiceTest {
         maxMinutesAllowed = 50,
       )
 
-      val request = CreateAdjustmentDto.valid().copy(
-        adjustmentReasonId = REASON_ID,
-        minutes = 51,
-      )
-
       assertThatThrownBy {
         service.validateCreate(
-          createAdjustment = request,
+          createAdjustment = baselineRequest.copy(
+            minutes = 51,
+          ),
           upwDetailsId = UNPAID_WORK_DETAILS,
           username = USERNAME,
         )
@@ -84,19 +112,8 @@ class AdjustmentValidationServiceTest {
 
     @Test
     fun success() {
-      val reason = AdjustmentReasonEntity.valid().copy(maxMinutesAllowed = 50)
-
-      every {
-        adjustmentReasonEntityRepository.findByIdOrNull(REASON_ID)
-      } returns reason
-
-      val request = CreateAdjustmentDto.valid().copy(
-        adjustmentReasonId = REASON_ID,
-        minutes = 50,
-      )
-
       service.validateCreate(
-        createAdjustment = request,
+        createAdjustment = baselineRequest,
         upwDetailsId = UNPAID_WORK_DETAILS,
         username = USERNAME,
       )

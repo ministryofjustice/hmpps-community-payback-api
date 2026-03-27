@@ -7,8 +7,12 @@ import org.springframework.http.MediaType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseDetail
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAdjustmentDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentTaskEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.valid
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.persist
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.CommunityPaybackAndDeliusMockServer
 
 class AdminAdjustmentIT : IntegrationTestBase() {
@@ -59,6 +63,9 @@ class AdminAdjustmentIT : IntegrationTestBase() {
 
     @Test
     fun `Should create an adjustment upstream`() {
+      val appointment = AppointmentEntity.valid().copy(crn = CRN, deliusEventNumber = DELIUS_EVENT_NUMBER).persist(ctx)
+      val task = AppointmentTaskEntity.valid().copy(appointment = appointment).persist(ctx)
+
       CommunityPaybackAndDeliusMockServer.getUpwDetailsSummary(
         crn = CRN,
         case = NDCaseSummary.valid(),
@@ -74,7 +81,11 @@ class AdminAdjustmentIT : IntegrationTestBase() {
         .uri("/admin/offenders/$CRN/unpaid-work-details/$DELIUS_EVENT_NUMBER/adjustments")
         .addAdminUiAuthHeader("theusername")
         .contentType(MediaType.APPLICATION_JSON)
-        .bodyValue(CreateAdjustmentDto.valid(ctx))
+        .bodyValue(
+          CreateAdjustmentDto.valid(ctx).copy(
+            taskId = task.id,
+          ),
+        )
         .exchange()
         .expectStatus()
         .isOk

@@ -15,8 +15,10 @@ import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.wiremock.spring.EnableWireMock
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntityRepository
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentTaskEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.config.ClockConfiguration
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.container.LocalStackContainer
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.container.LocalStackContainer.setLocalStackProperties
@@ -58,7 +60,9 @@ abstract class IntegrationTestBase {
 
   @BeforeEach
   fun clearAppointments() {
+    ctx.getBean<AdjustmentEventEntityRepository>().deleteAll()
     ctx.getBean<AppointmentEventEntityRepository>().deleteAll()
+    ctx.getBean<AppointmentTaskEntityRepository>().deleteAll()
     ctx.getBean<AppointmentEntityRepository>().deleteAll()
   }
 

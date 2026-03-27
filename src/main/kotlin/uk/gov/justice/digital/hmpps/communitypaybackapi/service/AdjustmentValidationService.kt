@@ -8,10 +8,14 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.BadReques
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.NotFoundException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentReasonEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentReasonEntityRepository
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentTaskEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentTaskEntityRepository
 
+@Suppress("ThrowsCount")
 @Service
 class AdjustmentValidationService(
   private val adjustmentReasonEntityRepository: AdjustmentReasonEntityRepository,
+  private val appointmentTaskEntityRepository: AppointmentTaskEntityRepository,
   private val offenderService: OffenderService,
 ) {
 
@@ -22,6 +26,8 @@ class AdjustmentValidationService(
   ): ValidatedCreateAdjustment {
     val reason = adjustmentReasonEntityRepository.findByIdOrNull(createAdjustment.adjustmentReasonId)
       ?: throw NotFoundException("Adjustment Reason", createAdjustment.adjustmentReasonId.toString())
+
+    val task = appointmentTaskEntityRepository.findByIdOrNull(createAdjustment.taskId) ?: throw NotFoundException("Task", createAdjustment.taskId)
 
     offenderService.ensureUnpaidWorkDetailsExist(upwDetailsId, username)
     val requestedMinutes = createAdjustment.minutes
@@ -34,11 +40,13 @@ class AdjustmentValidationService(
     return ValidatedCreateAdjustment(
       createAdjustment,
       reason,
+      task,
     )
   }
 
   data class ValidatedCreateAdjustment(
     val createAdjustment: CreateAdjustmentDto,
     val reason: AdjustmentReasonEntity,
+    val task: AppointmentTaskEntity,
   )
 }
