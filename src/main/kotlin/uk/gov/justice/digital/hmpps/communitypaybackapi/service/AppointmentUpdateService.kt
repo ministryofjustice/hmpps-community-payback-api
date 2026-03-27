@@ -10,6 +10,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOut
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.ConflictException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.InternalServerErrorException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.NotFoundException
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventEntityFactory.UpdateAppointmentEventDetails
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService.ValidatedAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toNDUpdateAppointment
 
@@ -35,21 +36,21 @@ class AppointmentUpdateService(
 
     val validatedUpdateDto = appointmentUpdateValidationService.validateUpdate(existingAppointment, update)
 
-    val event = appointmentEventService.buildUpdatedEvent(
+    val updateEventDetails = UpdateAppointmentEventDetails(
       validatedUpdate = appointmentUpdateValidationService.validateUpdate(existingAppointment, update),
       appointment = appointmentEntity,
       existingAppointment = existingAppointment,
       trigger = trigger,
     )
 
-    if (appointmentEventService.hasUpdateAlreadyBeenSent(event)) {
+    if (appointmentEventService.hasUpdateAlreadyBeenSent(updateEventDetails)) {
       log.debug("Not applying update for appointment ${update.deliusId} because the most recent update is logically identical")
       return
     }
 
     updateDelius(existingAppointment, validatedUpdateDto)
 
-    appointmentEventService.saveAndThenPublishOnTransactionCommit(event)
+    appointmentEventService.publishUpdateEventOnTransactionCommit(updateEventDetails)
   }
 
   @SuppressWarnings("SwallowedException", "ThrowsCount")

@@ -22,12 +22,11 @@ class AppointmentEventEntityFactory(
 ) {
 
   fun buildCreatedEvent(
-    appointment: AppointmentEntity,
-    trigger: AppointmentEventTrigger,
-    validatedCreateAppointmentDto: ValidatedAppointment<CreateAppointmentDto>,
+    details: CreateAppointmentEventDetails,
   ): AppointmentEventEntity {
-    val createAppointmentDto = validatedCreateAppointmentDto.dto
-    val project = validatedCreateAppointmentDto.project
+    val appointment = details.appointment
+    val createAppointmentDto = details.validatedCreateAppointmentDto.dto
+    val project = details.validatedCreateAppointmentDto.project
     val supervisorCode = createAppointmentDto.supervisorOfficerCode ?: providerService.getTeamUnallocatedSupervisor(project.getTeamId()).code
 
     return AppointmentEventEntity(
@@ -43,40 +42,38 @@ class AppointmentEventEntityFactory(
       pickupLocationCode = createAppointmentDto.pickUpLocationCode,
       pickupLocationDescription = createAppointmentDto.pickUpLocationDescription,
       pickupTime = createAppointmentDto.pickUpTime,
-      contactOutcome = validatedCreateAppointmentDto.contactOutcome,
+      contactOutcome = details.validatedCreateAppointmentDto.contactOutcome,
       supervisorOfficerCode = supervisorCode,
       notes = createAppointmentDto.notes,
       hiVisWorn = createAppointmentDto.attendanceData?.hiVisWorn,
       workedIntensively = createAppointmentDto.attendanceData?.workedIntensively,
       penaltyMinutes = createAppointmentDto.attendanceData?.derivePenaltyMinutesDuration()?.toMinutes(),
-      minutesCredited = validatedCreateAppointmentDto.minutesToCredit?.toMinutes(),
+      minutesCredited = details.validatedCreateAppointmentDto.minutesToCredit?.toMinutes(),
       workQuality = createAppointmentDto.attendanceData?.workQuality?.let { WorkQuality.fromDto(it) },
       behaviour = createAppointmentDto.attendanceData?.behaviour?.let { Behaviour.fromDto(it) },
       alertActive = createAppointmentDto.alertActive,
       sensitive = createAppointmentDto.sensitive,
       deliusAllocationId = createAppointmentDto.allocationId,
-      triggeredAt = trigger.triggeredAt,
-      triggerType = trigger.triggerType,
-      triggeredBy = trigger.triggeredBy,
+      triggeredAt = details.trigger.triggeredAt,
+      triggerType = details.trigger.triggerType,
+      triggeredBy = details.trigger.triggeredBy,
     )
   }
 
   fun buildUpdatedEvent(
-    validatedUpdate: ValidatedAppointment<UpdateAppointmentOutcomeDto>,
-    appointment: AppointmentEntity,
-    existingAppointment: AppointmentDto,
-    trigger: AppointmentEventTrigger,
+    details: UpdateAppointmentEventDetails,
   ): AppointmentEventEntity {
-    val outcome = validatedUpdate.dto
-    val project = validatedUpdate.project
+    val existingAppointment = details.existingAppointment
+    val outcome = details.validatedUpdate.dto
+    val project = details.validatedUpdate.project
     val startTime = outcome.startTime
     val endTime = outcome.endTime
     val penaltyMinutes = outcome.attendanceData?.derivePenaltyMinutesDuration()?.toMinutes()
-    val contactOutcome = validatedUpdate.contactOutcome
+    val contactOutcome = details.validatedUpdate.contactOutcome
 
     return AppointmentEventEntity(
       id = UUID.randomUUID(),
-      appointment = appointment,
+      appointment = details.appointment,
       eventType = AppointmentEventType.UPDATE,
       priorDeliusVersion = outcome.deliusVersionToUpdate,
       projectCode = project.projectCode,
@@ -93,17 +90,30 @@ class AppointmentEventEntityFactory(
       hiVisWorn = outcome.attendanceData?.hiVisWorn,
       workedIntensively = outcome.attendanceData?.workedIntensively,
       penaltyMinutes = penaltyMinutes,
-      minutesCredited = validatedUpdate.minutesToCredit?.toMinutes(),
+      minutesCredited = details.validatedUpdate.minutesToCredit?.toMinutes(),
       workQuality = outcome.attendanceData?.workQuality?.let { WorkQuality.fromDto(it) },
       behaviour = outcome.attendanceData?.behaviour?.let { Behaviour.fromDto(it) },
       alertActive = outcome.alertActive,
       sensitive = outcome.sensitive,
       deliusAllocationId = null,
-      triggeredAt = trigger.triggeredAt,
-      triggerType = trigger.triggerType,
-      triggeredBy = trigger.triggeredBy,
+      triggeredAt = details.trigger.triggeredAt,
+      triggerType = details.trigger.triggerType,
+      triggeredBy = details.trigger.triggeredBy,
     )
   }
+
+  data class UpdateAppointmentEventDetails(
+    val validatedUpdate: ValidatedAppointment<UpdateAppointmentOutcomeDto>,
+    val appointment: AppointmentEntity,
+    val existingAppointment: AppointmentDto,
+    val trigger: AppointmentEventTrigger,
+  )
+
+  data class CreateAppointmentEventDetails(
+    val appointment: AppointmentEntity,
+    val trigger: AppointmentEventTrigger,
+    val validatedCreateAppointmentDto: ValidatedAppointment<CreateAppointmentDto>,
+  )
 }
 
 data class AppointmentEventTrigger(

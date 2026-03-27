@@ -3,14 +3,11 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.service
 import jakarta.transaction.Transactional
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventType
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService.ValidatedAppointment
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventEntityFactory.CreateAppointmentEventDetails
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventEntityFactory.UpdateAppointmentEventDetails
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toAppointmentCreatedDomainEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toAppointmentUpdatedDomainEvent
 import java.time.OffsetDateTime
@@ -22,29 +19,14 @@ class AppointmentEventService(
   private val appointmentEventEntityFactory: AppointmentEventEntityFactory,
   private val domainEventService: DomainEventService,
 ) {
-  fun buildCreatedEvent(
-    appointment: AppointmentEntity,
-    trigger: AppointmentEventTrigger,
-    validatedCreateAppointmentDto: ValidatedAppointment<CreateAppointmentDto>,
-  ) = appointmentEventEntityFactory.buildCreatedEvent(appointment, trigger, validatedCreateAppointmentDto)
-
-  fun buildUpdatedEvent(
-    validatedUpdate: ValidatedAppointment<UpdateAppointmentOutcomeDto>,
-    appointment: AppointmentEntity,
-    existingAppointment: AppointmentDto,
-    trigger: AppointmentEventTrigger,
-  ) = appointmentEventEntityFactory.buildUpdatedEvent(validatedUpdate, appointment, existingAppointment, trigger)
-
   fun getCreatedDomainEventDetails(id: UUID) = appointmentEventEntityRepository.findByIdOrNullForDomainEventDetails(id, AppointmentEventType.CREATE)?.toAppointmentCreatedDomainEvent()
 
   fun getUpdateDomainEventDetails(id: UUID) = appointmentEventEntityRepository.findByIdOrNullForDomainEventDetails(id, AppointmentEventType.UPDATE)?.toAppointmentUpdatedDomainEvent()
 
   fun getEvent(eventId: UUID): AppointmentEventEntity? = appointmentEventEntityRepository.findByIdOrNull(eventId)
 
-  fun hasUpdateAlreadyBeenSent(proposedUpdate: AppointmentEventEntity): Boolean {
-    if (proposedUpdate.eventType != AppointmentEventType.UPDATE) {
-      error("Can only check if an update has already been sent for events of type UPDATE")
-    }
+  fun hasUpdateAlreadyBeenSent(proposedUpdateDetails: UpdateAppointmentEventDetails): Boolean {
+    val proposedUpdate = appointmentEventEntityFactory.buildUpdatedEvent(proposedUpdateDetails)
 
     return appointmentEventEntityRepository
       .findTopByAppointmentIdOrderByCreatedAtDesc(proposedUpdate.appointment.id)
@@ -63,14 +45,26 @@ class AppointmentEventService(
   )
 
   @Transactional(Transactional.TxType.REQUIRED)
-  fun saveAndThenPublishOnTransactionCommit(
-    event: AppointmentEventEntity,
-  ): AppointmentEventEntity = saveAndThenPublishOnTransactionCommit(listOf(event)).first()
+  fun publishUpdateEventOnTransactionCommit(
+    eventDetails: UpdateAppointmentEventDetails,
+  ) {
+    saveAndPublishEventsOnTransactionCommit(
+      listOf(appointmentEventEntityFactory.buildUpdatedEvent(eventDetails)),
+    )
+  }
 
   @Transactional(Transactional.TxType.REQUIRED)
-  fun saveAndThenPublishOnTransactionCommit(
-    events: List<AppointmentEventEntity>,
-  ): List<AppointmentEventEntity> {
+  fun publishCreateEventsOnTransactionCommit(
+    eventDetails: List<CreateAppointmentEventDetails>,
+  ) {
+    saveAndPublishEventsOnTransactionCommit(
+      eventDetails.map {
+        appointmentEventEntityFactory.buildCreatedEvent(it)
+      },
+    )
+  }
+
+  private fun saveAndPublishEventsOnTransactionCommit(events: List<AppointmentEventEntity>) {
     val persistedEvents = appointmentEventEntityRepository.saveAll(events)
 
     persistedEvents.forEach { event ->
@@ -87,7 +81,5 @@ class AppointmentEventService(
         personReferences = mapOf(PersonReferenceType.CRN to event.appointment.crn),
       )
     }
-
-    return persistedEvents
   }
 }
