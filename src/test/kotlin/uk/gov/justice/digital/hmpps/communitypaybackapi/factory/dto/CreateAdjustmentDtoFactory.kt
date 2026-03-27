@@ -12,7 +12,7 @@ import java.util.UUID
 fun CreateAdjustmentDto.Companion.valid() = CreateAdjustmentDto(
   taskId = UUID.randomUUID(),
   type = CreateAdjustmentTypeDto.entries.random(),
-  minutes = Int.random(0, 180),
+  minutes = Int.random(1, 180),
   dateOfAdjustment = randomLocalDate(),
   adjustmentReasonId = UUID.randomUUID(),
 )
