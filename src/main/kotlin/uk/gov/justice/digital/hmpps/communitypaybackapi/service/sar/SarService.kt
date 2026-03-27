@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.service.sar
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntityRepository
@@ -13,6 +14,7 @@ import java.time.ZoneId
 
 @Service
 class SarService(
+  val appointmentEntityRepository: AppointmentEntityRepository,
   val appointmentEventEntityRepository: AppointmentEventEntityRepository,
   val eteCourseCompletionEventEntityRepository: EteCourseCompletionEventEntityRepository,
 ) : HmppsProbationSubjectAccessRequestService {
@@ -31,11 +33,8 @@ class SarService(
 
     log.debug("Subject Access Request for CRN '{}' from '{}' inclusive to '{}' exclusive", crn, fromDateInclusive, toDateTimeExclusive)
 
-    val appointmentEvents = appointmentEventEntityRepository.findByCrnAndTriggeredAt(
-      crn = crn,
-      fromDateInclusive = fromDateInclusive,
-      toDateTimeExclusive = toDateTimeExclusive,
-    )
+    val appointmentIds = appointmentEntityRepository.findAppointmentIdsWithEventsInRange(crn, fromDateInclusive, toDateTimeExclusive)
+    val appointmentEntities = appointmentEntityRepository.findAllByIdOrderByDateAsc(appointmentIds)
 
     val courseCompletionEvents = eteCourseCompletionEventEntityRepository.findByCrnAndReceivedAt(
       crn = crn,
@@ -43,13 +42,19 @@ class SarService(
       toDateTimeExclusive = toDateTimeExclusive,
     )
 
-    if (appointmentEvents.isEmpty() && courseCompletionEvents.isEmpty()) {
+    val appointments = appointmentEntities.map { appointment ->
+      appointment.toSarEntry(
+        appointmentEventEntityRepository.findByAppointmentOrderByCreatedAtAsc(appointment),
+      )
+    }
+
+    if (appointments.isEmpty() && courseCompletionEvents.isEmpty()) {
       return null
     }
 
     return HmppsSubjectAccessRequestContent(
       content = mapOf(
-        "appointmentEvents" to appointmentEvents.map { it.toSarEntry() },
+        "appointments" to appointments,
         "eteCourseCompletionEvents" to courseCompletionEvents.map { completionEvent ->
           completionEvent.toSarEntry(
             appointmentEvent = completionEvent.resolution?.let { resolution ->

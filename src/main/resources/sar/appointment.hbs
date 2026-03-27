@@ -1,0 +1,17 @@
+<h3>Appointment</h3>
+
+<table class="summary-list">
+    <tr><td>Appointment Date</td><td>{{ formatDate date }}</td></tr>
+    <tr><td>Created in Community Payback</td><td>{{ createdByCommunityPayback }}</td></tr>
+</table>
+
+<h4>Events</h4>
+
+<p>If a date range was requested, only events in that range are shown. Events are shown in ascending order.</p>
+
+{{#events}}
+    {{> sar/appointment-event}}
+{{/events}}
+{{^events}}
+    <p>No Data Held</p>
+{{/events}}

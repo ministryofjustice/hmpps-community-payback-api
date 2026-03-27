@@ -34,4 +34,6 @@ interface AppointmentEventEntityRepository : JpaRepository<AppointmentEventEntit
   @Modifying
   @Query("update AppointmentEventEntity set triggeredSchedulingAt = :now, triggeredSchedulingId = :schedulingId where id = :eventId")
   fun setSchedulingRanAt(eventId: UUID, schedulingId: UUID, now: OffsetDateTime)
+
+  fun findByAppointmentOrderByCreatedAtAsc(appointment: AppointmentEntity): List<AppointmentEventEntity>
 }
