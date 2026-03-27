@@ -2,12 +2,12 @@ import java.net.InetSocketAddress
 import java.net.Socket
 
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "10.1.0"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "10.1.1"
   kotlin("plugin.spring") version "2.3.20"
   kotlin("plugin.jpa") version "2.3.20"
   id("dev.detekt") version "2.0.0-alpha.2"
   jacoco
-  id("io.sentry.jvm.gradle") version "6.2.0"
+  id("io.sentry.jvm.gradle") version "6.3.0"
 }
 
 configurations {
