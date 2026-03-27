@@ -10,7 +10,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentReasonE
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toNDAdjustmentRequest
 
 @Service
-class AdjustmentsService(
+class AdjustmentService(
   private val offenderService: OffenderService,
   private val adjustmentReasonEntityRepository: AdjustmentReasonEntityRepository,
   private val communityPaybackAndDeliusClient: CommunityPaybackAndDeliusClient,

@@ -16,13 +16,13 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentReasonE
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentReasonEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentsService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.OffenderService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toNDAdjustmentRequest
 import java.util.UUID
 
 @ExtendWith(MockKExtension::class)
-class AdjustmentsServiceTest {
+class AdjustmentServiceTest {
 
   @RelaxedMockK
   private lateinit var offenderService: OffenderService
@@ -34,7 +34,7 @@ class AdjustmentsServiceTest {
   private lateinit var communityPaybackAndDeliusClient: CommunityPaybackAndDeliusClient
 
   @InjectMockKs
-  private lateinit var service: AdjustmentsService
+  private lateinit var service: AdjustmentService
 
   companion object {
     const val CRN: String = "CRN123"
