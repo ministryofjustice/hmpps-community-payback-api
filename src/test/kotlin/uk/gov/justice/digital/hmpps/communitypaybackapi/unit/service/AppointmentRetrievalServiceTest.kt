@@ -125,6 +125,8 @@ class AppointmentRetrievalServiceTest {
           outcomeCodes = null,
           projectCodes = null,
           projectTypeCodes = null,
+          eventNumber = null,
+          appointmentIds = null,
           params = pageable.toHttpParams(),
         )
       } returns pageResponse
@@ -132,7 +134,15 @@ class AppointmentRetrievalServiceTest {
       val appointmentSummaryDto = AppointmentSummaryDto.valid()
       every { appointmentMappers.toSummaryDto(ndAppointmentSummary) } returns appointmentSummaryDto
 
-      val result = service.getAppointments(crn, null, null, null, null, null, pageable)
+      val result = service.getAppointments(
+        crn = crn,
+        fromDate = null,
+        toDate = null,
+        outcomeCodes = null,
+        projectCodes = null,
+        projectTypeGroup = null,
+        pageable = pageable,
+      )
 
       assertThat(result.content).containsExactly(appointmentSummaryDto)
       assertThat(result.totalElements).isEqualTo(1)
@@ -165,6 +175,8 @@ class AppointmentRetrievalServiceTest {
           outcomeCodes = outcomeCodes,
           projectCodes = projectCodes,
           projectTypeCodes = listOf("PT1"),
+          eventNumber = null,
+          appointmentIds = null,
           params = pageable.toHttpParams(),
         )
       } returns pageResponse
@@ -172,7 +184,15 @@ class AppointmentRetrievalServiceTest {
       val appointmentSummaryDto = AppointmentSummaryDto.valid()
       every { appointmentMappers.toSummaryDto(ndAppointmentSummary) } returns appointmentSummaryDto
 
-      val result = service.getAppointments(null, fromDate, toDate, outcomeCodes, projectCodes, projectTypeGroup, pageable)
+      val result = service.getAppointments(
+        crn = null,
+        fromDate = fromDate,
+        toDate = toDate,
+        outcomeCodes = outcomeCodes,
+        projectCodes = projectCodes,
+        projectTypeGroup = projectTypeGroup,
+        pageable = pageable,
+      )
 
       assertThat(result.content).containsExactly(appointmentSummaryDto)
     }

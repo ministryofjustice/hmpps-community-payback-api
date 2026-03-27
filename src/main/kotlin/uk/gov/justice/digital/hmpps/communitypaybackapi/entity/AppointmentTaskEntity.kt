@@ -12,8 +12,8 @@ import org.hibernate.annotations.CreationTimestamp
 import java.time.OffsetDateTime
 import java.util.UUID
 
-@Table(name = "appointment_tasks")
 @Entity
+@Table(name = "appointment_tasks")
 data class AppointmentTaskEntity(
   @Id
   val id: UUID,

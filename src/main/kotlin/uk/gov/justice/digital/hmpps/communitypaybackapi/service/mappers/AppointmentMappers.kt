@@ -116,14 +116,17 @@ class AppointmentMappers(
 
   fun toSummaryDtoFromDto(
     appointmentDto: AppointmentDto,
+    requirementMinutes: Int,
+    adjustmentMinutes: Int,
+    completedMinutes: Int,
   ) = AppointmentSummaryDto(
     id = appointmentDto.id,
     contactOutcome = appointmentDto.contactOutcomeCode?.let {
       contactOutcomeEntityRepository.findByCode(it)?.toDto()
     },
-    requirementMinutes = 0,
-    adjustmentMinutes = 0,
-    completedMinutes = 0,
+    requirementMinutes = requirementMinutes,
+    adjustmentMinutes = adjustmentMinutes,
+    completedMinutes = completedMinutes,
     offender = appointmentDto.offender,
     date = appointmentDto.date,
     startTime = appointmentDto.startTime,

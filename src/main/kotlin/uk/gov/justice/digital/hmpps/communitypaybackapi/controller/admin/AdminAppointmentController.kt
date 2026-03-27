@@ -194,6 +194,8 @@ class AdminAppointmentController(
       toDate = toDate,
       outcomeCodes = outcomeCodes,
       projectTypeGroup = projectTypeGroup,
+      eventNumber = null,
+      appointmentIds = null,
       pageable = pageable,
     )
   }

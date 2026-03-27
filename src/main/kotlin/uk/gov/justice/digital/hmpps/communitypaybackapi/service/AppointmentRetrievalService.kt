@@ -45,12 +45,14 @@ class AppointmentRetrievalService(
   }
 
   fun getAppointments(
-    crn: String?,
-    fromDate: LocalDate?,
-    toDate: LocalDate?,
-    outcomeCodes: List<String>?,
-    projectCodes: List<String>?,
-    projectTypeGroup: ProjectTypeGroupDto?,
+    crn: String? = null,
+    fromDate: LocalDate? = null,
+    toDate: LocalDate? = null,
+    outcomeCodes: List<String>? = null,
+    projectCodes: List<String>? = null,
+    projectTypeGroup: ProjectTypeGroupDto? = null,
+    eventNumber: String? = null,
+    appointmentIds: List<Long>? = null,
     pageable: Pageable,
   ): Page<AppointmentSummaryDto> {
     val pageResponse = communityPaybackAndDeliusClient.getAppointments(
@@ -61,6 +63,8 @@ class AppointmentRetrievalService(
       outcomeCodes = outcomeCodes,
       projectCodes = projectCodes,
       projectTypeCodes = projectTypeGroup?.let { projectTypeGroup -> projectService.projectTypesForGroup(projectTypeGroup).map { it.code } },
+      eventNumber = eventNumber,
+      appointmentIds = appointmentIds,
       params = pageable.toHttpParams(),
     )
     return PageImpl(pageResponse.content.map { appointmentMappers.toSummaryDto(it) }, pageable, pageResponse.page.totalElements)

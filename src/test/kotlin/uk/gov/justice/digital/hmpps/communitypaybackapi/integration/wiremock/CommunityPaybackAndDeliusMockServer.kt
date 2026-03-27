@@ -353,6 +353,7 @@ object CommunityPaybackAndDeliusMockServer {
     pageSize: Int = 50,
     sortString: String = "name,desc",
     appointments: List<NDAppointmentSummary>,
+    appointmentIds: List<Long> = emptyList(),
   ) {
     val url = buildString {
       append("/community-payback-and-delius/appointments")
@@ -363,6 +364,9 @@ object CommunityPaybackAndDeliusMockServer {
       toDate?.let { append("&toDate=$it") }
       projectCodes.forEach {
         append("&projectCodes=$it")
+      }
+      appointmentIds.forEach {
+        append("&appointmentIds=$it")
       }
       append("&page=$pageNumber")
       append("&size=$pageSize")

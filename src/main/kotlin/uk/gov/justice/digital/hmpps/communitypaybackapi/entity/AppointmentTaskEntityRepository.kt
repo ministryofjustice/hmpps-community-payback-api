@@ -14,8 +14,8 @@ interface AppointmentTaskEntityRepository : JpaRepository<AppointmentTaskEntity,
 
   @Query(
     """
-    SELECT task, appointment FROM AppointmentTaskEntity task
-    INNER JOIN AppointmentEntity appointment ON task.appointmentId = appointment.id
+    SELECT task FROM AppointmentTaskEntity task
+    JOIN FETCH task.appointment appointment
     WHERE task.taskStatus = 'PENDING'
     AND ((cast(:fromDate as date) IS NULL) OR (appointment.date >= :fromDate))
     AND ((cast(:toDate as date) IS NULL) OR (appointment.date <= :toDate))
@@ -24,24 +24,6 @@ interface AppointmentTaskEntityRepository : JpaRepository<AppointmentTaskEntity,
     """,
   )
   fun findPendingTasksWithFiltersAndAppointments(
-    fromDate: LocalDate?,
-    toDate: LocalDate?,
-    providerCode: String?,
-    pageable: Pageable,
-  ): Page<Pair<AppointmentTaskEntity, AppointmentEntity>>
-
-  @Query(
-    """
-    SELECT task FROM AppointmentTaskEntity task
-    INNER JOIN AppointmentEntity appointment ON task.appointmentId = appointment.id
-    WHERE task.taskStatus = 'PENDING'
-    AND ((cast(:fromDate as date) IS NULL) OR (appointment.date >= :fromDate))
-    AND ((cast(:toDate as date) IS NULL) OR (appointment.date <= :toDate))
-    AND ((cast(:providerCode as string) IS NULL) OR (appointment.providerCode = :providerCode))
-    ORDER BY task.createdAt DESC
-    """,
-  )
-  fun findPendingTasksWithFilters(
     fromDate: LocalDate?,
     toDate: LocalDate?,
     providerCode: String?,
