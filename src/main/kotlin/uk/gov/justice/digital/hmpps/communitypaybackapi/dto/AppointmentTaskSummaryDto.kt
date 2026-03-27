@@ -6,4 +6,6 @@ import java.util.UUID
 data class AppointmentTaskSummaryDto(
   @param:Schema(description = "The unique identifier for the appointment task", example = "550e8400-e29b-41d4-a716-446655440000")
   val taskId: UUID,
+  @param:Schema(description = "Summary details of the appointment associated with this task")
+  val appointment: AppointmentSummaryDto,
 )
