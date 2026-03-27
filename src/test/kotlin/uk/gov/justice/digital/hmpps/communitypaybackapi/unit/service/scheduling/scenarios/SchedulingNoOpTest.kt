@@ -1,7 +1,7 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.unit.service.scheduling.scenarios
 
 import org.junit.jupiter.api.Test
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingFrequency.WEEKLY
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.SchedulingFrequency.WEEKLY
 import java.time.DayOfWeek.MONDAY
 import java.time.DayOfWeek.TUESDAY
 import java.time.DayOfWeek.WEDNESDAY

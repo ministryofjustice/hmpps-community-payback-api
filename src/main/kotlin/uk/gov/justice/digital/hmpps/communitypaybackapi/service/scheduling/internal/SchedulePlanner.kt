@@ -1,12 +1,6 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal
 
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.onOrAfter
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.Schedule
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulePlan
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingAction
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingExistingAppointment
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingRequest
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingRequiredAppointment
 
 object SchedulePlanner {
 

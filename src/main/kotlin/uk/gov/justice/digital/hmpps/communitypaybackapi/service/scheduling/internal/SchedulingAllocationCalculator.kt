@@ -3,10 +3,6 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.inte
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.daysUntil
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.findNextOrSameDateForDayOfWeek
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.onOrBefore
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingAllocation
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingAllocations
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingFrequency
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingRequiredAppointment
 import java.time.LocalDate
 
 /**

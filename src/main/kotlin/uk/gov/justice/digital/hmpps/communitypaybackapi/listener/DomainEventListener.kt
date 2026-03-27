@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.listener
 
-import com.fasterxml.jackson.module.kotlin.readValue
 import io.awspring.cloud.sqs.annotation.SqsListener
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -12,7 +11,7 @@ import tools.jackson.module.kotlin.readValue
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdditionalInformationType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.DomainEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.HmppsDomainEvent
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingAppointmentDomainEventHandler
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingDomainEventHandler
 import uk.gov.justice.hmpps.sqs.SnsMessage
 import java.time.Duration
 import java.util.UUID
@@ -25,7 +24,7 @@ import java.util.UUID
 class DomainEventListener(
   private val jsonMapper: JsonMapper,
   private val sqsListenerErrorHandler: SqsListenerErrorHandler,
-  private val schedulingAppointmentEventHandler: SchedulingAppointmentDomainEventHandler,
+  private val schedulingAppointmentEventHandler: SchedulingDomainEventHandler,
 ) {
   private companion object {
     /**

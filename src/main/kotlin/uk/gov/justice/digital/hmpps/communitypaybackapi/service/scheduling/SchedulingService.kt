@@ -9,7 +9,13 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.inter
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.Scheduler.SchedulerOutcome.ExistingAppointmentsInsufficient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.Scheduler.SchedulerOutcome.ExistingAppointmentsSufficient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.Scheduler.SchedulerOutcome.RequirementAlreadySatisfied
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.SchedulingNonWorkingDates
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.SchedulingRequest
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.SchedulingTelemetryPublisher
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.SchedulingTrigger
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.toSchedulingAllocations
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.toSchedulingExistingAppointments
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.toSchedulingRequirement
 import java.time.Clock
 import java.time.LocalDate
 import java.util.UUID

@@ -12,13 +12,13 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackA
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDUnpaidWorkRequirement
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.scheduling.valid
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulePlan
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingService
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingTrigger
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.SchedulePlan
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.SchedulePlanExecutor
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.Scheduler
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.Scheduler.SchedulerOutcome
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.SchedulingTelemetryPublisher
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.SchedulingTrigger
 import java.time.Clock
 import java.time.Duration
 

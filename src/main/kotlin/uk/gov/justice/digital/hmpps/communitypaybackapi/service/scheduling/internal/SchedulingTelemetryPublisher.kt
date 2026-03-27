@@ -2,8 +2,6 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.inte
 
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.TelemetryService
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingAction
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingRequest
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.Scheduler.SchedulerOutcome
 
 @Service
