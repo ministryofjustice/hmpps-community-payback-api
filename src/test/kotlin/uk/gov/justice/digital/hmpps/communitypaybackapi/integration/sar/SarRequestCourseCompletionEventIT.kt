@@ -6,6 +6,7 @@ import org.springframework.beans.factory.getBean
 import org.springframework.context.ApplicationContext
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.atFirstSecondOfDay
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.atLastSecondOfDay
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.CommunityCampusPduEntityRepository
@@ -205,10 +206,11 @@ class SarRequestCourseCompletionEventIT : IntegrationTestBase() {
       )
     }
 
-    fun setupReportTestData() {
+    fun setupReportTestData(appointment: AppointmentEntity) {
       val hasAppointment = baselineCourseCompletion().run {
         appointmentEventRepository.save(
           appointmentEventFixtureFactory.baselineAppointmentEvent().copy(
+            appointment = appointment,
             triggerType = AppointmentEventTriggerType.ETE_COURSE_COMPLETION_RESOLUTION,
             triggeredBy = resolution!!.id.toString(),
             triggeredAt = RANGE_TEST_FROM_DATE.atLastSecondOfDay(),

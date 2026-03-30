@@ -232,7 +232,7 @@
 <p>Appointments are shown in ascending order, by appointment date</p>
 
 
-<h3>Appointment</h3>
+<h3>Appointment 01 January 2025</h3>
 
 <table class="summary-list">
   <tr><td>Appointment Date</td><td>01 January 2025</td></tr>
@@ -241,8 +241,7 @@
 
 <h4>Events</h4>
 
-<p>If a date range was requested, only events in that range are shown. Events are shown in ascending order.</p>
-
+<h5>Appointment Events</h5>
 
 <h5>CREATE event on 01 January 2025</h5>
 <table class="summary-list">
@@ -292,10 +291,48 @@
   <tr><td>Alert Active</td><td>false</td></tr>
 </table>
 
+<h5>CREATE event on 01 May 2025</h5>
+<table class="summary-list">
+  <tr><td>Event Type</td><td>CREATE</td></tr>
+  <tr><td>Triggered At</td><td>02 January 2025, 11:59:59 pm</td></tr>
+  <tr><td>Trigger Type</td><td>ETE_COURSE_COMPLETION_RESOLUTION</td></tr>
+  <tr><td>Triggered By User</td><td></td></tr>
+  <tr><td>Project Name</td><td>project 2</td></tr>
+  <tr><td>Appointment Date</td><td>01 May 2025</td></tr>
+  <tr><td>Appointment Start Time</td><td>00:00:00</td></tr>
+  <tr><td>Appointment End Time</td><td>01:00:00</td></tr>
+  <tr><td>Pick Up Location</td><td>The pickup location</td></tr>
+  <tr><td>Pick Up Time</td><td>09:35:00</td></tr>
+  <tr><td>Notes</td><td>The notes</td></tr>
+  <tr><td>Sensitive</td><td>true</td></tr>
+  <tr><td>Contact Outcome</td><td>Acceptable Absence - Court/Legal</td></tr>
+  <tr><td>Minutes Credited</td><td>50</td></tr>
+  <tr><td>Penalty Minutes</td><td>20</td></tr>
+  <tr><td>Hi-Vis Worn</td><td>false</td></tr>
+  <tr><td>Worked Intensively</td><td>false</td></tr>
+  <tr><td>Work Quality</td><td>SATISFACTORY</td></tr>
+  <tr><td>Behaviour</td><td>UNSATISFACTORY</td></tr>
+  <tr><td>Alert Active</td><td>false</td></tr>
+</table>
 
 
 
-<h3>Appointment</h3>
+<h5>Adjustment Events</h5>
+
+<h5>CREATE event on 01 January 2025</h5>
+<table class="summary-list">
+  <tr><td>Event Type</td><td>CREATE</td></tr>
+  <tr><td>Triggered At</td><td>01 January 2025, 11:59:59 pm</td></tr>
+  <tr><td>Trigger Type</td><td>APPOINTMENT_TASK</td></tr>
+  <tr><td>Adjustment Type</td><td>POSITIVE</td></tr>
+  <tr><td>Adjustment Minutes</td><td>20</td></tr>
+  <tr><td>Adjustment Date</td><td>02 March 2026</td></tr>
+  <tr><td>Adjustment Reason</td><td>Travel Time</td></tr>
+</table>
+
+
+
+<h3>Appointment 15 February 2025</h3>
 
 <table class="summary-list">
   <tr><td>Appointment Date</td><td>15 February 2025</td></tr>
@@ -304,8 +341,7 @@
 
 <h4>Events</h4>
 
-<p>If a date range was requested, only events in that range are shown. Events are shown in ascending order.</p>
-
+<h5>Appointment Events</h5>
 
 <h5>UPDATE event on 04 March 2026</h5>
 <table class="summary-list">
@@ -333,49 +369,24 @@
 
 
 
+<h5>Adjustment Events</h5>
 
-<h3>Appointment</h3>
-
-<table class="summary-list">
-  <tr><td>Appointment Date</td><td>04 March 2026</td></tr>
-  <tr><td>Created in Community Payback</td><td>true</td></tr>
-</table>
-
-<h4>Events</h4>
-
-<p>If a date range was requested, only events in that range are shown. Events are shown in ascending order.</p>
-
-
-<h5>CREATE event on 01 May 2025</h5>
+<h5>CREATE event on 15 February 2025</h5>
 <table class="summary-list">
   <tr><td>Event Type</td><td>CREATE</td></tr>
-  <tr><td>Triggered At</td><td>02 January 2025, 11:59:59 pm</td></tr>
-  <tr><td>Trigger Type</td><td>ETE_COURSE_COMPLETION_RESOLUTION</td></tr>
-  <tr><td>Triggered By User</td><td></td></tr>
-  <tr><td>Project Name</td><td>project 2</td></tr>
-  <tr><td>Appointment Date</td><td>01 May 2025</td></tr>
-  <tr><td>Appointment Start Time</td><td>00:00:00</td></tr>
-  <tr><td>Appointment End Time</td><td>01:00:00</td></tr>
-  <tr><td>Pick Up Location</td><td>The pickup location</td></tr>
-  <tr><td>Pick Up Time</td><td>09:35:00</td></tr>
-  <tr><td>Notes</td><td>The notes</td></tr>
-  <tr><td>Sensitive</td><td>true</td></tr>
-  <tr><td>Contact Outcome</td><td>Acceptable Absence - Court/Legal</td></tr>
-  <tr><td>Minutes Credited</td><td>50</td></tr>
-  <tr><td>Penalty Minutes</td><td>20</td></tr>
-  <tr><td>Hi-Vis Worn</td><td>false</td></tr>
-  <tr><td>Worked Intensively</td><td>false</td></tr>
-  <tr><td>Work Quality</td><td>SATISFACTORY</td></tr>
-  <tr><td>Behaviour</td><td>UNSATISFACTORY</td></tr>
-  <tr><td>Alert Active</td><td>false</td></tr>
+  <tr><td>Triggered At</td><td>15 February 2025, 12:00:00 am</td></tr>
+  <tr><td>Trigger Type</td><td>APPOINTMENT_TASK</td></tr>
+  <tr><td>Adjustment Type</td><td>NEGATIVE</td></tr>
+  <tr><td>Adjustment Minutes</td><td>30</td></tr>
+  <tr><td>Adjustment Date</td><td>04 March 2026</td></tr>
+  <tr><td>Adjustment Reason</td><td>Travel Time</td></tr>
 </table>
 
 
 
 
 
-
-<h2>Course Completion Events</h2>
+<h2>Course Completions</h2>
 
 
 <h3>Received at 15 February 2025, 12:00:00 am</h3>
@@ -434,7 +445,6 @@
 
 
 <h4>Related Appointment Event</h4>
-
 <table class="summary-list">
   <tr><td>Event Type</td><td>CREATE</td></tr>
   <tr><td>Triggered At</td><td>02 January 2025, 11:59:59 pm</td></tr>
