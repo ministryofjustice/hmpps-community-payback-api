@@ -45,7 +45,6 @@ class AppointmentEventService(
     now = OffsetDateTime.now(),
   )
 
-  @Transactional(Transactional.TxType.REQUIRED)
   fun publishUpdateEventOnTransactionCommit(
     eventDetails: UpdateAppointmentEventDetails,
   ) {
@@ -54,7 +53,6 @@ class AppointmentEventService(
     )
   }
 
-  @Transactional(Transactional.TxType.REQUIRED)
   fun publishCreateEventsOnTransactionCommit(
     eventDetails: List<CreateAppointmentEventDetails>,
   ) {

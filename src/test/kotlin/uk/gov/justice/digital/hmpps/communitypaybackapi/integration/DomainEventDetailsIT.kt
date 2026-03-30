@@ -10,6 +10,9 @@ import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.config.SecurityConfiguration
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.domainevent.AppointmentCreatedDomainEventDetailDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.domainevent.AppointmentUpdatedDomainEventDetailDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventEntityRepository
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventType
@@ -21,10 +24,80 @@ import java.util.UUID
 class DomainEventDetailsIT : IntegrationTestBase() {
 
   @Autowired
+  lateinit var adjustmentEventEntityRepository: AdjustmentEventEntityRepository
+
+  @Autowired
   lateinit var appointmentEventEntityRepository: AppointmentEventEntityRepository
 
   @Autowired
   lateinit var contactOutcomeEntityRepository: ContactOutcomeEntityRepository
+
+  @Nested
+  @DisplayName("GET /domain-event-details/adjustment-created/{eventId}")
+  inner class GetAdjustmentCreatedDetails {
+
+    val id: UUID = UUID.randomUUID()
+
+    @BeforeEach
+    fun setUp() {
+      adjustmentEventEntityRepository.deleteAll()
+    }
+
+    @Test
+    fun `should return unauthorized if no token`() {
+      webTestClient.get()
+        .uri("/domain-event-details/adjustment-created/$id")
+        .exchange()
+        .expectStatus()
+        .isUnauthorized
+    }
+
+    @Test
+    fun `should return forbidden if no role`() {
+      webTestClient.get()
+        .uri("/domain-event-details/adjustment-created/$id")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .isForbidden
+    }
+
+    @Test
+    fun `should return forbidden if wrong role`() {
+      webTestClient.get()
+        .uri("/domain-event-details/adjustment-created/$id")
+        .addAdminUiAuthHeader()
+        .exchange()
+        .expectStatus()
+        .isForbidden
+    }
+
+    @Test
+    fun `should return 404 if no entry exists for the ID`() {
+      webTestClient.get()
+        .uri("/domain-event-details/adjustment-created/${UUID.randomUUID()}")
+        .addDomainEventAuthHeader()
+        .exchange()
+        .expectStatus()
+        .isNotFound
+    }
+
+    @Test
+    fun `return domain event detail if entry exists`() {
+      val entity = adjustmentEventEntityRepository.save(
+        AdjustmentEventEntity.valid(ctx).copy(
+          eventType = AdjustmentEventType.CREATE,
+        ),
+      )
+
+      webTestClient.get()
+        .uri("/domain-event-details/adjustment-created/${entity.id}")
+        .addDomainEventAuthHeader()
+        .exchange()
+        .expectStatus()
+        .isOk
+    }
+  }
 
   @Nested
   @DisplayName("GET /domain-event-details/appointment-created/{eventId}")

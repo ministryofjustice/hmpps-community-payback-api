@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.service
 
+import jakarta.transaction.Transactional
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.ApplicationEvent
 import org.springframework.context.ApplicationEventPublisher
@@ -28,6 +29,7 @@ class DomainEventService(
     val personReferences: Map<PersonReferenceType, String> = emptyMap(),
   )
 
+  @Transactional(Transactional.TxType.REQUIRED)
   fun publishOnTransactionCommit(
     id: UUID,
     type: DomainEventType,
@@ -81,6 +83,11 @@ enum class DomainEventType(
   val urlType: String,
   val description: String,
 ) {
+  ADJUSTMENT_CREATED(
+    eventType = "community-payback.adjustment.created",
+    urlType = "adjustment-created",
+    description = "A community payback adjustment has been created",
+  ),
   APPOINTMENT_CREATED(
     eventType = "community-payback.appointment.created",
     urlType = "appointment-created",
