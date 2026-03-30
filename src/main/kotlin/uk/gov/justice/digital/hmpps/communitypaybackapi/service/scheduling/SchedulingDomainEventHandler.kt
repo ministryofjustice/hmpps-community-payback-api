@@ -4,6 +4,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventService
@@ -43,29 +44,36 @@ class SchedulingDomainEventHandler(
       return
     }
 
-    val schedulingId = lockService.withDistributedLock(
-      key = appointmentEvent.appointment.crn,
-      leaseTime = maxProcessingTime,
-    ) {
-      val triggerDescription = "Domain Event $eventId"
-
-      scheduleService.scheduleAppointments(
-        crn = appointmentEvent.appointment.crn,
-        eventNumber = appointmentEvent.appointment.deliusEventNumber,
-        trigger = when (appointmentEvent.eventType) {
-          AppointmentEventType.CREATE -> SchedulingTrigger(
-            type = SchedulingTriggerType.AppointmentCreated,
-            description = triggerDescription,
-          )
-          AppointmentEventType.UPDATE -> SchedulingTrigger(
-            type = SchedulingTriggerType.AppointmentChange,
-            description = triggerDescription,
-          )
-        },
-        dryRun = schedulingDryRun,
-      )
-    }
+    val schedulingId = triggerScheduling(
+      appointment = appointmentEvent.appointment,
+      eventId = eventId,
+      maxProcessingTime = maxProcessingTime,
+      triggerType = when (appointmentEvent.eventType) {
+        AppointmentEventType.UPDATE -> SchedulingTriggerType.AppointmentChange
+        AppointmentEventType.CREATE -> SchedulingTriggerType.AppointmentCreated
+      },
+    )
 
     appointmentEventService.recordSchedulingRan(eventId, schedulingId)
+  }
+
+  private fun triggerScheduling(
+    appointment: AppointmentEntity,
+    eventId: UUID,
+    maxProcessingTime: Duration,
+    triggerType: SchedulingTriggerType,
+  ): UUID = lockService.withDistributedLock(
+    key = appointment.crn,
+    leaseTime = maxProcessingTime,
+  ) {
+    scheduleService.scheduleAppointments(
+      crn = appointment.crn,
+      eventNumber = appointment.deliusEventNumber,
+      trigger = SchedulingTrigger(
+        type = triggerType,
+        description = "Domain Event $eventId",
+      ),
+      dryRun = schedulingDryRun,
+    )
   }
 }

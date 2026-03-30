@@ -24,7 +24,7 @@ import java.time.Duration
 import java.util.UUID
 
 @ExtendWith(MockKExtension::class)
-class SchedulingAppointmentDomainEventHandlerTest {
+class SchedulingDomainEventHandlerTest {
 
   @RelaxedMockK
   lateinit var scheduleService: SchedulingService
