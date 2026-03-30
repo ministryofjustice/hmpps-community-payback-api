@@ -1,4 +1,4 @@
-<h3>Appointment</h3>
+<h3>Appointment {{ formatDate date }}</h3>
 
 <table class="summary-list">
     <tr><td>Appointment Date</td><td>{{ formatDate date }}</td></tr>
@@ -7,11 +7,18 @@
 
 <h4>Events</h4>
 
-<p>If a date range was requested, only events in that range are shown. Events are shown in ascending order.</p>
-
-{{#events}}
+<h5>Appointment Events</h5>
+{{#appointmentEvents}}
     {{> sar/appointment-event}}
-{{/events}}
-{{^events}}
+{{/appointmentEvents}}
+{{^appointmentEvents}}
     <p>No Data Held</p>
-{{/events}}
+{{/appointmentEvents}}
+
+<h5>Adjustment Events</h5>
+{{#adjustmentEvents}}
+    {{> sar/adjustment-event}}
+{{/adjustmentEvents}}
+{{^adjustmentEvents}}
+    <p>No Data Held</p>
+{{/adjustmentEvents}}

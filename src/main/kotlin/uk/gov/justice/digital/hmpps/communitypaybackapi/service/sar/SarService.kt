@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.service.sar
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventTriggerType
@@ -14,6 +15,7 @@ import java.time.ZoneId
 
 @Service
 class SarService(
+  val adjustmentEventEntityRepository: AdjustmentEventEntityRepository,
   val appointmentEntityRepository: AppointmentEntityRepository,
   val appointmentEventEntityRepository: AppointmentEventEntityRepository,
   val eteCourseCompletionEventEntityRepository: EteCourseCompletionEventEntityRepository,
@@ -44,7 +46,8 @@ class SarService(
 
     val appointments = appointmentEntities.map { appointment ->
       appointment.toSarEntry(
-        appointmentEventEntityRepository.findByAppointmentOrderByCreatedAtAsc(appointment),
+        adjustmentEvents = adjustmentEventEntityRepository.findByAppointmentOrderByCreatedAtAsc(appointment),
+        appointmentEvents = appointmentEventEntityRepository.findByAppointmentOrderByCreatedAtAsc(appointment),
       )
     }
 

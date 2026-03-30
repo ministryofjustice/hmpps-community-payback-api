@@ -6,7 +6,10 @@ import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntityRepository
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.persist
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.subjectaccessrequest.SarApiDataTest
 import uk.gov.justice.digital.hmpps.subjectaccessrequest.SarFlywaySchemaTest
@@ -128,12 +131,33 @@ class SarRequestIT : IntegrationTestBase() {
   }
 
   private fun clearTestData() {
+    SarRequestAdjustmentEventIT.FixtureFactory(ctx).clearTestData()
     SarRequestAppointmentEventIT.FixtureFactory(ctx).clearTestData()
     SarRequestCourseCompletionEventIT.FixtureFactory(ctx).clearTestData()
   }
 
   private fun setupTestData() {
-    SarRequestAppointmentEventIT.FixtureFactory(ctx).setupReportTestData()
-    SarRequestCourseCompletionEventIT.FixtureFactory(ctx).setupReportTestData()
+    val appointment1 = baselineAppointment().copy(
+      deliusEventNumber = 1,
+      date = RANGE_TEST_FROM_DATE.minusDays(1),
+      createdByCommunityPayback = true,
+    ).persist(ctx)
+
+    val appointment2 = baselineAppointment().copy(
+      deliusEventNumber = 2,
+      date = RANGE_TEST_TO_DATE,
+      createdByCommunityPayback = false,
+    ).persist(ctx)
+
+    SarRequestAdjustmentEventIT.FixtureFactory(ctx).setupReportTestData(appointment1, appointment2)
+    SarRequestAppointmentEventIT.FixtureFactory(ctx).setupReportTestData(appointment1, appointment2)
+    SarRequestCourseCompletionEventIT.FixtureFactory(ctx).setupReportTestData(appointment1)
   }
+
+  fun baselineAppointment() = AppointmentEntity.valid().copy(
+    crn = CRN,
+    deliusEventNumber = 1,
+    date = LocalDate.of(2026, 3, 4),
+    createdByCommunityPayback = true,
+  )
 }

@@ -5,4 +5,6 @@ import org.springframework.stereotype.Repository
 import java.util.UUID
 
 @Repository
-interface AdjustmentEventEntityRepository : JpaRepository<AdjustmentEventEntity, UUID>
+interface AdjustmentEventEntityRepository : JpaRepository<AdjustmentEventEntity, UUID> {
+  fun findByAppointmentOrderByCreatedAtAsc(appointment: AppointmentEntity): List<AdjustmentEventEntity>
+}

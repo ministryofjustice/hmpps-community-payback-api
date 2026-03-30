@@ -20,14 +20,21 @@ interface AppointmentEntityRepository : JpaRepository<AppointmentEntity, UUID> {
         a.id as appointment_id, 
         (
             select count(*) 
+            from adjustment_events e 
+            where e.appointment_id = a.id AND 
+            ((cast(:fromDateInclusive as timestamp) IS NULL) OR (e.triggered_at >= :fromDateInclusive)) AND
+            ((cast(:toDateTimeExclusive as timestamp) IS NULL) OR (e.triggered_at < :toDateTimeExclusive))
+        ) AS adjustment_event_count,
+        (
+            select count(*) 
             from appointment_events e 
             where e.appointment_id = a.id AND 
             ((cast(:fromDateInclusive as timestamp) IS NULL) OR (e.triggered_at >= :fromDateInclusive)) AND
             ((cast(:toDateTimeExclusive as timestamp) IS NULL) OR (e.triggered_at < :toDateTimeExclusive))
-        ) AS event_count
+        ) AS appointment_event_count
         FROM appointments a WHERE crn = :crn
         GROUP BY a.id
-      ) WHERE event_count > 0
+      ) WHERE adjustment_event_count > 0 OR appointment_event_count > 0
     """,
     nativeQuery = true,
   )
