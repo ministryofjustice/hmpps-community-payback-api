@@ -4,7 +4,6 @@ import org.awaitility.Awaitility.await
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.data.repository.findByIdOrNull
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDRequirementProgress
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingAllocation
@@ -25,6 +24,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.persist
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.DomainEventAsserter
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.MockSentryService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.MockTelemetryService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.CommunityPaybackAndDeliusMockServer
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdditionalInformationType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.DomainEventType
@@ -50,6 +50,9 @@ class SchedulingIT : IntegrationTestBase() {
 
   @Autowired
   lateinit var mockSentryService: MockSentryService
+
+  @Autowired
+  lateinit var mockTelemetryService: MockTelemetryService
 
   @Autowired
   lateinit var domainEventAsserter: DomainEventAsserter
@@ -97,7 +100,7 @@ class SchedulingIT : IntegrationTestBase() {
       ),
     )
 
-    private fun publishEvent(eventId: UUID) = publishEvent(EventId(eventId), DomainEventType.APPOINTMENT_CREATED)
+    private fun publishEvent(eventId: UUID) = publishEvent(eventId, DomainEventType.APPOINTMENT_CREATED)
   }
 
   @Nested
@@ -138,10 +141,10 @@ class SchedulingIT : IntegrationTestBase() {
       ),
     )
 
-    private fun publishEvent(eventId: UUID) = publishEvent(EventId(eventId), DomainEventType.APPOINTMENT_UPDATED)
+    private fun publishEvent(eventId: UUID) = publishEvent(eventId, DomainEventType.APPOINTMENT_UPDATED)
   }
 
-  private fun publishEvent(eventId: EventId, type: DomainEventType): EventId {
+  private fun publishEvent(eventId: UUID, type: DomainEventType) {
     domainEventPublisher.publish(
       HmppsDomainEvent(
         eventType = type.eventType,
@@ -155,11 +158,10 @@ class SchedulingIT : IntegrationTestBase() {
         personReference = HmmpsEventPersonReferences(emptyList()),
       ),
     )
-    return eventId
   }
 
   private fun testNoShortfallDoNothing(
-    publishTriggeringEvent: () -> EventId,
+    publishTriggeringEvent: () -> Unit,
   ) {
     val schedulingDate = setClockToDayOfWeek(DayOfWeek.MONDAY)
 
@@ -217,14 +219,15 @@ class SchedulingIT : IntegrationTestBase() {
       ),
     )
 
-    waitForSchedulingToRun(publishTriggeringEvent())
+    publishTriggeringEvent()
+    waitForSchedulingToRun()
 
     CommunityPaybackAndDeliusMockServer.postAppointmentsVerifyZeroCalls()
   }
 
   private fun testHasShortfallCreateNewAppointments(
     triggeringEventIsAppointmentCreation: Boolean,
-    publishTriggeringEvent: () -> EventId,
+    publishTriggeringEvent: () -> Unit,
   ) {
     val schedulingDate = setClockToDayOfWeek(DayOfWeek.WEDNESDAY)
 
@@ -376,7 +379,8 @@ class SchedulingIT : IntegrationTestBase() {
     CommunityPaybackAndDeliusMockServer.postAppointments(projectCode = "PROJ1", appointmentCount = 1)
     CommunityPaybackAndDeliusMockServer.postAppointments(projectCode = "PROJ2", appointmentCount = 2)
 
-    waitForSchedulingToRun(publishTriggeringEvent())
+    publishTriggeringEvent()
+    waitForSchedulingToRun()
 
     /*
     Today+3 - ALLOC1, 10:00-16:00
@@ -426,12 +430,9 @@ class SchedulingIT : IntegrationTestBase() {
     return schedulingDate
   }
 
-  private fun waitForSchedulingToRun(eventId: EventId) {
+  private fun waitForSchedulingToRun() {
     await()
       .atMost(2, TimeUnit.SECONDS)
-      .until { appointmentEventEntityRepository.findByIdOrNull(eventId.value)!!.triggeredSchedulingAt != null }
+      .until { mockTelemetryService.hasEventsWithName("SchedulingComplete") }
   }
-
-  @JvmInline
-  value class EventId(val value: UUID)
 }
