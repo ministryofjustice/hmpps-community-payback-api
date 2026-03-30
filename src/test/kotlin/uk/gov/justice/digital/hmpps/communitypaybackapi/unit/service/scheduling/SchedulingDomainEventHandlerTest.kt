@@ -5,6 +5,7 @@ import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.verify
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
@@ -49,70 +50,74 @@ class SchedulingDomainEventHandlerTest {
     )
   }
 
-  @ParameterizedTest
-  @CsvSource(
-    "UPDATE,AppointmentChange",
-    "CREATE,AppointmentCreated",
-  )
-  fun `scheduling triggered`(
-    eventType: AppointmentEventType,
-    expectedScheduleTriggerType: SchedulingTriggerType,
-  ) {
-    every {
-      appointmentEventService.getEvent(EVENT_ID)
-    } returns AppointmentEventEntity.valid().copy(
-      appointment = AppointmentEntity.valid().copy(
-        crn = "CRN1",
-        deliusEventNumber = 5,
-      ),
-      eventType = eventType,
-      triggerType = AppointmentEventTriggerType.USER,
+  @Nested
+  inner class HandleAppointmentEvent {
+
+    @ParameterizedTest
+    @CsvSource(
+      "UPDATE,AppointmentChange",
+      "CREATE,AppointmentCreated",
     )
-
-    every {
-      scheduleService.scheduleAppointments(any(), any(), any(), any())
-    } returns SCHEDULE_ID
-
-    service.handleAppointmentEvent(
-      eventId = EVENT_ID,
-      maxProcessingTime = Duration.ofSeconds(30),
-    )
-
-    verify {
-      scheduleService.scheduleAppointments(
-        crn = "CRN1",
-        eventNumber = 5,
-        trigger = SchedulingTrigger(
-          type = expectedScheduleTriggerType,
-          description = "Domain Event $EVENT_ID",
+    fun `scheduling triggered`(
+      eventType: AppointmentEventType,
+      expectedScheduleTriggerType: SchedulingTriggerType,
+    ) {
+      every {
+        appointmentEventService.getEvent(EVENT_ID)
+      } returns AppointmentEventEntity.valid().copy(
+        appointment = AppointmentEntity.valid().copy(
+          crn = "CRN1",
+          deliusEventNumber = 5,
         ),
-        dryRun = false,
+        eventType = eventType,
+        triggerType = AppointmentEventTriggerType.USER,
       )
 
-      appointmentEventService.recordSchedulingRan(EVENT_ID, SCHEDULE_ID)
+      every {
+        scheduleService.scheduleAppointments(any(), any(), any(), any())
+      } returns SCHEDULE_ID
+
+      service.handleAppointmentEvent(
+        eventId = EVENT_ID,
+        maxProcessingTime = Duration.ofSeconds(30),
+      )
+
+      verify {
+        scheduleService.scheduleAppointments(
+          crn = "CRN1",
+          eventNumber = 5,
+          trigger = SchedulingTrigger(
+            type = expectedScheduleTriggerType,
+            description = "Domain Event $EVENT_ID",
+          ),
+          dryRun = false,
+        )
+
+        appointmentEventService.recordSchedulingRan(EVENT_ID, SCHEDULE_ID)
+      }
     }
-  }
 
-  @Test
-  fun `do not trigger scheduling if the appointment event was triggered from scheduling`() {
-    every {
-      appointmentEventService.getEvent(EVENT_ID)
-    } returns AppointmentEventEntity.valid().copy(
-      appointment = AppointmentEntity.valid().copy(
-        crn = "CRN1",
-        deliusEventNumber = 5,
-      ),
-      triggerType = AppointmentEventTriggerType.SCHEDULING,
-    )
+    @Test
+    fun `do not trigger scheduling if the appointment event was triggered from scheduling`() {
+      every {
+        appointmentEventService.getEvent(EVENT_ID)
+      } returns AppointmentEventEntity.valid().copy(
+        appointment = AppointmentEntity.valid().copy(
+          crn = "CRN1",
+          deliusEventNumber = 5,
+        ),
+        triggerType = AppointmentEventTriggerType.SCHEDULING,
+      )
 
-    service.handleAppointmentEvent(
-      eventId = EVENT_ID,
-      maxProcessingTime = Duration.ofSeconds(30),
-    )
+      service.handleAppointmentEvent(
+        eventId = EVENT_ID,
+        maxProcessingTime = Duration.ofSeconds(30),
+      )
 
-    verify(exactly = 0) {
-      scheduleService.scheduleAppointments(any(), any(), any(), any())
-      appointmentEventService.recordSchedulingRan(any(), any())
+      verify(exactly = 0) {
+        scheduleService.scheduleAppointments(any(), any(), any(), any())
+        appointmentEventService.recordSchedulingRan(any(), any())
+      }
     }
   }
 
