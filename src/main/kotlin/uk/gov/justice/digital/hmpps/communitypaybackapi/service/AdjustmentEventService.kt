@@ -1,11 +1,13 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.service
 
+import jakarta.transaction.Transactional
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentEventEntityFactory.CreateAdjustmentEventDetails
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toAdjustmentCreatedDomainEvent
+import java.time.OffsetDateTime
 import java.util.UUID
 
 @Service
@@ -31,4 +33,14 @@ class AdjustmentEventService(
       headers = persistedEvent.appointment.toDomainEventHeaders(),
     )
   }
+
+  @Transactional
+  fun recordSchedulingRan(
+    forEventId: UUID,
+    schedulingId: UUID,
+  ) = adjustmentEventEntityRepository.setSchedulingRanAt(
+    eventId = forEventId,
+    schedulingId = schedulingId,
+    now = OffsetDateTime.now(),
+  )
 }

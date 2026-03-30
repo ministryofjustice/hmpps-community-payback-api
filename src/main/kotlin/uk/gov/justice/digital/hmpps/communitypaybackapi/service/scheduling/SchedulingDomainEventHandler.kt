@@ -16,6 +16,13 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.inter
 import java.time.Duration
 import java.util.UUID
 
+/**
+ * Scheduling is deliberately not transacted at this level.
+ *
+ * This is because if we create an appointment and scheduling then subsequently fails,
+ * the next scheduling run (e.g. on retry) will spot the appointments that were created
+ * and reflect that in its plan (i.e. it won't recreate them)
+ */
 @Service
 class SchedulingDomainEventHandler(
   private val scheduleService: SchedulingService,
@@ -29,13 +36,6 @@ class SchedulingDomainEventHandler(
     val log: Logger = LoggerFactory.getLogger(this::class.java)
   }
 
-  /**
-   * Instead of having a database transaction around this entire call, we instead have transactions
-   * around the 'batch create appointment' calls.
-   *
-   * This is because if we create an appointment and scheduling then errors, these appointments still
-   * exist and will be considered and not recreated when scheduling is retried
-   */
   fun handleAppointmentEvent(
     eventId: UUID,
     maxProcessingTime: Duration,
@@ -66,7 +66,7 @@ class SchedulingDomainEventHandler(
   ) {
     val adjustmentEvent = adjustmentEventService.getEvent(eventId) ?: error("Can't find adjustment event with id '$eventId'")
 
-    triggerScheduling(
+    val schedulingId = triggerScheduling(
       appointment = adjustmentEvent.appointment,
       eventId = eventId,
       maxProcessingTime = maxProcessingTime,
@@ -74,6 +74,8 @@ class SchedulingDomainEventHandler(
         AdjustmentEventType.CREATE -> SchedulingTriggerType.AdjustmentCreated
       },
     )
+
+    adjustmentEventService.recordSchedulingRan(eventId, schedulingId)
   }
 
   private fun triggerScheduling(

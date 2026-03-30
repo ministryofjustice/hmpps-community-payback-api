@@ -10,6 +10,9 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventTriggerType
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventTriggerType
@@ -53,6 +56,53 @@ class SchedulingDomainEventHandlerTest {
       adjustmentEventService = adjustmentEventService,
       appointmentEventService = appointmentEventService,
     )
+  }
+
+  @Nested
+  inner class HandleAdjustmentEvent {
+
+    @ParameterizedTest
+    @CsvSource(
+      "CREATE,AdjustmentCreated",
+    )
+    fun `scheduling triggered`(
+      eventType: AdjustmentEventType,
+      expectedScheduleTriggerType: SchedulingTriggerType,
+    ) {
+      every {
+        adjustmentEventService.getEvent(EVENT_ID)
+      } returns AdjustmentEventEntity.valid().copy(
+        appointment = AppointmentEntity.valid().copy(
+          crn = "CRN1",
+          deliusEventNumber = 5,
+        ),
+        eventType = eventType,
+        triggerType = AdjustmentEventTriggerType.APPOINTMENT_TASK,
+      )
+
+      every {
+        scheduleService.scheduleAppointments(any(), any(), any(), any())
+      } returns SCHEDULE_ID
+
+      service.handleAdjustmentEvent(
+        eventId = EVENT_ID,
+        maxProcessingTime = Duration.ofSeconds(30),
+      )
+
+      verify {
+        scheduleService.scheduleAppointments(
+          crn = "CRN1",
+          eventNumber = 5,
+          trigger = SchedulingTrigger(
+            type = expectedScheduleTriggerType,
+            description = "Domain Event $EVENT_ID",
+          ),
+          dryRun = false,
+        )
+
+        adjustmentEventService.recordSchedulingRan(EVENT_ID, SCHEDULE_ID)
+      }
+    }
   }
 
   @Nested
