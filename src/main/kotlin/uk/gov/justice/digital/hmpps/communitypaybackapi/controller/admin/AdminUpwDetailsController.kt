@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAdjustmentDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsIdDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ContextService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.OffenderService
@@ -49,7 +50,11 @@ class AdminUpwDetailsController(
       ),
     ],
   )
-  fun getEvent(@PathVariable crn: String, @PathVariable deliusEventNumber: Int) = offenderService.getUnpaidWorkDetails(crn, deliusEventNumber, contextService.getUserName())
+  fun getEvent(@PathVariable crn: String, @PathVariable deliusEventNumber: Int) = offenderService.getUnpaidWorkDetails(
+    crn = crn,
+    deliusEventNumber = deliusEventNumber,
+    userName = contextService.getUserName(),
+  )
 
   @PostMapping(
     path = ["/offenders/{crn}/unpaid-work-details/{deliusEventNumber}/adjustments"],
@@ -77,8 +82,10 @@ class AdminUpwDetailsController(
     @PathVariable deliusEventNumber: Int,
     @Valid @RequestBody createAdjustment: CreateAdjustmentDto,
   ) = adjustmentsService.createAdjustment(
-    crn = crn,
-    deliusEventNumber = deliusEventNumber,
+    UnpaidWorkDetailsIdDto(
+      crn = crn,
+      deliusEventNumber = deliusEventNumber,
+    ),
     createAdjustment = createAdjustment,
     username = contextService.getUserName(),
   )

@@ -5,6 +5,7 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ArnsClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CaseDetailsSummaryDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsIdDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.NotFoundException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
 
@@ -19,7 +20,7 @@ class OffenderService(
     throw NotFoundException("Risk Summary", crn)
   }
 
-  fun ensureUnpaidWorkDetailsExist(crn: String, deliusEventNumber: Int, userName: String? = null) = getUnpaidWorkDetails(crn, deliusEventNumber, userName)
+  fun ensureUnpaidWorkDetailsExist(upwDetailsId: UnpaidWorkDetailsIdDto, userName: String? = null) = getUnpaidWorkDetails(upwDetailsId.crn, upwDetailsId.deliusEventNumber, userName)
 
   fun getUnpaidWorkDetails(crn: String, deliusEventNumber: Int, userName: String? = null) = getOffenderSummaryByCrn(crn, userName).unpaidWorkDetails.firstOrNull { it.eventNumber == deliusEventNumber }
     ?: throw NotFoundException("Unpaid Work Details", "CRN $crn, Event Number $deliusEventNumber")

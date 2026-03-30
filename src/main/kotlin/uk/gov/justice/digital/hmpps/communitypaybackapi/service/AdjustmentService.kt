@@ -1,45 +1,55 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.service
 
-import org.springframework.data.repository.findByIdOrNull
+import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAdjustmentDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.BadRequestException
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.NotFoundException
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentReasonEntityRepository
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsIdDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventTriggerType
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentEventEntityFactory.CreateAdjustmentEventDetails
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toNDAdjustmentRequest
+import java.time.Clock
+import java.time.OffsetDateTime
 
 @Service
 class AdjustmentService(
-  private val offenderService: OffenderService,
-  private val adjustmentReasonEntityRepository: AdjustmentReasonEntityRepository,
+  private val adjustmentEventService: AdjustmentEventService,
+  private val adjustmentValidationService: AdjustmentValidationService,
   private val communityPaybackAndDeliusClient: CommunityPaybackAndDeliusClient,
+  private val clock: Clock,
 ) {
 
+  @Transactional
   fun createAdjustment(
-    crn: String,
-    deliusEventNumber: Int,
+    upwDetailsId: UnpaidWorkDetailsIdDto,
     createAdjustment: CreateAdjustmentDto,
     username: String,
   ) {
-    val reason = adjustmentReasonEntityRepository.findByIdOrNull(createAdjustment.adjustmentReasonId)
-      ?: throw NotFoundException("Adjustment Reason", createAdjustment.adjustmentReasonId.toString())
+    val validatedAdjustment = adjustmentValidationService.validateCreate(createAdjustment, upwDetailsId, username)
 
-    offenderService.ensureUnpaidWorkDetailsExist(crn, deliusEventNumber, username)
-    val requestedMinutes = createAdjustment.minutes
+    val (crn, deliusEventNumber) = upwDetailsId
 
-    val maxMinutesAllowed = reason.maxMinutesAllowed
-    if (requestedMinutes > maxMinutesAllowed) {
-      throw BadRequestException("Requested adjustment minutes $requestedMinutes exceeds the maximum of $maxMinutesAllowed minutes allowed for adjustments with reason '${reason.name}'")
-    }
-
-    communityPaybackAndDeliusClient.postAdjustments(
+    val deliusAdjustmentId = communityPaybackAndDeliusClient.postAdjustments(
       username,
       listOf(
         createAdjustment.toNDAdjustmentRequest(
           crn = crn,
           deliusEventNumber = deliusEventNumber,
-          reason = reason,
+          reason = validatedAdjustment.reason,
+        ),
+      ),
+    ).single().id
+
+    adjustmentEventService.publishCreateEvent(
+      CreateAdjustmentEventDetails(
+        createAdjustmentDto = createAdjustment,
+        appointment = validatedAdjustment.task.appointment,
+        reason = validatedAdjustment.reason,
+        deliusAdjustmentId = deliusAdjustmentId,
+        trigger = AdjustmentEventTrigger(
+          triggeredAt = OffsetDateTime.now(clock),
+          triggerType = AdjustmentEventTriggerType.APPOINTMENT_TASK,
+          triggeredBy = validatedAdjustment.task.id.toString(),
         ),
       ),
     )

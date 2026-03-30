@@ -6,6 +6,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAdjustmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAdjustmentTypeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventAdjustmentType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventTriggerType
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentReasonEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.valid
@@ -24,24 +25,27 @@ class AdjustmentEventEntityFactoryTest {
     val reason = AdjustmentReasonEntity.valid()
 
     val result = AdjustmentEventEntityFactory().buildAdjustmentCreated(
-      createAdjustmentDto = CreateAdjustmentDto.valid().copy(
-        type = CreateAdjustmentTypeDto.Negative,
-        minutes = 61,
-        dateOfAdjustment = LocalDate.of(1971, 8, 23),
-      ),
-      appointment = appointment,
-      reason = reason,
-      deliusAdjustmentId = 2L,
-      trigger = AdjustmentEventTrigger(
-        triggeredAt = triggeredAt,
-        triggerType = AdjustmentEventTriggerType.CREATE,
-        triggeredBy = "mr trigger",
+      AdjustmentEventEntityFactory.CreateAdjustmentEventDetails(
+        createAdjustmentDto = CreateAdjustmentDto.valid().copy(
+          type = CreateAdjustmentTypeDto.Negative,
+          minutes = 61,
+          dateOfAdjustment = LocalDate.of(1971, 8, 23),
+        ),
+        appointment = appointment,
+        reason = reason,
+        deliusAdjustmentId = 2L,
+        trigger = AdjustmentEventTrigger(
+          triggeredAt = triggeredAt,
+          triggerType = AdjustmentEventTriggerType.APPOINTMENT_TASK,
+          triggeredBy = "task id",
+        ),
       ),
     )
 
+    assertThat(result.eventType).isEqualTo(AdjustmentEventType.CREATE)
     assertThat(result.triggeredAt).isEqualTo(triggeredAt)
-    assertThat(result.triggerType).isEqualTo(AdjustmentEventTriggerType.CREATE)
-    assertThat(result.triggeredBy).isEqualTo("mr trigger")
+    assertThat(result.triggerType).isEqualTo(AdjustmentEventTriggerType.APPOINTMENT_TASK)
+    assertThat(result.triggeredBy).isEqualTo("task id")
     assertThat(result.deliusAdjustmentId).isEqualTo(2L)
     assertThat(result.appointment).isEqualTo(appointment)
     assertThat(result.adjustmentType).isEqualTo(AdjustmentEventAdjustmentType.NEGATIVE)

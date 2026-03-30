@@ -3,16 +3,23 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.entity
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
+import jakarta.persistence.FetchType
 import jakarta.persistence.Id
+import jakarta.persistence.JoinColumn
+import jakarta.persistence.ManyToOne
+import jakarta.persistence.Table
 import org.hibernate.annotations.CreationTimestamp
 import java.time.OffsetDateTime
 import java.util.UUID
 
+@Table(name = "appointment_tasks")
 @Entity
 data class AppointmentTaskEntity(
   @Id
   val id: UUID,
-  val appointmentId: UUID,
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn("appointment_id")
+  val appointment: AppointmentEntity,
   @Enumerated(EnumType.STRING)
   val taskType: AppointmentTaskType,
   @CreationTimestamp
