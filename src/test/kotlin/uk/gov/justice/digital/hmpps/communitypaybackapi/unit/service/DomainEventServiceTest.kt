@@ -63,8 +63,10 @@ class DomainEventServiceTest {
       service.publishOnTransactionCommit(
         id = id,
         type = DomainEventType.APPOINTMENT_UPDATED,
-        additionalInformation = mapOf(AdditionalInformationType.APPOINTMENT_ID to "the appointment id"),
-        personReferences = mapOf(PersonReferenceType.CRN to "CRN1"),
+        headers = DomainEventService.EventHeaders(
+          additionalInformation = mapOf(AdditionalInformationType.APPOINTMENT_ID to "the appointment id"),
+          personReferences = mapOf(PersonReferenceType.CRN to "CRN1"),
+        ),
       )
 
       val publishDomainEventCommand = commandEventCaptor.captured
@@ -90,7 +92,7 @@ class DomainEventServiceTest {
       service.publishOnTransactionCommit(
         id = id,
         type = DomainEventType.APPOINTMENT_UPDATED,
-        personReferences = emptyMap(),
+        headers = DomainEventService.EventHeaders(),
       )
 
       val publishDomainEventCommand = commandEventCaptor.captured

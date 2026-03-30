@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.service
 import jakarta.transaction.Transactional
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter.event
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventType
@@ -74,11 +75,7 @@ class AppointmentEventService(
           AppointmentEventType.CREATE -> DomainEventType.APPOINTMENT_CREATED
           AppointmentEventType.UPDATE -> DomainEventType.APPOINTMENT_UPDATED
         },
-        additionalInformation = mapOf(
-          AdditionalInformationType.APPOINTMENT_ID to event.appointment.id,
-          AdditionalInformationType.DELIUS_APPOINTMENT_ID to event.appointment.deliusId,
-        ),
-        personReferences = mapOf(PersonReferenceType.CRN to event.appointment.crn),
+        headers = event.appointment.toDomainEventHeaders(),
       )
     }
   }

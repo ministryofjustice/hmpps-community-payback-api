@@ -26,6 +26,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventTrigger
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService.ValidatedAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.DomainEventService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.DomainEventService.EventHeaders
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.DomainEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.PersonReferenceType
 
@@ -160,11 +161,13 @@ class AppointmentEventServiceTest {
         domainEventService.publishOnTransactionCommit(
           id = createEvent.id,
           type = DomainEventType.APPOINTMENT_CREATED,
-          additionalInformation = mapOf(
-            AdditionalInformationType.APPOINTMENT_ID to appointmentEntity.id,
-            AdditionalInformationType.DELIUS_APPOINTMENT_ID to 52L,
+          headers = EventHeaders(
+            additionalInformation = mapOf(
+              AdditionalInformationType.APPOINTMENT_ID to appointmentEntity.id,
+              AdditionalInformationType.DELIUS_APPOINTMENT_ID to 52L,
+            ),
+            personReferences = mapOf(PersonReferenceType.CRN to "CRN1"),
           ),
-          personReferences = mapOf(PersonReferenceType.CRN to "CRN1"),
         )
       }
     }
@@ -204,11 +207,13 @@ class AppointmentEventServiceTest {
         domainEventService.publishOnTransactionCommit(
           id = updateEvent.id,
           type = DomainEventType.APPOINTMENT_UPDATED,
-          additionalInformation = mapOf(
-            AdditionalInformationType.APPOINTMENT_ID to appointmentEntity.id,
-            AdditionalInformationType.DELIUS_APPOINTMENT_ID to 52L,
+          headers = EventHeaders(
+            additionalInformation = mapOf(
+              AdditionalInformationType.APPOINTMENT_ID to appointmentEntity.id,
+              AdditionalInformationType.DELIUS_APPOINTMENT_ID to 52L,
+            ),
+            personReferences = mapOf(PersonReferenceType.CRN to "CRN1"),
           ),
-          personReferences = mapOf(PersonReferenceType.CRN to "CRN1"),
         )
       }
     }
