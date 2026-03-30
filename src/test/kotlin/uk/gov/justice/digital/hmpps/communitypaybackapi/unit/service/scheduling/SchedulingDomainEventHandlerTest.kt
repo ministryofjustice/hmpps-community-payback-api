@@ -1,0 +1,187 @@
+package uk.gov.justice.digital.hmpps.communitypaybackapi.unit.service.scheduling
+
+import io.mockk.every
+import io.mockk.impl.annotations.RelaxedMockK
+import io.mockk.junit5.MockKExtension
+import io.mockk.verify
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Nested
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventTriggerType
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventType
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventTriggerType
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventType
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentEventService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.LockService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingDomainEventHandler
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.SchedulingTrigger
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.SchedulingTriggerType
+import java.time.Duration
+import java.util.UUID
+
+@ExtendWith(MockKExtension::class)
+class SchedulingDomainEventHandlerTest {
+
+  @RelaxedMockK
+  lateinit var scheduleService: SchedulingService
+
+  @RelaxedMockK
+  lateinit var adjustmentEventService: AdjustmentEventService
+
+  @RelaxedMockK
+  lateinit var appointmentEventService: AppointmentEventService
+
+  lateinit var service: SchedulingDomainEventHandler
+
+  companion object {
+    val EVENT_ID: UUID = UUID.randomUUID()
+    val SCHEDULE_ID: UUID = UUID.randomUUID()
+  }
+
+  @BeforeEach
+  fun setupService() {
+    service = SchedulingDomainEventHandler(
+      scheduleService = scheduleService,
+      schedulingDryRun = false,
+      lockService = NoLockLockService(),
+      adjustmentEventService = adjustmentEventService,
+      appointmentEventService = appointmentEventService,
+    )
+  }
+
+  @Nested
+  inner class HandleAdjustmentEvent {
+
+    @ParameterizedTest
+    @CsvSource(
+      "CREATE,AdjustmentCreated",
+    )
+    fun `scheduling triggered`(
+      eventType: AdjustmentEventType,
+      expectedScheduleTriggerType: SchedulingTriggerType,
+    ) {
+      every {
+        adjustmentEventService.getEvent(EVENT_ID)
+      } returns AdjustmentEventEntity.valid().copy(
+        appointment = AppointmentEntity.valid().copy(
+          crn = "CRN1",
+          deliusEventNumber = 5,
+        ),
+        eventType = eventType,
+        triggerType = AdjustmentEventTriggerType.APPOINTMENT_TASK,
+      )
+
+      every {
+        scheduleService.scheduleAppointments(any(), any(), any(), any())
+      } returns SCHEDULE_ID
+
+      service.handleAdjustmentEvent(
+        eventId = EVENT_ID,
+        maxProcessingTime = Duration.ofSeconds(30),
+      )
+
+      verify {
+        scheduleService.scheduleAppointments(
+          crn = "CRN1",
+          eventNumber = 5,
+          trigger = SchedulingTrigger(
+            type = expectedScheduleTriggerType,
+            description = "Domain Event $EVENT_ID",
+          ),
+          dryRun = false,
+        )
+
+        adjustmentEventService.recordSchedulingRan(EVENT_ID, SCHEDULE_ID)
+      }
+    }
+  }
+
+  @Nested
+  inner class HandleAppointmentEvent {
+
+    @ParameterizedTest
+    @CsvSource(
+      "UPDATE,AppointmentChange",
+      "CREATE,AppointmentCreated",
+    )
+    fun `scheduling triggered`(
+      eventType: AppointmentEventType,
+      expectedScheduleTriggerType: SchedulingTriggerType,
+    ) {
+      every {
+        appointmentEventService.getEvent(EVENT_ID)
+      } returns AppointmentEventEntity.valid().copy(
+        appointment = AppointmentEntity.valid().copy(
+          crn = "CRN1",
+          deliusEventNumber = 5,
+        ),
+        eventType = eventType,
+        triggerType = AppointmentEventTriggerType.USER,
+      )
+
+      every {
+        scheduleService.scheduleAppointments(any(), any(), any(), any())
+      } returns SCHEDULE_ID
+
+      service.handleAppointmentEvent(
+        eventId = EVENT_ID,
+        maxProcessingTime = Duration.ofSeconds(30),
+      )
+
+      verify {
+        scheduleService.scheduleAppointments(
+          crn = "CRN1",
+          eventNumber = 5,
+          trigger = SchedulingTrigger(
+            type = expectedScheduleTriggerType,
+            description = "Domain Event $EVENT_ID",
+          ),
+          dryRun = false,
+        )
+
+        appointmentEventService.recordSchedulingRan(EVENT_ID, SCHEDULE_ID)
+      }
+    }
+
+    @Test
+    fun `do not trigger scheduling if the appointment event was triggered from scheduling`() {
+      every {
+        appointmentEventService.getEvent(EVENT_ID)
+      } returns AppointmentEventEntity.valid().copy(
+        appointment = AppointmentEntity.valid().copy(
+          crn = "CRN1",
+          deliusEventNumber = 5,
+        ),
+        triggerType = AppointmentEventTriggerType.SCHEDULING,
+      )
+
+      service.handleAppointmentEvent(
+        eventId = EVENT_ID,
+        maxProcessingTime = Duration.ofSeconds(30),
+      )
+
+      verify(exactly = 0) {
+        scheduleService.scheduleAppointments(any(), any(), any(), any())
+        appointmentEventService.recordSchedulingRan(any(), any())
+      }
+    }
+  }
+
+  class NoLockLockService : LockService {
+    override fun <T> withDistributedLock(
+      key: String,
+      waitTime: Duration,
+      leaseTime: Duration,
+      exec: () -> T,
+    ) = exec()
+  }
+}

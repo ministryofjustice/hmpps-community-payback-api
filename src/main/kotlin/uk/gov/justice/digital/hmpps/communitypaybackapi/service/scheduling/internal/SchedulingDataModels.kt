@@ -28,6 +28,7 @@ data class SchedulingTrigger(
 }
 
 enum class SchedulingTriggerType {
+  AdjustmentCreated,
   AppointmentCreated,
   AppointmentChange,
 }

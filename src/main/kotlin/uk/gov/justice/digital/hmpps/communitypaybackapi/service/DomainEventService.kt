@@ -1,10 +1,12 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.service
 
+import jakarta.transaction.Transactional
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.ApplicationEvent
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
 import org.springframework.transaction.event.TransactionalEventListener
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.DomainEventPublisher
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.HmmpsEventPersonReference
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.HmmpsEventPersonReferences
@@ -22,11 +24,16 @@ class DomainEventService(
   private val domainEventPublisher: DomainEventPublisher,
 ) {
 
+  data class EventHeaders(
+    val additionalInformation: Map<AdditionalInformationType, Any> = emptyMap(),
+    val personReferences: Map<PersonReferenceType, String> = emptyMap(),
+  )
+
+  @Transactional(Transactional.TxType.REQUIRED)
   fun publishOnTransactionCommit(
     id: UUID,
     type: DomainEventType,
-    additionalInformation: Map<AdditionalInformationType, Any> = emptyMap(),
-    personReferences: Map<PersonReferenceType, String> = emptyMap(),
+    headers: EventHeaders,
   ) {
     applicationEventPublisher.publishEvent(
       PublishDomainEventCommand(
@@ -36,8 +43,8 @@ class DomainEventService(
           description = type.description,
           detailUrl = resolveUrl(id, type),
           occurredAt = OffsetDateTime.now(),
-          additionalInformation = buildAdditionalInformation(id, additionalInformation),
-          personReference = personReferences.toHmppsPersonReference(),
+          additionalInformation = buildAdditionalInformation(id, headers.additionalInformation),
+          personReference = headers.personReferences.toHmppsPersonReference(),
         ),
       ),
     )
@@ -76,6 +83,11 @@ enum class DomainEventType(
   val urlType: String,
   val description: String,
 ) {
+  ADJUSTMENT_CREATED(
+    eventType = "community-payback.adjustment.created",
+    urlType = "adjustment-created",
+    description = "A community payback adjustment has been created",
+  ),
   APPOINTMENT_CREATED(
     eventType = "community-payback.appointment.created",
     urlType = "appointment-created",
@@ -97,3 +109,11 @@ enum class AdditionalInformationType {
 enum class PersonReferenceType {
   CRN,
 }
+
+fun AppointmentEntity.toDomainEventHeaders() = DomainEventService.EventHeaders(
+  additionalInformation = mapOf(
+    AdditionalInformationType.APPOINTMENT_ID to id,
+    AdditionalInformationType.DELIUS_APPOINTMENT_ID to deliusId,
+  ),
+  personReferences = mapOf(PersonReferenceType.CRN to crn),
+)

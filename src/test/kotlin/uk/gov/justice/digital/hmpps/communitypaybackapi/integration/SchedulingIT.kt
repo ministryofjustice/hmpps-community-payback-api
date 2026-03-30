@@ -4,7 +4,6 @@ import org.awaitility.Awaitility.await
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.data.repository.findByIdOrNull
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDRequirementProgress
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingAllocation
@@ -14,6 +13,9 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingFrequ
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingProject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDUnpaidWorkRequirement
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.findNextOrSameDateForDayOfWeek
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventEntityRepository
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntityRepository
@@ -25,6 +27,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.persist
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.DomainEventAsserter
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.MockSentryService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.MockTelemetryService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.CommunityPaybackAndDeliusMockServer
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdditionalInformationType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.DomainEventType
@@ -46,10 +49,16 @@ class SchedulingIT : IntegrationTestBase() {
   lateinit var domainEventPublisher: DomainEventPublisher
 
   @Autowired
+  lateinit var adjustmentEventEntityRepository: AdjustmentEventEntityRepository
+
+  @Autowired
   lateinit var appointmentEventEntityRepository: AppointmentEventEntityRepository
 
   @Autowired
   lateinit var mockSentryService: MockSentryService
+
+  @Autowired
+  lateinit var mockTelemetryService: MockTelemetryService
 
   @Autowired
   lateinit var domainEventAsserter: DomainEventAsserter
@@ -57,6 +66,47 @@ class SchedulingIT : IntegrationTestBase() {
   companion object {
     const val CRN: String = "CRN01"
     const val EVENT_NUMBER: Int = 10
+  }
+
+  @Nested
+  inner class SchedulingOnAdjustmentCreation {
+
+    @Test
+    fun `Can't find update event, raise alert`() {
+      val eventId = UUID.randomUUID()
+
+      publishEvent(eventId)
+
+      mockSentryService.assertExceptionRaisedWithMessage("Error occurred handling message with ID '.*' - Can't find adjustment event with id '$eventId'")
+    }
+
+    @Test
+    fun `Schedule already sufficient, do nothing`() {
+      testNoShortfallDoNothing {
+        publishEvent(createEvent().id)
+      }
+    }
+
+    @Test
+    fun `New appointments required as there is a shortfall`() {
+      testHasShortfallCreateNewAppointments(
+        triggeringEventIsAppointmentCreation = false,
+      ) {
+        publishEvent(createEvent().id)
+      }
+    }
+
+    private fun createEvent() = adjustmentEventEntityRepository.save(
+      AdjustmentEventEntity.valid(ctx).copy(
+        appointment = AppointmentEntity.valid().copy(
+          crn = CRN,
+          deliusEventNumber = EVENT_NUMBER,
+        ).persist(ctx),
+        eventType = AdjustmentEventType.CREATE,
+      ),
+    )
+
+    private fun publishEvent(eventId: UUID) = publishEvent(eventId, DomainEventType.ADJUSTMENT_CREATED)
   }
 
   @Nested
@@ -68,24 +118,22 @@ class SchedulingIT : IntegrationTestBase() {
 
       publishEvent(eventId)
 
-      mockSentryService.assertExceptionRaisedWithMessage("Error occurred handling message with ID '.*' - Can't find event with id '$eventId'")
+      mockSentryService.assertExceptionRaisedWithMessage("Error occurred handling message with ID '.*' - Can't find appointment event with id '$eventId'")
     }
 
     @Test
     fun `Schedule already sufficient, do nothing`() {
-      testSchedulingAlreadySufficientDoNothing {
-        createEvent().also {
-          publishEvent(it.id)
-        }
+      testNoShortfallDoNothing {
+        publishEvent(createEvent().id)
       }
     }
 
     @Test
-    fun `New appointments required after shortfall created by non attendance`() {
-      testNewAppointmentsRequiredAfterShortfall {
-        createEvent().also {
-          publishEvent(it.id)
-        }
+    fun `New appointments required as there is a shortfall`() {
+      testHasShortfallCreateNewAppointments(
+        triggeringEventIsAppointmentCreation = true,
+      ) {
+        publishEvent(createEvent().id)
       }
     }
 
@@ -99,21 +147,7 @@ class SchedulingIT : IntegrationTestBase() {
       ),
     )
 
-    private fun publishEvent(eventId: UUID) {
-      domainEventPublisher.publish(
-        HmppsDomainEvent(
-          eventType = DomainEventType.APPOINTMENT_CREATED.eventType,
-          version = 1,
-          description = DomainEventType.APPOINTMENT_CREATED.description,
-          detailUrl = "doesnt matter",
-          occurredAt = OffsetDateTime.now(),
-          additionalInformation = HmppsAdditionalInformation(
-            mapOf(AdditionalInformationType.EVENT_ID.name to eventId),
-          ),
-          personReference = HmmpsEventPersonReferences(emptyList()),
-        ),
-      )
-    }
+    private fun publishEvent(eventId: UUID) = publishEvent(eventId, DomainEventType.APPOINTMENT_CREATED)
   }
 
   @Nested
@@ -125,24 +159,22 @@ class SchedulingIT : IntegrationTestBase() {
 
       publishEvent(eventId)
 
-      mockSentryService.assertExceptionRaisedWithMessage("Error occurred handling message with ID '.*' - Can't find event with id '$eventId'")
+      mockSentryService.assertExceptionRaisedWithMessage("Error occurred handling message with ID '.*' - Can't find appointment event with id '$eventId'")
     }
 
     @Test
     fun `Schedule already sufficient, do nothing`() {
-      testSchedulingAlreadySufficientDoNothing {
-        createEvent().also {
-          publishEvent(it.id)
-        }
+      testNoShortfallDoNothing {
+        publishEvent(createEvent().id)
       }
     }
 
     @Test
-    fun `New appointments required after shortfall created by non attendance`() {
-      testNewAppointmentsRequiredAfterShortfall {
-        createEvent().also {
-          publishEvent(it.id)
-        }
+    fun `New appointments required as there is a shortfall`() {
+      testHasShortfallCreateNewAppointments(
+        triggeringEventIsAppointmentCreation = false,
+      ) {
+        publishEvent(createEvent().id)
       }
     }
 
@@ -156,25 +188,27 @@ class SchedulingIT : IntegrationTestBase() {
       ),
     )
 
-    private fun publishEvent(eventId: UUID) {
-      domainEventPublisher.publish(
-        HmppsDomainEvent(
-          eventType = DomainEventType.APPOINTMENT_UPDATED.eventType,
-          version = 1,
-          description = DomainEventType.APPOINTMENT_UPDATED.description,
-          detailUrl = "doesnt matter",
-          occurredAt = OffsetDateTime.now(),
-          additionalInformation = HmppsAdditionalInformation(
-            mapOf(AdditionalInformationType.EVENT_ID.name to eventId),
-          ),
-          personReference = HmmpsEventPersonReferences(emptyList()),
-        ),
-      )
-    }
+    private fun publishEvent(eventId: UUID) = publishEvent(eventId, DomainEventType.APPOINTMENT_UPDATED)
   }
 
-  private fun testSchedulingAlreadySufficientDoNothing(
-    publishTriggeringEvent: () -> AppointmentEventEntity,
+  private fun publishEvent(eventId: UUID, type: DomainEventType) {
+    domainEventPublisher.publish(
+      HmppsDomainEvent(
+        eventType = type.eventType,
+        version = 1,
+        description = type.description,
+        detailUrl = "doesnt matter",
+        occurredAt = OffsetDateTime.now(),
+        additionalInformation = HmppsAdditionalInformation(
+          mapOf(AdditionalInformationType.EVENT_ID.name to eventId),
+        ),
+        personReference = HmmpsEventPersonReferences(emptyList()),
+      ),
+    )
+  }
+
+  private fun testNoShortfallDoNothing(
+    publishTriggeringEvent: () -> Unit,
   ) {
     val schedulingDate = setClockToDayOfWeek(DayOfWeek.MONDAY)
 
@@ -232,14 +266,15 @@ class SchedulingIT : IntegrationTestBase() {
       ),
     )
 
-    val eventId = publishTriggeringEvent().id
-    waitForSchedulingToRun(eventId)
+    publishTriggeringEvent()
+    waitForSchedulingToRun()
 
     CommunityPaybackAndDeliusMockServer.postAppointmentsVerifyZeroCalls()
   }
 
-  private fun testNewAppointmentsRequiredAfterShortfall(
-    publishTriggeringEvent: () -> AppointmentEventEntity,
+  private fun testHasShortfallCreateNewAppointments(
+    triggeringEventIsAppointmentCreation: Boolean,
+    publishTriggeringEvent: () -> Unit,
   ) {
     val schedulingDate = setClockToDayOfWeek(DayOfWeek.WEDNESDAY)
 
@@ -391,8 +426,8 @@ class SchedulingIT : IntegrationTestBase() {
     CommunityPaybackAndDeliusMockServer.postAppointments(projectCode = "PROJ1", appointmentCount = 1)
     CommunityPaybackAndDeliusMockServer.postAppointments(projectCode = "PROJ2", appointmentCount = 2)
 
-    val triggeringEvent = publishTriggeringEvent()
-    waitForSchedulingToRun(triggeringEvent.id)
+    publishTriggeringEvent()
+    waitForSchedulingToRun()
 
     /*
     Today+3 - ALLOC1, 10:00-16:00
@@ -431,7 +466,7 @@ class SchedulingIT : IntegrationTestBase() {
       ),
     )
 
-    val expectedAppointmentCreateDomainEvents = 3 + if (triggeringEvent.eventType == AppointmentEventType.CREATE) 1 else 0
+    val expectedAppointmentCreateDomainEvents = 3 + if (triggeringEventIsAppointmentCreation) 1 else 0
 
     domainEventAsserter.assertEventCount(DomainEventType.APPOINTMENT_CREATED.eventType, expectedAppointmentCreateDomainEvents)
   }
@@ -442,9 +477,9 @@ class SchedulingIT : IntegrationTestBase() {
     return schedulingDate
   }
 
-  private fun waitForSchedulingToRun(outcomeRecordId: UUID) {
+  private fun waitForSchedulingToRun() {
     await()
       .atMost(2, TimeUnit.SECONDS)
-      .until { appointmentEventEntityRepository.findByIdOrNull(outcomeRecordId)!!.triggeredSchedulingAt != null }
+      .until { mockTelemetryService.hasEventsWithName("SchedulingComplete") }
   }
 }

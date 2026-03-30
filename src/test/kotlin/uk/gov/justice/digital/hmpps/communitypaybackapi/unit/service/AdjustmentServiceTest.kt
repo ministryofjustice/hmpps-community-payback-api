@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.unit.service
 
-import com.google.common.base.Verify.verify
 import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.RelaxedMockK
@@ -93,7 +92,7 @@ class AdjustmentServiceTest {
       )
 
       verify {
-        adjustmentEventService.publishCreateEvent(
+        adjustmentEventService.publishCreateEventOnTransactionCommit(
           CreateAdjustmentEventDetails(
             createAdjustmentDto = request,
             appointment = appointmentTask.appointment,

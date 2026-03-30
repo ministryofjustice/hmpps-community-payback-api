@@ -27,6 +27,10 @@ data class AdjustmentEventEntity(
   @Enumerated(EnumType.STRING)
   val triggerType: AdjustmentEventTriggerType,
   val triggeredBy: String,
+
+  val triggeredSchedulingAt: OffsetDateTime? = null,
+  val triggeredSchedulingId: UUID? = null,
+
   val deliusAdjustmentId: Long,
   @ManyToOne(fetch = FetchType.EAGER)
   @JoinColumn("appointment_id")

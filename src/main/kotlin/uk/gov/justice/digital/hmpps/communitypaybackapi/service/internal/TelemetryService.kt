@@ -7,17 +7,25 @@ import org.springframework.stereotype.Service
 import org.springframework.web.util.UriUtils
 import java.nio.charset.Charset
 
+interface TelemetryService {
+  fun trackEvent(
+    name: String,
+    properties: Map<String, String?> = mapOf(),
+    metrics: Map<String, Double?> = mapOf(),
+  )
+}
+
 @Service
-class TelemetryService(private val telemetryClient: TelemetryClient = TelemetryClient()) {
+class AppInsightsTelemetryService(private val telemetryClient: TelemetryClient = TelemetryClient()) : TelemetryService {
   companion object {
     private val log = LoggerFactory.getLogger(this::class.java)
   }
 
   @Async
-  fun trackEvent(
+  override fun trackEvent(
     name: String,
-    properties: Map<String, String?> = mapOf(),
-    metrics: Map<String, Double?> = mapOf(),
+    properties: Map<String, String?>,
+    metrics: Map<String, Double?>,
   ) {
     log.debug(
       "{} {} {}",

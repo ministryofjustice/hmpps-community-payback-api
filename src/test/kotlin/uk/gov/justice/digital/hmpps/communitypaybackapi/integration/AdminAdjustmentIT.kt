@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.integration
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseDetail
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseSummary
@@ -13,9 +14,13 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.persist
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
+import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.DomainEventAsserter
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.CommunityPaybackAndDeliusMockServer
 
 class AdminAdjustmentIT : IntegrationTestBase() {
+
+  @Autowired
+  lateinit var domainEventAsserter: DomainEventAsserter
 
   companion object {
     const val CRN = "X123456"
@@ -62,7 +67,7 @@ class AdminAdjustmentIT : IntegrationTestBase() {
     }
 
     @Test
-    fun `Should create an adjustment upstream`() {
+    fun `Should create an adjustment upstream and raise a domain event`() {
       val appointment = AppointmentEntity.valid().copy(crn = CRN, deliusEventNumber = DELIUS_EVENT_NUMBER).persist(ctx)
       val task = AppointmentTaskEntity.valid().copy(appointment = appointment).persist(ctx)
 
@@ -91,6 +96,8 @@ class AdminAdjustmentIT : IntegrationTestBase() {
         .isOk
 
       CommunityPaybackAndDeliusMockServer.postAdjustmentVerify(username = "theusername")
+
+      domainEventAsserter.assertEventCount("community-payback.adjustment.created", 1)
     }
   }
 }

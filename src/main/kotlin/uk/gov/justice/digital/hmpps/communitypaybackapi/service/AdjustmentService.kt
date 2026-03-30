@@ -40,7 +40,7 @@ class AdjustmentService(
       ),
     ).single().id
 
-    adjustmentEventService.publishCreateEvent(
+    adjustmentEventService.publishCreateEventOnTransactionCommit(
       CreateAdjustmentEventDetails(
         createAdjustmentDto = createAdjustment,
         appointment = validatedAdjustment.task.appointment,
