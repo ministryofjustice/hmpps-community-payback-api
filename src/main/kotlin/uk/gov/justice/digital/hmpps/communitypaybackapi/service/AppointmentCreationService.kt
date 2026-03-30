@@ -65,7 +65,7 @@ class AppointmentCreationService(
         CreateAppointmentEventDetails(
           appointment = appointmentEntities.first { it.id == validatedCreateAppointment.dto.id },
           trigger = trigger,
-          validatedCreateAppointmentDto = appointmentValidationService.validateCreate(validatedCreateAppointment.dto),
+          validatedCreateAppointmentDto = validatedCreateAppointment,
         )
       },
     )
