@@ -73,19 +73,17 @@ class SchedulingIT : IntegrationTestBase() {
 
     @Test
     fun `Schedule already sufficient, do nothing`() {
-      testSchedulingAlreadySufficientDoNothing {
-        createEvent().also {
-          publishEvent(it.id)
-        }
+      testNoShortfallDoNothing {
+        publishEvent(createEvent().id)
       }
     }
 
     @Test
-    fun `New appointments required after shortfall created by non attendance`() {
-      testNewAppointmentsRequiredAfterShortfall {
-        createEvent().also {
-          publishEvent(it.id)
-        }
+    fun `New appointments required as there is a shortfall`() {
+      testHasShortfallCreateNewAppointments(
+        triggeringEventIsAppointmentCreation = true,
+      ) {
+        publishEvent(createEvent().id)
       }
     }
 
@@ -99,21 +97,7 @@ class SchedulingIT : IntegrationTestBase() {
       ),
     )
 
-    private fun publishEvent(eventId: UUID) {
-      domainEventPublisher.publish(
-        HmppsDomainEvent(
-          eventType = DomainEventType.APPOINTMENT_CREATED.eventType,
-          version = 1,
-          description = DomainEventType.APPOINTMENT_CREATED.description,
-          detailUrl = "doesnt matter",
-          occurredAt = OffsetDateTime.now(),
-          additionalInformation = HmppsAdditionalInformation(
-            mapOf(AdditionalInformationType.EVENT_ID.name to eventId),
-          ),
-          personReference = HmmpsEventPersonReferences(emptyList()),
-        ),
-      )
-    }
+    private fun publishEvent(eventId: UUID) = publishEvent(EventId(eventId), DomainEventType.APPOINTMENT_CREATED)
   }
 
   @Nested
@@ -130,19 +114,17 @@ class SchedulingIT : IntegrationTestBase() {
 
     @Test
     fun `Schedule already sufficient, do nothing`() {
-      testSchedulingAlreadySufficientDoNothing {
-        createEvent().also {
-          publishEvent(it.id)
-        }
+      testNoShortfallDoNothing {
+        publishEvent(createEvent().id)
       }
     }
 
     @Test
-    fun `New appointments required after shortfall created by non attendance`() {
-      testNewAppointmentsRequiredAfterShortfall {
-        createEvent().also {
-          publishEvent(it.id)
-        }
+    fun `New appointments required as there is a shortfall`() {
+      testHasShortfallCreateNewAppointments(
+        triggeringEventIsAppointmentCreation = false,
+      ) {
+        publishEvent(createEvent().id)
       }
     }
 
@@ -156,25 +138,28 @@ class SchedulingIT : IntegrationTestBase() {
       ),
     )
 
-    private fun publishEvent(eventId: UUID) {
-      domainEventPublisher.publish(
-        HmppsDomainEvent(
-          eventType = DomainEventType.APPOINTMENT_UPDATED.eventType,
-          version = 1,
-          description = DomainEventType.APPOINTMENT_UPDATED.description,
-          detailUrl = "doesnt matter",
-          occurredAt = OffsetDateTime.now(),
-          additionalInformation = HmppsAdditionalInformation(
-            mapOf(AdditionalInformationType.EVENT_ID.name to eventId),
-          ),
-          personReference = HmmpsEventPersonReferences(emptyList()),
-        ),
-      )
-    }
+    private fun publishEvent(eventId: UUID) = publishEvent(EventId(eventId), DomainEventType.APPOINTMENT_UPDATED)
   }
 
-  private fun testSchedulingAlreadySufficientDoNothing(
-    publishTriggeringEvent: () -> AppointmentEventEntity,
+  private fun publishEvent(eventId: EventId, type: DomainEventType): EventId {
+    domainEventPublisher.publish(
+      HmppsDomainEvent(
+        eventType = type.eventType,
+        version = 1,
+        description = type.description,
+        detailUrl = "doesnt matter",
+        occurredAt = OffsetDateTime.now(),
+        additionalInformation = HmppsAdditionalInformation(
+          mapOf(AdditionalInformationType.EVENT_ID.name to eventId),
+        ),
+        personReference = HmmpsEventPersonReferences(emptyList()),
+      ),
+    )
+    return eventId
+  }
+
+  private fun testNoShortfallDoNothing(
+    publishTriggeringEvent: () -> EventId,
   ) {
     val schedulingDate = setClockToDayOfWeek(DayOfWeek.MONDAY)
 
@@ -232,14 +217,14 @@ class SchedulingIT : IntegrationTestBase() {
       ),
     )
 
-    val eventId = publishTriggeringEvent().id
-    waitForSchedulingToRun(eventId)
+    waitForSchedulingToRun(publishTriggeringEvent())
 
     CommunityPaybackAndDeliusMockServer.postAppointmentsVerifyZeroCalls()
   }
 
-  private fun testNewAppointmentsRequiredAfterShortfall(
-    publishTriggeringEvent: () -> AppointmentEventEntity,
+  private fun testHasShortfallCreateNewAppointments(
+    triggeringEventIsAppointmentCreation: Boolean,
+    publishTriggeringEvent: () -> EventId,
   ) {
     val schedulingDate = setClockToDayOfWeek(DayOfWeek.WEDNESDAY)
 
@@ -391,8 +376,7 @@ class SchedulingIT : IntegrationTestBase() {
     CommunityPaybackAndDeliusMockServer.postAppointments(projectCode = "PROJ1", appointmentCount = 1)
     CommunityPaybackAndDeliusMockServer.postAppointments(projectCode = "PROJ2", appointmentCount = 2)
 
-    val triggeringEvent = publishTriggeringEvent()
-    waitForSchedulingToRun(triggeringEvent.id)
+    waitForSchedulingToRun(publishTriggeringEvent())
 
     /*
     Today+3 - ALLOC1, 10:00-16:00
@@ -431,7 +415,7 @@ class SchedulingIT : IntegrationTestBase() {
       ),
     )
 
-    val expectedAppointmentCreateDomainEvents = 3 + if (triggeringEvent.eventType == AppointmentEventType.CREATE) 1 else 0
+    val expectedAppointmentCreateDomainEvents = 3 + if (triggeringEventIsAppointmentCreation) 1 else 0
 
     domainEventAsserter.assertEventCount(DomainEventType.APPOINTMENT_CREATED.eventType, expectedAppointmentCreateDomainEvents)
   }
@@ -442,9 +426,12 @@ class SchedulingIT : IntegrationTestBase() {
     return schedulingDate
   }
 
-  private fun waitForSchedulingToRun(outcomeRecordId: UUID) {
+  private fun waitForSchedulingToRun(eventId: EventId) {
     await()
       .atMost(2, TimeUnit.SECONDS)
-      .until { appointmentEventEntityRepository.findByIdOrNull(outcomeRecordId)!!.triggeredSchedulingAt != null }
+      .until { appointmentEventEntityRepository.findByIdOrNull(eventId.value)!!.triggeredSchedulingAt != null }
   }
+
+  @JvmInline
+  value class EventId(val value: UUID)
 }
