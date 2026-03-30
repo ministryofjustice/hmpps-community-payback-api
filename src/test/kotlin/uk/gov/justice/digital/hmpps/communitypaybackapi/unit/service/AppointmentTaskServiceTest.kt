@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Sort
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentTaskEntity
@@ -86,7 +87,7 @@ class AppointmentTaskServiceTest {
           projectTypeGroup = null,
           eventNumber = null,
           appointmentIds = listOf(deliusAppointmentId),
-          pageable = any(),
+          pageable = PageRequest.of(0, 1, Sort.by(Sort.Direction.DESC, "name")),
         )
       } returns PageImpl(listOf(appointmentSummary), PageRequest.of(0, 1), 1L)
 
@@ -145,7 +146,7 @@ class AppointmentTaskServiceTest {
           projectTypeGroup = null,
           eventNumber = null,
           appointmentIds = listOf(deliusAppointmentId),
-          pageable = any(),
+          pageable = PageRequest.of(0, 1, Sort.by(Sort.Direction.DESC, "name")),
         )
       } returns PageImpl(listOf(appointmentSummary), PageRequest.of(0, 1), 1L)
 
@@ -252,7 +253,7 @@ class AppointmentTaskServiceTest {
           projectTypeGroup = null,
           eventNumber = null,
           appointmentIds = any(),
-          pageable = any(),
+          pageable = PageRequest.of(0, 2, Sort.by(Sort.Direction.DESC, "name")),
         )
       } returns PageImpl(listOf(appointmentSummary1, appointmentSummary2), PageRequest.of(0, 2), 2L)
 
@@ -311,7 +312,7 @@ class AppointmentTaskServiceTest {
           projectTypeGroup = null,
           eventNumber = null,
           appointmentIds = listOf(deliusAppointmentId),
-          pageable = any(),
+          pageable = PageRequest.of(0, 1, Sort.by(Sort.Direction.DESC, "name")),
         )
       } returns PageImpl(listOf(appointmentSummary), PageRequest.of(0, 1), 1L)
 

@@ -5,11 +5,8 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointmentSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseSummary
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDContactOutcome
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectAndLocation
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.PageResponse
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentTaskSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
@@ -81,16 +78,21 @@ class AdminAppointmentTaskIT : IntegrationTestBase() {
 
     @Test
     fun `should return pending appointment tasks with default pagination`() {
-      val appointment = NDAppointment.valid(ctx).copy(
+      val appointment = saveAppointment(date = LocalDate.now(), providerCode = "PROVIDER1", deliusId = 101L)
+      saveTask(appointment)
+
+      val matchingAppointmentSummary = NDAppointmentSummary.valid(ctx).copy(
         id = 101L,
-        project = NDProjectAndLocation.valid().copy(name = "Community Garden Maintenance", code = "PC01"),
-        case = NDCaseSummary.valid().copy(crn = "X434334"),
-        outcome = NDContactOutcome.valid(ctx),
+        case = NDCaseSummary.valid().copy(crn = appointment.crn),
+        date = appointment.date,
       )
 
-      CommunityPaybackAndDeliusMockServer.getAppointment(
-        appointment = appointment,
+      CommunityPaybackAndDeliusMockServer.getAppointments(
         username = "theusername",
+        appointments = listOf(matchingAppointmentSummary),
+        appointmentIds = listOf(101L),
+        sortString = "name,desc",
+        pageSize = 1,
       )
 
       val pageResponse = webTestClient.get()
@@ -101,6 +103,8 @@ class AdminAppointmentTaskIT : IntegrationTestBase() {
         .isOk
         .bodyAsObject<PageResponse<AppointmentTaskSummaryDto>>()
 
+      assertThat(pageResponse.content).hasSize(1)
+      assertThat(pageResponse.content[0].appointment.id).isEqualTo(101L)
       assertThat(pageResponse.page.size).isEqualTo(50)
     }
 
@@ -129,6 +133,8 @@ class AdminAppointmentTaskIT : IntegrationTestBase() {
         username = "theusername",
         appointmentIds = listOf(101L),
         appointments = listOf(matchingAppointmentSummary),
+        sortString = "name,desc",
+        pageSize = 1,
       )
 
       val pageResponse = webTestClient.get()

@@ -352,8 +352,8 @@ object CommunityPaybackAndDeliusMockServer {
     pageNumber: Int = 0,
     pageSize: Int = 50,
     sortString: String = "name,desc",
-    appointments: List<NDAppointmentSummary>,
     appointmentIds: List<Long> = emptyList(),
+    appointments: List<NDAppointmentSummary> = emptyList(),
   ) {
     val url = buildString {
       append("/community-payback-and-delius/appointments")
