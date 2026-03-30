@@ -4,6 +4,7 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentTaskSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentTaskEntityRepository
@@ -35,15 +36,8 @@ class AppointmentTaskService(
     val appointmentIds = taskMap.keys.toList()
 
     val appointmentsPage = appointmentRetrievalService.getAppointments(
-      crn = null,
-      fromDate = null,
-      toDate = null,
-      outcomeCodes = null,
-      projectCodes = null,
-      projectTypeGroup = null,
-      eventNumber = null,
       appointmentIds = appointmentIds,
-      pageable = PageRequest.of(0, appointmentIds.size),
+      pageable = PageRequest.of(0, appointmentIds.size, Sort.by(Sort.Direction.DESC, "name")),
     )
 
     val taskSummaries = appointmentsPage.content.mapNotNull { appointment ->
