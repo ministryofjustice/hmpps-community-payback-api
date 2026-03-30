@@ -24,7 +24,7 @@ import java.util.UUID
 class DomainEventListener(
   private val jsonMapper: JsonMapper,
   private val sqsListenerErrorHandler: SqsListenerErrorHandler,
-  private val schedulingAppointmentEventHandler: SchedulingDomainEventHandler,
+  private val schedulingDomainEventHandler: SchedulingDomainEventHandler,
 ) {
   private companion object {
     /**
@@ -69,7 +69,12 @@ class DomainEventListener(
     when (event.eventType) {
       DomainEventType.APPOINTMENT_UPDATED.eventType,
       DomainEventType.APPOINTMENT_CREATED.eventType,
-      -> schedulingAppointmentEventHandler.handleAppointmentEvent(
+      -> schedulingDomainEventHandler.handleAppointmentEvent(
+        eventId = event.getEventId(),
+        maxProcessingTime = Duration.ofSeconds(MESSAGE_VISIBILITY_TIMEOUT),
+      )
+      DomainEventType.ADJUSTMENT_CREATED.eventType,
+      -> schedulingDomainEventHandler.handleAdjustmentEvent(
         eventId = event.getEventId(),
         maxProcessingTime = Duration.ofSeconds(MESSAGE_VISIBILITY_TIMEOUT),
       )

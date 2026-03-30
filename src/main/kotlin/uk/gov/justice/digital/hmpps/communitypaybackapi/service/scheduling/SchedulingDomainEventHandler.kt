@@ -4,9 +4,11 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventType
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentEventService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.LockService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.SchedulingTrigger
@@ -20,6 +22,7 @@ class SchedulingDomainEventHandler(
   @param:Value("\${community-payback.appointment-scheduling.dryRun:false}")
   private val schedulingDryRun: Boolean,
   private val lockService: LockService,
+  private val adjustmentEventService: AdjustmentEventService,
   private val appointmentEventService: AppointmentEventService,
 ) {
   private companion object {
@@ -37,7 +40,7 @@ class SchedulingDomainEventHandler(
     eventId: UUID,
     maxProcessingTime: Duration,
   ) {
-    val appointmentEvent = appointmentEventService.getEvent(eventId) ?: error("Can't find event with id '$eventId'")
+    val appointmentEvent = appointmentEventService.getEvent(eventId) ?: error("Can't find appointment event with id '$eventId'")
 
     if (appointmentEvent.triggerType == AppointmentEventTriggerType.SCHEDULING) {
       log.debug("not triggering scheduling for event {} because it was itself triggered via scheduling", eventId)
@@ -55,6 +58,22 @@ class SchedulingDomainEventHandler(
     )
 
     appointmentEventService.recordSchedulingRan(eventId, schedulingId)
+  }
+
+  fun handleAdjustmentEvent(
+    eventId: UUID,
+    maxProcessingTime: Duration,
+  ) {
+    val adjustmentEvent = adjustmentEventService.getEvent(eventId) ?: error("Can't find adjustment event with id '$eventId'")
+
+    triggerScheduling(
+      appointment = adjustmentEvent.appointment,
+      eventId = eventId,
+      maxProcessingTime = maxProcessingTime,
+      triggerType = when (adjustmentEvent.eventType) {
+        AdjustmentEventType.CREATE -> SchedulingTriggerType.AdjustmentCreated
+      },
+    )
   }
 
   private fun triggerScheduling(

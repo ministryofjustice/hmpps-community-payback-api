@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.service
 
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventType
@@ -14,6 +15,8 @@ class AdjustmentEventService(
   private val domainEventService: DomainEventService,
 ) {
   fun getCreatedDomainEventDetails(id: UUID) = adjustmentEventEntityRepository.findByIdOrNullForDomainEventDetails(id, AdjustmentEventType.CREATE)?.toAdjustmentCreatedDomainEvent()
+
+  fun getEvent(eventId: UUID) = adjustmentEventEntityRepository.findByIdOrNull(eventId)
 
   fun publishCreateEventOnTransactionCommit(details: CreateAdjustmentEventDetails) {
     val persistedEvent = adjustmentEventEntityRepository.save(

@@ -24,7 +24,7 @@ class AppointmentEventService(
 
   fun getUpdateDomainEventDetails(id: UUID) = appointmentEventEntityRepository.findByIdOrNullForDomainEventDetails(id, AppointmentEventType.UPDATE)?.toAppointmentUpdatedDomainEvent()
 
-  fun getEvent(eventId: UUID): AppointmentEventEntity? = appointmentEventEntityRepository.findByIdOrNull(eventId)
+  fun getEvent(eventId: UUID) = appointmentEventEntityRepository.findByIdOrNull(eventId)
 
   fun hasUpdateAlreadyBeenSent(proposedUpdateDetails: UpdateAppointmentEventDetails): Boolean {
     val proposedUpdate = appointmentEventEntityFactory.buildUpdatedEvent(proposedUpdateDetails)

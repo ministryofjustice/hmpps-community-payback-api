@@ -15,6 +15,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventE
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentEventService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.LockService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingDomainEventHandler
@@ -29,6 +30,9 @@ class SchedulingDomainEventHandlerTest {
 
   @RelaxedMockK
   lateinit var scheduleService: SchedulingService
+
+  @RelaxedMockK
+  lateinit var adjustmentEventService: AdjustmentEventService
 
   @RelaxedMockK
   lateinit var appointmentEventService: AppointmentEventService
@@ -46,6 +50,7 @@ class SchedulingDomainEventHandlerTest {
       scheduleService = scheduleService,
       schedulingDryRun = false,
       lockService = NoLockLockService(),
+      adjustmentEventService = adjustmentEventService,
       appointmentEventService = appointmentEventService,
     )
   }

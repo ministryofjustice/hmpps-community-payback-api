@@ -13,6 +13,9 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingFrequ
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingProject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDUnpaidWorkRequirement
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.findNextOrSameDateForDayOfWeek
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventEntityRepository
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntityRepository
@@ -46,6 +49,9 @@ class SchedulingIT : IntegrationTestBase() {
   lateinit var domainEventPublisher: DomainEventPublisher
 
   @Autowired
+  lateinit var adjustmentEventEntityRepository: AdjustmentEventEntityRepository
+
+  @Autowired
   lateinit var appointmentEventEntityRepository: AppointmentEventEntityRepository
 
   @Autowired
@@ -63,6 +69,47 @@ class SchedulingIT : IntegrationTestBase() {
   }
 
   @Nested
+  inner class SchedulingOnAdjustmentCreation {
+
+    @Test
+    fun `Can't find update event, raise alert`() {
+      val eventId = UUID.randomUUID()
+
+      publishEvent(eventId)
+
+      mockSentryService.assertExceptionRaisedWithMessage("Error occurred handling message with ID '.*' - Can't find adjustment event with id '$eventId'")
+    }
+
+    @Test
+    fun `Schedule already sufficient, do nothing`() {
+      testNoShortfallDoNothing {
+        publishEvent(createEvent().id)
+      }
+    }
+
+    @Test
+    fun `New appointments required as there is a shortfall`() {
+      testHasShortfallCreateNewAppointments(
+        triggeringEventIsAppointmentCreation = false,
+      ) {
+        publishEvent(createEvent().id)
+      }
+    }
+
+    private fun createEvent() = adjustmentEventEntityRepository.save(
+      AdjustmentEventEntity.valid(ctx).copy(
+        appointment = AppointmentEntity.valid().copy(
+          crn = CRN,
+          deliusEventNumber = EVENT_NUMBER,
+        ).persist(ctx),
+        eventType = AdjustmentEventType.CREATE,
+      ),
+    )
+
+    private fun publishEvent(eventId: UUID) = publishEvent(eventId, DomainEventType.ADJUSTMENT_CREATED)
+  }
+
+  @Nested
   inner class SchedulingOnAppointmentCreation {
 
     @Test
@@ -71,7 +118,7 @@ class SchedulingIT : IntegrationTestBase() {
 
       publishEvent(eventId)
 
-      mockSentryService.assertExceptionRaisedWithMessage("Error occurred handling message with ID '.*' - Can't find event with id '$eventId'")
+      mockSentryService.assertExceptionRaisedWithMessage("Error occurred handling message with ID '.*' - Can't find appointment event with id '$eventId'")
     }
 
     @Test
@@ -112,7 +159,7 @@ class SchedulingIT : IntegrationTestBase() {
 
       publishEvent(eventId)
 
-      mockSentryService.assertExceptionRaisedWithMessage("Error occurred handling message with ID '.*' - Can't find event with id '$eventId'")
+      mockSentryService.assertExceptionRaisedWithMessage("Error occurred handling message with ID '.*' - Can't find appointment event with id '$eventId'")
     }
 
     @Test
