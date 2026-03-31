@@ -15,6 +15,7 @@ import org.junit.jupiter.params.provider.CsvSource
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
+import org.springframework.data.repository.findByIdOrNull
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeDto
@@ -29,11 +30,15 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.validCreateAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.validUpdateAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.validPending
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.event.valid
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentEventTrigger
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentRetrievalService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentTaskService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService.ValidatedAppointment
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ContextService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AppointmentCreatedEvent
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.CreateAdjustmentEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.UpdateAppointmentEvent
 import java.time.LocalDate
 import java.time.OffsetDateTime
@@ -47,6 +52,9 @@ class AppointmentTaskServiceTest {
 
   @RelaxedMockK
   private lateinit var appointmentRetrievalService: AppointmentRetrievalService
+
+  @RelaxedMockK
+  private lateinit var contextService: ContextService
 
   @InjectMockKs
   private lateinit var service: AppointmentTaskService
@@ -192,6 +200,37 @@ class AppointmentTaskServiceTest {
       assertThat(taskSlot.captured.appointment).isEqualTo(event.appointmentEntity)
       assertThat(taskSlot.captured.taskType).isEqualTo(AppointmentTaskType.ADJUSTMENT_TRAVEL_TIME)
       assertThat(taskSlot.captured.taskStatus).isEqualTo(AppointmentTaskStatus.PENDING)
+    }
+  }
+
+  @Nested
+  inner class CompleteTravelTimeTaskOnAdjustmentCreation {
+
+    @Test
+    fun `complete task linked to the adjustment`() {
+      val task = AppointmentTaskEntity.validPending()
+      val triggeredAt = OffsetDateTime.now()
+
+      every { appointmentTaskEntityRepository.findByIdOrNull(task.id) } returns task
+      every { contextService.getUserName() } returns "currentUsername"
+      every { appointmentTaskEntityRepository.save(any()) } returnsArgument 0
+
+      service.closeTravelTimeTaskOnAdjustmentCreation(
+        CreateAdjustmentEvent.valid().copy(
+          trigger = AdjustmentEventTrigger.valid().copy(
+            triggeredAt = triggeredAt,
+            triggeredBy = task.id.toString(),
+          ),
+        ),
+      )
+
+      verify {
+        appointmentTaskEntityRepository.save(task)
+
+        assertThat(task.taskStatus).isEqualTo(AppointmentTaskStatus.COMPLETE)
+        assertThat(task.decisionMadeAt).isEqualTo(triggeredAt)
+        assertThat(task.decisionMadeByUsername).isEqualTo("currentUsername")
+      }
     }
   }
 

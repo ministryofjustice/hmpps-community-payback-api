@@ -41,7 +41,9 @@ sealed interface CommunityPaybackSpringEvent {
     val reason: AdjustmentReasonEntity,
     val deliusAdjustmentId: Long,
     val trigger: AdjustmentEventTrigger,
-  ) : CommunityPaybackSpringEvent
+  ) : CommunityPaybackSpringEvent {
+    companion object
+  }
 
   data class UpdateAppointmentEvent(
     val updateDto: AppointmentValidationService.ValidatedAppointment<UpdateAppointmentOutcomeDto>,
