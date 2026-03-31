@@ -20,8 +20,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.validUpdateA
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdditionalInformationType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventEntityFactory
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventEntityFactory.CreateAppointmentEventDetails
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventEntityFactory.UpdateAppointmentEventDetails
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventTrigger
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService.ValidatedAppointment
@@ -29,6 +27,8 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.DomainEventServi
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.DomainEventService.EventHeaders
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.DomainEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.PersonReferenceType
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AppointmentCreatedEvent
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.UpdateAppointmentEvent
 
 @ExtendWith(MockKExtension::class)
 class AppointmentEventServiceTest {
@@ -48,9 +48,9 @@ class AppointmentEventServiceTest {
   @Nested
   inner class HasUpdateAlreadyBeenSent {
 
-    val baselineUpdateDetails = UpdateAppointmentEventDetails(
-      validatedUpdate = ValidatedAppointment.validUpdateAppointment(),
-      appointment = AppointmentEntity.valid(),
+    val baselineUpdateDetails = UpdateAppointmentEvent(
+      updateDto = ValidatedAppointment.validUpdateAppointment(),
+      appointmentEntity = AppointmentEntity.valid(),
       existingAppointment = AppointmentDto.valid(),
       trigger = AppointmentEventTrigger.valid(),
     )
@@ -137,10 +137,10 @@ class AppointmentEventServiceTest {
         crn = "CRN1",
       )
 
-      val createDetails = CreateAppointmentEventDetails(
-        appointment = AppointmentEntity.valid(),
+      val createDetails = AppointmentCreatedEvent(
+        appointmentEntity = AppointmentEntity.valid(),
         trigger = AppointmentEventTrigger.valid(),
-        validatedCreateAppointmentDto = ValidatedAppointment.validCreateAppointment(),
+        createDto = ValidatedAppointment.validCreateAppointment(),
       )
 
       val createEvent = AppointmentEventEntity.valid().copy(
@@ -152,10 +152,10 @@ class AppointmentEventServiceTest {
       } returns createEvent
 
       every {
-        appointmentEventEntityRepository.saveAll(listOf(createEvent))
+        appointmentEventEntityRepository.save(createEvent)
       } returnsArgument 0
 
-      service.publishCreateEventsOnTransactionCommit(listOf(createDetails))
+      service.persistAndPublishAppointmentCreatedDomainEvent(createDetails)
 
       verify {
         domainEventService.publishOnTransactionCommit(
@@ -183,9 +183,9 @@ class AppointmentEventServiceTest {
         crn = "CRN1",
       )
 
-      val updateDetails = UpdateAppointmentEventDetails(
-        validatedUpdate = ValidatedAppointment.validUpdateAppointment(),
-        appointment = AppointmentEntity.valid(),
+      val updateDetails = UpdateAppointmentEvent(
+        updateDto = ValidatedAppointment.validUpdateAppointment(),
+        appointmentEntity = AppointmentEntity.valid(),
         existingAppointment = AppointmentDto.valid(),
         trigger = AppointmentEventTrigger.valid(),
       )
@@ -198,10 +198,10 @@ class AppointmentEventServiceTest {
       every { appointmentEventEntityFactory.buildUpdatedEvent(updateDetails) } returns updateEvent
 
       every {
-        appointmentEventEntityRepository.saveAll(listOf(updateEvent))
+        appointmentEventEntityRepository.save(updateEvent)
       } returnsArgument 0
 
-      service.publishUpdateEventOnTransactionCommit(updateDetails)
+      service.persistAndPublishAppointmentUpdateDomainEvent(updateDetails)
 
       verify {
         domainEventService.publishOnTransactionCommit(

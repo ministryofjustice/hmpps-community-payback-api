@@ -24,6 +24,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentRetri
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentUpdateService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService.ValidatedAppointment
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.SpringEventPublisher
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.ToAppointmentEntity.toAppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.unit.util.WebClientResponseExceptionFactory
 
@@ -41,6 +42,9 @@ class AppointmentUpdateServiceTest {
 
   @RelaxedMockK
   lateinit var appointmentOutcomeValidationService: AppointmentValidationService
+
+  @RelaxedMockK
+  lateinit var springEventPublisher: SpringEventPublisher
 
   @InjectMockKs
   lateinit var service: AppointmentUpdateService
@@ -106,7 +110,7 @@ class AppointmentUpdateServiceTest {
       )
 
       verify {
-        appointmentEventService.publishUpdateEventOnTransactionCommit(any())
+        springEventPublisher.publishEvent(any())
         communityPaybackAndDeliusClient.updateAppointment(
           projectCode = PROJECT_CODE,
           appointmentId = DELIUS_APPOINTMENT_ID,
@@ -129,7 +133,7 @@ class AppointmentUpdateServiceTest {
       )
 
       verify(exactly = 0) {
-        appointmentEventService.publishUpdateEventOnTransactionCommit(any())
+        springEventPublisher.publishEvent(any())
         communityPaybackAndDeliusClient.updateAppointment(any(), any(), any())
       }
     }

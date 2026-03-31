@@ -4,23 +4,37 @@ import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.junit5.MockKExtension
+import io.mockk.slot
+import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentSummaryDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeGroupDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentTaskEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentTaskEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentTaskStatus
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentTaskType
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.valid
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.validCreateAppointment
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.validUpdateAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.event.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentRetrievalService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentTaskService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService.ValidatedAppointment
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AppointmentCreatedEvent
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.UpdateAppointmentEvent
 import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.UUID
@@ -39,6 +53,146 @@ class AppointmentTaskServiceTest {
 
   private companion object {
     const val PROVIDER_CODE = "PROV123"
+  }
+
+  @Nested
+  inner class CreateTravelTimeTaskOnAppointmentCreation {
+
+    @Test
+    fun `no outcome, do nothing`() {
+      val event = AppointmentCreatedEvent.valid().copy(
+        createDto = ValidatedAppointment.validCreateAppointment().copy(
+          contactOutcome = null,
+        ),
+      )
+
+      service.createTravelTimeTaskOnAppointmentCreation(event)
+
+      verify(exactly = 0) { appointmentTaskEntityRepository.save(any()) }
+    }
+
+    @Test
+    fun `outcome not attended, do nothing`() {
+      val event = AppointmentCreatedEvent.valid().copy(
+        createDto = ValidatedAppointment.validCreateAppointment().copy(
+          contactOutcome = ContactOutcomeEntity.valid().copy(attended = false),
+        ),
+      )
+
+      service.createTravelTimeTaskOnAppointmentCreation(event)
+
+      verify(exactly = 0) { appointmentTaskEntityRepository.save(any()) }
+    }
+
+    @ParameterizedTest
+    @CsvSource("ETE", "INDUCTION")
+    fun `project group time doesn't support travel time, do nothing`(
+      projectTypeGroup: ProjectTypeGroupDto,
+    ) {
+      val event = AppointmentCreatedEvent.valid().copy(
+        createDto = ValidatedAppointment.validCreateAppointment().copy(
+          contactOutcome = ContactOutcomeEntity.valid().copy(attended = true),
+          project = ProjectDto.valid().copy(projectType = ProjectTypeDto.valid().copy(group = projectTypeGroup)),
+        ),
+      )
+
+      service.createTravelTimeTaskOnAppointmentCreation(event)
+
+      verify(exactly = 0) { appointmentTaskEntityRepository.save(any()) }
+    }
+
+    @ParameterizedTest
+    @CsvSource("GROUP", "INDIVIDUAL")
+    fun `only create task if outcome is attended and project group type supports travel time`(
+      projectTypeGroup: ProjectTypeGroupDto,
+    ) {
+      val event = AppointmentCreatedEvent.valid().copy(
+        createDto = ValidatedAppointment.validCreateAppointment().copy(
+          contactOutcome = ContactOutcomeEntity.valid().copy(attended = true),
+          project = ProjectDto.valid().copy(projectType = ProjectTypeDto.valid().copy(group = projectTypeGroup)),
+        ),
+      )
+
+      val taskSlot = slot<AppointmentTaskEntity>()
+      every { appointmentTaskEntityRepository.save(capture(taskSlot)) } returnsArgument 0
+
+      service.createTravelTimeTaskOnAppointmentCreation(event)
+
+      assertThat(taskSlot.isCaptured).isTrue
+      assertThat(taskSlot.captured.appointment).isEqualTo(event.appointmentEntity)
+      assertThat(taskSlot.captured.taskType).isEqualTo(AppointmentTaskType.ADJUSTMENT_TRAVEL_TIME)
+      assertThat(taskSlot.captured.taskStatus).isEqualTo(AppointmentTaskStatus.PENDING)
+    }
+  }
+
+  @Nested
+  inner class CreateTravelTimeTaskOnAppointmentUpdate {
+
+    @Test
+    fun `no outcome, do nothing`() {
+      val event = UpdateAppointmentEvent.valid().copy(
+        updateDto = ValidatedAppointment.validUpdateAppointment().copy(
+          contactOutcome = null,
+        ),
+      )
+
+      service.createTravelTimeTaskOnAppointmentUpdate(event)
+
+      verify(exactly = 0) { appointmentTaskEntityRepository.save(any()) }
+    }
+
+    @Test
+    fun `outcome not attended, do nothing`() {
+      val event = UpdateAppointmentEvent.valid().copy(
+        updateDto = ValidatedAppointment.validUpdateAppointment().copy(
+          contactOutcome = ContactOutcomeEntity.valid().copy(attended = false),
+        ),
+      )
+
+      service.createTravelTimeTaskOnAppointmentUpdate(event)
+
+      verify(exactly = 0) { appointmentTaskEntityRepository.save(any()) }
+    }
+
+    @ParameterizedTest
+    @CsvSource("ETE", "INDUCTION")
+    fun `project group time doesn't support travel time, do nothing`(
+      projectTypeGroup: ProjectTypeGroupDto,
+    ) {
+      val event = UpdateAppointmentEvent.valid().copy(
+        updateDto = ValidatedAppointment.validUpdateAppointment().copy(
+          contactOutcome = ContactOutcomeEntity.valid().copy(attended = true),
+          project = ProjectDto.valid().copy(projectType = ProjectTypeDto.valid().copy(group = projectTypeGroup)),
+        ),
+      )
+
+      service.createTravelTimeTaskOnAppointmentUpdate(event)
+
+      verify(exactly = 0) { appointmentTaskEntityRepository.save(any()) }
+    }
+
+    @ParameterizedTest
+    @CsvSource("GROUP", "INDIVIDUAL")
+    fun `only create task if outcome is attended and project group type supports travel time`(
+      projectTypeGroup: ProjectTypeGroupDto,
+    ) {
+      val event = UpdateAppointmentEvent.valid().copy(
+        updateDto = ValidatedAppointment.validUpdateAppointment().copy(
+          contactOutcome = ContactOutcomeEntity.valid().copy(attended = true),
+          project = ProjectDto.valid().copy(projectType = ProjectTypeDto.valid().copy(group = projectTypeGroup)),
+        ),
+      )
+
+      val taskSlot = slot<AppointmentTaskEntity>()
+      every { appointmentTaskEntityRepository.save(capture(taskSlot)) } returnsArgument 0
+
+      service.createTravelTimeTaskOnAppointmentUpdate(event)
+
+      assertThat(taskSlot.isCaptured).isTrue
+      assertThat(taskSlot.captured.appointment).isEqualTo(event.appointmentEntity)
+      assertThat(taskSlot.captured.taskType).isEqualTo(AppointmentTaskType.ADJUSTMENT_TRAVEL_TIME)
+      assertThat(taskSlot.captured.taskStatus).isEqualTo(AppointmentTaskStatus.PENDING)
+    }
   }
 
   @Nested

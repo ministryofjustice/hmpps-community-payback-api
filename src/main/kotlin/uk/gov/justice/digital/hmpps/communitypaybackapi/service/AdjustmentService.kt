@@ -6,17 +6,18 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackA
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAdjustmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsIdDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventTriggerType
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentEventEntityFactory.CreateAdjustmentEventDetails
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.CreateAdjustmentEvent
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.SpringEventPublisher
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toNDAdjustmentRequest
 import java.time.Clock
 import java.time.OffsetDateTime
 
 @Service
 class AdjustmentService(
-  private val adjustmentEventService: AdjustmentEventService,
   private val adjustmentValidationService: AdjustmentValidationService,
   private val communityPaybackAndDeliusClient: CommunityPaybackAndDeliusClient,
   private val clock: Clock,
+  private val springEventPublisher: SpringEventPublisher,
 ) {
 
   @Transactional
@@ -40,10 +41,10 @@ class AdjustmentService(
       ),
     ).single().id
 
-    adjustmentEventService.publishCreateEventOnTransactionCommit(
-      CreateAdjustmentEventDetails(
-        createAdjustmentDto = createAdjustment,
-        appointment = validatedAdjustment.task.appointment,
+    springEventPublisher.publishEvent(
+      CreateAdjustmentEvent(
+        createDto = createAdjustment,
+        appointmentEntity = validatedAdjustment.task.appointment,
         reason = validatedAdjustment.reason,
         deliusAdjustmentId = deliusAdjustmentId,
         trigger = AdjustmentEventTrigger(

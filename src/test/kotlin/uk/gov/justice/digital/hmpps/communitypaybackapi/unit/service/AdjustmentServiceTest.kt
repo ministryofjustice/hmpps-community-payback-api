@@ -18,11 +18,11 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentTaskEn
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.config.ClockConfiguration
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentEventEntityFactory.CreateAdjustmentEventDetails
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentEventService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentEventTrigger
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentValidationService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.CreateAdjustmentEvent
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.SpringEventPublisher
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toNDAdjustmentRequest
 import java.time.Clock
 import java.time.Instant
@@ -33,13 +33,13 @@ import java.util.UUID
 class AdjustmentServiceTest {
 
   @RelaxedMockK
-  private lateinit var adjustmentEventService: AdjustmentEventService
-
-  @RelaxedMockK
   private lateinit var adjustmentValidationService: AdjustmentValidationService
 
   @RelaxedMockK
   private lateinit var communityPaybackAndDeliusClient: CommunityPaybackAndDeliusClient
+
+  @RelaxedMockK
+  private lateinit var springEventPublisher: SpringEventPublisher
 
   val clock: Clock = ClockConfiguration.MutableClock(Instant.now())
 
@@ -92,10 +92,10 @@ class AdjustmentServiceTest {
       )
 
       verify {
-        adjustmentEventService.publishCreateEventOnTransactionCommit(
-          CreateAdjustmentEventDetails(
-            createAdjustmentDto = request,
-            appointment = appointmentTask.appointment,
+        springEventPublisher.publishEvent(
+          CreateAdjustmentEvent(
+            createDto = request,
+            appointmentEntity = appointmentTask.appointment,
             reason = validatedAdjustment.reason,
             deliusAdjustmentId = 5L,
             trigger = AdjustmentEventTrigger(

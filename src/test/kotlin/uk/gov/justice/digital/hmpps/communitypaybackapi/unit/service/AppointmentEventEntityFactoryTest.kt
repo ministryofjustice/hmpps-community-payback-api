@@ -32,12 +32,12 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.validCreateA
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.validUpdateAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventEntityFactory
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventEntityFactory.CreateAppointmentEventDetails
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventEntityFactory.UpdateAppointmentEventDetails
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventTrigger
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService.ValidatedAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ProviderService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.TeamId
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AppointmentCreatedEvent
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.UpdateAppointmentEvent
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
@@ -89,14 +89,14 @@ class AppointmentEventEntityFactoryTest {
       )
 
       val result = factory.buildCreatedEvent(
-        CreateAppointmentEventDetails(
-          appointment = AppointmentEntity.valid().copy(deliusId = 101L, id = ID),
+        AppointmentCreatedEvent(
+          appointmentEntity = AppointmentEntity.valid().copy(deliusId = 101L, id = ID),
           trigger = AppointmentEventTrigger(
             triggeredAt = TRIGGERED_AT,
             triggerType = AppointmentEventTriggerType.SCHEDULING,
             triggeredBy = TRIGGERED_BY,
           ),
-          validatedCreateAppointmentDto = ValidatedAppointment.validCreateAppointment().copy(
+          createDto = ValidatedAppointment.validCreateAppointment().copy(
             dto = CreateAppointmentDto(
               id = ID,
               crn = "X12345",
@@ -161,14 +161,14 @@ class AppointmentEventEntityFactoryTest {
     @Test
     fun `mandatory fields only`() {
       val result = factory.buildCreatedEvent(
-        CreateAppointmentEventDetails(
-          appointment = AppointmentEntity.valid().copy(deliusId = 101L, id = ID),
+        AppointmentCreatedEvent(
+          appointmentEntity = AppointmentEntity.valid().copy(deliusId = 101L, id = ID),
           trigger = AppointmentEventTrigger(
             triggeredAt = TRIGGERED_AT,
             triggerType = AppointmentEventTriggerType.SCHEDULING,
             triggeredBy = TRIGGERED_BY,
           ),
-          validatedCreateAppointmentDto = ValidatedAppointment.validCreateAppointment().copy(
+          createDto = ValidatedAppointment.validCreateAppointment().copy(
             dto = CreateAppointmentDto(
               id = ID,
               crn = "X12345",
@@ -226,14 +226,14 @@ class AppointmentEventEntityFactoryTest {
     @Test
     fun `use penaltyMinutes instead of penaltyTime if defined`() {
       val result = factory.buildCreatedEvent(
-        CreateAppointmentEventDetails(
-          appointment = AppointmentEntity.valid().copy(deliusId = 101L),
+        AppointmentCreatedEvent(
+          appointmentEntity = AppointmentEntity.valid().copy(deliusId = 101L),
           trigger = AppointmentEventTrigger(
             triggeredAt = TRIGGERED_AT,
             triggerType = AppointmentEventTriggerType.SCHEDULING,
             triggeredBy = TRIGGERED_BY,
           ),
-          validatedCreateAppointmentDto = ValidatedAppointment.validCreateAppointment().copy(
+          createDto = ValidatedAppointment.validCreateAppointment().copy(
             dto = CreateAppointmentDto.valid().copy(
               contactOutcomeCode = null,
               attendanceData = AttendanceDataDto.valid().copy(
@@ -263,8 +263,8 @@ class AppointmentEventEntityFactoryTest {
       )
 
       val result = factory.buildUpdatedEvent(
-        UpdateAppointmentEventDetails(
-          validatedUpdate = ValidatedAppointment.validUpdateAppointment().copy(
+        UpdateAppointmentEvent(
+          updateDto = ValidatedAppointment.validUpdateAppointment().copy(
             dto = UpdateAppointmentOutcomeDto(
               deliusId = 101L,
               deliusVersionToUpdate = deliusVersion,
@@ -292,7 +292,7 @@ class AppointmentEventEntityFactoryTest {
             project = PROJECT,
             contactOutcome = contactOutcomeEntity,
           ),
-          appointment = AppointmentEntity.valid(),
+          appointmentEntity = AppointmentEntity.valid(),
           existingAppointment = AppointmentDto.valid().copy(
             communityPaybackId = communityPaybackId,
             offender = OffenderDto.OffenderLimitedDto(crn = "X12345"),
@@ -345,8 +345,8 @@ class AppointmentEventEntityFactoryTest {
       val deliusVersion = UUID.randomUUID()
 
       val result = factory.buildUpdatedEvent(
-        UpdateAppointmentEventDetails(
-          validatedUpdate = ValidatedAppointment.validUpdateAppointment().copy(
+        UpdateAppointmentEvent(
+          updateDto = ValidatedAppointment.validUpdateAppointment().copy(
             dto = UpdateAppointmentOutcomeDto(
               deliusId = 101L,
               deliusVersionToUpdate = deliusVersion,
@@ -364,7 +364,7 @@ class AppointmentEventEntityFactoryTest {
             project = PROJECT,
             contactOutcome = null,
           ),
-          appointment = AppointmentEntity.valid(),
+          appointmentEntity = AppointmentEntity.valid(),
           existingAppointment = AppointmentDto.valid().copy(
             offender = OffenderDto.OffenderLimitedDto(crn = "X12345"),
             communityPaybackId = null,
@@ -412,8 +412,8 @@ class AppointmentEventEntityFactoryTest {
     @Test
     fun `use penaltyMinutes instead of penaltyTime if defined`() {
       val result = factory.buildUpdatedEvent(
-        UpdateAppointmentEventDetails(
-          validatedUpdate = ValidatedAppointment.validUpdateAppointment().copy(
+        UpdateAppointmentEvent(
+          updateDto = ValidatedAppointment.validUpdateAppointment().copy(
             UpdateAppointmentOutcomeDto.valid().copy(
               contactOutcomeCode = null,
               attendanceData = AttendanceDataDto.valid().copy(
@@ -422,7 +422,7 @@ class AppointmentEventEntityFactoryTest {
               ),
             ),
           ),
-          appointment = AppointmentEntity.valid(),
+          appointmentEntity = AppointmentEntity.valid(),
           existingAppointment = AppointmentDto.valid(),
           trigger = AppointmentEventTrigger(
             triggeredAt = TRIGGERED_AT,
@@ -438,8 +438,8 @@ class AppointmentEventEntityFactoryTest {
     @Test
     fun `use legacy penaltyTime if penaltyMinutes not defined`() {
       val result = factory.buildUpdatedEvent(
-        UpdateAppointmentEventDetails(
-          validatedUpdate = ValidatedAppointment.validUpdateAppointment().copy(
+        UpdateAppointmentEvent(
+          updateDto = ValidatedAppointment.validUpdateAppointment().copy(
             UpdateAppointmentOutcomeDto.valid().copy(
               contactOutcomeCode = null,
               attendanceData = AttendanceDataDto.valid().copy(
@@ -448,7 +448,7 @@ class AppointmentEventEntityFactoryTest {
               ),
             ),
           ),
-          appointment = AppointmentEntity.valid(),
+          appointmentEntity = AppointmentEntity.valid(),
           existingAppointment = AppointmentDto.valid(),
           trigger = AppointmentEventTrigger(
             triggeredAt = TRIGGERED_AT,

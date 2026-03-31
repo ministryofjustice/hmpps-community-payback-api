@@ -10,8 +10,9 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOut
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.ConflictException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.InternalServerErrorException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.NotFoundException
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventEntityFactory.UpdateAppointmentEventDetails
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService.ValidatedAppointment
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.UpdateAppointmentEvent
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.SpringEventPublisher
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toNDUpdateAppointment
 
 @Service
@@ -20,6 +21,7 @@ class AppointmentUpdateService(
   private val appointmentEventService: AppointmentEventService,
   private val communityPaybackAndDeliusClient: CommunityPaybackAndDeliusClient,
   private val appointmentUpdateValidationService: AppointmentValidationService,
+  private val springEventPublisher: SpringEventPublisher,
 ) {
   private companion object {
     private val log = LoggerFactory.getLogger(this::class.java)
@@ -36,9 +38,9 @@ class AppointmentUpdateService(
 
     val validatedUpdateDto = appointmentUpdateValidationService.validateUpdate(existingAppointment, update)
 
-    val updateEventDetails = UpdateAppointmentEventDetails(
-      validatedUpdate = appointmentUpdateValidationService.validateUpdate(existingAppointment, update),
-      appointment = appointmentEntity,
+    val updateEventDetails = UpdateAppointmentEvent(
+      updateDto = appointmentUpdateValidationService.validateUpdate(existingAppointment, update),
+      appointmentEntity = appointmentEntity,
       existingAppointment = existingAppointment,
       trigger = trigger,
     )
@@ -50,7 +52,7 @@ class AppointmentUpdateService(
 
     updateDelius(existingAppointment, validatedUpdateDto)
 
-    appointmentEventService.publishUpdateEventOnTransactionCommit(updateEventDetails)
+    springEventPublisher.publishEvent(updateEventDetails)
   }
 
   @SuppressWarnings("SwallowedException", "ThrowsCount")
