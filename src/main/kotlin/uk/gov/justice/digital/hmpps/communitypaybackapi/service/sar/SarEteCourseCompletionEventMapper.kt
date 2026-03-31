@@ -30,6 +30,7 @@ fun EteCourseCompletionEventEntity.toSarEntry(
       "appointmentCreated" to (deliusAppointmentCreated == true),
       "appointmentUpdated" to (deliusAppointmentCreated == false),
       "minutesCredited" to minutesCredited,
+      "notes" to notes,
       "appointment" to appointmentEvent?.toSarEntry(),
     )
   },

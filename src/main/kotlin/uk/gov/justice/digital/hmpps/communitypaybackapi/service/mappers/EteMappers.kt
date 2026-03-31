@@ -106,7 +106,7 @@ class EteMappers(
     behaviour = AppointmentBehaviourDto.NOT_APPLICABLE,
   )
 
-  fun toResolutionEntityForCourseAlreadyCompleted(
+  fun toResolutionEntityForDontCreditTime(
     id: UUID,
     courseCompletionEvent: EteCourseCompletionEventEntity,
     courseCompletionResolution: CourseCompletionResolutionDto,
@@ -114,7 +114,9 @@ class EteMappers(
     id,
     courseCompletionEvent,
     courseCompletionResolution,
-    EteCourseCompletionResolution.COURSE_ALREADY_COMPLETED_WITHIN_THRESHOLD,
+    EteCourseCompletionResolution.DONT_CREDIT_TIME,
+  ).copy(
+    notes = courseCompletionResolution.dontCreditTimeDetails!!.notes,
   )
 
   fun toResolutionEntityForCreditTime(
@@ -137,6 +139,7 @@ class EteMappers(
       projectCode = creditTime.projectCode,
       minutesCredited = creditTime.minutesToCredit,
       contactOutcome = contactOutcomeEntityRepository.findByCode(creditTime.contactOutcomeCode),
+      notes = creditTime.notes,
     )
   }
 

@@ -106,7 +106,7 @@ class EteService(
 
     when (courseCompletionResolution.type) {
       CourseCompletionResolutionTypeDto.CREDIT_TIME -> creditTime(courseCompletionResolution, courseCompletionEvent)
-      CourseCompletionResolutionTypeDto.COURSE_ALREADY_COMPLETED_WITHIN_THRESHOLD -> courseAlreadyCompleted(courseCompletionResolution, courseCompletionEvent)
+      CourseCompletionResolutionTypeDto.DONT_CREDIT_TIME -> dontCreditTime(courseCompletionResolution, courseCompletionEvent)
     }
   }
 
@@ -153,12 +153,12 @@ class EteService(
     )
   }
 
-  private fun courseAlreadyCompleted(
+  private fun dontCreditTime(
     courseCompletionResolution: CourseCompletionResolutionDto,
     courseCompletionEvent: EteCourseCompletionEventEntity,
   ) {
     eteCourseCompletionEventResolutionRepository.save(
-      eteMapper.toResolutionEntityForCourseAlreadyCompleted(
+      eteMapper.toResolutionEntityForDontCreditTime(
         id = UUID.randomUUID(),
         courseCompletionEvent = courseCompletionEvent,
         courseCompletionResolution = courseCompletionResolution,

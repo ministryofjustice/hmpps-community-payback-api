@@ -218,6 +218,7 @@ class SarRequestCourseCompletionEventIT : IntegrationTestBase() {
             date = LocalDate.of(2025, 5, 1),
             startTime = LocalTime.of(0, 0),
             endTime = LocalTime.of(1, 0),
+            notes = "Some example notes",
           ),
         )
 
@@ -269,7 +270,7 @@ class SarRequestCourseCompletionEventIT : IntegrationTestBase() {
           resolution = resolution!!.copy(
             createdAt = RANGE_TEST_TO_DATE.atLastSecondOfDay(),
             createdByUsername = "user2",
-            resolution = EteCourseCompletionResolution.COURSE_ALREADY_COMPLETED_WITHIN_THRESHOLD,
+            resolution = EteCourseCompletionResolution.DONT_CREDIT_TIME,
             minutesCredited = null,
             deliusAppointmentCreated = null,
           ),

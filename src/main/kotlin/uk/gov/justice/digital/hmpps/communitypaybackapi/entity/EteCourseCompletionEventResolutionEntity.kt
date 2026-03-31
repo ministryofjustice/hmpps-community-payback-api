@@ -32,6 +32,7 @@ data class EteCourseCompletionEventResolutionEntity(
   val createdByUsername: String,
 
   val crn: String?,
+  val notes: String? = null,
   /**
    * The following fields are set when resolution is [EteCourseCompletionResolution.CREDIT_TIME]
    */
@@ -106,5 +107,5 @@ data class EteCourseCompletionEventResolutionEntity(
 
 enum class EteCourseCompletionResolution {
   CREDIT_TIME,
-  COURSE_ALREADY_COMPLETED_WITHIN_THRESHOLD,
+  DONT_CREDIT_TIME,
 }
