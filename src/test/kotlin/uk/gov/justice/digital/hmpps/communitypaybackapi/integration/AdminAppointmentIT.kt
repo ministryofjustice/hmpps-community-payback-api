@@ -14,12 +14,16 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDEnforcementActi
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectAndLocation
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.PageResponse
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AttendanceDataDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntityRepository
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentTaskEntityRepository
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity.Companion.CODE_ATTENDED_COMPLIED
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ProjectTypeEntity.Companion.GROUP_PLACEMENT_NATIONAL_PROJECT_CODE
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.validNoOutcome
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.valid
@@ -35,6 +39,9 @@ class AdminAppointmentIT : IntegrationTestBase() {
 
   @Autowired
   lateinit var appointmentOutcomeEntityRepository: AppointmentEventEntityRepository
+
+  @Autowired
+  lateinit var appointmentTaskEntityRepository: AppointmentTaskEntityRepository
 
   @Autowired
   lateinit var domainEventAsserter: DomainEventAsserter
@@ -188,7 +195,9 @@ class AdminAppointmentIT : IntegrationTestBase() {
     }
 
     @Test
-    fun `Should send update upstream, raise domain event and delete corresponding form data`() {
+    fun `Should update upstream, raise domain event and create travel time task`() {
+      appointmentTaskEntityRepository.deleteAll()
+
       CommunityPaybackAndDeliusMockServer.setupGetDataMocksForUpdateAppointment(
         existingAppointment = NDAppointment.validNoOutcome(ctx).copy(
           id = 1234L,
@@ -198,7 +207,7 @@ class AdminAppointmentIT : IntegrationTestBase() {
           case = NDCaseSummary.valid().copy(crn = CRN),
         ),
         username = "theusername",
-        project = NDProject.valid(ctx).copy(code = "proj123"),
+        project = NDProject.valid(ctx).copy(code = "proj123", type = NDProjectType.valid().copy(code = GROUP_PLACEMENT_NATIONAL_PROJECT_CODE)),
       )
 
       CommunityPaybackAndDeliusMockServer.putAppointment(
@@ -213,6 +222,7 @@ class AdminAppointmentIT : IntegrationTestBase() {
           UpdateAppointmentOutcomeDto.valid(ctx).copy(
             deliusId = 1234L,
             attendanceData = AttendanceDataDto.valid(),
+            contactOutcomeCode = CODE_ATTENDED_COMPLIED,
           ),
         )
         .exchange()
@@ -225,6 +235,8 @@ class AdminAppointmentIT : IntegrationTestBase() {
       )
 
       domainEventAsserter.assertEventCount("community-payback.appointment.updated", 1)
+
+      assertThat(appointmentTaskEntityRepository.findAll()).hasSize(1)
     }
   }
 

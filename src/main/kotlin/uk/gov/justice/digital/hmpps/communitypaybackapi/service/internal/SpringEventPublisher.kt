@@ -31,7 +31,9 @@ sealed interface CommunityPaybackSpringEvent {
     val createDto: AppointmentValidationService.ValidatedAppointment<CreateAppointmentDto>,
     val appointmentEntity: AppointmentEntity,
     val trigger: AppointmentEventTrigger,
-  ) : CommunityPaybackSpringEvent
+  ) : CommunityPaybackSpringEvent {
+    companion object
+  }
 
   data class CreateAdjustmentEvent(
     val createDto: CreateAdjustmentDto,
@@ -46,5 +48,7 @@ sealed interface CommunityPaybackSpringEvent {
     val appointmentEntity: AppointmentEntity,
     val existingAppointment: AppointmentDto,
     val trigger: AppointmentEventTrigger,
-  ) : CommunityPaybackSpringEvent
+  ) : CommunityPaybackSpringEvent {
+    companion object
+  }
 }

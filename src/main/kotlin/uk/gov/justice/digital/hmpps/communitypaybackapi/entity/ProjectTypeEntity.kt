@@ -37,14 +37,16 @@ data class ProjectTypeEntity(
 
   override fun toString(): String = "ProjectType(id=$id, code='$code', name='$name')"
 
-  companion object
+  companion object {
+    const val GROUP_PLACEMENT_NATIONAL_PROJECT_CODE = "NP2"
+  }
 }
 
-enum class ProjectTypeGroup {
-  ETE,
-  GROUP,
-  INDIVIDUAL,
-  INDUCTION,
+enum class ProjectTypeGroup(val travelTimeSupported: Boolean) {
+  ETE(travelTimeSupported = false),
+  GROUP(travelTimeSupported = true),
+  INDIVIDUAL(travelTimeSupported = true),
+  INDUCTION(travelTimeSupported = false),
   ;
 
   companion object {

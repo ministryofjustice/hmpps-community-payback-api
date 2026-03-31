@@ -10,8 +10,6 @@ import java.util.UUID
 
 @Repository
 interface AppointmentTaskEntityRepository : JpaRepository<AppointmentTaskEntity, UUID> {
-  fun findByAppointmentId(appointmentId: UUID): List<AppointmentTaskEntity>
-
   @Query(
     """
     SELECT task FROM AppointmentTaskEntity task
