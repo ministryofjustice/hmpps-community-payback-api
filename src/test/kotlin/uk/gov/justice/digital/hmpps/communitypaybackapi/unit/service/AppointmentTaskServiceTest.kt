@@ -7,6 +7,8 @@ import io.mockk.junit5.MockKExtension
 import io.mockk.slot
 import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
+import org.assertj.core.api.Assertions.within
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -42,6 +44,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.Communi
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.UpdateAppointmentEvent
 import java.time.LocalDate
 import java.time.OffsetDateTime
+import java.time.temporal.ChronoUnit
 import java.util.UUID
 
 @ExtendWith(MockKExtension::class)
@@ -230,6 +233,42 @@ class AppointmentTaskServiceTest {
         assertThat(task.taskStatus).isEqualTo(AppointmentTaskStatus.COMPLETE)
         assertThat(task.decisionMadeAt).isEqualTo(triggeredAt)
         assertThat(task.decisionMadeByUsername).isEqualTo("currentUsername")
+        assertThat(task.decisionDescription).isEqualTo("Task completed on adjustment creation")
+      }
+    }
+  }
+
+  @Nested
+  inner class CompleteTask {
+
+    @Test
+    fun `throw exception if task not found`() {
+      val taskId = UUID.randomUUID()
+
+      every { appointmentTaskEntityRepository.findByIdOrNull(taskId) } returns null
+
+      assertThatThrownBy {
+        service.completeTask(taskId)
+      }.hasMessage("Can't find task with id $taskId")
+    }
+
+    @Test
+    fun `complete task`() {
+      val task = AppointmentTaskEntity.validPending()
+
+      every { appointmentTaskEntityRepository.findByIdOrNull(task.id) } returns task
+      every { contextService.getUserName() } returns "currentUsername"
+      every { appointmentTaskEntityRepository.save(any()) } returnsArgument 0
+
+      service.completeTask(task.id)
+
+      verify {
+        appointmentTaskEntityRepository.save(task)
+
+        assertThat(task.taskStatus).isEqualTo(AppointmentTaskStatus.COMPLETE)
+        assertThat(task.decisionMadeAt).isCloseTo(OffsetDateTime.now(), within(1, ChronoUnit.MINUTES))
+        assertThat(task.decisionMadeByUsername).isEqualTo("currentUsername")
+        assertThat(task.decisionDescription).isEqualTo("Task completed directly")
       }
     }
   }
