@@ -30,13 +30,13 @@ class AdminAppointmentTaskIT : IntegrationTestBase() {
   lateinit var appointmentEntityRepository: AppointmentEntityRepository
 
   @Nested
-  @DisplayName("GET /admin/appointment-tasks")
+  @DisplayName("GET /admin/appointment-tasks/pending")
   inner class GetAppointmentTasks {
 
     @Test
     fun `should return unauthorized if no token`() {
       webTestClient.get()
-        .uri("/admin/appointment-tasks")
+        .uri("/admin/appointment-tasks/pending")
         .exchange()
         .expectStatus()
         .isUnauthorized
@@ -45,7 +45,7 @@ class AdminAppointmentTaskIT : IntegrationTestBase() {
     @Test
     fun `should return forbidden if no role`() {
       webTestClient.get()
-        .uri("/admin/appointment-tasks")
+        .uri("/admin/appointment-tasks/pending")
         .headers(setAuthorisation())
         .exchange()
         .expectStatus()
@@ -55,7 +55,7 @@ class AdminAppointmentTaskIT : IntegrationTestBase() {
     @Test
     fun `should return forbidden if wrong role`() {
       webTestClient.get()
-        .uri("/admin/appointment-tasks")
+        .uri("/admin/appointment-tasks/pending")
         .headers(setAuthorisation(roles = listOf("ROLE_WRONG")))
         .exchange()
         .expectStatus()
@@ -65,7 +65,7 @@ class AdminAppointmentTaskIT : IntegrationTestBase() {
     @Test
     fun `should return empty page when no pending appointment tasks`() {
       val pageResponse = webTestClient.get()
-        .uri("/admin/appointment-tasks")
+        .uri("/admin/appointment-tasks/pending")
         .addAdminUiAuthHeader("theusername")
         .exchange()
         .expectStatus()
@@ -96,7 +96,7 @@ class AdminAppointmentTaskIT : IntegrationTestBase() {
       )
 
       val pageResponse = webTestClient.get()
-        .uri("/admin/appointment-tasks")
+        .uri("/admin/appointment-tasks/pending")
         .addAdminUiAuthHeader("theusername")
         .exchange()
         .expectStatus()
@@ -138,7 +138,7 @@ class AdminAppointmentTaskIT : IntegrationTestBase() {
       )
 
       val pageResponse = webTestClient.get()
-        .uri("/admin/appointment-tasks?appointmentFromDate=$fromDate&appointmentToDate=$toDate&appointmentProviderCode=$providerCode&page=0&size=10")
+        .uri("/admin/appointment-tasks/pending?appointmentFromDate=$fromDate&appointmentToDate=$toDate&appointmentProviderCode=$providerCode&page=0&size=10")
         .addAdminUiAuthHeader("theusername")
         .exchange()
         .expectStatus()

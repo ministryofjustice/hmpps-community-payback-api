@@ -30,7 +30,7 @@ class AdminAppointmentTaskController(
 ) {
 
   @GetMapping(
-    path = ["/appointment-tasks"],
+    path = ["/appointment-tasks/pending"],
     produces = [MediaType.APPLICATION_JSON_VALUE],
   )
   @Operation(
