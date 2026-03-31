@@ -9,16 +9,17 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.SpringEventPublisher
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.ToAppointmentEntity.toAppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toNDCreateAppointment
 import java.util.UUID
 
 @Service
 class AppointmentCreationService(
-  private val appointmentEventService: AppointmentEventService,
   private val appointmentValidationService: AppointmentValidationService,
   private val communityPaybackAndDeliusClient: CommunityPaybackAndDeliusClient,
   private val appointmentEntityRepository: AppointmentEntityRepository,
+  private val springEventPublisher: SpringEventPublisher,
 ) {
 
   @Transactional
@@ -60,15 +61,15 @@ class AppointmentCreationService(
       },
     )
 
-    appointmentEventService.persistAndPublishAppointmentCreatedDomainEvents(
-      validatedAppointments.map { validatedCreateAppointment ->
+    validatedAppointments.forEach { validatedCreateAppointment ->
+      springEventPublisher.publishEvent(
         CommunityPaybackSpringEvent.AppointmentCreatedEvent(
           createDto = validatedCreateAppointment,
           appointmentEntity = appointmentEntities.first { it.id == validatedCreateAppointment.dto.id },
           trigger = trigger,
-        )
-      },
-    )
+        ),
+      )
+    }
 
     return creationResponse.map { it.id }
   }

@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.service
 
 import jakarta.transaction.Transactional
+import org.springframework.context.event.EventListener
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventEntityRepository
@@ -20,9 +21,10 @@ class AdjustmentEventService(
 
   fun getEvent(eventId: UUID) = adjustmentEventEntityRepository.findByIdOrNull(eventId)
 
-  fun publishCreateEventOnTransactionCommit(details: CreateAdjustmentEvent) {
+  @EventListener
+  fun persistAndPublishCreateAdjustmentDomainEvent(event: CreateAdjustmentEvent) {
     val persistedEvent = adjustmentEventEntityRepository.save(
-      adjustmentEventEntityFactory.buildAdjustmentCreated(details),
+      adjustmentEventEntityFactory.buildAdjustmentCreated(event),
     )
 
     domainEventService.publishOnTransactionCommit(

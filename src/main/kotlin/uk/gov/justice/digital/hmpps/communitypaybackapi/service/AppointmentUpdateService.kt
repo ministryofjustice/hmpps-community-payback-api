@@ -12,6 +12,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.InternalS
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.NotFoundException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService.ValidatedAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.UpdateAppointmentEvent
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.SpringEventPublisher
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toNDUpdateAppointment
 
 @Service
@@ -20,6 +21,7 @@ class AppointmentUpdateService(
   private val appointmentEventService: AppointmentEventService,
   private val communityPaybackAndDeliusClient: CommunityPaybackAndDeliusClient,
   private val appointmentUpdateValidationService: AppointmentValidationService,
+  private val springEventPublisher: SpringEventPublisher,
 ) {
   private companion object {
     private val log = LoggerFactory.getLogger(this::class.java)
@@ -50,7 +52,7 @@ class AppointmentUpdateService(
 
     updateDelius(existingAppointment, validatedUpdateDto)
 
-    appointmentEventService.persistAndPublishAppointmentUpdateDomainEvent(updateEventDetails)
+    springEventPublisher.publishEvent(updateEventDetails)
   }
 
   @SuppressWarnings("SwallowedException", "ThrowsCount")

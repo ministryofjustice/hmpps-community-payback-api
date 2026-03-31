@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.service
 
 import jakarta.transaction.Transactional
+import org.springframework.context.event.EventListener
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntity
@@ -44,36 +45,30 @@ class AppointmentEventService(
     now = OffsetDateTime.now(),
   )
 
-  fun persistAndPublishAppointmentCreatedDomainEvents(
-    event: List<AppointmentCreatedEvent>,
+  @EventListener
+  fun persistAndPublishAppointmentCreatedDomainEvent(
+    event: AppointmentCreatedEvent,
   ) {
-    persistAndPublishDomainEventsOnTransactionCommit(
-      event.map {
-        appointmentEventEntityFactory.buildCreatedEvent(it)
-      },
-    )
+    persistAndPublishDomainEventOnTransactionCommit(appointmentEventEntityFactory.buildCreatedEvent(event))
   }
 
+  @EventListener
   fun persistAndPublishAppointmentUpdateDomainEvent(
     event: UpdateAppointmentEvent,
   ) {
-    persistAndPublishDomainEventsOnTransactionCommit(
-      listOf(appointmentEventEntityFactory.buildUpdatedEvent(event)),
-    )
+    persistAndPublishDomainEventOnTransactionCommit(appointmentEventEntityFactory.buildUpdatedEvent(event))
   }
 
-  private fun persistAndPublishDomainEventsOnTransactionCommit(events: List<AppointmentEventEntity>) {
-    val persistedEvents = appointmentEventEntityRepository.saveAll(events)
+  private fun persistAndPublishDomainEventOnTransactionCommit(event: AppointmentEventEntity) {
+    val persistedEvent = appointmentEventEntityRepository.save(event)
 
-    persistedEvents.forEach { event ->
-      domainEventService.publishOnTransactionCommit(
-        id = event.id,
-        type = when (event.eventType) {
-          AppointmentEventType.CREATE -> DomainEventType.APPOINTMENT_CREATED
-          AppointmentEventType.UPDATE -> DomainEventType.APPOINTMENT_UPDATED
-        },
-        headers = event.appointment.toDomainEventHeaders(),
-      )
-    }
+    domainEventService.publishOnTransactionCommit(
+      id = persistedEvent.id,
+      type = when (persistedEvent.eventType) {
+        AppointmentEventType.CREATE -> DomainEventType.APPOINTMENT_CREATED
+        AppointmentEventType.UPDATE -> DomainEventType.APPOINTMENT_UPDATED
+      },
+      headers = persistedEvent.appointment.toDomainEventHeaders(),
+    )
   }
 }

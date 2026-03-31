@@ -152,10 +152,10 @@ class AppointmentEventServiceTest {
       } returns createEvent
 
       every {
-        appointmentEventEntityRepository.saveAll(listOf(createEvent))
+        appointmentEventEntityRepository.save(createEvent)
       } returnsArgument 0
 
-      service.persistAndPublishAppointmentCreatedDomainEvents(listOf(createDetails))
+      service.persistAndPublishAppointmentCreatedDomainEvent(createDetails)
 
       verify {
         domainEventService.publishOnTransactionCommit(
@@ -198,7 +198,7 @@ class AppointmentEventServiceTest {
       every { appointmentEventEntityFactory.buildUpdatedEvent(updateDetails) } returns updateEvent
 
       every {
-        appointmentEventEntityRepository.saveAll(listOf(updateEvent))
+        appointmentEventEntityRepository.save(updateEvent)
       } returnsArgument 0
 
       service.persistAndPublishAppointmentUpdateDomainEvent(updateDetails)

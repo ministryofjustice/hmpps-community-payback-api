@@ -21,11 +21,11 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.validCreateAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentCreationService
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventTrigger
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService.ValidatedAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AppointmentCreatedEvent
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.SpringEventPublisher
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.ToAppointmentEntity.toAppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toNDCreateAppointment
 
@@ -38,10 +38,10 @@ class AppointmentCreationServiceTest {
   lateinit var communityPaybackAndDeliusClient: CommunityPaybackAndDeliusClient
 
   @RelaxedMockK
-  lateinit var appointmentEventService: AppointmentEventService
+  lateinit var appointmentEntityRepository: AppointmentEntityRepository
 
   @RelaxedMockK
-  lateinit var appointmentEntityRepository: AppointmentEntityRepository
+  lateinit var springEventPublisher: SpringEventPublisher
 
   @InjectMockKs
   private lateinit var service: AppointmentCreationService
@@ -131,18 +131,19 @@ class AppointmentCreationServiceTest {
           ),
         )
 
-        appointmentEventService.persistAndPublishAppointmentCreatedDomainEvents(
-          listOf(
-            AppointmentCreatedEvent(
-              appointmentEntity = appointmentEntity1,
-              trigger = TRIGGER,
-              createDto = validatedCreateAppointment1,
-            ),
-            AppointmentCreatedEvent(
-              appointmentEntity = appointmentEntity2,
-              trigger = TRIGGER,
-              createDto = validatedCreateAppointment2,
-            ),
+        springEventPublisher.publishEvent(
+          AppointmentCreatedEvent(
+            appointmentEntity = appointmentEntity1,
+            trigger = TRIGGER,
+            createDto = validatedCreateAppointment1,
+          ),
+        )
+
+        springEventPublisher.publishEvent(
+          AppointmentCreatedEvent(
+            appointmentEntity = appointmentEntity2,
+            trigger = TRIGGER,
+            createDto = validatedCreateAppointment2,
           ),
         )
       }
