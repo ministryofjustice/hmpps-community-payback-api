@@ -7,6 +7,8 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentTaskEn
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentTaskEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentTaskStatus
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentTaskType
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.random
+import java.time.OffsetDateTime
 import java.util.UUID
 
 fun AppointmentTaskEntity.Companion.valid() = AppointmentTaskEntity(
@@ -14,6 +16,14 @@ fun AppointmentTaskEntity.Companion.valid() = AppointmentTaskEntity(
   appointment = AppointmentEntity.valid(),
   taskType = AppointmentTaskType.entries.random(),
   taskStatus = AppointmentTaskStatus.entries.random(),
+  decisionMadeAt = OffsetDateTime.now(),
+  decisionMadeByUsername = String.random(10),
+)
+
+fun AppointmentTaskEntity.Companion.validPending() = AppointmentTaskEntity.valid().copy(
+  taskStatus = AppointmentTaskStatus.PENDING,
+  decisionMadeAt = null,
+  decisionMadeByUsername = null,
 )
 
 fun AppointmentTaskEntity.persist(ctx: ApplicationContext) = ctx.getBean<AppointmentTaskEntityRepository>().save(this)

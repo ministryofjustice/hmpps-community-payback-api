@@ -6,9 +6,11 @@ import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentTaskSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentTaskEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentTaskEntityRepository
@@ -17,6 +19,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentTaskTy
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ProjectTypeGroup
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AppointmentCreatedEvent
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.CreateAdjustmentEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.UpdateAppointmentEvent
 import java.time.LocalDate
 import java.util.UUID
@@ -25,6 +28,7 @@ import java.util.UUID
 class AppointmentTaskService(
   private val appointmentTaskEntityRepository: AppointmentTaskEntityRepository,
   private val appointmentRetrievalService: AppointmentRetrievalService,
+  private val contextService: ContextService,
 ) {
 
   @EventListener
@@ -47,6 +51,21 @@ class AppointmentTaskService(
       outcome = event.updateDto.contactOutcome,
       project = event.updateDto.project,
     )
+  }
+
+  @EventListener
+  fun closeTravelTimeTaskOnAdjustmentCreation(
+    event: CreateAdjustmentEvent,
+  ) {
+    val trigger = event.trigger
+    if (trigger.triggerType == AdjustmentEventTriggerType.APPOINTMENT_TASK) {
+      val taskId = UUID.fromString(trigger.triggeredBy)
+      val task = appointmentTaskEntityRepository.findByIdOrNull(taskId) ?: error("Can't find task with id $taskId for adjustment ${event.deliusAdjustmentId}")
+      task.taskStatus = AppointmentTaskStatus.COMPLETE
+      task.decisionMadeAt = trigger.triggeredAt
+      task.decisionMadeByUsername = contextService.getUserName()
+      appointmentTaskEntityRepository.save(task)
+    }
   }
 
   private fun createTravelTimeTaskIfRequired(
