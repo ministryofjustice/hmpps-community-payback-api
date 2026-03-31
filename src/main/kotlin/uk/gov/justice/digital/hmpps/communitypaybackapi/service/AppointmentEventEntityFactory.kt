@@ -1,17 +1,13 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.service
 
 import org.springframework.stereotype.Service
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.derivePenaltyMinutesDuration
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.Behaviour
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.WorkQuality
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService.ValidatedAppointment
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.fromDto
 import java.time.OffsetDateTime
 import java.util.UUID
@@ -22,11 +18,11 @@ class AppointmentEventEntityFactory(
 ) {
 
   fun buildCreatedEvent(
-    details: CreateAppointmentEventDetails,
+    details: CommunityPaybackSpringEvent.AppointmentCreatedEvent,
   ): AppointmentEventEntity {
-    val appointment = details.appointment
-    val createAppointmentDto = details.validatedCreateAppointmentDto.dto
-    val project = details.validatedCreateAppointmentDto.project
+    val appointment = details.appointmentEntity
+    val createAppointmentDto = details.createDto.dto
+    val project = details.createDto.project
     val supervisorCode = createAppointmentDto.supervisorOfficerCode ?: providerService.getTeamUnallocatedSupervisor(project.getTeamId()).code
 
     return AppointmentEventEntity(
@@ -42,13 +38,13 @@ class AppointmentEventEntityFactory(
       pickupLocationCode = createAppointmentDto.pickUpLocationCode,
       pickupLocationDescription = createAppointmentDto.pickUpLocationDescription,
       pickupTime = createAppointmentDto.pickUpTime,
-      contactOutcome = details.validatedCreateAppointmentDto.contactOutcome,
+      contactOutcome = details.createDto.contactOutcome,
       supervisorOfficerCode = supervisorCode,
       notes = createAppointmentDto.notes,
       hiVisWorn = createAppointmentDto.attendanceData?.hiVisWorn,
       workedIntensively = createAppointmentDto.attendanceData?.workedIntensively,
       penaltyMinutes = createAppointmentDto.attendanceData?.derivePenaltyMinutesDuration()?.toMinutes(),
-      minutesCredited = details.validatedCreateAppointmentDto.minutesToCredit?.toMinutes(),
+      minutesCredited = details.createDto.minutesToCredit?.toMinutes(),
       workQuality = createAppointmentDto.attendanceData?.workQuality?.let { WorkQuality.fromDto(it) },
       behaviour = createAppointmentDto.attendanceData?.behaviour?.let { Behaviour.fromDto(it) },
       alertActive = createAppointmentDto.alertActive,
@@ -61,19 +57,19 @@ class AppointmentEventEntityFactory(
   }
 
   fun buildUpdatedEvent(
-    details: UpdateAppointmentEventDetails,
+    details: CommunityPaybackSpringEvent.UpdateAppointmentEvent,
   ): AppointmentEventEntity {
     val existingAppointment = details.existingAppointment
-    val outcome = details.validatedUpdate.dto
-    val project = details.validatedUpdate.project
+    val outcome = details.updateDto.dto
+    val project = details.updateDto.project
     val startTime = outcome.startTime
     val endTime = outcome.endTime
     val penaltyMinutes = outcome.attendanceData?.derivePenaltyMinutesDuration()?.toMinutes()
-    val contactOutcome = details.validatedUpdate.contactOutcome
+    val contactOutcome = details.updateDto.contactOutcome
 
     return AppointmentEventEntity(
       id = UUID.randomUUID(),
-      appointment = details.appointment,
+      appointment = details.appointmentEntity,
       eventType = AppointmentEventType.UPDATE,
       priorDeliusVersion = outcome.deliusVersionToUpdate,
       projectCode = project.projectCode,
@@ -90,7 +86,7 @@ class AppointmentEventEntityFactory(
       hiVisWorn = outcome.attendanceData?.hiVisWorn,
       workedIntensively = outcome.attendanceData?.workedIntensively,
       penaltyMinutes = penaltyMinutes,
-      minutesCredited = details.validatedUpdate.minutesToCredit?.toMinutes(),
+      minutesCredited = details.updateDto.minutesToCredit?.toMinutes(),
       workQuality = outcome.attendanceData?.workQuality?.let { WorkQuality.fromDto(it) },
       behaviour = outcome.attendanceData?.behaviour?.let { Behaviour.fromDto(it) },
       alertActive = outcome.alertActive,
@@ -101,19 +97,6 @@ class AppointmentEventEntityFactory(
       triggeredBy = details.trigger.triggeredBy,
     )
   }
-
-  data class UpdateAppointmentEventDetails(
-    val validatedUpdate: ValidatedAppointment<UpdateAppointmentOutcomeDto>,
-    val appointment: AppointmentEntity,
-    val existingAppointment: AppointmentDto,
-    val trigger: AppointmentEventTrigger,
-  )
-
-  data class CreateAppointmentEventDetails(
-    val appointment: AppointmentEntity,
-    val trigger: AppointmentEventTrigger,
-    val validatedCreateAppointmentDto: ValidatedAppointment<CreateAppointmentDto>,
-  )
 }
 
 data class AppointmentEventTrigger(

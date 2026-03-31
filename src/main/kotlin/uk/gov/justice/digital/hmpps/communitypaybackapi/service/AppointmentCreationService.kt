@@ -8,7 +8,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCreatedAppointm
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntityRepository
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventEntityFactory.CreateAppointmentEventDetails
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.ToAppointmentEntity.toAppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toNDCreateAppointment
 import java.util.UUID
@@ -60,12 +60,12 @@ class AppointmentCreationService(
       },
     )
 
-    appointmentEventService.publishCreateEventsOnTransactionCommit(
+    appointmentEventService.persistAndPublishAppointmentCreatedDomainEvents(
       validatedAppointments.map { validatedCreateAppointment ->
-        CreateAppointmentEventDetails(
-          appointment = appointmentEntities.first { it.id == validatedCreateAppointment.dto.id },
+        CommunityPaybackSpringEvent.AppointmentCreatedEvent(
+          createDto = validatedCreateAppointment,
+          appointmentEntity = appointmentEntities.first { it.id == validatedCreateAppointment.dto.id },
           trigger = trigger,
-          validatedCreateAppointmentDto = validatedCreateAppointment,
         )
       },
     )

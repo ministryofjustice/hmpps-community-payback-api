@@ -6,7 +6,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackA
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAdjustmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsIdDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventTriggerType
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentEventEntityFactory.CreateAdjustmentEventDetails
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.CreateAdjustmentEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toNDAdjustmentRequest
 import java.time.Clock
 import java.time.OffsetDateTime
@@ -41,9 +41,9 @@ class AdjustmentService(
     ).single().id
 
     adjustmentEventService.publishCreateEventOnTransactionCommit(
-      CreateAdjustmentEventDetails(
-        createAdjustmentDto = createAdjustment,
-        appointment = validatedAdjustment.task.appointment,
+      CreateAdjustmentEvent(
+        createDto = createAdjustment,
+        appointmentEntity = validatedAdjustment.task.appointment,
         reason = validatedAdjustment.reason,
         deliusAdjustmentId = deliusAdjustmentId,
         trigger = AdjustmentEventTrigger(

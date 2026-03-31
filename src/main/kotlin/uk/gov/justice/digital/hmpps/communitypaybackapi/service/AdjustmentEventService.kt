@@ -5,7 +5,7 @@ import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventType
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentEventEntityFactory.CreateAdjustmentEventDetails
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.CreateAdjustmentEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toAdjustmentCreatedDomainEvent
 import java.time.OffsetDateTime
 import java.util.UUID
@@ -20,7 +20,7 @@ class AdjustmentEventService(
 
   fun getEvent(eventId: UUID) = adjustmentEventEntityRepository.findByIdOrNull(eventId)
 
-  fun publishCreateEventOnTransactionCommit(details: CreateAdjustmentEventDetails) {
+  fun publishCreateEventOnTransactionCommit(details: CreateAdjustmentEvent) {
     val persistedEvent = adjustmentEventEntityRepository.save(
       adjustmentEventEntityFactory.buildAdjustmentCreated(details),
     )

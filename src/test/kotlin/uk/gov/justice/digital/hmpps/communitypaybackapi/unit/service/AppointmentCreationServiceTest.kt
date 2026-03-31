@@ -21,11 +21,11 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.validCreateAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentCreationService
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventEntityFactory.CreateAppointmentEventDetails
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventTrigger
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService.ValidatedAppointment
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AppointmentCreatedEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.ToAppointmentEntity.toAppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toNDCreateAppointment
 
@@ -131,17 +131,17 @@ class AppointmentCreationServiceTest {
           ),
         )
 
-        appointmentEventService.publishCreateEventsOnTransactionCommit(
+        appointmentEventService.persistAndPublishAppointmentCreatedDomainEvents(
           listOf(
-            CreateAppointmentEventDetails(
-              appointment = appointmentEntity1,
+            AppointmentCreatedEvent(
+              appointmentEntity = appointmentEntity1,
               trigger = TRIGGER,
-              validatedCreateAppointmentDto = validatedCreateAppointment1,
+              createDto = validatedCreateAppointment1,
             ),
-            CreateAppointmentEventDetails(
-              appointment = appointmentEntity2,
+            AppointmentCreatedEvent(
+              appointmentEntity = appointmentEntity2,
               trigger = TRIGGER,
-              validatedCreateAppointmentDto = validatedCreateAppointment2,
+              createDto = validatedCreateAppointment2,
             ),
           ),
         )

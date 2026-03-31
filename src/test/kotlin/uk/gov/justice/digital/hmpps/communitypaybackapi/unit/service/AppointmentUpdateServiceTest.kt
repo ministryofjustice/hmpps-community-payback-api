@@ -106,7 +106,7 @@ class AppointmentUpdateServiceTest {
       )
 
       verify {
-        appointmentEventService.publishUpdateEventOnTransactionCommit(any())
+        appointmentEventService.persistAndPublishAppointmentUpdateDomainEvent(any())
         communityPaybackAndDeliusClient.updateAppointment(
           projectCode = PROJECT_CODE,
           appointmentId = DELIUS_APPOINTMENT_ID,
@@ -129,7 +129,7 @@ class AppointmentUpdateServiceTest {
       )
 
       verify(exactly = 0) {
-        appointmentEventService.publishUpdateEventOnTransactionCommit(any())
+        appointmentEventService.persistAndPublishAppointmentCreatedDomainEvents(any())
         communityPaybackAndDeliusClient.updateAppointment(any(), any(), any())
       }
     }
