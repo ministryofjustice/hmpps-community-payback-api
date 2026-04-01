@@ -6,6 +6,7 @@ import jakarta.persistence.Id
 import jakarta.persistence.IdClass
 import jakarta.persistence.Table
 import org.hibernate.annotations.CreationTimestamp
+import org.hibernate.proxy.HibernateProxy
 import java.time.OffsetDateTime
 
 @Entity
@@ -25,13 +26,22 @@ data class FormCacheEntity(
 
   var updatedAt: OffsetDateTime = OffsetDateTime.now(),
 ) {
+  @Suppress("USELESS_IS_CHECK")
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
-    if (other !is FormCacheEntity) return false
-    return formId == other.formId && formType == other.formType
+    if (other == null) return false
+    val oEffectiveClass =
+      if (other is HibernateProxy) other.hibernateLazyInitializer.persistentClass else other.javaClass
+    val thisEffectiveClass =
+      this.asHibernateProxy()?.hibernateLazyInitializer?.persistentClass ?: this.javaClass
+    if (thisEffectiveClass != oEffectiveClass) return false
+    other as FormCacheEntity
+
+    return formId == other.formId
   }
 
-  override fun hashCode(): Int = 31 * formId.hashCode() + formType.hashCode()
+  @Suppress("USELESS_IS_CHECK")
+  override fun hashCode(): Int = this.asHibernateProxy()?.hibernateLazyInitializer?.persistentClass?.hashCode() ?: javaClass.hashCode()
 
   override fun toString(): String = "FormCacheEntity(formId='$formId', formType='$formType')"
 

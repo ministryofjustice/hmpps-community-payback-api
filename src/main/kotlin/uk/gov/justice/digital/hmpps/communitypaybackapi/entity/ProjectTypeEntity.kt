@@ -8,6 +8,7 @@ import jakarta.persistence.Table
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.Immutable
 import org.hibernate.annotations.UpdateTimestamp
+import org.hibernate.proxy.HibernateProxy
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeGroupDto
 import java.time.OffsetDateTime
 import java.util.UUID
@@ -27,13 +28,22 @@ data class ProjectTypeEntity(
   @UpdateTimestamp
   val updatedAt: OffsetDateTime = OffsetDateTime.now(),
 ) {
+  @Suppress("USELESS_IS_CHECK")
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
-    if (other !is ProjectTypeEntity) return false
+    if (other == null) return false
+    val oEffectiveClass =
+      if (other is HibernateProxy) other.hibernateLazyInitializer.persistentClass else other.javaClass
+    val thisEffectiveClass =
+      this.asHibernateProxy()?.hibernateLazyInitializer?.persistentClass ?: this.javaClass
+    if (thisEffectiveClass != oEffectiveClass) return false
+    other as ProjectTypeEntity
+
     return id == other.id
   }
 
-  override fun hashCode(): Int = id.hashCode()
+  @Suppress("USELESS_IS_CHECK")
+  override fun hashCode(): Int = this.asHibernateProxy()?.hibernateLazyInitializer?.persistentClass?.hashCode() ?: javaClass.hashCode()
 
   override fun toString(): String = "ProjectType(id=$id, code='$code', name='$name')"
 

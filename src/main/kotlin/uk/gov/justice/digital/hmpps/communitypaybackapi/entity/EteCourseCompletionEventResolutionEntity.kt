@@ -8,15 +8,16 @@ import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.OneToOne
-import jakarta.persistence.PreUpdate
 import jakarta.persistence.Table
 import org.apache.commons.lang3.builder.CompareToBuilder.reflectionCompare
+import org.hibernate.annotations.Immutable
 import org.hibernate.proxy.HibernateProxy
 import java.time.OffsetDateTime
 import java.util.UUID
 
 @Entity
 @Table(name = "ete_course_completion_event_resolutions")
+@Immutable
 data class EteCourseCompletionEventResolutionEntity(
   @Id
   val id: UUID,
@@ -80,9 +81,6 @@ data class EteCourseCompletionEventResolutionEntity(
     ) == 0
   }
 
-  @PreUpdate
-  fun preUpdate(): Unit = throw UnsupportedOperationException("This entity can't be updated")
-
   @Suppress("USELESS_IS_CHECK")
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
@@ -92,7 +90,7 @@ data class EteCourseCompletionEventResolutionEntity(
     val thisEffectiveClass =
       this.asHibernateProxy()?.hibernateLazyInitializer?.persistentClass ?: this.javaClass
     if (thisEffectiveClass != oEffectiveClass) return false
-    other as EteCourseCompletionEventEntity
+    other as EteCourseCompletionEventResolutionEntity
 
     return id == other.id
   }
