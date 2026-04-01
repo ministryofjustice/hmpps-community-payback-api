@@ -1,7 +1,10 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.service
 
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.badRequest
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.onOrAfter
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.validateLengthLessThan
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.validateNotNull
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentCommandDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
@@ -10,11 +13,8 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeGroupDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.derivePenaltyMinutesDuration
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.BadRequestException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.validateLengthLessThan
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.validateNotNull
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDayOfWeek
 import java.time.Duration
 import java.time.LocalDate
@@ -88,13 +88,13 @@ class AppointmentValidationService(
 
     projectEndDateExclusive?.let {
       if (appointmentDate.onOrAfter(projectEndDateExclusive)) {
-        throw BadRequestException("Appointment Date of $appointmentDate must be before project end date $projectEndDateExclusive")
+        badRequest("Appointment Date of $appointmentDate must be before project end date $projectEndDateExclusive")
       }
     }
 
     val sentenceDate = unpaidWorkDetails.sentenceDate
     if (appointmentDate.isBefore(sentenceDate)) {
-      throw BadRequestException("Appointment Date of $appointmentDate must be on or after sentence date of $sentenceDate")
+      badRequest("Appointment Date of $appointmentDate must be on or after sentence date of $sentenceDate")
     }
   }
 
@@ -103,7 +103,7 @@ class AppointmentValidationService(
 
     if (project.availability.none { it.dayOfWeek.toDayOfWeek() == appointmentDayOfWeek }) {
       val availableDays = project.availability.map { it.dayOfWeek }.toSet()
-      throw BadRequestException("Project is not available on $appointmentDayOfWeek. Available days are $availableDays")
+      badRequest("Project is not available on $appointmentDayOfWeek. Available days are $availableDays")
     }
   }
 
@@ -115,7 +115,7 @@ class AppointmentValidationService(
     val appointmentIsInFuture = appointmentDate.atTime(command.startTime).isAfter(LocalDateTime.now())
     val attendanceOrEnforcementRecorded = contactOutcome.attended || contactOutcome.enforceable
     if (appointmentIsInFuture && attendanceOrEnforcementRecorded) {
-      throw BadRequestException("If the appointment is in the future, only acceptable absences are permitted to be recorded")
+      badRequest("If the appointment is in the future, only acceptable absences are permitted to be recorded")
     }
 
     if (contactOutcome.attended) {
@@ -127,7 +127,7 @@ class AppointmentValidationService(
 
   private fun ValidationContext.validateDuration() {
     if (command.endTime <= command.startTime) {
-      throw BadRequestException("End Time '${command.endTime}' must be after Start Time '${command.startTime}'")
+      badRequest("End Time '${command.endTime}' must be after Start Time '${command.startTime}'")
     }
   }
 
@@ -135,7 +135,7 @@ class AppointmentValidationService(
     command.attendanceData?.derivePenaltyMinutesDuration()?.let { penaltyDuration ->
       val appointmentDuration = Duration.between(command.startTime, command.endTime)
       if (penaltyDuration > appointmentDuration) {
-        throw BadRequestException("Penalty duration '$penaltyDuration' is greater than appointment duration '$appointmentDuration'")
+        badRequest("Penalty duration '$penaltyDuration' is greater than appointment duration '$appointmentDuration'")
       }
     }
   }
@@ -152,7 +152,7 @@ class AppointmentValidationService(
       val remainingEteMinutesAllowance = Duration.ofMinutes(unpaidWorkDetails.remainingEteMinutes) + appointmentMinutesAlreadyCredited
 
       if (minutesToCredit > remainingEteMinutesAllowance) {
-        throw BadRequestException("Credited minutes of $minutesToCredit exceeds remaining allowed ETE minutes of $remainingEteMinutesAllowance")
+        badRequest("Credited minutes of $minutesToCredit exceeds remaining allowed ETE minutes of $remainingEteMinutesAllowance")
       }
     }
   }
@@ -165,8 +165,7 @@ class AppointmentValidationService(
   )
 
   private fun loadContactOutcome(code: String?) = code?.let {
-    contactOutcomeEntityRepository.findByCode(it)
-      ?: throw BadRequestException("Contact outcome not found for code $code")
+    contactOutcomeEntityRepository.findByCode(it) ?: badRequest("Contact outcome not found for code $code")
   }
 
   private data class ValidationContext(
