@@ -59,7 +59,7 @@ class SessionService(
     projectCode: String,
     date: LocalDate,
   ): SessionDto {
-    val project = projectService.getProject(projectCode)
+    val project = projectService.getProject(projectCode) ?: error("Can't retrieve project $projectCode")
     val appointments = getSessionAppointments(projectCode, date)
 
     return sessionMappers.toSessionDto(
@@ -114,7 +114,7 @@ class SessionService(
 
   private fun SessionSupervisorEntity.toDto() = sessionMappers.toSummaryDto(
     date = day,
-    project = projectService.getProject(projectCode),
+    project = projectService.getProject(projectCode) ?: error("Can't retrieve project $projectCode"),
     appointments = getSessionAppointments(projectCode, day),
   )
 

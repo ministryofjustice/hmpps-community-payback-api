@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.service
 
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.badRequest
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.badRequestReferenceNotFound
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.formatForUser
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.onOrAfter
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.validateLengthLessThan
@@ -35,7 +36,7 @@ class AppointmentValidationService(
   ): ValidatedAppointment<CreateAppointmentDto> {
     val ctx = ValidationContext(
       command = create,
-      project = projectService.getProject(create.projectCode),
+      project = projectService.getProject(create.projectCode) ?: badRequestReferenceNotFound("Project", create.projectCode),
       contactOutcome = loadContactOutcome(create.contactOutcomeCode),
       unpaidWorkDetails = offenderService.getUnpaidWorkDetails(create.crn, create.deliusEventNumber),
       appointmentDate = create.date,
@@ -63,7 +64,7 @@ class AppointmentValidationService(
   ): ValidatedAppointment<UpdateAppointmentOutcomeDto> {
     val ctx = ValidationContext(
       command = update,
-      project = projectService.getProject(appointment.projectCode),
+      project = projectService.getProject(appointment.projectCode) ?: error("Can't retrieve project ${appointment.projectCode}"),
       contactOutcome = loadContactOutcome(update.contactOutcomeCode),
       unpaidWorkDetails = offenderService.getUnpaidWorkDetails(appointment.offender.crn, appointment.deliusEventNumber),
       appointmentDate = appointment.date,

@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.common
 
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.BadRequestException
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.NotFoundException
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 
@@ -33,3 +34,5 @@ inline fun validateLengthLessThan(
 }
 
 fun badRequest(message: String): Nothing = throw BadRequestException(message)
+fun badRequestReferenceNotFound(entityType: String, id: Any): Nothing = throw BadRequestException("$entityType not found for ID '$id'")
+fun notFound(entityType: String, id: Any): Nothing = throw NotFoundException(entityType, id)

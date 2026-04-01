@@ -9,7 +9,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackA
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectOutcomeSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeGroupDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.NotFoundException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ProjectTypeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ProjectTypeGroup
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.toHttpParams
@@ -41,13 +40,13 @@ class ProjectService(
   fun projectTypesForGroup(projectTypeGroup: ProjectTypeGroupDto) = projectTypeEntityRepository.findByProjectTypeGroupOrderByCodeAsc(ProjectTypeGroup.fromDto(projectTypeGroup))
     .map { it.toDto() }
 
-  fun getProject(projectCode: String): ProjectDto {
+  fun getProject(projectCode: String): ProjectDto? {
     val project = try {
       communityPaybackAndDeliusClient.getProject(
         projectCode = projectCode,
       )
     } catch (_: WebClientResponseException.NotFound) {
-      throw NotFoundException("Project", projectCode)
+      return null
     }
 
     val projectTypeCode = project.type.code

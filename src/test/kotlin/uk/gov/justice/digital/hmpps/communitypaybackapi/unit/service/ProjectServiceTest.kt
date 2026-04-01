@@ -19,7 +19,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.PageResponse
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectOutcomeSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeGroupDto.INDIVIDUAL
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.NotFoundException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ProjectTypeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ProjectTypeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ProjectTypeGroup
@@ -91,16 +90,16 @@ class ProjectServiceTest {
   inner class GetProject {
 
     @Test
-    fun `if project not found, throw not found exception`() {
+    fun `if project not found return null`() {
       every {
         communityPaybackAndDeliusClient.getProject(
           projectCode = PROJECT_CODE,
         )
       } throws WebClientResponseExceptionFactory.notFound()
 
-      assertThatThrownBy {
-        service.getProject(PROJECT_CODE)
-      }.isInstanceOf(NotFoundException::class.java).hasMessage("Project not found for ID 'PROJ123'")
+      val result = service.getProject(PROJECT_CODE)
+
+      assertThat(result).isNull()
     }
 
     @Test
