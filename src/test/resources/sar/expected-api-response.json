@@ -63,7 +63,7 @@
           "endTime": "01:00:00",
           "pickupLocation": "The pickup location",
           "pickupTime": "09:35:00",
-          "notes": "The notes",
+          "notes": "Some example notes",
           "contactOutcome": "Acceptable Absence - Court/Legal",
           "minutesCredited": 50,
           "penaltyMinutes": 20,
@@ -150,12 +150,13 @@
       "expectedTimeMinutes": 40,
       "attempts": null,
       "resolution": {
-        "decision": "COURSE_ALREADY_COMPLETED_WITHIN_THRESHOLD",
+        "decision": "DONT_CREDIT_TIME",
         "recordedAt": "2025-02-15T23:59:59Z",
         "recordedByUsername": "user2",
         "appointmentCreated": false,
         "appointmentUpdated": false,
         "minutesCredited": null,
+        "notes": null,
         "appointment": null
       }
     },
@@ -183,6 +184,7 @@
         "appointmentCreated": true,
         "appointmentUpdated": false,
         "minutesCredited": 101,
+        "notes": null,
         "appointment": {
           "triggeredAt": "2025-01-02T23:59:59Z",
           "triggerType": "ETE_COURSE_COMPLETION_RESOLUTION",
@@ -195,7 +197,7 @@
           "endTime": "01:00:00",
           "pickupLocation": "The pickup location",
           "pickupTime": "09:35:00",
-          "notes": "The notes",
+          "notes": "Some example notes",
           "contactOutcome": "Acceptable Absence - Court/Legal",
           "minutesCredited": 50,
           "penaltyMinutes": 20,

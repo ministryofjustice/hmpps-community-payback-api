@@ -18,6 +18,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentBehaviour
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentWorkQualityDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionCreditTimeDetailsDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionDontCreditTimeDetailsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionResolutionDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EteCourseCompletionEventStatusDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.CommunityCampusPduEntity
@@ -378,24 +379,28 @@ class EteMappersTest {
     val resolutionId: UUID = UUID.randomUUID()
 
     @Test
-    fun `for course already completed`() {
+    fun `for don't credit time`() {
       every { contextService.getUserName() } returns "jeff"
 
       val courseCompletionEvent = EteCourseCompletionEventEntity.valid()
 
-      val result = mapper.toResolutionEntityForCourseAlreadyCompleted(
+      val result = mapper.toResolutionEntityForDontCreditTime(
         id = resolutionId,
         courseCompletionEvent = courseCompletionEvent,
         courseCompletionResolution = CourseCompletionResolutionDto.valid().copy(
           crn = CRN,
           creditTimeDetails = null,
+          dontCreditTimeDetails = CourseCompletionDontCreditTimeDetailsDto(
+            notes = "some useful notes",
+          ),
         ),
       )
 
       assertThat(result.id).isEqualTo(resolutionId)
       assertThat(result.eteCourseCompletionEvent).isEqualTo(courseCompletionEvent)
-      assertThat(result.resolution).isEqualTo(EteCourseCompletionResolution.COURSE_ALREADY_COMPLETED_WITHIN_THRESHOLD)
+      assertThat(result.resolution).isEqualTo(EteCourseCompletionResolution.DONT_CREDIT_TIME)
       assertThat(result.createdByUsername).isEqualTo("jeff")
+      assertThat(result.notes).isEqualTo("some useful notes")
       assertThat(result.crn).isEqualTo(CRN)
       assertThat(result.deliusEventNumber).isNull()
       assertThat(result.deliusAppointmentId).isNull()
@@ -429,6 +434,7 @@ class EteMappersTest {
             } else {
               DELIUS_APPOINTMENT_ID
             },
+            notes = "some useful notes",
           ),
         ),
         deliusAppointmentId = DELIUS_APPOINTMENT_ID,
@@ -438,6 +444,7 @@ class EteMappersTest {
       assertThat(result.eteCourseCompletionEvent).isEqualTo(courseCompletionEvent)
       assertThat(result.resolution).isEqualTo(EteCourseCompletionResolution.CREDIT_TIME)
       assertThat(result.createdByUsername).isEqualTo("jeff")
+      assertThat(result.notes).isEqualTo("some useful notes")
       assertThat(result.crn).isEqualTo(CRN)
       assertThat(result.deliusEventNumber).isEqualTo(DELIUS_EVENT_NUMBER)
       assertThat(result.deliusAppointmentId).isEqualTo(DELIUS_APPOINTMENT_ID)

@@ -34,6 +34,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.bodyAsO
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.CommunityPaybackAndDeliusMockServer
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 import java.time.LocalDate
+import java.time.LocalTime
 
 class AdminAppointmentIT : IntegrationTestBase() {
 
@@ -223,6 +224,8 @@ class AdminAppointmentIT : IntegrationTestBase() {
             deliusId = 1234L,
             attendanceData = AttendanceDataDto.valid(),
             contactOutcomeCode = CODE_ATTENDED_COMPLIED,
+            startTime = LocalTime.of(0, 0),
+            endTime = LocalTime.of(1, 0),
           ),
         )
         .exchange()

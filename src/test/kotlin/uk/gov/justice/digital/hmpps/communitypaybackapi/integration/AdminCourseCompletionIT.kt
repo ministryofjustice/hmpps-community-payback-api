@@ -21,6 +21,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSupervisorSumma
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.atFirstSecondOfDay
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.atLastSecondOfDay
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionCreditTimeDetailsDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionDontCreditTimeDetailsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionRecommendationDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionResolutionDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionResolutionTypeDto
@@ -582,6 +583,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
       )
 
       val resolution = CourseCompletionResolutionDto.valid().copy(
+        type = CourseCompletionResolutionTypeDto.CREDIT_TIME,
         creditTimeDetails = CourseCompletionCreditTimeDetailsDto.valid().copy(
           contactOutcomeCode = "WRONG",
         ),
@@ -598,15 +600,18 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
     }
 
     @Test
-    fun `if type is COURSE_ALREADY_COMPLETED_WITHIN_THRESHOLD, just record resolution`() {
+    fun `if type is DONT_CREDIT_TIME, just record resolution and notes`() {
       val eventEntity = eteCourseCompletionEventEntityRepository.save(
         EteCourseCompletionEventEntity.valid(ctx),
       )
 
       val resolutionDto = CourseCompletionResolutionDto.valid(ctx).copy(
-        type = CourseCompletionResolutionTypeDto.COURSE_ALREADY_COMPLETED_WITHIN_THRESHOLD,
+        type = CourseCompletionResolutionTypeDto.DONT_CREDIT_TIME,
         crn = CRN,
         creditTimeDetails = null,
+        dontCreditTimeDetails = CourseCompletionDontCreditTimeDetailsDto(
+          notes = "Some notes",
+        ),
       )
 
       webTestClient.post()
@@ -619,7 +624,8 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
         .isNoContent
 
       val resolutionEntity = eteCourseCompletionEventEntityRepository.findByIdOrNull(eventEntity.id)!!.resolution!!
-      assertThat(resolutionEntity.resolution == EteCourseCompletionResolution.COURSE_ALREADY_COMPLETED_WITHIN_THRESHOLD)
+      assertThat(resolutionEntity.resolution).isEqualTo(EteCourseCompletionResolution.DONT_CREDIT_TIME)
+      assertThat(resolutionEntity.notes).isEqualTo("Some notes")
     }
 
     @Test
@@ -669,7 +675,8 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
         expectedAppointments = listOf(expectedAppointment),
       )
 
-      assertThat(eteCourseCompletionEventEntityRepository.findByIdOrNull(eventEntity.id)!!.resolution).isNotNull
+      val resolutionEntity = eteCourseCompletionEventEntityRepository.findByIdOrNull(eventEntity.id)!!.resolution!!
+      assertThat(resolutionEntity.resolution).isEqualTo(EteCourseCompletionResolution.CREDIT_TIME)
     }
 
     @Test
@@ -722,7 +729,8 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
         appointmentId = appointmentId,
       )
 
-      assertThat(eteCourseCompletionEventEntityRepository.findByIdOrNull(eventEntity.id)!!.resolution).isNotNull
+      val resolutionEntity = eteCourseCompletionEventEntityRepository.findByIdOrNull(eventEntity.id)!!.resolution!!
+      assertThat(resolutionEntity.resolution).isEqualTo(EteCourseCompletionResolution.CREDIT_TIME)
     }
 
     @Test
@@ -746,7 +754,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
 
       CommunityPaybackAndDeliusMockServer.getUpwDetailsSummary(
         crn = CRN,
-        case = NDCaseSummary.Companion.valid(),
+        case = NDCaseSummary.valid(),
         unpaidWorkDetails = listOf(
           NDCaseDetail.valid().copy(
             eventNumber = DELIUS_EVENT_NUMBER,

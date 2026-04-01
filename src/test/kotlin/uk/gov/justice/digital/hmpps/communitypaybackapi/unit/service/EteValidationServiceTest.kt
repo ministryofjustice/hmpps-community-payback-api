@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionCreditTimeDetailsDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionDontCreditTimeDetailsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionResolutionDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionResolutionTypeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
@@ -111,11 +112,12 @@ class EteValidationServiceTest {
     }
 
     @Nested
-    inner class CourseAlreadyCompletedWithinThreshold {
+    inner class DontCreditTime {
 
       val baselineCourseCompletionResolution = CourseCompletionResolutionDto.valid().copy(
-        type = CourseCompletionResolutionTypeDto.COURSE_ALREADY_COMPLETED_WITHIN_THRESHOLD,
+        type = CourseCompletionResolutionTypeDto.DONT_CREDIT_TIME,
         creditTimeDetails = null,
+        dontCreditTimeDetails = CourseCompletionDontCreditTimeDetailsDto.valid(),
       )
 
       val baselineCourseCompletionEvent = EteCourseCompletionEventEntity.valid().copy(
@@ -131,15 +133,15 @@ class EteValidationServiceTest {
       }
 
       @Test
-      fun `error if credit time details are provided`() {
+      fun `error if don't credit time details are not provided`() {
         assertThatThrownBy {
           eteValidationService.validateCourseCompletionResolution(
             baselineCourseCompletionResolution.copy(
-              creditTimeDetails = CourseCompletionCreditTimeDetailsDto.valid(),
+              dontCreditTimeDetails = null,
             ),
             baselineCourseCompletionEvent,
           )
-        }.hasMessage("Credit Time Details should not be provided for type COURSE_ALREADY_COMPLETED_WITHIN_THRESHOLD")
+        }.hasMessage("Don't Credit Time Details are required for type DONT_CREDIT_TIME")
       }
     }
 
