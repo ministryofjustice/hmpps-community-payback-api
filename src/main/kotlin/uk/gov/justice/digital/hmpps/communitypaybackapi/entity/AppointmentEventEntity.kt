@@ -10,6 +10,7 @@ import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
 import org.apache.commons.lang3.builder.CompareToBuilder.reflectionCompare
 import org.hibernate.annotations.CreationTimestamp
+import org.hibernate.proxy.HibernateProxy
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.OffsetDateTime
@@ -67,13 +68,22 @@ data class AppointmentEventEntity(
   val alertActive: Boolean?,
   val sensitive: Boolean?,
 ) {
+  @Suppress("USELESS_IS_CHECK")
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
-    if (other !is AppointmentEventEntity) return false
+    if (other == null) return false
+    val oEffectiveClass =
+      if (other is HibernateProxy) other.hibernateLazyInitializer.persistentClass else other.javaClass
+    val thisEffectiveClass =
+      this.asHibernateProxy()?.hibernateLazyInitializer?.persistentClass ?: this.javaClass
+    if (thisEffectiveClass != oEffectiveClass) return false
+    other as AppointmentEventEntity
+
     return id == other.id
   }
 
-  override fun hashCode(): Int = id.hashCode()
+  @Suppress("USELESS_IS_CHECK")
+  override fun hashCode(): Int = this.asHibernateProxy()?.hibernateLazyInitializer?.persistentClass?.hashCode() ?: javaClass.hashCode()
 
   override fun toString(): String = "AppointmentEventEntity(id=$id, eventType=$eventType, appointmentId='${appointment.id}')"
 

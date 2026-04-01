@@ -90,7 +90,7 @@ data class EteCourseCompletionEventResolutionEntity(
     val thisEffectiveClass =
       this.asHibernateProxy()?.hibernateLazyInitializer?.persistentClass ?: this.javaClass
     if (thisEffectiveClass != oEffectiveClass) return false
-    other as EteCourseCompletionEventEntity
+    other as EteCourseCompletionEventResolutionEntity
 
     return id == other.id
   }
