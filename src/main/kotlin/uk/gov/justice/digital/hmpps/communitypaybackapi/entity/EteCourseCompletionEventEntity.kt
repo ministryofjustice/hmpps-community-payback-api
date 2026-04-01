@@ -10,9 +10,8 @@ import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
-import jakarta.persistence.Version
 import org.hibernate.annotations.CreationTimestamp
-import org.hibernate.annotations.UpdateTimestamp
+import org.hibernate.annotations.Immutable
 import org.hibernate.proxy.HibernateProxy
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EteCourseCompletionEventStatusDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseCompletionStatus
@@ -22,12 +21,10 @@ import java.util.UUID
 
 @Entity
 @Table(name = "ete_course_completion_events")
+@Immutable
 data class EteCourseCompletionEventEntity(
   @Id
   val id: UUID,
-
-  @Version
-  var version: Long = 1,
 
   val firstName: String,
   val lastName: String,
@@ -67,9 +64,6 @@ data class EteCourseCompletionEventEntity(
 
   @CreationTimestamp
   val createdAt: OffsetDateTime = OffsetDateTime.now(),
-
-  @UpdateTimestamp
-  val updatedAt: OffsetDateTime = OffsetDateTime.now(),
 ) {
 
   @Suppress("USELESS_IS_CHECK")
