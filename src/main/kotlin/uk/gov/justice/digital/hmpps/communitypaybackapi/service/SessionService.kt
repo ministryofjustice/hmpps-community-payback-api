@@ -6,12 +6,12 @@ import org.springframework.data.domain.Sort
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.badRequest
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeGroupDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionIdDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionSummariesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionSummaryDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.BadRequestException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.SessionSupervisorEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.SessionSupervisorEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.SessionSupervisorId
@@ -41,7 +41,7 @@ class SessionService(
     projectTypeGroup: ProjectTypeGroupDto?,
   ): SessionSummariesDto {
     if (ChronoUnit.DAYS.between(startDate, endDate) > 7) {
-      throw BadRequestException("Date range cannot be greater than 7 days")
+      badRequest("Date range cannot be greater than 7 days")
     }
 
     return communityPaybackAndDeliusClient.getSessions(
@@ -59,7 +59,7 @@ class SessionService(
     projectCode: String,
     date: LocalDate,
   ): SessionDto {
-    val project = projectService.getProject(projectCode)
+    val project = projectService.getProject(projectCode) ?: error("Can't retrieve project $projectCode")
     val appointments = getSessionAppointments(projectCode, date)
 
     return sessionMappers.toSessionDto(
@@ -114,7 +114,7 @@ class SessionService(
 
   private fun SessionSupervisorEntity.toDto() = sessionMappers.toSummaryDto(
     date = day,
-    project = projectService.getProject(projectCode),
+    project = projectService.getProject(projectCode) ?: error("Can't retrieve project $projectCode"),
     appointments = getSessionAppointments(projectCode, day),
   )
 

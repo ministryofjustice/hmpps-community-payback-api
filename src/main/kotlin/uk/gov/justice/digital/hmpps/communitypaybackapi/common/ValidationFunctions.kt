@@ -1,6 +1,7 @@
-package uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal
+package uk.gov.justice.digital.hmpps.communitypaybackapi.common
 
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.BadRequestException
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.NotFoundException
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 
@@ -12,7 +13,7 @@ inline fun <T : Any> validateNotNull(value: T?, lazyMessage: () -> Any): T {
 
   if (value == null) {
     val message = lazyMessage()
-    throw BadRequestException(message.toString())
+    badRequest(message.toString())
   } else {
     return value
   }
@@ -27,7 +28,11 @@ inline fun validateLengthLessThan(
     val length = provided.length
     if (length > maxExclusive) {
       val message = lazyMessage(length, maxExclusive)
-      throw BadRequestException(message.toString())
+      badRequest(message.toString())
     }
   }
 }
+
+fun badRequest(message: String): Nothing = throw BadRequestException(message)
+fun badRequestReferenceNotFound(entityType: String, id: Any): Nothing = throw BadRequestException("$entityType not found for ID '$id'")
+fun notFound(entityType: String, id: Any): Nothing = throw NotFoundException(entityType, id)

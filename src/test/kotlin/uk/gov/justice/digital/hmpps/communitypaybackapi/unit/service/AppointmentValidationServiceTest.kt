@@ -169,7 +169,7 @@ class AppointmentValidationServiceTest {
             ),
           )
         }.isInstanceOf(BadRequestException::class.java)
-          .hasMessage("Appointment Date of 2030-05-04 must be before project end date 2030-05-04")
+          .hasMessage("Appointment Date of 04/05/2030 must be before project end date 04/05/2030")
       }
 
       @Test
@@ -185,7 +185,7 @@ class AppointmentValidationServiceTest {
             ),
           )
         }.isInstanceOf(BadRequestException::class.java)
-          .hasMessage("Appointment Date of 2030-05-05 must be before project end date 2030-05-04")
+          .hasMessage("Appointment Date of 05/05/2030 must be before project end date 04/05/2030")
       }
 
       @Test
@@ -196,9 +196,13 @@ class AppointmentValidationServiceTest {
         )
 
         assertThatThrownBy {
-          service.validateCreate(baselineCreate)
+          service.validateCreate(
+            baselineCreate.copy(
+              date = LocalDate.of(2025, 1, 1),
+            ),
+          )
         }.isInstanceOf(BadRequestException::class.java)
-          .hasMessage("Appointment Date of 2025-01-01 must be on or after sentence date of 2025-01-02")
+          .hasMessage("Appointment Date of 01/01/2025 must be on or after sentence date of 02/01/2025")
       }
     }
 
@@ -221,7 +225,7 @@ class AppointmentValidationServiceTest {
             ),
           )
         }.isInstanceOf(BadRequestException::class.java)
-          .hasMessage("Project is not available on WEDNESDAY. Available days are [MONDAY, TUESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY]")
+          .hasMessage("Project is not available on Wednesday. Available days are Monday, Tuesday, Thursday, Friday, Saturday, Sunday")
       }
     }
 
@@ -235,7 +239,7 @@ class AppointmentValidationServiceTest {
         assertThatThrownBy {
           service.validateCreate(baselineCreate)
         }.isInstanceOf(BadRequestException::class.java)
-          .hasMessage("Contact outcome not found for code $OUTCOME_CODE")
+          .hasMessage("Contact outcome not found for code '$OUTCOME_CODE'")
       }
 
       @Test
@@ -290,7 +294,7 @@ class AppointmentValidationServiceTest {
             ),
           )
         }.isInstanceOf(BadRequestException::class.java)
-          .hasMessage("If the appointment is in the future, only acceptable absences are permitted to be recorded")
+          .hasMessage("As the appointment is in the future only acceptable absence outcomes can be recorded")
       }
 
       @Test
@@ -306,7 +310,7 @@ class AppointmentValidationServiceTest {
             ),
           )
         }.isInstanceOf(BadRequestException::class.java)
-          .hasMessage("If the appointment is in the future, only acceptable absences are permitted to be recorded")
+          .hasMessage("As the appointment is in the future only acceptable absence outcomes can be recorded")
       }
 
       @Test
@@ -343,7 +347,7 @@ class AppointmentValidationServiceTest {
             ),
           )
         }.isInstanceOf(BadRequestException::class.java)
-          .hasMessage("Attendance data is required for 'attended' contact outcomes")
+          .hasMessage("Attendance data is required for contact outcomes that indicate attendance")
       }
 
       @Test
@@ -490,7 +494,7 @@ class AppointmentValidationServiceTest {
             ),
           )
         }.isInstanceOf(BadRequestException::class.java)
-          .hasMessage("Penalty duration 'PT6H36M' is greater than appointment duration 'PT6H35M'")
+          .hasMessage("Penalty duration '6 hours 36 minutes' is greater than appointment duration '6 hours 35 minutes'")
       }
 
       @Test
@@ -507,7 +511,7 @@ class AppointmentValidationServiceTest {
             ),
           )
         }.isInstanceOf(BadRequestException::class.java)
-          .hasMessage("Penalty duration 'PT6H36M' is greater than appointment duration 'PT6H35M'")
+          .hasMessage("Penalty duration '6 hours 36 minutes' is greater than appointment duration '6 hours 35 minutes'")
       }
     }
 
@@ -550,7 +554,7 @@ class AppointmentValidationServiceTest {
             baselineCreate.copy(notes = notes),
           )
         }.isInstanceOf(BadRequestException::class.java)
-          .hasMessage("Outcome notes must be fewer than 4000 characters")
+          .hasMessage("Notes must be fewer than 4000 characters")
       }
     }
 
@@ -599,7 +603,7 @@ class AppointmentValidationServiceTest {
         assertThatThrownBy {
           service.validateCreate(baselineCreate)
         }.isInstanceOf(BadRequestException::class.java)
-          .hasMessage("Credited minutes of PT1H1M exceeds remaining allowed ETE minutes of PT1H")
+          .hasMessage("Credited minutes of '1 hours 1 minutes' exceeds remaining allowed ETE time of '1 hours 0 minutes'")
       }
     }
   }
@@ -695,7 +699,7 @@ class AppointmentValidationServiceTest {
             update = baselineUpdate,
           )
         }.isInstanceOf(BadRequestException::class.java)
-          .hasMessage("Contact outcome not found for code $OUTCOME_CODE")
+          .hasMessage("Contact outcome not found for code '$OUTCOME_CODE'")
       }
 
       @Test
@@ -750,7 +754,7 @@ class AppointmentValidationServiceTest {
             ),
           )
         }.isInstanceOf(BadRequestException::class.java)
-          .hasMessage("If the appointment is in the future, only acceptable absences are permitted to be recorded")
+          .hasMessage("As the appointment is in the future only acceptable absence outcomes can be recorded")
       }
 
       @Test
@@ -766,7 +770,7 @@ class AppointmentValidationServiceTest {
             ),
           )
         }.isInstanceOf(BadRequestException::class.java)
-          .hasMessage("If the appointment is in the future, only acceptable absences are permitted to be recorded")
+          .hasMessage("As the appointment is in the future only acceptable absence outcomes can be recorded")
       }
 
       @Test
@@ -806,7 +810,7 @@ class AppointmentValidationServiceTest {
             ),
           )
         }.isInstanceOf(BadRequestException::class.java)
-          .hasMessage("Attendance data is required for 'attended' contact outcomes")
+          .hasMessage("Attendance data is required for contact outcomes that indicate attendance")
       }
 
       @Test
@@ -967,7 +971,7 @@ class AppointmentValidationServiceTest {
             ),
           )
         }.isInstanceOf(BadRequestException::class.java)
-          .hasMessage("Penalty duration 'PT6H36M' is greater than appointment duration 'PT6H35M'")
+          .hasMessage("Penalty duration '6 hours 36 minutes' is greater than appointment duration '6 hours 35 minutes'")
       }
 
       @Test
@@ -985,7 +989,7 @@ class AppointmentValidationServiceTest {
             ),
           )
         }.isInstanceOf(BadRequestException::class.java)
-          .hasMessage("Penalty duration 'PT6H36M' is greater than appointment duration 'PT6H35M'")
+          .hasMessage("Penalty duration '6 hours 36 minutes' is greater than appointment duration '6 hours 35 minutes'")
       }
     }
 
@@ -1037,7 +1041,7 @@ class AppointmentValidationServiceTest {
             baselineUpdate.copy(notes = notes),
           )
         }.isInstanceOf(BadRequestException::class.java)
-          .hasMessage("Outcome notes must be fewer than 4000 characters")
+          .hasMessage("Notes must be fewer than 4000 characters")
       }
     }
 
@@ -1099,7 +1103,7 @@ class AppointmentValidationServiceTest {
             update = baselineUpdate,
           )
         }.isInstanceOf(BadRequestException::class.java)
-          .hasMessage("Credited minutes of PT1H1M exceeds remaining allowed ETE minutes of PT1H")
+          .hasMessage("Credited minutes of '1 hours 1 minutes' exceeds remaining allowed ETE time of '1 hours 0 minutes'")
       }
 
       @Test

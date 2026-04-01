@@ -2,14 +2,16 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.service
 
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.badRequest
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.formatForUser
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAdjustmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsIdDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.BadRequestException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.NotFoundException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentReasonEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentReasonEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentTaskEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentTaskEntityRepository
+import java.time.Duration
 
 @Suppress("ThrowsCount")
 @Service
@@ -34,7 +36,9 @@ class AdjustmentValidationService(
 
     val maxMinutesAllowed = reason.maxMinutesAllowed
     if (requestedMinutes > maxMinutesAllowed) {
-      throw BadRequestException("Requested adjustment minutes $requestedMinutes exceeds the maximum of $maxMinutesAllowed minutes allowed for adjustments with reason '${reason.name}'")
+      val requestedDuration = Duration.ofMinutes(requestedMinutes.toLong())
+      val maxMinutesDuration = Duration.ofMinutes(maxMinutesAllowed.toLong())
+      badRequest("Requested adjustment of '${requestedDuration.formatForUser()}' exceeds the maximum allowed time '${maxMinutesDuration.formatForUser()}' for adjustment reason '${reason.name}'")
     }
 
     return ValidatedCreateAdjustment(

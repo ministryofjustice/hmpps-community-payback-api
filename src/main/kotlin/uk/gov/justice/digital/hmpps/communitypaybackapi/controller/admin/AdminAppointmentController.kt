@@ -19,10 +19,10 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.badRequest
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeGroupDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.BadRequestException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventTrigger
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentService
@@ -112,7 +112,7 @@ class AdminAppointmentController(
     @RequestBody outcome: UpdateAppointmentOutcomeDto,
   ) {
     if (outcome.deliusId != deliusAppointmentId) {
-      throw BadRequestException("ID in URL should match ID in payload")
+      badRequest("ID in URL should match ID in payload")
     }
 
     appointmentService.updateAppointmentOutcome(
@@ -184,7 +184,7 @@ class AdminAppointmentController(
       projectTypeGroup != null
 
     if (!hasFilter) {
-      throw BadRequestException("At least one filter parameter must be provided")
+      badRequest("At least one filter parameter must be provided")
     }
 
     return appointmentService.getAppointments(
