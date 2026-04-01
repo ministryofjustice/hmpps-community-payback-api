@@ -7,7 +7,6 @@ import jakarta.persistence.FetchType
 import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
-import jakarta.persistence.PreUpdate
 import jakarta.persistence.Table
 import org.apache.commons.lang3.builder.CompareToBuilder.reflectionCompare
 import org.hibernate.annotations.CreationTimestamp
@@ -68,9 +67,6 @@ data class AppointmentEventEntity(
   val alertActive: Boolean?,
   val sensitive: Boolean?,
 ) {
-  @PreUpdate
-  fun preUpdate(): Unit = throw UnsupportedOperationException("This entity can't be updated")
-
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is AppointmentEventEntity) return false
