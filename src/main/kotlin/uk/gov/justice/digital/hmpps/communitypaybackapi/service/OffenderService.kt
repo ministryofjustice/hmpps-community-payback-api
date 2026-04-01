@@ -17,7 +17,7 @@ class OffenderService(
   fun getRiskSummary(crn: String) = try {
     arnsClient.rosh(crn).summary.overallRiskLevel.toString()
   } catch (_: WebClientResponseException.NotFound) {
-    throw NotFoundException("Risk Summary", crn)
+    null
   }
 
   fun ensureUnpaidWorkDetailsExist(upwDetailsId: UnpaidWorkDetailsIdDto, userName: String? = null) = getUnpaidWorkDetails(upwDetailsId.crn, upwDetailsId.deliusEventNumber, userName)

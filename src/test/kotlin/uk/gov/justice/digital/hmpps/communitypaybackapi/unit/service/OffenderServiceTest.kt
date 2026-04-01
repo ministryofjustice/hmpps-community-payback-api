@@ -52,12 +52,12 @@ class OffenderServiceTest {
     }
 
     @Test
-    fun `Entry doesnt exist, return 404`() {
+    fun `Entry doesnt exist, return null`() {
       every { arnsClient.rosh(CRN) } throws WebClientResponseExceptionFactory.notFound()
 
-      assertThatThrownBy {
-        service.getRiskSummary(CRN)
-      }.isInstanceOf(NotFoundException::class.java).hasMessage("Risk Summary not found for ID '$CRN'")
+      val result = service.getRiskSummary(CRN)
+
+      assertThat(result).isNull()
     }
   }
 
