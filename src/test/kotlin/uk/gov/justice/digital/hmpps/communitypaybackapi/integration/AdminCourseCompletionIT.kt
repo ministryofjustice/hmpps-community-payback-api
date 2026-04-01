@@ -10,7 +10,6 @@ import org.springframework.data.repository.findByIdOrNull
 import org.springframework.hateoas.PagedModel
 import org.springframework.http.MediaType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointment
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseDetail
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCode
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDEvent
@@ -18,6 +17,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectAndLocation
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSupervisorSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSupervisorSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDUpwDetails
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.atFirstSecondOfDay
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.atLastSecondOfDay
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionCreditTimeDetailsDto
@@ -756,7 +756,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
         crn = CRN,
         case = NDCaseSummary.valid(),
         unpaidWorkDetails = listOf(
-          NDCaseDetail.valid().copy(
+          NDUpwDetails.valid().copy(
             eventNumber = DELIUS_EVENT_NUMBER,
             sentenceDate = LocalDate.now().minusDays(10),
           ),
@@ -813,7 +813,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
         crn = CRN,
         case = NDCaseSummary.valid(),
         unpaidWorkDetails = listOf(
-          NDCaseDetail.valid().copy(
+          NDUpwDetails.valid().copy(
             eventNumber = DELIUS_EVENT_NUMBER,
             sentenceDate = LocalDate.now().minusDays(10),
           ),

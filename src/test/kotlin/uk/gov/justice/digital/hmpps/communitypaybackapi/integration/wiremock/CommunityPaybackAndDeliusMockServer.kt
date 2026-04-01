@@ -18,7 +18,6 @@ import tools.jackson.databind.json.JsonMapper
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAdjustmentPostResponse
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointmentSummary
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseDetail
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseDetailsSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProject
@@ -30,6 +29,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSupervisor
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSupervisorSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSupervisorSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDUnpaidWorkRequirement
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDUpwDetails
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.PageResponse
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.unallocated
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
@@ -327,7 +327,7 @@ object CommunityPaybackAndDeliusMockServer {
   fun setupGetUpwDetailsSummaryResponse(
     crn: String,
     case: NDCaseSummary,
-    unpaidWorkDetails: List<NDCaseDetail>,
+    unpaidWorkDetails: List<NDUpwDetails>,
     username: String? = null,
   ) {
     val ndCaseDetailsSummary = NDCaseDetailsSummary(case, unpaidWorkDetails)
@@ -468,7 +468,7 @@ object CommunityPaybackAndDeliusMockServer {
         crn = crn,
         case = NDCaseSummary.valid(),
         unpaidWorkDetails = listOf(
-          NDCaseDetail.valid().copy(
+          NDUpwDetails.valid().copy(
             eventNumber = eventNumber,
             sentenceDate = LocalDate.now().minusYears(10),
           ),

@@ -13,8 +13,8 @@ import org.junit.jupiter.api.extension.ExtendWith
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.AllRoshRisk
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ArnsClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseDetail
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseDetailsSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDUpwDetails
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.OverallRiskLevel
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.RiskRoshSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.NotFoundException
@@ -68,10 +68,10 @@ class OffenderServiceTest {
     fun `returns offender summary when found`() {
       val caseDetailsSummary = NDCaseDetailsSummary.valid().copy(
         unpaidWorkDetails = listOf(
-          NDCaseDetail.valid(),
-          NDCaseDetail.valid(),
-          NDCaseDetail.valid(),
-          NDCaseDetail.valid(),
+          NDUpwDetails.valid(),
+          NDUpwDetails.valid(),
+          NDUpwDetails.valid(),
+          NDUpwDetails.valid(),
         ),
       )
 
@@ -119,15 +119,15 @@ class OffenderServiceTest {
     fun `return details when found`() {
       val caseDetailsSummary = NDCaseDetailsSummary.valid().copy(
         unpaidWorkDetails = listOf(
-          NDCaseDetail.valid().copy(
+          NDUpwDetails.valid().copy(
             eventNumber = 4,
             requiredMinutes = 1L,
           ),
-          NDCaseDetail.valid().copy(
+          NDUpwDetails.valid().copy(
             eventNumber = 5,
             requiredMinutes = 2L,
           ),
-          NDCaseDetail.valid().copy(
+          NDUpwDetails.valid().copy(
             eventNumber = 6,
             requiredMinutes = 3L,
           ),
@@ -146,7 +146,7 @@ class OffenderServiceTest {
     fun `return details when username is not passed`() {
       val caseDetailsSummary = NDCaseDetailsSummary.valid().copy(
         unpaidWorkDetails = listOf(
-          NDCaseDetail.valid().copy(
+          NDUpwDetails.valid().copy(
             eventNumber = 5,
           ),
         ),
@@ -176,7 +176,7 @@ class OffenderServiceTest {
   fun `throws NotFoundException when unpaid work details not found`() {
     val caseDetailsSummary = NDCaseDetailsSummary.valid().copy(
       unpaidWorkDetails = listOf(
-        NDCaseDetail.valid().copy(
+        NDUpwDetails.valid().copy(
           eventNumber = 4,
           requiredMinutes = 1L,
         ),

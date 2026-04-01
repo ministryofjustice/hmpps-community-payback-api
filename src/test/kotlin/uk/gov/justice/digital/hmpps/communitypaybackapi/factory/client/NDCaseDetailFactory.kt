@@ -1,20 +1,20 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client
 
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseDetail
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseDetailsSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCodeDescription
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDMainOffence
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDUpwDetails
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.random
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.randomLocalDate
 import kotlin.random.Random
 
 fun NDCaseDetailsSummary.Companion.valid() = NDCaseDetailsSummary(
   case = NDCaseSummary.Companion.valid(),
-  unpaidWorkDetails = listOf(NDCaseDetail.valid()),
+  unpaidWorkDetails = listOf(NDUpwDetails.valid()),
 )
 
-fun NDCaseDetail.Companion.valid() = NDCaseDetail(
+fun NDUpwDetails.Companion.valid() = NDUpwDetails(
   eventNumber = Random.nextInt(1, 6),
   sentenceDate = randomLocalDate(),
   requiredMinutes = Random.nextLong(100, 301),

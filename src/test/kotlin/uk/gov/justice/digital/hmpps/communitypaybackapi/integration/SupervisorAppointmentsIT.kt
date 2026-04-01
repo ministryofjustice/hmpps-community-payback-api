@@ -7,13 +7,13 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointment
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseDetail
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDContactOutcome
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDEnforcementAction
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectAndLocation
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDUpwDetails
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AttendanceDataDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
@@ -271,7 +271,7 @@ class SupervisorAppointmentsIT : IntegrationTestBase() {
         crn = CRN,
         case = NDCaseSummary.valid(),
         unpaidWorkDetails = listOf(
-          NDCaseDetail.valid().copy(
+          NDUpwDetails.valid().copy(
             eventNumber = EVENT_NUMBER,
             sentenceDate = LocalDate.now().minusYears(1),
           ),

@@ -7,8 +7,8 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.http.MediaType
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseDetail
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDUpwDetails
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAdjustmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentTaskEntity
@@ -82,7 +82,7 @@ class AdminAdjustmentIT : IntegrationTestBase() {
         crn = CRN,
         case = NDCaseSummary.valid(),
         unpaidWorkDetails = listOf(
-          NDCaseDetail.valid().copy(eventNumber = DELIUS_EVENT_NUMBER),
+          NDUpwDetails.valid().copy(eventNumber = DELIUS_EVENT_NUMBER),
         ),
         username = "theusername",
       )
