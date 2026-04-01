@@ -124,11 +124,11 @@ class AppointmentTaskService(
     }
 
     val taskMap = tasksWithAppointments.content.associateBy { it.appointment.deliusId }
-    val appointmentIds = taskMap.keys.toList()
+    val deliusAppointmentIds = taskMap.keys.toList()
 
     val appointmentsPage = appointmentRetrievalService.getAppointments(
-      appointmentIds = appointmentIds,
-      pageable = PageRequest.of(0, appointmentIds.size, Sort.by(Sort.Direction.DESC, "name")),
+      deliusAppointmentIds = deliusAppointmentIds,
+      pageable = PageRequest.of(0, deliusAppointmentIds.size, Sort.by(Sort.Direction.DESC, "name")),
     )
 
     val taskSummaries = appointmentsPage.content.mapNotNull { appointment ->

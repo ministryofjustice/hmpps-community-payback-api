@@ -5,6 +5,7 @@ import java.time.LocalDate
 import java.time.LocalTime
 
 data class AppointmentSummaryDto(
+  @param:Schema(description = "The NDelius Appointment ID")
   val id: Long,
   @param:Schema(
     description = "How many community payback minutes the offender is required to complete",

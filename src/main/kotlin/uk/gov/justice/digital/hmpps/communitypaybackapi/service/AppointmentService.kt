@@ -29,8 +29,8 @@ class AppointmentService(
 
   fun getAppointment(
     projectCode: String,
-    appointmentId: Long,
-  ) = appointmentRetrievalService.getAppointment(projectCode, appointmentId)
+    deliusAppointmentId: Long,
+  ) = appointmentRetrievalService.getAppointment(projectCode, deliusAppointmentId)
 
   fun getAppointments(
     crn: String? = null,
@@ -40,7 +40,7 @@ class AppointmentService(
     projectCodes: List<String>? = null,
     projectTypeGroup: ProjectTypeGroupDto? = null,
     eventNumber: String? = null,
-    appointmentIds: List<Long>? = null,
+    deliusAppointmentIds: List<Long>? = null,
     pageable: Pageable,
   ) = appointmentRetrievalService.getAppointments(
     crn = crn,
@@ -50,7 +50,7 @@ class AppointmentService(
     projectCodes = projectCodes,
     projectTypeGroup = projectTypeGroup,
     eventNumber = eventNumber,
-    appointmentIds = appointmentIds,
+    deliusAppointmentIds = deliusAppointmentIds,
     pageable = pageable,
   )
 

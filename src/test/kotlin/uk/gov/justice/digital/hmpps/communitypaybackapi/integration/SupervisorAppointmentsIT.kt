@@ -85,7 +85,7 @@ class SupervisorAppointmentsIT : IntegrationTestBase() {
         .isNotFound()
         .bodyAsObject<ErrorResponse>()
 
-      assertThat(response.userMessage).isEqualTo("No resource found failure: Appointment not found for ID 'Project PC01, ID 101'")
+      assertThat(response.userMessage).isEqualTo("No resource found failure: Appointment not found for ID 'Project PC01, NDelius ID 101'")
     }
 
     @Test
@@ -180,7 +180,7 @@ class SupervisorAppointmentsIT : IntegrationTestBase() {
         .isNotFound()
         .bodyAsObject<ErrorResponse>()
 
-      assertThat(response.userMessage).isEqualTo("No resource found failure: Appointment not found for ID 'Project PC01, ID 1234'")
+      assertThat(response.userMessage).isEqualTo("No resource found failure: Appointment not found for ID 'Project PC01, NDelius ID 1234'")
     }
 
     @Test

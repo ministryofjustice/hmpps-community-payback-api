@@ -57,7 +57,7 @@ class SupervisorAppointmentsController(
     @PathVariable deliusAppointmentId: Long,
   ) = appointmentService.getAppointment(
     projectCode = projectCode,
-    appointmentId = deliusAppointmentId,
+    deliusAppointmentId = deliusAppointmentId,
   )
 
   @PostMapping(

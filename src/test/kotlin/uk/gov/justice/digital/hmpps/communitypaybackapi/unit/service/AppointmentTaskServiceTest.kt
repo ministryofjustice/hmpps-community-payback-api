@@ -318,7 +318,7 @@ class AppointmentTaskServiceTest {
           projectCodes = null,
           projectTypeGroup = null,
           eventNumber = null,
-          appointmentIds = listOf(deliusAppointmentId),
+          deliusAppointmentIds = listOf(deliusAppointmentId),
           pageable = PageRequest.of(0, 1, Sort.by(Sort.Direction.DESC, "name")),
         )
       } returns PageImpl(listOf(appointmentSummary), PageRequest.of(0, 1), 1L)
@@ -377,7 +377,7 @@ class AppointmentTaskServiceTest {
           projectCodes = null,
           projectTypeGroup = null,
           eventNumber = null,
-          appointmentIds = listOf(deliusAppointmentId),
+          deliusAppointmentIds = listOf(deliusAppointmentId),
           pageable = PageRequest.of(0, 1, Sort.by(Sort.Direction.DESC, "name")),
         )
       } returns PageImpl(listOf(appointmentSummary), PageRequest.of(0, 1), 1L)
@@ -484,7 +484,7 @@ class AppointmentTaskServiceTest {
           projectCodes = null,
           projectTypeGroup = null,
           eventNumber = null,
-          appointmentIds = any(),
+          deliusAppointmentIds = any(),
           pageable = PageRequest.of(0, 2, Sort.by(Sort.Direction.DESC, "name")),
         )
       } returns PageImpl(listOf(appointmentSummary1, appointmentSummary2), PageRequest.of(0, 2), 2L)
@@ -543,7 +543,7 @@ class AppointmentTaskServiceTest {
           projectCodes = null,
           projectTypeGroup = null,
           eventNumber = null,
-          appointmentIds = listOf(deliusAppointmentId),
+          deliusAppointmentIds = listOf(deliusAppointmentId),
           pageable = PageRequest.of(0, 1, Sort.by(Sort.Direction.DESC, "name")),
         )
       } returns PageImpl(listOf(appointmentSummary), PageRequest.of(0, 1), 1L)

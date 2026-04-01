@@ -28,11 +28,11 @@ class AppointmentRetrievalService(
 
   fun getAppointment(
     projectCode: String,
-    appointmentId: Long,
+    deliusAppointmentId: Long,
   ): AppointmentDto = try {
     communityPaybackAndDeliusClient.getAppointment(
       projectCode = projectCode,
-      appointmentId = appointmentId,
+      appointmentId = deliusAppointmentId,
       username = contextService.getUserName(),
     ).let { appointment ->
       val projectTypeCode = appointment.projectType.code
@@ -41,7 +41,7 @@ class AppointmentRetrievalService(
       appointmentMappers.toDto(appointment, projectType)
     }
   } catch (_: WebClientResponseException.NotFound) {
-    throw NotFoundException("Appointment", "Project $projectCode, ID $appointmentId")
+    throw NotFoundException("Appointment", "Project $projectCode, NDelius ID $deliusAppointmentId")
   }
 
   fun getAppointments(
@@ -52,7 +52,7 @@ class AppointmentRetrievalService(
     projectCodes: List<String>? = null,
     projectTypeGroup: ProjectTypeGroupDto? = null,
     eventNumber: String? = null,
-    appointmentIds: List<Long>? = null,
+    deliusAppointmentIds: List<Long>? = null,
     pageable: Pageable,
   ): Page<AppointmentSummaryDto> {
     val pageResponse = communityPaybackAndDeliusClient.getAppointments(
@@ -64,7 +64,7 @@ class AppointmentRetrievalService(
       projectCodes = projectCodes,
       projectTypeCodes = projectTypeGroup?.let { projectTypeGroup -> projectService.projectTypesForGroup(projectTypeGroup).map { it.code } },
       eventNumber = eventNumber,
-      appointmentIds = appointmentIds,
+      appointmentIds = deliusAppointmentIds,
       params = pageable.toHttpParams(),
     )
     return PageImpl(pageResponse.content.map { appointmentMappers.toSummaryDto(it) }, pageable, pageResponse.page.totalElements)

@@ -128,7 +128,7 @@ class EteService(
     } else {
       val existingAppointment = appointmentService.getAppointment(
         projectCode = courseCompletionResolution.creditTimeDetails.projectCode,
-        appointmentId = courseCompletionResolution.creditTimeDetails.appointmentIdToUpdate,
+        deliusAppointmentId = courseCompletionResolution.creditTimeDetails.appointmentIdToUpdate,
       )
 
       appointmentService.updateAppointmentOutcome(
