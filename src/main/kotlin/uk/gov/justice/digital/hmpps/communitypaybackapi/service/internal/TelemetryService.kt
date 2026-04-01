@@ -28,7 +28,7 @@ class AppInsightsTelemetryService(private val telemetryClient: TelemetryClient =
     metrics: Map<String, Double?>,
   ) {
     log.debug(
-      "{} {} {}",
+      "Publishing event name '{}': {} {}",
       UriUtils.encode(name, Charset.defaultCharset()),
       UriUtils.encode(properties.toString(), Charset.defaultCharset()),
       UriUtils.encode(metrics.toString(), Charset.defaultCharset()),
