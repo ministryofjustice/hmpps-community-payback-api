@@ -107,7 +107,7 @@ class AdjustmentValidationServiceTest {
           upwDetailsId = UNPAID_WORK_DETAILS,
           username = USERNAME,
         )
-      }.hasMessage("Requested adjustment minutes 51 exceeds the maximum of 50 minutes allowed for adjustments with reason 'The reason name'")
+      }.hasMessage("Requested adjustment of '0 hours 51 minutes' exceeds the maximum allowed time '0 hours 50 minutes' for adjustment reason 'The reason name'")
     }
 
     @Test
