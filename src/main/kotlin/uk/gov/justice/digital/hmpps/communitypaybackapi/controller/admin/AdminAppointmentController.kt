@@ -68,7 +68,7 @@ class AdminAppointmentController(
     @PathVariable deliusAppointmentId: Long,
   ) = appointmentService.getAppointment(
     projectCode = projectCode,
-    appointmentId = deliusAppointmentId,
+    deliusAppointmentId = deliusAppointmentId,
   )
 
   @PostMapping(
@@ -109,15 +109,15 @@ class AdminAppointmentController(
   fun updateAppointmentOutcome(
     @PathVariable projectCode: String,
     @PathVariable deliusAppointmentId: Long,
-    @RequestBody outcome: UpdateAppointmentOutcomeDto,
+    @RequestBody update: UpdateAppointmentOutcomeDto,
   ) {
-    if (outcome.deliusId != deliusAppointmentId) {
+    if (update.deliusId != deliusAppointmentId) {
       badRequest("ID in URL should match ID in payload")
     }
 
     appointmentService.updateAppointmentOutcome(
       projectCode = projectCode,
-      update = outcome,
+      update = update,
       trigger = AppointmentEventTrigger(
         triggeredAt = OffsetDateTime.now(),
         triggerType = AppointmentEventTriggerType.USER,
@@ -195,7 +195,7 @@ class AdminAppointmentController(
       outcomeCodes = outcomeCodes,
       projectTypeGroup = projectTypeGroup,
       eventNumber = null,
-      appointmentIds = null,
+      deliusAppointmentIds = null,
       pageable = pageable,
     )
   }
