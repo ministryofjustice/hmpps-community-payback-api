@@ -25,6 +25,7 @@ class DomainEventListener(
   private val jsonMapper: JsonMapper,
   private val sqsListenerErrorHandler: SqsListenerErrorHandler,
   private val schedulingDomainEventHandler: SchedulingDomainEventHandler,
+  private val config: DomainEventListenerConfig,
 ) {
   private companion object {
     /**
@@ -55,6 +56,11 @@ class DomainEventListener(
     messageString: String,
     @Headers headers: MessageHeaders,
   ) {
+    if (!config.enabled()) {
+      log.warn("Not processing domain event because listener is disabled")
+      return
+    }
+
     sqsListenerErrorHandler.withErrorHandler(headers) {
       handleDomainEvent(messageString)
     }
@@ -85,4 +91,13 @@ class DomainEventListener(
   private fun HmppsDomainEvent.getEventId() = additionalInformation?.map[AdditionalInformationType.EVENT_ID.name]?.toString()?.let {
     UUID.fromString(it)
   } ?: error("Can't find event id")
+}
+
+interface DomainEventListenerConfig {
+  fun enabled(): Boolean
+}
+
+@Service
+class DefaultDomainEventListenerConfig : DomainEventListenerConfig {
+  override fun enabled() = true
 }
