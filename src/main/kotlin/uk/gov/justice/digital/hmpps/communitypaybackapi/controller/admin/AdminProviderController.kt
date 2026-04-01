@@ -157,13 +157,13 @@ class AdminProviderController(
   fun getProjects(
     @Parameter(
       hidden = true,
-      description = "Pagination and sorting parameters. Supported sort fields: projectName Default sort: projectName DESC, size: 50",
+      description = "Pagination and sorting parameters. Supported sort fields: projectName Default sort: projectName DESC, size: 100",
       schema = Schema(
         implementation = Pageable::class,
         description = "Only projectName. numberOfAppointmentsOverdue and oldestOverdueAppointmentInDays fields are supported for sorting",
       ),
     )
-    @PageableDefault(size = 50, sort = ["name"], direction = Sort.Direction.DESC) pageable: Pageable,
+    @PageableDefault(size = 100, sort = ["name"], direction = Sort.Direction.DESC) pageable: Pageable,
     @PathVariable providerCode: String,
     @PathVariable teamCode: String,
     @RequestParam projectTypeGroup: ProjectTypeGroupDto,
