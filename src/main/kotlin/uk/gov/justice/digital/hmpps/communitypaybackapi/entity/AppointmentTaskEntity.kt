@@ -28,6 +28,7 @@ data class AppointmentTaskEntity(
   var taskStatus: AppointmentTaskStatus,
   var decisionMadeByUsername: String? = null,
   var decisionMadeAt: OffsetDateTime? = null,
+  var decisionDescription: String? = null,
 ) {
   override fun equals(other: Any?): Boolean {
     if (this === other) return true

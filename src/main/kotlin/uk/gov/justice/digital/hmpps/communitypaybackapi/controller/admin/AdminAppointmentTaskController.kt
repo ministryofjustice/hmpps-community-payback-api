@@ -13,12 +13,15 @@ import org.springframework.data.web.PageableDefault
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentTaskSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentTaskService
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 import java.time.LocalDate
+import java.util.UUID
 
 @AdminUiController
 @RequestMapping(
@@ -71,4 +74,16 @@ class AdminAppointmentTaskController(
     providerCode = appointmentProviderCode,
     pageable = pageable,
   )
+
+  @PutMapping("/appointment-tasks/{taskId}/complete")
+  @Operation(
+    description = "Marks a task as complete",
+    responses = [
+      ApiResponse(responseCode = "204", description = "Processed"),
+      ApiResponse(responseCode = "404", description = "Task not found", content = [Content(schema = Schema(implementation = ErrorResponse::class))]),
+    ],
+  )
+  fun completeTask(@PathVariable taskId: UUID) {
+    appointmentTaskService.completeTask(taskId)
+  }
 }

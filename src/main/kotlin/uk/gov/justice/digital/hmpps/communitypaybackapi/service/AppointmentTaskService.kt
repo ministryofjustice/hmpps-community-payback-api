@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.service
 
+import jakarta.transaction.Transactional
 import org.springframework.context.event.EventListener
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
@@ -10,6 +11,7 @@ import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentTaskSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.NotFoundException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentTaskEntity
@@ -22,6 +24,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.Communi
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.CreateAdjustmentEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.UpdateAppointmentEvent
 import java.time.LocalDate
+import java.time.OffsetDateTime
 import java.util.UUID
 
 @Service
@@ -32,6 +35,7 @@ class AppointmentTaskService(
 ) {
 
   @EventListener
+  @Transactional(Transactional.TxType.REQUIRED)
   fun createTravelTimeTaskOnAppointmentCreation(
     event: AppointmentCreatedEvent,
   ) {
@@ -43,6 +47,7 @@ class AppointmentTaskService(
   }
 
   @EventListener
+  @Transactional(Transactional.TxType.REQUIRED)
   fun createTravelTimeTaskOnAppointmentUpdate(
     event: UpdateAppointmentEvent,
   ) {
@@ -54,6 +59,7 @@ class AppointmentTaskService(
   }
 
   @EventListener
+  @Transactional(Transactional.TxType.REQUIRED)
   fun closeTravelTimeTaskOnAdjustmentCreation(
     event: CreateAdjustmentEvent,
   ) {
@@ -64,8 +70,21 @@ class AppointmentTaskService(
       task.taskStatus = AppointmentTaskStatus.COMPLETE
       task.decisionMadeAt = trigger.triggeredAt
       task.decisionMadeByUsername = contextService.getUserName()
+      task.decisionDescription = "Task completed on adjustment creation"
       appointmentTaskEntityRepository.save(task)
     }
+  }
+
+  @Transactional
+  fun completeTask(
+    taskId: UUID,
+  ) {
+    val task = appointmentTaskEntityRepository.findByIdOrNull(taskId) ?: throw NotFoundException("Can't find task with id $taskId")
+    task.taskStatus = AppointmentTaskStatus.COMPLETE
+    task.decisionMadeAt = OffsetDateTime.now()
+    task.decisionMadeByUsername = contextService.getUserName()
+    task.decisionDescription = "Task completed directly"
+    appointmentTaskEntityRepository.save(task)
   }
 
   private fun createTravelTimeTaskIfRequired(

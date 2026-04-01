@@ -5,6 +5,7 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.data.repository.findByIdOrNull
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointmentSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.PageResponse
@@ -16,6 +17,9 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentTaskEn
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentTaskStatus
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentTaskType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.persist
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.validPending
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.bodyAsObject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.CommunityPaybackAndDeliusMockServer
 import java.time.LocalDate
@@ -170,5 +174,55 @@ class AdminAppointmentTaskIT : IntegrationTestBase() {
         taskStatus = AppointmentTaskStatus.PENDING,
       ),
     )
+  }
+
+  @Nested
+  @DisplayName("PUT /admin/appointment-tasks/{task-id}/complete")
+  inner class CompleteTask {
+
+    @Test
+    fun `should return unauthorized if no token`() {
+      webTestClient.put()
+        .uri("/admin/appointment-tasks/${UUID.randomUUID()}/complete")
+        .exchange()
+        .expectStatus()
+        .isUnauthorized
+    }
+
+    @Test
+    fun `should return forbidden if no role`() {
+      webTestClient.put()
+        .uri("/admin/appointment-tasks/${UUID.randomUUID()}/complete")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .isForbidden
+    }
+
+    @Test
+    fun `should return forbidden if wrong role`() {
+      webTestClient.put()
+        .uri("/admin/appointment-tasks/${UUID.randomUUID()}/complete")
+        .headers(setAuthorisation(roles = listOf("ROLE_WRONG")))
+        .exchange()
+        .expectStatus()
+        .isForbidden
+    }
+
+    @Test
+    fun `should mark task as completed`() {
+      val task = AppointmentTaskEntity.validPending().copy(
+        appointment = AppointmentEntity.valid().persist(ctx),
+      ).persist(ctx)
+
+      webTestClient.put()
+        .uri("/admin/appointment-tasks/${task.id}/complete")
+        .addAdminUiAuthHeader("theusername")
+        .exchange()
+        .expectStatus()
+        .isOk
+
+      assertThat(appointmentTaskEntityRepository.findByIdOrNull(task.id)!!.taskStatus).isEqualTo(AppointmentTaskStatus.COMPLETE)
+    }
   }
 }

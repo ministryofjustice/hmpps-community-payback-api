@@ -18,12 +18,14 @@ fun AppointmentTaskEntity.Companion.valid() = AppointmentTaskEntity(
   taskStatus = AppointmentTaskStatus.entries.random(),
   decisionMadeAt = OffsetDateTime.now(),
   decisionMadeByUsername = String.random(10),
+  decisionDescription = String.random(100),
 )
 
 fun AppointmentTaskEntity.Companion.validPending() = AppointmentTaskEntity.valid().copy(
   taskStatus = AppointmentTaskStatus.PENDING,
   decisionMadeAt = null,
   decisionMadeByUsername = null,
+  decisionDescription = null,
 )
 
 fun AppointmentTaskEntity.persist(ctx: ApplicationContext) = ctx.getBean<AppointmentTaskEntityRepository>().save(this)
