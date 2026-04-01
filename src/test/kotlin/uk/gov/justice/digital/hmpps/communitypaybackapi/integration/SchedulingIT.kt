@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.integration
 
 import org.awaitility.Awaitility.await
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -25,6 +26,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.validNoEn
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.validWithOutcome
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.persist
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
+import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.config.MutableDomainEventListenerConfig
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.DomainEventAsserter
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.MockSentryService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.MockTelemetryService
@@ -63,9 +65,17 @@ class SchedulingIT : IntegrationTestBase() {
   @Autowired
   lateinit var domainEventAsserter: DomainEventAsserter
 
+  @Autowired
+  lateinit var mutableDomainEventListenerConfig: MutableDomainEventListenerConfig
+
   companion object {
     const val CRN: String = "CRN01"
     const val EVENT_NUMBER: Int = 10
+  }
+
+  @BeforeEach
+  fun enableDomainEventListener() {
+    mutableDomainEventListenerConfig.enable()
   }
 
   @Nested
