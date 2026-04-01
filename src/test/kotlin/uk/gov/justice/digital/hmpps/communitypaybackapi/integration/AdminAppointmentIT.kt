@@ -82,7 +82,7 @@ class AdminAppointmentIT : IntegrationTestBase() {
 
     @Test
     fun `Should return 404 if an appointment can't be found`() {
-      CommunityPaybackAndDeliusMockServer.getAppointmentNotFound(
+      CommunityPaybackAndDeliusMockServer.setupGetAppointment404Response(
         projectCode = "PC01",
         appointmentId = 101L,
         username = "theusername",
@@ -105,7 +105,7 @@ class AdminAppointmentIT : IntegrationTestBase() {
       val projectName = "Community Garden Maintenance"
       val crn = "X434334"
 
-      CommunityPaybackAndDeliusMockServer.getAppointment(
+      CommunityPaybackAndDeliusMockServer.setupGetAppointmentResponse(
         appointment = NDAppointment.valid(ctx).copy(
           id = id,
           project = NDProjectAndLocation.valid().copy(name = projectName, code = "PC01"),
@@ -172,7 +172,7 @@ class AdminAppointmentIT : IntegrationTestBase() {
 
     @Test
     fun `Should return 404 if an appointment can't be found`() {
-      CommunityPaybackAndDeliusMockServer.getAppointmentNotFound(
+      CommunityPaybackAndDeliusMockServer.setupGetAppointment404Response(
         projectCode = "proj123",
         appointmentId = 1234L,
         username = "theusername",
@@ -199,7 +199,7 @@ class AdminAppointmentIT : IntegrationTestBase() {
     fun `Should update upstream, raise domain event and create travel time task`() {
       appointmentTaskEntityRepository.deleteAll()
 
-      CommunityPaybackAndDeliusMockServer.setupGetDataMocksForUpdateAppointment(
+      CommunityPaybackAndDeliusMockServer.Aggregates.setupGetDataMocksForUpdateAppointment(
         existingAppointment = NDAppointment.validNoOutcome(ctx).copy(
           id = 1234L,
           project = NDProjectAndLocation.valid().copy(code = "proj123"),
@@ -211,7 +211,7 @@ class AdminAppointmentIT : IntegrationTestBase() {
         project = NDProject.valid(ctx).copy(code = "proj123", type = NDProjectType.valid().copy(code = GROUP_PLACEMENT_NATIONAL_PROJECT_CODE)),
       )
 
-      CommunityPaybackAndDeliusMockServer.putAppointment(
+      CommunityPaybackAndDeliusMockServer.setupPutAppointmentResponse(
         projectCode = "proj123",
         appointmentId = 1234L,
       )
@@ -232,7 +232,7 @@ class AdminAppointmentIT : IntegrationTestBase() {
         .expectStatus()
         .isOk()
 
-      CommunityPaybackAndDeliusMockServer.putAppointmentVerify(
+      CommunityPaybackAndDeliusMockServer.verifyPutAppointmentRequest(
         projectCode = "proj123",
         appointmentId = 1234L,
       )
@@ -281,7 +281,7 @@ class AdminAppointmentIT : IntegrationTestBase() {
       val appointment1 = NDAppointmentSummary.valid(ctx)
       val appointment2 = NDAppointmentSummary.valid(ctx)
 
-      CommunityPaybackAndDeliusMockServer.getAppointments(
+      CommunityPaybackAndDeliusMockServer.setupGetAppointmentsResponse(
         crn = "CRN000",
         username = "theusername",
         appointments = listOf(appointment1, appointment2),

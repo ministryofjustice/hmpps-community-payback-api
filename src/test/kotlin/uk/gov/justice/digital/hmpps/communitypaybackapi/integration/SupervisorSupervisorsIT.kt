@@ -57,7 +57,7 @@ class SupervisorSupervisorsIT : IntegrationTestBase() {
 
     @Test
     fun `should return 404 if supervisor cant be found`() {
-      CommunityPaybackAndDeliusMockServer.getSupervisorNotFound(
+      CommunityPaybackAndDeliusMockServer.setupGetSupervisor404Response(
         username = "thesupervisorusername",
       )
 
@@ -71,7 +71,7 @@ class SupervisorSupervisorsIT : IntegrationTestBase() {
 
     @Test
     fun `should return OK with supervisor info`() {
-      CommunityPaybackAndDeliusMockServer.getSupervisor(
+      CommunityPaybackAndDeliusMockServer.setupGetSupervisorResponse(
         username = "thesupervisorusername",
         supervisor = NDSupervisor.valid().copy(
           code = "SUP01",

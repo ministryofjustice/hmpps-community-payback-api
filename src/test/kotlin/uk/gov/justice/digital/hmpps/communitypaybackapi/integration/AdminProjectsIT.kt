@@ -47,7 +47,7 @@ class AdminProjectsIT : IntegrationTestBase() {
 
     @Test
     fun `Should return 404 if a project can't be found`() {
-      CommunityPaybackAndDeliusMockServer.getProjectNotFound(
+      CommunityPaybackAndDeliusMockServer.setupGetProject404Response(
         projectCode = "PC01",
       )
 
@@ -61,7 +61,7 @@ class AdminProjectsIT : IntegrationTestBase() {
 
     @Test
     fun `Should return existing project`() {
-      CommunityPaybackAndDeliusMockServer.getProject(
+      CommunityPaybackAndDeliusMockServer.setupGetProjectResponse(
         project = NDProject.valid(ctx).copy(
           code = "PC01",
           name = "the project name",

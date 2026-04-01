@@ -44,7 +44,7 @@ object CommunityPaybackAndDeliusMockServer {
 
   val jsonMapper: JsonMapper = JsonMapper()
 
-  fun providers(
+  fun setupGetProvidersResponse(
     username: String,
     providers: NDProviderSummaries,
   ) {
@@ -57,7 +57,7 @@ object CommunityPaybackAndDeliusMockServer {
     )
   }
 
-  fun providerTeams(
+  fun setupGetProviderTeamsResponse(
     providerCode: String,
     providerTeams: NDProviderTeamSummaries,
   ) {
@@ -70,7 +70,7 @@ object CommunityPaybackAndDeliusMockServer {
     )
   }
 
-  fun getProjectNotFound(
+  fun setupGetProject404Response(
     projectCode: String,
   ) {
     WireMock.stubFor(
@@ -81,7 +81,7 @@ object CommunityPaybackAndDeliusMockServer {
     )
   }
 
-  fun getProject(
+  fun setupGetProjectResponse(
     project: NDProject,
   ) {
     WireMock.stubFor(
@@ -93,7 +93,7 @@ object CommunityPaybackAndDeliusMockServer {
     )
   }
 
-  fun getSessions(
+  fun setupGetSessionsResponse(
     providerCode: String,
     teamCode: String,
     startDate: LocalDate,
@@ -118,7 +118,7 @@ object CommunityPaybackAndDeliusMockServer {
     )
   }
 
-  fun getSupervisor(
+  fun setupGetSupervisorResponse(
     username: String,
     supervisor: NDSupervisor,
   ) {
@@ -134,7 +134,7 @@ object CommunityPaybackAndDeliusMockServer {
     )
   }
 
-  fun getSupervisorNotFound(
+  fun setupGetSupervisor404Response(
     username: String,
   ) {
     WireMock.stubFor(
@@ -145,7 +145,7 @@ object CommunityPaybackAndDeliusMockServer {
     )
   }
 
-  fun getAppointmentNotFound(
+  fun setupGetAppointment404Response(
     projectCode: String,
     appointmentId: Long,
     username: String,
@@ -158,7 +158,7 @@ object CommunityPaybackAndDeliusMockServer {
     )
   }
 
-  fun getAppointment(
+  fun setupGetAppointmentResponse(
     appointment: NDAppointment,
     username: String,
   ) {
@@ -172,7 +172,7 @@ object CommunityPaybackAndDeliusMockServer {
     )
   }
 
-  fun postAppointments(
+  fun setupPostAppointmentsResponse(
     projectCode: String,
     appointmentCount: Int,
   ) {
@@ -194,7 +194,7 @@ object CommunityPaybackAndDeliusMockServer {
     )
   }
 
-  fun postAppointmentVerify(
+  fun verifyPostAppointmentsRequest(
     projectCode: String,
     expectedAppointments: List<ExpectedAppointmentCreate>,
   ) {
@@ -212,7 +212,7 @@ object CommunityPaybackAndDeliusMockServer {
     WireMock.verify(assertion)
   }
 
-  fun postAppointmentVerify(
+  fun verifyPostAppointmentsRequestSimple(
     projectCode: String,
     totalExpectedCalls: Int,
   ) {
@@ -230,11 +230,11 @@ object CommunityPaybackAndDeliusMockServer {
     val endTime: LocalTime,
   )
 
-  fun postAppointmentsVerifyZeroCalls() {
+  fun verifyPostAppointmentsZeroCalls() {
     WireMock.verify(0, postRequestedFor(urlMatching("/community-payback-and-delius/.*/appointments")))
   }
 
-  fun putAppointment(
+  fun setupPutAppointmentResponse(
     projectCode: String,
     appointmentId: Long,
   ) {
@@ -246,7 +246,7 @@ object CommunityPaybackAndDeliusMockServer {
     )
   }
 
-  fun putAppointmentNotFound(
+  fun setupPutAppointment404Response(
     projectCode: String,
     appointmentId: Long,
   ) {
@@ -258,20 +258,20 @@ object CommunityPaybackAndDeliusMockServer {
     )
   }
 
-  fun putAppointmentVerify(
+  fun verifyPutAppointmentRequest(
     projectCode: String,
     appointmentId: Long,
   ) {
     WireMock.verify(putRequestedFor(urlEqualTo("/community-payback-and-delius/projects/$projectCode/appointments/$appointmentId/outcome")))
   }
 
-  fun getTeamSupervisors(forProject: NDProject, supervisorSummaries: NDSupervisorSummaries) = getTeamSupervisors(
+  fun setupGetTeamSupervisorsResponse(forProject: NDProject, supervisorSummaries: NDSupervisorSummaries) = setupGetTeamSupervisorsResponse(
     providerCode = forProject.provider.code,
     teamCode = forProject.team.code,
     supervisorSummaries = supervisorSummaries,
   )
 
-  fun getTeamSupervisors(
+  fun setupGetTeamSupervisorsResponse(
     providerCode: String,
     teamCode: String,
     supervisorSummaries: NDSupervisorSummaries,
@@ -286,7 +286,7 @@ object CommunityPaybackAndDeliusMockServer {
     )
   }
 
-  fun getUnpaidWorkRequirement(
+  fun setupGetUnpaidWorkRequirementResponse(
     crn: String,
     eventNumber: Int,
     requirement: NDUnpaidWorkRequirement,
@@ -301,7 +301,7 @@ object CommunityPaybackAndDeliusMockServer {
     )
   }
 
-  fun getNonWorkingDays(
+  fun setupGetNonWorkingDaysResponse(
     nonWorkingDates: List<LocalDate>,
   ) {
     WireMock.stubFor(
@@ -314,7 +314,7 @@ object CommunityPaybackAndDeliusMockServer {
     )
   }
 
-  fun getProjects(
+  fun setupGetProjectsResponse(
     providerCode: String,
     teamCode: String,
     projectTypeCodes: List<String> = emptyList(),
@@ -343,7 +343,7 @@ object CommunityPaybackAndDeliusMockServer {
     )
   }
 
-  fun getAppointments(
+  fun setupGetAppointmentsResponse(
     crn: String? = null,
     username: String,
     fromDate: LocalDate? = null,
@@ -385,7 +385,7 @@ object CommunityPaybackAndDeliusMockServer {
     )
   }
 
-  fun getUpwDetailsSummary(
+  fun setupGetUpwDetailsSummaryResponse(
     crn: String,
     case: NDCaseSummary,
     unpaidWorkDetails: List<NDCaseDetail>,
@@ -410,7 +410,7 @@ object CommunityPaybackAndDeliusMockServer {
     )
   }
 
-  fun getUpwDetailsSummaryNotFound(crn: String) {
+  fun setGetUpwDetailsSummary404Response(crn: String) {
     WireMock.stubFor(
       get("/community-payback-and-delius/case/$crn/summary")
         .willReturn(
@@ -420,7 +420,7 @@ object CommunityPaybackAndDeliusMockServer {
     )
   }
 
-  fun postAdjustment(username: String) {
+  fun setupPostAdjustmentResponse(username: String) {
     WireMock.stubFor(
       post("/community-payback-and-delius/adjustments?username=$username")
         .willReturn(
@@ -432,46 +432,49 @@ object CommunityPaybackAndDeliusMockServer {
     )
   }
 
-  fun postAdjustmentVerify(username: String) {
+  fun verifyPostAdjustment(username: String) {
     WireMock.verify(postRequestedFor(urlEqualTo("/community-payback-and-delius/adjustments?username=$username")))
   }
 
-  fun setupGetDataMocksForUpdateAppointment(
-    existingAppointment: NDAppointment,
-    project: NDProject,
-    username: String,
-  ) {
-    getAppointment(
-      appointment = existingAppointment,
-      username = username,
-    )
-    setupGetDataMocksForCreateAppointment(
-      crn = existingAppointment.case.crn,
-      eventNumber = existingAppointment.event.number,
-      project = project,
-    )
-  }
+  object Aggregates {
 
-  fun setupGetDataMocksForCreateAppointment(
-    crn: String,
-    eventNumber: Int,
-    project: NDProject,
-  ) {
-    getProject(project)
-    getTeamSupervisors(
-      forProject = project,
-      supervisorSummaries = NDSupervisorSummaries(listOf(NDSupervisorSummary.unallocated())),
-    )
-    getUpwDetailsSummary(
-      crn = crn,
-      case = NDCaseSummary.valid(),
-      unpaidWorkDetails = listOf(
-        NDCaseDetail.valid().copy(
-          eventNumber = eventNumber,
-          sentenceDate = LocalDate.now().minusYears(10),
+    fun setupGetDataMocksForUpdateAppointment(
+      existingAppointment: NDAppointment,
+      project: NDProject,
+      username: String,
+    ) {
+      setupGetAppointmentResponse(
+        appointment = existingAppointment,
+        username = username,
+      )
+      setupGetDataMocksForCreateAppointment(
+        crn = existingAppointment.case.crn,
+        eventNumber = existingAppointment.event.number,
+        project = project,
+      )
+    }
+
+    fun setupGetDataMocksForCreateAppointment(
+      crn: String,
+      eventNumber: Int,
+      project: NDProject,
+    ) {
+      setupGetProjectResponse(project)
+      setupGetTeamSupervisorsResponse(
+        forProject = project,
+        supervisorSummaries = NDSupervisorSummaries(listOf(NDSupervisorSummary.unallocated())),
+      )
+      setupGetUpwDetailsSummaryResponse(
+        crn = crn,
+        case = NDCaseSummary.valid(),
+        unpaidWorkDetails = listOf(
+          NDCaseDetail.valid().copy(
+            eventNumber = eventNumber,
+            sentenceDate = LocalDate.now().minusYears(10),
+          ),
         ),
-      ),
-    )
+      )
+    }
   }
 
   private fun LocalDate.toIsoDateString() = this.format(DateTimeFormatter.ISO_DATE)

@@ -91,7 +91,7 @@ class AdminAppointmentTaskIT : IntegrationTestBase() {
         date = appointment.date,
       )
 
-      CommunityPaybackAndDeliusMockServer.getAppointments(
+      CommunityPaybackAndDeliusMockServer.setupGetAppointmentsResponse(
         username = "theusername",
         appointments = listOf(matchingAppointmentSummary),
         appointmentIds = listOf(101L),
@@ -133,7 +133,7 @@ class AdminAppointmentTaskIT : IntegrationTestBase() {
         date = matchingAppointment.date,
       )
 
-      CommunityPaybackAndDeliusMockServer.getAppointments(
+      CommunityPaybackAndDeliusMockServer.setupGetAppointmentsResponse(
         username = "theusername",
         appointmentIds = listOf(101L),
         appointments = listOf(matchingAppointmentSummary),

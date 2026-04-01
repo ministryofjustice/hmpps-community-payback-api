@@ -50,7 +50,7 @@ class AdminUpwDetailsIT : IntegrationTestBase() {
 
     @Test
     fun `should return OK with unpaid work details`() {
-      CommunityPaybackAndDeliusMockServer.getUpwDetailsSummary(
+      CommunityPaybackAndDeliusMockServer.setupGetUpwDetailsSummaryResponse(
         crn = CRN,
         case = NDCaseSummary.Companion.valid(),
         unpaidWorkDetails = listOf(
