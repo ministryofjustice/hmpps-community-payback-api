@@ -112,16 +112,18 @@ class AppointmentValidationService(
 
   private fun ValidationContext.validateOutcome() {
     if (contactOutcome == null) {
-      return
-    }
+      if (appointmentIsInPast()) {
+        badRequest("As the appointment is now complete a contact outcome is required")
+      }
+    } else {
+      if (appointmentIsInFuture() && (contactOutcome.attended || contactOutcome.enforceable)) {
+        badRequest("As the appointment is in the future only acceptable absence outcomes can be recorded")
+      }
 
-    if (appointmentIsInFuture() && (contactOutcome.attended || contactOutcome.enforceable)) {
-      badRequest("As the appointment is in the future only acceptable absence outcomes can be recorded")
-    }
-
-    if (contactOutcome.attended) {
-      validateNotNull(command.attendanceData) {
-        "Attendance data is required for contact outcomes that indicate attendance"
+      if (contactOutcome.attended) {
+        validateNotNull(command.attendanceData) {
+          "Attendance data is required for contact outcomes that indicate attendance"
+        }
       }
     }
   }
@@ -178,6 +180,7 @@ class AppointmentValidationService(
     val appointmentMinutesAlreadyCredited: Duration = Duration.ZERO,
   ) {
     fun appointmentIsInFuture() = appointmentDate.atTime(command.startTime).isAfter(LocalDateTime.now())
+    fun appointmentIsInPast() = appointmentDate.atTime(command.endTime).isBefore(LocalDateTime.now())
   }
 
   data class ValidatedAppointment<T>(

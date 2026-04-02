@@ -243,6 +243,24 @@ class AppointmentValidationServiceTest {
       }
 
       @Test
+      fun `if appointment ended in the past, an outcome is mandatory`() {
+        val outcome = baselineOutcome.copy(attended = true, enforceable = false)
+        every { contactOutcomeEntityRepository.findByCode(OUTCOME_CODE) } returns outcome
+
+        assertThatThrownBy {
+          service.validateCreate(
+            baselineCreate.copy(
+              date = LocalDate.now(),
+              startTime = LocalTime.now().minusMinutes(2),
+              endTime = LocalTime.now().minusMinutes(1),
+              contactOutcomeCode = null,
+            ),
+          )
+        }.isInstanceOf(BadRequestException::class.java)
+          .hasMessage("As the appointment is now complete a contact outcome is required")
+      }
+
+      @Test
       fun `if appointment is current or in the past, attendance outcome can be recorded`() {
         val outcome = baselineOutcome.copy(attended = true, enforceable = false)
         every { contactOutcomeEntityRepository.findByCode(OUTCOME_CODE) } returns outcome
@@ -700,6 +718,19 @@ class AppointmentValidationServiceTest {
           )
         }.isInstanceOf(BadRequestException::class.java)
           .hasMessage("Contact outcome not found for code '$OUTCOME_CODE'")
+      }
+
+      @Test
+      fun `if appointment ends in the past, attendance outcome is mandatory`() {
+        val outcome = baselineOutcome.copy(attended = true, enforceable = false)
+        every { contactOutcomeEntityRepository.findByCode(OUTCOME_CODE) } returns outcome
+
+        service.validateUpdate(
+          appointment = baselineExistingAppointment.copy(date = LocalDate.now()),
+          update = baselineUpdate.copy(
+            startTime = LocalTime.now().minusMinutes(1),
+          ),
+        )
       }
 
       @Test
