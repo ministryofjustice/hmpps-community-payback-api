@@ -570,12 +570,12 @@ data class PageResponse<T>(
 
 data class NDCaseDetailsSummary(
   val case: NDCaseSummary,
-  val unpaidWorkDetails: List<NDCaseDetail> = emptyList(),
+  val unpaidWorkDetails: List<NDUpwDetails> = emptyList(),
 ) {
   companion object
 }
 
-data class NDCaseDetail(
+data class NDUpwDetails(
   val eventNumber: Int,
   val sentenceDate: LocalDate,
   val requiredMinutes: Long,

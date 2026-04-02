@@ -7,8 +7,8 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.http.MediaType
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseDetail
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDUpwDetails
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAdjustmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentTaskEntity
@@ -78,16 +78,16 @@ class AdminAdjustmentIT : IntegrationTestBase() {
       val appointment = AppointmentEntity.valid().copy(crn = CRN, deliusEventNumber = DELIUS_EVENT_NUMBER).persist(ctx)
       val task = AppointmentTaskEntity.valid().copy(appointment = appointment).persist(ctx)
 
-      CommunityPaybackAndDeliusMockServer.getUpwDetailsSummary(
+      CommunityPaybackAndDeliusMockServer.setupGetUpwDetailsSummaryResponse(
         crn = CRN,
         case = NDCaseSummary.valid(),
         unpaidWorkDetails = listOf(
-          NDCaseDetail.valid().copy(eventNumber = DELIUS_EVENT_NUMBER),
+          NDUpwDetails.valid().copy(eventNumber = DELIUS_EVENT_NUMBER),
         ),
         username = "theusername",
       )
 
-      CommunityPaybackAndDeliusMockServer.postAdjustment(username = "theusername")
+      CommunityPaybackAndDeliusMockServer.setupPostAdjustmentResponse(username = "theusername")
 
       webTestClient.post()
         .uri("/admin/offenders/$CRN/unpaid-work-details/$DELIUS_EVENT_NUMBER/adjustments")
@@ -102,7 +102,7 @@ class AdminAdjustmentIT : IntegrationTestBase() {
         .expectStatus()
         .isOk
 
-      CommunityPaybackAndDeliusMockServer.postAdjustmentVerify(username = "theusername")
+      CommunityPaybackAndDeliusMockServer.verifyPostAdjustment(username = "theusername")
 
       domainEventAsserter.assertEventCount("community-payback.adjustment.created", 1)
       assertThat(appointmentTaskEntityRepository.findByIdOrNull(task.id)!!.taskStatus).isEqualTo(AppointmentTaskStatus.COMPLETE)

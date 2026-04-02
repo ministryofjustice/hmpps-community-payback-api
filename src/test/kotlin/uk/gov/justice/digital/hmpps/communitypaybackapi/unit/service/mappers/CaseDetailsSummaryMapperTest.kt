@@ -3,9 +3,9 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.unit.service.mappers
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseDetail
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCodeDescription
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDMainOffence
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDUpwDetails
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourtDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.MainOffenceDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
@@ -18,7 +18,7 @@ class CaseDetailsSummaryMapperTest {
 
     @Test
     fun success() {
-      val result = NDCaseDetail(
+      val result = NDUpwDetails(
         eventNumber = 1,
         sentenceDate = LocalDate.of(2022, 2, 12),
         requiredMinutes = 1000,

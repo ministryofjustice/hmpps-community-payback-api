@@ -56,14 +56,14 @@ class AdminSessionsIT : IntegrationTestBase() {
 
     @Test
     fun `should return OK with project session`() {
-      CommunityPaybackAndDeliusMockServer.getProject(
+      CommunityPaybackAndDeliusMockServer.setupGetProjectResponse(
         NDProject.valid(ctx).copy(
           name = "Community Garden Maintenance",
           code = "N123456789",
         ),
       )
 
-      CommunityPaybackAndDeliusMockServer.getAppointments(
+      CommunityPaybackAndDeliusMockServer.setupGetAppointmentsResponse(
         username = "USER1",
         pageSize = Int.MAX_VALUE,
         fromDate = LocalDate.of(2025, 1, 9),

@@ -10,7 +10,6 @@ import org.springframework.data.repository.findByIdOrNull
 import org.springframework.hateoas.PagedModel
 import org.springframework.http.MediaType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointment
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseDetail
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCode
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDEvent
@@ -18,6 +17,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectAndLocation
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSupervisorSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSupervisorSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDUpwDetails
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.atFirstSecondOfDay
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.atLastSecondOfDay
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionCreditTimeDetailsDto
@@ -519,8 +519,8 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
     @BeforeEach
     fun setupCommonWiremocks() {
       val project = NDProject.valid(ctx).copy(code = PROJECT_CODE, actualEndDateExclusive = null)
-      CommunityPaybackAndDeliusMockServer.getProject(project)
-      CommunityPaybackAndDeliusMockServer.getTeamSupervisors(
+      CommunityPaybackAndDeliusMockServer.setupGetProjectResponse(project)
+      CommunityPaybackAndDeliusMockServer.setupGetTeamSupervisorsResponse(
         forProject = project,
         supervisorSummaries = NDSupervisorSummaries(listOf(NDSupervisorSummary.unallocated())),
       )
@@ -646,12 +646,12 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
         ),
       )
 
-      CommunityPaybackAndDeliusMockServer.setupGetDataMocksForCreateAppointment(
+      CommunityPaybackAndDeliusMockServer.Aggregates.setupGetDataMocksForCreateAppointment(
         crn = CRN,
         eventNumber = DELIUS_EVENT_NUMBER,
         project = NDProject.valid(ctx).copy(code = PROJECT_CODE, actualEndDateExclusive = null),
       )
-      CommunityPaybackAndDeliusMockServer.postAppointments(projectCode = PROJECT_CODE, appointmentCount = 1)
+      CommunityPaybackAndDeliusMockServer.setupPostAppointmentsResponse(projectCode = PROJECT_CODE, appointmentCount = 1)
 
       webTestClient.post()
         .uri("/admin/course-completions/${eventEntity.id}/resolution")
@@ -670,7 +670,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
         endTime = LocalTime.of(1, 30),
       )
 
-      CommunityPaybackAndDeliusMockServer.postAppointmentVerify(
+      CommunityPaybackAndDeliusMockServer.verifyPostAppointmentsRequest(
         projectCode = PROJECT_CODE,
         expectedAppointments = listOf(expectedAppointment),
       )
@@ -696,7 +696,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
         ),
       )
 
-      CommunityPaybackAndDeliusMockServer.setupGetDataMocksForUpdateAppointment(
+      CommunityPaybackAndDeliusMockServer.Aggregates.setupGetDataMocksForUpdateAppointment(
         existingAppointment = NDAppointment.validNoOutcome(ctx).copy(
           id = appointmentId,
           project = NDProjectAndLocation.valid().copy(
@@ -710,7 +710,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
         project = NDProject.valid(ctx).copy(code = "proj123"),
       )
 
-      CommunityPaybackAndDeliusMockServer.putAppointment(
+      CommunityPaybackAndDeliusMockServer.setupPutAppointmentResponse(
         projectCode = PROJECT_CODE,
         appointmentId = appointmentId,
       )
@@ -724,7 +724,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
         .expectStatus()
         .isNoContent
 
-      CommunityPaybackAndDeliusMockServer.putAppointmentVerify(
+      CommunityPaybackAndDeliusMockServer.verifyPutAppointmentRequest(
         projectCode = PROJECT_CODE,
         appointmentId = appointmentId,
       )
@@ -752,17 +752,17 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
         ),
       )
 
-      CommunityPaybackAndDeliusMockServer.getUpwDetailsSummary(
+      CommunityPaybackAndDeliusMockServer.setupGetUpwDetailsSummaryResponse(
         crn = CRN,
         case = NDCaseSummary.valid(),
         unpaidWorkDetails = listOf(
-          NDCaseDetail.valid().copy(
+          NDUpwDetails.valid().copy(
             eventNumber = DELIUS_EVENT_NUMBER,
             sentenceDate = LocalDate.now().minusDays(10),
           ),
         ),
       )
-      CommunityPaybackAndDeliusMockServer.postAppointments(projectCode = PROJECT_CODE, appointmentCount = 1)
+      CommunityPaybackAndDeliusMockServer.setupPostAppointmentsResponse(projectCode = PROJECT_CODE, appointmentCount = 1)
 
       webTestClient.post()
         .uri("/admin/course-completions/${eventEntity.id}/resolution")
@@ -782,7 +782,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
         .expectStatus()
         .isNoContent
 
-      CommunityPaybackAndDeliusMockServer.postAppointmentVerify(
+      CommunityPaybackAndDeliusMockServer.verifyPostAppointmentsRequestSimple(
         projectCode = PROJECT_CODE,
         totalExpectedCalls = 1,
       )
@@ -809,17 +809,17 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
         ),
       )
 
-      CommunityPaybackAndDeliusMockServer.getUpwDetailsSummary(
+      CommunityPaybackAndDeliusMockServer.setupGetUpwDetailsSummaryResponse(
         crn = CRN,
         case = NDCaseSummary.valid(),
         unpaidWorkDetails = listOf(
-          NDCaseDetail.valid().copy(
+          NDUpwDetails.valid().copy(
             eventNumber = DELIUS_EVENT_NUMBER,
             sentenceDate = LocalDate.now().minusDays(10),
           ),
         ),
       )
-      CommunityPaybackAndDeliusMockServer.postAppointments(projectCode = PROJECT_CODE, appointmentCount = 1)
+      CommunityPaybackAndDeliusMockServer.setupPostAppointmentsResponse(projectCode = PROJECT_CODE, appointmentCount = 1)
 
       webTestClient.post()
         .uri("/admin/course-completions/${eventEntity.id}/resolution")
@@ -1006,7 +1006,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
         code = projectCode,
         team = NDCode(teamCode),
       )
-      CommunityPaybackAndDeliusMockServer.getProject(project)
+      CommunityPaybackAndDeliusMockServer.setupGetProjectResponse(project)
 
       val recommendation = webTestClient.get()
         .uri("/admin/course-completions/${targetEvent.id}/recommended-selection")

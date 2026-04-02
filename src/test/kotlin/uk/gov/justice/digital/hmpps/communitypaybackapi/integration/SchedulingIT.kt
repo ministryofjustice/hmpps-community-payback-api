@@ -222,7 +222,7 @@ class SchedulingIT : IntegrationTestBase() {
   ) {
     val schedulingDate = setClockToDayOfWeek(DayOfWeek.MONDAY)
 
-    CommunityPaybackAndDeliusMockServer.getNonWorkingDays(emptyList())
+    CommunityPaybackAndDeliusMockServer.setupGetNonWorkingDaysResponse(emptyList())
 
     // ALLOC1-PROJ1-WK-MON-10:00-20:00
     val allocation1 = NDSchedulingAllocation.valid().copy(
@@ -237,7 +237,7 @@ class SchedulingIT : IntegrationTestBase() {
       endTime = LocalTime.of(18, 0),
     )
 
-    CommunityPaybackAndDeliusMockServer.getUnpaidWorkRequirement(
+    CommunityPaybackAndDeliusMockServer.setupGetUnpaidWorkRequirementResponse(
       crn = CRN,
       eventNumber = EVENT_NUMBER,
       NDUnpaidWorkRequirement(
@@ -279,7 +279,7 @@ class SchedulingIT : IntegrationTestBase() {
     publishTriggeringEvent()
     waitForSchedulingToRun()
 
-    CommunityPaybackAndDeliusMockServer.postAppointmentsVerifyZeroCalls()
+    CommunityPaybackAndDeliusMockServer.verifyPostAppointmentsZeroCalls()
   }
 
   private fun testHasShortfallCreateNewAppointments(
@@ -289,7 +289,7 @@ class SchedulingIT : IntegrationTestBase() {
     val schedulingDate = setClockToDayOfWeek(DayOfWeek.WEDNESDAY)
 
     // This will block ALLOC1 on this specific date
-    CommunityPaybackAndDeliusMockServer.getNonWorkingDays(listOf(schedulingDate.plusDays(17)))
+    CommunityPaybackAndDeliusMockServer.setupGetNonWorkingDaysResponse(listOf(schedulingDate.plusDays(17)))
 
     // ALLOC1-PROJ1-FN-SAT-10:00-16:00, Started Today-365
     val allocation1 = NDSchedulingAllocation.valid().copy(
@@ -317,7 +317,7 @@ class SchedulingIT : IntegrationTestBase() {
       endTime = LocalTime.of(18, 0),
     )
 
-    CommunityPaybackAndDeliusMockServer.getUnpaidWorkRequirement(
+    CommunityPaybackAndDeliusMockServer.setupGetUnpaidWorkRequirementResponse(
       crn = CRN,
       eventNumber = EVENT_NUMBER,
       NDUnpaidWorkRequirement(
@@ -421,20 +421,20 @@ class SchedulingIT : IntegrationTestBase() {
       ),
     )
 
-    CommunityPaybackAndDeliusMockServer.setupGetDataMocksForCreateAppointment(
+    CommunityPaybackAndDeliusMockServer.Aggregates.setupGetDataMocksForCreateAppointment(
       crn = CRN,
       eventNumber = EVENT_NUMBER,
       project = NDProject.valid(ctx).copy(code = "PROJ1", actualEndDateExclusive = null),
     )
 
-    CommunityPaybackAndDeliusMockServer.setupGetDataMocksForCreateAppointment(
+    CommunityPaybackAndDeliusMockServer.Aggregates.setupGetDataMocksForCreateAppointment(
       crn = CRN,
       eventNumber = EVENT_NUMBER,
       project = NDProject.valid(ctx).copy(code = "PROJ2", actualEndDateExclusive = null),
     )
 
-    CommunityPaybackAndDeliusMockServer.postAppointments(projectCode = "PROJ1", appointmentCount = 1)
-    CommunityPaybackAndDeliusMockServer.postAppointments(projectCode = "PROJ2", appointmentCount = 2)
+    CommunityPaybackAndDeliusMockServer.setupPostAppointmentsResponse(projectCode = "PROJ1", appointmentCount = 1)
+    CommunityPaybackAndDeliusMockServer.setupPostAppointmentsResponse(projectCode = "PROJ2", appointmentCount = 2)
 
     publishTriggeringEvent()
     waitForSchedulingToRun()
@@ -444,7 +444,7 @@ class SchedulingIT : IntegrationTestBase() {
     Today+4 - ALLOC2, 12:00-18:00
     Today+18 - ALLOC2, 12:00-14:00
      */
-    CommunityPaybackAndDeliusMockServer.postAppointmentVerify(
+    CommunityPaybackAndDeliusMockServer.verifyPostAppointmentsRequest(
       projectCode = "PROJ1",
       expectedAppointments = listOf(
         CommunityPaybackAndDeliusMockServer.ExpectedAppointmentCreate(
@@ -456,7 +456,7 @@ class SchedulingIT : IntegrationTestBase() {
         ),
       ),
     )
-    CommunityPaybackAndDeliusMockServer.postAppointmentVerify(
+    CommunityPaybackAndDeliusMockServer.verifyPostAppointmentsRequest(
       projectCode = "PROJ2",
       expectedAppointments = listOf(
         CommunityPaybackAndDeliusMockServer.ExpectedAppointmentCreate(

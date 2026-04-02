@@ -7,13 +7,13 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointment
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseDetail
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDContactOutcome
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDEnforcementAction
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectAndLocation
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDUpwDetails
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AttendanceDataDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
@@ -75,7 +75,7 @@ class SupervisorAppointmentsIT : IntegrationTestBase() {
 
     @Test
     fun `Should return 404 if an appointment can't be found`() {
-      CommunityPaybackAndDeliusMockServer.getAppointmentNotFound("PC01", 101L, "theusername")
+      CommunityPaybackAndDeliusMockServer.setupGetAppointment404Response("PC01", 101L, "theusername")
 
       val response = webTestClient.get()
         .uri("/supervisor/projects/PC01/appointments/101")
@@ -94,7 +94,7 @@ class SupervisorAppointmentsIT : IntegrationTestBase() {
       val projectName = "Community Garden Maintenance"
       val crn = "X434334"
 
-      CommunityPaybackAndDeliusMockServer.getAppointment(
+      CommunityPaybackAndDeliusMockServer.setupGetAppointmentResponse(
         appointment = NDAppointment.valid(ctx).copy(
           id = id,
           project = NDProjectAndLocation.valid().copy(name = projectName, code = "PC01"),
@@ -161,7 +161,7 @@ class SupervisorAppointmentsIT : IntegrationTestBase() {
 
     @Test
     fun `Should return 404 if an appointment can't be found`() {
-      CommunityPaybackAndDeliusMockServer.putAppointmentNotFound(
+      CommunityPaybackAndDeliusMockServer.setupPutAppointment404Response(
         projectCode = "PC01",
         appointmentId = 1234L,
       )
@@ -185,7 +185,7 @@ class SupervisorAppointmentsIT : IntegrationTestBase() {
 
     @Test
     fun `Should send update upstream and delete corresponding form data`() {
-      CommunityPaybackAndDeliusMockServer.setupGetDataMocksForUpdateAppointment(
+      CommunityPaybackAndDeliusMockServer.Aggregates.setupGetDataMocksForUpdateAppointment(
         existingAppointment = NDAppointment.validNoOutcome(ctx).copy(
           id = 1234L,
           project = NDProjectAndLocation.valid().copy(code = "PC01"),
@@ -197,7 +197,7 @@ class SupervisorAppointmentsIT : IntegrationTestBase() {
         project = NDProject.valid(ctx).copy(code = "PC01"),
       )
 
-      CommunityPaybackAndDeliusMockServer.putAppointment(
+      CommunityPaybackAndDeliusMockServer.setupPutAppointmentResponse(
         projectCode = "PC01",
         appointmentId = 1234L,
       )
@@ -215,7 +215,7 @@ class SupervisorAppointmentsIT : IntegrationTestBase() {
         .expectStatus()
         .isOk()
 
-      CommunityPaybackAndDeliusMockServer.putAppointmentVerify(
+      CommunityPaybackAndDeliusMockServer.verifyPutAppointmentRequest(
         projectCode = "PC01",
         appointmentId = 1234L,
       )
@@ -267,18 +267,18 @@ class SupervisorAppointmentsIT : IntegrationTestBase() {
 
     @Test
     fun `succeeds and calls upstream endpoint`() {
-      CommunityPaybackAndDeliusMockServer.getUpwDetailsSummary(
+      CommunityPaybackAndDeliusMockServer.setupGetUpwDetailsSummaryResponse(
         crn = CRN,
         case = NDCaseSummary.valid(),
         unpaidWorkDetails = listOf(
-          NDCaseDetail.valid().copy(
+          NDUpwDetails.valid().copy(
             eventNumber = EVENT_NUMBER,
             sentenceDate = LocalDate.now().minusYears(1),
           ),
         ),
       )
 
-      CommunityPaybackAndDeliusMockServer.getAppointment(
+      CommunityPaybackAndDeliusMockServer.setupGetAppointmentResponse(
         appointment = NDAppointment.validNoOutcome(ctx).copy(
           id = 1234L,
           project = NDProjectAndLocation.valid().copy(code = "PC01"),
@@ -288,13 +288,13 @@ class SupervisorAppointmentsIT : IntegrationTestBase() {
         ),
         username = "theusername",
       )
-      CommunityPaybackAndDeliusMockServer.getProject(NDProject.valid(ctx).copy(code = "PC01"))
-      CommunityPaybackAndDeliusMockServer.putAppointment(
+      CommunityPaybackAndDeliusMockServer.setupGetProjectResponse(NDProject.valid(ctx).copy(code = "PC01"))
+      CommunityPaybackAndDeliusMockServer.setupPutAppointmentResponse(
         projectCode = "PC01",
         appointmentId = 1234L,
       )
 
-      CommunityPaybackAndDeliusMockServer.getAppointment(
+      CommunityPaybackAndDeliusMockServer.setupGetAppointmentResponse(
         appointment = NDAppointment.validNoOutcome(ctx).copy(
           id = 5678L,
           project = NDProjectAndLocation.valid().copy(code = "PC01"),
@@ -304,7 +304,7 @@ class SupervisorAppointmentsIT : IntegrationTestBase() {
         ),
         username = "theusername",
       )
-      CommunityPaybackAndDeliusMockServer.putAppointment(
+      CommunityPaybackAndDeliusMockServer.setupPutAppointmentResponse(
         projectCode = "PC01",
         appointmentId = 5678L,
       )
@@ -329,8 +329,8 @@ class SupervisorAppointmentsIT : IntegrationTestBase() {
       assertThat(result.results[0].result).isEqualTo(UpdateAppointmentOutcomeResultType.SUCCESS)
       assertThat(result.results[1].result).isEqualTo(UpdateAppointmentOutcomeResultType.SUCCESS)
 
-      CommunityPaybackAndDeliusMockServer.putAppointmentVerify("PC01", 1234L)
-      CommunityPaybackAndDeliusMockServer.putAppointmentVerify("PC01", 5678L)
+      CommunityPaybackAndDeliusMockServer.verifyPutAppointmentRequest("PC01", 1234L)
+      CommunityPaybackAndDeliusMockServer.verifyPutAppointmentRequest("PC01", 5678L)
 
       domainEventAsserter.assertEventCount("community-payback.appointment.updated", 2)
     }

@@ -18,7 +18,6 @@ import tools.jackson.databind.json.JsonMapper
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAdjustmentPostResponse
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointmentSummary
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseDetail
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseDetailsSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProject
@@ -30,6 +29,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSupervisor
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSupervisorSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSupervisorSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDUnpaidWorkRequirement
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDUpwDetails
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.PageResponse
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.unallocated
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
@@ -44,108 +44,7 @@ object CommunityPaybackAndDeliusMockServer {
 
   val jsonMapper: JsonMapper = JsonMapper()
 
-  fun providers(
-    username: String,
-    providers: NDProviderSummaries,
-  ) {
-    WireMock.stubFor(
-      get("/community-payback-and-delius/providers?username=$username").willReturn(
-        aResponse()
-          .withHeader("Content-Type", "application/json")
-          .withBody(jsonMapper.writeValueAsString(providers)),
-      ),
-    )
-  }
-
-  fun providerTeams(
-    providerCode: String,
-    providerTeams: NDProviderTeamSummaries,
-  ) {
-    WireMock.stubFor(
-      get("/community-payback-and-delius/providers/$providerCode/teams").willReturn(
-        aResponse()
-          .withHeader("Content-Type", "application/json")
-          .withBody(jsonMapper.writeValueAsString(providerTeams)),
-      ),
-    )
-  }
-
-  fun getProjectNotFound(
-    projectCode: String,
-  ) {
-    WireMock.stubFor(
-      get("/community-payback-and-delius/projects/$projectCode")
-        .willReturn(
-          aResponse().withStatus(404),
-        ),
-    )
-  }
-
-  fun getProject(
-    project: NDProject,
-  ) {
-    WireMock.stubFor(
-      get("/community-payback-and-delius/projects/${project.code}").willReturn(
-        aResponse()
-          .withHeader("Content-Type", "application/json")
-          .withBody(jsonMapper.writeValueAsString(project)),
-      ),
-    )
-  }
-
-  fun getSessions(
-    providerCode: String,
-    teamCode: String,
-    startDate: LocalDate,
-    endDate: LocalDate,
-    projectSessions: NDSessionSummaries,
-    typeCode: List<String> = emptyList(),
-  ) {
-    val url = buildString {
-      append("/community-payback-and-delius/providers/$providerCode/teams/$teamCode/sessions?startDate=${startDate.toIsoDateString()}&endDate=${endDate.toIsoDateString()}")
-      typeCode.forEach {
-        append("&typeCode=$it")
-      }
-    }
-
-    WireMock.stubFor(
-      get(url)
-        .willReturn(
-          aResponse()
-            .withHeader("Content-Type", "application/json")
-            .withBody(jsonMapper.writeValueAsString(projectSessions)),
-        ),
-    )
-  }
-
-  fun getSupervisor(
-    username: String,
-    supervisor: NDSupervisor,
-  ) {
-    println("This is " + jsonMapper.writeValueAsString(supervisor))
-
-    WireMock.stubFor(
-      get("/community-payback-and-delius/supervisors?username=$username")
-        .willReturn(
-          aResponse()
-            .withHeader("Content-Type", "application/json")
-            .withBody(jsonMapper.writeValueAsString(supervisor)),
-        ),
-    )
-  }
-
-  fun getSupervisorNotFound(
-    username: String,
-  ) {
-    WireMock.stubFor(
-      get("/community-payback-and-delius/supervisors?username=$username")
-        .willReturn(
-          aResponse().withStatus(404),
-        ),
-    )
-  }
-
-  fun getAppointmentNotFound(
+  fun setupGetAppointment404Response(
     projectCode: String,
     appointmentId: Long,
     username: String,
@@ -158,7 +57,7 @@ object CommunityPaybackAndDeliusMockServer {
     )
   }
 
-  fun getAppointment(
+  fun setupGetAppointmentResponse(
     appointment: NDAppointment,
     username: String,
   ) {
@@ -172,178 +71,7 @@ object CommunityPaybackAndDeliusMockServer {
     )
   }
 
-  fun postAppointments(
-    projectCode: String,
-    appointmentCount: Int,
-  ) {
-    val response = (0..<appointmentCount).map { i ->
-      mapOf(
-        "id" to Long.random(),
-        "reference" to $$"{{jsonPath request.body '$.appointments[$$i].reference'}}",
-      )
-    }
-
-    WireMock.stubFor(
-      post("/community-payback-and-delius/projects/$projectCode/appointments")
-        .willReturn(
-          aResponse()
-            .withHeader("Content-Type", "application/json")
-            .withBody(jsonMapper.writeValueAsString(response))
-            .withTransformers("response-template"),
-        ),
-    )
-  }
-
-  fun postAppointmentVerify(
-    projectCode: String,
-    expectedAppointments: List<ExpectedAppointmentCreate>,
-  ) {
-    var assertion = postRequestedFor(urlEqualTo("/community-payback-and-delius/projects/$projectCode/appointments"))
-
-    expectedAppointments.forEachIndexed { index, expectedAppointment ->
-      assertion = assertion
-        .withRequestBody(matchingJsonPath("$.appointments[$index].crn", equalTo(expectedAppointment.crn)))
-        .withRequestBody(matchingJsonPath("$.appointments[$index].eventNumber", equalTo(expectedAppointment.eventNumber.toString())))
-        .withRequestBody(matchingJsonPath("$.appointments[$index].date", equalTo(expectedAppointment.date.toIsoDateString())))
-        .withRequestBody(matchingJsonPath("$.appointments[$index].startTime", equalTo(expectedAppointment.startTime.format(DateTimeFormatter.ISO_TIME))))
-        .withRequestBody(matchingJsonPath("$.appointments[$index].endTime", equalTo(expectedAppointment.endTime.format(DateTimeFormatter.ISO_TIME))))
-    }
-
-    WireMock.verify(assertion)
-  }
-
-  fun postAppointmentVerify(
-    projectCode: String,
-    totalExpectedCalls: Int,
-  ) {
-    WireMock.verify(
-      exactly(totalExpectedCalls),
-      postRequestedFor(urlEqualTo("/community-payback-and-delius/projects/$projectCode/appointments")),
-    )
-  }
-
-  data class ExpectedAppointmentCreate(
-    val crn: String,
-    val eventNumber: Int,
-    val date: LocalDate,
-    val startTime: LocalTime,
-    val endTime: LocalTime,
-  )
-
-  fun postAppointmentsVerifyZeroCalls() {
-    WireMock.verify(0, postRequestedFor(urlMatching("/community-payback-and-delius/.*/appointments")))
-  }
-
-  fun putAppointment(
-    projectCode: String,
-    appointmentId: Long,
-  ) {
-    WireMock.stubFor(
-      put("/community-payback-and-delius/projects/$projectCode/appointments/$appointmentId/outcome")
-        .willReturn(
-          aResponse().withStatus(200),
-        ),
-    )
-  }
-
-  fun putAppointmentNotFound(
-    projectCode: String,
-    appointmentId: Long,
-  ) {
-    WireMock.stubFor(
-      put("/community-payback-and-delius/projects/$projectCode/appointments/$appointmentId/outcome")
-        .willReturn(
-          aResponse().withStatus(404),
-        ),
-    )
-  }
-
-  fun putAppointmentVerify(
-    projectCode: String,
-    appointmentId: Long,
-  ) {
-    WireMock.verify(putRequestedFor(urlEqualTo("/community-payback-and-delius/projects/$projectCode/appointments/$appointmentId/outcome")))
-  }
-
-  fun getTeamSupervisors(forProject: NDProject, supervisorSummaries: NDSupervisorSummaries) = getTeamSupervisors(
-    providerCode = forProject.provider.code,
-    teamCode = forProject.team.code,
-    supervisorSummaries = supervisorSummaries,
-  )
-
-  fun getTeamSupervisors(
-    providerCode: String,
-    teamCode: String,
-    supervisorSummaries: NDSupervisorSummaries,
-  ) {
-    WireMock.stubFor(
-      get("/community-payback-and-delius/providers/$providerCode/teams/$teamCode/supervisors")
-        .willReturn(
-          aResponse()
-            .withHeader("Content-Type", "application/json")
-            .withBody(jsonMapper.writer().writeValueAsString(supervisorSummaries)),
-        ),
-    )
-  }
-
-  fun getUnpaidWorkRequirement(
-    crn: String,
-    eventNumber: Int,
-    requirement: NDUnpaidWorkRequirement,
-  ) {
-    WireMock.stubFor(
-      get("/community-payback-and-delius/case/$crn/event/$eventNumber/appointments/schedule")
-        .willReturn(
-          aResponse()
-            .withHeader("Content-Type", "application/json")
-            .withBody(jsonMapper.writer().writeValueAsString(requirement)),
-        ),
-    )
-  }
-
-  fun getNonWorkingDays(
-    nonWorkingDates: List<LocalDate>,
-  ) {
-    WireMock.stubFor(
-      get("/community-payback-and-delius/reference-data/non-working-days")
-        .willReturn(
-          aResponse()
-            .withHeader("Content-Type", "application/json")
-            .withBody(jsonMapper.writer().writeValueAsString(nonWorkingDates)),
-        ),
-    )
-  }
-
-  fun getProjects(
-    providerCode: String,
-    teamCode: String,
-    projectTypeCodes: List<String> = emptyList(),
-    response: List<NDProjectOutcomeStats>,
-    pageNumber: Int = 0,
-    pageSize: Int = 100,
-    sortString: String = "name,desc",
-  ) {
-    val url = buildString {
-      append("/community-payback-and-delius/providers/$providerCode/teams/$teamCode/projects?")
-      projectTypeCodes.forEach {
-        append("typeCode=$it&")
-      }
-      append("page=$pageNumber&size=$pageSize&sort=${URLEncoder.encode(sortString, "UTF-8")}")
-    }
-
-    val pageResponse = PageResponse(response, PageResponse.PageMeta(pageSize, pageNumber, response.size.toLong(), 1))
-
-    WireMock.stubFor(
-      get(url)
-        .willReturn(
-          aResponse()
-            .withHeader("Content-Type", "application/json")
-            .withBody(jsonMapper.writeValueAsString(pageResponse)),
-        ),
-    )
-  }
-
-  fun getAppointments(
+  fun setupGetAppointmentsResponse(
     crn: String? = null,
     username: String,
     fromDate: LocalDate? = null,
@@ -385,10 +113,221 @@ object CommunityPaybackAndDeliusMockServer {
     )
   }
 
-  fun getUpwDetailsSummary(
+  fun setupGetNonWorkingDaysResponse(
+    nonWorkingDates: List<LocalDate>,
+  ) {
+    WireMock.stubFor(
+      get("/community-payback-and-delius/reference-data/non-working-days")
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withBody(jsonMapper.writer().writeValueAsString(nonWorkingDates)),
+        ),
+    )
+  }
+
+  fun setupPostAppointmentsResponse(
+    projectCode: String,
+    appointmentCount: Int,
+  ) {
+    val response = (0..<appointmentCount).map { i ->
+      mapOf(
+        "id" to Long.random(),
+        "reference" to $$"{{jsonPath request.body '$.appointments[$$i].reference'}}",
+      )
+    }
+
+    WireMock.stubFor(
+      post("/community-payback-and-delius/projects/$projectCode/appointments")
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withBody(jsonMapper.writeValueAsString(response))
+            .withTransformers("response-template"),
+        ),
+    )
+  }
+
+  fun setupGetProject404Response(
+    projectCode: String,
+  ) {
+    WireMock.stubFor(
+      get("/community-payback-and-delius/projects/$projectCode")
+        .willReturn(
+          aResponse().withStatus(404),
+        ),
+    )
+  }
+
+  fun setupGetProjectResponse(
+    project: NDProject,
+  ) {
+    WireMock.stubFor(
+      get("/community-payback-and-delius/projects/${project.code}").willReturn(
+        aResponse()
+          .withHeader("Content-Type", "application/json")
+          .withBody(jsonMapper.writeValueAsString(project)),
+      ),
+    )
+  }
+
+  fun setupGetProjectsResponse(
+    providerCode: String,
+    teamCode: String,
+    projectTypeCodes: List<String> = emptyList(),
+    response: List<NDProjectOutcomeStats>,
+    pageNumber: Int = 0,
+    pageSize: Int = 100,
+    sortString: String = "name,desc",
+  ) {
+    val url = buildString {
+      append("/community-payback-and-delius/providers/$providerCode/teams/$teamCode/projects?")
+      projectTypeCodes.forEach {
+        append("typeCode=$it&")
+      }
+      append("page=$pageNumber&size=$pageSize&sort=${URLEncoder.encode(sortString, "UTF-8")}")
+    }
+
+    val pageResponse = PageResponse(response, PageResponse.PageMeta(pageSize, pageNumber, response.size.toLong(), 1))
+
+    WireMock.stubFor(
+      get(url)
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withBody(jsonMapper.writeValueAsString(pageResponse)),
+        ),
+    )
+  }
+
+  fun setupGetProvidersResponse(
+    username: String,
+    providers: NDProviderSummaries,
+  ) {
+    WireMock.stubFor(
+      get("/community-payback-and-delius/providers?username=$username").willReturn(
+        aResponse()
+          .withHeader("Content-Type", "application/json")
+          .withBody(jsonMapper.writeValueAsString(providers)),
+      ),
+    )
+  }
+
+  fun setupGetProviderTeamsResponse(
+    providerCode: String,
+    providerTeams: NDProviderTeamSummaries,
+  ) {
+    WireMock.stubFor(
+      get("/community-payback-and-delius/providers/$providerCode/teams").willReturn(
+        aResponse()
+          .withHeader("Content-Type", "application/json")
+          .withBody(jsonMapper.writeValueAsString(providerTeams)),
+      ),
+    )
+  }
+
+  fun setupGetSessionsResponse(
+    providerCode: String,
+    teamCode: String,
+    startDate: LocalDate,
+    endDate: LocalDate,
+    projectSessions: NDSessionSummaries,
+    typeCode: List<String> = emptyList(),
+  ) {
+    val url = buildString {
+      append("/community-payback-and-delius/providers/$providerCode/teams/$teamCode/sessions?startDate=${startDate.toIsoDateString()}&endDate=${endDate.toIsoDateString()}")
+      typeCode.forEach {
+        append("&typeCode=$it")
+      }
+    }
+
+    WireMock.stubFor(
+      get(url)
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withBody(jsonMapper.writeValueAsString(projectSessions)),
+        ),
+    )
+  }
+
+  fun setupGetSupervisor404Response(
+    username: String,
+  ) {
+    WireMock.stubFor(
+      get("/community-payback-and-delius/supervisors?username=$username")
+        .willReturn(
+          aResponse().withStatus(404),
+        ),
+    )
+  }
+
+  fun setupGetSupervisorResponse(
+    username: String,
+    supervisor: NDSupervisor,
+  ) {
+    println("This is " + jsonMapper.writeValueAsString(supervisor))
+
+    WireMock.stubFor(
+      get("/community-payback-and-delius/supervisors?username=$username")
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withBody(jsonMapper.writeValueAsString(supervisor)),
+        ),
+    )
+  }
+
+  fun setupGetTeamSupervisorsResponse(forProject: NDProject, supervisorSummaries: NDSupervisorSummaries) = setupGetTeamSupervisorsResponse(
+    providerCode = forProject.provider.code,
+    teamCode = forProject.team.code,
+    supervisorSummaries = supervisorSummaries,
+  )
+
+  fun setupGetTeamSupervisorsResponse(
+    providerCode: String,
+    teamCode: String,
+    supervisorSummaries: NDSupervisorSummaries,
+  ) {
+    WireMock.stubFor(
+      get("/community-payback-and-delius/providers/$providerCode/teams/$teamCode/supervisors")
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withBody(jsonMapper.writer().writeValueAsString(supervisorSummaries)),
+        ),
+    )
+  }
+
+  fun setupGetUnpaidWorkRequirementResponse(
+    crn: String,
+    eventNumber: Int,
+    requirement: NDUnpaidWorkRequirement,
+  ) {
+    WireMock.stubFor(
+      get("/community-payback-and-delius/case/$crn/event/$eventNumber/appointments/schedule")
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withBody(jsonMapper.writer().writeValueAsString(requirement)),
+        ),
+    )
+  }
+
+  fun setGetUpwDetailsSummary404Response(crn: String) {
+    WireMock.stubFor(
+      get("/community-payback-and-delius/case/$crn/summary")
+        .willReturn(
+          aResponse()
+            .withStatus(404),
+        ),
+    )
+  }
+
+  fun setupGetUpwDetailsSummaryResponse(
     crn: String,
     case: NDCaseSummary,
-    unpaidWorkDetails: List<NDCaseDetail>,
+    unpaidWorkDetails: List<NDUpwDetails>,
     username: String? = null,
   ) {
     val ndCaseDetailsSummary = NDCaseDetailsSummary(case, unpaidWorkDetails)
@@ -410,17 +349,7 @@ object CommunityPaybackAndDeliusMockServer {
     )
   }
 
-  fun getUpwDetailsSummaryNotFound(crn: String) {
-    WireMock.stubFor(
-      get("/community-payback-and-delius/case/$crn/summary")
-        .willReturn(
-          aResponse()
-            .withStatus(404),
-        ),
-    )
-  }
-
-  fun postAdjustment(username: String) {
+  fun setupPostAdjustmentResponse(username: String) {
     WireMock.stubFor(
       post("/community-payback-and-delius/adjustments?username=$username")
         .willReturn(
@@ -432,46 +361,120 @@ object CommunityPaybackAndDeliusMockServer {
     )
   }
 
-  fun postAdjustmentVerify(username: String) {
+  fun setupPutAppointmentResponse(
+    projectCode: String,
+    appointmentId: Long,
+  ) {
+    WireMock.stubFor(
+      put("/community-payback-and-delius/projects/$projectCode/appointments/$appointmentId/outcome")
+        .willReturn(
+          aResponse().withStatus(200),
+        ),
+    )
+  }
+
+  fun setupPutAppointment404Response(
+    projectCode: String,
+    appointmentId: Long,
+  ) {
+    WireMock.stubFor(
+      put("/community-payback-and-delius/projects/$projectCode/appointments/$appointmentId/outcome")
+        .willReturn(
+          aResponse().withStatus(404),
+        ),
+    )
+  }
+
+  fun verifyPutAppointmentRequest(
+    projectCode: String,
+    appointmentId: Long,
+  ) {
+    WireMock.verify(putRequestedFor(urlEqualTo("/community-payback-and-delius/projects/$projectCode/appointments/$appointmentId/outcome")))
+  }
+
+  fun verifyPostAppointmentsRequest(
+    projectCode: String,
+    expectedAppointments: List<ExpectedAppointmentCreate>,
+  ) {
+    var assertion = postRequestedFor(urlEqualTo("/community-payback-and-delius/projects/$projectCode/appointments"))
+
+    expectedAppointments.forEachIndexed { index, expectedAppointment ->
+      assertion = assertion
+        .withRequestBody(matchingJsonPath("$.appointments[$index].crn", equalTo(expectedAppointment.crn)))
+        .withRequestBody(matchingJsonPath("$.appointments[$index].eventNumber", equalTo(expectedAppointment.eventNumber.toString())))
+        .withRequestBody(matchingJsonPath("$.appointments[$index].date", equalTo(expectedAppointment.date.toIsoDateString())))
+        .withRequestBody(matchingJsonPath("$.appointments[$index].startTime", equalTo(expectedAppointment.startTime.format(DateTimeFormatter.ISO_TIME))))
+        .withRequestBody(matchingJsonPath("$.appointments[$index].endTime", equalTo(expectedAppointment.endTime.format(DateTimeFormatter.ISO_TIME))))
+    }
+
+    WireMock.verify(assertion)
+  }
+
+  fun verifyPostAppointmentsRequestSimple(
+    projectCode: String,
+    totalExpectedCalls: Int,
+  ) {
+    WireMock.verify(
+      exactly(totalExpectedCalls),
+      postRequestedFor(urlEqualTo("/community-payback-and-delius/projects/$projectCode/appointments")),
+    )
+  }
+
+  data class ExpectedAppointmentCreate(
+    val crn: String,
+    val eventNumber: Int,
+    val date: LocalDate,
+    val startTime: LocalTime,
+    val endTime: LocalTime,
+  )
+
+  fun verifyPostAppointmentsZeroCalls() {
+    WireMock.verify(0, postRequestedFor(urlMatching("/community-payback-and-delius/.*/appointments")))
+  }
+
+  fun verifyPostAdjustment(username: String) {
     WireMock.verify(postRequestedFor(urlEqualTo("/community-payback-and-delius/adjustments?username=$username")))
   }
 
-  fun setupGetDataMocksForUpdateAppointment(
-    existingAppointment: NDAppointment,
-    project: NDProject,
-    username: String,
-  ) {
-    getAppointment(
-      appointment = existingAppointment,
-      username = username,
-    )
-    setupGetDataMocksForCreateAppointment(
-      crn = existingAppointment.case.crn,
-      eventNumber = existingAppointment.event.number,
-      project = project,
-    )
-  }
+  object Aggregates {
 
-  fun setupGetDataMocksForCreateAppointment(
-    crn: String,
-    eventNumber: Int,
-    project: NDProject,
-  ) {
-    getProject(project)
-    getTeamSupervisors(
-      forProject = project,
-      supervisorSummaries = NDSupervisorSummaries(listOf(NDSupervisorSummary.unallocated())),
-    )
-    getUpwDetailsSummary(
-      crn = crn,
-      case = NDCaseSummary.valid(),
-      unpaidWorkDetails = listOf(
-        NDCaseDetail.valid().copy(
-          eventNumber = eventNumber,
-          sentenceDate = LocalDate.now().minusYears(10),
+    fun setupGetDataMocksForUpdateAppointment(
+      existingAppointment: NDAppointment,
+      project: NDProject,
+      username: String,
+    ) {
+      setupGetAppointmentResponse(
+        appointment = existingAppointment,
+        username = username,
+      )
+      setupGetDataMocksForCreateAppointment(
+        crn = existingAppointment.case.crn,
+        eventNumber = existingAppointment.event.number,
+        project = project,
+      )
+    }
+
+    fun setupGetDataMocksForCreateAppointment(
+      crn: String,
+      eventNumber: Int,
+      project: NDProject,
+    ) {
+      setupGetProjectResponse(project)
+      setupGetTeamSupervisorsResponse(
+        forProject = project,
+        supervisorSummaries = NDSupervisorSummaries(listOf(NDSupervisorSummary.unallocated())),
+      )
+      setupGetUpwDetailsSummaryResponse(
+        crn = crn,
+        case = NDCaseSummary.valid(),
+        unpaidWorkDetails = listOf(
+          NDUpwDetails.valid().copy(
+            eventNumber = eventNumber,
+            sentenceDate = LocalDate.now().minusYears(10),
+          ),
         ),
-      ),
-    )
+      )
+    }
   }
 
   private fun LocalDate.toIsoDateString() = this.format(DateTimeFormatter.ISO_DATE)

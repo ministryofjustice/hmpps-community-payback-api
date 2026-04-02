@@ -17,7 +17,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.SessionSupervisorEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.SessionSupervisorEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
-import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.bodyAsObject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.CommunityPaybackAndDeliusMockServer
@@ -73,14 +72,14 @@ class SupervisorSessionsIT : IntegrationTestBase() {
 
     @Test
     fun `should return OK with project session`() {
-      CommunityPaybackAndDeliusMockServer.getProject(
+      CommunityPaybackAndDeliusMockServer.setupGetProjectResponse(
         NDProject.valid(ctx).copy(
           name = "Community Garden Maintenance",
           code = "N123456789",
         ),
       )
 
-      CommunityPaybackAndDeliusMockServer.getAppointments(
+      CommunityPaybackAndDeliusMockServer.setupGetAppointmentsResponse(
         username = "USER1",
         pageSize = Int.MAX_VALUE,
         fromDate = LocalDate.of(2025, 1, 9),
@@ -169,9 +168,9 @@ class SupervisorSessionsIT : IntegrationTestBase() {
       val today = LocalDate.now()
       allocateSessionToSupervisor1("PROJ1", today)
 
-      CommunityPaybackAndDeliusMockServer.getProject(NDProject.valid(ctx).copy(code = "PROJ1"))
+      CommunityPaybackAndDeliusMockServer.setupGetProjectResponse(NDProject.valid(ctx).copy(code = "PROJ1"))
 
-      CommunityPaybackAndDeliusMockServer.getAppointments(
+      CommunityPaybackAndDeliusMockServer.setupGetAppointmentsResponse(
         username = "USER1",
         pageSize = Int.MAX_VALUE,
         fromDate = today,
@@ -235,7 +234,7 @@ class SupervisorSessionsIT : IntegrationTestBase() {
 
     @Test
     fun `should return OK with project session`() {
-      CommunityPaybackAndDeliusMockServer.getSessions(
+      CommunityPaybackAndDeliusMockServer.setupGetSessionsResponse(
         providerCode = "P123",
         teamCode = "T456",
         startDate = LocalDate.now(),

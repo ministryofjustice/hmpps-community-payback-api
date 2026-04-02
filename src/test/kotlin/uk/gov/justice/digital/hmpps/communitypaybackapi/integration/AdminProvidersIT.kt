@@ -62,7 +62,7 @@ class AdminProvidersIT : IntegrationTestBase() {
 
     @Test
     fun `should return OK`() {
-      CommunityPaybackAndDeliusMockServer.providers(
+      CommunityPaybackAndDeliusMockServer.setupGetProvidersResponse(
         username = "calling_user",
         providers = NDProviderSummaries(
           listOf(
@@ -122,7 +122,7 @@ class AdminProvidersIT : IntegrationTestBase() {
 
     @Test
     fun `should return OK`() {
-      CommunityPaybackAndDeliusMockServer.providerTeams(
+      CommunityPaybackAndDeliusMockServer.setupGetProviderTeamsResponse(
         providerCode = "N123456789",
         NDProviderTeamSummaries(
           listOf(
@@ -172,7 +172,7 @@ class AdminProvidersIT : IntegrationTestBase() {
 
     @Test
     fun `should return OK with team supervisors`() {
-      CommunityPaybackAndDeliusMockServer.getTeamSupervisors(
+      CommunityPaybackAndDeliusMockServer.setupGetTeamSupervisorsResponse(
         providerCode = "123",
         teamCode = "99",
         NDSupervisorSummaries(
@@ -193,7 +193,7 @@ class AdminProvidersIT : IntegrationTestBase() {
 
     @Test
     fun `should return empty list when no supervisors found`() {
-      CommunityPaybackAndDeliusMockServer.getTeamSupervisors(
+      CommunityPaybackAndDeliusMockServer.setupGetTeamSupervisorsResponse(
         providerCode = "123",
         teamCode = "99",
         NDSupervisorSummaries(emptyList()),
@@ -256,7 +256,7 @@ class AdminProvidersIT : IntegrationTestBase() {
 
     @Test
     fun `should return OK with project session summaries`() {
-      CommunityPaybackAndDeliusMockServer.getSessions(
+      CommunityPaybackAndDeliusMockServer.setupGetSessionsResponse(
         providerCode = "PC01",
         teamCode = "999",
         startDate = LocalDate.of(2025, 1, 9),
@@ -285,7 +285,7 @@ class AdminProvidersIT : IntegrationTestBase() {
 
     @Test
     fun `should return empty list when no session summaries found`() {
-      CommunityPaybackAndDeliusMockServer.getSessions(
+      CommunityPaybackAndDeliusMockServer.setupGetSessionsResponse(
         providerCode = "PC01",
         teamCode = "999",
         startDate = LocalDate.of(2025, 1, 9),
@@ -353,7 +353,7 @@ class AdminProvidersIT : IntegrationTestBase() {
     fun `should return 200 for successful default paginated response for individual projects`() {
       val project1 = NDProjectOutcomeStats.valid()
       val project2 = NDProjectOutcomeStats.valid()
-      CommunityPaybackAndDeliusMockServer.getProjects(
+      CommunityPaybackAndDeliusMockServer.setupGetProjectsResponse(
         providerCode = "PC01",
         teamCode = "999",
         projectTypeCodes = listOf("ES", "ICP", "PIP2"),
@@ -381,7 +381,7 @@ class AdminProvidersIT : IntegrationTestBase() {
     fun `should return 200 for successful requested paginated response for individual projects`() {
       val project1 = NDProjectOutcomeStats.valid()
       val project2 = NDProjectOutcomeStats.valid()
-      CommunityPaybackAndDeliusMockServer.getProjects(
+      CommunityPaybackAndDeliusMockServer.setupGetProjectsResponse(
         providerCode = "PC01",
         teamCode = "999",
         projectTypeCodes = listOf("ES", "ICP", "PIP2"),

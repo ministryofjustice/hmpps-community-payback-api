@@ -4,8 +4,8 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseDetail
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDUpwDetails
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.AdminOffenderIT.Companion.CRN
@@ -50,11 +50,11 @@ class AdminUpwDetailsIT : IntegrationTestBase() {
 
     @Test
     fun `should return OK with unpaid work details`() {
-      CommunityPaybackAndDeliusMockServer.getUpwDetailsSummary(
+      CommunityPaybackAndDeliusMockServer.setupGetUpwDetailsSummaryResponse(
         crn = CRN,
         case = NDCaseSummary.Companion.valid(),
         unpaidWorkDetails = listOf(
-          NDCaseDetail.valid().copy(eventNumber = DELIUS_EVENT_NUMBER),
+          NDUpwDetails.valid().copy(eventNumber = DELIUS_EVENT_NUMBER),
         ),
         username = "AUTH_ADM",
       )
