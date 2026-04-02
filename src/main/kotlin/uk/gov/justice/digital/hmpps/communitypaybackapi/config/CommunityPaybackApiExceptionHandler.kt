@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.config
 
-import io.sentry.Sentry
 import jakarta.validation.ValidationException
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
@@ -18,10 +17,13 @@ import org.springframework.web.servlet.resource.NoResourceFoundException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.BadRequestException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.ConflictException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.NotFoundException
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.SentryService
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 
 @RestControllerAdvice
-class CommunityPaybackApiExceptionHandler {
+class CommunityPaybackApiExceptionHandler(
+  val sentryService: SentryService,
+) {
 
   @ExceptionHandler(
     ValidationException::class,
@@ -87,7 +89,7 @@ class CommunityPaybackApiExceptionHandler {
         developerMessage = e.message,
       ),
     )
-    .also { Sentry.captureException(e) }
+    .also { sentryService.captureException(e) }
     .also { log.error("Unexpected exception", e) }
 
   private companion object {
