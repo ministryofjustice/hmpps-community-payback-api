@@ -69,6 +69,7 @@ class AppointmentValidationService(
       unpaidWorkDetails = offenderService.getUnpaidWorkDetails(appointment.offender.crn, appointment.deliusEventNumber),
       appointmentDate = appointment.date,
       appointmentMinutesAlreadyCredited = appointment.minutesCredited?.let { Duration.ofMinutes(it) } ?: Duration.ZERO,
+      existingContactOutcome = loadContactOutcome(appointment.contactOutcomeCode),
     )
 
     ctx.validateOutcome()
@@ -126,6 +127,10 @@ class AppointmentValidationService(
         }
       }
     }
+
+    if (existingContactOutcome != null && contactOutcome != existingContactOutcome) {
+      badRequest("The existing contact outcome of '${existingContactOutcome.name}' cannot be modified")
+    }
   }
 
   private fun ValidationContext.validateDuration() {
@@ -178,6 +183,7 @@ class AppointmentValidationService(
     val unpaidWorkDetails: UnpaidWorkDetailsDto,
     val appointmentDate: LocalDate,
     val appointmentMinutesAlreadyCredited: Duration = Duration.ZERO,
+    val existingContactOutcome: ContactOutcomeEntity? = null,
   ) {
     fun appointmentIsInFuture() = appointmentDate.atTime(command.startTime).isAfter(LocalDateTime.now())
     fun appointmentIsInPast() = appointmentDate.atTime(command.endTime).isBefore(LocalDateTime.now())

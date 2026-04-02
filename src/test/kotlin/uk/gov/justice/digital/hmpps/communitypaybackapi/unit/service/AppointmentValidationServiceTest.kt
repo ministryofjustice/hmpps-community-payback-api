@@ -633,6 +633,7 @@ class AppointmentValidationServiceTest {
       projectCode = PROJECT_CODE,
       deliusEventNumber = EVENT_NUMBER,
       offender = OffenderDto.validFull().copy(crn = CRN),
+      contactOutcomeCode = null,
     )
     val baselineUpdate = UpdateAppointmentOutcomeDto.valid().copy(
       contactOutcomeCode = OUTCOME_CODE,
@@ -855,6 +856,24 @@ class AppointmentValidationServiceTest {
             attendanceData = AttendanceDataDto.valid(),
           ),
         )
+      }
+
+      @Test
+      fun `existing contact outcome cannot be modified`() {
+        every { contactOutcomeEntityRepository.findByCode("outcome1") } returns ContactOutcomeEntity.valid().copy(code = "outcome1", name = "outcome 1")
+        every { contactOutcomeEntityRepository.findByCode("outcome2") } returns ContactOutcomeEntity.valid().copy(code = "outcome2")
+
+        assertThatThrownBy {
+          service.validateUpdate(
+            appointment = baselineExistingAppointment.copy(
+              contactOutcomeCode = "outcome1",
+            ),
+            update = baselineUpdate.copy(
+              contactOutcomeCode = "outcome2",
+            ),
+          )
+        }.isInstanceOf(BadRequestException::class.java)
+          .hasMessage("The existing contact outcome of 'outcome 1' cannot be modified")
       }
     }
 
