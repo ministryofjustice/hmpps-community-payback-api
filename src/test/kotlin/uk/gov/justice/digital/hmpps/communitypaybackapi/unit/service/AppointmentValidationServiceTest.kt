@@ -243,6 +243,24 @@ class AppointmentValidationServiceTest {
       }
 
       @Test
+      fun `if appointment ended in the past, an outcome is mandatory`() {
+        val outcome = baselineOutcome.copy(attended = true, enforceable = false)
+        every { contactOutcomeEntityRepository.findByCode(OUTCOME_CODE) } returns outcome
+
+        assertThatThrownBy {
+          service.validateCreate(
+            baselineCreate.copy(
+              date = LocalDate.now(),
+              startTime = LocalTime.now().minusMinutes(2),
+              endTime = LocalTime.now().minusMinutes(1),
+              contactOutcomeCode = null,
+            ),
+          )
+        }.isInstanceOf(BadRequestException::class.java)
+          .hasMessage("As the appointment is now complete a contact outcome is required")
+      }
+
+      @Test
       fun `if appointment is current or in the past, attendance outcome can be recorded`() {
         val outcome = baselineOutcome.copy(attended = true, enforceable = false)
         every { contactOutcomeEntityRepository.findByCode(OUTCOME_CODE) } returns outcome
@@ -365,7 +383,7 @@ class AppointmentValidationServiceTest {
     }
 
     @Nested
-    inner class AppointmentDuration {
+    inner class StartAndEndTime {
 
       @BeforeEach
       fun setupOutcome() {
@@ -516,7 +534,7 @@ class AppointmentValidationServiceTest {
     }
 
     @Nested
-    inner class NotesValidation {
+    inner class Notes {
 
       @Test
       fun `null notes is accepted`() {
@@ -615,6 +633,7 @@ class AppointmentValidationServiceTest {
       projectCode = PROJECT_CODE,
       deliusEventNumber = EVENT_NUMBER,
       offender = OffenderDto.validFull().copy(crn = CRN),
+      contactOutcomeCode = null,
     )
     val baselineUpdate = UpdateAppointmentOutcomeDto.valid().copy(
       contactOutcomeCode = OUTCOME_CODE,
@@ -700,6 +719,19 @@ class AppointmentValidationServiceTest {
           )
         }.isInstanceOf(BadRequestException::class.java)
           .hasMessage("Contact outcome not found for code '$OUTCOME_CODE'")
+      }
+
+      @Test
+      fun `if appointment ends in the past, attendance outcome is mandatory`() {
+        val outcome = baselineOutcome.copy(attended = true, enforceable = false)
+        every { contactOutcomeEntityRepository.findByCode(OUTCOME_CODE) } returns outcome
+
+        service.validateUpdate(
+          appointment = baselineExistingAppointment.copy(date = LocalDate.now()),
+          update = baselineUpdate.copy(
+            startTime = LocalTime.now().minusMinutes(1),
+          ),
+        )
       }
 
       @Test
@@ -825,10 +857,28 @@ class AppointmentValidationServiceTest {
           ),
         )
       }
+
+      @Test
+      fun `existing contact outcome cannot be modified`() {
+        every { contactOutcomeEntityRepository.findByCode("outcome1") } returns ContactOutcomeEntity.valid().copy(code = "outcome1", name = "outcome 1")
+        every { contactOutcomeEntityRepository.findByCode("outcome2") } returns ContactOutcomeEntity.valid().copy(code = "outcome2")
+
+        assertThatThrownBy {
+          service.validateUpdate(
+            appointment = baselineExistingAppointment.copy(
+              contactOutcomeCode = "outcome1",
+            ),
+            update = baselineUpdate.copy(
+              contactOutcomeCode = "outcome2",
+            ),
+          )
+        }.isInstanceOf(BadRequestException::class.java)
+          .hasMessage("The existing contact outcome of 'outcome 1' cannot be modified")
+      }
     }
 
     @Nested
-    inner class AppointmentDuration {
+    inner class StartAndEndTime {
 
       @BeforeEach
       fun setupOutcome() {
@@ -872,6 +922,60 @@ class AppointmentValidationServiceTest {
           )
         }.isInstanceOf(BadRequestException::class.java)
           .hasMessage("End Time '10:00' must be after Start Time '10:01'")
+      }
+
+      @Test
+      fun `if contact outcome is already set and start and end time remain the same, do nothing`() {
+        service.validateUpdate(
+          appointment = baselineExistingAppointment.copy(
+            contactOutcomeCode = OUTCOME_CODE,
+            startTime = LocalTime.of(10, 0),
+            endTime = LocalTime.of(10, 1),
+          ),
+          baselineUpdate.copy(
+            contactOutcomeCode = OUTCOME_CODE,
+            startTime = LocalTime.of(10, 0),
+            endTime = LocalTime.of(10, 1),
+          ),
+        )
+      }
+
+      @Test
+      fun `if contact outcome is already set and start time is modified, throw exception`() {
+        assertThatThrownBy {
+          service.validateUpdate(
+            appointment = baselineExistingAppointment.copy(
+              contactOutcomeCode = OUTCOME_CODE,
+              startTime = LocalTime.of(10, 0),
+              endTime = LocalTime.of(10, 5),
+            ),
+            baselineUpdate.copy(
+              contactOutcomeCode = OUTCOME_CODE,
+              startTime = LocalTime.of(10, 1),
+              endTime = LocalTime.of(10, 5),
+            ),
+          )
+        }.isInstanceOf(BadRequestException::class.java)
+          .hasMessage("The start time cannot be modified once a contact outcome has been set. Current start time is '10:00', proposed start time is '10:01'")
+      }
+
+      @Test
+      fun `if contact outcome is already set and end time is modified, throw exception`() {
+        assertThatThrownBy {
+          service.validateUpdate(
+            appointment = baselineExistingAppointment.copy(
+              contactOutcomeCode = OUTCOME_CODE,
+              startTime = LocalTime.of(10, 0),
+              endTime = LocalTime.of(10, 5),
+            ),
+            baselineUpdate.copy(
+              contactOutcomeCode = OUTCOME_CODE,
+              startTime = LocalTime.of(10, 0),
+              endTime = LocalTime.of(10, 10),
+            ),
+          )
+        }.isInstanceOf(BadRequestException::class.java)
+          .hasMessage("The end time cannot be modified once a contact outcome has been set. Current end time is '10:05', proposed end time is '10:10'")
       }
     }
 
@@ -994,7 +1098,7 @@ class AppointmentValidationServiceTest {
     }
 
     @Nested
-    inner class NotesValidation {
+    inner class Notes {
 
       @BeforeEach
       fun setupOutcome() {

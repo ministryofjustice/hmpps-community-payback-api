@@ -21,6 +21,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDayOfW
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.LocalTime
 
 @Suppress("ThrowsCount")
 @Service
@@ -45,7 +46,7 @@ class AppointmentValidationService(
     ctx.validateDate()
     ctx.validateAvailability()
     ctx.validateOutcome()
-    ctx.validateDuration()
+    ctx.validateStartAndEndTime()
     ctx.validatePenaltyTime()
     ctx.validateNotes()
     ctx.validateEteAllowanceRemaining()
@@ -69,10 +70,13 @@ class AppointmentValidationService(
       unpaidWorkDetails = offenderService.getUnpaidWorkDetails(appointment.offender.crn, appointment.deliusEventNumber),
       appointmentDate = appointment.date,
       appointmentMinutesAlreadyCredited = appointment.minutesCredited?.let { Duration.ofMinutes(it) } ?: Duration.ZERO,
+      existingContactOutcome = loadContactOutcome(appointment.contactOutcomeCode),
+      existingStartTime = appointment.startTime,
+      existingEndTime = appointment.endTime,
     )
 
     ctx.validateOutcome()
-    ctx.validateDuration()
+    ctx.validateStartAndEndTime()
     ctx.validatePenaltyTime()
     ctx.validateNotes()
     ctx.validateEteAllowanceRemaining()
@@ -112,25 +116,38 @@ class AppointmentValidationService(
 
   private fun ValidationContext.validateOutcome() {
     if (contactOutcome == null) {
-      return
-    }
-
-    val appointmentIsInFuture = appointmentDate.atTime(command.startTime).isAfter(LocalDateTime.now())
-    val attendanceOrEnforcementRecorded = contactOutcome.attended || contactOutcome.enforceable
-    if (appointmentIsInFuture && attendanceOrEnforcementRecorded) {
-      badRequest("As the appointment is in the future only acceptable absence outcomes can be recorded")
-    }
-
-    if (contactOutcome.attended) {
-      validateNotNull(command.attendanceData) {
-        "Attendance data is required for contact outcomes that indicate attendance"
+      if (appointmentIsInPast()) {
+        badRequest("As the appointment is now complete a contact outcome is required")
       }
+    } else {
+      if (appointmentIsInFuture() && (contactOutcome.attended || contactOutcome.enforceable)) {
+        badRequest("As the appointment is in the future only acceptable absence outcomes can be recorded")
+      }
+
+      if (contactOutcome.attended) {
+        validateNotNull(command.attendanceData) {
+          "Attendance data is required for contact outcomes that indicate attendance"
+        }
+      }
+    }
+
+    if (existingContactOutcome != null && contactOutcome != existingContactOutcome) {
+      badRequest("The existing contact outcome of '${existingContactOutcome.name}' cannot be modified")
     }
   }
 
-  private fun ValidationContext.validateDuration() {
+  private fun ValidationContext.validateStartAndEndTime() {
     if (command.endTime <= command.startTime) {
-      badRequest("End Time '${command.endTime}' must be after Start Time '${command.startTime}'")
+      badRequest("End Time '${command.endTime.formatForUser()}' must be after Start Time '${command.startTime.formatForUser()}'")
+    }
+
+    if (existingContactOutcome != null) {
+      if (existingStartTime != null && existingStartTime != command.startTime) {
+        badRequest("The start time cannot be modified once a contact outcome has been set. Current start time is '${existingStartTime.formatForUser()}', proposed start time is '${command.startTime.formatForUser()}'")
+      }
+      if (existingEndTime != null && existingEndTime != command.endTime) {
+        badRequest("The end time cannot be modified once a contact outcome has been set. Current end time is '${existingEndTime.formatForUser()}', proposed end time is '${command.endTime.formatForUser()}'")
+      }
     }
   }
 
@@ -178,7 +195,13 @@ class AppointmentValidationService(
     val unpaidWorkDetails: UnpaidWorkDetailsDto,
     val appointmentDate: LocalDate,
     val appointmentMinutesAlreadyCredited: Duration = Duration.ZERO,
-  )
+    val existingContactOutcome: ContactOutcomeEntity? = null,
+    val existingStartTime: LocalTime? = null,
+    val existingEndTime: LocalTime? = null,
+  ) {
+    fun appointmentIsInFuture() = appointmentDate.atTime(command.startTime).isAfter(LocalDateTime.now())
+    fun appointmentIsInPast() = appointmentDate.atTime(command.endTime).isBefore(LocalDateTime.now())
+  }
 
   data class ValidatedAppointment<T>(
     val dto: T,

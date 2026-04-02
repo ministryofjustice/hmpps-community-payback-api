@@ -34,3 +34,5 @@ fun LocalDate.formatForUser(): String = format(DateTimeFormatter.ofLocalizedDate
 fun DayOfWeek.formatForUser(): String = getDisplayName(TextStyle.FULL, Locale.UK)
 
 fun Duration.formatForUser(): String = "${toHoursPart()} hours ${toMinutesPart()} minutes"
+
+fun LocalTime.formatForUser(): String = toString()
