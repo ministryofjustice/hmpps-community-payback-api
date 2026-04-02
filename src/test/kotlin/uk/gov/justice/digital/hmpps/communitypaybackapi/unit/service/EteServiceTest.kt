@@ -8,14 +8,12 @@ import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.atFirstSecondOfDay
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.atLastSecondOfDay
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.NotFoundException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntityRepository.ResolutionStatus
@@ -137,17 +135,13 @@ class EteServiceTest {
     }
 
     @Test
-    fun `throws NotFoundException when event not found`() {
+    fun `returns null when event not found`() {
       val eventId = UUID.randomUUID()
 
       every { eteCourseCompletionEventEntityRepository.findByIdOrNull(eventId) } returns null
 
-      assertThrows<NotFoundException> {
-        eteService.getCourseCompletionEvent(eventId)
-      }.also {
-        assertThat(it.message).contains("Course completion event")
-        assertThat(it.message).contains(eventId.toString())
-      }
+      val result = eteService.getCourseCompletionEvent(eventId)
+      assertThat(result).isNull()
     }
   }
 }

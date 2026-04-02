@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.atFirstSecondOfDay
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.atLastSecondOfDay
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.notFound
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionRecommendationDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionResolutionDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EteCourseCompletionEventDto
@@ -115,7 +116,7 @@ class AdminCourseCompletionController(val eteService: EteService) {
   )
   fun getCourseCompletion(
     @PathVariable id: UUID,
-  ): EteCourseCompletionEventDto = eteService.getCourseCompletionEvent(id)
+  ): EteCourseCompletionEventDto = eteService.getCourseCompletionEvent(id) ?: notFound("Course completion event", id.toString())
 
   @PostMapping("/course-completions/{id}/resolution", consumes = [MediaType.APPLICATION_JSON_VALUE])
   @Operation(
@@ -129,6 +130,7 @@ class AdminCourseCompletionController(val eteService: EteService) {
     @PathVariable id: UUID,
     @Valid @RequestBody courseCompletionResolution: CourseCompletionResolutionDto,
   ): ResponseEntity<Unit> {
+    ensureCourseCompletionExists(id)
     eteService.recordCourseCompletionResolution(id, courseCompletionResolution)
     return ResponseEntity.status(HttpStatus.NO_CONTENT).build()
   }
@@ -143,5 +145,10 @@ class AdminCourseCompletionController(val eteService: EteService) {
   )
   fun getCourseCompletionRecommendation(
     @PathVariable id: UUID,
-  ): CourseCompletionRecommendationDto = eteService.getCourseCompletionRecommendation(id)
+  ): CourseCompletionRecommendationDto {
+    ensureCourseCompletionExists(id)
+    return eteService.getCourseCompletionRecommendation(id) ?: notFound("Course completion event", id.toString())
+  }
+
+  private fun ensureCourseCompletionExists(id: UUID) = eteService.getCourseCompletionEvent(id) ?: notFound("Course completion event", id.toString())
 }
