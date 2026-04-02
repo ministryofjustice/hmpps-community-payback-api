@@ -2,10 +2,12 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.controller.common
 
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.responses.ApiResponse
+import org.springframework.cache.annotation.Cacheable
 import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
+import uk.gov.justice.digital.hmpps.communitypaybackapi.config.CacheConfig.Companion.CacheKey
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AdjustmentReasonsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CommunityCampusPdusDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ContactOutcomeGroupDto
@@ -31,6 +33,7 @@ class CommonReferenceController(val referenceService: ReferenceService) {
       ),
     ],
   )
+  @Cacheable(CacheKey.Api.GET_ADJUSTMENT_REASONS)
   fun getAdjustmentReasons(): AdjustmentReasonsDto = referenceService.getAdjustmentReasons()
 
   @GetMapping("/project-types")
@@ -43,6 +46,7 @@ class CommonReferenceController(val referenceService: ReferenceService) {
       ),
     ],
   )
+  @Cacheable(CacheKey.Api.GET_PROJECT_TYPES)
   fun getProjectTypes(): ProjectTypesDto = referenceService.getProjectTypes()
 
   @GetMapping("/contact-outcomes")
@@ -55,6 +59,7 @@ class CommonReferenceController(val referenceService: ReferenceService) {
       ),
     ],
   )
+  @Cacheable(CacheKey.Api.GET_CONTACT_OUTCOMES)
   fun getContactOutcomes(
     @RequestParam
     group: ContactOutcomeGroupDto?,
@@ -62,8 +67,10 @@ class CommonReferenceController(val referenceService: ReferenceService) {
 
   @GetMapping("/enforcement-actions")
   @Operation(description = "Get all enforcement actions")
+  @Cacheable(CacheKey.Api.GET_ENFORCEMENT_OUTCOMES)
   fun getEnforcementActions(): EnforcementActionsDto = referenceService.getEnforcementActions()
 
   @GetMapping("/community-campus-pdus")
+  @Cacheable(CacheKey.Api.GET_COMMUNITY_CAMPUS_PDUS)
   fun getCommunityCampusPdus(): CommunityCampusPdusDto = referenceService.getCommunityCampusPdus()
 }
