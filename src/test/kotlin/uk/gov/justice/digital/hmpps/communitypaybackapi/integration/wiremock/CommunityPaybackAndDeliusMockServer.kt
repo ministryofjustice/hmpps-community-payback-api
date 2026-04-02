@@ -320,7 +320,7 @@ object CommunityPaybackAndDeliusMockServer {
     projectTypeCodes: List<String> = emptyList(),
     response: List<NDProjectOutcomeStats>,
     pageNumber: Int = 0,
-    pageSize: Int = 50,
+    pageSize: Int = 100,
     sortString: String = "name,desc",
   ) {
     val url = buildString {

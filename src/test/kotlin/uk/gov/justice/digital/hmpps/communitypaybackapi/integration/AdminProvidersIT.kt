@@ -371,7 +371,7 @@ class AdminProvidersIT : IntegrationTestBase() {
       assertThat(pageResponse.content).hasSize(2)
       assertThat(pageResponse.content[0].projectName).isEqualTo(project1.project.name)
       assertThat(pageResponse.content[1].projectName).isEqualTo(project2.project.name)
-      assertThat(pageResponse.page.size).isEqualTo(50)
+      assertThat(pageResponse.page.size).isEqualTo(100)
       assertThat(pageResponse.page.totalPages).isEqualTo(1)
       assertThat(pageResponse.page.totalElements).isEqualTo(2)
       assertThat(pageResponse.page.number).isEqualTo(0)
