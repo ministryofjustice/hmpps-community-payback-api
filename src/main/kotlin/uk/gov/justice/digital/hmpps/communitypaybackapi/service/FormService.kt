@@ -6,7 +6,6 @@ import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import tools.jackson.databind.json.JsonMapper
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.FormKeyDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.NotFoundException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.FormCacheEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.FormCacheEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.FormCacheId
@@ -24,12 +23,7 @@ class FormService(
     const val TTL_DAYS: Long = 7
   }
 
-  fun get(key: FormKeyDto): String {
-    val existing = repository.findByIdOrNull(key.toJpaId())
-      ?: throw NotFoundException("Form data", "${key.type}/${key.id}")
-
-    return existing.formData
-  }
+  fun get(key: FormKeyDto): String? = repository.findByIdOrNull(key.toJpaId())?.formData
 
   fun put(key: FormKeyDto, json: String) {
     // Validate JSON is well-formed

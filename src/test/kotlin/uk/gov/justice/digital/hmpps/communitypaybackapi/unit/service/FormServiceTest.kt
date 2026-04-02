@@ -54,12 +54,12 @@ class FormServiceTest {
     }
 
     @Test
-    fun `throws NotFoundException when missing`() {
+    fun `returns null when missing`() {
       every { repository.findByIdOrNull(FormCacheId(id, formType)) } returns null
 
-      assertThatThrownBy {
-        service.get(FormKeyDto(formType, id))
-      }.hasMessage("Form data not found for ID 'assessment/12345'")
+      val result = service.get(FormKeyDto(formType, id))
+
+      assertThat(result).isNull()
     }
   }
 
