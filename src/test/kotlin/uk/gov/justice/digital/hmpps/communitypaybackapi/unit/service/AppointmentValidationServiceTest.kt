@@ -383,7 +383,7 @@ class AppointmentValidationServiceTest {
     }
 
     @Nested
-    inner class AppointmentDuration {
+    inner class StartAndEndTime {
 
       @BeforeEach
       fun setupOutcome() {
@@ -534,7 +534,7 @@ class AppointmentValidationServiceTest {
     }
 
     @Nested
-    inner class NotesValidation {
+    inner class Notes {
 
       @Test
       fun `null notes is accepted`() {
@@ -878,7 +878,7 @@ class AppointmentValidationServiceTest {
     }
 
     @Nested
-    inner class AppointmentDuration {
+    inner class StartAndEndTime {
 
       @BeforeEach
       fun setupOutcome() {
@@ -922,6 +922,60 @@ class AppointmentValidationServiceTest {
           )
         }.isInstanceOf(BadRequestException::class.java)
           .hasMessage("End Time '10:00' must be after Start Time '10:01'")
+      }
+
+      @Test
+      fun `if contact outcome is already set and start and end time remain the same, do nothing`() {
+        service.validateUpdate(
+          appointment = baselineExistingAppointment.copy(
+            contactOutcomeCode = OUTCOME_CODE,
+            startTime = LocalTime.of(10, 0),
+            endTime = LocalTime.of(10, 1),
+          ),
+          baselineUpdate.copy(
+            contactOutcomeCode = OUTCOME_CODE,
+            startTime = LocalTime.of(10, 0),
+            endTime = LocalTime.of(10, 1),
+          ),
+        )
+      }
+
+      @Test
+      fun `if contact outcome is already set and start time is modified, throw exception`() {
+        assertThatThrownBy {
+          service.validateUpdate(
+            appointment = baselineExistingAppointment.copy(
+              contactOutcomeCode = OUTCOME_CODE,
+              startTime = LocalTime.of(10, 0),
+              endTime = LocalTime.of(10, 5),
+            ),
+            baselineUpdate.copy(
+              contactOutcomeCode = OUTCOME_CODE,
+              startTime = LocalTime.of(10, 1),
+              endTime = LocalTime.of(10, 5),
+            ),
+          )
+        }.isInstanceOf(BadRequestException::class.java)
+          .hasMessage("The start time cannot be modified once a contact outcome has been set. Current start time is '10:00', proposed start time is '10:01'")
+      }
+
+      @Test
+      fun `if contact outcome is already set and end time is modified, throw exception`() {
+        assertThatThrownBy {
+          service.validateUpdate(
+            appointment = baselineExistingAppointment.copy(
+              contactOutcomeCode = OUTCOME_CODE,
+              startTime = LocalTime.of(10, 0),
+              endTime = LocalTime.of(10, 5),
+            ),
+            baselineUpdate.copy(
+              contactOutcomeCode = OUTCOME_CODE,
+              startTime = LocalTime.of(10, 0),
+              endTime = LocalTime.of(10, 10),
+            ),
+          )
+        }.isInstanceOf(BadRequestException::class.java)
+          .hasMessage("The end time cannot be modified once a contact outcome has been set. Current end time is '10:05', proposed end time is '10:10'")
       }
     }
 
@@ -1044,7 +1098,7 @@ class AppointmentValidationServiceTest {
     }
 
     @Nested
-    inner class NotesValidation {
+    inner class Notes {
 
       @BeforeEach
       fun setupOutcome() {

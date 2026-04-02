@@ -21,6 +21,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDayOfW
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.LocalTime
 
 @Suppress("ThrowsCount")
 @Service
@@ -45,7 +46,7 @@ class AppointmentValidationService(
     ctx.validateDate()
     ctx.validateAvailability()
     ctx.validateOutcome()
-    ctx.validateDuration()
+    ctx.validateStartAndEndTime()
     ctx.validatePenaltyTime()
     ctx.validateNotes()
     ctx.validateEteAllowanceRemaining()
@@ -70,10 +71,12 @@ class AppointmentValidationService(
       appointmentDate = appointment.date,
       appointmentMinutesAlreadyCredited = appointment.minutesCredited?.let { Duration.ofMinutes(it) } ?: Duration.ZERO,
       existingContactOutcome = loadContactOutcome(appointment.contactOutcomeCode),
+      existingStartTime = appointment.startTime,
+      existingEndTime = appointment.endTime,
     )
 
     ctx.validateOutcome()
-    ctx.validateDuration()
+    ctx.validateStartAndEndTime()
     ctx.validatePenaltyTime()
     ctx.validateNotes()
     ctx.validateEteAllowanceRemaining()
@@ -133,9 +136,18 @@ class AppointmentValidationService(
     }
   }
 
-  private fun ValidationContext.validateDuration() {
+  private fun ValidationContext.validateStartAndEndTime() {
     if (command.endTime <= command.startTime) {
-      badRequest("End Time '${command.endTime}' must be after Start Time '${command.startTime}'")
+      badRequest("End Time '${command.endTime.formatForUser()}' must be after Start Time '${command.startTime.formatForUser()}'")
+    }
+
+    if (existingContactOutcome != null) {
+      if (existingStartTime != null && existingStartTime != command.startTime) {
+        badRequest("The start time cannot be modified once a contact outcome has been set. Current start time is '${existingStartTime.formatForUser()}', proposed start time is '${command.startTime.formatForUser()}'")
+      }
+      if (existingEndTime != null && existingEndTime != command.endTime) {
+        badRequest("The end time cannot be modified once a contact outcome has been set. Current end time is '${existingEndTime.formatForUser()}', proposed end time is '${command.endTime.formatForUser()}'")
+      }
     }
   }
 
@@ -184,6 +196,8 @@ class AppointmentValidationService(
     val appointmentDate: LocalDate,
     val appointmentMinutesAlreadyCredited: Duration = Duration.ZERO,
     val existingContactOutcome: ContactOutcomeEntity? = null,
+    val existingStartTime: LocalTime? = null,
+    val existingEndTime: LocalTime? = null,
   ) {
     fun appointmentIsInFuture() = appointmentDate.atTime(command.startTime).isAfter(LocalDateTime.now())
     fun appointmentIsInPast() = appointmentDate.atTime(command.endTime).isBefore(LocalDateTime.now())

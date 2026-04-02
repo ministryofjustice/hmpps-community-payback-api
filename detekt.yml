@@ -37,3 +37,4 @@ complexity:
   TooManyFunctions:
     allowedFunctionsPerInterface: 20
     allowedFunctionsPerClass: 20
+    allowedFunctionsPerFile: 20
