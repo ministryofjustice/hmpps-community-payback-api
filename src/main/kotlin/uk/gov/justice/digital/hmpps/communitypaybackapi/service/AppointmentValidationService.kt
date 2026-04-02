@@ -115,9 +115,7 @@ class AppointmentValidationService(
       return
     }
 
-    val appointmentIsInFuture = appointmentDate.atTime(command.startTime).isAfter(LocalDateTime.now())
-    val attendanceOrEnforcementRecorded = contactOutcome.attended || contactOutcome.enforceable
-    if (appointmentIsInFuture && attendanceOrEnforcementRecorded) {
+    if (appointmentIsInFuture() && (contactOutcome.attended || contactOutcome.enforceable)) {
       badRequest("As the appointment is in the future only acceptable absence outcomes can be recorded")
     }
 
@@ -178,7 +176,9 @@ class AppointmentValidationService(
     val unpaidWorkDetails: UnpaidWorkDetailsDto,
     val appointmentDate: LocalDate,
     val appointmentMinutesAlreadyCredited: Duration = Duration.ZERO,
-  )
+  ) {
+    fun appointmentIsInFuture() = appointmentDate.atTime(command.startTime).isAfter(LocalDateTime.now())
+  }
 
   data class ValidatedAppointment<T>(
     val dto: T,
