@@ -14,6 +14,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.PickUpLocationDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeGroupDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsIdDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.derivePenaltyMinutesDuration
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
@@ -44,7 +45,7 @@ class AppointmentValidationService(
       project = project,
       contactOutcome = loadContactOutcome(create.contactOutcomeCode),
       pickUpLocation = loadPickUpLocation(project, create.pickUpLocationCode),
-      unpaidWorkDetails = offenderService.getUnpaidWorkDetails(create.crn, create.deliusEventNumber),
+      unpaidWorkDetails = offenderService.getUnpaidWorkDetails(UnpaidWorkDetailsIdDto(create.crn, create.deliusEventNumber)),
       appointmentDate = create.date,
     )
 
@@ -70,8 +71,7 @@ class AppointmentValidationService(
       project = project,
       contactOutcome = loadContactOutcome(update.contactOutcomeCode),
       pickUpLocation = loadPickUpLocation(project, existingAppointment.pickUpData?.pickupLocation?.deliusCode),
-      unpaidWorkDetails = offenderService.getUnpaidWorkDetails(existingAppointment.offender.crn, existingAppointment.deliusEventNumber),
-      appointmentDate = update.resolveDate(existingAppointment),
+      unpaidWorkDetails = offenderService.getUnpaidWorkDetails(UnpaidWorkDetailsIdDto(existingAppointment.offender.crn, existingAppointment.deliusEventNumber)),appointmentDate = update.resolveDate(existingAppointment),
       appointmentMinutesAlreadyCredited = existingAppointment.minutesCredited?.let { Duration.ofMinutes(it) } ?: Duration.ZERO,
       existingContactOutcome = loadContactOutcome(existingAppointment.contactOutcomeCode),
       existingStartTime = existingAppointment.startTime,

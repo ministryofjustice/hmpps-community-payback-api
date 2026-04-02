@@ -51,8 +51,7 @@ class AdminUpwDetailsController(
     ],
   )
   fun getEvent(@PathVariable crn: String, @PathVariable deliusEventNumber: Int) = offenderService.getUnpaidWorkDetails(
-    crn = crn,
-    deliusEventNumber = deliusEventNumber,
+    upwDetailsId = UnpaidWorkDetailsIdDto(crn, deliusEventNumber),
     userName = contextService.getUserName(),
   )
 

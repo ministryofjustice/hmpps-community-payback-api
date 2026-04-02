@@ -17,6 +17,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseDetailsSumm
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDUpwDetails
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.OverallRiskLevel
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.RiskRoshSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsIdDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.NotFoundException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.OffenderService
@@ -136,7 +137,7 @@ class OffenderServiceTest {
 
       every { communityPaybackAndDeliusClient.getUpwDetailsSummary(CRN, USER_NAME) } returns caseDetailsSummary
 
-      val result = service.getUnpaidWorkDetails(CRN, 5, USER_NAME)
+      val result = service.getUnpaidWorkDetails(UnpaidWorkDetailsIdDto(CRN, 5), USER_NAME)
 
       assertThat(result.eventNumber).isEqualTo(5)
       assertThat(result.requiredMinutes).isEqualTo(2L)
@@ -154,7 +155,7 @@ class OffenderServiceTest {
 
       every { communityPaybackAndDeliusClient.getUpwDetailsSummary(CRN, null) } returns caseDetailsSummary
 
-      val result = service.getUnpaidWorkDetails(CRN, 5)
+      val result = service.getUnpaidWorkDetails(UnpaidWorkDetailsIdDto(CRN, 5))
 
       assertThat(result.eventNumber).isEqualTo(5)
       verify(exactly = 1) { communityPaybackAndDeliusClient.getUpwDetailsSummary(CRN, null) }
@@ -166,7 +167,7 @@ class OffenderServiceTest {
     every { communityPaybackAndDeliusClient.getUpwDetailsSummary(CRN, USER_NAME) } throws WebClientResponseExceptionFactory.notFound()
 
     assertThatThrownBy {
-      service.getUnpaidWorkDetails(CRN, 1, USER_NAME)
+      service.getUnpaidWorkDetails(UnpaidWorkDetailsIdDto(CRN, 1), USER_NAME)
     }
       .isInstanceOf(NotFoundException::class.java)
       .hasMessage("Offender Summary not found for ID '$CRN'")
@@ -186,7 +187,7 @@ class OffenderServiceTest {
     every { communityPaybackAndDeliusClient.getUpwDetailsSummary(CRN, USER_NAME) } returns caseDetailsSummary
 
     assertThatThrownBy {
-      service.getUnpaidWorkDetails(CRN, 5, USER_NAME)
+      service.getUnpaidWorkDetails(UnpaidWorkDetailsIdDto(CRN, 5), USER_NAME)
     }
       .isInstanceOf(NotFoundException::class.java)
       .hasMessage("Unpaid Work Details not found for ID 'CRN CRN1, Event Number 5'")
