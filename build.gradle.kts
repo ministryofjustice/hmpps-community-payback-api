@@ -33,7 +33,7 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-flyway")
   implementation("org.postgresql:postgresql")
 
-  implementation("org.redisson:redisson-spring-boot-starter:4.3.0")
+  implementation("org.redisson:redisson-spring-boot-starter:4.3.1")
   implementation("com.github.ben-manes.caffeine:caffeine:3.2.3")
   implementation("net.javacrumbs.shedlock:shedlock-spring:7.7.0")
   implementation("net.javacrumbs.shedlock:shedlock-provider-redis-spring:7.7.0")
