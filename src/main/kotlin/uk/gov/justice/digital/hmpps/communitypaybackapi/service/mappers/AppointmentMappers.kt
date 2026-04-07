@@ -173,6 +173,7 @@ fun ValidatedAppointment<UpdateAppointmentOutcomeDto>.toNDUpdateAppointment(
   val updateDto = dto
   return NDUpdateAppointment(
     version = updateDto.deliusVersionToUpdate,
+    date = updateDto.resolveDate(existingAppointment),
     startTime = updateDto.startTime,
     endTime = updateDto.endTime,
     outcome = this.contactOutcome?.let { NDCode(it.code) },

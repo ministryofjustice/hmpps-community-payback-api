@@ -31,7 +31,7 @@ class AppointmentBulkUpdateService(
 
   private fun UpdateAppointmentOutcomesDto.validate(projectCode: String) = updates.forEach {
     appointmentUpdateValidationService.validateUpdate(
-      appointment = appointmentRetrievalService.getAppointment(
+      existingAppointment = appointmentRetrievalService.getAppointment(
         projectCode,
         it.deliusId,
       ),

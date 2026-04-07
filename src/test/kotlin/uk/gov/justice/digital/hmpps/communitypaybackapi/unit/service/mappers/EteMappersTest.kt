@@ -281,22 +281,6 @@ class EteMappersTest {
         )
       }.hasMessage("Cannot credit more than 1439 minutes")
     }
-
-    @Test
-    fun `error if attempting to change date`() {
-      assertThatThrownBy {
-        val existingAppointment = baselineExistingAppointment.copy()
-
-        mapper.toUpdateAppointmentDto(
-          courseCompletionResolution = baselineCourseCompletionOutcome.copy(
-            creditTimeDetails = baselineCourseCompletionOutcome.creditTimeDetails!!.copy(
-              date = baselineExistingAppointment.date.plusDays(1),
-            ),
-          ),
-          existingAppointment = existingAppointment,
-        )
-      }.hasMessage("Changing an existing appointment's date is not currently supported")
-    }
   }
 
   @Nested

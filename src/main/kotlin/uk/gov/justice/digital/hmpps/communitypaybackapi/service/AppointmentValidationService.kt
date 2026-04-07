@@ -43,13 +43,7 @@ class AppointmentValidationService(
       appointmentDate = create.date,
     )
 
-    ctx.validateDate()
-    ctx.validateAvailability()
-    ctx.validateOutcome()
-    ctx.validateStartAndEndTime()
-    ctx.validatePenaltyTime()
-    ctx.validateNotes()
-    ctx.validateEteAllowanceRemaining()
+    ctx.applyValidations()
 
     return ValidatedAppointment(
       dto = create,
@@ -60,26 +54,22 @@ class AppointmentValidationService(
   }
 
   fun validateUpdate(
-    appointment: AppointmentDto,
+    existingAppointment: AppointmentDto,
     update: UpdateAppointmentOutcomeDto,
   ): ValidatedAppointment<UpdateAppointmentOutcomeDto> {
     val ctx = ValidationContext(
       command = update,
-      project = projectService.getProject(appointment.projectCode) ?: error("Can't retrieve project ${appointment.projectCode}"),
+      project = projectService.getProject(existingAppointment.projectCode) ?: error("Can't retrieve project ${existingAppointment.projectCode}"),
       contactOutcome = loadContactOutcome(update.contactOutcomeCode),
-      unpaidWorkDetails = offenderService.getUnpaidWorkDetails(appointment.offender.crn, appointment.deliusEventNumber),
-      appointmentDate = appointment.date,
-      appointmentMinutesAlreadyCredited = appointment.minutesCredited?.let { Duration.ofMinutes(it) } ?: Duration.ZERO,
-      existingContactOutcome = loadContactOutcome(appointment.contactOutcomeCode),
-      existingStartTime = appointment.startTime,
-      existingEndTime = appointment.endTime,
+      unpaidWorkDetails = offenderService.getUnpaidWorkDetails(existingAppointment.offender.crn, existingAppointment.deliusEventNumber),
+      appointmentDate = update.resolveDate(existingAppointment),
+      appointmentMinutesAlreadyCredited = existingAppointment.minutesCredited?.let { Duration.ofMinutes(it) } ?: Duration.ZERO,
+      existingContactOutcome = loadContactOutcome(existingAppointment.contactOutcomeCode),
+      existingStartTime = existingAppointment.startTime,
+      existingEndTime = existingAppointment.endTime,
     )
 
-    ctx.validateOutcome()
-    ctx.validateStartAndEndTime()
-    ctx.validatePenaltyTime()
-    ctx.validateNotes()
-    ctx.validateEteAllowanceRemaining()
+    ctx.applyValidations()
 
     return ValidatedAppointment(
       dto = update,
@@ -87,6 +77,16 @@ class AppointmentValidationService(
       contactOutcome = ctx.contactOutcome,
       project = ctx.project,
     )
+  }
+
+  private fun ValidationContext.applyValidations() {
+    validateDate()
+    validateAvailability()
+    validateOutcome()
+    validateStartAndEndTime()
+    validatePenaltyTime()
+    validateNotes()
+    validateEteAllowanceRemaining()
   }
 
   private fun ValidationContext.validateDate() {
