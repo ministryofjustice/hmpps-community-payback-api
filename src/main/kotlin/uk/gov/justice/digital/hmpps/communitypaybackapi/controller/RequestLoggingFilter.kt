@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.communitypaybackapi.config
+package uk.gov.justice.digital.hmpps.communitypaybackapi.controller
 
 import jakarta.annotation.PostConstruct
 import jakarta.servlet.AsyncEvent
@@ -46,7 +46,11 @@ class RequestLoggingFilter(
     response: HttpServletResponse,
     filterChain: FilterChain,
   ) {
-    val wrappedRequest = ContentCachingRequestWrapper(request, 0)
+    val wrappedRequest = if (request is ContentCachingRequestWrapper) {
+      request
+    } else {
+      ContentCachingRequestWrapper(request, 0)
+    }
     val wrappedResponse = ContentCachingResponseWrapper(response)
 
     filterChain.doFilter(wrappedRequest, wrappedResponse)

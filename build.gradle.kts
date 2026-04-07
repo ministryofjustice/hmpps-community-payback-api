@@ -57,6 +57,7 @@ dependencies {
   testImplementation("com.lemonappdev:konsist:0.17.3")
   testImplementation("uk.gov.justice.service.hmpps:hmpps-subject-access-request-test-support:2.1.4")
   testImplementation("org.zalando:logbook-spring-boot-starter:4.0.3")
+  testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
 }
 
 kotlin {

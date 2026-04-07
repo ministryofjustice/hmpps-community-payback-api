@@ -10,7 +10,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventT
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentEventService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventService
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.LockService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.LockService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.SchedulingTrigger
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.SchedulingTriggerType
 import java.time.Duration

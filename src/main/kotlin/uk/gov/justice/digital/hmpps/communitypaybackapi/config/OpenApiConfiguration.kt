@@ -7,6 +7,7 @@ import io.swagger.v3.oas.models.info.Info
 import io.swagger.v3.oas.models.media.Content
 import io.swagger.v3.oas.models.media.MediaType
 import io.swagger.v3.oas.models.media.Schema
+import io.swagger.v3.oas.models.parameters.HeaderParameter
 import io.swagger.v3.oas.models.responses.ApiResponse
 import io.swagger.v3.oas.models.security.SecurityScheme
 import io.swagger.v3.oas.models.servers.Server
@@ -72,6 +73,7 @@ class OpenApiConfiguration(buildProperties: BuildProperties) {
     .group("All")
     .displayName("All Endpoints")
     .addOpenApiCustomizer(defaultErrorResponseCustomizer())
+    .addOpenApiCustomizer(idempotencyKeyCustomizer())
     .build()
 
   @Bean
@@ -80,6 +82,7 @@ class OpenApiConfiguration(buildProperties: BuildProperties) {
     .displayName("For Community Payback Admin UI")
     .pathsToMatch("/admin/**", "/common/**")
     .addOpenApiCustomizer(defaultErrorResponseCustomizer())
+    .addOpenApiCustomizer(idempotencyKeyCustomizer())
     .build()
 
   @Bean
@@ -88,6 +91,7 @@ class OpenApiConfiguration(buildProperties: BuildProperties) {
     .displayName("Domain Event Details")
     .pathsToMatch("/domain-event-details/**")
     .addOpenApiCustomizer(defaultErrorResponseCustomizer())
+    .addOpenApiCustomizer(idempotencyKeyCustomizer())
     .build()
 
   @Bean
@@ -96,6 +100,7 @@ class OpenApiConfiguration(buildProperties: BuildProperties) {
     .displayName("For Community Payback Supervisor UI")
     .pathsToMatch("/supervisor/**", "/common/**")
     .addOpenApiCustomizer(defaultErrorResponseCustomizer())
+    .addOpenApiCustomizer(idempotencyKeyCustomizer())
     .build()
 
   private fun SecurityScheme.addBearerJwtRequirement(vararg roles: String): SecurityScheme = type(SecurityScheme.Type.HTTP)
@@ -109,7 +114,6 @@ class OpenApiConfiguration(buildProperties: BuildProperties) {
    * Adds 401, 403 and 500 error response structures to all endpoints, aligned
    * with the responses returned by [CommunityPaybackApiExceptionHandler]
    */
-  @Bean
   fun defaultErrorResponseCustomizer(): OpenApiCustomizer = OpenApiCustomizer { openApi: OpenAPI ->
     checkNotNull(openApi.components.schemas.keys.firstOrNull { it == "ErrorResponse" }) {
       """/components/schemas/ErrorResponse must exist so it can be referred to for
@@ -125,6 +129,22 @@ class OpenApiConfiguration(buildProperties: BuildProperties) {
         addDefaultErrorResponse(responses, "401", "Not authenticated")
         addDefaultErrorResponse(responses, "403", "Unauthorized")
         addDefaultErrorResponse(responses, "500", "Unexpected error")
+      }
+    }
+  }
+
+  fun idempotencyKeyCustomizer(): OpenApiCustomizer = OpenApiCustomizer { openApi: OpenAPI ->
+    openApi.paths.values.forEach { pathItem ->
+      pathItem.readOperations().forEach { operation ->
+
+        if (operation.tags.contains("supportsIdempotencyKey")) {
+          operation.addParametersItem(
+            HeaderParameter()
+              .required(false)
+              .description("If defined and the key and request body has previously resulted in a successful outcome, the previous result will be returned. Keys should be unique across all endpoints")
+              .name("Idempotency-key"),
+          )
+        }
       }
     }
   }

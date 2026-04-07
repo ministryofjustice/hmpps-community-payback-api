@@ -24,6 +24,9 @@ class ResourceSecurityIT : IntegrationTestBase() {
     " /error",
     "GET /mocks/community-payback-and-delius",
     "POST /mocks/community-payback-and-delius",
+    "POST /it/idempotency/success",
+    "POST /it/idempotency/client-error",
+    "POST /it/idempotency/use-body-as-status-code",
   )
 
   @Test

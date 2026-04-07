@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.EnvironmentService
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.LockService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.LockService
 import java.time.Duration
 
 @Service
