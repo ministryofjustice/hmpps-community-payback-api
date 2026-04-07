@@ -24,6 +24,9 @@ class RedisLockService(
     val log: Logger = LoggerFactory.getLogger(this::class.java)
   }
 
+  /**
+   * key should ideally be named `lock:{group}:{value}
+   */
   override fun <T> withDistributedLock(
     key: String,
     waitTime: Duration,

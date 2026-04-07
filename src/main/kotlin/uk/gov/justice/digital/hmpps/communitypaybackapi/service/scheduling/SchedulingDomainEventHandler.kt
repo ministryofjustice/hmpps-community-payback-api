@@ -84,7 +84,7 @@ class SchedulingDomainEventHandler(
     maxProcessingTime: Duration,
     triggerType: SchedulingTriggerType,
   ): UUID = lockService.withDistributedLock(
-    key = appointment.crn,
+    key = "lock:appointment-scheduling:${appointment.crn}",
     leaseTime = maxProcessingTime,
   ) {
     scheduleService.scheduleAppointments(
