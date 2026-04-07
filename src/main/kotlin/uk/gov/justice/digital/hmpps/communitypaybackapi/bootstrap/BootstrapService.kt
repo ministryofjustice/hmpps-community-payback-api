@@ -23,7 +23,7 @@ class BootstrapService(
       error("boot strap should not be enabled outside of test environments")
     }
 
-    lockService.withDistributedLock(key = "bootstrap", leaseTime = Duration.ofSeconds(10)) {
+    lockService.withDistributedLock(key = "lock:bootstrap", leaseTime = Duration.ofSeconds(10)) {
       runAutoSeeders()
     }
   }
