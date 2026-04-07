@@ -13,7 +13,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEnt
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EnforcementActionEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ProjectTypeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ProjectTypeGroup
-import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
 import java.util.UUID
@@ -24,7 +23,7 @@ class ReferenceMappersTest {
   inner class AdjustmentReasonsMapper {
 
     @Test
-    fun `should map empty ProjectTypes list correctly`() {
+    fun `should map empty list correctly`() {
       val adjustmentReasons = listOf<AdjustmentReasonEntity>()
       val result = adjustmentReasons.toDto()
 
@@ -32,16 +31,18 @@ class ReferenceMappersTest {
     }
 
     @Test
-    fun `should map ProjectTypes to DTO correctly`() {
+    fun `should map to DTO correctly`() {
       val adjustmentReasons = listOf(
         AdjustmentReasonEntity.valid().copy(
           id = UUID.fromString("e68f2cd5-c6f2-4ed8-af66-cd9a46d5fe77"),
           name = "reason 1",
+          deliusCode = "ND1",
           maxMinutesAllowed = 25,
         ),
         AdjustmentReasonEntity.valid().copy(
           id = UUID.fromString("ea55e70e-c1ca-45b9-9001-18af7a907b25"),
           name = "reason 2",
+          deliusCode = "ND2",
           maxMinutesAllowed = 50,
         ),
       )
@@ -52,10 +53,12 @@ class ReferenceMappersTest {
 
       assertThat(result.adjustmentReasons[0].id.toString()).isEqualTo("e68f2cd5-c6f2-4ed8-af66-cd9a46d5fe77")
       assertThat(result.adjustmentReasons[0].name).isEqualTo("reason 1")
+      assertThat(result.adjustmentReasons[0].deliusCode).isEqualTo("ND1")
       assertThat(result.adjustmentReasons[0].maxMinutesAllowed).isEqualTo(25)
 
       assertThat(result.adjustmentReasons[1].id.toString()).isEqualTo("ea55e70e-c1ca-45b9-9001-18af7a907b25")
       assertThat(result.adjustmentReasons[1].name).isEqualTo("reason 2")
+      assertThat(result.adjustmentReasons[1].deliusCode).isEqualTo("ND2")
       assertThat(result.adjustmentReasons[1].maxMinutesAllowed).isEqualTo(50)
     }
   }

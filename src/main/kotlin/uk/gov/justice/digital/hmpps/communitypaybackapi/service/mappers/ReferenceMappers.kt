@@ -22,6 +22,7 @@ fun List<AdjustmentReasonEntity>.toDto() = AdjustmentReasonsDto(this.map { it.to
 fun AdjustmentReasonEntity.toDto() = AdjustmentReasonDto(
   id = this.id,
   name = this.name,
+  deliusCode = this.deliusCode,
   maxMinutesAllowed = this.maxMinutesAllowed,
 )
 
