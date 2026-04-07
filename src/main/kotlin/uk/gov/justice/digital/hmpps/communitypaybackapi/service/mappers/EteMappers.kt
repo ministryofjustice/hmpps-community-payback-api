@@ -70,6 +70,7 @@ class EteMappers(
     return UpdateAppointmentOutcomeDto(
       deliusId = existingAppointment.id,
       deliusVersionToUpdate = existingAppointment.version,
+      date = courseCompletionResolution.creditTimeDetails.date,
       startTime = APPOINTMENT_START_TIME,
       endTime = calculateEndTime(creditTime.minutesToCredit),
       contactOutcomeCode = creditTime.contactOutcomeCode,

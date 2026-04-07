@@ -216,6 +216,7 @@ class EteMappersTest {
             notes = "the provided notes",
             sensitive = sensitive,
             alertActive = alertActive,
+            date = LocalDate.of(2025, 1, 1),
           ),
         ),
         existingAppointment = existingAppointment,
@@ -223,6 +224,7 @@ class EteMappersTest {
 
       assertThat(result.deliusId).isEqualTo(existingAppointment.id)
       assertThat(result.deliusVersionToUpdate).isEqualTo(existingAppointment.version)
+      assertThat(result.date).isEqualTo(LocalDate.of(2025, 1, 1))
       assertThat(result.contactOutcomeCode).isEqualTo(CONTACT_OUTCOME_CODE)
       assertThat(result.enforcementData).isNull()
       assertThat(result.supervisorOfficerCode).isEqualTo(existingAppointment.supervisorOfficerCode)

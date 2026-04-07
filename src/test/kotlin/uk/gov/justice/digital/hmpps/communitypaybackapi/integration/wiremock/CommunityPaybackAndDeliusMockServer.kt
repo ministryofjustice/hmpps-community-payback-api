@@ -392,6 +392,35 @@ object CommunityPaybackAndDeliusMockServer {
     WireMock.verify(putRequestedFor(urlEqualTo("/community-payback-and-delius/projects/$projectCode/appointments/$appointmentId/outcome")))
   }
 
+  fun verifyPutAppointmentRequest(
+    expectedUpdate: ExpectedAppointmentUpdate,
+  ) {
+    WireMock.verify(
+      putRequestedFor(urlEqualTo("/community-payback-and-delius/projects/${expectedUpdate.projectCode}/appointments/${expectedUpdate.appointmentId}/outcome"))
+        .withRequestBody(matchingJsonPath("$.date", equalTo(expectedUpdate.date.toIsoDateString())))
+        .withRequestBody(
+          matchingJsonPath(
+            "$.startTime",
+            equalTo(expectedUpdate.startTime.format(DateTimeFormatter.ISO_TIME)),
+          ),
+        )
+        .withRequestBody(
+          matchingJsonPath(
+            "$.endTime",
+            equalTo(expectedUpdate.endTime.format(DateTimeFormatter.ISO_TIME)),
+          ),
+        ),
+    )
+  }
+
+  data class ExpectedAppointmentUpdate(
+    val projectCode: String,
+    val appointmentId: Long,
+    val date: LocalDate,
+    val startTime: LocalTime,
+    val endTime: LocalTime,
+  )
+
   fun verifyPostAppointmentsRequest(
     projectCode: String,
     expectedAppointments: List<ExpectedAppointmentCreate>,
