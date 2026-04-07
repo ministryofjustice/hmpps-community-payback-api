@@ -45,6 +45,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.DomainE
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.bodyAsObject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.CommunityPaybackAndDeliusMockServer
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.CommunityPaybackAndDeliusMockServer.ExpectedAppointmentCreate
+import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.CommunityPaybackAndDeliusMockServer.ExpectedAppointmentUpdate
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.OffsetDateTime
@@ -683,19 +684,6 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
     fun `if type is CREDIT_TIME, should update appointment when appointmentIdToUpdate is present`() {
       val appointmentId = 12345L
 
-      val eventEntity = eteCourseCompletionEventEntityRepository.save(
-        EteCourseCompletionEventEntity.valid(ctx).copy(),
-      )
-      val resolution = CourseCompletionResolutionDto.valid(ctx).copy(
-        type = CourseCompletionResolutionTypeDto.CREDIT_TIME,
-        crn = CRN,
-        creditTimeDetails = CourseCompletionCreditTimeDetailsDto.valid(ctx).copy(
-          date = LocalDate.now().minusDays(5),
-          appointmentIdToUpdate = appointmentId,
-          projectCode = PROJECT_CODE,
-        ),
-      )
-
       CommunityPaybackAndDeliusMockServer.Aggregates.setupGetDataMocksForUpdateAppointment(
         existingAppointment = NDAppointment.validNoOutcome(ctx).copy(
           id = appointmentId,
@@ -715,6 +703,21 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
         appointmentId = appointmentId,
       )
 
+      val eventEntity = eteCourseCompletionEventEntityRepository.save(
+        EteCourseCompletionEventEntity.valid(ctx).copy(),
+      )
+
+      val resolution = CourseCompletionResolutionDto.valid(ctx).copy(
+        type = CourseCompletionResolutionTypeDto.CREDIT_TIME,
+        crn = CRN,
+        creditTimeDetails = CourseCompletionCreditTimeDetailsDto.valid(ctx).copy(
+          date = LocalDate.now().minusDays(5),
+          appointmentIdToUpdate = appointmentId,
+          projectCode = PROJECT_CODE,
+          minutesToCredit = 30,
+        ),
+      )
+
       webTestClient.post()
         .uri("/admin/course-completions/${eventEntity.id}/resolution")
         .addAdminUiAuthHeader("theusername")
@@ -725,8 +728,13 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
         .isNoContent
 
       CommunityPaybackAndDeliusMockServer.verifyPutAppointmentRequest(
-        projectCode = PROJECT_CODE,
-        appointmentId = appointmentId,
+        ExpectedAppointmentUpdate(
+          projectCode = PROJECT_CODE,
+          appointmentId = appointmentId,
+          date = LocalDate.now().minusDays(5),
+          startTime = LocalTime.of(0, 0),
+          endTime = LocalTime.of(0, 30),
+        ),
       )
 
       val resolutionEntity = eteCourseCompletionEventEntityRepository.findByIdOrNull(eventEntity.id)!!.resolution!!
