@@ -10,13 +10,16 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestMapping
+import uk.gov.justice.digital.hmpps.communitypaybackapi.controller.IdempotentRequestService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAdjustmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsIdDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ContextService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.OffenderService
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
+import java.time.Duration
 
 @AdminUiController
 @RequestMapping(
@@ -27,6 +30,7 @@ class AdminUpwDetailsController(
   private val adjustmentsService: AdjustmentService,
   private val offenderService: OffenderService,
   private val contextService: ContextService,
+  private val idempotentRequestService: IdempotentRequestService,
 ) {
 
   @GetMapping(
@@ -80,13 +84,20 @@ class AdminUpwDetailsController(
   fun createAdjustment(
     @PathVariable crn: String,
     @PathVariable deliusEventNumber: Int,
+    @RequestHeader(name = "Idempotency-key", required = false) idempotencyKey: String?,
     @Valid @RequestBody createAdjustment: CreateAdjustmentDto,
-  ) = adjustmentsService.createAdjustment(
-    UnpaidWorkDetailsIdDto(
-      crn = crn,
-      deliusEventNumber = deliusEventNumber,
-    ),
-    createAdjustment = createAdjustment,
-    username = contextService.getUserName(),
-  )
+  ) = idempotentRequestService.handleIdempotentRequest(
+    idempotencyKey = idempotencyKey,
+    maxProcessingTime = Duration.ofSeconds(2),
+  ) {
+    adjustmentsService.createAdjustment(
+      upwDetailsId = UnpaidWorkDetailsIdDto(
+        crn = crn,
+        deliusEventNumber = deliusEventNumber,
+      ),
+      createAdjustment = createAdjustment,
+      username = contextService.getUserName(),
+    )
+    200
+  }
 }

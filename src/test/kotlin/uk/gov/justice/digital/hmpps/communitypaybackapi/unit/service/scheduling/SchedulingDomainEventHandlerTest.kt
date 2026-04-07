@@ -20,7 +20,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventT
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentEventService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventService
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.LockService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.LockService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingDomainEventHandler
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.SchedulingService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.SchedulingTrigger
@@ -182,6 +182,14 @@ class SchedulingDomainEventHandlerTest {
       waitTime: Duration,
       leaseTime: Duration,
       exec: () -> T,
+    ) = exec()
+
+    override fun singleFlightForIntResult(
+      lockKey: String,
+      resultKey: String,
+      lockWaitTime: Duration,
+      lockLeaseTime: Duration,
+      exec: () -> Int,
     ) = exec()
   }
 }
