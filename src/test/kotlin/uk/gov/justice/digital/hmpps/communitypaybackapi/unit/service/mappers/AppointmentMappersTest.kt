@@ -195,6 +195,7 @@ class AppointmentMappersTest {
         dto = UpdateAppointmentOutcomeDto.valid().copy(
           deliusId = 101L,
           deliusVersionToUpdate = priorDeliusVersion,
+          date = LocalDate.of(2018, 12, 9),
           startTime = LocalTime.of(3, 2, 1),
           endTime = LocalTime.of(12, 11, 10),
           attendanceData = AttendanceDataDto.valid().copy(
@@ -223,6 +224,7 @@ class AppointmentMappersTest {
       )
 
       assertThat(result.version).isEqualTo(priorDeliusVersion)
+      assertThat(result.date).isEqualTo(LocalDate.of(2018, 12, 9))
       assertThat(result.startTime).isEqualTo(LocalTime.of(3, 2, 1))
       assertThat(result.endTime).isEqualTo(LocalTime.of(12, 11, 10))
       assertThat(result.outcome!!.code).isEqualTo("COE1")
@@ -248,6 +250,7 @@ class AppointmentMappersTest {
         dto = UpdateAppointmentOutcomeDto.valid().copy(
           deliusId = 101L,
           deliusVersionToUpdate = priorDeliusVersion,
+          date = null,
           startTime = LocalTime.of(3, 2, 1),
           endTime = LocalTime.of(12, 11, 10),
           attendanceData = null,
@@ -262,11 +265,13 @@ class AppointmentMappersTest {
 
       val result = dto.toNDUpdateAppointment(
         existingAppointment = AppointmentDto.valid().copy(
+          date = LocalDate.of(2020, 1, 2),
           pickUpData = null,
         ),
       )
 
       assertThat(result.version).isEqualTo(priorDeliusVersion)
+      assertThat(result.date).isEqualTo(LocalDate.of(2020, 1, 2))
       assertThat(result.startTime).isEqualTo(LocalTime.of(3, 2, 1))
       assertThat(result.endTime).isEqualTo(LocalTime.of(12, 11, 10))
       assertThat(result.outcome).isNull()

@@ -67,10 +67,6 @@ class EteMappers(
       "Missing credit time details"
     }
 
-    if (existingAppointment.date != creditTime.date) {
-      error("Changing an existing appointment's date is not currently supported")
-    }
-
     return UpdateAppointmentOutcomeDto(
       deliusId = existingAppointment.id,
       deliusVersionToUpdate = existingAppointment.version,

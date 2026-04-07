@@ -702,7 +702,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
           project = NDProjectAndLocation.valid().copy(
             code = PROJECT_CODE,
           ),
-          date = LocalDate.now().minusDays(5),
+          date = LocalDate.now().minusDays(10),
           event = NDEvent.valid().copy(number = EVENT_NUMBER),
           case = NDCaseSummary.valid().copy(crn = SchedulingIT.CRN),
         ),
