@@ -1,11 +1,13 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.service
 
 import jakarta.transaction.Transactional
+import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAdjustmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsIdDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventTriggerType
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AdjustmentCreatedEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.SpringEventPublisher
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toNDAdjustmentRequest
@@ -54,5 +56,15 @@ class AdjustmentService(
         ),
       ),
     )
+  }
+
+  @EventListener
+  fun rollbackAdjustment(
+    rollbackEvent: CommunityPaybackSpringEvent.NDeliusRollbackRequired,
+  ) {
+    val event = rollbackEvent.event
+    if (event is AdjustmentCreatedEvent) {
+      communityPaybackAndDeliusClient.deleteAdjustment(event.deliusAdjustmentId)
+    }
   }
 }

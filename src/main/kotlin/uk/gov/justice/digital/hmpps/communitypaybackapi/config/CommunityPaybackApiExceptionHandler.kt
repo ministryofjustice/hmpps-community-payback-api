@@ -17,12 +17,14 @@ import org.springframework.web.servlet.resource.NoResourceFoundException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.controller.internal.NotFoundException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.BadRequestException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.ConflictException
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.NDeliusRollbackService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.SentryService
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 
 @RestControllerAdvice
 class CommunityPaybackApiExceptionHandler(
   val sentryService: SentryService,
+  val rollbackService: NDeliusRollbackService,
 ) {
 
   @ExceptionHandler(
@@ -82,6 +84,7 @@ class CommunityPaybackApiExceptionHandler(
         developerMessage = e.message,
       ),
     )
+    .also { rollbackService.publishEventsForRollback() }
     .also { sentryService.captureException(e) }
     .also { log.error("Unexpected exception", e) }
 

@@ -3,6 +3,8 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.absent
+import com.github.tomakehurst.wiremock.client.WireMock.delete
+import com.github.tomakehurst.wiremock.client.WireMock.deleteRequestedFor
 import com.github.tomakehurst.wiremock.client.WireMock.equalTo
 import com.github.tomakehurst.wiremock.client.WireMock.exactly
 import com.github.tomakehurst.wiremock.client.WireMock.get
@@ -45,6 +47,15 @@ import kotlin.Long
 object CommunityPaybackAndDeliusMockServer {
 
   val jsonMapper: JsonMapper = JsonMapper()
+
+  fun setupDeleteAdjustmentResponse(adjustmentId: Long) {
+    WireMock.stubFor(
+      delete("/community-payback-and-delius/adjustments/$adjustmentId")
+        .willReturn(
+          aResponse().withStatus(200),
+        ),
+    )
+  }
 
   fun setupGetAppointment404Response(
     projectCode: String,
@@ -372,13 +383,16 @@ object CommunityPaybackAndDeliusMockServer {
     )
   }
 
-  fun setupPostAdjustmentResponse(username: String) {
+  fun setupPostAdjustmentResponse(
+    username: String,
+    adjustmentId: Long = 1L,
+  ) {
     WireMock.stubFor(
       post("/community-payback-and-delius/adjustments?username=$username")
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")
-            .withBody(jsonMapper.writeValueAsString(listOf(NDAdjustmentPostResponse(1L))))
+            .withBody(jsonMapper.writeValueAsString(listOf(NDAdjustmentPostResponse(adjustmentId))))
             .withTransformers("response-template"),
         ),
     )
@@ -484,8 +498,12 @@ object CommunityPaybackAndDeliusMockServer {
     WireMock.verify(0, postRequestedFor(urlMatching("/community-payback-and-delius/.*/appointments")))
   }
 
-  fun verifyPostAdjustment(username: String) {
-    WireMock.verify(postRequestedFor(urlEqualTo("/community-payback-and-delius/adjustments?username=$username")))
+  fun verifyPostAdjustment(username: String, count: Int = 1) {
+    WireMock.verify(count, postRequestedFor(urlEqualTo("/community-payback-and-delius/adjustments?username=$username")))
+  }
+
+  fun verifyDeleteAdjustment(adjustmentId: Long, count: Int = 1) {
+    WireMock.verify(count, deleteRequestedFor(urlMatching("/community-payback-and-delius/adjustments/$adjustmentId")))
   }
 
   object Aggregates {

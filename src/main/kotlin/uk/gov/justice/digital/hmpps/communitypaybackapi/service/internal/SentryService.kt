@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service
 
 interface SentryService {
   fun captureException(throwable: Throwable)
+  fun captureMessage(message: String)
 }
 
 @Service
@@ -17,5 +18,10 @@ class SentryServiceImpl : SentryService {
   override fun captureException(throwable: Throwable) {
     log.debug("Will capture exception in sentry", throwable)
     Sentry.captureException(throwable)
+  }
+
+  override fun captureMessage(message: String) {
+    log.debug("Will capture message in sentry '{}'", message)
+    Sentry.captureMessage(message)
   }
 }

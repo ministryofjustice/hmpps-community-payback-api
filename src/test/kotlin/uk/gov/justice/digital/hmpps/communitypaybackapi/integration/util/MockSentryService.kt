@@ -23,6 +23,10 @@ class MockSentryService : SentryService {
     capturedExceptions.add(throwable)
   }
 
+  override fun captureMessage(message: String) {
+    // do nothing
+  }
+
   fun getRaisedExceptions(): List<Throwable> {
     await()
       .atMost(1, TimeUnit.SECONDS)
