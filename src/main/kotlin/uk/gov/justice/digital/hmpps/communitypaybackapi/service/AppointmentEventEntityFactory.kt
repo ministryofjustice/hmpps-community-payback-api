@@ -58,7 +58,7 @@ class AppointmentEventEntityFactory(
   }
 
   fun buildUpdatedEvent(
-    details: CommunityPaybackSpringEvent.UpdateAppointmentEvent,
+    details: CommunityPaybackSpringEvent.AppointmentUpdatedEvent,
   ): AppointmentEventEntity {
     val existingAppointment = details.existingAppointment
     val outcome = details.updateDto.dto

@@ -10,7 +10,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOut
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.ConflictException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.InternalServerErrorException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService.ValidatedAppointment
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.UpdateAppointmentEvent
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AppointmentUpdatedEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.SpringEventPublisher
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toNDUpdateAppointment
 
@@ -36,7 +36,7 @@ class AppointmentUpdateService(
 
     val validatedUpdateDto = appointmentUpdateValidationService.validateUpdate(existingAppointment, update)
 
-    val updateEventDetails = UpdateAppointmentEvent(
+    val updateEventDetails = AppointmentUpdatedEvent(
       updateDto = appointmentUpdateValidationService.validateUpdate(existingAppointment, update),
       appointmentEntity = appointmentEntity,
       existingAppointment = existingAppointment,

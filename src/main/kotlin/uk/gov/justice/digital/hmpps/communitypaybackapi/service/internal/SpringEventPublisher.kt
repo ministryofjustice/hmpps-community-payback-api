@@ -35,7 +35,7 @@ sealed interface CommunityPaybackSpringEvent {
     companion object
   }
 
-  data class CreateAdjustmentEvent(
+  data class AdjustmentCreatedEvent(
     val createDto: CreateAdjustmentDto,
     val appointmentEntity: AppointmentEntity,
     val reason: AdjustmentReasonEntity,
@@ -45,7 +45,7 @@ sealed interface CommunityPaybackSpringEvent {
     companion object
   }
 
-  data class UpdateAppointmentEvent(
+  data class AppointmentUpdatedEvent(
     val updateDto: AppointmentValidationService.ValidatedAppointment<UpdateAppointmentOutcomeDto>,
     val appointmentEntity: AppointmentEntity,
     val existingAppointment: AppointmentDto,

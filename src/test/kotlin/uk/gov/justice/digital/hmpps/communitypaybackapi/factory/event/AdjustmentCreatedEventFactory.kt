@@ -8,10 +8,10 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.random
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentEventTrigger
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.CreateAdjustmentEvent
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AdjustmentCreatedEvent
 import java.time.OffsetDateTime
 
-fun CreateAdjustmentEvent.Companion.valid() = CreateAdjustmentEvent(
+fun AdjustmentCreatedEvent.Companion.valid() = AdjustmentCreatedEvent(
   createDto = CreateAdjustmentDto.valid(),
   appointmentEntity = AppointmentEntity.valid(),
   reason = AdjustmentReasonEntity.valid(),

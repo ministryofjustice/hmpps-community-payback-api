@@ -28,7 +28,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.DomainEventServi
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.DomainEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.PersonReferenceType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AppointmentCreatedEvent
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.UpdateAppointmentEvent
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AppointmentUpdatedEvent
 
 @ExtendWith(MockKExtension::class)
 class AppointmentEventServiceTest {
@@ -48,7 +48,7 @@ class AppointmentEventServiceTest {
   @Nested
   inner class HasUpdateAlreadyBeenSent {
 
-    val baselineUpdateDetails = UpdateAppointmentEvent(
+    val baselineUpdateDetails = AppointmentUpdatedEvent(
       updateDto = ValidatedAppointment.validUpdateAppointment(),
       appointmentEntity = AppointmentEntity.valid(),
       existingAppointment = AppointmentDto.valid(),
@@ -183,7 +183,7 @@ class AppointmentEventServiceTest {
         crn = "CRN1",
       )
 
-      val updateDetails = UpdateAppointmentEvent(
+      val updateDetails = AppointmentUpdatedEvent(
         updateDto = ValidatedAppointment.validUpdateAppointment(),
         appointmentEntity = AppointmentEntity.valid(),
         existingAppointment = AppointmentDto.valid(),

@@ -20,9 +20,9 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentTaskSt
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentTaskType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ProjectTypeGroup
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AdjustmentCreatedEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AppointmentCreatedEvent
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.CreateAdjustmentEvent
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.UpdateAppointmentEvent
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AppointmentUpdatedEvent
 import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.UUID
@@ -49,7 +49,7 @@ class AppointmentTaskService(
   @EventListener
   @Transactional(Transactional.TxType.REQUIRED)
   fun createTravelTimeTaskOnAppointmentUpdate(
-    event: UpdateAppointmentEvent,
+    event: AppointmentUpdatedEvent,
   ) {
     createTravelTimeTaskIfRequired(
       appointment = event.appointmentEntity,
@@ -61,7 +61,7 @@ class AppointmentTaskService(
   @EventListener
   @Transactional(Transactional.TxType.REQUIRED)
   fun closeTravelTimeTaskOnAdjustmentCreation(
-    event: CreateAdjustmentEvent,
+    event: AdjustmentCreatedEvent,
   ) {
     val trigger = event.trigger
     if (trigger.triggerType == AdjustmentEventTriggerType.APPOINTMENT_TASK) {

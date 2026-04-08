@@ -38,7 +38,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ProviderService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.TeamId
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AppointmentCreatedEvent
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.UpdateAppointmentEvent
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AppointmentUpdatedEvent
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
@@ -268,7 +268,7 @@ class AppointmentEventEntityFactoryTest {
       )
 
       val result = factory.buildUpdatedEvent(
-        UpdateAppointmentEvent(
+        AppointmentUpdatedEvent(
           updateDto = ValidatedAppointment.validUpdateAppointment().copy(
             dto = UpdateAppointmentOutcomeDto(
               deliusId = 101L,
@@ -346,7 +346,7 @@ class AppointmentEventEntityFactoryTest {
       val deliusVersion = UUID.randomUUID()
 
       val result = factory.buildUpdatedEvent(
-        UpdateAppointmentEvent(
+        AppointmentUpdatedEvent(
           updateDto = ValidatedAppointment.validUpdateAppointment().copy(
             dto = UpdateAppointmentOutcomeDto(
               deliusId = 101L,
@@ -412,7 +412,7 @@ class AppointmentEventEntityFactoryTest {
     @Test
     fun `use penaltyMinutes instead of penaltyTime if defined`() {
       val result = factory.buildUpdatedEvent(
-        UpdateAppointmentEvent(
+        AppointmentUpdatedEvent(
           updateDto = ValidatedAppointment.validUpdateAppointment().copy(
             UpdateAppointmentOutcomeDto.valid().copy(
               contactOutcomeCode = null,
@@ -438,7 +438,7 @@ class AppointmentEventEntityFactoryTest {
     @Test
     fun `use legacy penaltyTime if penaltyMinutes not defined`() {
       val result = factory.buildUpdatedEvent(
-        UpdateAppointmentEvent(
+        AppointmentUpdatedEvent(
           updateDto = ValidatedAppointment.validUpdateAppointment().copy(
             UpdateAppointmentOutcomeDto.valid().copy(
               contactOutcomeCode = null,
