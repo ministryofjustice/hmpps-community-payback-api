@@ -366,7 +366,7 @@ object CommunityPaybackAndDeliusMockServer {
     appointmentId: Long,
   ) {
     WireMock.stubFor(
-      put("/community-payback-and-delius/projects/$projectCode/appointments/$appointmentId/outcome")
+      put("/community-payback-and-delius/projects/$projectCode/appointments/$appointmentId")
         .willReturn(
           aResponse().withStatus(200),
         ),
@@ -378,7 +378,7 @@ object CommunityPaybackAndDeliusMockServer {
     appointmentId: Long,
   ) {
     WireMock.stubFor(
-      put("/community-payback-and-delius/projects/$projectCode/appointments/$appointmentId/outcome")
+      put("/community-payback-and-delius/projects/$projectCode/appointments/$appointmentId")
         .willReturn(
           aResponse().withStatus(404),
         ),
@@ -389,14 +389,14 @@ object CommunityPaybackAndDeliusMockServer {
     projectCode: String,
     appointmentId: Long,
   ) {
-    WireMock.verify(putRequestedFor(urlEqualTo("/community-payback-and-delius/projects/$projectCode/appointments/$appointmentId/outcome")))
+    WireMock.verify(putRequestedFor(urlEqualTo("/community-payback-and-delius/projects/$projectCode/appointments/$appointmentId")))
   }
 
   fun verifyPutAppointmentRequest(
     expectedUpdate: ExpectedAppointmentUpdate,
   ) {
     WireMock.verify(
-      putRequestedFor(urlEqualTo("/community-payback-and-delius/projects/${expectedUpdate.projectCode}/appointments/${expectedUpdate.appointmentId}/outcome"))
+      putRequestedFor(urlEqualTo("/community-payback-and-delius/projects/${expectedUpdate.projectCode}/appointments/${expectedUpdate.appointmentId}"))
         .withRequestBody(matchingJsonPath("$.date", equalTo(expectedUpdate.date.toIsoDateString())))
         .withRequestBody(
           matchingJsonPath(

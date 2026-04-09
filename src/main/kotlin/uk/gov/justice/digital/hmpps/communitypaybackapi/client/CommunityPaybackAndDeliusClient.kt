@@ -67,7 +67,7 @@ interface CommunityPaybackAndDeliusClient {
     @RequestParam username: String,
   ): NDAppointment
 
-  @PutExchange("/projects/{projectCode}/appointments/{appointmentId}/outcome")
+  @PutExchange("/projects/{projectCode}/appointments/{appointmentId}")
   fun updateAppointment(
     @PathVariable projectCode: String,
     @PathVariable appointmentId: Long,
