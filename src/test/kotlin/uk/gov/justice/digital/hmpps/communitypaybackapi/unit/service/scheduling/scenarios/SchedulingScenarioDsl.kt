@@ -23,7 +23,6 @@ import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.temporal.TemporalAdjusters
-import java.util.UUID
 
 @DslMarker
 annotation class SchedulingScenarioDslMarker
@@ -139,27 +138,13 @@ class SchedulingScenarioBuilder {
       )
       expectedActions.apply(init)
 
-      val testReference = UUID.randomUUID()
+      val actualCreations = insufficient.plan.actions.filterIsInstance<SchedulingAction.CreateAppointment>()
 
-      val actualCreations = insufficient.plan.actions.filterIsInstance<SchedulingAction.CreateAppointment>().allWithSameReference(testReference)
-
-      assertThat(actualCreations).containsExactlyInAnyOrderElementsOf(expectedActions.actions.allWithSameReference(testReference))
+      assertThat(actualCreations).containsExactlyInAnyOrderElementsOf(expectedActions.actions)
 
       toAddressShortfall?.let {
         assertThat(insufficient.plan.shortfall).isEqualTo(it)
       }
-    }
-
-    /*
-    Because reference is a random UUID we can't know its value before running the test
-
-    Attempts to ignore this field when checking lists in assertj using `usingRecursiveFieldByFieldElementComparator`
-    failed, so instead we set the reference to the same value for all entries before doing a comparison
-     */
-    private fun List<SchedulingAction.CreateAppointment>.allWithSameReference(reference: UUID) = map {
-      SchedulingAction.CreateAppointment(
-        toCreate = it.toCreate.copy(id = reference),
-      )
     }
 
     fun noActionsExpected(toAddressShortfall: Duration? = null) {

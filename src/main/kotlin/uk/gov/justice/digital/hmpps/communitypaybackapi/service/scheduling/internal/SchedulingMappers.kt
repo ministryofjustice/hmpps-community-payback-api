@@ -7,6 +7,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingExist
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingFrequency
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingProject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
 import java.time.DayOfWeek
 import java.time.Duration
 
@@ -75,7 +76,7 @@ fun SchedulingRequiredAppointment.toCreateAppointmentDto(
   crn: String,
   eventNumber: Int,
 ) = CreateAppointmentDto(
-  id = id,
+  id = AppointmentEntity.generateId(),
   crn = crn,
   deliusEventNumber = eventNumber,
   allocationId = allocation.id,
