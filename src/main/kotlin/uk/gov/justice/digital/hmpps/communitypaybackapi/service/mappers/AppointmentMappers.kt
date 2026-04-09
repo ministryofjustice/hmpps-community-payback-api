@@ -113,32 +113,6 @@ class AppointmentMappers(
     projectTypeCode = appointmentSummary.project.projectType.code,
     projectTypeName = appointmentSummary.project.projectType.description,
   )
-
-  fun toSummaryDtoFromDto(
-    appointmentDto: AppointmentDto,
-    requirementMinutes: Int,
-    adjustmentMinutes: Int,
-    completedMinutes: Int,
-  ) = AppointmentSummaryDto(
-    id = appointmentDto.id,
-    contactOutcome = appointmentDto.contactOutcomeCode?.let {
-      contactOutcomeEntityRepository.findByCode(it)?.toDto()
-    },
-    requirementMinutes = requirementMinutes,
-    adjustmentMinutes = adjustmentMinutes,
-    completedMinutes = completedMinutes,
-    offender = appointmentDto.offender,
-    date = appointmentDto.date,
-    startTime = appointmentDto.startTime,
-    endTime = appointmentDto.endTime,
-    minutesCredited = appointmentDto.minutesCredited,
-    daysOverdue = null,
-    notes = appointmentDto.notes,
-    projectCode = appointmentDto.projectCode,
-    projectName = appointmentDto.projectName.orEmpty(),
-    projectTypeCode = appointmentDto.projectTypeCode.orEmpty(),
-    projectTypeName = appointmentDto.projectTypeName.orEmpty(),
-  )
 }
 
 fun AppointmentEventEntity.toAppointmentCreatedDomainEvent() = AppointmentCreatedDomainEventDetailDto(
