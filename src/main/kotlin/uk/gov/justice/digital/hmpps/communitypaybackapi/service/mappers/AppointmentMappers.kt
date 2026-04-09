@@ -32,6 +32,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EnforcementAction
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ProjectTypeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.WorkQuality
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService.ValidatedAppointment
+import java.util.UUID
 
 @Service
 class AppointmentMappers(
@@ -200,10 +201,12 @@ private fun ValidatedAppointment<UpdateAppointmentOutcomeDto>.buildUpdateNote(
   }
 }.trimEnd().ifBlank { null }
 
-fun ValidatedAppointment<CreateAppointmentDto>.toNDCreateAppointment(): NDCreateAppointment {
+fun ValidatedAppointment<CreateAppointmentDto>.toNDCreateAppointment(
+  id: UUID,
+): NDCreateAppointment {
   val createDto = this.dto
   return NDCreateAppointment(
-    reference = createDto.id,
+    reference = id,
     crn = createDto.crn,
     eventNumber = createDto.deliusEventNumber,
     date = createDto.date,
@@ -231,10 +234,11 @@ fun ValidatedAppointment<CreateAppointmentDto>.toNDCreateAppointment(): NDCreate
 object ToAppointmentEntity {
 
   fun CreateAppointmentDto.toAppointmentEntity(
+    id: UUID,
     deliusAppointmentId: Long,
     providerCode: String,
   ): AppointmentEntity = AppointmentEntity(
-    id = this.id,
+    id = id,
     deliusId = deliusAppointmentId,
     crn = this.crn,
     deliusEventNumber = this.deliusEventNumber,

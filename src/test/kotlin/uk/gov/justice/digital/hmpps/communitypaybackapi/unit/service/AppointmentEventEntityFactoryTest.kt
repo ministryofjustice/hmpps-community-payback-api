@@ -98,7 +98,6 @@ class AppointmentEventEntityFactoryTest {
           ),
           createDto = ValidatedAppointment.validCreateAppointment().copy(
             dto = CreateAppointmentDto(
-              id = ID,
               crn = "X12345",
               deliusEventNumber = 48,
               allocationId = 22,
@@ -170,7 +169,6 @@ class AppointmentEventEntityFactoryTest {
           ),
           createDto = ValidatedAppointment.validCreateAppointment().copy(
             dto = CreateAppointmentDto(
-              id = ID,
               crn = "X12345",
               deliusEventNumber = 48,
               allocationId = null,

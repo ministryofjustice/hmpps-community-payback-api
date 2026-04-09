@@ -87,7 +87,6 @@ class AppointmentMappersTest {
 
       val dto = ValidatedAppointment(
         dto = CreateAppointmentDto.valid().copy(
-          id = appointmentId,
           crn = "CRN123",
           deliusEventNumber = 5,
           date = LocalDate.of(2028, 7, 6),
@@ -112,7 +111,7 @@ class AppointmentMappersTest {
         project = ProjectDto.valid(),
       )
 
-      val result = dto.toNDCreateAppointment()
+      val result = dto.toNDCreateAppointment(appointmentId)
 
       assertThat(result.reference).isEqualTo(appointmentId)
       assertThat(result.crn).isEqualTo("CRN123")
@@ -141,7 +140,6 @@ class AppointmentMappersTest {
 
       val dto = ValidatedAppointment(
         dto = CreateAppointmentDto.valid().copy(
-          id = appointmentId,
           crn = "CRN123",
           deliusEventNumber = 5,
           date = LocalDate.of(2028, 7, 6),
@@ -160,7 +158,7 @@ class AppointmentMappersTest {
         project = ProjectDto.valid(),
       )
 
-      val result = dto.toNDCreateAppointment()
+      val result = dto.toNDCreateAppointment(appointmentId)
 
       assertThat(result.reference).isEqualTo(appointmentId)
       assertThat(result.crn).isEqualTo("CRN123")
@@ -694,11 +692,11 @@ class AppointmentMappersTest {
     fun success() {
       val communityPaybackId = UUID.randomUUID()
       val result = CreateAppointmentDto.valid().copy(
-        id = communityPaybackId,
         crn = "CRN777",
         deliusEventNumber = 90,
         date = LocalDate.of(2009, 8, 7),
       ).toAppointmentEntity(
+        id = communityPaybackId,
         deliusAppointmentId = 91283,
         providerCode = "PROV1",
       )
