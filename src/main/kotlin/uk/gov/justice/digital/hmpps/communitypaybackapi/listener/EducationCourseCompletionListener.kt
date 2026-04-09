@@ -20,7 +20,7 @@ class EducationCourseCompletionListener(
   @param:Value("\${community-payback.education-course-integration.log-messages:false}") private val logMessages: Boolean,
 ) {
   private companion object {
-    val log: Logger = LoggerFactory.getLogger(this::class.java)
+    val log: Logger = LoggerFactory.getLogger(this::class.java.name + ".message")
   }
 
   @SqsListener(
@@ -33,7 +33,7 @@ class EducationCourseCompletionListener(
     @Headers headers: MessageHeaders,
   ) {
     if (logMessages) {
-      log.debug("Have received education course course completion message '$messageString'")
+      log.info(messageString)
     }
     sqsListenerErrorHandler.withErrorHandler(headers) {
       val message = jsonMapper.readValue(messageString, EducationCourseCompletionMessage::class.java)
