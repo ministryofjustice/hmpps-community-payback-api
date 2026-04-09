@@ -10,6 +10,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointmentWork
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCode
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCreateAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDUpdateAppointment
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.formatForUser
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentBehaviourDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentSummaryDto
@@ -113,32 +114,6 @@ class AppointmentMappers(
     projectTypeCode = appointmentSummary.project.projectType.code,
     projectTypeName = appointmentSummary.project.projectType.description,
   )
-
-  fun toSummaryDtoFromDto(
-    appointmentDto: AppointmentDto,
-    requirementMinutes: Int,
-    adjustmentMinutes: Int,
-    completedMinutes: Int,
-  ) = AppointmentSummaryDto(
-    id = appointmentDto.id,
-    contactOutcome = appointmentDto.contactOutcomeCode?.let {
-      contactOutcomeEntityRepository.findByCode(it)?.toDto()
-    },
-    requirementMinutes = requirementMinutes,
-    adjustmentMinutes = adjustmentMinutes,
-    completedMinutes = completedMinutes,
-    offender = appointmentDto.offender,
-    date = appointmentDto.date,
-    startTime = appointmentDto.startTime,
-    endTime = appointmentDto.endTime,
-    minutesCredited = appointmentDto.minutesCredited,
-    daysOverdue = null,
-    notes = appointmentDto.notes,
-    projectCode = appointmentDto.projectCode,
-    projectName = appointmentDto.projectName.orEmpty(),
-    projectTypeCode = appointmentDto.projectTypeCode.orEmpty(),
-    projectTypeName = appointmentDto.projectTypeName.orEmpty(),
-  )
 }
 
 fun AppointmentEventEntity.toAppointmentCreatedDomainEvent() = AppointmentCreatedDomainEventDetailDto(
@@ -171,6 +146,7 @@ fun ValidatedAppointment<UpdateAppointmentOutcomeDto>.toNDUpdateAppointment(
   existingAppointment: AppointmentDto,
 ): NDUpdateAppointment {
   val updateDto = dto
+
   return NDUpdateAppointment(
     version = updateDto.deliusVersionToUpdate,
     date = updateDto.resolveDate(existingAppointment),
@@ -178,7 +154,7 @@ fun ValidatedAppointment<UpdateAppointmentOutcomeDto>.toNDUpdateAppointment(
     endTime = updateDto.endTime,
     outcome = this.contactOutcome?.let { NDCode(it.code) },
     supervisor = NDCode(updateDto.supervisorOfficerCode),
-    notes = updateDto.notes,
+    notes = buildUpdateNote(existingAppointment),
     hiVisWorn = updateDto.attendanceData?.hiVisWorn,
     workedIntensively = updateDto.attendanceData?.workedIntensively,
     penaltyMinutes = updateDto.attendanceData?.derivePenaltyMinutesDuration()?.toMinutes(),
@@ -195,6 +171,34 @@ fun ValidatedAppointment<UpdateAppointmentOutcomeDto>.toNDUpdateAppointment(
     },
   )
 }
+
+private fun ValidatedAppointment<UpdateAppointmentOutcomeDto>.buildUpdateNote(
+  existingAppointment: AppointmentDto,
+) = buildString {
+  val updateDto = dto
+
+  val existingDate = existingAppointment.date
+  val updatedDate = updateDto.resolveDate(existingAppointment)
+  if (updatedDate != existingDate) {
+    appendLine("Appointment Date changed from ${existingDate.formatForUser()} to ${updatedDate.formatForUser()}")
+  }
+
+  val existingStartTime = existingAppointment.startTime
+  val updatedStartTime = updateDto.startTime
+  if (updatedStartTime != existingStartTime) {
+    appendLine("Appointment Start Time changed from ${existingStartTime.formatForUser()} to ${updatedStartTime.formatForUser()}")
+  }
+
+  val existingEndTime = existingAppointment.endTime
+  val updatedEndTime = updateDto.endTime
+  if (updatedEndTime != existingEndTime) {
+    appendLine("Appointment End Time changed from ${existingEndTime.formatForUser()} to ${updatedEndTime.formatForUser()}")
+  }
+
+  if (updateDto.notes?.isNotBlank() == true) {
+    appendLine(updateDto.notes)
+  }
+}.trimEnd().ifBlank { null }
 
 fun ValidatedAppointment<CreateAppointmentDto>.toNDCreateAppointment(): NDCreateAppointment {
   val createDto = this.dto
