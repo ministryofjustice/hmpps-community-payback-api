@@ -24,6 +24,7 @@ import java.util.UUID
 class DomainEventListener(
   private val jsonMapper: JsonMapper,
   private val sqsListenerErrorHandler: SqsListenerErrorHandler,
+  private val sqsListenerRequestScope: SqsListenerRequestScope,
   private val schedulingDomainEventHandler: SchedulingDomainEventHandler,
   private val config: DomainEventListenerConfig,
 ) {
@@ -62,7 +63,9 @@ class DomainEventListener(
     }
 
     sqsListenerErrorHandler.withErrorHandler(headers) {
-      handleDomainEvent(messageString)
+      sqsListenerRequestScope.withRequestScope {
+        handleDomainEvent(messageString)
+      }
     }
   }
 

@@ -9,7 +9,6 @@ import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
 import org.springframework.stereotype.Service
 import org.springframework.web.context.WebApplicationContext
-import org.springframework.web.context.request.RequestContextHolder
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.NDeliusRollbackRequired
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.SentryService
@@ -34,21 +33,11 @@ class NDeliusRollbackService(
 
   @EventListener
   fun captureEvent(event: CommunityPaybackSpringEvent) {
-    if (!requestScopeActive()) {
-      log.debug("Ignoring event because request scope isn't active")
-      return
-    }
-
     getRequestScopedEvents().add(event)
   }
 
   @SuppressWarnings("TooGenericExceptionCaught")
   fun publishEventsForRollback() {
-    if (!requestScopeActive()) {
-      log.debug("Ignoring rollback becuase request scope isn't active")
-      return
-    }
-
     val events = getRequestScopedEvents().getAll()
 
     if (events.size > 50) {
@@ -68,12 +57,6 @@ class NDeliusRollbackService(
   }
 
   private fun getRequestScopedEvents() = applicationContext.getBean<RequestScopedEvents>()
-
-  /**
-   * Request scope isn't active when consuming SQS messages, leading to exceptions.
-   * This guards against that
-   */
-  private fun requestScopeActive() = RequestContextHolder.getRequestAttributes() != null
 }
 
 @Component
