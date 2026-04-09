@@ -8,11 +8,13 @@ import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.badRequest
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomesDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventTrigger
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentService
@@ -60,13 +62,52 @@ class SupervisorAppointmentsController(
     deliusAppointmentId = deliusAppointmentId,
   )
 
+  @PutMapping(
+    path = ["/{deliusAppointmentId}"],
+    consumes = [MediaType.APPLICATION_JSON_VALUE],
+  )
+  @Operation(
+    description = "Record an appointment's outcome",
+    responses = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Appointment update is (or has already) been recorded",
+      ),
+      ApiResponse(
+        responseCode = "404",
+        description = "Invalid appointment ID provided",
+        content = [
+          Content(
+            mediaType = "application/json",
+            schema = Schema(implementation = ErrorResponse::class),
+          ),
+        ],
+      ),
+      ApiResponse(
+        responseCode = "409",
+        description = "A newer version of the appointment exists in Delius",
+        content = [
+          Content(
+            mediaType = "application/json",
+            schema = Schema(implementation = ErrorResponse::class),
+          ),
+        ],
+      ),
+    ],
+  )
+  fun updateAppointment(
+    @PathVariable projectCode: String,
+    @PathVariable deliusAppointmentId: Long,
+    @RequestBody outcome: UpdateAppointmentDto,
+  ) = updateAppointmentOutcome(projectCode, deliusAppointmentId, outcome.toUpdateAppointmentOutcomeDto())
+
   @PostMapping(
     path = ["/{deliusAppointmentId}/outcome"],
     consumes = [MediaType.APPLICATION_JSON_VALUE],
   )
   @Operation(
-    description = """Record an appointment's outcome. This endpoint is idempotent -  
-      If the most recent recorded outcome matches the values in the request nothing will be done and a 200 will be returned""",
+    deprecated = true,
+    description = """Deprecated, instead use PUT /supervisor/projects/{projectCode}/appointments/{deliusAppointmentId}""",
     responses = [
       ApiResponse(
         responseCode = "200",
@@ -136,13 +177,12 @@ class SupervisorAppointmentsController(
       ),
     ],
   )
-  @SuppressWarnings("UnusedParameter")
-  fun updateAppointmentOutcomes(
+  fun updateAppointments(
     @PathVariable projectCode: String,
-    @RequestBody request: UpdateAppointmentOutcomesDto,
+    @RequestBody request: UpdateAppointmentsDto,
   ) = appointmentService.updateAppointmentOutcomes(
     projectCode = projectCode,
-    request = request,
+    request = request.toUpdateAppointmentOutcomesDto(),
     trigger = AppointmentEventTrigger(
       triggeredAt = OffsetDateTime.now(),
       triggerType = AppointmentEventTriggerType.USER,

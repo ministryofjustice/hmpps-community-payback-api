@@ -19,6 +19,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.PageResponse
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AttendanceDataDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentTaskEntityRepository
@@ -126,6 +127,120 @@ class AdminAppointmentIT : IntegrationTestBase() {
 
       assertThat(response.id).isEqualTo(id)
       assertThat(response.projectName).isEqualTo(projectName)
+    }
+  }
+
+  @Nested
+  @DisplayName("PUT /admin/projects/{projectCode}/appointments/{deliusAppointmentId}")
+  inner class PutAppointmentEndpoint {
+
+    @BeforeEach
+    fun setUp() {
+      appointmentOutcomeEntityRepository.deleteAll()
+    }
+
+    @Test
+    fun `should return unauthorized if no token`() {
+      webTestClient.put()
+        .uri("/admin/projects/proj123/appointments/1234")
+        .bodyValue(UpdateAppointmentDto.valid())
+        .exchange()
+        .expectStatus()
+        .isUnauthorized
+    }
+
+    @Test
+    fun `should return forbidden if no role`() {
+      webTestClient.put()
+        .uri("/admin/projects/proj123/appointments/1234")
+        .bodyValue(UpdateAppointmentDto.valid())
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .isForbidden
+    }
+
+    @Test
+    fun `should return forbidden if wrong role`() {
+      webTestClient.put()
+        .uri("/admin/projects/proj123/appointments/1234")
+        .bodyValue(UpdateAppointmentDto.valid())
+        .headers(setAuthorisation(roles = listOf("ROLE_WRONG")))
+        .exchange()
+        .expectStatus()
+        .isForbidden
+    }
+
+    @Test
+    fun `Should return 404 if an appointment can't be found`() {
+      CommunityPaybackAndDeliusMockServer.setupGetAppointment404Response(
+        projectCode = "proj123",
+        appointmentId = 1234L,
+        username = "theusername",
+      )
+
+      val response = webTestClient.put()
+        .uri("/admin/projects/proj123/appointments/1234")
+        .addAdminUiAuthHeader("theusername")
+        .bodyValue(
+          UpdateAppointmentDto.valid(ctx).copy(
+            deliusId = 1234L,
+            attendanceData = AttendanceDataDto.valid(),
+          ),
+        )
+        .exchange()
+        .expectStatus()
+        .isNotFound()
+        .bodyAsObject<ErrorResponse>()
+
+      assertThat(response.userMessage).isEqualTo("No resource found failure: Appointment not found for ID 'Project proj123, NDelius ID 1234'")
+    }
+
+    @Test
+    fun `Should update upstream, raise domain event and create travel time task`() {
+      appointmentTaskEntityRepository.deleteAll()
+
+      CommunityPaybackAndDeliusMockServer.Aggregates.setupGetDataMocksForUpdateAppointment(
+        existingAppointment = NDAppointment.validNoOutcome(ctx).copy(
+          id = 1234L,
+          project = NDProjectAndLocation.valid().copy(code = "proj123"),
+          date = LocalDate.now(),
+          event = NDEvent.valid().copy(number = EVENT_NUMBER),
+          case = NDCaseSummary.valid().copy(crn = CRN),
+        ),
+        username = "theusername",
+        project = NDProject.valid(ctx).copy(code = "proj123", type = NDProjectType.valid().copy(code = GROUP_PLACEMENT_NATIONAL_PROJECT_CODE)),
+      )
+
+      CommunityPaybackAndDeliusMockServer.setupPutAppointmentResponse(
+        projectCode = "proj123",
+        appointmentId = 1234L,
+      )
+
+      webTestClient.put()
+        .uri("/admin/projects/proj123/appointments/1234")
+        .addAdminUiAuthHeader("theusername")
+        .bodyValue(
+          UpdateAppointmentDto.valid(ctx).copy(
+            deliusId = 1234L,
+            attendanceData = AttendanceDataDto.valid(),
+            contactOutcomeCode = CODE_ATTENDED_COMPLIED,
+            startTime = LocalTime.of(0, 0),
+            endTime = LocalTime.of(1, 0),
+          ),
+        )
+        .exchange()
+        .expectStatus()
+        .isOk()
+
+      CommunityPaybackAndDeliusMockServer.verifyPutAppointmentRequest(
+        projectCode = "proj123",
+        appointmentId = 1234L,
+      )
+
+      domainEventAsserter.assertEventCount("community-payback.appointment.updated", 1)
+
+      assertThat(appointmentTaskEntityRepository.findAll()).hasSize(1)
     }
   }
 
