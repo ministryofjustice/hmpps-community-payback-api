@@ -188,8 +188,18 @@ class AppointmentMappersTest {
   inner class ValidatedUpdateAppointmentDtoToNDUpdateAppointment {
 
     @Test
-    fun success() {
+    fun `success with all fields updated`() {
       val priorDeliusVersion = UUID.randomUUID()
+
+      val existingAppointment = AppointmentDto.valid().copy(
+        date = LocalDate.of(2020, 1, 2),
+        startTime = LocalTime.of(2, 2, 1),
+        endTime = LocalTime.of(11, 11, 10),
+        pickUpData = PickUpDataDto.valid().copy(
+          time = LocalTime.of(1, 0, 0),
+          locationCode = "PICKUP1",
+        ),
+      )
 
       val dto = ValidatedAppointment.validUpdateAppointment().copy(
         dto = UpdateAppointmentOutcomeDto.valid().copy(
@@ -214,14 +224,7 @@ class AppointmentMappersTest {
         contactOutcome = ContactOutcomeEntity.valid().copy(code = "COE1"),
       )
 
-      val result = dto.toNDUpdateAppointment(
-        existingAppointment = AppointmentDto.valid().copy(
-          pickUpData = PickUpDataDto.valid().copy(
-            time = LocalTime.of(1, 0, 0),
-            locationCode = "PICKUP1",
-          ),
-        ),
-      )
+      val result = dto.toNDUpdateAppointment(existingAppointment)
 
       assertThat(result.version).isEqualTo(priorDeliusVersion)
       assertThat(result.date).isEqualTo(LocalDate.of(2018, 12, 9))
@@ -229,7 +232,14 @@ class AppointmentMappersTest {
       assertThat(result.endTime).isEqualTo(LocalTime.of(12, 11, 10))
       assertThat(result.outcome!!.code).isEqualTo("COE1")
       assertThat(result.supervisor.code).isEqualTo("WO3736")
-      assertThat(result.notes).isEqualTo("The notes")
+      assertThat(result.notes).isEqualTo(
+        """
+          |Appointment Date changed from 02/01/2020 to 09/12/2018
+          |Appointment Start Time changed from 02:02:01 to 03:02:01
+          |Appointment End Time changed from 11:11:10 to 12:11:10
+          |The notes
+        """.trimMargin(),
+      )
       assertThat(result.hiVisWorn).isTrue
       assertThat(result.workedIntensively).isFalse
       assertThat(result.penaltyMinutes).isEqualTo(105)
@@ -245,6 +255,13 @@ class AppointmentMappersTest {
     @Test
     fun `success with only mandatory fields`() {
       val priorDeliusVersion = UUID.randomUUID()
+
+      val existingAppointment = AppointmentDto.valid().copy(
+        date = LocalDate.of(2020, 1, 2),
+        startTime = LocalTime.of(3, 2, 1),
+        endTime = LocalTime.of(12, 11, 10),
+        pickUpData = null,
+      )
 
       val dto = ValidatedAppointment.validUpdateAppointment().copy(
         dto = UpdateAppointmentOutcomeDto.valid().copy(
@@ -263,12 +280,7 @@ class AppointmentMappersTest {
         contactOutcome = null,
       )
 
-      val result = dto.toNDUpdateAppointment(
-        existingAppointment = AppointmentDto.valid().copy(
-          date = LocalDate.of(2020, 1, 2),
-          pickUpData = null,
-        ),
-      )
+      val result = dto.toNDUpdateAppointment(existingAppointment)
 
       assertThat(result.version).isEqualTo(priorDeliusVersion)
       assertThat(result.date).isEqualTo(LocalDate.of(2020, 1, 2))
@@ -286,6 +298,115 @@ class AppointmentMappersTest {
       assertThat(result.alertActive).isNull()
       assertThat(result.sensitive).isNull()
       assertThat(result.pickUp).isNull()
+    }
+
+    @Test
+    fun `if date changes add to note before user provided note`() {
+      val existingAppointment = AppointmentDto.valid().copy(
+        date = LocalDate.of(2021, 2, 3),
+        startTime = LocalTime.of(0, 1),
+        endTime = LocalTime.of(12, 45),
+      )
+
+      val dto = ValidatedAppointment.validUpdateAppointment().copy(
+        dto = UpdateAppointmentOutcomeDto.valid().copy(
+          date = LocalDate.of(2020, 1, 2),
+          startTime = LocalTime.of(0, 1),
+          endTime = LocalTime.of(12, 45),
+          notes = "The user provided notes",
+        ),
+      )
+
+      val result = dto.toNDUpdateAppointment(existingAppointment)
+
+      assertThat(result.notes).isEqualTo(
+        """
+          |Appointment Date changed from 03/02/2021 to 02/01/2020
+          |The user provided notes
+        """.trimMargin(),
+      )
+    }
+
+    @Test
+    fun `if start time changes add to note before user provided note`() {
+      val existingAppointment = AppointmentDto.valid().copy(
+        date = LocalDate.of(2021, 2, 3),
+        startTime = LocalTime.of(1, 2),
+        endTime = LocalTime.of(12, 45),
+      )
+
+      val dto = ValidatedAppointment.validUpdateAppointment().copy(
+        dto = UpdateAppointmentOutcomeDto.valid().copy(
+          date = LocalDate.of(2021, 2, 3),
+          startTime = LocalTime.of(0, 1),
+          endTime = LocalTime.of(12, 45),
+          notes = "The user provided notes",
+        ),
+      )
+
+      val result = dto.toNDUpdateAppointment(existingAppointment)
+
+      assertThat(result.notes).isEqualTo(
+        """
+          |Appointment Start Time changed from 01:02 to 00:01
+          |The user provided notes
+        """.trimMargin(),
+      )
+    }
+
+    @Test
+    fun `if end time changes add to note before user provided note`() {
+      val existingAppointment = AppointmentDto.valid().copy(
+        date = LocalDate.of(2021, 2, 3),
+        startTime = LocalTime.of(1, 2),
+        endTime = LocalTime.of(12, 45),
+      )
+
+      val dto = ValidatedAppointment.validUpdateAppointment().copy(
+        dto = UpdateAppointmentOutcomeDto.valid().copy(
+          date = LocalDate.of(2021, 2, 3),
+          startTime = LocalTime.of(1, 2),
+          endTime = LocalTime.of(13, 50),
+          notes = "The user provided notes",
+        ),
+      )
+
+      val result = dto.toNDUpdateAppointment(existingAppointment)
+
+      assertThat(result.notes).isEqualTo(
+        """
+          |Appointment End Time changed from 12:45 to 13:50
+          |The user provided notes
+        """.trimMargin(),
+      )
+    }
+
+    @Test
+    fun `all date time fields change without user provided note`() {
+      val existingAppointment = AppointmentDto.valid().copy(
+        date = LocalDate.of(2020, 1, 2),
+        startTime = LocalTime.of(2, 2, 1),
+        endTime = LocalTime.of(11, 11, 10),
+      )
+
+      val dto = ValidatedAppointment.validUpdateAppointment().copy(
+        dto = UpdateAppointmentOutcomeDto.valid().copy(
+          date = LocalDate.of(2018, 12, 9),
+          startTime = LocalTime.of(3, 2, 1),
+          endTime = LocalTime.of(12, 11, 10),
+          notes = " ",
+        ),
+      )
+
+      val result = dto.toNDUpdateAppointment(existingAppointment)
+
+      assertThat(result.notes).isEqualTo(
+        """
+          |Appointment Date changed from 02/01/2020 to 09/12/2018
+          |Appointment Start Time changed from 02:02:01 to 03:02:01
+          |Appointment End Time changed from 11:11:10 to 12:11:10
+        """.trimMargin(),
+      )
     }
   }
 
