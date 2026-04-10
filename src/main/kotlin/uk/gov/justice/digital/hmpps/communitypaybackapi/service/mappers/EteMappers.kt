@@ -46,7 +46,6 @@ class EteMappers(
       startTime = APPOINTMENT_START_TIME,
       endTime = calculateEndTime(creditTime.minutesToCredit),
       pickUpLocationCode = null,
-      pickUpLocationDescription = null,
       pickUpTime = null,
       contactOutcomeCode = creditTime.contactOutcomeCode,
       attendanceData = createAttendanceData(),

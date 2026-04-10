@@ -54,6 +54,7 @@ class AppointmentValidationService(
       dto = create,
       minutesToCredit = ctx.calculateMinutesToCredit(),
       contactOutcome = ctx.contactOutcome,
+      pickUpLocation = ctx.pickUpLocation,
       project = ctx.project,
     )
   }
@@ -83,6 +84,7 @@ class AppointmentValidationService(
       dto = update,
       minutesToCredit = ctx.calculateMinutesToCredit(),
       contactOutcome = ctx.contactOutcome,
+      pickUpLocation = ctx.pickUpLocation,
       project = ctx.project,
     )
   }
@@ -220,6 +222,7 @@ class AppointmentValidationService(
     val dto: T,
     val minutesToCredit: Duration? = null,
     val contactOutcome: ContactOutcomeEntity? = null,
+    val pickUpLocation: PickUpLocationDto?,
     val project: ProjectDto,
   ) {
     companion object

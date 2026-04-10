@@ -123,6 +123,7 @@ class AppointmentValidationServiceTest {
             dto = baselineCreate,
             minutesToCredit = Duration.ofMinutes(60),
             contactOutcome = baselineOutcome,
+            pickUpLocation = baselinePickUpLocation,
             project = baselineProject,
           ),
         )
@@ -149,6 +150,7 @@ class AppointmentValidationServiceTest {
             dto = create,
             minutesToCredit = Duration.ofMinutes(125),
             contactOutcome = baselineOutcome,
+            pickUpLocation = baselinePickUpLocation,
             project = baselineProject,
           ),
         )
@@ -713,6 +715,7 @@ class AppointmentValidationServiceTest {
             dto = baselineUpdate,
             minutesToCredit = Duration.ofMinutes(60),
             contactOutcome = baselineOutcome,
+            pickUpLocation = baselinePickUpLocation,
             project = baselineProject,
           ),
         )
@@ -743,6 +746,7 @@ class AppointmentValidationServiceTest {
             dto = update,
             minutesToCredit = Duration.ofMinutes(125),
             contactOutcome = baselineOutcome,
+            pickUpLocation = baselinePickUpLocation,
             project = baselineProject,
           ),
         )

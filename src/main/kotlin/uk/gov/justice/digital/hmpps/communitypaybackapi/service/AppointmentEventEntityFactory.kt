@@ -23,6 +23,7 @@ class AppointmentEventEntityFactory(
     val appointment = details.appointmentEntity
     val createAppointmentDto = details.createDto.dto
     val project = details.createDto.project
+    val pickUpLocation = details.createDto.pickUpLocation
     val supervisorCode = createAppointmentDto.supervisorOfficerCode ?: providerService.getTeamUnallocatedSupervisor(project.getTeamId()).code
 
     return AppointmentEventEntity(
@@ -35,8 +36,8 @@ class AppointmentEventEntityFactory(
       date = createAppointmentDto.date,
       startTime = createAppointmentDto.startTime,
       endTime = createAppointmentDto.endTime,
-      pickupLocationCode = createAppointmentDto.pickUpLocationCode,
-      pickupLocationDescription = createAppointmentDto.pickUpLocationDescription,
+      pickupLocationCode = pickUpLocation?.deliusCode,
+      pickupLocationDescription = pickUpLocation?.description,
       pickupTime = createAppointmentDto.pickUpTime,
       contactOutcome = details.createDto.contactOutcome,
       supervisorOfficerCode = supervisorCode,

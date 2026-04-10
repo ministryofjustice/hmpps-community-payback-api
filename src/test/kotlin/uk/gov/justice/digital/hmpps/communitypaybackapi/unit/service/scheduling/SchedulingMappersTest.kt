@@ -328,7 +328,6 @@ class SchedulingMappersTest {
       assertThat(result.startTime).isEqualTo(LocalTime.of(1, 2))
       assertThat(result.endTime).isEqualTo(LocalTime.of(11, 12))
       assertThat(result.pickUpLocationCode).isEqualTo("PICKUP1")
-      assertThat(result.pickUpLocationDescription).isEqualTo("Pickup Description")
       assertThat(result.pickUpTime).isEqualTo(LocalTime.of(13, 14))
       assertThat(result.contactOutcomeCode).isNull()
       assertThat(result.attendanceData).isNull()

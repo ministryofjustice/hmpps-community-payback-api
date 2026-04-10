@@ -9,6 +9,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import org.mockito.kotlin.description
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.HourMinuteDuration
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentBehaviourDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
@@ -18,6 +19,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EnforcementDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.OffenderDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.PickUpDataDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.PickUpLocationDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SupervisorSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
@@ -63,6 +65,8 @@ class AppointmentEventEntityFactoryTest {
     const val PROVIDER_CODE: String = "PRIV1"
     const val TEAM_CODE: String = "TEAM1"
     const val UNALLOCATED_SUPERVISOR_CODE: String = "SUPCODE1"
+    const val PICK_UP_LOCATION_CODE: String = "Pickup 1"
+    const val PICK_UP_LOCATION_DESCRIPTION: String = "Pickup Desc"
     val PROJECT = ProjectDto.valid().copy(
       projectCode = PROJECT_CODE,
       projectName = "The project name",
@@ -88,6 +92,11 @@ class AppointmentEventEntityFactoryTest {
         attended = true,
       )
 
+      val pickUpLocationDto = PickUpLocationDto.valid().copy(
+        deliusCode = PICK_UP_LOCATION_CODE,
+        description = PICK_UP_LOCATION_DESCRIPTION,
+      )
+
       val result = factory.buildCreatedEvent(
         AppointmentCreatedEvent(
           appointmentEntity = AppointmentEntity.valid().copy(deliusId = 101L, id = ID),
@@ -106,7 +115,6 @@ class AppointmentEventEntityFactoryTest {
               startTime = LocalTime.of(10, 1),
               endTime = LocalTime.of(16, 3),
               pickUpLocationCode = "PICKUPLOC1",
-              pickUpLocationDescription = "Pickup Description",
               pickUpTime = LocalTime.of(20, 5),
               contactOutcomeCode = CONTACT_OUTCOME_CODE,
               supervisorOfficerCode = "N45",
@@ -125,6 +133,7 @@ class AppointmentEventEntityFactoryTest {
             minutesToCredit = Duration.ofMinutes(66),
             project = PROJECT,
             contactOutcome = contactOutcomeEntity,
+            pickUpLocation = pickUpLocationDto,
           ),
         ),
       )
@@ -137,8 +146,8 @@ class AppointmentEventEntityFactoryTest {
       assertThat(result.date).isEqualTo(LocalDate.of(2014, 6, 7))
       assertThat(result.startTime).isEqualTo(LocalTime.of(10, 1))
       assertThat(result.endTime).isEqualTo(LocalTime.of(16, 3))
-      assertThat(result.pickupLocationCode).isEqualTo("PICKUPLOC1")
-      assertThat(result.pickupLocationDescription).isEqualTo("Pickup Description")
+      assertThat(result.pickupLocationCode).isEqualTo(PICK_UP_LOCATION_CODE)
+      assertThat(result.pickupLocationDescription).isEqualTo(PICK_UP_LOCATION_DESCRIPTION)
       assertThat(result.pickupTime).isEqualTo(LocalTime.of(20, 5))
       assertThat(result.contactOutcome).isEqualTo(contactOutcomeEntity)
       assertThat(result.supervisorOfficerCode).isEqualTo("N45")
@@ -177,7 +186,6 @@ class AppointmentEventEntityFactoryTest {
               startTime = LocalTime.of(10, 1),
               endTime = LocalTime.of(16, 3),
               pickUpLocationCode = null,
-              pickUpLocationDescription = null,
               pickUpTime = null,
               contactOutcomeCode = null,
               supervisorOfficerCode = null,
@@ -189,6 +197,7 @@ class AppointmentEventEntityFactoryTest {
             minutesToCredit = null,
             project = PROJECT,
             contactOutcome = null,
+            pickUpLocation = null,
           ),
         ),
       )
