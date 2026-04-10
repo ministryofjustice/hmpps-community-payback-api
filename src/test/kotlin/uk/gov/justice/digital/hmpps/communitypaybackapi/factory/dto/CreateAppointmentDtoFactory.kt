@@ -6,10 +6,8 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.random
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.randomLocalDate
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.randomLocalTime
 import java.time.LocalTime
-import java.util.UUID
 
 fun CreateAppointmentDto.Companion.valid() = CreateAppointmentDto(
-  id = UUID.randomUUID(),
   crn = String.random(5),
   deliusEventNumber = Int.random(50),
   allocationId = Long.random(),

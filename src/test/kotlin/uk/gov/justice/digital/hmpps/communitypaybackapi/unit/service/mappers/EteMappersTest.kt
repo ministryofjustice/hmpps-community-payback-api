@@ -103,7 +103,6 @@ class EteMappersTest {
       )
 
       assertThat(result).isNotNull
-      assertThat(result.id).isNotNull()
       assertThat(result.crn).isEqualTo(CRN)
       assertThat(result.deliusEventNumber).isEqualTo(DELIUS_EVENT_NUMBER)
       assertThat(result.allocationId).isNull()

@@ -163,10 +163,8 @@ object SchedulingRenderer {
     }
   }
 
-  // "28f0, Today+6, ALLOC1, 16:00-20:00"
+  // "Today+6, ALLOC1, 16:00-20:00"
   private fun SchedulingRequiredAppointment.render(today: LocalDate) = buildString {
-    append(id.toString().substring(0, 4))
-    append(", ")
     append(dayAsDelta(today, date))
     append(", ")
     append(project.code)

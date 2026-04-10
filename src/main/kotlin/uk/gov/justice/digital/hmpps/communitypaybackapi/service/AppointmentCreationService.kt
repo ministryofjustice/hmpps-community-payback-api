@@ -7,7 +7,9 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCreateAppointme
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCreatedAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentsDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntityRepository
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService.ValidatedAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.SpringEventPublisher
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.ToAppointmentEntity.toAppointmentEntity
@@ -20,6 +22,7 @@ class AppointmentCreationService(
   private val communityPaybackAndDeliusClient: CommunityPaybackAndDeliusClient,
   private val appointmentEntityRepository: AppointmentEntityRepository,
   private val springEventPublisher: SpringEventPublisher,
+  private val appointmentIdGenerator: AppointmentIdGenerator,
 ) {
 
   @Transactional
@@ -45,27 +48,33 @@ class AppointmentCreationService(
     require(createAppointmentsDto.appointments.isNotEmpty()) { "At least one appointment must be provided" }
     require(createAppointmentsDto.appointments.count { it.projectCode != createAppointmentsDto.projectCode } == 0) { "All appointments must be for the same project code" }
 
-    val validatedAppointments = appointments.map { appointmentValidationService.validateCreate(it) }
+    val appointmentsToCreate = appointments.map {
+      AppointmentToCreate(
+        id = appointmentIdGenerator.generateId(),
+        validatedAppointment = appointmentValidationService.validateCreate(it),
+      )
+    }
 
     val creationResponse = communityPaybackAndDeliusClient.createAppointments(
       projectCode = projectCode,
-      appointments = NDCreateAppointments(validatedAppointments.map { it.toNDCreateAppointment() }),
+      appointments = NDCreateAppointments(appointmentsToCreate.map { it.validatedAppointment.toNDCreateAppointment(it.id) }),
     )
 
     val appointmentEntities = appointmentEntityRepository.saveAll(
-      validatedAppointments.map {
-        it.dto.toAppointmentEntity(
-          deliusAppointmentId = creationResponse.findDeliusId(communityPaybackId = it.dto.id),
-          providerCode = it.project.providerCode,
+      appointmentsToCreate.map {
+        it.validatedAppointment.dto.toAppointmentEntity(
+          id = it.id,
+          deliusAppointmentId = creationResponse.findDeliusId(communityPaybackId = it.id),
+          providerCode = it.validatedAppointment.project.providerCode,
         )
       },
     )
 
-    validatedAppointments.forEach { validatedCreateAppointment ->
+    appointmentsToCreate.forEach { appointmentToCreate ->
       springEventPublisher.publishEvent(
         CommunityPaybackSpringEvent.AppointmentCreatedEvent(
-          createDto = validatedCreateAppointment,
-          appointmentEntity = appointmentEntities.first { it.id == validatedCreateAppointment.dto.id },
+          createDto = appointmentToCreate.validatedAppointment,
+          appointmentEntity = appointmentEntities.first { it.id == appointmentToCreate.id },
           trigger = trigger,
         ),
       )
@@ -74,5 +83,19 @@ class AppointmentCreationService(
     return creationResponse.map { it.id }
   }
 
+  data class AppointmentToCreate(
+    val id: UUID,
+    val validatedAppointment: ValidatedAppointment<CreateAppointmentDto>,
+  )
+
   private fun List<NDCreatedAppointment>.findDeliusId(communityPaybackId: UUID) = first { it.reference == communityPaybackId }.id
+}
+
+interface AppointmentIdGenerator {
+  fun generateId(): UUID
+}
+
+@Service
+class DefaultAppointmentIdGenerator : AppointmentIdGenerator {
+  override fun generateId() = AppointmentEntity.generateId()
 }

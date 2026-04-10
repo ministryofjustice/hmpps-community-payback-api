@@ -9,7 +9,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionReso
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EteCourseCompletionEventDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.CommunityCampusPduEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntity
@@ -39,7 +38,6 @@ class EteMappers(
   ): CreateAppointmentDto {
     val creditTime = courseCompletionResolution.creditTimeDetails!!
     return CreateAppointmentDto(
-      id = AppointmentEntity.generateId(),
       crn = courseCompletionResolution.crn!!,
       deliusEventNumber = creditTime.deliusEventNumber,
       allocationId = null,

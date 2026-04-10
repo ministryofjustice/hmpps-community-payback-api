@@ -22,12 +22,14 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.validCreateA
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentCreationService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventTrigger
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentIdGenerator
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService.ValidatedAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AppointmentCreatedEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.SpringEventPublisher
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.ToAppointmentEntity.toAppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toNDCreateAppointment
+import java.util.UUID
 
 @ExtendWith(MockKExtension::class)
 class AppointmentCreationServiceTest {
@@ -42,6 +44,9 @@ class AppointmentCreationServiceTest {
 
   @RelaxedMockK
   lateinit var springEventPublisher: SpringEventPublisher
+
+  @RelaxedMockK
+  lateinit var appointmentIdGenerator: AppointmentIdGenerator
 
   @InjectMockKs
   private lateinit var service: AppointmentCreationService
@@ -91,6 +96,10 @@ class AppointmentCreationServiceTest {
 
     @Test
     fun `create appointments persists data, sends to ND and raises a domain events`() {
+      val appointment1Id = UUID.randomUUID()
+      val appointment2Id = UUID.randomUUID()
+      every { appointmentIdGenerator.generateId() } returnsMany listOf(appointment1Id, appointment2Id)
+
       val createAppointment1Dto = CreateAppointmentDto.valid().copy(crn = CRN, deliusEventNumber = DELIUS_EVENT_NUMBER, projectCode = PROJECT_CODE)
       val createAppointment2Dto = CreateAppointmentDto.valid().copy(crn = CRN, deliusEventNumber = DELIUS_EVENT_NUMBER, projectCode = PROJECT_CODE)
 
@@ -99,18 +108,23 @@ class AppointmentCreationServiceTest {
       val validatedCreateAppointment2 = ValidatedAppointment.validCreateAppointment().copy(dto = createAppointment2Dto, project = PROJECT)
       every { appointmentValidationService.validateCreate(createAppointment2Dto) } returns validatedCreateAppointment2
 
-      val appointmentEntity1 = createAppointment1Dto.toAppointmentEntity(ND_APPT1_ID, PROVIDER_CODE)
-      val appointmentEntity2 = createAppointment2Dto.toAppointmentEntity(ND_APPT2_ID, PROVIDER_CODE)
+      val appointmentEntity1 = createAppointment1Dto.toAppointmentEntity(appointment1Id, ND_APPT1_ID, PROVIDER_CODE)
+      val appointmentEntity2 = createAppointment2Dto.toAppointmentEntity(appointment2Id, ND_APPT2_ID, PROVIDER_CODE)
       every { appointmentEntityRepository.saveAll(listOf(appointmentEntity1, appointmentEntity2)) } returnsArgument 0
 
       every {
         communityPaybackAndDeliusClient.createAppointments(
           projectCode = PROJECT_CODE,
-          NDCreateAppointments(listOf(validatedCreateAppointment1.toNDCreateAppointment(), validatedCreateAppointment2.toNDCreateAppointment())),
+          NDCreateAppointments(
+            listOf(
+              validatedCreateAppointment1.toNDCreateAppointment(appointment1Id),
+              validatedCreateAppointment2.toNDCreateAppointment(appointment2Id),
+            ),
+          ),
         )
       } returns listOf(
-        NDCreatedAppointment(id = ND_APPT1_ID, reference = createAppointment1Dto.id),
-        NDCreatedAppointment(id = ND_APPT2_ID, reference = createAppointment2Dto.id),
+        NDCreatedAppointment(id = ND_APPT1_ID, reference = appointment1Id),
+        NDCreatedAppointment(id = ND_APPT2_ID, reference = appointment2Id),
       )
 
       val result = service.createAppointmentsForProject(
@@ -126,8 +140,8 @@ class AppointmentCreationServiceTest {
       verify {
         appointmentEntityRepository.saveAll(
           listOf(
-            createAppointment1Dto.toAppointmentEntity(ND_APPT1_ID, PROVIDER_CODE),
-            createAppointment2Dto.toAppointmentEntity(ND_APPT2_ID, PROVIDER_CODE),
+            createAppointment1Dto.toAppointmentEntity(appointment1Id, ND_APPT1_ID, PROVIDER_CODE),
+            createAppointment2Dto.toAppointmentEntity(appointment2Id, ND_APPT2_ID, PROVIDER_CODE),
           ),
         )
 
