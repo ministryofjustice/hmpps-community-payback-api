@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.common
 import java.time.DayOfWeek
 import java.time.Duration
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.OffsetDateTime
 import java.time.ZoneId
@@ -35,4 +36,6 @@ fun DayOfWeek.formatForUser(): String = getDisplayName(TextStyle.FULL, Locale.UK
 
 fun Duration.formatForUser(): String = "${toHoursPart()} hours ${toMinutesPart()} minutes"
 
-fun LocalTime.formatForUser(): String = toString()
+fun LocalTime.formatForUser(): String = format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT).withLocale(Locale.UK))
+
+fun OffsetDateTime.toLocalDateTimeEuropeLondon(): LocalDateTime = atZoneSameInstant(ZoneId.of("Europe/London")).toLocalDateTime()

@@ -233,8 +233,8 @@ class AppointmentMappersTest {
       assertThat(result.notes).isEqualTo(
         """
           |Appointment Date changed from 02/01/2020 to 09/12/2018
-          |Appointment Start Time changed from 02:02:01 to 03:02:01
-          |Appointment End Time changed from 11:11:10 to 12:11:10
+          |Appointment Start Time changed from 02:02 to 03:02
+          |Appointment End Time changed from 11:11 to 12:11
           |The notes
         """.trimMargin(),
       )
@@ -401,8 +401,8 @@ class AppointmentMappersTest {
       assertThat(result.notes).isEqualTo(
         """
           |Appointment Date changed from 02/01/2020 to 09/12/2018
-          |Appointment Start Time changed from 02:02:01 to 03:02:01
-          |Appointment End Time changed from 11:11:10 to 12:11:10
+          |Appointment Start Time changed from 02:02 to 03:02
+          |Appointment End Time changed from 11:11 to 12:11
         """.trimMargin(),
       )
     }

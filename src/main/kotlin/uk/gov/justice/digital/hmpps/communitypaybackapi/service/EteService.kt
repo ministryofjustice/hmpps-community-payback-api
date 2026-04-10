@@ -122,7 +122,10 @@ class EteService(
 
     val deliusAppointmentId = if (courseCompletionResolution.creditTimeDetails!!.appointmentIdToUpdate == null) {
       appointmentService.createAppointment(
-        appointment = eteMapper.toCreateAppointmentDto(courseCompletionResolution),
+        appointment = eteMapper.toCreateAppointmentDto(
+          courseCompletionResolution = courseCompletionResolution,
+          courseCompletionEvent = courseCompletionEvent,
+        ),
         trigger = appointmentEventTrigger,
       )
     } else {
@@ -135,6 +138,7 @@ class EteService(
         projectCode = existingAppointment.projectCode,
         update = eteMapper.toUpdateAppointmentDto(
           courseCompletionResolution = courseCompletionResolution,
+          courseCompletionEvent = courseCompletionEvent,
           existingAppointment = existingAppointment,
         ),
         trigger = appointmentEventTrigger,

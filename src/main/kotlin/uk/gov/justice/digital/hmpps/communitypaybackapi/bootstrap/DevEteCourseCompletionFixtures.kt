@@ -34,14 +34,6 @@ class DevEteCourseCompletionFixtures(
     }
   }
 
-  private fun buildFixtures(): List<EteCourseCompletionEventEntity> {
-    val records = mutableListOf<EteCourseCompletionEventEntity>()
-    for (i in 0 until NUMBER_OF_RECORDS) {
-      records.add(buildFixture(i))
-    }
-    return records
-  }
-
   private fun buildFixture(offset: Int): EteCourseCompletionEventEntity {
     val firstName = randFirstName()
     val lastName = randLastName()
@@ -52,7 +44,7 @@ class DevEteCourseCompletionFixtures(
       lastName = lastName,
       dateOfBirth = randDOB(),
       region = "East of England",
-      pdu = communityCampusPduEntityRepository.findAll().first(),
+      pdu = communityCampusPduEntityRepository.findByName("Bedfordshire")!!,
       office = "The Lighthouse",
       email = "$firstName.$lastName@example.test",
       courseName = randomCourseName(),

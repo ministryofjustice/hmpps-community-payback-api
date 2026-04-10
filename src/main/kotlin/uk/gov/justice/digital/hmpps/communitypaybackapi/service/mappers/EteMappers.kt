@@ -1,6 +1,8 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers
 
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.formatForUser
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.toLocalDateTimeEuropeLondon
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentBehaviourDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentWorkQualityDto
@@ -35,6 +37,7 @@ class EteMappers(
 
   fun toCreateAppointmentDto(
     courseCompletionResolution: CourseCompletionResolutionDto,
+    courseCompletionEvent: EteCourseCompletionEventEntity,
   ): CreateAppointmentDto {
     val creditTime = courseCompletionResolution.creditTimeDetails!!
     return CreateAppointmentDto(
@@ -50,7 +53,7 @@ class EteMappers(
       contactOutcomeCode = creditTime.contactOutcomeCode,
       attendanceData = createAttendanceData(),
       supervisorOfficerCode = null,
-      notes = creditTime.notes,
+      notes = buildNote(creditTime.notes, courseCompletionEvent),
       alertActive = creditTime.alertActive,
       sensitive = creditTime.sensitive,
     )
@@ -58,6 +61,7 @@ class EteMappers(
 
   fun toUpdateAppointmentDto(
     courseCompletionResolution: CourseCompletionResolutionDto,
+    courseCompletionEvent: EteCourseCompletionEventEntity,
     existingAppointment: AppointmentDto,
   ): UpdateAppointmentOutcomeDto {
     val creditTime = requireNotNull(courseCompletionResolution.creditTimeDetails) {
@@ -74,11 +78,31 @@ class EteMappers(
       attendanceData = createAttendanceData(),
       enforcementData = null,
       supervisorOfficerCode = existingAppointment.supervisorOfficerCode,
-      notes = creditTime.notes,
+      notes = buildNote(creditTime.notes, courseCompletionEvent),
       alertActive = creditTime.alertActive,
       sensitive = creditTime.sensitive,
     )
   }
+
+  private fun buildNote(
+    userNotes: String?,
+    courseCompletionEvent: EteCourseCompletionEventEntity,
+  ) = buildString {
+    val completionDateLocal = courseCompletionEvent.completionDateTime.toLocalDateTimeEuropeLondon()
+
+    append("'")
+    append(courseCompletionEvent.courseName)
+    append("' was completed on ")
+    append(courseCompletionEvent.provider)
+    append(" at ")
+    append(completionDateLocal.toLocalDate().formatForUser())
+    append(" on ")
+    appendLine(completionDateLocal.toLocalTime().formatForUser())
+
+    if (userNotes?.isNotBlank() == true) {
+      appendLine(userNotes)
+    }
+  }.trimEnd()
 
   private fun calculateEndTime(
     minutesToCredit: Long,
