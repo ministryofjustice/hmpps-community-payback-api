@@ -87,6 +87,10 @@ interface CommunityPaybackAndDeliusClient {
     @PathVariable teamCode: String,
   ): NDSupervisorSummaries
 
+  @Cacheable(CacheKey.Delius.GET_TEAM_LOCATIONS)
+  @GetExchange("/providers/team/{teamCode}/locations")
+  fun getTeamLocations(@PathVariable teamCode: String): NDPickUpLocationsResponse
+
   @GetExchange("/case/{crn}/event/{eventNumber}/appointments/schedule")
   fun getUnpaidWorkRequirement(
     @PathVariable crn: String,
@@ -618,4 +622,8 @@ enum class NDAdjustmentType(val code: String) {
 
 data class NDAdjustmentPostResponse(
   val id: Long,
+)
+
+data class NDPickUpLocationsResponse(
+  val locations: List<NDPickUpLocation> = emptyList(),
 )

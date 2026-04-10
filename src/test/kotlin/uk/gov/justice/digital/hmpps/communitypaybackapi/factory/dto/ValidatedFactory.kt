@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto
 
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.PickUpLocationDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
@@ -12,6 +13,7 @@ fun ValidatedAppointment.Companion.validCreateAppointment() = ValidatedAppointme
   dto = CreateAppointmentDto.valid(),
   minutesToCredit = randomDuration(),
   contactOutcome = ContactOutcomeEntity.valid(),
+  pickUpLocation = PickUpLocationDto.valid(),
   project = ProjectDto.valid(),
 )
 
@@ -19,5 +21,6 @@ fun ValidatedAppointment.Companion.validUpdateAppointment() = ValidatedAppointme
   dto = UpdateAppointmentOutcomeDto.valid(),
   minutesToCredit = randomDuration(),
   contactOutcome = ContactOutcomeEntity.valid(),
+  pickUpLocation = PickUpLocationDto.valid(),
   project = ProjectDto.valid(),
 )

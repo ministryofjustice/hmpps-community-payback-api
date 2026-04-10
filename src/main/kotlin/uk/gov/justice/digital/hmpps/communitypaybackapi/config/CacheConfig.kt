@@ -37,6 +37,7 @@ class CacheConfig {
         const val GET_PROVIDERS = "cpAndDelius.getProviders"
         const val GET_PROVIDER_TEAMS = "cpAndDelius.getProviderTeams"
         const val GET_SUPERVISORS = "cpAndDelius.getSupervisors"
+        const val GET_TEAM_LOCATIONS = "cpAndDelius.getTeamLocations"
         const val GET_TEAM_SUPERVISORS = "cpAndDelius.getTeamSupervisors"
         const val GET_NON_WORKING_DAYS = "cpAndDelius.getNonWorkingDays"
       }
@@ -72,6 +73,7 @@ class CacheConfig {
     caffeineCacheManager.registerCustomCache(CacheKey.Delius.GET_PROVIDERS, builder().expireAfterWrite(Duration.ofMinutes(10)).build())
     caffeineCacheManager.registerCustomCache(CacheKey.Delius.GET_PROVIDER_TEAMS, builder().expireAfterWrite(Duration.ofMinutes(5)).build())
     caffeineCacheManager.registerCustomCache(CacheKey.Delius.GET_SUPERVISORS, builder().expireAfterWrite(Duration.ofMinutes(5)).build())
+    caffeineCacheManager.registerCustomCache(CacheKey.Delius.GET_TEAM_LOCATIONS, builder().expireAfterWrite(Duration.ofMinutes(5)).build())
     caffeineCacheManager.registerCustomCache(CacheKey.Delius.GET_TEAM_SUPERVISORS, builder().expireAfterWrite(Duration.ofMinutes(5)).build())
 
     return caffeineCacheManager

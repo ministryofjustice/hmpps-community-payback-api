@@ -10,6 +10,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.common.validateNotNull
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentCommandDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.PickUpLocationDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeGroupDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsDto
@@ -29,16 +30,20 @@ class AppointmentValidationService(
   private val contactOutcomeEntityRepository: ContactOutcomeEntityRepository,
   private val offenderService: OffenderService,
   private val projectService: ProjectService,
+  private val providerService: ProviderService,
   private val appointmentCalculationService: AppointmentCalculationService,
 ) {
 
   fun validateCreate(
     create: CreateAppointmentDto,
   ): ValidatedAppointment<CreateAppointmentDto> {
+    val project = projectService.getProject(create.projectCode) ?: badRequestReferenceNotFound("Project", create.projectCode)
+
     val ctx = ValidationContext(
       command = create,
-      project = projectService.getProject(create.projectCode) ?: badRequestReferenceNotFound("Project", create.projectCode),
+      project = project,
       contactOutcome = loadContactOutcome(create.contactOutcomeCode),
+      pickUpLocation = loadPickUpLocation(project, create.pickUpLocationCode),
       unpaidWorkDetails = offenderService.getUnpaidWorkDetails(create.crn, create.deliusEventNumber),
       appointmentDate = create.date,
     )
@@ -49,6 +54,7 @@ class AppointmentValidationService(
       dto = create,
       minutesToCredit = ctx.calculateMinutesToCredit(),
       contactOutcome = ctx.contactOutcome,
+      pickUpLocation = ctx.pickUpLocation,
       project = ctx.project,
     )
   }
@@ -57,10 +63,13 @@ class AppointmentValidationService(
     existingAppointment: AppointmentDto,
     update: UpdateAppointmentOutcomeDto,
   ): ValidatedAppointment<UpdateAppointmentOutcomeDto> {
+    val project = projectService.getProject(existingAppointment.projectCode) ?: error("Can't retrieve project ${existingAppointment.projectCode}")
+
     val ctx = ValidationContext(
       command = update,
-      project = projectService.getProject(existingAppointment.projectCode) ?: error("Can't retrieve project ${existingAppointment.projectCode}"),
+      project = project,
       contactOutcome = loadContactOutcome(update.contactOutcomeCode),
+      pickUpLocation = loadPickUpLocation(project, existingAppointment.pickUpData?.pickupLocation?.deliusCode),
       unpaidWorkDetails = offenderService.getUnpaidWorkDetails(existingAppointment.offender.crn, existingAppointment.deliusEventNumber),
       appointmentDate = update.resolveDate(existingAppointment),
       appointmentMinutesAlreadyCredited = existingAppointment.minutesCredited?.let { Duration.ofMinutes(it) } ?: Duration.ZERO,
@@ -75,6 +84,7 @@ class AppointmentValidationService(
       dto = update,
       minutesToCredit = ctx.calculateMinutesToCredit(),
       contactOutcome = ctx.contactOutcome,
+      pickUpLocation = ctx.pickUpLocation,
       project = ctx.project,
     )
   }
@@ -188,10 +198,15 @@ class AppointmentValidationService(
     contactOutcomeEntityRepository.findByCode(it) ?: badRequest("Contact outcome not found for code '$code'")
   }
 
+  private fun loadPickUpLocation(project: ProjectDto, locationCode: String?) = locationCode?.let {
+    providerService.getPickupLocation(project.getTeamId(), locationCode) ?: badRequest("Pick Up Location not found for team '${project.teamCode}' and code '$locationCode'")
+  }
+
   private data class ValidationContext(
     val project: ProjectDto,
     val command: AppointmentCommandDto,
     val contactOutcome: ContactOutcomeEntity?,
+    val pickUpLocation: PickUpLocationDto?,
     val unpaidWorkDetails: UnpaidWorkDetailsDto,
     val appointmentDate: LocalDate,
     val appointmentMinutesAlreadyCredited: Duration = Duration.ZERO,
@@ -207,6 +222,7 @@ class AppointmentValidationService(
     val dto: T,
     val minutesToCredit: Duration? = null,
     val contactOutcome: ContactOutcomeEntity? = null,
+    val pickUpLocation: PickUpLocationDto?,
     val project: ProjectDto,
   ) {
     companion object

@@ -302,6 +302,7 @@ class SchedulingIT : IntegrationTestBase() {
       dayOfWeek = NDSchedulingDayOfWeek.Saturday,
       startTime = LocalTime.of(10, 0),
       endTime = LocalTime.of(14, 0),
+      pickUp = null,
     )
 
     // ALLOC2-PROJ1-FN-SUN-12:00-18:00, Started Today-365
@@ -315,6 +316,7 @@ class SchedulingIT : IntegrationTestBase() {
       dayOfWeek = NDSchedulingDayOfWeek.Sunday,
       startTime = LocalTime.of(12, 0),
       endTime = LocalTime.of(18, 0),
+      pickUp = null,
     )
 
     CommunityPaybackAndDeliusMockServer.setupGetUnpaidWorkRequirementResponse(

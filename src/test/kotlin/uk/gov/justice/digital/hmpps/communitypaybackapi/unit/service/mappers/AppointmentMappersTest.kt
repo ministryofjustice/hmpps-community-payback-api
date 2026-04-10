@@ -51,6 +51,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ProjectTypeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.WorkQuality
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.valid
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.validCreateAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.validFull
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.validUpdateAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
@@ -85,7 +86,7 @@ class AppointmentMappersTest {
     fun success() {
       val appointmentId = UUID.randomUUID()
 
-      val dto = ValidatedAppointment(
+      val dto = ValidatedAppointment.validCreateAppointment().copy(
         dto = CreateAppointmentDto.valid().copy(
           crn = "CRN123",
           deliusEventNumber = 5,
@@ -108,7 +109,6 @@ class AppointmentMappersTest {
         ),
         minutesToCredit = Duration.ofMinutes(35),
         contactOutcome = ContactOutcomeEntity.valid().copy(code = "COE1"),
-        project = ProjectDto.valid(),
       )
 
       val result = dto.toNDCreateAppointment(appointmentId)
@@ -138,7 +138,7 @@ class AppointmentMappersTest {
     fun `success only mandatory fields`() {
       val appointmentId = UUID.randomUUID()
 
-      val dto = ValidatedAppointment(
+      val dto = ValidatedAppointment.validCreateAppointment().copy(
         dto = CreateAppointmentDto.valid().copy(
           crn = "CRN123",
           deliusEventNumber = 5,

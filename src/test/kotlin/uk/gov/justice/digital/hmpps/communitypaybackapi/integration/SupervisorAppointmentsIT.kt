@@ -7,13 +7,13 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointment
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointmentPickUp
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDContactOutcome
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDEnforcementAction
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectAndLocation
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDUpwDetails
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AttendanceDataDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
@@ -266,44 +266,42 @@ class SupervisorAppointmentsIT : IntegrationTestBase() {
     }
 
     @Test
-    fun `succeeds and calls upstream endpoint`() {
-      CommunityPaybackAndDeliusMockServer.setupGetUpwDetailsSummaryResponse(
-        crn = CRN,
-        case = NDCaseSummary.valid(),
-        unpaidWorkDetails = listOf(
-          NDUpwDetails.valid().copy(
-            eventNumber = EVENT_NUMBER,
-            sentenceDate = LocalDate.now().minusYears(1),
-          ),
-        ),
-      )
+    fun `succeeds and calls upstream endpoint to update the appointment`() {
+      val projectAndLocation = NDProjectAndLocation.valid().copy(code = "PC01")
+      val project = NDProject.valid(ctx).copy(code = "PC01")
+      val pickup = NDAppointmentPickUp.valid()
 
-      CommunityPaybackAndDeliusMockServer.setupGetAppointmentResponse(
-        appointment = NDAppointment.validNoOutcome(ctx).copy(
+      CommunityPaybackAndDeliusMockServer.Aggregates.setupGetDataMocksForUpdateAppointment(
+        existingAppointment = NDAppointment.validNoOutcome(ctx).copy(
           id = 1234L,
-          project = NDProjectAndLocation.valid().copy(code = "PC01"),
+          project = projectAndLocation,
           date = LocalDate.now(),
           event = NDEvent.valid().copy(number = EVENT_NUMBER),
           case = NDCaseSummary.valid().copy(crn = CRN),
+          pickUpData = pickup,
         ),
+        project = project,
         username = "theusername",
       )
-      CommunityPaybackAndDeliusMockServer.setupGetProjectResponse(NDProject.valid(ctx).copy(code = "PC01"))
+
       CommunityPaybackAndDeliusMockServer.setupPutAppointmentResponse(
         projectCode = "PC01",
         appointmentId = 1234L,
       )
 
-      CommunityPaybackAndDeliusMockServer.setupGetAppointmentResponse(
-        appointment = NDAppointment.validNoOutcome(ctx).copy(
+      CommunityPaybackAndDeliusMockServer.Aggregates.setupGetDataMocksForUpdateAppointment(
+        existingAppointment = NDAppointment.validNoOutcome(ctx).copy(
           id = 5678L,
-          project = NDProjectAndLocation.valid().copy(code = "PC01"),
+          project = projectAndLocation,
           date = LocalDate.now(),
           event = NDEvent.valid().copy(number = EVENT_NUMBER),
           case = NDCaseSummary.valid().copy(crn = CRN),
+          pickUpData = pickup,
         ),
+        project = project,
         username = "theusername",
       )
+
       CommunityPaybackAndDeliusMockServer.setupPutAppointmentResponse(
         projectCode = "PC01",
         appointmentId = 5678L,

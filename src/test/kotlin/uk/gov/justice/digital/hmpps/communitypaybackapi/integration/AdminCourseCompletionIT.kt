@@ -695,7 +695,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
           case = NDCaseSummary.valid().copy(crn = SchedulingIT.CRN),
         ),
         username = "theusername",
-        project = NDProject.valid(ctx).copy(code = "proj123"),
+        project = NDProject.valid(ctx).copy(code = PROJECT_CODE),
       )
 
       CommunityPaybackAndDeliusMockServer.setupPutAppointmentResponse(

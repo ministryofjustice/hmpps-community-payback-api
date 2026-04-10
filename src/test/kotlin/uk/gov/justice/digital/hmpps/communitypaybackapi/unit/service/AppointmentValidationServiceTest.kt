@@ -16,6 +16,8 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AttendanceDataDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.OffenderDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.PickUpDataDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.PickUpLocationDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectAvailabilityDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeDto
@@ -34,6 +36,8 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService.ValidatedAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.OffenderService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ProjectService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ProviderService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.TeamId
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
@@ -53,6 +57,9 @@ class AppointmentValidationServiceTest {
   @MockK
   lateinit var appointmentCalculationService: AppointmentCalculationService
 
+  @MockK
+  lateinit var providerService: ProviderService
+
   @InjectMockKs
   lateinit var service: AppointmentValidationService
 
@@ -60,7 +67,10 @@ class AppointmentValidationServiceTest {
     const val CRN = "CRN123"
     const val EVENT_NUMBER = 1234321
     const val OUTCOME_CODE = "OUTCOME1"
+    const val PICK_UP_LOCATION_CODE = "PICKUP1"
     const val PROJECT_CODE = "PROJ123"
+    const val PROVIDER_CODE = "PROV1"
+    const val TEAM_CODE = "TEAM1"
   }
 
   @Nested
@@ -74,14 +84,18 @@ class AppointmentValidationServiceTest {
       contactOutcomeCode = OUTCOME_CODE,
       startTime = LocalTime.MIN,
       endTime = LocalTime.MAX,
+      pickUpLocationCode = PICK_UP_LOCATION_CODE,
     )
     val baselineOutcome = ContactOutcomeEntity.valid().copy(code = OUTCOME_CODE)
+    val baselinePickUpLocation = PickUpLocationDto.valid()
     val baselineProject = ProjectDto.valid().copy(
       actualEndDateExclusive = null,
       availability = SchedulingDayOfWeekDto.entries.map { dayOfWeek ->
         ProjectAvailabilityDto.valid().copy(dayOfWeek = dayOfWeek)
       },
       projectType = ProjectTypeDto.valid().copy(group = ProjectTypeGroupDto.INDIVIDUAL),
+      providerCode = PROVIDER_CODE,
+      teamCode = TEAM_CODE,
     )
     val baselineUnpaidWorkDetails = UnpaidWorkDetailsDto.valid().copy(
       eventNumber = EVENT_NUMBER,
@@ -92,6 +106,7 @@ class AppointmentValidationServiceTest {
     fun setupBaselineMockResponses() {
       every { projectService.getProject(PROJECT_CODE) } returns baselineProject
       every { contactOutcomeEntityRepository.findByCode(baselineOutcome.code) } returns baselineOutcome
+      every { providerService.getPickupLocation(TeamId(PROVIDER_CODE, TEAM_CODE), PICK_UP_LOCATION_CODE) } returns baselinePickUpLocation
       every { offenderService.getUnpaidWorkDetails(CRN, EVENT_NUMBER) } returns baselineUnpaidWorkDetails
       every { appointmentCalculationService.minutesToCredit(any(), any(), any(), any()) } returns Duration.ofMinutes(60)
     }
@@ -108,6 +123,7 @@ class AppointmentValidationServiceTest {
             dto = baselineCreate,
             minutesToCredit = Duration.ofMinutes(60),
             contactOutcome = baselineOutcome,
+            pickUpLocation = baselinePickUpLocation,
             project = baselineProject,
           ),
         )
@@ -134,6 +150,7 @@ class AppointmentValidationServiceTest {
             dto = create,
             minutesToCredit = Duration.ofMinutes(125),
             contactOutcome = baselineOutcome,
+            pickUpLocation = baselinePickUpLocation,
             project = baselineProject,
           ),
         )
@@ -624,6 +641,19 @@ class AppointmentValidationServiceTest {
           .hasMessage("Credited minutes of '1 hours 1 minutes' exceeds remaining allowed ETE time of '1 hours 0 minutes'")
       }
     }
+
+    @Nested
+    inner class PickUpLocation {
+      @Test
+      fun `throws BadRequestException when pickup location not found`() {
+        every { providerService.getPickupLocation(TeamId(PROVIDER_CODE, TEAM_CODE), PICK_UP_LOCATION_CODE) } returns null
+
+        assertThatThrownBy {
+          service.validateCreate(baselineCreate)
+        }.isInstanceOf(BadRequestException::class.java)
+          .hasMessage("Pick Up Location not found for team 'TEAM1' and code 'PICKUP1'")
+      }
+    }
   }
 
   @Nested
@@ -634,6 +664,11 @@ class AppointmentValidationServiceTest {
       deliusEventNumber = EVENT_NUMBER,
       offender = OffenderDto.validFull().copy(crn = CRN),
       contactOutcomeCode = null,
+      pickUpData = PickUpDataDto.valid().copy(
+        pickupLocation = PickUpLocationDto.valid().copy(
+          deliusCode = PICK_UP_LOCATION_CODE,
+        ),
+      ),
     )
     val baselineUpdate = UpdateAppointmentOutcomeDto.valid().copy(
       contactOutcomeCode = OUTCOME_CODE,
@@ -642,11 +677,14 @@ class AppointmentValidationServiceTest {
       endTime = LocalTime.MAX,
     )
     val baselineOutcome = ContactOutcomeEntity.valid().copy(code = OUTCOME_CODE)
+    val baselinePickUpLocation = PickUpLocationDto.valid()
     val baselineProject = ProjectDto.valid().copy(
       projectType = ProjectTypeDto.valid().copy(group = ProjectTypeGroupDto.INDIVIDUAL),
       availability = SchedulingDayOfWeekDto.entries.map { dayOfWeek ->
         ProjectAvailabilityDto.valid().copy(dayOfWeek = dayOfWeek)
       },
+      providerCode = PROVIDER_CODE,
+      teamCode = TEAM_CODE,
     )
     val baselineUnpaidWorkDetails = UnpaidWorkDetailsDto.valid().copy(
       eventNumber = EVENT_NUMBER,
@@ -657,6 +695,7 @@ class AppointmentValidationServiceTest {
     fun setupBaselineMockResponses() {
       every { projectService.getProject(PROJECT_CODE) } returns baselineProject
       every { contactOutcomeEntityRepository.findByCode(OUTCOME_CODE) } returns baselineOutcome
+      every { providerService.getPickupLocation(TeamId(PROVIDER_CODE, TEAM_CODE), PICK_UP_LOCATION_CODE) } returns baselinePickUpLocation
       every { offenderService.getUnpaidWorkDetails(CRN, EVENT_NUMBER) } returns baselineUnpaidWorkDetails
       every { appointmentCalculationService.minutesToCredit(any(), any(), any(), any()) } returns Duration.ofMinutes(60)
     }
@@ -676,6 +715,7 @@ class AppointmentValidationServiceTest {
             dto = baselineUpdate,
             minutesToCredit = Duration.ofMinutes(60),
             contactOutcome = baselineOutcome,
+            pickUpLocation = baselinePickUpLocation,
             project = baselineProject,
           ),
         )
@@ -706,6 +746,7 @@ class AppointmentValidationServiceTest {
             dto = update,
             minutesToCredit = Duration.ofMinutes(125),
             contactOutcome = baselineOutcome,
+            pickUpLocation = baselinePickUpLocation,
             project = baselineProject,
           ),
         )
@@ -1407,6 +1448,22 @@ class AppointmentValidationServiceTest {
           ),
           update = baselineUpdate,
         )
+      }
+
+      @Nested
+      inner class PickUpLocation {
+        @Test
+        fun `throws BadRequestException when pickup location not found`() {
+          every { providerService.getPickupLocation(TeamId(PROVIDER_CODE, TEAM_CODE), PICK_UP_LOCATION_CODE) } returns null
+
+          assertThatThrownBy {
+            service.validateUpdate(
+              existingAppointment = baselineExistingAppointment,
+              update = baselineUpdate,
+            )
+          }.isInstanceOf(BadRequestException::class.java)
+            .hasMessage("Pick Up Location not found for team 'TEAM1' and code 'PICKUP1'")
+        }
       }
     }
   }
