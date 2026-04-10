@@ -20,6 +20,8 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointmentSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseDetailsSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDPickUpLocation
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDPickUpLocationsResponse
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectOutcomeStats
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProviderSummaries
@@ -278,6 +280,17 @@ object CommunityPaybackAndDeliusMockServer {
     )
   }
 
+  fun setupGetTeamLocations(teamCode: String, locations: NDPickUpLocationsResponse) {
+    WireMock.stubFor(
+      get("/community-payback-and-delius/providers/team/$teamCode/locations")
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withBody(jsonMapper.writer().writeValueAsString(locations)),
+        ),
+    )
+  }
+
   fun setupGetTeamSupervisorsResponse(forProject: NDProject, supervisorSummaries: NDSupervisorSummaries) = setupGetTeamSupervisorsResponse(
     providerCode = forProject.provider.code,
     teamCode = forProject.team.code,
@@ -480,6 +493,9 @@ object CommunityPaybackAndDeliusMockServer {
         crn = existingAppointment.case.crn,
         eventNumber = existingAppointment.event.number,
         project = project,
+        pickUpLocation = existingAppointment.pickUpData?.location?.code?.let {
+          NDPickUpLocation.valid().copy(code = existingAppointment.pickUpData.location.code)
+        },
       )
     }
 
@@ -487,6 +503,7 @@ object CommunityPaybackAndDeliusMockServer {
       crn: String,
       eventNumber: Int,
       project: NDProject,
+      pickUpLocation: NDPickUpLocation? = null,
     ) {
       setupGetProjectResponse(project)
       setupGetTeamSupervisorsResponse(
@@ -501,6 +518,12 @@ object CommunityPaybackAndDeliusMockServer {
             eventNumber = eventNumber,
             sentenceDate = LocalDate.now().minusYears(10),
           ),
+        ),
+      )
+      setupGetTeamLocations(
+        teamCode = project.team.code,
+        locations = NDPickUpLocationsResponse(
+          locations = listOfNotNull(pickUpLocation),
         ),
       )
     }

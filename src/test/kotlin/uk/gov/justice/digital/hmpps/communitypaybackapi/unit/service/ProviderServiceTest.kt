@@ -10,12 +10,15 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDPickUpLocation
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDPickUpLocationsResponse
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSupervisorSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSupervisorSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ProviderService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.TeamId
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.unit.util.WebClientResponseExceptionFactory
 
 @ExtendWith(MockKExtension::class)
 class ProviderServiceTest {
@@ -29,6 +32,7 @@ class ProviderServiceTest {
   companion object {
     const val PROVIDER_CODE = "PROV1"
     const val TEAM_CODE = "TEAM1"
+    val TEAM_ID = TeamId(PROVIDER_CODE, TEAM_CODE)
   }
 
   @Nested
@@ -62,6 +66,38 @@ class ProviderServiceTest {
       assertThatThrownBy {
         service.getTeamUnallocatedSupervisor(TeamId(PROVIDER_CODE, TEAM_CODE))
       }.hasMessage("Can't find unallocated supervisor for team 'TeamId(providerCode=PROV1, teamCode=TEAM1)'")
+    }
+  }
+
+  @Nested
+  inner class GetPickupLocations {
+
+    @Test
+    fun success() {
+      val location = NDPickUpLocation.valid()
+
+      every {
+        communityPaybackAndDeliusClient.getTeamLocations(TEAM_CODE)
+      } returns NDPickUpLocationsResponse(
+        locations = listOf(location),
+      )
+
+      val result = service.getPickupLocations(TEAM_ID)
+
+      assertThat(result).containsExactly(
+        location.toDto(),
+      )
+    }
+
+    @Test
+    fun `return null if team locations not found`() {
+      every {
+        communityPaybackAndDeliusClient.getTeamLocations(TEAM_CODE)
+      } throws WebClientResponseExceptionFactory.notFound()
+
+      val result = service.getPickupLocations(TEAM_ID)
+
+      assertThat(result).isNull()
     }
   }
 }

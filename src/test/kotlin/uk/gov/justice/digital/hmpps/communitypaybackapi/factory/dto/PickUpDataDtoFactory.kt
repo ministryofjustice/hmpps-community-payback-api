@@ -17,15 +17,6 @@ fun PickUpDataDto.Companion.valid() = PickUpDataDto(
   ),
   locationCode = String.random(5),
   locationDescription = String.random(50),
-  pickupLocation = PickUpLocationDto(
-    deliusCode = String.random(5),
-    description = String.random(50),
-    buildingName = String.random(),
-    buildingNumber = String.random(),
-    streetName = String.random(),
-    townCity = String.random(),
-    county = String.random(),
-    postCode = String.random(),
-  ),
+  pickupLocation = PickUpLocationDto.valid(),
   time = randomLocalTime(),
 )

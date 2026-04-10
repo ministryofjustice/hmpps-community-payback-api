@@ -9,4 +9,6 @@ data class PickUpLocationDto(
   val townCity: String?,
   val county: String?,
   val postCode: String?,
-)
+) {
+  companion object
+}

@@ -6,7 +6,6 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import io.swagger.v3.oas.annotations.media.Schema
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.format.annotation.DateTimeFormat
-import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
@@ -89,7 +88,7 @@ interface CommunityPaybackAndDeliusClient {
   ): NDSupervisorSummaries
 
   @Cacheable(CacheKey.Delius.GET_TEAM_LOCATIONS)
-  @GetMapping("/providers/team/{teamCode}/locations")
+  @GetExchange("/providers/team/{teamCode}/locations")
   fun getTeamLocations(@PathVariable teamCode: String): NDPickUpLocationsResponse
 
   @GetExchange("/case/{crn}/event/{eventNumber}/appointments/schedule")
