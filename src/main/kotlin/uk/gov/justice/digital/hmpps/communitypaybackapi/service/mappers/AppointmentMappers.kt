@@ -262,9 +262,10 @@ fun WorkQuality.Companion.fromDto(dto: AppointmentWorkQualityDto) = WorkQuality.
 fun Behaviour.Companion.fromDto(dto: AppointmentBehaviourDto) = Behaviour.entries.first { it.dtoType == dto }
 
 fun NDAppointmentPickUp.toDto() = PickUpDataDto(
-  location = location?.toDto(),
+  location = location?.toLocationDto(),
   locationCode = location?.code,
   locationDescription = location?.description,
+  pickupLocation = location?.toDto(),
   time = time,
 )
 
