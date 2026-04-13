@@ -27,7 +27,7 @@ class AdjustmentValidationService(
     username: String,
   ): ValidatedCreateAdjustment {
     val reason = adjustmentReasonEntityRepository.findByIdOrNull(createAdjustment.adjustmentReasonId)
-      ?: notFound("Adjustment Reason", createAdjustment.adjustmentReasonId.toString())
+      ?: badRequest("Adjustment Reason not found for ID '${createAdjustment.adjustmentReasonId}'")
 
     val task = appointmentTaskEntityRepository.findByIdOrNull(createAdjustment.taskId) ?: notFound("Task", createAdjustment.taskId)
 
