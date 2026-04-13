@@ -4,7 +4,6 @@ import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.badRequest
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.formatForUser
-import uk.gov.justice.digital.hmpps.communitypaybackapi.common.notFound
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAdjustmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsIdDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentReasonEntity
@@ -29,7 +28,7 @@ class AdjustmentValidationService(
     val reason = adjustmentReasonEntityRepository.findByIdOrNull(createAdjustment.adjustmentReasonId)
       ?: badRequest("Adjustment Reason not found for ID '${createAdjustment.adjustmentReasonId}'")
 
-    val task = appointmentTaskEntityRepository.findByIdOrNull(createAdjustment.taskId) ?: notFound("Task", createAdjustment.taskId)
+    val task = appointmentTaskEntityRepository.findByIdOrNull(createAdjustment.taskId) ?: badRequest("Task not found for ID '${createAdjustment.taskId}'")
 
     offenderService.ensureUnpaidWorkDetailsExist(upwDetailsId, username)
     val requestedMinutes = createAdjustment.minutes
