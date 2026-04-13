@@ -16,9 +16,10 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectAndLocation
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AttendanceDataDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeResultType
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomesDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentsOutcomesResultDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
@@ -115,6 +116,112 @@ class SupervisorAppointmentsIT : IntegrationTestBase() {
 
       assertThat(response.id).isEqualTo(id)
       assertThat(response.projectName).isEqualTo(projectName)
+    }
+  }
+
+  @Nested
+  @DisplayName("PUT /supervisor/projects/{projectCode}/appointments/{deliusAppointmentId}")
+  inner class PutAppointment {
+
+    @BeforeEach
+    fun setUp() {
+      appointmentOutcomeEntityRepository.deleteAll()
+    }
+
+    @Test
+    fun `should return unauthorized if no token`() {
+      webTestClient.put()
+        .uri("/supervisor/projects/PC01/appointments/1234")
+        .bodyValue(UpdateAppointmentDto.valid())
+        .exchange()
+        .expectStatus()
+        .isUnauthorized
+    }
+
+    @Test
+    fun `should return forbidden if no role`() {
+      webTestClient.put()
+        .uri("/supervisor/projects/PC01/appointments/1234")
+        .bodyValue(UpdateAppointmentDto.valid())
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .isForbidden
+    }
+
+    @Test
+    fun `should return forbidden if wrong role`() {
+      webTestClient.put()
+        .uri("/supervisor/projects/PC01/appointments/1234")
+        .bodyValue(UpdateAppointmentDto.valid())
+        .headers(setAuthorisation(roles = listOf("ROLE_WRONG")))
+        .exchange()
+        .expectStatus()
+        .isForbidden
+    }
+
+    @Test
+    fun `Should return 404 if an appointment can't be found`() {
+      CommunityPaybackAndDeliusMockServer.setupPutAppointment404Response(
+        projectCode = "PC01",
+        appointmentId = 1234L,
+      )
+
+      val response = webTestClient.put()
+        .uri("/supervisor/projects/PC01/appointments/1234")
+        .addSupervisorUiAuthHeader()
+        .bodyValue(
+          UpdateAppointmentDto.valid(ctx).copy(
+            deliusId = 1234L,
+            attendanceData = AttendanceDataDto.valid(),
+          ),
+        )
+        .exchange()
+        .expectStatus()
+        .isNotFound()
+        .bodyAsObject<ErrorResponse>()
+
+      assertThat(response.userMessage).isEqualTo("No resource found failure: Appointment not found for ID 'Project PC01, NDelius ID 1234'")
+    }
+
+    @Test
+    fun `Should send update upstream and delete corresponding form data`() {
+      CommunityPaybackAndDeliusMockServer.Aggregates.setupGetDataMocksForUpdateAppointment(
+        existingAppointment = NDAppointment.validNoOutcome(ctx).copy(
+          id = 1234L,
+          project = NDProjectAndLocation.valid().copy(code = "PC01"),
+          date = LocalDate.now(),
+          event = NDEvent.valid().copy(number = EVENT_NUMBER),
+          case = NDCaseSummary.valid().copy(crn = CRN),
+        ),
+        username = "theusername",
+        project = NDProject.valid(ctx).copy(code = "PC01"),
+      )
+
+      CommunityPaybackAndDeliusMockServer.setupPutAppointmentResponse(
+        projectCode = "PC01",
+        appointmentId = 1234L,
+      )
+
+      webTestClient.put()
+        .uri("/supervisor/projects/PC01/appointments/1234")
+        .addSupervisorUiAuthHeader("theusername")
+        .bodyValue(
+          UpdateAppointmentDto.valid(ctx).copy(
+            deliusId = 1234L,
+            attendanceData = AttendanceDataDto.valid(),
+          ),
+        )
+        .exchange()
+        .expectStatus()
+        .isOk()
+
+      CommunityPaybackAndDeliusMockServer.verifyPutAppointmentRequest(
+        projectCode = "PC01",
+        appointmentId = 1234L,
+      )
+
+      domainEventAsserter.assertEventCount("community-payback.appointment.updated", 1)
     }
   }
 
@@ -226,7 +333,7 @@ class SupervisorAppointmentsIT : IntegrationTestBase() {
 
   @Nested
   @DisplayName("POST /supervisor/projects/{projectCode}/appointments/bulk")
-  inner class UpdateAppointmentOutcomes {
+  inner class BulkUpdate {
 
     @BeforeEach
     fun setUp() {
@@ -237,7 +344,7 @@ class SupervisorAppointmentsIT : IntegrationTestBase() {
     fun `should return unauthorized if no token`() {
       webTestClient.post()
         .uri("/supervisor/projects/PC01/appointments/bulk")
-        .bodyValue(UpdateAppointmentOutcomesDto.valid())
+        .bodyValue(UpdateAppointmentsDto.valid())
         .exchange()
         .expectStatus()
         .isUnauthorized
@@ -248,7 +355,7 @@ class SupervisorAppointmentsIT : IntegrationTestBase() {
       webTestClient.post()
         .uri("/supervisor/projects/PC01/appointments/bulk")
         .headers(setAuthorisation())
-        .bodyValue(UpdateAppointmentOutcomesDto.valid())
+        .bodyValue(UpdateAppointmentsDto.valid())
         .exchange()
         .expectStatus()
         .isForbidden
@@ -259,7 +366,7 @@ class SupervisorAppointmentsIT : IntegrationTestBase() {
       webTestClient.post()
         .uri("/supervisor/projects/PC01/appointments/bulk")
         .headers(setAuthorisation(roles = listOf("ROLE_WRONG")))
-        .bodyValue(UpdateAppointmentOutcomesDto.valid())
+        .bodyValue(UpdateAppointmentsDto.valid())
         .exchange()
         .expectStatus()
         .isForbidden
@@ -311,10 +418,10 @@ class SupervisorAppointmentsIT : IntegrationTestBase() {
         .uri("/supervisor/projects/PC01/appointments/bulk")
         .addSupervisorUiAuthHeader("theusername")
         .bodyValue(
-          UpdateAppointmentOutcomesDto(
+          UpdateAppointmentsDto(
             updates = listOf(
-              UpdateAppointmentOutcomeDto.valid(ctx).copy(deliusId = 1234L),
-              UpdateAppointmentOutcomeDto.valid(ctx).copy(deliusId = 5678L),
+              UpdateAppointmentDto.valid(ctx).copy(deliusId = 1234L),
+              UpdateAppointmentDto.valid(ctx).copy(deliusId = 5678L),
             ),
           ),
         )
