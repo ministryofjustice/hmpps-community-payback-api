@@ -24,6 +24,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeGroupDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SchedulingDayOfWeekDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsIdDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.BadRequestException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
@@ -71,6 +72,7 @@ class AppointmentValidationServiceTest {
     const val PROJECT_CODE = "PROJ123"
     const val PROVIDER_CODE = "PROV1"
     const val TEAM_CODE = "TEAM1"
+    val UPW_DETAILS_ID = UnpaidWorkDetailsIdDto(CRN, EVENT_NUMBER)
   }
 
   @Nested
@@ -107,7 +109,7 @@ class AppointmentValidationServiceTest {
       every { projectService.getProject(PROJECT_CODE) } returns baselineProject
       every { contactOutcomeEntityRepository.findByCode(baselineOutcome.code) } returns baselineOutcome
       every { providerService.getPickupLocation(TeamId(PROVIDER_CODE, TEAM_CODE), PICK_UP_LOCATION_CODE) } returns baselinePickUpLocation
-      every { offenderService.getUnpaidWorkDetails(CRN, EVENT_NUMBER) } returns baselineUnpaidWorkDetails
+      every { offenderService.getUnpaidWorkDetails(UPW_DETAILS_ID) } returns baselineUnpaidWorkDetails
       every { appointmentCalculationService.minutesToCredit(any(), any(), any(), any()) } returns Duration.ofMinutes(60)
     }
 
@@ -207,7 +209,7 @@ class AppointmentValidationServiceTest {
 
       @Test
       fun `throws BadRequestException if date is before sentencing date`() {
-        every { offenderService.getUnpaidWorkDetails(CRN, EVENT_NUMBER) } returns UnpaidWorkDetailsDto.valid().copy(
+        every { offenderService.getUnpaidWorkDetails(UPW_DETAILS_ID) } returns UnpaidWorkDetailsDto.valid().copy(
           eventNumber = EVENT_NUMBER,
           sentenceDate = LocalDate.of(2025, 1, 2),
         )
@@ -620,7 +622,7 @@ class AppointmentValidationServiceTest {
       fun `ETE project with sufficient remaining ETE allowance for appointment`() {
         every { appointmentCalculationService.minutesToCredit(any(), any(), any(), any()) } returns Duration.ofMinutes(60)
         every { projectService.getProject(PROJECT_CODE) } returns eteProject
-        every { offenderService.getUnpaidWorkDetails(CRN, EVENT_NUMBER) } returns baselineUnpaidWorkDetails.copy(
+        every { offenderService.getUnpaidWorkDetails(UPW_DETAILS_ID) } returns baselineUnpaidWorkDetails.copy(
           remainingEteMinutes = 60,
         )
 
@@ -631,7 +633,7 @@ class AppointmentValidationServiceTest {
       fun `ETE project with insufficient remaining ETE allowance for appointment, throw exception`() {
         every { appointmentCalculationService.minutesToCredit(any(), any(), any(), any()) } returns Duration.ofMinutes(61)
         every { projectService.getProject(PROJECT_CODE) } returns eteProject
-        every { offenderService.getUnpaidWorkDetails(CRN, EVENT_NUMBER) } returns baselineUnpaidWorkDetails.copy(
+        every { offenderService.getUnpaidWorkDetails(UPW_DETAILS_ID) } returns baselineUnpaidWorkDetails.copy(
           remainingEteMinutes = 60,
         )
 
@@ -696,7 +698,7 @@ class AppointmentValidationServiceTest {
       every { projectService.getProject(PROJECT_CODE) } returns baselineProject
       every { contactOutcomeEntityRepository.findByCode(OUTCOME_CODE) } returns baselineOutcome
       every { providerService.getPickupLocation(TeamId(PROVIDER_CODE, TEAM_CODE), PICK_UP_LOCATION_CODE) } returns baselinePickUpLocation
-      every { offenderService.getUnpaidWorkDetails(CRN, EVENT_NUMBER) } returns baselineUnpaidWorkDetails
+      every { offenderService.getUnpaidWorkDetails(UPW_DETAILS_ID) } returns baselineUnpaidWorkDetails
       every { appointmentCalculationService.minutesToCredit(any(), any(), any(), any()) } returns Duration.ofMinutes(60)
     }
 
@@ -844,7 +846,7 @@ class AppointmentValidationServiceTest {
 
       @Test
       fun `throws BadRequestException if no update to date and existing date is before sentencing date`() {
-        every { offenderService.getUnpaidWorkDetails(CRN, EVENT_NUMBER) } returns UnpaidWorkDetailsDto.valid().copy(
+        every { offenderService.getUnpaidWorkDetails(UPW_DETAILS_ID) } returns UnpaidWorkDetailsDto.valid().copy(
           eventNumber = EVENT_NUMBER,
           sentenceDate = LocalDate.of(2025, 1, 2),
         )
@@ -864,7 +866,7 @@ class AppointmentValidationServiceTest {
 
       @Test
       fun `throws BadRequestException if updated date is before sentencing date`() {
-        every { offenderService.getUnpaidWorkDetails(CRN, EVENT_NUMBER) } returns UnpaidWorkDetailsDto.valid().copy(
+        every { offenderService.getUnpaidWorkDetails(UPW_DETAILS_ID) } returns UnpaidWorkDetailsDto.valid().copy(
           eventNumber = EVENT_NUMBER,
           sentenceDate = LocalDate.of(2025, 1, 2),
         )
@@ -1403,7 +1405,7 @@ class AppointmentValidationServiceTest {
       fun `ETE project with sufficient remaining ETE allowance for appointment`() {
         every { projectService.getProject(PROJECT_CODE) } returns eteProject
         every { appointmentCalculationService.minutesToCredit(any(), any(), any(), any()) } returns Duration.ofMinutes(60)
-        every { offenderService.getUnpaidWorkDetails(CRN, EVENT_NUMBER) } returns baselineUnpaidWorkDetails.copy(
+        every { offenderService.getUnpaidWorkDetails(UPW_DETAILS_ID) } returns baselineUnpaidWorkDetails.copy(
           remainingEteMinutes = 60,
         )
 
@@ -1419,7 +1421,7 @@ class AppointmentValidationServiceTest {
       fun `ETE project with insufficient remaining ETE allowance for appointment, throw exception`() {
         every { projectService.getProject(PROJECT_CODE) } returns eteProject
         every { appointmentCalculationService.minutesToCredit(any(), any(), any(), any()) } returns Duration.ofMinutes(61)
-        every { offenderService.getUnpaidWorkDetails(CRN, EVENT_NUMBER) } returns baselineUnpaidWorkDetails.copy(
+        every { offenderService.getUnpaidWorkDetails(UPW_DETAILS_ID) } returns baselineUnpaidWorkDetails.copy(
           remainingEteMinutes = 60,
         )
 
@@ -1438,7 +1440,7 @@ class AppointmentValidationServiceTest {
       fun `Ensure existing minutes credited aren't 'double counted' when updating minutes credited`() {
         every { projectService.getProject(PROJECT_CODE) } returns eteProject
         every { appointmentCalculationService.minutesToCredit(any(), any(), any(), any()) } returns Duration.ofMinutes(120)
-        every { offenderService.getUnpaidWorkDetails(CRN, EVENT_NUMBER) } returns baselineUnpaidWorkDetails.copy(
+        every { offenderService.getUnpaidWorkDetails(UPW_DETAILS_ID) } returns baselineUnpaidWorkDetails.copy(
           remainingEteMinutes = 20,
         )
 

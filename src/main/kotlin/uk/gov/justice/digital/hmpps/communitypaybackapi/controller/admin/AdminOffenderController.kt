@@ -8,6 +8,7 @@ import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.notFound
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CaseDetailsSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ContextService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.OffenderService
@@ -42,4 +43,5 @@ class AdminOffenderController(private val offenderService: OffenderService, priv
     ],
   )
   fun getOffenderSummary(@PathVariable crn: String): CaseDetailsSummaryDto = offenderService.getOffenderSummaryByCrn(crn, contextService.getUserName())
+    ?: notFound("Offender Summary", crn)
 }

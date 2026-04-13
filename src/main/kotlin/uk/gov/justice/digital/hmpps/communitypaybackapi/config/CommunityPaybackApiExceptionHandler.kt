@@ -45,15 +45,8 @@ class CommunityPaybackApiExceptionHandler(
     NoResourceFoundException::class,
     NotFoundException::class,
   )
-  fun handleNoResourceFoundException(e: Exception): ResponseEntity<ErrorResponse> = ResponseEntity
-    .status(NOT_FOUND)
-    .body(
-      ErrorResponse(
-        status = NOT_FOUND,
-        userMessage = "No resource found failure: ${e.message}",
-        developerMessage = e.message,
-      ),
-    ).also { log.info("No resource found exception: {}", e.message) }
+  fun handleNoResourceFoundException(e: Exception): ResponseEntity<ErrorResponse> = buildNoResourceFoundResponse(e.message)
+    .also { log.info("No resource found exception: {}", e.message) }
 
   @ExceptionHandler(
     ConflictException::class,
@@ -96,3 +89,13 @@ class CommunityPaybackApiExceptionHandler(
     private val log = LoggerFactory.getLogger(this::class.java)
   }
 }
+
+fun buildNoResourceFoundResponse(message: String?) = ResponseEntity
+  .status(NOT_FOUND)
+  .body(
+    ErrorResponse(
+      status = NOT_FOUND,
+      userMessage = "No resource found failure: $message",
+      developerMessage = message,
+    ),
+  )

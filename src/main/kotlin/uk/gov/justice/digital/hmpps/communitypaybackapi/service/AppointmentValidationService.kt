@@ -14,6 +14,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.PickUpLocationDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeGroupDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsIdDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.derivePenaltyMinutesDuration
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
@@ -37,6 +38,7 @@ class AppointmentValidationService(
   fun validateCreate(
     create: CreateAppointmentDto,
   ): ValidatedAppointment<CreateAppointmentDto> {
+    val upwDetailsId = UnpaidWorkDetailsIdDto(create.crn, create.deliusEventNumber)
     val project = projectService.getProject(create.projectCode) ?: badRequestReferenceNotFound("Project", create.projectCode)
 
     val ctx = ValidationContext(
@@ -44,7 +46,7 @@ class AppointmentValidationService(
       project = project,
       contactOutcome = loadContactOutcome(create.contactOutcomeCode),
       pickUpLocation = loadPickUpLocation(project, create.pickUpLocationCode),
-      unpaidWorkDetails = offenderService.getUnpaidWorkDetails(create.crn, create.deliusEventNumber),
+      unpaidWorkDetails = offenderService.getUnpaidWorkDetails(upwDetailsId) ?: badRequest("Cannot find unpaid work details for CRN ${upwDetailsId.crn} and event number ${upwDetailsId.deliusEventNumber}"),
       appointmentDate = create.date,
     )
 
@@ -64,13 +66,14 @@ class AppointmentValidationService(
     update: UpdateAppointmentOutcomeDto,
   ): ValidatedAppointment<UpdateAppointmentOutcomeDto> {
     val project = projectService.getProject(existingAppointment.projectCode) ?: error("Can't retrieve project ${existingAppointment.projectCode}")
+    val upwDetailsId = UnpaidWorkDetailsIdDto(existingAppointment.offender.crn, existingAppointment.deliusEventNumber)
 
     val ctx = ValidationContext(
       command = update,
       project = project,
       contactOutcome = loadContactOutcome(update.contactOutcomeCode),
       pickUpLocation = loadPickUpLocation(project, existingAppointment.pickUpData?.pickupLocation?.deliusCode),
-      unpaidWorkDetails = offenderService.getUnpaidWorkDetails(existingAppointment.offender.crn, existingAppointment.deliusEventNumber),
+      unpaidWorkDetails = offenderService.getUnpaidWorkDetails(upwDetailsId) ?: badRequest("Cannot find unpaid work details for CRN ${upwDetailsId.crn} and event number ${upwDetailsId.deliusEventNumber}"),
       appointmentDate = update.resolveDate(existingAppointment),
       appointmentMinutesAlreadyCredited = existingAppointment.minutesCredited?.let { Duration.ofMinutes(it) } ?: Duration.ZERO,
       existingContactOutcome = loadContactOutcome(existingAppointment.contactOutcomeCode),

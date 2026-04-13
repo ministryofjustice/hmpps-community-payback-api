@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAdjustmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsIdDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.NotFoundException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ContextService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.OffenderService
@@ -51,10 +52,9 @@ class AdminUpwDetailsController(
     ],
   )
   fun getEvent(@PathVariable crn: String, @PathVariable deliusEventNumber: Int) = offenderService.getUnpaidWorkDetails(
-    crn = crn,
-    deliusEventNumber = deliusEventNumber,
+    upwDetailsId = UnpaidWorkDetailsIdDto(crn, deliusEventNumber),
     userName = contextService.getUserName(),
-  )
+  ) ?: throw NotFoundException("Unpaid Work Details", "CRN $crn, Event Number $deliusEventNumber")
 
   @PostMapping(
     path = ["/offenders/{crn}/unpaid-work-details/{deliusEventNumber}/adjustments"],

@@ -10,7 +10,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionReso
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionResolutionTypeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EteCourseCompletionEventDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EteCourseCompletionResolutionStatusDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.NotFoundException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntityRepository
@@ -68,9 +67,9 @@ class EteService(
     return page.map { it.toDto() }
   }
 
-  fun getCourseCompletionEvent(id: UUID) = getEventOrError(id).toDto()
+  fun getCourseCompletionEvent(id: UUID) = eteCourseCompletionEventEntityRepository.findByIdOrNull(id)?.toDto()
 
-  fun getCourseCompletionRecommendation(id: UUID): CourseCompletionRecommendationDto {
+  fun getCourseCompletionRecommendation(id: UUID): CourseCompletionRecommendationDto? {
     val courseCompletionEvent = getEventOrError(id)
 
     val email = courseCompletionEvent.email
@@ -170,6 +169,5 @@ class EteService(
     )
   }
 
-  private fun getEventOrError(id: UUID) = eteCourseCompletionEventEntityRepository.findByIdOrNull(id)
-    ?: throw NotFoundException("Course completion event", id.toString())
+  private fun getEventOrError(id: UUID) = eteCourseCompletionEventEntityRepository.findByIdOrNull(id) ?: error("Can't find course completion event $id")
 }
