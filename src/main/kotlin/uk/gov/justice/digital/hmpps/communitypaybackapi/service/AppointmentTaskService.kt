@@ -9,7 +9,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
-import uk.gov.justice.digital.hmpps.communitypaybackapi.common.notFound
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.badRequest
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentTaskSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventTriggerType
@@ -75,11 +75,13 @@ class AppointmentTaskService(
     }
   }
 
+  fun taskExists(taskId: UUID) = appointmentTaskEntityRepository.existsById(taskId)
+
   @Transactional
   fun completeTask(
     taskId: UUID,
   ) {
-    val task = appointmentTaskEntityRepository.findByIdOrNull(taskId) ?: notFound("Task", taskId)
+    val task = appointmentTaskEntityRepository.findByIdOrNull(taskId) ?: badRequest("Task not found for ID '$taskId'")
     task.taskStatus = AppointmentTaskStatus.COMPLETE
     task.decisionMadeAt = OffsetDateTime.now()
     task.decisionMadeByUsername = contextService.getUserName()

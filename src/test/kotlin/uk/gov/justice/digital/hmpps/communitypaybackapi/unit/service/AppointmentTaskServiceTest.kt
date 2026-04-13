@@ -22,6 +22,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentSummaryDt
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeGroupDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.BadRequestException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentTaskEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentTaskEntityRepository
@@ -249,7 +250,7 @@ class AppointmentTaskServiceTest {
 
       assertThatThrownBy {
         service.completeTask(taskId)
-      }.hasMessage("Task not found for ID '$taskId'")
+      }.isInstanceOf(BadRequestException::class.java).hasMessage("Task not found for ID '$taskId'")
     }
 
     @Test

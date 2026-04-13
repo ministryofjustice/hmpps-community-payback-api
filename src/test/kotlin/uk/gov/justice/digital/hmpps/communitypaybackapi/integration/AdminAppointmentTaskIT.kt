@@ -210,6 +210,16 @@ class AdminAppointmentTaskIT : IntegrationTestBase() {
     }
 
     @Test
+    fun `should 404 if task doesn't exist`() {
+      webTestClient.put()
+        .uri("/admin/appointment-tasks/${UUID.randomUUID()}/complete")
+        .addAdminUiAuthHeader("theusername")
+        .exchange()
+        .expectStatus()
+        .isNotFound
+    }
+
+    @Test
     fun `should mark task as completed`() {
       val task = AppointmentTaskEntity.validPending().copy(
         appointment = AppointmentEntity.valid().persist(ctx),
