@@ -84,7 +84,7 @@ class ProviderServiceTest {
 
       val result = service.getPickupLocations(TEAM_ID)
 
-      assertThat(result).containsExactly(
+      assertThat(result?.locations).containsExactly(
         location.toDto(),
       )
     }

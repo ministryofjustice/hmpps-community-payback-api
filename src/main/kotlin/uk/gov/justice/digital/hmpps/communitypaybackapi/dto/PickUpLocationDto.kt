@@ -1,5 +1,9 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.dto
 
+data class PickUpLocationsDto(
+  val locations: List<PickUpLocationDto>,
+)
+
 data class PickUpLocationDto(
   val deliusCode: String,
   val description: String,

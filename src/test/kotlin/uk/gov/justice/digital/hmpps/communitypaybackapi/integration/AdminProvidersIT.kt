@@ -4,6 +4,8 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDPickUpLocation
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDPickUpLocationsResponse
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectOutcomeStats
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProviderSummaries
@@ -15,6 +17,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSessionSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSupervisorSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSupervisorSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.PageResponse
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.PickUpLocationsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectOutcomeSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProviderSummariesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProviderTeamSummariesDto
@@ -88,7 +91,7 @@ class AdminProvidersIT : IntegrationTestBase() {
   }
 
   @Nested
-  @DisplayName("GET /admin/providers/123/teams")
+  @DisplayName("GET /admin/providers/{providerCode}/teams")
   inner class ProviderTeamsEndpoint {
 
     @Test
@@ -144,6 +147,64 @@ class AdminProvidersIT : IntegrationTestBase() {
       assertThat(providers.providers).hasSize(3)
       assertThat(providers.providers[0].code).isEqualTo("ABC123")
       assertThat(providers.providers[0].name).isEqualTo("Team 1")
+    }
+  }
+
+  @Nested
+  @DisplayName("GET /admin/providers/{providerCode}/teams/{teamCode}/pickUpLocations")
+  inner class TeamPickUpLocationsEndpoint {
+
+    @Test
+    fun `should return unauthorized if no token`() {
+      webTestClient.get()
+        .uri("/admin/providers/123/teams/99/pickUpLocations")
+        .exchange()
+        .expectStatus()
+        .isUnauthorized
+    }
+
+    @Test
+    fun `should return forbidden if no role`() {
+      webTestClient.get()
+        .uri("/admin/providers/123/teams/99/pickUpLocations")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .isForbidden
+    }
+
+    @Test
+    fun `should return OK with team locations`() {
+      CommunityPaybackAndDeliusMockServer.setupGetTeamLocations(
+        teamCode = "99",
+        NDPickUpLocationsResponse(
+          listOf(NDPickUpLocation.valid(), NDPickUpLocation.valid()),
+        ),
+      )
+
+      val teamLocations = webTestClient.get()
+        .uri("/admin/providers/123/teams/99/pickUpLocations")
+        .addAdminUiAuthHeader()
+        .exchange()
+        .expectStatus()
+        .isOk
+        .bodyAsObject<PickUpLocationsDto>()
+
+      assertThat(teamLocations.locations).hasSize(2)
+    }
+
+    @Test
+    fun `should return 404 if no results for team`() {
+      CommunityPaybackAndDeliusMockServer.setGetTeamLocations404Response(
+        teamCode = "99",
+      )
+
+      webTestClient.get()
+        .uri("/admin/providers/123/teams/99/pickUpLocations")
+        .addAdminUiAuthHeader()
+        .exchange()
+        .expectStatus()
+        .isNotFound
     }
   }
 
