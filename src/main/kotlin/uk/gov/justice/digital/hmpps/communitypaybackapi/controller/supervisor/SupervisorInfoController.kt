@@ -8,6 +8,7 @@ import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.notFound
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.SupervisorService
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 
@@ -43,5 +44,5 @@ class SupervisorInfoController(
   )
   fun getSupervisorInfo(
     @RequestParam username: String,
-  ) = supervisorService.getSupervisorInfo(username)
+  ) = supervisorService.getSupervisorInfo(username) ?: notFound("Supervisor", username)
 }
