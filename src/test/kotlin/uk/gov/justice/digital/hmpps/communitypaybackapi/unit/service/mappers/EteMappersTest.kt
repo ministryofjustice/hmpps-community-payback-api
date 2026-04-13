@@ -82,6 +82,12 @@ class EteMappersTest {
       creditTimeDetails = baselineCreditTimeDetailsDto,
     )
 
+    val baselineCourseCompletionEvent = EteCourseCompletionEventEntity.valid().copy(
+      courseName = "The course name",
+      provider = "Provider1",
+      completionDateTime = OffsetDateTime.parse("2021-05-04T12:15:00.000+01:00"),
+    )
+
     @ParameterizedTest
     @CsvSource(
       nullValues = ["null"],
@@ -92,7 +98,7 @@ class EteMappersTest {
       alertActive: Boolean?,
     ) {
       val result = mapper.toCreateAppointmentDto(
-        baselineCourseCompletionResolution.copy(
+        courseCompletionResolution = baselineCourseCompletionResolution.copy(
           creditTimeDetails = baselineCourseCompletionResolution.creditTimeDetails!!.copy(
             minutesToCredit = 60L,
             notes = "the provided notes",
@@ -100,6 +106,7 @@ class EteMappersTest {
             alertActive = alertActive,
           ),
         ),
+        courseCompletionEvent = baselineCourseCompletionEvent,
       )
 
       assertThat(result).isNotNull
@@ -107,7 +114,12 @@ class EteMappersTest {
       assertThat(result.deliusEventNumber).isEqualTo(DELIUS_EVENT_NUMBER)
       assertThat(result.allocationId).isNull()
       assertThat(result.date).isEqualTo(baselineCourseCompletionResolution.creditTimeDetails.date)
-      assertThat(result.notes).isEqualTo("the provided notes")
+      assertThat(result.notes).isEqualTo(
+        """
+        |'The course name' was completed on Provider1 at 04/05/2021 on 12:15
+        |the provided notes
+        """.trimMargin(),
+      )
       assertThat(result.contactOutcomeCode).isEqualTo(CONTACT_OUTCOME_CODE)
       assertThat(result.pickUpLocationCode).isNull()
       assertThat(result.pickUpTime).isNull()
@@ -119,12 +131,13 @@ class EteMappersTest {
     @Test
     fun `should set start time to 9am`() {
       val result = mapper.toCreateAppointmentDto(
-        baselineCourseCompletionResolution.copy(
+        courseCompletionResolution = baselineCourseCompletionResolution.copy(
 
           creditTimeDetails = CourseCompletionCreditTimeDetailsDto.valid().copy(
             minutesToCredit = 60L,
           ),
         ),
+        courseCompletionEvent = baselineCourseCompletionEvent,
       )
 
       assertThat(result.startTime).isEqualTo(LocalTime.of(0, 0))
@@ -136,12 +149,12 @@ class EteMappersTest {
       minutesToCredit: Long,
     ) {
       val result = mapper.toCreateAppointmentDto(
-        baselineCourseCompletionResolution.copy(
-
+        courseCompletionResolution = baselineCourseCompletionResolution.copy(
           creditTimeDetails = CourseCompletionCreditTimeDetailsDto.valid().copy(
             minutesToCredit = minutesToCredit,
           ),
         ),
+        courseCompletionEvent = baselineCourseCompletionEvent,
       )
 
       assertThat(result.endTime).isEqualTo(LocalTime.of(0, 0).plusMinutes(minutesToCredit))
@@ -150,12 +163,12 @@ class EteMappersTest {
     @Test
     fun `should set attendance data with default values`() {
       val result = mapper.toCreateAppointmentDto(
-        baselineCourseCompletionResolution.copy(
-
+        courseCompletionResolution = baselineCourseCompletionResolution.copy(
           creditTimeDetails = CourseCompletionCreditTimeDetailsDto.valid().copy(
             minutesToCredit = 60L,
           ),
         ),
+        courseCompletionEvent = baselineCourseCompletionEvent,
       )
 
       assertThat(result.attendanceData).isNotNull
@@ -170,13 +183,40 @@ class EteMappersTest {
     fun `should error if crediting minutes that would roll into next day`() {
       assertThatThrownBy {
         mapper.toCreateAppointmentDto(
-          baselineCourseCompletionResolution.copy(
+          courseCompletionResolution = baselineCourseCompletionResolution.copy(
             creditTimeDetails = CourseCompletionCreditTimeDetailsDto.valid().copy(
               minutesToCredit = 60L * 24,
             ),
           ),
+          courseCompletionEvent = baselineCourseCompletionEvent,
         )
       }.hasMessage("Cannot credit more than 1439 minutes")
+    }
+
+    @ParameterizedTest
+    @CsvSource(
+      value = [
+        "2020-01-02T12:15:15.125+00:00,'The course name' was completed on Provider1 at 02/01/2020 on 12:15",
+        "2020-01-02T12:15:00.000Z,'The course name' was completed on Provider1 at 02/01/2020 on 12:15",
+        "2021-05-04T12:15:00.000+01:00,'The course name' was completed on Provider1 at 04/05/2021 on 12:15",
+        "2021-05-04T12:15:00.000Z,'The course name' was completed on Provider1 at 04/05/2021 on 13:15",
+      ],
+      quoteCharacter = '"',
+    )
+    fun `ensure note date time is correct according to EuropeLondon timezone`(
+      completionDateTime: OffsetDateTime,
+      expectedNote: String,
+    ) {
+      val result = mapper.toCreateAppointmentDto(
+        courseCompletionResolution = baselineCourseCompletionResolution.copy(
+          creditTimeDetails = baselineCourseCompletionResolution.creditTimeDetails!!.copy(notes = null),
+        ),
+        courseCompletionEvent = baselineCourseCompletionEvent.copy(
+          completionDateTime = completionDateTime,
+        ),
+      )
+
+      assertThat(result.notes).isEqualTo(expectedNote)
     }
   }
 
@@ -196,6 +236,12 @@ class EteMappersTest {
       date = baselineCourseCompletionOutcome.creditTimeDetails!!.date,
     )
 
+    val baselineCourseCompletionEvent = EteCourseCompletionEventEntity.valid().copy(
+      courseName = "The course name",
+      provider = "Provider1",
+      completionDateTime = OffsetDateTime.parse("2021-05-04T12:15:00.000+01:00"),
+    )
+
     @ParameterizedTest
     @CsvSource(
       nullValues = ["null"],
@@ -209,7 +255,6 @@ class EteMappersTest {
 
       val result = mapper.toUpdateAppointmentDto(
         courseCompletionResolution = baselineCourseCompletionOutcome.copy(
-
           creditTimeDetails = baselineCourseCompletionOutcome.creditTimeDetails!!.copy(
             minutesToCredit = 60L,
             notes = "the provided notes",
@@ -218,6 +263,7 @@ class EteMappersTest {
             date = LocalDate.of(2025, 1, 1),
           ),
         ),
+        courseCompletionEvent = baselineCourseCompletionEvent,
         existingAppointment = existingAppointment,
       )
 
@@ -227,7 +273,12 @@ class EteMappersTest {
       assertThat(result.contactOutcomeCode).isEqualTo(CONTACT_OUTCOME_CODE)
       assertThat(result.enforcementData).isNull()
       assertThat(result.supervisorOfficerCode).isEqualTo(existingAppointment.supervisorOfficerCode)
-      assertThat(result.notes).isEqualTo("the provided notes")
+      assertThat(result.notes).isEqualTo(
+        """
+        |'The course name' was completed on Provider1 at 04/05/2021 on 12:15
+        |the provided notes
+        """.trimMargin(),
+      )
       assertThat(result.alertActive).isEqualTo(alertActive)
       assertThat(result.sensitive).isEqualTo(sensitive)
     }
@@ -242,6 +293,7 @@ class EteMappersTest {
             minutesToCredit = 60L,
           ),
         ),
+        courseCompletionEvent = baselineCourseCompletionEvent,
         existingAppointment = existingAppointment,
       )
 
@@ -261,6 +313,7 @@ class EteMappersTest {
             minutesToCredit = minutesToCredit,
           ),
         ),
+        courseCompletionEvent = baselineCourseCompletionEvent,
         existingAppointment = existingAppointment,
       )
 
@@ -270,17 +323,43 @@ class EteMappersTest {
     @Test
     fun `should error if crediting minutes that would roll into next day`() {
       assertThatThrownBy {
-        val existingAppointment = baselineExistingAppointment.copy()
-
         mapper.toUpdateAppointmentDto(
           courseCompletionResolution = baselineCourseCompletionOutcome.copy(
             creditTimeDetails = baselineCourseCompletionOutcome.creditTimeDetails!!.copy(
               minutesToCredit = 60L * 24,
             ),
           ),
-          existingAppointment = existingAppointment,
+          courseCompletionEvent = baselineCourseCompletionEvent,
+          existingAppointment = baselineExistingAppointment,
         )
       }.hasMessage("Cannot credit more than 1439 minutes")
+    }
+
+    @ParameterizedTest
+    @CsvSource(
+      value = [
+        "2020-01-02T12:15:00.000+00:00,'The course name' was completed on Provider1 at 02/01/2020 on 12:15",
+        "2020-01-02T12:15:00.000Z,'The course name' was completed on Provider1 at 02/01/2020 on 12:15",
+        "2021-05-04T12:15:00.000+01:00,'The course name' was completed on Provider1 at 04/05/2021 on 12:15",
+        "2021-05-04T12:15:00.000Z,'The course name' was completed on Provider1 at 04/05/2021 on 13:15",
+      ],
+      quoteCharacter = '"',
+    )
+    fun `ensure note date time is correct according to EuropeLondon timezone`(
+      completionDateTime: OffsetDateTime,
+      expectedNote: String,
+    ) {
+      val result = mapper.toUpdateAppointmentDto(
+        courseCompletionResolution = baselineCourseCompletionOutcome.copy(
+          creditTimeDetails = baselineCourseCompletionOutcome.creditTimeDetails!!.copy(notes = null),
+        ),
+        courseCompletionEvent = baselineCourseCompletionEvent.copy(
+          completionDateTime = completionDateTime,
+        ),
+        existingAppointment = baselineExistingAppointment,
+      )
+
+      assertThat(result.notes).isEqualTo(expectedNote)
     }
   }
 
