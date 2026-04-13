@@ -28,7 +28,7 @@ class OpenApiConfiguration(buildProperties: BuildProperties) {
   }
 
   @Bean
-  fun customOpenAPI() = OpenAPI()
+  fun customOpenAPI(): OpenAPI = OpenAPI()
     .servers(
       listOf(
         Server().url("https://community-payback-api-dev.hmpps.service.justice.gov.uk").description("Development"),

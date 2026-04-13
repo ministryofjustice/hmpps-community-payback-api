@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.integration
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.getBeansOfType
 import org.springframework.context.ApplicationContext
 import org.springframework.core.annotation.AnnotationUtils
 import org.springframework.security.access.prepost.PreAuthorize
@@ -19,7 +20,7 @@ class ResourceSecurityIT : IntegrationTestBase() {
     "GET /swagger-ui.html",
     "GET /v3/api-docs",
     "GET /v3/api-docs/swagger-config",
-    "GET /queue-admin/retry-all-dlqs",
+    "PUT /queue-admin/retry-all-dlqs",
     " /error",
     "GET /mocks/community-payback-and-delius",
     "POST /mocks/community-payback-and-delius",
@@ -36,11 +37,11 @@ class ResourceSecurityIT : IntegrationTestBase() {
         }
       }
       .filterNotNull()
-      .flatMap { path -> listOf("GET", "POST", "PUT", "DELETE").map { method -> "$method $path" } }
+      .flatMap { path -> listOf("GET", "POST", "PUT", "DELETE", "PUT").map { method -> "$method $path" } }
       .toMutableSet()
       .also { it.addAll(unprotectedDefaultMethods) }
 
-    val beans = context.getBeansOfType(RequestMappingHandlerMapping::class.java)
+    val beans = context.getBeansOfType<RequestMappingHandlerMapping>()
 
     val unprotected = beans.values.asSequence()
       .flatMap { mapping -> mapping.handlerMethods.asSequence() }
