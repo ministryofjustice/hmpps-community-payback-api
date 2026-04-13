@@ -12,6 +12,7 @@ import org.junit.jupiter.api.extension.ExtendWith
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.BadRequestException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.ConflictException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.InternalServerErrorException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.NotFoundException
@@ -73,26 +74,6 @@ class AppointmentUpdateServiceTest {
           trigger = TRIGGER,
         )
       }.isSameAs(upstreamException)
-    }
-
-    @Test
-    fun `if appointment not found on call to update, throw not found exception`() {
-      val validatedUpdateAppointment = ValidatedAppointment.validUpdateAppointment().copy(dto = updateRequest)
-      every { appointmentOutcomeValidationService.validateUpdate(any(), any()) } returns validatedUpdateAppointment
-      every { appointmentRetrievalService.getAppointment(PROJECT_CODE, DELIUS_APPOINTMENT_ID) } returns existingAppointment
-      every { appointmentEventService.hasUpdateAlreadyBeenSent(any()) } returns false
-
-      every {
-        communityPaybackAndDeliusClient.updateAppointment(any(), any(), any())
-      } throws WebClientResponseExceptionFactory.notFound()
-
-      assertThatThrownBy {
-        service.updateAppointmentOutcome(
-          projectCode = PROJECT_CODE,
-          update = updateRequest,
-          trigger = TRIGGER,
-        )
-      }.isInstanceOf(NotFoundException::class.java).hasMessage("Appointment not found for ID '$DELIUS_APPOINTMENT_ID'")
     }
 
     @Test

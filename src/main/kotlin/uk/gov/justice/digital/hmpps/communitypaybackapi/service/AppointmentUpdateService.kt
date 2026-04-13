@@ -5,7 +5,6 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
-import uk.gov.justice.digital.hmpps.communitypaybackapi.common.notFound
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.ConflictException
@@ -67,8 +66,6 @@ class AppointmentUpdateService(
         appointmentId = deliusAppointmentId,
         updateAppointment = validatedUpdateDto.toNDUpdateAppointment(existingAppointment),
       )
-    } catch (_: WebClientResponseException.NotFound) {
-      notFound("Appointment", deliusAppointmentId.toString())
     } catch (_: WebClientResponseException.Conflict) {
       throw ConflictException("A newer version of the appointment exists. Stale version is '${validatedUpdateDto.dto.deliusVersionToUpdate}'")
     } catch (badRequest: WebClientResponseException.BadRequest) {
