@@ -291,6 +291,16 @@ object CommunityPaybackAndDeliusMockServer {
     )
   }
 
+  fun setGetTeamLocations404Response(teamCode: String) {
+    WireMock.stubFor(
+      get("/community-payback-and-delius/providers/team/$teamCode/locations")
+        .willReturn(
+          aResponse()
+            .withStatus(404),
+        ),
+    )
+  }
+
   fun setupGetTeamSupervisorsResponse(forProject: NDProject, supervisorSummaries: NDSupervisorSummaries) = setupGetTeamSupervisorsResponse(
     providerCode = forProject.provider.code,
     teamCode = forProject.team.code,
