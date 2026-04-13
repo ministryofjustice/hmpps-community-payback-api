@@ -249,7 +249,7 @@ class AppointmentTaskServiceTest {
 
       assertThatThrownBy {
         service.completeTask(taskId)
-      }.hasMessage("Can't find task with id $taskId")
+      }.hasMessage("Task not found for ID '$taskId'")
     }
 
     @Test

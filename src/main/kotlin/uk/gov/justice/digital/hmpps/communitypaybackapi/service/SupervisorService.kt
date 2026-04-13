@@ -3,7 +3,7 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.service
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.NotFoundException
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.notFound
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
 
 @Service
@@ -14,6 +14,6 @@ class SupervisorService(
   fun getSupervisorInfo(username: String) = try {
     communityPaybackAndDeliusClient.getSupervisor(username).toDto()
   } catch (_: WebClientResponseException.NotFound) {
-    throw NotFoundException("Supervisor", username)
+    notFound("Supervisor", username)
   }
 }

@@ -4,9 +4,9 @@ import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.badRequest
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.formatForUser
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.notFound
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAdjustmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsIdDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.NotFoundException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentReasonEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentReasonEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentTaskEntity
@@ -27,9 +27,9 @@ class AdjustmentValidationService(
     username: String,
   ): ValidatedCreateAdjustment {
     val reason = adjustmentReasonEntityRepository.findByIdOrNull(createAdjustment.adjustmentReasonId)
-      ?: throw NotFoundException("Adjustment Reason", createAdjustment.adjustmentReasonId.toString())
+      ?: notFound("Adjustment Reason", createAdjustment.adjustmentReasonId.toString())
 
-    val task = appointmentTaskEntityRepository.findByIdOrNull(createAdjustment.taskId) ?: throw NotFoundException("Task", createAdjustment.taskId)
+    val task = appointmentTaskEntityRepository.findByIdOrNull(createAdjustment.taskId) ?: notFound("Task", createAdjustment.taskId)
 
     offenderService.ensureUnpaidWorkDetailsExist(upwDetailsId, username)
     val requestedMinutes = createAdjustment.minutes
