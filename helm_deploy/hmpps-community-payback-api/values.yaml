@@ -81,3 +81,8 @@ generic-prometheus-alerts:
 # Override in values-dev.yaml
 # Also update the environment variables to point the application to the mocked services (on port 80)
 deploy_stubs: false
+
+# see https://github.com/ministryofjustice/hmpps-spring-boot-sqs?tab=readme-ov-file#usage
+retryDlqCronjob:
+  enabled: false
+  retryDlqSchedule: "*/20 * * * *"
