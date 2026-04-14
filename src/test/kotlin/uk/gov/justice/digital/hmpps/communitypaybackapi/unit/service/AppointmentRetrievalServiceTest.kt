@@ -18,6 +18,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.PageResponse
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentSummaryDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.DeliusAppointmentIdDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeGroupDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.NotFoundException
@@ -82,7 +83,7 @@ class AppointmentRetrievalServiceTest {
       } throws WebClientResponseExceptionFactory.notFound()
 
       assertThatThrownBy {
-        service.getAppointment(PROJECT_CODE, 101L)
+        service.getAppointment(DeliusAppointmentIdDto(PROJECT_CODE, 101L))
       }.isInstanceOf(NotFoundException::class.java).hasMessage("Appointment not found for ID 'Project PROJ123, NDelius ID 101'")
     }
 
@@ -97,7 +98,7 @@ class AppointmentRetrievalServiceTest {
       val appointmentDto = AppointmentDto.valid()
       every { appointmentMappers.toDto(appointment, projectType) } returns appointmentDto
 
-      val result = service.getAppointment(PROJECT_CODE, 101L)
+      val result = service.getAppointment(DeliusAppointmentIdDto(PROJECT_CODE, 101L))
 
       assertThat(result).isSameAs(appointmentDto)
     }

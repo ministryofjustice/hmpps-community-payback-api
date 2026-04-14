@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.service
 
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.DeliusAppointmentIdDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeResultDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeResultType
@@ -33,7 +34,7 @@ class AppointmentBulkUpdateService(
   private fun UpdateAppointmentOutcomesDto.validate(projectCode: String) = updates.map {
     val deliusId = it.deliusId
 
-    val existingAppointment = appointmentRetrievalService.getAppointment(projectCode, deliusId)
+    val existingAppointment = appointmentRetrievalService.getAppointment(DeliusAppointmentIdDto(projectCode, deliusId))
 
     appointmentUpdateValidationService.validateUpdate(existingAppointment, it)
 

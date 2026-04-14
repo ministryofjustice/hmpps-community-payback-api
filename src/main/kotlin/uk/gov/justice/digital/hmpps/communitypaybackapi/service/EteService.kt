@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionRecommendationDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionResolutionDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionResolutionTypeDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.DeliusAppointmentIdDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EteCourseCompletionEventDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EteCourseCompletionResolutionStatusDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventTriggerType
@@ -129,8 +130,10 @@ class EteService(
       )
     } else {
       val existingAppointment = appointmentService.getAppointment(
-        projectCode = courseCompletionResolution.creditTimeDetails.projectCode,
-        deliusAppointmentId = courseCompletionResolution.creditTimeDetails.appointmentIdToUpdate,
+        DeliusAppointmentIdDto(
+          projectCode = courseCompletionResolution.creditTimeDetails.projectCode,
+          deliusAppointmentId = courseCompletionResolution.creditTimeDetails.appointmentIdToUpdate,
+        ),
       )
 
       appointmentService.updateAppointment(

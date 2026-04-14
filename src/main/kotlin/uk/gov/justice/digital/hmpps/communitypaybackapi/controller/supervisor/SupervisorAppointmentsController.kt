@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.badRequest
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.DeliusAppointmentIdDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentsDto
@@ -58,8 +59,10 @@ class SupervisorAppointmentsController(
     @PathVariable projectCode: String,
     @PathVariable deliusAppointmentId: Long,
   ) = appointmentService.getAppointment(
-    projectCode = projectCode,
-    deliusAppointmentId = deliusAppointmentId,
+    DeliusAppointmentIdDto(
+      projectCode = projectCode,
+      deliusAppointmentId = deliusAppointmentId,
+    ),
   )
 
   @PutMapping(
@@ -144,7 +147,9 @@ class SupervisorAppointmentsController(
       badRequest("ID in URL should match ID in payload")
     }
 
-    val existingAppointment = appointmentService.getAppointment(projectCode, update.deliusId)
+    val existingAppointment = appointmentService.getAppointment(
+      DeliusAppointmentIdDto(projectCode, update.deliusId),
+    )
 
     appointmentService.updateAppointment(
       existingAppointment = existingAppointment,

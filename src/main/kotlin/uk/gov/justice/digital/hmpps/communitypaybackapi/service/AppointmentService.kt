@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentsDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.DeliusAppointmentIdDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeGroupDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomesDto
@@ -29,9 +30,8 @@ class AppointmentService(
   ) = appointmentCreationService.createAppointmentsForProject(appointments, trigger)
 
   fun getAppointment(
-    projectCode: String,
-    deliusAppointmentId: Long,
-  ) = appointmentRetrievalService.getAppointment(projectCode, deliusAppointmentId)
+    id: DeliusAppointmentIdDto,
+  ) = appointmentRetrievalService.getAppointment(id)
 
   fun getAppointments(
     crn: String? = null,
