@@ -630,7 +630,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
     }
 
     @Test
-    fun `if type is CREDIT_TIME, should create appointment when appointmentIdToUpdate is null`() {
+    fun `if type is CREDIT_TIME, should create appointment when appointmentIdToUpdate is null, with sanitized notes`() {
       val eventEntity = eteCourseCompletionEventEntityRepository.save(
         EteCourseCompletionEventEntity.valid(ctx).copy(),
       )
@@ -644,6 +644,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
           appointmentIdToUpdate = null,
           projectCode = PROJECT_CODE,
           minutesToCredit = 90,
+          notes = "A note with some script <script>here()</script>",
         ),
       )
 
@@ -678,10 +679,11 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
 
       val resolutionEntity = eteCourseCompletionEventEntityRepository.findByIdOrNull(eventEntity.id)!!.resolution!!
       assertThat(resolutionEntity.resolution).isEqualTo(EteCourseCompletionResolution.CREDIT_TIME)
+      assertThat(resolutionEntity.notes).isEqualTo("A note with some script ")
     }
 
     @Test
-    fun `if type is CREDIT_TIME, should update appointment when appointmentIdToUpdate is present`() {
+    fun `if type is CREDIT_TIME, should update appointment when appointmentIdToUpdate is present, with sanitized notes`() {
       val appointmentId = 12345L
 
       CommunityPaybackAndDeliusMockServer.Aggregates.setupGetDataMocksForUpdateAppointment(
@@ -715,6 +717,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
           appointmentIdToUpdate = appointmentId,
           projectCode = PROJECT_CODE,
           minutesToCredit = 30,
+          notes = "A note with some script <script>here()</script>",
         ),
       )
 
@@ -739,6 +742,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
 
       val resolutionEntity = eteCourseCompletionEventEntityRepository.findByIdOrNull(eventEntity.id)!!.resolution!!
       assertThat(resolutionEntity.resolution).isEqualTo(EteCourseCompletionResolution.CREDIT_TIME)
+      assertThat(resolutionEntity.notes).isEqualTo("A note with some script ")
     }
 
     @Test

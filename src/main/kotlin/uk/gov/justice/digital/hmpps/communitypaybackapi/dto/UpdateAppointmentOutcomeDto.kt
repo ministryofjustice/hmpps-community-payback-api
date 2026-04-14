@@ -1,6 +1,8 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.dto
 
 import io.swagger.v3.oas.annotations.media.Schema
+import tools.jackson.databind.annotation.JsonDeserialize
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.SanitizingStringDeserializer
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
@@ -22,6 +24,7 @@ data class UpdateAppointmentOutcomeDto(
   @param:Schema(description = "Setting specific enforcement data is not supported", deprecated = true)
   val enforcementData: EnforcementDto?,
   val supervisorOfficerCode: String,
+  @field:JsonDeserialize(using = SanitizingStringDeserializer::class)
   override val notes: String? = null,
   val alertActive: Boolean?,
   @param:Schema(description = "If the corresponding delius contact should be marked as sensitive")

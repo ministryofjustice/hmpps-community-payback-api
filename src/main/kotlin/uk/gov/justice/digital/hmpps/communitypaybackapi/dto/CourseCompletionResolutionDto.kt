@@ -2,6 +2,8 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.dto
 
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.Min
+import tools.jackson.databind.annotation.JsonDeserialize
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.SanitizingStringDeserializer
 import java.time.LocalDate
 
 data class CourseCompletionResolutionDto(
@@ -24,6 +26,7 @@ data class CourseCompletionCreditTimeDetailsDto(
   val minutesToCredit: Long,
   val contactOutcomeCode: String,
   val projectCode: String,
+  @field:JsonDeserialize(using = SanitizingStringDeserializer::class)
   val notes: String?,
   val alertActive: Boolean?,
   val sensitive: Boolean?,
