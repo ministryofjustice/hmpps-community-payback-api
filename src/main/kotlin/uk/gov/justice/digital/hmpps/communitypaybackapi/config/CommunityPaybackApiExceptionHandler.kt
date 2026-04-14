@@ -14,9 +14,9 @@ import org.springframework.web.bind.MissingServletRequestParameterException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.servlet.resource.NoResourceFoundException
+import uk.gov.justice.digital.hmpps.communitypaybackapi.controller.internal.NotFoundException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.BadRequestException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.ConflictException
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.NotFoundException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.SentryService
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 

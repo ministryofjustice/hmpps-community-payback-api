@@ -4,7 +4,7 @@ import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
-import uk.gov.justice.digital.hmpps.communitypaybackapi.common.notFound
+import uk.gov.justice.digital.hmpps.communitypaybackapi.controller.internal.notFound
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.OffenderService
 
 /*
