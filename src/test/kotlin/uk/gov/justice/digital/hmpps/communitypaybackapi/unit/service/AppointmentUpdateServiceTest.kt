@@ -76,26 +76,6 @@ class AppointmentUpdateServiceTest {
     }
 
     @Test
-    fun `if appointment not found on call to update, throw not found exception`() {
-      val validatedUpdateAppointment = ValidatedAppointment.validUpdateAppointment().copy(dto = updateRequest)
-      every { appointmentOutcomeValidationService.validateUpdate(any(), any()) } returns validatedUpdateAppointment
-      every { appointmentRetrievalService.getAppointment(PROJECT_CODE, DELIUS_APPOINTMENT_ID) } returns existingAppointment
-      every { appointmentEventService.hasUpdateAlreadyBeenSent(any()) } returns false
-
-      every {
-        communityPaybackAndDeliusClient.updateAppointment(any(), any(), any())
-      } throws WebClientResponseExceptionFactory.notFound()
-
-      assertThatThrownBy {
-        service.updateAppointmentOutcome(
-          projectCode = PROJECT_CODE,
-          update = updateRequest,
-          trigger = TRIGGER,
-        )
-      }.isInstanceOf(NotFoundException::class.java).hasMessage("Appointment not found for ID '$DELIUS_APPOINTMENT_ID'")
-    }
-
-    @Test
     fun `if there's no existing entries for the delius appointment ids, persist new entry, raise domain event and invoke update endpoint`() {
       val appointmentEntity = existingAppointment.toAppointmentEntity()
       every { appointmentRetrievalService.getAppointment(PROJECT_CODE, DELIUS_APPOINTMENT_ID) } returns existingAppointment

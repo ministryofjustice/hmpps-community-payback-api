@@ -12,6 +12,7 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.data.repository.findByIdOrNull
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAdjustmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsIdDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.BadRequestException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentReasonEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentReasonEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentTaskEntity
@@ -74,7 +75,7 @@ class AdjustmentValidationServiceTest {
           upwDetailsId = UNPAID_WORK_DETAILS,
           username = USERNAME,
         )
-      }.hasMessage("Adjustment Reason not found for ID '74f0f62b-bbd4-49a4-9af8-1ce6cd94e3e1'")
+      }.isInstanceOf(BadRequestException::class.java).hasMessage("Adjustment Reason not found for ID '74f0f62b-bbd4-49a4-9af8-1ce6cd94e3e1'")
     }
 
     @Test
@@ -87,7 +88,7 @@ class AdjustmentValidationServiceTest {
           upwDetailsId = UNPAID_WORK_DETAILS,
           username = USERNAME,
         )
-      }.hasMessage("Task not found for ID '84f0f62b-bbd4-49a4-9af8-1ce6cd94e3e1'")
+      }.isInstanceOf(BadRequestException::class.java).hasMessage("Task not found for ID '84f0f62b-bbd4-49a4-9af8-1ce6cd94e3e1'")
     }
 
     @Test
@@ -107,7 +108,8 @@ class AdjustmentValidationServiceTest {
           upwDetailsId = UNPAID_WORK_DETAILS,
           username = USERNAME,
         )
-      }.hasMessage("Requested adjustment of '0 hours 51 minutes' exceeds the maximum allowed time '0 hours 50 minutes' for adjustment reason 'The reason name'")
+      }.isInstanceOf(BadRequestException::class.java)
+        .hasMessage("Requested adjustment of '0 hours 51 minutes' exceeds the maximum allowed time '0 hours 50 minutes' for adjustment reason 'The reason name'")
     }
 
     @Test
