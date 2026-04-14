@@ -212,7 +212,6 @@ class ReferenceMappersTest {
           code = "ATTC",
           enforceable = false,
           attended = true,
-          availableToSupervisors = false,
           willAlertEnforcementDiary = false,
         ),
       )

@@ -6,10 +6,9 @@ import java.util.UUID
 
 fun ContactOutcomeDto.Companion.valid() = ContactOutcomeDto(
   id = UUID.randomUUID(),
-  name = String.Companion.random(),
+  name = String.random(),
   code = String.random(5),
   enforceable = Boolean.random(),
   attended = Boolean.random(),
-  availableToSupervisors = Boolean.random(),
   willAlertEnforcementDiary = Boolean.random(),
 )
