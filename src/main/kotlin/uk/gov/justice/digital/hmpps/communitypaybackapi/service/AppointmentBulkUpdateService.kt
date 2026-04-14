@@ -1,6 +1,8 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.service
 
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeResultDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeResultType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomesDto
@@ -17,35 +19,37 @@ class AppointmentBulkUpdateService(
   private val sentryService: SentryService,
 ) {
 
-  fun updateAppointmentOutcomes(
+  fun updateAppointments(
     projectCode: String,
     request: UpdateAppointmentOutcomesDto,
     trigger: AppointmentEventTrigger,
   ): UpdateAppointmentsOutcomesResultDto {
-    request.validate(projectCode)
-
-    val outcomes = request.apply(projectCode, trigger)
+    val internalRequests = request.validate(projectCode)
+    val outcomes = internalRequests.apply(trigger)
 
     return UpdateAppointmentsOutcomesResultDto(outcomes)
   }
 
-  private fun UpdateAppointmentOutcomesDto.validate(projectCode: String) = updates.forEach {
-    appointmentUpdateValidationService.validateUpdate(
-      existingAppointment = appointmentRetrievalService.getAppointment(
-        projectCode,
-        it.deliusId,
-      ),
-      update = it,
-    )
+  private fun UpdateAppointmentOutcomesDto.validate(projectCode: String) = updates.map {
+    val deliusId = it.deliusId
+
+    val existingAppointment = appointmentRetrievalService.getAppointment(projectCode, deliusId)
+
+    appointmentUpdateValidationService.validateUpdate(existingAppointment, it)
+
+    AppointmentWithUpdateRequest(deliusId, existingAppointment, it)
   }
 
   @SuppressWarnings("TooGenericExceptionCaught")
-  private fun UpdateAppointmentOutcomesDto.apply(
-    projectCode: String,
+  private fun List<AppointmentWithUpdateRequest>.apply(
     trigger: AppointmentEventTrigger,
-  ) = updates.map { updateAppointmentOutcome ->
+  ) = map { internalUpdateRequest ->
     val outcome = try {
-      appointmentUpdateService.updateAppointmentOutcome(projectCode, updateAppointmentOutcome, trigger)
+      appointmentUpdateService.updateAppointment(
+        existingAppointment = internalUpdateRequest.existingAppointment,
+        update = internalUpdateRequest.update,
+        trigger = trigger,
+      )
       UpdateAppointmentOutcomeResultType.SUCCESS
     } catch (_: NotFoundException) {
       UpdateAppointmentOutcomeResultType.NOT_FOUND
@@ -56,6 +60,12 @@ class AppointmentBulkUpdateService(
       UpdateAppointmentOutcomeResultType.SERVER_ERROR
     }
 
-    UpdateAppointmentOutcomeResultDto(updateAppointmentOutcome.deliusId, outcome)
+    UpdateAppointmentOutcomeResultDto(internalUpdateRequest.deliusId, outcome)
   }
+
+  private data class AppointmentWithUpdateRequest(
+    val deliusId: Long,
+    val existingAppointment: AppointmentDto,
+    val update: UpdateAppointmentOutcomeDto,
+  )
 }

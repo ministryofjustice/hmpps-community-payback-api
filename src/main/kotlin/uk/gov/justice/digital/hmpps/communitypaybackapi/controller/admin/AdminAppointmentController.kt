@@ -156,8 +156,10 @@ class AdminAppointmentController(
       badRequest("ID in URL should match ID in payload")
     }
 
-    appointmentService.updateAppointmentOutcome(
-      projectCode = projectCode,
+    val existingAppointment = appointmentService.getAppointment(projectCode, update.deliusId)
+
+    appointmentService.updateAppointment(
+      existingAppointment = existingAppointment,
       update = update,
       trigger = AppointmentEventTrigger(
         triggeredAt = OffsetDateTime.now(),

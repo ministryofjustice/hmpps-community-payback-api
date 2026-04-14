@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.service
 
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeGroupDto
@@ -54,15 +55,15 @@ class AppointmentService(
     pageable = pageable,
   )
 
-  fun updateAppointmentOutcome(
-    projectCode: String,
+  fun updateAppointment(
+    existingAppointment: AppointmentDto,
     update: UpdateAppointmentOutcomeDto,
     trigger: AppointmentEventTrigger,
-  ) = appointmentUpdateService.updateAppointmentOutcome(projectCode, update, trigger)
+  ) = appointmentUpdateService.updateAppointment(existingAppointment, update, trigger)
 
-  fun updateAppointmentOutcomes(
+  fun updateAppointments(
     projectCode: String,
     request: UpdateAppointmentOutcomesDto,
     trigger: AppointmentEventTrigger,
-  ) = appointmentBulkUpdateService.updateAppointmentOutcomes(projectCode, request, trigger)
+  ) = appointmentBulkUpdateService.updateAppointments(projectCode, request, trigger)
 }

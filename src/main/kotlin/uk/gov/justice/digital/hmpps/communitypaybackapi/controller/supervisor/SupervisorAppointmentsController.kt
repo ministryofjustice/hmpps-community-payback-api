@@ -138,15 +138,17 @@ class SupervisorAppointmentsController(
   fun updateAppointmentOutcome(
     @PathVariable projectCode: String,
     @PathVariable deliusAppointmentId: Long,
-    @RequestBody outcome: UpdateAppointmentOutcomeDto,
+    @RequestBody update: UpdateAppointmentOutcomeDto,
   ) {
-    if (outcome.deliusId != deliusAppointmentId) {
+    if (update.deliusId != deliusAppointmentId) {
       badRequest("ID in URL should match ID in payload")
     }
 
-    appointmentService.updateAppointmentOutcome(
-      update = outcome,
-      projectCode = projectCode,
+    val existingAppointment = appointmentService.getAppointment(projectCode, update.deliusId)
+
+    appointmentService.updateAppointment(
+      existingAppointment = existingAppointment,
+      update = update,
       trigger = AppointmentEventTrigger(
         triggeredAt = OffsetDateTime.now(),
         triggerType = AppointmentEventTriggerType.USER,
@@ -180,7 +182,7 @@ class SupervisorAppointmentsController(
   fun updateAppointments(
     @PathVariable projectCode: String,
     @RequestBody request: UpdateAppointmentsDto,
-  ) = appointmentService.updateAppointmentOutcomes(
+  ) = appointmentService.updateAppointments(
     projectCode = projectCode,
     request = request.toUpdateAppointmentOutcomesDto(),
     trigger = AppointmentEventTrigger(

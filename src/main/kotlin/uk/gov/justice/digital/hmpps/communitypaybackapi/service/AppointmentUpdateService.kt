@@ -27,12 +27,11 @@ class AppointmentUpdateService(
   }
 
   @Transactional
-  fun updateAppointmentOutcome(
-    projectCode: String,
+  fun updateAppointment(
+    existingAppointment: AppointmentDto,
     update: UpdateAppointmentOutcomeDto,
     trigger: AppointmentEventTrigger,
   ) {
-    val existingAppointment = appointmentRetrievalService.getAppointment(projectCode, update.deliusId)
     val appointmentEntity = appointmentRetrievalService.getOrCreateAppointmentEntity(existingAppointment)
 
     val validatedUpdateDto = appointmentUpdateValidationService.validateUpdate(existingAppointment, update)

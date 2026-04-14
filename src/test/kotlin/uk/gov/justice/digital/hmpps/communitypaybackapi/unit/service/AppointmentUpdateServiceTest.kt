@@ -14,7 +14,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.ConflictException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.InternalServerErrorException
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.NotFoundException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.validUpdateAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
@@ -62,29 +61,14 @@ class AppointmentUpdateServiceTest {
     val updateRequest = UpdateAppointmentOutcomeDto.valid().copy(deliusId = DELIUS_APPOINTMENT_ID)
 
     @Test
-    fun `if appointment not found on retrieval, pass through exception`() {
-      val upstreamException = NotFoundException("not found!")
-      every { appointmentRetrievalService.getAppointment(PROJECT_CODE, DELIUS_APPOINTMENT_ID) } throws upstreamException
-
-      assertThatThrownBy {
-        service.updateAppointmentOutcome(
-          projectCode = PROJECT_CODE,
-          update = updateRequest,
-          trigger = TRIGGER,
-        )
-      }.isSameAs(upstreamException)
-    }
-
-    @Test
     fun `if there's no existing entries for the delius appointment ids, persist new entry, raise domain event and invoke update endpoint`() {
       val appointmentEntity = existingAppointment.toAppointmentEntity()
-      every { appointmentRetrievalService.getAppointment(PROJECT_CODE, DELIUS_APPOINTMENT_ID) } returns existingAppointment
       every { appointmentRetrievalService.getOrCreateAppointmentEntity(existingAppointment) } returns appointmentEntity
       val validatedUpdateAppointment = ValidatedAppointment.validUpdateAppointment().copy(dto = updateRequest)
       every { appointmentOutcomeValidationService.validateUpdate(any(), any()) } returns validatedUpdateAppointment
 
-      service.updateAppointmentOutcome(
-        projectCode = PROJECT_CODE,
+      service.updateAppointment(
+        existingAppointment = existingAppointment,
         update = updateRequest,
         trigger = TRIGGER,
       )
@@ -101,13 +85,12 @@ class AppointmentUpdateServiceTest {
 
     @Test
     fun `if there's an existing entry for the delius appointment id and it's logically identical, do not send an update`() {
-      every { appointmentRetrievalService.getAppointment(PROJECT_CODE, DELIUS_APPOINTMENT_ID) } returns existingAppointment
       val validatedUpdateAppointment = ValidatedAppointment.validUpdateAppointment().copy(dto = updateRequest)
       every { appointmentOutcomeValidationService.validateUpdate(any(), any()) } returns validatedUpdateAppointment
       every { appointmentEventService.hasUpdateAlreadyBeenSent(any()) } returns true
 
-      service.updateAppointmentOutcome(
-        projectCode = PROJECT_CODE,
+      service.updateAppointment(
+        existingAppointment = existingAppointment,
         update = updateRequest,
         trigger = TRIGGER,
       )
@@ -120,7 +103,6 @@ class AppointmentUpdateServiceTest {
 
     @Test
     fun `if appointment has newer version on update, throw conflict exception`() {
-      every { appointmentRetrievalService.getAppointment(PROJECT_CODE, DELIUS_APPOINTMENT_ID) } returns existingAppointment
       every { appointmentOutcomeValidationService.validateUpdate(any(), any()) } returns ValidatedAppointment.validUpdateAppointment().copy(dto = updateRequest)
 
       every { appointmentEventService.hasUpdateAlreadyBeenSent(any()) } returns false
@@ -130,8 +112,8 @@ class AppointmentUpdateServiceTest {
       } throws WebClientResponseExceptionFactory.conflict()
 
       assertThatThrownBy {
-        service.updateAppointmentOutcome(
-          projectCode = PROJECT_CODE,
+        service.updateAppointment(
+          existingAppointment = existingAppointment,
           update = updateRequest,
           trigger = TRIGGER,
         )
@@ -140,7 +122,6 @@ class AppointmentUpdateServiceTest {
 
     @Test
     fun `if bad request returned throw internal server error`() {
-      every { appointmentRetrievalService.getAppointment(PROJECT_CODE, DELIUS_APPOINTMENT_ID) } returns existingAppointment
       every { appointmentOutcomeValidationService.validateUpdate(any(), any()) } returns ValidatedAppointment.validUpdateAppointment().copy(dto = updateRequest)
       every { appointmentEventService.hasUpdateAlreadyBeenSent(any()) } returns false
 
@@ -149,8 +130,8 @@ class AppointmentUpdateServiceTest {
       } throws WebClientResponseExceptionFactory.badRequest("didn't look good")
 
       assertThatThrownBy {
-        service.updateAppointmentOutcome(
-          projectCode = PROJECT_CODE,
+        service.updateAppointment(
+          existingAppointment = existingAppointment,
           update = updateRequest,
           trigger = TRIGGER,
         )

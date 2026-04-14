@@ -133,8 +133,8 @@ class EteService(
         deliusAppointmentId = courseCompletionResolution.creditTimeDetails.appointmentIdToUpdate,
       )
 
-      appointmentService.updateAppointmentOutcome(
-        projectCode = existingAppointment.projectCode,
+      appointmentService.updateAppointment(
+        existingAppointment = existingAppointment,
         update = eteMapper.toUpdateAppointmentDto(
           courseCompletionResolution = courseCompletionResolution,
           courseCompletionEvent = courseCompletionEvent,
