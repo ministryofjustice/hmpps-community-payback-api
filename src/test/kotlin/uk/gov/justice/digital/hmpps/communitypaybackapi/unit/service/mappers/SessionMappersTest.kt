@@ -26,7 +26,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.SessionM
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toFullAddress
 import java.time.LocalDate
-import java.time.LocalTime
 
 @ExtendWith(MockKExtension::class)
 class SessionMappersTest {
@@ -76,8 +75,6 @@ class SessionMappersTest {
 
       assertThat(projectAllocationsDto.allocations[0].projectName).isEqualTo("Community Garden")
       assertThat(projectAllocationsDto.allocations[0].date).isEqualTo(LocalDate.of(2025, 9, 1))
-      assertThat(projectAllocationsDto.allocations[0].startTime).isEqualTo(LocalTime.of(0, 0))
-      assertThat(projectAllocationsDto.allocations[0].endTime).isEqualTo(LocalTime.of(0, 0))
       assertThat(projectAllocationsDto.allocations[0].projectCode).isEqualTo("cg")
       assertThat(projectAllocationsDto.allocations[0].numberOfOffendersAllocated).isEqualTo(0)
       assertThat(projectAllocationsDto.allocations[0].numberOfOffendersWithOutcomes).isEqualTo(1)
@@ -85,8 +82,6 @@ class SessionMappersTest {
 
       assertThat(projectAllocationsDto.allocations[1].projectName).isEqualTo("Park Cleanup")
       assertThat(projectAllocationsDto.allocations[1].date).isEqualTo(LocalDate.of(2025, 9, 8))
-      assertThat(projectAllocationsDto.allocations[1].startTime).isEqualTo(LocalTime.of(0, 0))
-      assertThat(projectAllocationsDto.allocations[1].endTime).isEqualTo(LocalTime.of(0, 0))
       assertThat(projectAllocationsDto.allocations[1].projectCode).isEqualTo("pc")
       assertThat(projectAllocationsDto.allocations[1].numberOfOffendersAllocated).isEqualTo(3)
       assertThat(projectAllocationsDto.allocations[1].numberOfOffendersWithOutcomes).isEqualTo(4)
@@ -113,8 +108,6 @@ class SessionMappersTest {
         SessionSummaryDto(
           projectName = "Community Garden",
           date = LocalDate.of(2025, 9, 1),
-          startTime = LocalTime.of(0, 0),
-          endTime = LocalTime.of(0, 0),
           projectCode = "cg",
           numberOfOffendersAllocated = 40,
           numberOfOffendersWithOutcomes = 0,
@@ -150,8 +143,6 @@ class SessionMappersTest {
       assertThat(result.appointmentSummaries).isEqualTo(appointments)
 
       assertThat(result.projectLocation).isEqualTo("")
-      assertThat(result.startTime).isEqualTo(LocalTime.of(0, 0))
-      assertThat(result.endTime).isEqualTo(LocalTime.of(0, 0))
     }
   }
 

@@ -16,7 +16,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentWorkQualityDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AttendanceDataDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EnforcementDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.OffenderDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.PickUpDataDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.PickUpLocationDto
@@ -57,7 +56,6 @@ class AppointmentEventEntityFactoryTest {
 
   companion object {
     const val CONTACT_OUTCOME_CODE: String = "CONTACT-1"
-    val ENFORCEMENT_ACTION_ID: UUID = UUID.randomUUID()
     val TRIGGERED_AT: OffsetDateTime = OffsetDateTime.now()
     const val TRIGGERED_BY: String = "User1"
     val ID: UUID = UUID.randomUUID()
@@ -288,10 +286,6 @@ class AppointmentEventEntityFactoryTest {
                 workQuality = AppointmentWorkQualityDto.SATISFACTORY,
                 behaviour = AppointmentBehaviourDto.UNSATISFACTORY,
               ),
-              enforcementData = EnforcementDto(
-                enforcementActionId = ENFORCEMENT_ACTION_ID,
-                respondBy = LocalDate.of(2026, 8, 10),
-              ),
               alertActive = false,
               sensitive = true,
             ),
@@ -363,7 +357,6 @@ class AppointmentEventEntityFactoryTest {
               supervisorOfficerCode = "N45",
               notes = null,
               attendanceData = null,
-              enforcementData = null,
               alertActive = null,
               sensitive = null,
             ),
