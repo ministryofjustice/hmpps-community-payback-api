@@ -12,6 +12,9 @@ import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.badRequest
+import uk.gov.justice.digital.hmpps.communitypaybackapi.controller.internal.notFound
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.DeliusAppointmentIdDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentsDto
@@ -57,10 +60,10 @@ class SupervisorAppointmentsController(
   fun getAppointment(
     @PathVariable projectCode: String,
     @PathVariable deliusAppointmentId: Long,
-  ) = appointmentService.getAppointment(
-    projectCode = projectCode,
-    deliusAppointmentId = deliusAppointmentId,
-  )
+  ): AppointmentDto {
+    val id = DeliusAppointmentIdDto(projectCode, deliusAppointmentId)
+    return appointmentService.getAppointment(id) ?: notFound("Appointment", id)
+  }
 
   @PutMapping(
     path = ["/{deliusAppointmentId}"],
@@ -138,15 +141,18 @@ class SupervisorAppointmentsController(
   fun updateAppointmentOutcome(
     @PathVariable projectCode: String,
     @PathVariable deliusAppointmentId: Long,
-    @RequestBody outcome: UpdateAppointmentOutcomeDto,
+    @RequestBody update: UpdateAppointmentOutcomeDto,
   ) {
-    if (outcome.deliusId != deliusAppointmentId) {
+    if (update.deliusId != deliusAppointmentId) {
       badRequest("ID in URL should match ID in payload")
     }
 
-    appointmentService.updateAppointmentOutcome(
-      update = outcome,
-      projectCode = projectCode,
+    val id = DeliusAppointmentIdDto(projectCode, deliusAppointmentId)
+    val existingAppointment = appointmentService.getAppointment(id) ?: notFound("Appointment", id)
+
+    appointmentService.updateAppointment(
+      existingAppointment = existingAppointment,
+      update = update,
       trigger = AppointmentEventTrigger(
         triggeredAt = OffsetDateTime.now(),
         triggerType = AppointmentEventTriggerType.USER,
@@ -180,7 +186,7 @@ class SupervisorAppointmentsController(
   fun updateAppointments(
     @PathVariable projectCode: String,
     @RequestBody request: UpdateAppointmentsDto,
-  ) = appointmentService.updateAppointmentOutcomes(
+  ) = appointmentService.updateAppointments(
     projectCode = projectCode,
     request = request.toUpdateAppointmentOutcomesDto(),
     trigger = AppointmentEventTrigger(

@@ -2,8 +2,10 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.service
 
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentsDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.DeliusAppointmentIdDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeGroupDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomesDto
@@ -28,9 +30,8 @@ class AppointmentService(
   ) = appointmentCreationService.createAppointmentsForProject(appointments, trigger)
 
   fun getAppointment(
-    projectCode: String,
-    deliusAppointmentId: Long,
-  ) = appointmentRetrievalService.getAppointment(projectCode, deliusAppointmentId)
+    id: DeliusAppointmentIdDto,
+  ) = appointmentRetrievalService.getAppointment(id)
 
   fun getAppointments(
     crn: String? = null,
@@ -54,15 +55,15 @@ class AppointmentService(
     pageable = pageable,
   )
 
-  fun updateAppointmentOutcome(
-    projectCode: String,
+  fun updateAppointment(
+    existingAppointment: AppointmentDto,
     update: UpdateAppointmentOutcomeDto,
     trigger: AppointmentEventTrigger,
-  ) = appointmentUpdateService.updateAppointmentOutcome(projectCode, update, trigger)
+  ) = appointmentUpdateService.updateAppointment(existingAppointment, update, trigger)
 
-  fun updateAppointmentOutcomes(
+  fun updateAppointments(
     projectCode: String,
     request: UpdateAppointmentOutcomesDto,
     trigger: AppointmentEventTrigger,
-  ) = appointmentBulkUpdateService.updateAppointmentOutcomes(projectCode, request, trigger)
+  ) = appointmentBulkUpdateService.updateAppointments(projectCode, request, trigger)
 }

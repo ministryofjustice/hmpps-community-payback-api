@@ -21,7 +21,10 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.badRequest
+import uk.gov.justice.digital.hmpps.communitypaybackapi.controller.internal.notFound
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentSummaryDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.DeliusAppointmentIdDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeGroupDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
@@ -68,10 +71,13 @@ class AdminAppointmentController(
   fun getAppointment(
     @PathVariable projectCode: String,
     @PathVariable deliusAppointmentId: Long,
-  ) = appointmentService.getAppointment(
-    projectCode = projectCode,
-    deliusAppointmentId = deliusAppointmentId,
-  )
+  ): AppointmentDto {
+    val id = DeliusAppointmentIdDto(
+      projectCode = projectCode,
+      deliusAppointmentId = deliusAppointmentId,
+    )
+    return appointmentService.getAppointment(id) ?: notFound("Appointment", id)
+  }
 
   @PutMapping(
     path = ["/projects/{projectCode}/appointments/{deliusAppointmentId}"],
@@ -156,8 +162,11 @@ class AdminAppointmentController(
       badRequest("ID in URL should match ID in payload")
     }
 
-    appointmentService.updateAppointmentOutcome(
-      projectCode = projectCode,
+    val id = DeliusAppointmentIdDto(projectCode, update.deliusId)
+    val existingAppointment = appointmentService.getAppointment(id) ?: notFound("Appointment", id)
+
+    appointmentService.updateAppointment(
+      existingAppointment = existingAppointment,
       update = update,
       trigger = AppointmentEventTrigger(
         triggeredAt = OffsetDateTime.now(),

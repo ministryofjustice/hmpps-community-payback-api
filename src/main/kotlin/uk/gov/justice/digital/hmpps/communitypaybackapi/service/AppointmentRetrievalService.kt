@@ -6,9 +6,9 @@ import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
-import uk.gov.justice.digital.hmpps.communitypaybackapi.common.notFound
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentSummaryDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.DeliusAppointmentIdDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeGroupDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntityRepository
@@ -26,13 +26,10 @@ class AppointmentRetrievalService(
   private val appointmentEntityRepository: AppointmentEntityRepository,
 ) {
 
-  fun getAppointment(
-    projectCode: String,
-    deliusAppointmentId: Long,
-  ): AppointmentDto = try {
+  fun getAppointment(id: DeliusAppointmentIdDto): AppointmentDto? = try {
     communityPaybackAndDeliusClient.getAppointment(
-      projectCode = projectCode,
-      appointmentId = deliusAppointmentId,
+      projectCode = id.projectCode,
+      appointmentId = id.deliusAppointmentId,
       username = contextService.getUserName(),
     ).let { appointment ->
       val projectTypeCode = appointment.projectType.code
@@ -41,7 +38,7 @@ class AppointmentRetrievalService(
       appointmentMappers.toDto(appointment, projectType)
     }
   } catch (_: WebClientResponseException.NotFound) {
-    notFound("Appointment", "Project $projectCode, NDelius ID $deliusAppointmentId")
+    null
   }
 
   fun getAppointments(
