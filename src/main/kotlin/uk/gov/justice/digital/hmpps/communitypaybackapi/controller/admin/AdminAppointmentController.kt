@@ -21,6 +21,8 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.badRequest
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.notFound
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.DeliusAppointmentIdDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeGroupDto
@@ -69,12 +71,13 @@ class AdminAppointmentController(
   fun getAppointment(
     @PathVariable projectCode: String,
     @PathVariable deliusAppointmentId: Long,
-  ) = appointmentService.getAppointment(
-    DeliusAppointmentIdDto(
+  ): AppointmentDto {
+    val id = DeliusAppointmentIdDto(
       projectCode = projectCode,
       deliusAppointmentId = deliusAppointmentId,
-    ),
-  )
+    )
+    return appointmentService.getAppointment(id) ?: notFound("Appointment", id)
+  }
 
   @PutMapping(
     path = ["/projects/{projectCode}/appointments/{deliusAppointmentId}"],
@@ -159,9 +162,8 @@ class AdminAppointmentController(
       badRequest("ID in URL should match ID in payload")
     }
 
-    val existingAppointment = appointmentService.getAppointment(
-      DeliusAppointmentIdDto(projectCode, update.deliusId),
-    )
+    val id = DeliusAppointmentIdDto(projectCode, update.deliusId)
+    val existingAppointment = appointmentService.getAppointment(id) ?: notFound("Appointment", id)
 
     appointmentService.updateAppointment(
       existingAppointment = existingAppointment,

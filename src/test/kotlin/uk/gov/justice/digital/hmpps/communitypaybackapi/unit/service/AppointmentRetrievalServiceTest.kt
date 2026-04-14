@@ -5,7 +5,6 @@ import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.junit5.MockKExtension
 import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -21,7 +20,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentSummaryDt
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.DeliusAppointmentIdDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeGroupDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.NotFoundException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ProjectTypeEntity
@@ -73,7 +71,7 @@ class AppointmentRetrievalServiceTest {
   inner class GetAppointment {
 
     @Test
-    fun `if appointment not found, throw not found exception`() {
+    fun `if appointment not found return null`() {
       every {
         communityPaybackAndDeliusClient.getAppointment(
           projectCode = PROJECT_CODE,
@@ -82,9 +80,9 @@ class AppointmentRetrievalServiceTest {
         )
       } throws WebClientResponseExceptionFactory.notFound()
 
-      assertThatThrownBy {
-        service.getAppointment(DeliusAppointmentIdDto(PROJECT_CODE, 101L))
-      }.isInstanceOf(NotFoundException::class.java).hasMessage("Appointment not found for ID 'Project PROJ123, NDelius ID 101'")
+      val result = service.getAppointment(DeliusAppointmentIdDto(PROJECT_CODE, 101L))
+
+      assertThat(result).isNull()
     }
 
     @Test

@@ -17,7 +17,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOut
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.BadRequestException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.ConflictException
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.NotFoundException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.validUpdateAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
@@ -84,9 +83,8 @@ class AppointmentBulkUpdateServiceTest {
       val appointment1Dto = AppointmentDto.valid()
       val update1 = UpdateAppointmentOutcomeDto.valid().copy(deliusId = 1L)
 
-      every { appointmentRetrievalService.getAppointment(DeliusAppointmentIdDto(PROJECT_CODE, update1.deliusId)) } returns appointment1Dto
+      every { appointmentRetrievalService.getAppointment(DeliusAppointmentIdDto(PROJECT_CODE, update1.deliusId)) } returns null
       every { appointmentUpdateValidationService.validateUpdate(appointment1Dto, update1) } returns ValidatedAppointment.validUpdateAppointment().copy(dto = update1)
-      every { appointmentUpdateService.updateAppointment(appointment1Dto, update1, TRIGGER) } throws NotFoundException("appointment", "1")
 
       val result = service.updateAppointments(
         projectCode = PROJECT_CODE,
@@ -166,7 +164,6 @@ class AppointmentBulkUpdateServiceTest {
 
     @Test
     fun `mix of all outcomes`() {
-      val existing1 = AppointmentDto.valid()
       val existing2 = AppointmentDto.valid()
       val existing3 = AppointmentDto.valid()
       val existing4 = AppointmentDto.valid()
@@ -176,17 +173,15 @@ class AppointmentBulkUpdateServiceTest {
       val update3 = UpdateAppointmentOutcomeDto.valid().copy(deliusId = 3L)
       val update4 = UpdateAppointmentOutcomeDto.valid().copy(deliusId = 4L)
 
-      every { appointmentRetrievalService.getAppointment(DeliusAppointmentIdDto(PROJECT_CODE, update1.deliusId)) } returns existing1
+      every { appointmentRetrievalService.getAppointment(DeliusAppointmentIdDto(PROJECT_CODE, update1.deliusId)) } returns null
       every { appointmentRetrievalService.getAppointment(DeliusAppointmentIdDto(PROJECT_CODE, update2.deliusId)) } returns existing2
       every { appointmentRetrievalService.getAppointment(DeliusAppointmentIdDto(PROJECT_CODE, update3.deliusId)) } returns existing3
       every { appointmentRetrievalService.getAppointment(DeliusAppointmentIdDto(PROJECT_CODE, update4.deliusId)) } returns existing4
 
-      every { appointmentUpdateValidationService.validateUpdate(existing1, update1) } returns ValidatedAppointment.validUpdateAppointment().copy(dto = update1)
       every { appointmentUpdateValidationService.validateUpdate(existing2, update2) } returns ValidatedAppointment.validUpdateAppointment().copy(dto = update2)
       every { appointmentUpdateValidationService.validateUpdate(existing3, update3) } returns ValidatedAppointment.validUpdateAppointment().copy(dto = update3)
       every { appointmentUpdateValidationService.validateUpdate(existing4, update4) } returns ValidatedAppointment.validUpdateAppointment().copy(dto = update4)
 
-      every { appointmentUpdateService.updateAppointment(existing1, update1, TRIGGER) } throws NotFoundException("appointment", "1")
       every { appointmentUpdateService.updateAppointment(existing2, update2, TRIGGER) } throws ConflictException("oh no")
       every { appointmentUpdateService.updateAppointment(existing3, update3, TRIGGER) } throws IllegalStateException("oh no")
 

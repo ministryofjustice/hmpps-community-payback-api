@@ -6,7 +6,6 @@ import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
-import uk.gov.justice.digital.hmpps.communitypaybackapi.common.notFound
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.DeliusAppointmentIdDto
@@ -27,7 +26,7 @@ class AppointmentRetrievalService(
   private val appointmentEntityRepository: AppointmentEntityRepository,
 ) {
 
-  fun getAppointment(id: DeliusAppointmentIdDto): AppointmentDto = try {
+  fun getAppointment(id: DeliusAppointmentIdDto): AppointmentDto? = try {
     communityPaybackAndDeliusClient.getAppointment(
       projectCode = id.projectCode,
       appointmentId = id.deliusAppointmentId,
@@ -39,7 +38,7 @@ class AppointmentRetrievalService(
       appointmentMappers.toDto(appointment, projectType)
     }
   } catch (_: WebClientResponseException.NotFound) {
-    notFound("Appointment", "$id")
+    null
   }
 
   fun getAppointments(

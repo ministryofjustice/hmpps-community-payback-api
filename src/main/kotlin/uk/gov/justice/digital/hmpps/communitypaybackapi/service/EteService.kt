@@ -5,6 +5,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.badRequest
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionRecommendationDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionResolutionDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionResolutionTypeDto
@@ -129,12 +130,11 @@ class EteService(
         trigger = appointmentEventTrigger,
       )
     } else {
-      val existingAppointment = appointmentService.getAppointment(
-        DeliusAppointmentIdDto(
-          projectCode = courseCompletionResolution.creditTimeDetails.projectCode,
-          deliusAppointmentId = courseCompletionResolution.creditTimeDetails.appointmentIdToUpdate,
-        ),
+      val appointmentId = DeliusAppointmentIdDto(
+        projectCode = courseCompletionResolution.creditTimeDetails.projectCode,
+        deliusAppointmentId = courseCompletionResolution.creditTimeDetails.appointmentIdToUpdate,
       )
+      val existingAppointment = appointmentService.getAppointment(appointmentId) ?: badRequest("Appointment not found with ID '$appointmentId'")
 
       appointmentService.updateAppointment(
         existingAppointment = existingAppointment,
