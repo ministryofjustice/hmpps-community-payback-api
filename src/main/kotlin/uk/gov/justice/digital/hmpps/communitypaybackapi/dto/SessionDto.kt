@@ -9,14 +9,14 @@ data class SessionDto(
   val projectCode: String,
   @Deprecated("Use [location] instead")
   @param:Schema(description = "Deprecated, use the structured location instead", deprecated = true)
-  val projectLocation: String,
+  val projectLocation: String?,
   val location: LocationDto,
   val date: LocalDate,
   @Deprecated("Will be removed")
   @param:Schema(description = "Deprecated", deprecated = true)
-  val startTime: LocalTime,
+  val startTime: LocalTime?,
   @Deprecated("Will be removed")
   @param:Schema(description = "Deprecated", deprecated = true)
-  val endTime: LocalTime,
+  val endTime: LocalTime?,
   val appointmentSummaries: List<AppointmentSummaryDto>,
 )
