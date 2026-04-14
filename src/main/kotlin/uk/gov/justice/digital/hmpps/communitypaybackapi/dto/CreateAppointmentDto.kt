@@ -1,6 +1,8 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.dto
 
 import io.swagger.v3.oas.annotations.media.Schema
+import tools.jackson.databind.annotation.JsonDeserialize
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.SanitizingStringDeserializer
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -25,6 +27,7 @@ data class CreateAppointmentDto(
   override val attendanceData: AttendanceDataDto? = null,
   @param:Schema(description = "Will default to the unallocated supervisor for the project's team if not defined")
   val supervisorOfficerCode: String? = null,
+  @field:JsonDeserialize(using = SanitizingStringDeserializer::class)
   override val notes: String? = null,
   @param:Schema(description = "If the corresponding delius contact should be alerted")
   val alertActive: Boolean? = null,
