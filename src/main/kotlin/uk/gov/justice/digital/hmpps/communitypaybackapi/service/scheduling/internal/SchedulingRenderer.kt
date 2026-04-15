@@ -63,7 +63,7 @@ object SchedulingRenderer {
     request: SchedulingRequest,
     remainingMinutesAsOfToday: Duration,
   ) = buildString {
-    append(requestSummary("Scheduling Results", request, remainingMinutesAsOfToday))
+    append(requestSummary("Schedule and Plan", request, remainingMinutesAsOfToday))
     appendLine(" ** No changes required **")
     appendLine()
   }
@@ -77,7 +77,7 @@ object SchedulingRenderer {
     val today = request.today
 
     return buildString {
-      append(requestSummary("Scheduling Results", request, remainingMinutesAsOfToday))
+      append(requestSummary("Schedule and Plan", request, remainingMinutesAsOfToday))
 
       val shortfall = schedule.shortfall
       if (!shortfall.isZero && shortfall.isPositive) {
