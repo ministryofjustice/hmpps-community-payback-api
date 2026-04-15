@@ -15,9 +15,10 @@ class SchedulingNonWorkingDatesTest {
     schedulingScenario {
       scenarioId("DATES-NWD-01")
       given {
-        requirementIsHours(8)
+        requirementHoursAre(8)
         todayIs(MONDAY)
         projectExistsWithCode("PROJ1")
+        schedulingIsTriggeredByAnAppointmentChange()
 
         allocation {
           alias("ALLOC1")
@@ -44,9 +45,10 @@ class SchedulingNonWorkingDatesTest {
     schedulingScenario {
       scenarioId("DATES-NWD-02")
       given {
-        requirementIsHours(32)
+        requirementHoursAre(32)
         todayIs(MONDAY)
         projectExistsWithCode("PROJ1")
+        schedulingIsTriggeredByAnAppointmentChange()
 
         allocation {
           alias("ALLOC1")
@@ -101,9 +103,10 @@ class SchedulingNonWorkingDatesTest {
     schedulingScenario {
       scenarioId("DATES-NWD-03")
       given {
-        requirementIsHours(32)
+        requirementHoursAre(32)
         todayIs(MONDAY)
         projectExistsWithCode("PROJ1")
+        schedulingIsTriggeredByAnAppointmentChange()
 
         allocation {
           alias("ALLOC1")
@@ -158,9 +161,10 @@ class SchedulingNonWorkingDatesTest {
     schedulingScenario {
       scenarioId("DATES-NWD-04")
       given {
-        requirementIsHours(32)
+        requirementHoursAre(32)
         todayIs(MONDAY)
         projectExistsWithCode("PROJ1")
+        schedulingIsTriggeredByAnAppointmentChange()
 
         allocation {
           alias("ALLOC1")

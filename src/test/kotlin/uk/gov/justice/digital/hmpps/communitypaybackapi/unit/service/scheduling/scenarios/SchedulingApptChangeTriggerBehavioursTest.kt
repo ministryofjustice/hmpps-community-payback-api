@@ -10,6 +10,7 @@ import java.time.Duration
 
 /**
  * These scenarios highlight behaviours that are specific to scheduling triggered by appointment changes
+ * (including adjustments)
  */
 class SchedulingApptChangeTriggerBehavioursTest {
 
@@ -21,12 +22,13 @@ class SchedulingApptChangeTriggerBehavioursTest {
       schedulingScenario {
         scenarioId("APP-CHANGE-TRIGGER-CLASH-01")
         given {
-          requirementIsHours(44)
+          requirementHoursAre(44)
           todayIs(MONDAY)
           projectExistsWithCode("PROJ1")
           projectExistsWithCode("PROJ2")
           projectExistsWithCode("PROJ3")
           projectExistsWithCode("PROJ4")
+          schedulingIsTriggeredByAnAppointmentChange()
 
           allocation {
             alias("ALLOC1")
@@ -122,12 +124,13 @@ class SchedulingApptChangeTriggerBehavioursTest {
       schedulingScenario {
         scenarioId("APP-CHANGE-TRIGGER-CLASH-02")
         given {
-          requirementIsHours(58)
+          requirementHoursAre(58)
           todayIs(MONDAY)
           projectExistsWithCode("PROJ1")
           projectExistsWithCode("PROJ2")
           projectExistsWithCode("PROJ3")
           projectExistsWithCode("PROJ4")
+          schedulingIsTriggeredByAnAppointmentChange()
 
           allocation {
             alias("ALLOC1")
@@ -229,11 +232,12 @@ class SchedulingApptChangeTriggerBehavioursTest {
       schedulingScenario {
         scenarioId("APP-CHANGE-TRIGGER-CLASH-03")
         given {
-          requirementIsHours(30)
+          requirementHoursAre(30)
           todayIs(MONDAY)
           projectExistsWithCode("PROJ1")
           projectExistsWithCode("PROJ2")
           projectExistsWithCode("PROJ4")
+          schedulingIsTriggeredByAnAppointmentChange()
 
           allocation {
             alias("ALLOC1")
@@ -309,9 +313,10 @@ class SchedulingApptChangeTriggerBehavioursTest {
       schedulingScenario {
         scenarioId("APP-CHANGE-TRIGGER-MANUAL-01")
         given {
-          requirementIsHours(24)
+          requirementHoursAre(24)
           todayIs(MONDAY)
           projectExistsWithCode("PROJ1")
+          schedulingIsTriggeredByAnAppointmentChange()
 
           allocation {
             alias("ALLOC1")
@@ -367,9 +372,10 @@ class SchedulingApptChangeTriggerBehavioursTest {
       schedulingScenario {
         scenarioId("APP-CHANGE-TRIGGER-MANUAL-02")
         given {
-          requirementIsHours(16)
+          requirementHoursAre(16)
           todayIs(MONDAY)
           projectExistsWithCode("PROJ1")
+          schedulingIsTriggeredByAnAppointmentChange()
 
           allocation {
             alias("ALLOC1")

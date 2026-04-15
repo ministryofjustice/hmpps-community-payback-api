@@ -19,9 +19,10 @@ class SchedulingNoOpTest {
     schedulingScenario {
       scenarioId("NOOP-01")
       given {
-        requirementIsHours(8)
+        requirementHoursAre(8)
         todayIs(MONDAY)
         projectExistsWithCode("PROJ1")
+        schedulingIsTriggeredByAnAppointmentChange()
 
         allocation {
           alias("ALLOC1")
@@ -56,6 +57,7 @@ class SchedulingNoOpTest {
         requirementIs(Duration.parse("PT6H30M"))
         todayIs(MONDAY)
         projectExistsWithCode("PROJ1")
+        schedulingIsTriggeredByAnAppointmentChange()
 
         allocation {
           alias("ALLOC1")
@@ -90,6 +92,7 @@ class SchedulingNoOpTest {
         requirementIs(Duration.parse("PT6H30M"))
         todayIs(MONDAY)
         projectExistsWithCode("PROJ1")
+        schedulingIsTriggeredByAnAppointmentChange()
 
         allocation {
           alias("ALLOC1")
@@ -124,6 +127,7 @@ class SchedulingNoOpTest {
         requirementIs(Duration.parse("PT6H30M"))
         todayIs(MONDAY)
         projectExistsWithCode("PROJ1")
+        schedulingIsTriggeredByAnAppointmentChange()
 
         allocation {
           alias("ALLOC1")
@@ -158,6 +162,7 @@ class SchedulingNoOpTest {
         requirementIs(Duration.parse("PT6H30M"))
         todayIs(TUESDAY)
         projectExistsWithCode("PROJ1")
+        schedulingIsTriggeredByAnAppointmentChange()
 
         allocation {
           alias("ALLOC1")
@@ -192,6 +197,7 @@ class SchedulingNoOpTest {
         requirementIs(Duration.parse("PT2H"))
         todayIs(TUESDAY)
         projectExistsWithCode("PROJ1")
+        schedulingIsTriggeredByAnAppointmentChange()
 
         allocation {
           alias("ALLOC1")
@@ -226,6 +232,7 @@ class SchedulingNoOpTest {
         requirementIs(Duration.parse("PT120H"))
         todayIs(MONDAY)
         projectExistsWithCode("PROJ1")
+        schedulingIsTriggeredByAnAppointmentChange()
 
         allocation {
           alias("ALLOC1")
@@ -262,6 +269,7 @@ class SchedulingNoOpTest {
         requirementIs(Duration.parse("PT8H"))
         todayIs(WEDNESDAY)
         projectExistsWithCode("PROJ1")
+        schedulingIsTriggeredByAnAppointmentChange()
 
         allocation {
           alias("ALLOC1")
@@ -305,6 +313,7 @@ class SchedulingNoOpTest {
         requirementIs(Duration.ofHours(8))
         todayIs(WEDNESDAY)
         projectExistsWithCode("PROJ1")
+        schedulingIsTriggeredByAnAppointmentChange()
 
         allocation {
           alias("ALLOC1")
@@ -349,6 +358,7 @@ class SchedulingNoOpTest {
         todayIs(WEDNESDAY)
         projectExistsWithCode("PROJ1")
         projectExistsWithCode("PROJ2")
+        schedulingIsTriggeredByAnAppointmentChange()
 
         allocation {
           alias("ALLOC1")
@@ -433,6 +443,7 @@ class SchedulingNoOpTest {
         todayIs(WEDNESDAY)
         projectExistsWithCode("PROJ1")
         projectExistsWithCode("PROJ2")
+        schedulingIsTriggeredByAnAppointmentChange()
 
         allocation {
           alias("ALLOC1")

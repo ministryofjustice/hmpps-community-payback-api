@@ -13,10 +13,11 @@ class SchedulingMiscTest {
     schedulingScenario {
       scenarioId("MISC-01")
       given {
-        requirementIsHours(160)
+        requirementHoursAre(160)
         todayIs(MONDAY)
         projectExistsWithCode("PROJ1")
         projectExistsWithCode("PROJ2")
+        schedulingIsTriggeredByAnAppointmentChange()
 
         allocation {
           alias("ALLOC1")
@@ -107,9 +108,10 @@ class SchedulingMiscTest {
     schedulingScenario {
       scenarioId("MISC-03")
       given {
-        requirementIsHours(300)
+        requirementHoursAre(300)
         todayIs(MONDAY)
         projectExistsWithCode("PROJ1")
+        schedulingIsTriggeredByAnAppointmentChange()
 
         allocation {
           alias("ALLOC1")
@@ -142,10 +144,11 @@ class SchedulingMiscTest {
     schedulingScenario {
       scenarioId("MISC-04")
       given {
-        requirementIsHours(8)
+        requirementHoursAre(8)
         todayIs(MONDAY)
         projectExistsWithCode("PROJ1")
         projectExistsWithCode("PROJ2")
+        schedulingIsTriggeredByAnAppointmentChange()
 
         allocation {
           alias("ALLOC1")

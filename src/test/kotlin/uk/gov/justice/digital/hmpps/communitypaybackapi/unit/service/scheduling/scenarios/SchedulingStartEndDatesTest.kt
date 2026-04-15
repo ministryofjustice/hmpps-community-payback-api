@@ -18,9 +18,10 @@ class SchedulingStartEndDatesTest {
       schedulingScenario {
         scenarioId("DATES-START-01")
         given {
-          requirementIsHours(16)
+          requirementHoursAre(16)
           todayIs(MONDAY)
           projectExistsWithCode("PROJ1")
+          schedulingIsTriggeredByAnAppointmentChange()
 
           allocation {
             alias("ALLOC1")
@@ -59,9 +60,10 @@ class SchedulingStartEndDatesTest {
       schedulingScenario {
         scenarioId("DATES-START-02")
         given {
-          requirementIsHours(16)
+          requirementHoursAre(16)
           todayIs(TUESDAY)
           projectExistsWithCode("PROJ1")
+          schedulingIsTriggeredByAnAppointmentChange()
 
           allocation {
             alias("ALLOC1")
@@ -100,9 +102,10 @@ class SchedulingStartEndDatesTest {
       schedulingScenario {
         scenarioId("DATES-START-03")
         given {
-          requirementIsHours(16)
+          requirementHoursAre(16)
           todayIs(TUESDAY)
           projectExistsWithCode("PROJ1")
+          schedulingIsTriggeredByAnAppointmentChange()
 
           allocation {
             alias("ALLOC1")
@@ -147,9 +150,10 @@ class SchedulingStartEndDatesTest {
         given {
           todayIs(MONDAY)
           projectExistsWithCode("PROJ1")
+          schedulingIsTriggeredByAnAppointmentChange()
 
           allocation {
-            requirementIsHours(80)
+            requirementHoursAre(80)
             alias("ALLOC1")
             projectCode("PROJ1")
             frequency(FORTNIGHTLY)
@@ -187,9 +191,10 @@ class SchedulingStartEndDatesTest {
       schedulingScenario {
         scenarioId("DATES-END-02")
         given {
-          requirementIsHours(80)
+          requirementHoursAre(80)
           todayIs(MONDAY)
           projectExistsWithCode("PROJ1")
+          schedulingIsTriggeredByAnAppointmentChange()
 
           allocation {
             alias("ALLOC1")
@@ -227,9 +232,10 @@ class SchedulingStartEndDatesTest {
       schedulingScenario {
         scenarioId("DATES-END-04")
         given {
-          requirementIsHours(80)
+          requirementHoursAre(80)
           todayIs(TUESDAY)
           projectExistsWithCode("PROJ1")
+          schedulingIsTriggeredByAnAppointmentChange()
 
           allocation {
             alias("ALLOC1")
@@ -254,9 +260,10 @@ class SchedulingStartEndDatesTest {
       schedulingScenario {
         scenarioId("DATES-END-05")
         given {
-          requirementIsHours(80)
+          requirementHoursAre(80)
           todayIs(MONDAY)
           projectExistsWithCode("PROJ1")
+          schedulingIsTriggeredByAnAppointmentChange()
 
           allocation {
             alias("ALLOC1")

@@ -23,6 +23,7 @@ class SchedulingRemainingTimeTest {
         requirementIs(Duration.ZERO)
         todayIs(MONDAY)
         projectExistsWithCode("PROJ1")
+        schedulingIsTriggeredByAnAppointmentChange()
 
         allocation {
           alias("ALLOC1")
@@ -45,10 +46,11 @@ class SchedulingRemainingTimeTest {
     schedulingScenario {
       scenarioId("REMAINING-TIME-02")
       given {
-        requirementIsHours(8)
+        requirementHoursAre(8)
         todayIs(MONDAY)
         projectExistsWithCode("PROJ1")
         projectExistsWithCode("PROJ2")
+        schedulingIsTriggeredByAnAppointmentChange()
 
         allocation {
           alias("ALLOC1")
@@ -88,10 +90,11 @@ class SchedulingRemainingTimeTest {
     schedulingScenario {
       scenarioId("REMAINING-TIME-03")
       given {
-        requirementIsHours(4)
+        requirementHoursAre(4)
         todayIs(MONDAY)
         projectExistsWithCode("PROJ1")
         projectExistsWithCode("PROJ2")
+        schedulingIsTriggeredByAnAppointmentChange()
 
         allocation {
           alias("ALLOC1")
@@ -131,10 +134,11 @@ class SchedulingRemainingTimeTest {
     schedulingScenario {
       scenarioId("REMAINING-TIME-04")
       given {
-        requirementIsHours(12)
+        requirementHoursAre(12)
         todayIs(MONDAY)
         projectExistsWithCode("PROJ1")
         projectExistsWithCode("PROJ2")
+        schedulingIsTriggeredByAnAppointmentChange()
 
         allocation {
           alias("ALLOC1")
@@ -183,10 +187,11 @@ class SchedulingRemainingTimeTest {
     schedulingScenario {
       scenarioId("REMAINING-TIME-05")
       given {
-        requirementIsHours(12)
+        requirementHoursAre(12)
         todayIs(MONDAY)
         projectExistsWithCode("PROJ1")
         projectExistsWithCode("PROJ2")
+        schedulingIsTriggeredByAnAppointmentChange()
 
         allocation {
           alias("ALLOC1")
@@ -235,10 +240,12 @@ class SchedulingRemainingTimeTest {
     schedulingScenario {
       scenarioId("REMAINING-TIME-06")
       given {
-        requirementIsHours(8)
+        requirementHoursAre(8)
         todayIs(MONDAY)
         projectExistsWithCode("PROJ1")
         projectExistsWithCode("PROJ2")
+        schedulingIsTriggeredByAnAppointmentChange()
+        schedulingIsTriggeredByAnAppointmentChange()
 
         allocation {
           alias("ALLOC1")
@@ -291,6 +298,7 @@ class SchedulingRemainingTimeTest {
         todayIs(MONDAY)
         projectExistsWithCode("PROJ1")
         projectExistsWithCode("PROJ2")
+        schedulingIsTriggeredByAnAppointmentChange()
 
         allocation {
           alias("ALLOC1")
@@ -343,6 +351,7 @@ class SchedulingRemainingTimeTest {
         todayIs(MONDAY)
         projectExistsWithCode("PROJ1")
         projectExistsWithCode("PROJ2")
+        schedulingIsTriggeredByAnAppointmentChange()
 
         allocation {
           alias("ALLOC1")
@@ -395,6 +404,7 @@ class SchedulingRemainingTimeTest {
         todayIs(MONDAY)
         projectExistsWithCode("PROJ1")
         projectExistsWithCode("PROJ2")
+        schedulingIsTriggeredByAnAppointmentChange()
 
         allocation {
           alias("ALLOC1")

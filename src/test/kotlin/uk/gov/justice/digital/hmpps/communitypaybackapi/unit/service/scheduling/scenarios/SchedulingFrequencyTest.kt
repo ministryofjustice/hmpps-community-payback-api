@@ -20,9 +20,6 @@ import java.time.Duration
  */
 class SchedulingFrequencyTest {
 
-  /**
-   * Once has some surprising/inconsistent behaviour. These are modelled by the ‘inconsistent behaviour’ scenarios
-   */
   @Nested
   inner class Once {
 
@@ -31,9 +28,10 @@ class SchedulingFrequencyTest {
       schedulingScenario {
         scenarioId("FREQ-ONCE-01")
         given {
-          requirementIsHours(8)
+          requirementHoursAre(8)
           todayIs(MONDAY)
           projectExistsWithCode("PROJ1")
+          schedulingIsTriggeredByAnAppointmentChange()
 
           allocation {
             alias("ALLOC1")
@@ -65,9 +63,10 @@ class SchedulingFrequencyTest {
       schedulingScenario {
         scenarioId("FREQ-ONCE-02")
         given {
-          requirementIsHours(8)
+          requirementHoursAre(8)
           todayIs(MONDAY)
           projectExistsWithCode("PROJ1")
+          schedulingIsTriggeredByAnAppointmentChange()
 
           allocation {
             alias("ALLOC1")
@@ -99,9 +98,10 @@ class SchedulingFrequencyTest {
       schedulingScenario {
         scenarioId("FREQ-ONCE-03")
         given {
-          requirementIsHours(8)
+          requirementHoursAre(8)
           todayIs(MONDAY)
           projectExistsWithCode("PROJ1")
+          schedulingIsTriggeredByAnAppointmentChange()
 
           allocation {
             alias("ALLOC1")
@@ -133,9 +133,10 @@ class SchedulingFrequencyTest {
       schedulingScenario {
         scenarioId("FREQ-ONCE-04")
         given {
-          requirementIsHours(16)
+          requirementHoursAre(16)
           todayIs(THURSDAY)
           projectExistsWithCode("PROJ1")
+          schedulingIsTriggeredByAnAppointmentChange()
 
           allocation {
             alias("ALLOC1")
@@ -167,9 +168,10 @@ class SchedulingFrequencyTest {
       schedulingScenario {
         scenarioId("FREQ-ONCE-05")
         given {
-          requirementIsHours(40)
+          requirementHoursAre(40)
           todayIs(MONDAY)
           projectExistsWithCode("PROJ1")
+          schedulingIsTriggeredByAnAppointmentChange()
 
           allocation {
             alias("ALLOC1")
@@ -211,9 +213,10 @@ class SchedulingFrequencyTest {
       schedulingScenario {
         scenarioId("FREQ-ONCE-06")
         given {
-          requirementIsHours(40)
+          requirementHoursAre(40)
           todayIs(MONDAY)
           projectExistsWithCode("PROJ1")
+          schedulingIsTriggeredByAnAppointmentChange()
 
           allocation {
             alias("ALLOC1")
@@ -254,9 +257,10 @@ class SchedulingFrequencyTest {
     fun `FREQ-ONCE-07 'Once' allocation with suitable end date will not result in multiple appointments`() {
       schedulingScenario {
         given {
-          requirementIsHours(40)
+          requirementHoursAre(40)
           todayIs(MONDAY)
           projectExistsWithCode("PROJ1")
+          schedulingIsTriggeredByAnAppointmentChange()
 
           allocation {
             alias("ALLOC1")
@@ -303,9 +307,10 @@ class SchedulingFrequencyTest {
       schedulingScenario {
         scenarioId("FREQ-WK-01")
         given {
-          requirementIsHours(4)
+          requirementHoursAre(4)
           todayIs(MONDAY)
           projectExistsWithCode("PROJ1")
+          schedulingIsTriggeredByAnAppointmentChange()
 
           allocation {
             alias("ALLOC1")
@@ -336,9 +341,10 @@ class SchedulingFrequencyTest {
       schedulingScenario {
         scenarioId("FREQ-WK-02")
         given {
-          requirementIsHours(27)
+          requirementHoursAre(27)
           todayIs(TUESDAY)
           projectExistsWithCode("PROJ1")
+          schedulingIsTriggeredByAnAppointmentChange()
 
           allocation {
             alias("ALLOC1")
@@ -371,9 +377,10 @@ class SchedulingFrequencyTest {
       schedulingScenario {
         scenarioId("FREQ-WK-03")
         given {
-          requirementIsHours(50)
+          requirementHoursAre(50)
           todayIs(TUESDAY)
           projectExistsWithCode("PROJ1")
+          schedulingIsTriggeredByAnAppointmentChange()
 
           allocation {
             alias("ALLOC1")
@@ -406,9 +413,10 @@ class SchedulingFrequencyTest {
       schedulingScenario {
         scenarioId("FREQ-WK-04")
         given {
-          requirementIsHours(80)
+          requirementHoursAre(80)
           todayIs(MONDAY)
           projectExistsWithCode("PROJ1")
+          schedulingIsTriggeredByAnAppointmentChange()
 
           allocation {
             alias("ALLOC1")
@@ -454,9 +462,10 @@ class SchedulingFrequencyTest {
       schedulingScenario {
         scenarioId("FREQ-FN-01")
         given {
-          requirementIsHours(8)
+          requirementHoursAre(8)
           todayIs(MONDAY)
           projectExistsWithCode("PROJ1")
+          schedulingIsTriggeredByAnAppointmentChange()
 
           allocation {
             alias("ALLOC1")
@@ -495,9 +504,10 @@ class SchedulingFrequencyTest {
       schedulingScenario {
         scenarioId("FREQ-FN-02")
         given {
-          requirementIsHours(8)
+          requirementHoursAre(8)
           todayIs(MONDAY)
           projectExistsWithCode("PROJ1")
+          schedulingIsTriggeredByAnAppointmentChange()
 
           allocation {
             alias("ALLOC1")
@@ -531,9 +541,10 @@ class SchedulingFrequencyTest {
       schedulingScenario {
         scenarioId("FREQ-FN-03")
         given {
-          requirementIsHours(8)
+          requirementHoursAre(8)
           todayIs(FRIDAY)
           projectExistsWithCode("PROJ1")
+          schedulingIsTriggeredByAnAppointmentChange()
 
           allocation {
             alias("ALLOC1")
@@ -567,9 +578,10 @@ class SchedulingFrequencyTest {
       schedulingScenario {
         scenarioId("FREQ-FN-04")
         given {
-          requirementIsHours(8)
+          requirementHoursAre(8)
           todayIs(SATURDAY)
           projectExistsWithCode("PROJ1")
+          schedulingIsTriggeredByAnAppointmentChange()
 
           allocation {
             alias("ALLOC1")
@@ -603,9 +615,10 @@ class SchedulingFrequencyTest {
       schedulingScenario {
         scenarioId("FREQ-FN-05")
         given {
-          requirementIsHours(8)
+          requirementHoursAre(8)
           todayIs(FRIDAY)
           projectExistsWithCode("PROJ1")
+          schedulingIsTriggeredByAnAppointmentChange()
 
           allocation {
             alias("ALLOC1")
@@ -639,9 +652,10 @@ class SchedulingFrequencyTest {
       schedulingScenario {
         scenarioId("FREQ-FN-06")
         given {
-          requirementIsHours(8)
+          requirementHoursAre(8)
           todayIs(FRIDAY)
           projectExistsWithCode("PROJ1")
+          schedulingIsTriggeredByAnAppointmentChange()
 
           allocation {
             alias("ALLOC1")
@@ -675,9 +689,10 @@ class SchedulingFrequencyTest {
       schedulingScenario {
         scenarioId("FREQ-FN-07")
         given {
-          requirementIsHours(8)
+          requirementHoursAre(8)
           todayIs(SATURDAY)
           projectExistsWithCode("PROJ1")
+          schedulingIsTriggeredByAnAppointmentChange()
 
           allocation {
             alias("ALLOC1")
@@ -711,9 +726,10 @@ class SchedulingFrequencyTest {
       schedulingScenario {
         scenarioId("FREQ-FN-08")
         given {
-          requirementIsHours(52)
+          requirementHoursAre(52)
           todayIs(FRIDAY)
           projectExistsWithCode("PROJ1")
+          schedulingIsTriggeredByAnAppointmentChange()
 
           allocation {
             alias("ALLOC1")
@@ -751,7 +767,7 @@ class SchedulingFrequencyTest {
       schedulingScenario {
         scenarioId("FREQ-MIXED-01")
         given {
-          requirementIsHours(37)
+          requirementHoursAre(37)
           todayIs(FRIDAY)
           projectExistsWithCode("PROJ1")
           projectExistsWithCode("PROJ2")
@@ -759,6 +775,7 @@ class SchedulingFrequencyTest {
           projectExistsWithCode("PROJ4")
           projectExistsWithCode("PROJ5")
           projectExistsWithCode("PROJ6")
+          schedulingIsTriggeredByAnAppointmentChange()
 
           allocation {
             alias("ALLOC1")

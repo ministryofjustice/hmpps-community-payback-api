@@ -36,6 +36,7 @@ class SchedulingScenarioBuilder {
   private val nonWorkingDates = mutableListOf<LocalDate>()
   private val projects = mutableMapOf<String, SchedulingProject>()
   private var scenarioId: String? = null
+  private var triggerType: SchedulingTriggerType? = null
 
   fun scenarioId(scenarioId: String) {
     this.scenarioId = scenarioId
@@ -49,7 +50,7 @@ class SchedulingScenarioBuilder {
     val request = SchedulingRequest.valid().copy(
       today = today,
       trigger = SchedulingTrigger(
-        type = SchedulingTriggerType.AppointmentChange,
+        type = triggerType ?: error("Trigger type must be defined"),
         description = "Unit Test: $scenarioId",
       ),
       requirement = SchedulingRequirement(crn = "CRN1", deliusEventNumber = 5, requirementLengthMinutes = requireNotNull(requirementLength)),
@@ -103,8 +104,12 @@ class SchedulingScenarioBuilder {
       this@SchedulingScenarioBuilder.requirementLength = duration
     }
 
-    fun requirementIsHours(hours: Long) {
+    fun requirementHoursAre(hours: Long) {
       this@SchedulingScenarioBuilder.requirementLength = Duration.ofHours(hours)
+    }
+
+    fun schedulingIsTriggeredByAnAppointmentChange() {
+      this@SchedulingScenarioBuilder.triggerType = SchedulingTriggerType.AppointmentChange
     }
   }
 
