@@ -20,9 +20,6 @@ data class UpdateAppointmentOutcomeDto(
   override val endTime: LocalTime,
   override val contactOutcomeCode: String?,
   override val attendanceData: AttendanceDataDto?,
-  @Deprecated("Setting specific enforcement data is not supported")
-  @param:Schema(description = "Setting specific enforcement data is not supported", deprecated = true)
-  val enforcementData: EnforcementDto?,
   val supervisorOfficerCode: String,
   @field:JsonDeserialize(using = SanitizingStringDeserializer::class)
   override val notes: String? = null,

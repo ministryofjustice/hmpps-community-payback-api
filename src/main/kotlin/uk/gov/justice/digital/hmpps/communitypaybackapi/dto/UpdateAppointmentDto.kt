@@ -46,7 +46,6 @@ data class UpdateAppointmentDto(
     endTime = endTime,
     contactOutcomeCode = contactOutcomeCode,
     attendanceData = attendanceData,
-    enforcementData = null,
     supervisorOfficerCode = supervisorOfficerCode,
     notes = notes,
     alertActive = alertActive,

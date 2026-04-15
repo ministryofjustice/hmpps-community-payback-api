@@ -271,7 +271,6 @@ class EteMappersTest {
       assertThat(result.deliusVersionToUpdate).isEqualTo(existingAppointment.version)
       assertThat(result.date).isEqualTo(LocalDate.of(2025, 1, 1))
       assertThat(result.contactOutcomeCode).isEqualTo(CONTACT_OUTCOME_CODE)
-      assertThat(result.enforcementData).isNull()
       assertThat(result.supervisorOfficerCode).isEqualTo(existingAppointment.supervisorOfficerCode)
       assertThat(result.notes).isEqualTo(
         """

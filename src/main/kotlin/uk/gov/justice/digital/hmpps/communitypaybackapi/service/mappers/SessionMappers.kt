@@ -11,7 +11,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionSummariesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
 import java.time.LocalDate
-import java.time.LocalTime
 
 @Service
 class SessionMappers(
@@ -31,8 +30,6 @@ class SessionMappers(
     appointmentSummaries = appointments,
     // deprecated fields
     projectLocation = "",
-    startTime = LocalTime.of(0, 0),
-    endTime = LocalTime.of(0, 0),
   )
 
   fun toSummaryDto(
@@ -43,8 +40,6 @@ class SessionMappers(
     projectName = project.projectName,
     projectCode = project.projectCode,
     date = date,
-    startTime = LocalTime.of(0, 0),
-    endTime = LocalTime.of(0, 0),
     numberOfOffendersAllocated = appointments.size,
     numberOfOffendersWithEA = appointments.count { it.hasOutcome() && findOutcome(it.contactOutcome!!.code).enforceable },
     numberOfOffendersWithOutcomes = appointments.count { it.hasOutcome() },
@@ -58,8 +53,6 @@ fun NDSessionSummary.toDto() = SessionSummaryDto(
   projectName = this.project.description,
   projectCode = this.project.code,
   date = this.date,
-  startTime = LocalTime.of(0, 0),
-  endTime = LocalTime.of(0, 0),
   numberOfOffendersAllocated = this.allocatedCount,
   numberOfOffendersWithOutcomes = this.outcomeCount,
   numberOfOffendersWithEA = this.enforcementActionCount,
