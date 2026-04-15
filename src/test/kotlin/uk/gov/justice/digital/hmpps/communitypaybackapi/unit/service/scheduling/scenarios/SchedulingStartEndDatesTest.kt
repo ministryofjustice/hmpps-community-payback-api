@@ -222,7 +222,7 @@ class SchedulingStartEndDatesTest {
       }
     }
 
-    @NDeliusDataModelsRequired
+    @TestByNDeliusDataModelMapping
     fun `DATES-END-03 Allocation Start Date is same as End Date`() {
       // see documentation on @NDeliusDataModelsRequired
     }
@@ -283,17 +283,17 @@ class SchedulingStartEndDatesTest {
       }
     }
 
-    @NDeliusDataModelsRequired
+    @TestByNDeliusDataModelMapping
     fun `DATES-END-06 Allocation end date not defined and project's expected end date is earliest`() {
       // see documentation on @NDeliusDataModelsRequired
     }
 
-    @NDeliusDataModelsRequired
+    @TestByNDeliusDataModelMapping
     fun `DATES-END-07 Allocation end date not defined and project's actual end date is earliest`() {
       // see documentation on @NDeliusDataModelsRequired
     }
 
-    @NDeliusDataModelsRequired
+    @TestByNDeliusDataModelMapping
     fun `DATES-END-08 Allocation end date not defined and availability's end date is earliest`() {
       // see documentation on @NDeliusDataModelsRequired
     }

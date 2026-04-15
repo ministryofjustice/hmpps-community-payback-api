@@ -922,7 +922,7 @@ class SchedulingFrequencyTest {
       }
     }
 
-    @NDeliusDataModelsRequired
+    @TestByNDeliusDataModelMapping
     fun `FREQ-MIXED-02 Use largest frequency defined between Allocation and linked Availability`() {
       // see documentation on @NDeliusDataModelsRequired
     }
