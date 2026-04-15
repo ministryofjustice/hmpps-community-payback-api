@@ -29,11 +29,10 @@ data class SchedulingTrigger(
 enum class SchedulingTriggerType(val allocationChange: Boolean) {
   AdjustmentCreated(false),
 
-  // This currently only exists to unit test specific behaviour
-  // that doesn't apply to allocation changes
-  AllocationChange(true),
+  // This currently only exists to unit test specific behaviour that doesn't apply for allocation triggers isn't applied
+  AllocationChanged(true),
   AppointmentCreated(false),
-  AppointmentChange(false),
+  AppointmentUpdated(false),
 }
 
 data class SchedulingRequirement(

@@ -1,10 +1,12 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.unit.service.scheduling.scenarios
 
 import org.junit.jupiter.api.Nested
-import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.ArgumentsSource
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.SchedulingFrequency.FORTNIGHTLY
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.SchedulingFrequency.ONCE
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.SchedulingFrequency.WEEKLY
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.SchedulingTriggerType
 import java.time.DayOfWeek.MONDAY
 import java.time.Duration
 
@@ -17,8 +19,11 @@ class SchedulingApptChangeTriggerBehavioursTest {
   @Nested
   inner class AllocationClashesDoubleBookings {
 
-    @Test
-    fun `APP-CHANGE-TRIGGER-CLASH-01 Double Bookings are made if double booked allocations exist and there are no existing appointments on that date`() {
+    @ParameterizedTest
+    @ArgumentsSource(NonAllocationChangeTriggerTypes::class)
+    fun `APP-CHANGE-TRIGGER-CLASH-01 Double Bookings are made if double booked allocations exist and there are no existing appointments on that date`(
+      triggerType: SchedulingTriggerType,
+    ) {
       schedulingScenario {
         scenarioId("APP-CHANGE-TRIGGER-CLASH-01")
         given {
@@ -28,7 +33,7 @@ class SchedulingApptChangeTriggerBehavioursTest {
           projectExistsWithCode("PROJ2")
           projectExistsWithCode("PROJ3")
           projectExistsWithCode("PROJ4")
-          schedulingIsTriggeredByAnAppointmentChange()
+          schedulingTriggerTypeIs(triggerType)
 
           allocation {
             alias("ALLOC1")
@@ -119,8 +124,9 @@ class SchedulingApptChangeTriggerBehavioursTest {
       }
     }
 
-    @Test
-    fun `APP-CHANGE-TRIGGER-CLASH-02 Double Bookings are not made if double booked allocations exist and there is at least one appointment on the date already, has outcome`() {
+    @ParameterizedTest
+    @ArgumentsSource(NonAllocationChangeTriggerTypes::class)
+    fun `APP-CHANGE-TRIGGER-CLASH-02 Double Bookings are not made if double booked allocations exist and there is at least one appointment on the date already, has outcome`(triggerType: SchedulingTriggerType) {
       schedulingScenario {
         scenarioId("APP-CHANGE-TRIGGER-CLASH-02")
         given {
@@ -130,7 +136,7 @@ class SchedulingApptChangeTriggerBehavioursTest {
           projectExistsWithCode("PROJ2")
           projectExistsWithCode("PROJ3")
           projectExistsWithCode("PROJ4")
-          schedulingIsTriggeredByAnAppointmentChange()
+          schedulingTriggerTypeIs(triggerType)
 
           allocation {
             alias("ALLOC1")
@@ -227,8 +233,9 @@ class SchedulingApptChangeTriggerBehavioursTest {
       }
     }
 
-    @Test
-    fun `APP-CHANGE-TRIGGER-CLASH-03 Double Bookings are not made if double booked allocations exist and there is at least one appointment on the date already, pending`() {
+    @ParameterizedTest
+    @ArgumentsSource(NonAllocationChangeTriggerTypes::class)
+    fun `APP-CHANGE-TRIGGER-CLASH-03 Double Bookings are not made if double booked allocations exist and there is at least one appointment on the date already, pending`(triggerType: SchedulingTriggerType) {
       schedulingScenario {
         scenarioId("APP-CHANGE-TRIGGER-CLASH-03")
         given {
@@ -237,7 +244,7 @@ class SchedulingApptChangeTriggerBehavioursTest {
           projectExistsWithCode("PROJ1")
           projectExistsWithCode("PROJ2")
           projectExistsWithCode("PROJ4")
-          schedulingIsTriggeredByAnAppointmentChange()
+          schedulingTriggerTypeIs(triggerType)
 
           allocation {
             alias("ALLOC1")
@@ -308,15 +315,16 @@ class SchedulingApptChangeTriggerBehavioursTest {
   @Nested
   inner class ManualAppointmentsAndScheduling {
 
-    @Test
-    fun `APP-CHANGE-TRIGGER-MANUAL-01 Manually created appointments in the future without an outcome are retained by the scheduler if attempting to allocate to same day`() {
+    @ParameterizedTest
+    @ArgumentsSource(NonAllocationChangeTriggerTypes::class)
+    fun `APP-CHANGE-TRIGGER-MANUAL-01 Manually created appointments in the future without an outcome are retained by the scheduler if attempting to allocate to same day`(triggerType: SchedulingTriggerType) {
       schedulingScenario {
         scenarioId("APP-CHANGE-TRIGGER-MANUAL-01")
         given {
           requirementHoursAre(24)
           todayIs(MONDAY)
           projectExistsWithCode("PROJ1")
-          schedulingIsTriggeredByAnAppointmentChange()
+          schedulingTriggerTypeIs(triggerType)
 
           allocation {
             alias("ALLOC1")
@@ -367,15 +375,16 @@ class SchedulingApptChangeTriggerBehavioursTest {
       }
     }
 
-    @Test
-    fun `APP-CHANGE-TRIGGER-MANUAL-02 Appointments in the future are retained but potential time credited ignored if not attempting to allocate to same day`() {
+    @ParameterizedTest
+    @ArgumentsSource(NonAllocationChangeTriggerTypes::class)
+    fun `APP-CHANGE-TRIGGER-MANUAL-02 Appointments in the future are retained but potential time credited ignored if not attempting to allocate to same day`(triggerType: SchedulingTriggerType) {
       schedulingScenario {
         scenarioId("APP-CHANGE-TRIGGER-MANUAL-02")
         given {
           requirementHoursAre(16)
           todayIs(MONDAY)
           projectExistsWithCode("PROJ1")
-          schedulingIsTriggeredByAnAppointmentChange()
+          schedulingTriggerTypeIs(triggerType)
 
           allocation {
             alias("ALLOC1")

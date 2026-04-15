@@ -1,6 +1,10 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.unit.service.scheduling.scenarios
 
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.extension.ExtensionContext
+import org.junit.jupiter.params.provider.Arguments
+import org.junit.jupiter.params.provider.ArgumentsProvider
+import org.junit.jupiter.params.support.ParameterDeclarations
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.random
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.scheduling.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.Scheduler
@@ -108,12 +112,8 @@ class SchedulingScenarioBuilder {
       this@SchedulingScenarioBuilder.requirementLength = Duration.ofHours(hours)
     }
 
-    fun schedulingIsTriggeredByAnAppointmentChange() {
-      this@SchedulingScenarioBuilder.triggerType = SchedulingTriggerType.AppointmentChange
-    }
-
-    fun schedulingIsTriggeredByAnAllocationChange() {
-      this@SchedulingScenarioBuilder.triggerType = SchedulingTriggerType.AllocationChange
+    fun schedulingTriggerTypeIs(type: SchedulingTriggerType) {
+      this@SchedulingScenarioBuilder.triggerType = type
     }
   }
 
@@ -351,4 +351,12 @@ class ExpectedAppointmentBuilder {
 
 fun schedulingScenario(init: SchedulingScenarioBuilder.() -> Unit) {
   SchedulingScenarioBuilder().apply(init)
+}
+
+class AllocationChangeTriggerTypes : ArgumentsProvider {
+  override fun provideArguments(parameters: ParameterDeclarations, context: ExtensionContext) = SchedulingTriggerType.entries.filter { it.allocationChange }.map { Arguments.argumentSet("$it", it) }.stream()
+}
+
+class NonAllocationChangeTriggerTypes : ArgumentsProvider {
+  override fun provideArguments(parameters: ParameterDeclarations, context: ExtensionContext) = SchedulingTriggerType.entries.filter { !it.allocationChange }.map { Arguments.argumentSet("$it", it) }.stream()
 }

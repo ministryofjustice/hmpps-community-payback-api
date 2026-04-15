@@ -52,7 +52,7 @@ class SchedulingDomainEventHandler(
       eventId = eventId,
       maxProcessingTime = maxProcessingTime,
       triggerType = when (appointmentEvent.eventType) {
-        AppointmentEventType.UPDATE -> SchedulingTriggerType.AppointmentChange
+        AppointmentEventType.UPDATE -> SchedulingTriggerType.AppointmentUpdated
         AppointmentEventType.CREATE -> SchedulingTriggerType.AppointmentCreated
       },
     )

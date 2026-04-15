@@ -1,10 +1,12 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.unit.service.scheduling.scenarios
 
 import org.junit.jupiter.api.Nested
-import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.ArgumentsSource
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.SchedulingFrequency.FORTNIGHTLY
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.SchedulingFrequency.ONCE
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.SchedulingFrequency.WEEKLY
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.SchedulingTriggerType
 import java.time.DayOfWeek.MONDAY
 import java.time.Duration
 
@@ -17,8 +19,9 @@ class SchedulingAllocChangeTriggerBehavioursTest {
   @Nested
   inner class AllocationClashesDoubleBookings {
 
-    @Test
-    fun `Double Bookings are made if double booked allocations exist and there are no existing appointments on that date`() {
+    @ParameterizedTest
+    @ArgumentsSource(AllocationChangeTriggerTypes::class)
+    fun `Double Bookings are made if double booked allocations exist and there are no existing appointments on that date`(triggerType: SchedulingTriggerType) {
       schedulingScenario {
         scenarioId("NO-ID")
         given {
@@ -28,7 +31,7 @@ class SchedulingAllocChangeTriggerBehavioursTest {
           projectExistsWithCode("PROJ2")
           projectExistsWithCode("PROJ3")
           projectExistsWithCode("PROJ4")
-          schedulingIsTriggeredByAnAllocationChange()
+          schedulingTriggerTypeIs(triggerType)
 
           allocation {
             alias("ALLOC1")
@@ -119,8 +122,9 @@ class SchedulingAllocChangeTriggerBehavioursTest {
       }
     }
 
-    @Test
-    fun `Double Bookings are made if double booked allocations exist and there is at least one appointment on the date already, has outcome`() {
+    @ParameterizedTest
+    @ArgumentsSource(AllocationChangeTriggerTypes::class)
+    fun `Double Bookings are made if double booked allocations exist and there is at least one appointment on the date already, has outcome`(triggerType: SchedulingTriggerType) {
       schedulingScenario {
         scenarioId("NO-ID")
         given {
@@ -130,7 +134,7 @@ class SchedulingAllocChangeTriggerBehavioursTest {
           projectExistsWithCode("PROJ2")
           projectExistsWithCode("PROJ3")
           projectExistsWithCode("PROJ4")
-          schedulingIsTriggeredByAnAllocationChange()
+          schedulingTriggerTypeIs(triggerType)
 
           allocation {
             alias("ALLOC1")
@@ -227,15 +231,16 @@ class SchedulingAllocChangeTriggerBehavioursTest {
       }
     }
 
-    @Test
-    fun `Double Bookings are not made if appointment on same day for same allocation has allocation start and end time, has no outcome`() {
+    @ParameterizedTest
+    @ArgumentsSource(AllocationChangeTriggerTypes::class)
+    fun `Double Bookings are not made if appointment on same day for same allocation has allocation start and end time, has no outcome`(triggerType: SchedulingTriggerType) {
       schedulingScenario {
         scenarioId("NO-ID")
         given {
           requirementHoursAre(4)
           todayIs(MONDAY)
           projectExistsWithCode("PROJ1")
-          schedulingIsTriggeredByAnAllocationChange()
+          schedulingTriggerTypeIs(triggerType)
 
           allocation {
             alias("ALLOC1")
@@ -264,15 +269,16 @@ class SchedulingAllocChangeTriggerBehavioursTest {
       }
     }
 
-    @Test
-    fun `Double Bookings are not made if appointment on same day for same allocation has allocation start and end time, has outcome`() {
+    @ParameterizedTest
+    @ArgumentsSource(AllocationChangeTriggerTypes::class)
+    fun `Double Bookings are not made if appointment on same day for same allocation has allocation start and end time, has outcome`(triggerType: SchedulingTriggerType) {
       schedulingScenario {
         scenarioId("NO-ID")
         given {
           requirementHoursAre(4)
           todayIs(MONDAY)
           projectExistsWithCode("PROJ1")
-          schedulingIsTriggeredByAnAllocationChange()
+          schedulingTriggerTypeIs(triggerType)
 
           allocation {
             alias("ALLOC1")
@@ -304,15 +310,16 @@ class SchedulingAllocChangeTriggerBehavioursTest {
     This highlights a bug in our current implementation because it differs from the NDelius implementation
     because "This doesn’t happen if there is at least one existing appointment today for the allocation that has an outcome recorded"
      */
-    @Test
-    fun `Double Bookings are made if appointment on same day for same allocation has different allocation start and end time, has outcome`() {
+    @ParameterizedTest
+    @ArgumentsSource(AllocationChangeTriggerTypes::class)
+    fun `Double Bookings are made if appointment on same day for same allocation has different allocation start and end time, has outcome`(triggerType: SchedulingTriggerType) {
       schedulingScenario {
         scenarioId("NO-ID")
         given {
           requirementHoursAre(4)
           todayIs(MONDAY)
           projectExistsWithCode("PROJ1")
-          schedulingIsTriggeredByAnAllocationChange()
+          schedulingTriggerTypeIs(triggerType)
 
           allocation {
             alias("ALLOC1")

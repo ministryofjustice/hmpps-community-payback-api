@@ -1,7 +1,9 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.unit.service.scheduling.scenarios
 
-import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.ArgumentsSource
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.SchedulingFrequency.WEEKLY
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.SchedulingTriggerType
 import java.time.DayOfWeek.MONDAY
 import java.time.DayOfWeek.TUESDAY
 import java.time.Duration
@@ -15,15 +17,16 @@ import java.time.Duration
  */
 class SchedulingRemainingTimeTest {
 
-  @Test
-  fun `REMAINING-TIME-01 0 Requirement`() {
+  @ParameterizedTest
+  @ArgumentsSource(NonAllocationChangeTriggerTypes::class)
+  fun `REMAINING-TIME-01 0 Requirement`(triggerType: SchedulingTriggerType) {
     schedulingScenario {
       scenarioId("REMAINING-TIME-01")
       given {
         requirementIs(Duration.ZERO)
         todayIs(MONDAY)
         projectExistsWithCode("PROJ1")
-        schedulingIsTriggeredByAnAppointmentChange()
+        schedulingTriggerTypeIs(triggerType)
 
         allocation {
           alias("ALLOC1")
@@ -41,8 +44,9 @@ class SchedulingRemainingTimeTest {
     }
   }
 
-  @Test
-  fun `REMAINING-TIME-02 No Scheduled Appointments, Create 1 non-truncated Appointment Today`() {
+  @ParameterizedTest
+  @ArgumentsSource(NonAllocationChangeTriggerTypes::class)
+  fun `REMAINING-TIME-02 No Scheduled Appointments, Create 1 non-truncated Appointment Today`(triggerType: SchedulingTriggerType) {
     schedulingScenario {
       scenarioId("REMAINING-TIME-02")
       given {
@@ -50,7 +54,7 @@ class SchedulingRemainingTimeTest {
         todayIs(MONDAY)
         projectExistsWithCode("PROJ1")
         projectExistsWithCode("PROJ2")
-        schedulingIsTriggeredByAnAppointmentChange()
+        schedulingTriggerTypeIs(triggerType)
 
         allocation {
           alias("ALLOC1")
@@ -85,8 +89,9 @@ class SchedulingRemainingTimeTest {
     }
   }
 
-  @Test
-  fun `REMAINING-TIME-03 No Scheduled Appointments, Create 1 truncated Appointment Today`() {
+  @ParameterizedTest
+  @ArgumentsSource(NonAllocationChangeTriggerTypes::class)
+  fun `REMAINING-TIME-03 No Scheduled Appointments, Create 1 truncated Appointment Today`(triggerType: SchedulingTriggerType) {
     schedulingScenario {
       scenarioId("REMAINING-TIME-03")
       given {
@@ -94,7 +99,7 @@ class SchedulingRemainingTimeTest {
         todayIs(MONDAY)
         projectExistsWithCode("PROJ1")
         projectExistsWithCode("PROJ2")
-        schedulingIsTriggeredByAnAppointmentChange()
+        schedulingTriggerTypeIs(triggerType)
 
         allocation {
           alias("ALLOC1")
@@ -129,8 +134,9 @@ class SchedulingRemainingTimeTest {
     }
   }
 
-  @Test
-  fun `REMAINING-TIME-04 Pending Past Appointment Insufficient, Create 1 non-truncated Appointment Today`() {
+  @ParameterizedTest
+  @ArgumentsSource(NonAllocationChangeTriggerTypes::class)
+  fun `REMAINING-TIME-04 Pending Past Appointment Insufficient, Create 1 non-truncated Appointment Today`(triggerType: SchedulingTriggerType) {
     schedulingScenario {
       scenarioId("REMAINING-TIME-04")
       given {
@@ -138,7 +144,7 @@ class SchedulingRemainingTimeTest {
         todayIs(MONDAY)
         projectExistsWithCode("PROJ1")
         projectExistsWithCode("PROJ2")
-        schedulingIsTriggeredByAnAppointmentChange()
+        schedulingTriggerTypeIs(triggerType)
 
         allocation {
           alias("ALLOC1")
@@ -182,8 +188,9 @@ class SchedulingRemainingTimeTest {
     }
   }
 
-  @Test
-  fun `REMAINING-TIME-05 Credited Past Appointment Insufficient, Create 1 non-truncated Appointment Today`() {
+  @ParameterizedTest
+  @ArgumentsSource(NonAllocationChangeTriggerTypes::class)
+  fun `REMAINING-TIME-05 Credited Past Appointment Insufficient, Create 1 non-truncated Appointment Today`(triggerType: SchedulingTriggerType) {
     schedulingScenario {
       scenarioId("REMAINING-TIME-05")
       given {
@@ -191,7 +198,7 @@ class SchedulingRemainingTimeTest {
         todayIs(MONDAY)
         projectExistsWithCode("PROJ1")
         projectExistsWithCode("PROJ2")
-        schedulingIsTriggeredByAnAppointmentChange()
+        schedulingTriggerTypeIs(triggerType)
 
         allocation {
           alias("ALLOC1")
@@ -235,8 +242,9 @@ class SchedulingRemainingTimeTest {
     }
   }
 
-  @Test
-  fun `REMAINING-TIME-06 Non Attended Past Appointment Insufficient, Create 1 non-truncated Appointment Today`() {
+  @ParameterizedTest
+  @ArgumentsSource(NonAllocationChangeTriggerTypes::class)
+  fun `REMAINING-TIME-06 Non Attended Past Appointment Insufficient, Create 1 non-truncated Appointment Today`(triggerType: SchedulingTriggerType) {
     schedulingScenario {
       scenarioId("REMAINING-TIME-06")
       given {
@@ -244,8 +252,7 @@ class SchedulingRemainingTimeTest {
         todayIs(MONDAY)
         projectExistsWithCode("PROJ1")
         projectExistsWithCode("PROJ2")
-        schedulingIsTriggeredByAnAppointmentChange()
-        schedulingIsTriggeredByAnAppointmentChange()
+        schedulingTriggerTypeIs(triggerType)
 
         allocation {
           alias("ALLOC1")
@@ -289,8 +296,9 @@ class SchedulingRemainingTimeTest {
     }
   }
 
-  @Test
-  fun `REMAINING-TIME-07 Pending Past Appointment Insufficient, Create 1 truncated Appointment`() {
+  @ParameterizedTest
+  @ArgumentsSource(NonAllocationChangeTriggerTypes::class)
+  fun `REMAINING-TIME-07 Pending Past Appointment Insufficient, Create 1 truncated Appointment`(triggerType: SchedulingTriggerType) {
     schedulingScenario {
       scenarioId("REMAINING-TIME-07")
       given {
@@ -298,7 +306,7 @@ class SchedulingRemainingTimeTest {
         todayIs(MONDAY)
         projectExistsWithCode("PROJ1")
         projectExistsWithCode("PROJ2")
-        schedulingIsTriggeredByAnAppointmentChange()
+        schedulingTriggerTypeIs(triggerType)
 
         allocation {
           alias("ALLOC1")
@@ -342,8 +350,9 @@ class SchedulingRemainingTimeTest {
     }
   }
 
-  @Test
-  fun `REMAINING-TIME-08 Credited Past Appointment Insufficient, Create 1 truncated Appointment`() {
+  @ParameterizedTest
+  @ArgumentsSource(NonAllocationChangeTriggerTypes::class)
+  fun `REMAINING-TIME-08 Credited Past Appointment Insufficient, Create 1 truncated Appointment`(triggerType: SchedulingTriggerType) {
     schedulingScenario {
       scenarioId("REMAINING-TIME-08")
       given {
@@ -351,7 +360,7 @@ class SchedulingRemainingTimeTest {
         todayIs(MONDAY)
         projectExistsWithCode("PROJ1")
         projectExistsWithCode("PROJ2")
-        schedulingIsTriggeredByAnAppointmentChange()
+        schedulingTriggerTypeIs(triggerType)
 
         allocation {
           alias("ALLOC1")
@@ -395,8 +404,9 @@ class SchedulingRemainingTimeTest {
     }
   }
 
-  @Test
-  fun `REMAINING-TIME-09 Credited Past Appointments Insufficient, Create multiple Appointments including truncated final Appointment`() {
+  @ParameterizedTest
+  @ArgumentsSource(NonAllocationChangeTriggerTypes::class)
+  fun `REMAINING-TIME-09 Credited Past Appointments Insufficient, Create multiple Appointments including truncated final Appointment`(triggerType: SchedulingTriggerType) {
     schedulingScenario {
       scenarioId("REMAINING-TIME-09")
       given {
@@ -404,7 +414,7 @@ class SchedulingRemainingTimeTest {
         todayIs(MONDAY)
         projectExistsWithCode("PROJ1")
         projectExistsWithCode("PROJ2")
-        schedulingIsTriggeredByAnAppointmentChange()
+        schedulingTriggerTypeIs(triggerType)
 
         allocation {
           alias("ALLOC1")

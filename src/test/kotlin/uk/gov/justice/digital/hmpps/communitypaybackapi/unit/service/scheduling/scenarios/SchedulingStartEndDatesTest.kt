@@ -1,9 +1,11 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.unit.service.scheduling.scenarios
 
 import org.junit.jupiter.api.Nested
-import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.ArgumentsSource
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.SchedulingFrequency.FORTNIGHTLY
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.SchedulingFrequency.WEEKLY
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.SchedulingTriggerType
 import java.time.DayOfWeek.MONDAY
 import java.time.DayOfWeek.TUESDAY
 import java.time.Duration
@@ -13,15 +15,16 @@ class SchedulingStartEndDatesTest {
   @Nested
   inner class StartDate {
 
-    @Test
-    fun `DATES-START-01 Allocation Start Date is tomorrow`() {
+    @ParameterizedTest
+    @ArgumentsSource(NonAllocationChangeTriggerTypes::class)
+    fun `DATES-START-01 Allocation Start Date is tomorrow`(triggerType: SchedulingTriggerType) {
       schedulingScenario {
         scenarioId("DATES-START-01")
         given {
           requirementHoursAre(16)
           todayIs(MONDAY)
           projectExistsWithCode("PROJ1")
-          schedulingIsTriggeredByAnAppointmentChange()
+          schedulingTriggerTypeIs(triggerType)
 
           allocation {
             alias("ALLOC1")
@@ -55,15 +58,16 @@ class SchedulingStartEndDatesTest {
       }
     }
 
-    @Test
-    fun `DATES-START-02 Allocation Start Date is today`() {
+    @ParameterizedTest
+    @ArgumentsSource(NonAllocationChangeTriggerTypes::class)
+    fun `DATES-START-02 Allocation Start Date is today`(triggerType: SchedulingTriggerType) {
       schedulingScenario {
         scenarioId("DATES-START-02")
         given {
           requirementHoursAre(16)
           todayIs(TUESDAY)
           projectExistsWithCode("PROJ1")
-          schedulingIsTriggeredByAnAppointmentChange()
+          schedulingTriggerTypeIs(triggerType)
 
           allocation {
             alias("ALLOC1")
@@ -97,15 +101,16 @@ class SchedulingStartEndDatesTest {
       }
     }
 
-    @Test
-    fun `DATES-START-03 Allocation Start Date is in far future`() {
+    @ParameterizedTest
+    @ArgumentsSource(NonAllocationChangeTriggerTypes::class)
+    fun `DATES-START-03 Allocation Start Date is in far future`(triggerType: SchedulingTriggerType) {
       schedulingScenario {
         scenarioId("DATES-START-03")
         given {
           requirementHoursAre(16)
           todayIs(TUESDAY)
           projectExistsWithCode("PROJ1")
-          schedulingIsTriggeredByAnAppointmentChange()
+          schedulingTriggerTypeIs(triggerType)
 
           allocation {
             alias("ALLOC1")
@@ -143,14 +148,15 @@ class SchedulingStartEndDatesTest {
   @Nested
   inner class EndDates {
 
-    @Test
-    fun `DATES-END-01 Allocation End Date is day of next iteration`() {
+    @ParameterizedTest
+    @ArgumentsSource(NonAllocationChangeTriggerTypes::class)
+    fun `DATES-END-01 Allocation End Date is day of next iteration`(triggerType: SchedulingTriggerType) {
       schedulingScenario {
         scenarioId("DATES-END-01")
         given {
           todayIs(MONDAY)
           projectExistsWithCode("PROJ1")
-          schedulingIsTriggeredByAnAppointmentChange()
+          schedulingTriggerTypeIs(triggerType)
 
           allocation {
             requirementHoursAre(80)
@@ -186,15 +192,16 @@ class SchedulingStartEndDatesTest {
       }
     }
 
-    @Test
-    fun `DATES-END-02 Allocation End Date is day before next iteration`() {
+    @ParameterizedTest
+    @ArgumentsSource(NonAllocationChangeTriggerTypes::class)
+    fun `DATES-END-02 Allocation End Date is day before next iteration`(triggerType: SchedulingTriggerType) {
       schedulingScenario {
         scenarioId("DATES-END-02")
         given {
           requirementHoursAre(80)
           todayIs(MONDAY)
           projectExistsWithCode("PROJ1")
-          schedulingIsTriggeredByAnAppointmentChange()
+          schedulingTriggerTypeIs(triggerType)
 
           allocation {
             alias("ALLOC1")
@@ -227,15 +234,16 @@ class SchedulingStartEndDatesTest {
       // see documentation on @NDeliusDataModelsRequired
     }
 
-    @Test
-    fun `DATES-END-04 Allocation End Date is so close to Start Date it prohibits Appointments being created`() {
+    @ParameterizedTest
+    @ArgumentsSource(NonAllocationChangeTriggerTypes::class)
+    fun `DATES-END-04 Allocation End Date is so close to Start Date it prohibits Appointments being created`(triggerType: SchedulingTriggerType) {
       schedulingScenario {
         scenarioId("DATES-END-04")
         given {
           requirementHoursAre(80)
           todayIs(TUESDAY)
           projectExistsWithCode("PROJ1")
-          schedulingIsTriggeredByAnAppointmentChange()
+          schedulingTriggerTypeIs(triggerType)
 
           allocation {
             alias("ALLOC1")
@@ -255,15 +263,16 @@ class SchedulingStartEndDatesTest {
       }
     }
 
-    @Test
-    fun `DATES-END-05 Allocation ends in the past`() {
+    @ParameterizedTest
+    @ArgumentsSource(NonAllocationChangeTriggerTypes::class)
+    fun `DATES-END-05 Allocation ends in the past`(triggerType: SchedulingTriggerType) {
       schedulingScenario {
         scenarioId("DATES-END-05")
         given {
           requirementHoursAre(80)
           todayIs(MONDAY)
           projectExistsWithCode("PROJ1")
-          schedulingIsTriggeredByAnAppointmentChange()
+          schedulingTriggerTypeIs(triggerType)
 
           allocation {
             alias("ALLOC1")

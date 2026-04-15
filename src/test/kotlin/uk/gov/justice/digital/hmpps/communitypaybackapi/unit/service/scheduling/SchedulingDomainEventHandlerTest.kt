@@ -110,7 +110,7 @@ class SchedulingDomainEventHandlerTest {
 
     @ParameterizedTest
     @CsvSource(
-      "UPDATE,AppointmentChange",
+      "UPDATE,AppointmentUpdated",
       "CREATE,AppointmentCreated",
     )
     fun `scheduling triggered`(
