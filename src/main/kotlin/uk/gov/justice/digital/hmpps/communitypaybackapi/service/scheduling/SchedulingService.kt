@@ -27,20 +27,23 @@ import java.util.UUID
  * that there are sufficient Appointments to satisfy the event's unpaid work
  * requirement's remaining time.
  *
+ * A full breakdown of how scheduling works in NDelius is detailed on
+ * https://dsdmoj.atlassian.net/wiki/spaces/CP1/pages/5964468443/NDelius+-+Appointment+Scheduling
+ *
+ * The native NDelius scheduling code cannot be triggered by the `community-payback-and-delius` API,
+ * so instead implement it here.
+ *
  * Scheduling is driven by Allocations, which identify when a person is available
  * to work on a specific project. Allocations apply to a day of the week and are
  * repeated once, weekly or fortnightly. They also have a start and optional
  * end date.
  *
- * Scheduling is only considered with appointment as of the current day. Any existing
+ * Scheduling only considers creating appointments as of today. Any existing
  * appointments as of today with outcomes already recorded are considered immutable
  * and will always be included in the schedule
  *
- * The NDelius scheduling code cannot be triggered by the `community-payback-and-delius` API,
- * so instead we duplicate it here.
- *
- * Currently, scheduling is only supported for appointment changes meaning that
- * appointments will only ever be created to satisfy a shortfall in future appointments.
+ * Currently this scheduling implementation only implements behaviour required for appointments changes
+ * (i.e. it doesn't implement behaviour for allocation changes).
  */
 @Service
 class SchedulingService(
