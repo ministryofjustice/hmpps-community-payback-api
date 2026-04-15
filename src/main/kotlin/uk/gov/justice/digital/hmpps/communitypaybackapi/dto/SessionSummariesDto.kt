@@ -18,10 +18,10 @@ data class SessionSummaryDto(
   val date: LocalDate,
   @Deprecated("Will be removed")
   @param:Schema(description = "Allocation start local time (deprecated)", example = "09:00", pattern = "^([0-1][0-9]|2[0-3]):[0-5][0-9]$", deprecated = true)
-  val startTime: LocalTime,
+  val startTime: LocalTime?,
   @Deprecated("Will be removed")
   @param:Schema(description = "Allocation end local time (deprecated)", example = "17:00", pattern = "^([0-1][0-9]|2[0-3]):[0-5][0-9]$", deprecated = true)
-  val endTime: LocalTime,
+  val endTime: LocalTime?,
   @param:Schema(description = "Number of offenders allocated", example = "12")
   val numberOfOffendersAllocated: Int,
   @param:Schema(description = "Number of offenders with outcomes", example = "2")
