@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.EnvironmentService
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.LockService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.LockService
 import java.time.Duration
 
 @Service
@@ -23,7 +23,7 @@ class BootstrapService(
       error("boot strap should not be enabled outside of test environments")
     }
 
-    lockService.withDistributedLock(key = "bootstrap", leaseTime = Duration.ofSeconds(10)) {
+    lockService.withDistributedLock(key = "lock:bootstrap", leaseTime = Duration.ofSeconds(10)) {
       runAutoSeeders()
     }
   }
