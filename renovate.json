@@ -4,6 +4,10 @@
   "prBodyTemplate": "{{{table}}}{{{notes}}}{{{warnings}}}{{{controls}}}",
   "packageRules": [
     {
+      "matchUpdateTypes": ["patch","minor","major"],
+      "minimumReleaseAge": "7 days"
+    },
+    {
       "matchManagers": ["gradle"],
       "matchUpdateTypes": ["minor", "patch"],
       "groupName": "all non major Gradle dependencies",
