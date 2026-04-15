@@ -5,6 +5,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.inter
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.SchedulingTriggerType
 
 fun SchedulingTrigger.Companion.valid() = SchedulingTrigger(
-  type = SchedulingTriggerType.AppointmentChange,
+  type = SchedulingTriggerType.AppointmentUpdated,
   description = String.random(50),
 )

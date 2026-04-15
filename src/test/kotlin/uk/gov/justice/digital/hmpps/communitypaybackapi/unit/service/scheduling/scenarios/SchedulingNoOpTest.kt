@@ -1,7 +1,9 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.unit.service.scheduling.scenarios
 
-import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.ArgumentsSource
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.SchedulingFrequency.WEEKLY
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.SchedulingTriggerType
 import java.time.DayOfWeek.MONDAY
 import java.time.DayOfWeek.TUESDAY
 import java.time.DayOfWeek.WEDNESDAY
@@ -14,14 +16,16 @@ import java.time.Duration
  */
 class SchedulingNoOpTest {
 
-  @Test
-  fun `NOOP-01 Today's Pending Appointment Satisfies Requirement`() {
+  @ParameterizedTest
+  @ArgumentsSource(NonAllocationChangeTriggerTypes::class)
+  fun `NOOP-01 Today's Pending Appointment Satisfies Requirement`(triggerType: SchedulingTriggerType) {
     schedulingScenario {
       scenarioId("NOOP-01")
       given {
-        requirementIsHours(8)
+        requirementHoursAre(8)
         todayIs(MONDAY)
         projectExistsWithCode("PROJ1")
+        schedulingTriggerTypeIs(triggerType)
 
         allocation {
           alias("ALLOC1")
@@ -38,7 +42,7 @@ class SchedulingNoOpTest {
           today()
           from("12:00")
           until("20:00")
-          pending()
+          pendingOutcome()
         }
       }
 
@@ -48,14 +52,16 @@ class SchedulingNoOpTest {
     }
   }
 
-  @Test
-  fun `NOOP-02 Today's Completed Appointment Time Credited Satisfies Requirement`() {
+  @ParameterizedTest
+  @ArgumentsSource(NonAllocationChangeTriggerTypes::class)
+  fun `NOOP-02 Today's Completed Appointment Time Credited Satisfies Requirement`(triggerType: SchedulingTriggerType) {
     schedulingScenario {
       scenarioId("NOOP-02")
       given {
         requirementIs(Duration.parse("PT6H30M"))
         todayIs(MONDAY)
         projectExistsWithCode("PROJ1")
+        schedulingTriggerTypeIs(triggerType)
 
         allocation {
           alias("ALLOC1")
@@ -82,14 +88,16 @@ class SchedulingNoOpTest {
     }
   }
 
-  @Test
-  fun `NOOP-03 Today's Pending Appointment Exceeds Requirement`() {
+  @ParameterizedTest
+  @ArgumentsSource(NonAllocationChangeTriggerTypes::class)
+  fun `NOOP-03 Today's Pending Appointment Exceeds Requirement`(triggerType: SchedulingTriggerType) {
     schedulingScenario {
       scenarioId("NOOP-03")
       given {
         requirementIs(Duration.parse("PT6H30M"))
         todayIs(MONDAY)
         projectExistsWithCode("PROJ1")
+        schedulingTriggerTypeIs(triggerType)
 
         allocation {
           alias("ALLOC1")
@@ -106,7 +114,7 @@ class SchedulingNoOpTest {
           today()
           from("10:00")
           until("16:30")
-          pending()
+          pendingOutcome()
         }
       }
 
@@ -116,14 +124,16 @@ class SchedulingNoOpTest {
     }
   }
 
-  @Test
-  fun `NOOP-04 Today's Complete Appointment Satisfies Requirement`() {
+  @ParameterizedTest
+  @ArgumentsSource(NonAllocationChangeTriggerTypes::class)
+  fun `NOOP-04 Today's Complete Appointment Satisfies Requirement`(triggerType: SchedulingTriggerType) {
     schedulingScenario {
       scenarioId("NOOP-04")
       given {
         requirementIs(Duration.parse("PT6H30M"))
         todayIs(MONDAY)
         projectExistsWithCode("PROJ1")
+        schedulingTriggerTypeIs(triggerType)
 
         allocation {
           alias("ALLOC1")
@@ -150,14 +160,16 @@ class SchedulingNoOpTest {
     }
   }
 
-  @Test
-  fun `NOOP-05 Yesterday's Pending Appointment Satisfies Requirement`() {
+  @ParameterizedTest
+  @ArgumentsSource(NonAllocationChangeTriggerTypes::class)
+  fun `NOOP-05 Yesterday's Pending Appointment Satisfies Requirement`(triggerType: SchedulingTriggerType) {
     schedulingScenario {
       scenarioId("NOOP-05")
       given {
         requirementIs(Duration.parse("PT6H30M"))
         todayIs(TUESDAY)
         projectExistsWithCode("PROJ1")
+        schedulingTriggerTypeIs(triggerType)
 
         allocation {
           alias("ALLOC1")
@@ -174,7 +186,7 @@ class SchedulingNoOpTest {
           today(-1)
           from("10:00")
           until("18:30")
-          pending()
+          pendingOutcome()
         }
       }
 
@@ -184,14 +196,16 @@ class SchedulingNoOpTest {
     }
   }
 
-  @Test
-  fun `NOOP-06 Yesterday's Complete Appointment Satisfies Requirement`() {
+  @ParameterizedTest
+  @ArgumentsSource(NonAllocationChangeTriggerTypes::class)
+  fun `NOOP-06 Yesterday's Complete Appointment Satisfies Requirement`(triggerType: SchedulingTriggerType) {
     schedulingScenario {
       scenarioId("NOOP-06")
       given {
         requirementIs(Duration.parse("PT2H"))
         todayIs(TUESDAY)
         projectExistsWithCode("PROJ1")
+        schedulingTriggerTypeIs(triggerType)
 
         allocation {
           alias("ALLOC1")
@@ -218,14 +232,16 @@ class SchedulingNoOpTest {
     }
   }
 
-  @Test
-  fun `NOOP-07 Multiple Complete and Pending Past Appointments Satisfy Requirement`() {
+  @ParameterizedTest
+  @ArgumentsSource(NonAllocationChangeTriggerTypes::class)
+  fun `NOOP-07 Multiple Complete and Pending Past Appointments Satisfy Requirement`(triggerType: SchedulingTriggerType) {
     schedulingScenario {
       scenarioId("NOOP-07")
       given {
         requirementIs(Duration.parse("PT120H"))
         todayIs(MONDAY)
         projectExistsWithCode("PROJ1")
+        schedulingTriggerTypeIs(triggerType)
 
         allocation {
           alias("ALLOC1")
@@ -254,14 +270,16 @@ class SchedulingNoOpTest {
     }
   }
 
-  @Test
-  fun `NOOP-08 1 Past and 1 Future Pending Appointments Satisfy Requirement`() {
+  @ParameterizedTest
+  @ArgumentsSource(NonAllocationChangeTriggerTypes::class)
+  fun `NOOP-08 1 Past and 1 Future Pending Appointments Satisfy Requirement`(triggerType: SchedulingTriggerType) {
     schedulingScenario {
       scenarioId("NOOP-08")
       given {
         requirementIs(Duration.parse("PT8H"))
         todayIs(WEDNESDAY)
         projectExistsWithCode("PROJ1")
+        schedulingTriggerTypeIs(triggerType)
 
         allocation {
           alias("ALLOC1")
@@ -278,7 +296,7 @@ class SchedulingNoOpTest {
           today(-1)
           from("08:00")
           until("12:00")
-          pending()
+          pendingOutcome()
         }
 
         appointment {
@@ -287,7 +305,7 @@ class SchedulingNoOpTest {
           today(6)
           from("08:00")
           until("12:00")
-          pending()
+          pendingOutcome()
         }
       }
 
@@ -297,14 +315,16 @@ class SchedulingNoOpTest {
     }
   }
 
-  @Test
-  fun `NOOP-09 1 Past and 1 Future Complete Appointments Satisfy Requirement`() {
+  @ParameterizedTest
+  @ArgumentsSource(NonAllocationChangeTriggerTypes::class)
+  fun `NOOP-09 1 Past and 1 Future Complete Appointments Satisfy Requirement`(triggerType: SchedulingTriggerType) {
     schedulingScenario {
       scenarioId("NOOP-09")
       given {
         requirementIs(Duration.ofHours(8))
         todayIs(WEDNESDAY)
         projectExistsWithCode("PROJ1")
+        schedulingTriggerTypeIs(triggerType)
 
         allocation {
           alias("ALLOC1")
@@ -340,8 +360,9 @@ class SchedulingNoOpTest {
     }
   }
 
-  @Test
-  fun `NOOP-10 Many Past and Future Pending and Complete Appointments Across Multiple Allocations Satisfy Requirement`() {
+  @ParameterizedTest
+  @ArgumentsSource(NonAllocationChangeTriggerTypes::class)
+  fun `NOOP-10 Many Past and Future Pending and Complete Appointments Across Multiple Allocations Satisfy Requirement`(triggerType: SchedulingTriggerType) {
     schedulingScenario {
       scenarioId("NOOP-10")
       given {
@@ -349,6 +370,7 @@ class SchedulingNoOpTest {
         todayIs(WEDNESDAY)
         projectExistsWithCode("PROJ1")
         projectExistsWithCode("PROJ2")
+        schedulingTriggerTypeIs(triggerType)
 
         allocation {
           alias("ALLOC1")
@@ -402,7 +424,7 @@ class SchedulingNoOpTest {
             today(offset)
             from("12:00")
             until("20:00")
-            pending()
+            pendingOutcome()
           }
         }
 
@@ -413,7 +435,7 @@ class SchedulingNoOpTest {
             today(offset)
             from("10:00")
             until("14:00")
-            pending()
+            pendingOutcome()
           }
         }
       }
@@ -424,8 +446,9 @@ class SchedulingNoOpTest {
     }
   }
 
-  @Test
-  fun `NOOP-11 Surplus Appointments are not removed`() {
+  @ParameterizedTest
+  @ArgumentsSource(NonAllocationChangeTriggerTypes::class)
+  fun `NOOP-11 Surplus Appointments are not removed`(triggerType: SchedulingTriggerType) {
     schedulingScenario {
       scenarioId("NOOP-11")
       given {
@@ -433,6 +456,7 @@ class SchedulingNoOpTest {
         todayIs(WEDNESDAY)
         projectExistsWithCode("PROJ1")
         projectExistsWithCode("PROJ2")
+        schedulingTriggerTypeIs(triggerType)
 
         allocation {
           alias("ALLOC1")
@@ -476,7 +500,7 @@ class SchedulingNoOpTest {
           today()
           from("01:00")
           until("09:00")
-          pending()
+          pendingOutcome()
         }
 
         appointment {
@@ -485,7 +509,7 @@ class SchedulingNoOpTest {
           today(10)
           from("01:30")
           until("09:30")
-          pending()
+          pendingOutcome()
         }
 
         appointment {
@@ -494,7 +518,7 @@ class SchedulingNoOpTest {
           today(20)
           from("02:00")
           until("10:00")
-          pending()
+          pendingOutcome()
         }
       }
 

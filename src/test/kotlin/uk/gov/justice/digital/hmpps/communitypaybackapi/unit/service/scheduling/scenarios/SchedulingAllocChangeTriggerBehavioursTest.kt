@@ -11,21 +11,19 @@ import java.time.DayOfWeek.MONDAY
 import java.time.Duration
 
 /**
- * These scenarios highlight behaviours that are specific to scheduling triggered by appointment changes
- * (including adjustments)
+ * Whilst we have not fully implemented scheduling on allocation changes, these unit tests have been
+ * added to provide a counter example to tests defined in [SchedulingApptChangeTriggerBehavioursTest]
  */
-class SchedulingApptChangeTriggerBehavioursTest {
+class SchedulingAllocChangeTriggerBehavioursTest {
 
   @Nested
   inner class AllocationClashesDoubleBookings {
 
     @ParameterizedTest
-    @ArgumentsSource(NonAllocationChangeTriggerTypes::class)
-    fun `APP-CHANGE-TRIGGER-CLASH-01 Double Bookings are made if double booked allocations exist and there are no existing appointments on that date`(
-      triggerType: SchedulingTriggerType,
-    ) {
+    @ArgumentsSource(AllocationChangeTriggerTypes::class)
+    fun `Double Bookings are made if double booked allocations exist and there are no existing appointments on that date`(triggerType: SchedulingTriggerType) {
       schedulingScenario {
-        scenarioId("APP-CHANGE-TRIGGER-CLASH-01")
+        scenarioId("NO-ID")
         given {
           requirementHoursAre(44)
           todayIs(MONDAY)
@@ -125,10 +123,10 @@ class SchedulingApptChangeTriggerBehavioursTest {
     }
 
     @ParameterizedTest
-    @ArgumentsSource(NonAllocationChangeTriggerTypes::class)
-    fun `APP-CHANGE-TRIGGER-CLASH-02 Double Bookings are not made if double booked allocations exist and there is at least one appointment on the date already, has outcome`(triggerType: SchedulingTriggerType) {
+    @ArgumentsSource(AllocationChangeTriggerTypes::class)
+    fun `Double Bookings are made if double booked allocations exist and there is at least one appointment on the date already, has outcome`(triggerType: SchedulingTriggerType) {
       schedulingScenario {
-        scenarioId("APP-CHANGE-TRIGGER-CLASH-02")
+        scenarioId("NO-ID")
         given {
           requirementHoursAre(58)
           todayIs(MONDAY)
@@ -180,6 +178,20 @@ class SchedulingApptChangeTriggerBehavioursTest {
         then {
           shouldCreateAppointments {
             appointment {
+              projectCode("PROJ2")
+              allocation("ALLOC2")
+              today()
+              from("12:00")
+              until("20:00")
+            }
+            appointment {
+              projectCode("PROJ3")
+              allocation("ALLOC3")
+              today()
+              from("10:00")
+              until("18:00")
+            }
+            appointment {
               projectCode("PROJ1")
               allocation("ALLOC1")
               todayWithOffsetDays(7)
@@ -214,65 +226,118 @@ class SchedulingApptChangeTriggerBehavioursTest {
               from("10:00")
               until("18:00")
             }
-            appointment {
-              projectCode("PROJ2")
-              allocation("ALLOC2")
-              todayWithOffsetDays(21)
-              from("12:00")
-              until("20:00")
-            }
-            appointment {
-              projectCode("PROJ3")
-              allocation("ALLOC3")
-              todayWithOffsetDays(21)
-              from("10:00")
-              until("18:00")
-            }
           }
         }
       }
     }
 
     @ParameterizedTest
-    @ArgumentsSource(NonAllocationChangeTriggerTypes::class)
-    fun `APP-CHANGE-TRIGGER-CLASH-03 Double Bookings are not made if double booked allocations exist and there is at least one appointment on the date already, pending`(triggerType: SchedulingTriggerType) {
+    @ArgumentsSource(AllocationChangeTriggerTypes::class)
+    fun `Double Bookings are not made if appointment on same day for same allocation has allocation start and end time, has no outcome`(triggerType: SchedulingTriggerType) {
       schedulingScenario {
-        scenarioId("APP-CHANGE-TRIGGER-CLASH-03")
+        scenarioId("NO-ID")
         given {
-          requirementHoursAre(30)
+          requirementHoursAre(4)
           todayIs(MONDAY)
           projectExistsWithCode("PROJ1")
-          projectExistsWithCode("PROJ2")
-          projectExistsWithCode("PROJ4")
           schedulingTriggerTypeIs(triggerType)
 
           allocation {
             alias("ALLOC1")
             projectCode("PROJ1")
-            frequency(ONCE)
+            frequency(WEEKLY)
             onWeekDay(MONDAY)
             from("10:00")
             until("14:00")
-            startingInDays(7)
+            startingToday()
             endingInDays(7)
           }
 
+          appointment {
+            projectCode("PROJ1")
+            allocation("ALLOC1")
+            today()
+            from("10:00")
+            until("14:00")
+            pendingOutcome()
+          }
+        }
+
+        then {
+          existingAppointmentsSufficient()
+        }
+      }
+    }
+
+    @ParameterizedTest
+    @ArgumentsSource(AllocationChangeTriggerTypes::class)
+    fun `Double Bookings are not made if appointment on same day for same allocation has allocation start and end time, has outcome`(triggerType: SchedulingTriggerType) {
+      schedulingScenario {
+        scenarioId("NO-ID")
+        given {
+          requirementHoursAre(4)
+          todayIs(MONDAY)
+          projectExistsWithCode("PROJ1")
+          schedulingTriggerTypeIs(triggerType)
+
           allocation {
-            alias("ALLOC2")
-            projectCode("PROJ2")
+            alias("ALLOC1")
+            projectCode("PROJ1")
             frequency(WEEKLY)
             onWeekDay(MONDAY)
-            from("12:00")
-            until("20:00")
+            from("10:00")
+            until("14:00")
+            startingToday()
+            endingInDays(7)
           }
 
           appointment {
-            projectCode("PROJ4")
-            manual()
+            projectCode("PROJ1")
+            allocation("ALLOC1")
             today()
-            from("12:00")
-            until("20:00")
-            pendingOutcome()
+            from("10:00")
+            until("14:00")
+          }
+        }
+
+        then {
+          existingAppointmentsSufficient()
+        }
+      }
+    }
+
+    /*
+    This highlights a bug in our current implementation because it differs from the NDelius implementation
+    because "This doesn’t happen if there is at least one existing appointment today for the allocation that has an outcome recorded"
+     */
+    @ParameterizedTest
+    @ArgumentsSource(AllocationChangeTriggerTypes::class)
+    fun `Double Bookings are made if appointment on same day for same allocation has different allocation start and end time, has outcome`(triggerType: SchedulingTriggerType) {
+      schedulingScenario {
+        scenarioId("NO-ID")
+        given {
+          requirementHoursAre(4)
+          todayIs(MONDAY)
+          projectExistsWithCode("PROJ1")
+          schedulingTriggerTypeIs(triggerType)
+
+          allocation {
+            alias("ALLOC1")
+            projectCode("PROJ1")
+            frequency(WEEKLY)
+            onWeekDay(MONDAY)
+            from("10:00")
+            until("14:00")
+            startingToday()
+            endingInDays(7)
+          }
+
+          appointment {
+            projectCode("PROJ1")
+            allocation("ALLOC1")
+            today()
+            from("10:00")
+            until("12:00")
           }
         }
 
@@ -281,147 +346,9 @@ class SchedulingApptChangeTriggerBehavioursTest {
             appointment {
               projectCode("PROJ1")
               allocation("ALLOC1")
-              todayWithOffsetDays(7)
+              today()
               from("10:00")
               until("14:00")
-            }
-            appointment {
-              projectCode("PROJ2")
-              allocation("ALLOC2")
-              todayWithOffsetDays(7)
-              from("12:00")
-              until("20:00")
-            }
-            appointment {
-              projectCode("PROJ2")
-              allocation("ALLOC2")
-              todayWithOffsetDays(14)
-              from("12:00")
-              until("20:00")
-            }
-            appointment {
-              projectCode("PROJ2")
-              allocation("ALLOC2")
-              todayWithOffsetDays(21)
-              from("12:00")
-              until("14:00")
-            }
-          }
-        }
-      }
-    }
-  }
-
-  @Nested
-  inner class ManualAppointmentsAndScheduling {
-
-    @ParameterizedTest
-    @ArgumentsSource(NonAllocationChangeTriggerTypes::class)
-    fun `APP-CHANGE-TRIGGER-MANUAL-01 Manually created appointments in the future without an outcome are retained by the scheduler if attempting to allocate to same day`(triggerType: SchedulingTriggerType) {
-      schedulingScenario {
-        scenarioId("APP-CHANGE-TRIGGER-MANUAL-01")
-        given {
-          requirementHoursAre(24)
-          todayIs(MONDAY)
-          projectExistsWithCode("PROJ1")
-          schedulingTriggerTypeIs(triggerType)
-
-          allocation {
-            alias("ALLOC1")
-            projectCode("PROJ1")
-            frequency(WEEKLY)
-            onWeekDay(MONDAY)
-            from("12:00")
-            until("20:00")
-          }
-
-          appointment {
-            projectCode("PROJ1")
-            manual()
-            today()
-            from("12:00")
-            until("20:00")
-            credited(Duration.parse("PT8H"))
-          }
-
-          appointment {
-            projectCode("PROJ1")
-            manual()
-            today(7)
-            from("12:00")
-            until("13:00")
-            pendingOutcome()
-          }
-        }
-
-        then {
-          shouldCreateAppointments {
-            appointment {
-              projectCode("PROJ1")
-              allocation("ALLOC1")
-              todayWithOffsetDays(14)
-              from("12:00")
-              until("20:00")
-            }
-            appointment {
-              projectCode("PROJ1")
-              allocation("ALLOC1")
-              todayWithOffsetDays(21)
-              from("12:00")
-              until("19:00")
-            }
-          }
-        }
-      }
-    }
-
-    @ParameterizedTest
-    @ArgumentsSource(NonAllocationChangeTriggerTypes::class)
-    fun `APP-CHANGE-TRIGGER-MANUAL-02 Appointments in the future are retained but potential time credited ignored if not attempting to allocate to same day`(triggerType: SchedulingTriggerType) {
-      schedulingScenario {
-        scenarioId("APP-CHANGE-TRIGGER-MANUAL-02")
-        given {
-          requirementHoursAre(16)
-          todayIs(MONDAY)
-          projectExistsWithCode("PROJ1")
-          schedulingTriggerTypeIs(triggerType)
-
-          allocation {
-            alias("ALLOC1")
-            projectCode("PROJ1")
-            frequency(WEEKLY)
-            onWeekDay(MONDAY)
-            from("12:00")
-            until("20:00")
-          }
-
-          appointment {
-            projectCode("PROJ1")
-            manual()
-            today()
-            from("12:00")
-            until("20:00")
-            credited(Duration.parse("PT8H"))
-          }
-
-          appointment {
-            projectCode("PROJ1")
-            manual()
-            today(1)
-            from("00:00")
-            until("23:00")
-            pendingOutcome()
-          }
-        }
-
-        then {
-          shouldCreateAppointments {
-            appointment {
-              projectCode("PROJ1")
-              allocation("ALLOC1")
-              todayWithOffsetDays(7)
-              from("12:00")
-              until("20:00")
             }
           }
         }

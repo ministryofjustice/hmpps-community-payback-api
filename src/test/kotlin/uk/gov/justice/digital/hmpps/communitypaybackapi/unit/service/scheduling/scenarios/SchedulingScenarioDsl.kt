@@ -1,6 +1,10 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.unit.service.scheduling.scenarios
 
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.extension.ExtensionContext
+import org.junit.jupiter.params.provider.Arguments
+import org.junit.jupiter.params.provider.ArgumentsProvider
+import org.junit.jupiter.params.support.ParameterDeclarations
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.random
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.scheduling.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.Scheduler
@@ -36,6 +40,7 @@ class SchedulingScenarioBuilder {
   private val nonWorkingDates = mutableListOf<LocalDate>()
   private val projects = mutableMapOf<String, SchedulingProject>()
   private var scenarioId: String? = null
+  private var triggerType: SchedulingTriggerType? = null
 
   fun scenarioId(scenarioId: String) {
     this.scenarioId = scenarioId
@@ -49,7 +54,7 @@ class SchedulingScenarioBuilder {
     val request = SchedulingRequest.valid().copy(
       today = today,
       trigger = SchedulingTrigger(
-        type = SchedulingTriggerType.AppointmentChange,
+        type = triggerType ?: error("Trigger type must be defined"),
         description = "Unit Test: $scenarioId",
       ),
       requirement = SchedulingRequirement(crn = "CRN1", deliusEventNumber = 5, requirementLengthMinutes = requireNotNull(requirementLength)),
@@ -103,8 +108,12 @@ class SchedulingScenarioBuilder {
       this@SchedulingScenarioBuilder.requirementLength = duration
     }
 
-    fun requirementIsHours(hours: Long) {
+    fun requirementHoursAre(hours: Long) {
       this@SchedulingScenarioBuilder.requirementLength = Duration.ofHours(hours)
+    }
+
+    fun schedulingTriggerTypeIs(type: SchedulingTriggerType) {
+      this@SchedulingScenarioBuilder.triggerType = type
     }
   }
 
@@ -252,7 +261,7 @@ class AppointmentBuilder {
   fun until(time: String) {
     endTime = LocalTime.parse(time)
   }
-  fun pending() {
+  fun pendingOutcome() {
     hasOutcome = false
     creditedTime = null
   }
@@ -313,7 +322,7 @@ class ExpectedAppointmentBuilder {
   fun todayWithOffsetDays(offsetDays: Int) {
     this@ExpectedAppointmentBuilder.offsetDays = offsetDays
   }
-  fun todayWithOffsetDays() {
+  fun today() {
     offsetDays = 0
   }
   fun from(time: String) {
@@ -342,4 +351,12 @@ class ExpectedAppointmentBuilder {
 
 fun schedulingScenario(init: SchedulingScenarioBuilder.() -> Unit) {
   SchedulingScenarioBuilder().apply(init)
+}
+
+class AllocationChangeTriggerTypes : ArgumentsProvider {
+  override fun provideArguments(parameters: ParameterDeclarations, context: ExtensionContext) = SchedulingTriggerType.entries.filter { it.allocationChange }.map { Arguments.argumentSet("$it", it) }.stream()
+}
+
+class NonAllocationChangeTriggerTypes : ArgumentsProvider {
+  override fun provideArguments(parameters: ParameterDeclarations, context: ExtensionContext) = SchedulingTriggerType.entries.filter { !it.allocationChange }.map { Arguments.argumentSet("$it", it) }.stream()
 }

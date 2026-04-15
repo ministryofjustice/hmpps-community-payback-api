@@ -1,22 +1,26 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.unit.service.scheduling.scenarios
 
-import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.ArgumentsSource
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.SchedulingFrequency.WEEKLY
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.SchedulingTriggerType
 import java.time.DayOfWeek.MONDAY
 import java.time.DayOfWeek.WEDNESDAY
 import java.time.Duration
 
 class SchedulingMiscTest {
 
-  @Test
-  fun `MISC-01 Insufficient Allocations to meet requirements`() {
+  @ParameterizedTest
+  @ArgumentsSource(NonAllocationChangeTriggerTypes::class)
+  fun `MISC-01 Insufficient Allocations to meet requirements`(triggerType: SchedulingTriggerType) {
     schedulingScenario {
       scenarioId("MISC-01")
       given {
-        requirementIsHours(160)
+        requirementHoursAre(160)
         todayIs(MONDAY)
         projectExistsWithCode("PROJ1")
         projectExistsWithCode("PROJ2")
+        schedulingTriggerTypeIs(triggerType)
 
         allocation {
           alias("ALLOC1")
@@ -44,7 +48,7 @@ class SchedulingMiscTest {
           appointment {
             projectCode("PROJ1")
             allocation("ALLOC1")
-            todayWithOffsetDays()
+            today()
             from("10:00")
             until("18:00")
           }
@@ -102,14 +106,16 @@ class SchedulingMiscTest {
     }
   }
 
-  @Test
-  fun `MISC-03 Maximum Requirement Length`() {
+  @ParameterizedTest
+  @ArgumentsSource(NonAllocationChangeTriggerTypes::class)
+  fun `MISC-03 Maximum Requirement Length`(triggerType: SchedulingTriggerType) {
     schedulingScenario {
       scenarioId("MISC-03")
       given {
-        requirementIsHours(300)
+        requirementHoursAre(300)
         todayIs(MONDAY)
         projectExistsWithCode("PROJ1")
+        schedulingTriggerTypeIs(triggerType)
 
         allocation {
           alias("ALLOC1")
@@ -137,15 +143,17 @@ class SchedulingMiscTest {
     }
   }
 
-  @Test
-  fun `MISC-04 If multiple allocations on same day, schedule earliest start time first`() {
+  @ParameterizedTest
+  @ArgumentsSource(NonAllocationChangeTriggerTypes::class)
+  fun `MISC-04 If multiple allocations on same day, schedule earliest start time first`(triggerType: SchedulingTriggerType) {
     schedulingScenario {
       scenarioId("MISC-04")
       given {
-        requirementIsHours(8)
+        requirementHoursAre(8)
         todayIs(MONDAY)
         projectExistsWithCode("PROJ1")
         projectExistsWithCode("PROJ2")
+        schedulingTriggerTypeIs(triggerType)
 
         allocation {
           alias("ALLOC1")

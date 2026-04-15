@@ -74,7 +74,7 @@ object ScheduleCreator {
      existing appointments, where as NDelius only considers one of the existing appointments
      (indeterminately).
      */
-    if (ctx.getTriggerType() == SchedulingTriggerType.AppointmentChange && existingAppointmentsToday.isNotEmpty()) {
+    if (!ctx.getTriggerType().allocationChange && existingAppointmentsToday.isNotEmpty()) {
       existingAppointmentsToday.filter { !it.hasOutcome }.forEach {
         ctx.addForcedRetentionAppointment(it)
       }

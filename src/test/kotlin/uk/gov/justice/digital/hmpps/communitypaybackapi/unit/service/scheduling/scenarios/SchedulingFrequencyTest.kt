@@ -1,12 +1,13 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.unit.service.scheduling.scenarios
 
 import org.junit.jupiter.api.Nested
-import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.ArgumentsSource
 import org.junit.jupiter.params.provider.CsvSource
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.SchedulingFrequency.FORTNIGHTLY
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.SchedulingFrequency.ONCE
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.SchedulingFrequency.WEEKLY
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.SchedulingTriggerType
 import java.time.DayOfWeek
 import java.time.DayOfWeek.FRIDAY
 import java.time.DayOfWeek.MONDAY
@@ -20,20 +21,19 @@ import java.time.Duration
  */
 class SchedulingFrequencyTest {
 
-  /**
-   * Once has some surprising/inconsistent behaviour. These are modelled by the ‘inconsistent behaviour’ scenarios
-   */
   @Nested
   inner class Once {
 
-    @Test
-    fun `FREQ-ONCE-01 Schedule 'Once' Allocation for today`() {
+    @ParameterizedTest
+    @ArgumentsSource(NonAllocationChangeTriggerTypes::class)
+    fun `FREQ-ONCE-01 Schedule 'Once' Allocation for today`(triggerType: SchedulingTriggerType) {
       schedulingScenario {
         scenarioId("FREQ-ONCE-01")
         given {
-          requirementIsHours(8)
+          requirementHoursAre(8)
           todayIs(MONDAY)
           projectExistsWithCode("PROJ1")
+          schedulingTriggerTypeIs(triggerType)
 
           allocation {
             alias("ALLOC1")
@@ -51,7 +51,7 @@ class SchedulingFrequencyTest {
             appointment {
               projectCode("PROJ1")
               allocation("ALLOC1")
-              todayWithOffsetDays()
+              today()
               from("12:00")
               until("20:00")
             }
@@ -60,14 +60,16 @@ class SchedulingFrequencyTest {
       }
     }
 
-    @Test
-    fun `FREQ-ONCE-02 Schedule 'Once' Allocation tomorrow`() {
+    @ParameterizedTest
+    @ArgumentsSource(NonAllocationChangeTriggerTypes::class)
+    fun `FREQ-ONCE-02 Schedule 'Once' Allocation tomorrow`(triggerType: SchedulingTriggerType) {
       schedulingScenario {
         scenarioId("FREQ-ONCE-02")
         given {
-          requirementIsHours(8)
+          requirementHoursAre(8)
           todayIs(MONDAY)
           projectExistsWithCode("PROJ1")
+          schedulingTriggerTypeIs(triggerType)
 
           allocation {
             alias("ALLOC1")
@@ -94,14 +96,16 @@ class SchedulingFrequencyTest {
       }
     }
 
-    @Test
-    fun `FREQ-ONCE-03 Schedule 'Once' Allocation in far future`() {
+    @ParameterizedTest
+    @ArgumentsSource(NonAllocationChangeTriggerTypes::class)
+    fun `FREQ-ONCE-03 Schedule 'Once' Allocation in far future`(triggerType: SchedulingTriggerType) {
       schedulingScenario {
         scenarioId("FREQ-ONCE-03")
         given {
-          requirementIsHours(8)
+          requirementHoursAre(8)
           todayIs(MONDAY)
           projectExistsWithCode("PROJ1")
+          schedulingTriggerTypeIs(triggerType)
 
           allocation {
             alias("ALLOC1")
@@ -128,14 +132,16 @@ class SchedulingFrequencyTest {
       }
     }
 
-    @Test
-    fun `FREQ-ONCE-04 Schedule 'Once' Allocation once`() {
+    @ParameterizedTest
+    @ArgumentsSource(NonAllocationChangeTriggerTypes::class)
+    fun `FREQ-ONCE-04 Schedule 'Once' Allocation once`(triggerType: SchedulingTriggerType) {
       schedulingScenario {
         scenarioId("FREQ-ONCE-04")
         given {
-          requirementIsHours(16)
+          requirementHoursAre(16)
           todayIs(THURSDAY)
           projectExistsWithCode("PROJ1")
+          schedulingTriggerTypeIs(triggerType)
 
           allocation {
             alias("ALLOC1")
@@ -162,14 +168,16 @@ class SchedulingFrequencyTest {
       }
     }
 
-    @Test
-    fun `FREQ-ONCE-05 'Once' allocation already scheduled last week will result in multiple appointments if end date allows`() {
+    @ParameterizedTest
+    @ArgumentsSource(NonAllocationChangeTriggerTypes::class)
+    fun `FREQ-ONCE-05 'Once' allocation already scheduled last week will result in multiple appointments if end date allows`(triggerType: SchedulingTriggerType) {
       schedulingScenario {
         scenarioId("FREQ-ONCE-05")
         given {
-          requirementIsHours(40)
+          requirementHoursAre(40)
           todayIs(MONDAY)
           projectExistsWithCode("PROJ1")
+          schedulingTriggerTypeIs(triggerType)
 
           allocation {
             alias("ALLOC1")
@@ -197,7 +205,7 @@ class SchedulingFrequencyTest {
             appointment {
               projectCode("PROJ1")
               allocation("ALLOC1")
-              todayWithOffsetDays()
+              today()
               from("10:00")
               until("20:00")
             }
@@ -206,14 +214,16 @@ class SchedulingFrequencyTest {
       }
     }
 
-    @Test
-    fun `FREQ-ONCE-06 'Once' allocation already scheduled months ago will result in multiple appointments if end date allows`() {
+    @ParameterizedTest
+    @ArgumentsSource(NonAllocationChangeTriggerTypes::class)
+    fun `FREQ-ONCE-06 'Once' allocation already scheduled months ago will result in multiple appointments if end date allows`(triggerType: SchedulingTriggerType) {
       schedulingScenario {
         scenarioId("FREQ-ONCE-06")
         given {
-          requirementIsHours(40)
+          requirementHoursAre(40)
           todayIs(MONDAY)
           projectExistsWithCode("PROJ1")
+          schedulingTriggerTypeIs(triggerType)
 
           allocation {
             alias("ALLOC1")
@@ -241,7 +251,7 @@ class SchedulingFrequencyTest {
             appointment {
               projectCode("PROJ1")
               allocation("ALLOC1")
-              todayWithOffsetDays()
+              today()
               from("10:00")
               until("20:00")
             }
@@ -250,13 +260,15 @@ class SchedulingFrequencyTest {
       }
     }
 
-    @Test
-    fun `FREQ-ONCE-07 'Once' allocation with suitable end date will not result in multiple appointments`() {
+    @ParameterizedTest
+    @ArgumentsSource(NonAllocationChangeTriggerTypes::class)
+    fun `FREQ-ONCE-07 'Once' allocation with suitable end date will not result in multiple appointments`(triggerType: SchedulingTriggerType) {
       schedulingScenario {
         given {
-          requirementIsHours(40)
+          requirementHoursAre(40)
           todayIs(MONDAY)
           projectExistsWithCode("PROJ1")
+          schedulingTriggerTypeIs(triggerType)
 
           allocation {
             alias("ALLOC1")
@@ -303,9 +315,10 @@ class SchedulingFrequencyTest {
       schedulingScenario {
         scenarioId("FREQ-WK-01")
         given {
-          requirementIsHours(4)
+          requirementHoursAre(4)
           todayIs(MONDAY)
           projectExistsWithCode("PROJ1")
+          schedulingTriggerTypeIs(SchedulingTriggerType.AppointmentUpdated)
 
           allocation {
             alias("ALLOC1")
@@ -331,14 +344,16 @@ class SchedulingFrequencyTest {
       }
     }
 
-    @Test
-    fun `FREQ-WK-02 Schedule Weekly Allocation until requirement met, Allocation starting yesterday`() {
+    @ParameterizedTest
+    @ArgumentsSource(NonAllocationChangeTriggerTypes::class)
+    fun `FREQ-WK-02 Schedule Weekly Allocation until requirement met, Allocation starting yesterday`(triggerType: SchedulingTriggerType) {
       schedulingScenario {
         scenarioId("FREQ-WK-02")
         given {
-          requirementIsHours(27)
+          requirementHoursAre(27)
           todayIs(TUESDAY)
           projectExistsWithCode("PROJ1")
+          schedulingTriggerTypeIs(triggerType)
 
           allocation {
             alias("ALLOC1")
@@ -366,14 +381,16 @@ class SchedulingFrequencyTest {
       }
     }
 
-    @Test
-    fun `FREQ-WK-03 Schedule Weekly Allocation until requirement met, Allocation starting today`() {
+    @ParameterizedTest
+    @ArgumentsSource(NonAllocationChangeTriggerTypes::class)
+    fun `FREQ-WK-03 Schedule Weekly Allocation until requirement met, Allocation starting today`(triggerType: SchedulingTriggerType) {
       schedulingScenario {
         scenarioId("FREQ-WK-03")
         given {
-          requirementIsHours(50)
+          requirementHoursAre(50)
           todayIs(TUESDAY)
           projectExistsWithCode("PROJ1")
+          schedulingTriggerTypeIs(triggerType)
 
           allocation {
             alias("ALLOC1")
@@ -401,14 +418,16 @@ class SchedulingFrequencyTest {
       }
     }
 
-    @Test
-    fun `FREQ-WK-04 Schedule Weekly Allocation until requirement met, Allocation starting tomorrow`() {
+    @ParameterizedTest
+    @ArgumentsSource(NonAllocationChangeTriggerTypes::class)
+    fun `FREQ-WK-04 Schedule Weekly Allocation until requirement met, Allocation starting tomorrow`(triggerType: SchedulingTriggerType) {
       schedulingScenario {
         scenarioId("FREQ-WK-04")
         given {
-          requirementIsHours(80)
+          requirementHoursAre(80)
           todayIs(MONDAY)
           projectExistsWithCode("PROJ1")
+          schedulingTriggerTypeIs(triggerType)
 
           allocation {
             alias("ALLOC1")
@@ -454,9 +473,10 @@ class SchedulingFrequencyTest {
       schedulingScenario {
         scenarioId("FREQ-FN-01")
         given {
-          requirementIsHours(8)
+          requirementHoursAre(8)
           todayIs(MONDAY)
           projectExistsWithCode("PROJ1")
+          schedulingTriggerTypeIs(SchedulingTriggerType.AppointmentUpdated)
 
           allocation {
             alias("ALLOC1")
@@ -490,14 +510,16 @@ class SchedulingFrequencyTest {
       }
     }
 
-    @Test
-    fun `FREQ-FN-02 Schedule Fortnightly Allocation until requirement met, iterating from Allocation start date`() {
+    @ParameterizedTest
+    @ArgumentsSource(NonAllocationChangeTriggerTypes::class)
+    fun `FREQ-FN-02 Schedule Fortnightly Allocation until requirement met, iterating from Allocation start date`(triggerType: SchedulingTriggerType) {
       schedulingScenario {
         scenarioId("FREQ-FN-02")
         given {
-          requirementIsHours(8)
+          requirementHoursAre(8)
           todayIs(MONDAY)
           projectExistsWithCode("PROJ1")
+          schedulingTriggerTypeIs(triggerType)
 
           allocation {
             alias("ALLOC1")
@@ -526,14 +548,16 @@ class SchedulingFrequencyTest {
       }
     }
 
-    @Test
-    fun `FREQ-FN-03 Schedule Fortnightly Allocation until requirement met, starting 14 days ago`() {
+    @ParameterizedTest
+    @ArgumentsSource(NonAllocationChangeTriggerTypes::class)
+    fun `FREQ-FN-03 Schedule Fortnightly Allocation until requirement met, starting 14 days ago`(triggerType: SchedulingTriggerType) {
       schedulingScenario {
         scenarioId("FREQ-FN-03")
         given {
-          requirementIsHours(8)
+          requirementHoursAre(8)
           todayIs(FRIDAY)
           projectExistsWithCode("PROJ1")
+          schedulingTriggerTypeIs(triggerType)
 
           allocation {
             alias("ALLOC1")
@@ -562,14 +586,16 @@ class SchedulingFrequencyTest {
       }
     }
 
-    @Test
-    fun `FREQ-FN-04 Schedule Fortnightly Allocation until requirement met, starting 8 days ago`() {
+    @ParameterizedTest
+    @ArgumentsSource(NonAllocationChangeTriggerTypes::class)
+    fun `FREQ-FN-04 Schedule Fortnightly Allocation until requirement met, starting 8 days ago`(triggerType: SchedulingTriggerType) {
       schedulingScenario {
         scenarioId("FREQ-FN-04")
         given {
-          requirementIsHours(8)
+          requirementHoursAre(8)
           todayIs(SATURDAY)
           projectExistsWithCode("PROJ1")
+          schedulingTriggerTypeIs(triggerType)
 
           allocation {
             alias("ALLOC1")
@@ -598,14 +624,16 @@ class SchedulingFrequencyTest {
       }
     }
 
-    @Test
-    fun `FREQ-FN-05 Schedule Fortnightly Allocation until requirement met, starting yesterday`() {
+    @ParameterizedTest
+    @ArgumentsSource(NonAllocationChangeTriggerTypes::class)
+    fun `FREQ-FN-05 Schedule Fortnightly Allocation until requirement met, starting yesterday`(triggerType: SchedulingTriggerType) {
       schedulingScenario {
         scenarioId("FREQ-FN-05")
         given {
-          requirementIsHours(8)
+          requirementHoursAre(8)
           todayIs(FRIDAY)
           projectExistsWithCode("PROJ1")
+          schedulingTriggerTypeIs(triggerType)
 
           allocation {
             alias("ALLOC1")
@@ -634,14 +662,16 @@ class SchedulingFrequencyTest {
       }
     }
 
-    @Test
-    fun `FREQ-FN-06 Schedule Fortnightly Allocation until requirement met, starting today`() {
+    @ParameterizedTest
+    @ArgumentsSource(NonAllocationChangeTriggerTypes::class)
+    fun `FREQ-FN-06 Schedule Fortnightly Allocation until requirement met, starting today`(triggerType: SchedulingTriggerType) {
       schedulingScenario {
         scenarioId("FREQ-FN-06")
         given {
-          requirementIsHours(8)
+          requirementHoursAre(8)
           todayIs(FRIDAY)
           projectExistsWithCode("PROJ1")
+          schedulingTriggerTypeIs(triggerType)
 
           allocation {
             alias("ALLOC1")
@@ -670,14 +700,16 @@ class SchedulingFrequencyTest {
       }
     }
 
-    @Test
-    fun `FREQ-FN-07 Schedule Fortnightly Allocation until requirement met, starting tomorrow`() {
+    @ParameterizedTest
+    @ArgumentsSource(NonAllocationChangeTriggerTypes::class)
+    fun `FREQ-FN-07 Schedule Fortnightly Allocation until requirement met, starting tomorrow`(triggerType: SchedulingTriggerType) {
       schedulingScenario {
         scenarioId("FREQ-FN-07")
         given {
-          requirementIsHours(8)
+          requirementHoursAre(8)
           todayIs(SATURDAY)
           projectExistsWithCode("PROJ1")
+          schedulingTriggerTypeIs(triggerType)
 
           allocation {
             alias("ALLOC1")
@@ -706,14 +738,16 @@ class SchedulingFrequencyTest {
       }
     }
 
-    @Test
-    fun `FREQ-FN-08 Schedule Fortnightly Allocation until requirement met, over a year`() {
+    @ParameterizedTest
+    @ArgumentsSource(NonAllocationChangeTriggerTypes::class)
+    fun `FREQ-FN-08 Schedule Fortnightly Allocation until requirement met, over a year`(triggerType: SchedulingTriggerType) {
       schedulingScenario {
         scenarioId("FREQ-FN-08")
         given {
-          requirementIsHours(52)
+          requirementHoursAre(52)
           todayIs(FRIDAY)
           projectExistsWithCode("PROJ1")
+          schedulingTriggerTypeIs(triggerType)
 
           allocation {
             alias("ALLOC1")
@@ -746,12 +780,13 @@ class SchedulingFrequencyTest {
   @Nested
   inner class Mixed {
 
-    @Test
-    fun `FREQ-MIXED-01 Multiple Allocations of different Frequencies`() {
+    @ParameterizedTest
+    @ArgumentsSource(NonAllocationChangeTriggerTypes::class)
+    fun `FREQ-MIXED-01 Multiple Allocations of different Frequencies`(triggerType: SchedulingTriggerType) {
       schedulingScenario {
         scenarioId("FREQ-MIXED-01")
         given {
-          requirementIsHours(37)
+          requirementHoursAre(37)
           todayIs(FRIDAY)
           projectExistsWithCode("PROJ1")
           projectExistsWithCode("PROJ2")
@@ -759,6 +794,7 @@ class SchedulingFrequencyTest {
           projectExistsWithCode("PROJ4")
           projectExistsWithCode("PROJ5")
           projectExistsWithCode("PROJ6")
+          schedulingTriggerTypeIs(triggerType)
 
           allocation {
             alias("ALLOC1")
@@ -826,7 +862,7 @@ class SchedulingFrequencyTest {
             appointment {
               projectCode("PROJ1")
               allocation("ALLOC1")
-              todayWithOffsetDays()
+              today()
               from("10:00")
               until("12:00")
             }
@@ -905,7 +941,7 @@ class SchedulingFrequencyTest {
       }
     }
 
-    @NDeliusDataModelsRequired
+    @TestByNDeliusDataModelMapping
     fun `FREQ-MIXED-02 Use largest frequency defined between Allocation and linked Availability`() {
       // see documentation on @NDeliusDataModelsRequired
     }

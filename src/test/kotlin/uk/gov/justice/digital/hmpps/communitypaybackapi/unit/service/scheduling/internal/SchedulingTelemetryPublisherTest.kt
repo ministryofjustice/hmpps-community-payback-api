@@ -39,7 +39,7 @@ class SchedulingTelemetryPublisherTest {
       request = SchedulingRequest.valid().copy(
         id = ID,
         requirement = SchedulingRequirement.valid().copy(crn = "CRN123"),
-        trigger = SchedulingTrigger.valid().copy(type = SchedulingTriggerType.AppointmentChange),
+        trigger = SchedulingTrigger.valid().copy(type = SchedulingTriggerType.AppointmentUpdated),
       ),
       outcome = SchedulerOutcome.ExistingAppointmentsSufficient,
     )
@@ -50,7 +50,7 @@ class SchedulingTelemetryPublisherTest {
         properties = mapOf(
           "id" to ID.toString(),
           "crn" to "CRN123",
-          "triggerType" to "AppointmentChange",
+          "triggerType" to "AppointmentUpdated",
           "outcome" to "ExistingAppointmentsSufficient",
           "appointmentCreationCount" to "0",
         ),
@@ -64,7 +64,7 @@ class SchedulingTelemetryPublisherTest {
       request = SchedulingRequest.valid().copy(
         id = ID,
         requirement = SchedulingRequirement.valid().copy(crn = "CRN456"),
-        trigger = SchedulingTrigger.valid().copy(type = SchedulingTriggerType.AppointmentChange),
+        trigger = SchedulingTrigger.valid().copy(type = SchedulingTriggerType.AppointmentUpdated),
       ),
       outcome = SchedulerOutcome.RequirementAlreadySatisfied,
     )
@@ -75,7 +75,7 @@ class SchedulingTelemetryPublisherTest {
         properties = mapOf(
           "id" to ID.toString(),
           "crn" to "CRN456",
-          "triggerType" to "AppointmentChange",
+          "triggerType" to "AppointmentUpdated",
           "outcome" to "RequirementAlreadySatisfied",
           "appointmentCreationCount" to "0",
         ),
@@ -89,7 +89,7 @@ class SchedulingTelemetryPublisherTest {
       request = SchedulingRequest.valid().copy(
         id = ID,
         requirement = SchedulingRequirement.valid().copy(crn = "CRN789"),
-        trigger = SchedulingTrigger.valid().copy(type = SchedulingTriggerType.AppointmentChange),
+        trigger = SchedulingTrigger.valid().copy(type = SchedulingTriggerType.AppointmentUpdated),
       ),
       outcome = SchedulerOutcome.ExistingAppointmentsInsufficient(
         SchedulePlan.valid().copy(
@@ -109,7 +109,7 @@ class SchedulingTelemetryPublisherTest {
         properties = mapOf(
           "id" to ID.toString(),
           "crn" to "CRN789",
-          "triggerType" to "AppointmentChange",
+          "triggerType" to "AppointmentUpdated",
           "outcome" to "ExistingAppointmentsInsufficient",
           "appointmentCreationCount" to "3",
         ),
