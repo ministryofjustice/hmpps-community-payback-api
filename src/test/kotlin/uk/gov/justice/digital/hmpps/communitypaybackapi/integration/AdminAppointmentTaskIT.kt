@@ -82,18 +82,16 @@ class AdminAppointmentTaskIT : IntegrationTestBase() {
 
     @Test
     fun `should return pending appointment tasks with default pagination`() {
-      val appointment = saveAppointment(date = LocalDate.now(), providerCode = "PROVIDER1", deliusId = 101L)
+      val appointment = AppointmentEntity.valid().copy(
+        deliusId = 101L,
+        providerCode = "PROVIDER1",
+        date = LocalDate.now(),
+      ).persist(ctx)
       saveTask(appointment)
-
-      val matchingAppointmentSummary = NDAppointmentSummary.valid(ctx).copy(
-        id = 101L,
-        case = NDCaseSummary.valid().copy(crn = appointment.crn),
-        date = appointment.date,
-      )
 
       CommunityPaybackAndDeliusMockServer.setupGetAppointmentsResponse(
         username = "theusername",
-        appointments = listOf(matchingAppointmentSummary),
+        appointments = listOf(NDAppointmentSummary.forAppointment(appointment)),
         appointmentIds = listOf(101L),
         sortString = "name,desc",
         pageSize = 1,
@@ -195,25 +193,31 @@ class AdminAppointmentTaskIT : IntegrationTestBase() {
       val toDate = LocalDate.now()
       val providerCode = "PROVIDER1"
 
-      val matchingAppointment = saveAppointment(date = fromDate.plusDays(1), providerCode = providerCode, deliusId = 101L)
+      val matchingAppointment = AppointmentEntity.valid().copy(
+        deliusId = 101L,
+        providerCode = providerCode,
+        date = fromDate.plusDays(1),
+      ).persist(ctx)
       saveTask(matchingAppointment)
 
-      val wrongDateAppointment = saveAppointment(date = fromDate.minusDays(1), providerCode = providerCode, deliusId = 102L)
+      val wrongDateAppointment = AppointmentEntity.valid().copy(
+        deliusId = 102L,
+        providerCode = providerCode,
+        date = fromDate.minusDays(1),
+      ).persist(ctx)
       saveTask(wrongDateAppointment)
 
-      val wrongProviderAppointment = saveAppointment(date = fromDate.plusDays(1), providerCode = "OTHER_PROV", deliusId = 103L)
+      val wrongProviderAppointment = AppointmentEntity.valid().copy(
+        deliusId = 103L,
+        providerCode = "OTHER_PROV",
+        date = fromDate.plusDays(1),
+      ).persist(ctx)
       saveTask(wrongProviderAppointment)
-
-      val matchingAppointmentSummary = NDAppointmentSummary.valid(ctx).copy(
-        id = 101L,
-        case = NDCaseSummary.valid().copy(crn = matchingAppointment.crn),
-        date = matchingAppointment.date,
-      )
 
       CommunityPaybackAndDeliusMockServer.setupGetAppointmentsResponse(
         username = "theusername",
         appointmentIds = listOf(101L),
-        appointments = listOf(matchingAppointmentSummary),
+        appointments = listOf(NDAppointmentSummary.forAppointment(matchingAppointment)),
         sortString = "name,desc",
         pageSize = 1,
       )
@@ -230,18 +234,6 @@ class AdminAppointmentTaskIT : IntegrationTestBase() {
       assertThat(pageResponse.content[0].appointment.id).isEqualTo(101L)
       assertThat(pageResponse.content[0].appointment.date).isEqualTo(matchingAppointment.date)
     }
-
-    private fun saveAppointment(date: LocalDate, providerCode: String, deliusId: Long): AppointmentEntity = appointmentEntityRepository.save(
-      AppointmentEntity(
-        id = UUID.randomUUID(),
-        deliusId = deliusId,
-        crn = "CRN$deliusId",
-        deliusEventNumber = 1,
-        createdByCommunityPayback = true,
-        date = date,
-        providerCode = providerCode,
-      ),
-    )
 
     private fun saveTask(appointment: AppointmentEntity): AppointmentTaskEntity = appointmentTaskEntityRepository.save(
       AppointmentTaskEntity(
