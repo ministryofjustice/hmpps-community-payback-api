@@ -111,6 +111,10 @@ class SchedulingScenarioBuilder {
     fun schedulingIsTriggeredByAnAppointmentChange() {
       this@SchedulingScenarioBuilder.triggerType = SchedulingTriggerType.AppointmentChange
     }
+
+    fun schedulingIsTriggeredByAnAllocationChange() {
+      this@SchedulingScenarioBuilder.triggerType = SchedulingTriggerType.AllocationChange
+    }
   }
 
   @SchedulingScenarioDslMarker

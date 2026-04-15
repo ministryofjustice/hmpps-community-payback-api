@@ -26,10 +26,14 @@ data class SchedulingTrigger(
   companion object
 }
 
-enum class SchedulingTriggerType {
-  AdjustmentCreated,
-  AppointmentCreated,
-  AppointmentChange,
+enum class SchedulingTriggerType(val allocationChange: Boolean) {
+  AdjustmentCreated(false),
+
+  // This currently only exists to unit test specific behaviour
+  // that doesn't apply to allocation changes
+  AllocationChange(true),
+  AppointmentCreated(false),
+  AppointmentChange(false),
 }
 
 data class SchedulingRequirement(
