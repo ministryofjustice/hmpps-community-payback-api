@@ -13,7 +13,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentEventEntityFactory
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentEventTrigger
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.CreateAdjustmentEvent
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AdjustmentCreatedEvent
 import java.time.LocalDate
 import java.time.OffsetDateTime
 
@@ -26,7 +26,7 @@ class AdjustmentEventEntityFactoryTest {
     val reason = AdjustmentReasonEntity.valid()
 
     val result = AdjustmentEventEntityFactory().buildAdjustmentCreated(
-      CreateAdjustmentEvent(
+      AdjustmentCreatedEvent(
         createDto = CreateAdjustmentDto.valid().copy(
           type = CreateAdjustmentTypeDto.Negative,
           minutes = 61,

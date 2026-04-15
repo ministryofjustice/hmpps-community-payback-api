@@ -7,9 +7,9 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.validUpdateA
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventTrigger
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.UpdateAppointmentEvent
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AppointmentUpdatedEvent
 
-fun UpdateAppointmentEvent.Companion.valid() = UpdateAppointmentEvent(
+fun AppointmentUpdatedEvent.Companion.valid() = AppointmentUpdatedEvent(
   updateDto = AppointmentValidationService.ValidatedAppointment.validUpdateAppointment(),
   appointmentEntity = AppointmentEntity.valid(),
   existingAppointment = AppointmentDto.valid(),

@@ -40,9 +40,9 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentRetri
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentTaskService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService.ValidatedAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ContextService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AdjustmentCreatedEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AppointmentCreatedEvent
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.CreateAdjustmentEvent
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.UpdateAppointmentEvent
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AppointmentUpdatedEvent
 import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.time.temporal.ChronoUnit
@@ -142,7 +142,7 @@ class AppointmentTaskServiceTest {
 
     @Test
     fun `no outcome, do nothing`() {
-      val event = UpdateAppointmentEvent.valid().copy(
+      val event = AppointmentUpdatedEvent.valid().copy(
         updateDto = ValidatedAppointment.validUpdateAppointment().copy(
           contactOutcome = null,
         ),
@@ -155,7 +155,7 @@ class AppointmentTaskServiceTest {
 
     @Test
     fun `outcome not attended, do nothing`() {
-      val event = UpdateAppointmentEvent.valid().copy(
+      val event = AppointmentUpdatedEvent.valid().copy(
         updateDto = ValidatedAppointment.validUpdateAppointment().copy(
           contactOutcome = ContactOutcomeEntity.valid().copy(attended = false),
         ),
@@ -171,7 +171,7 @@ class AppointmentTaskServiceTest {
     fun `project group time doesn't support travel time, do nothing`(
       projectTypeGroup: ProjectTypeGroupDto,
     ) {
-      val event = UpdateAppointmentEvent.valid().copy(
+      val event = AppointmentUpdatedEvent.valid().copy(
         updateDto = ValidatedAppointment.validUpdateAppointment().copy(
           contactOutcome = ContactOutcomeEntity.valid().copy(attended = true),
           project = ProjectDto.valid().copy(projectType = ProjectTypeDto.valid().copy(group = projectTypeGroup)),
@@ -188,7 +188,7 @@ class AppointmentTaskServiceTest {
     fun `only create task if outcome is attended and project group type supports travel time`(
       projectTypeGroup: ProjectTypeGroupDto,
     ) {
-      val event = UpdateAppointmentEvent.valid().copy(
+      val event = AppointmentUpdatedEvent.valid().copy(
         updateDto = ValidatedAppointment.validUpdateAppointment().copy(
           contactOutcome = ContactOutcomeEntity.valid().copy(attended = true),
           project = ProjectDto.valid().copy(projectType = ProjectTypeDto.valid().copy(group = projectTypeGroup)),
@@ -220,7 +220,7 @@ class AppointmentTaskServiceTest {
       every { appointmentTaskEntityRepository.save(any()) } returnsArgument 0
 
       service.closeTravelTimeTaskOnAdjustmentCreation(
-        CreateAdjustmentEvent.valid().copy(
+        AdjustmentCreatedEvent.valid().copy(
           trigger = AdjustmentEventTrigger.valid().copy(
             triggeredAt = triggeredAt,
             triggeredBy = task.id.toString(),

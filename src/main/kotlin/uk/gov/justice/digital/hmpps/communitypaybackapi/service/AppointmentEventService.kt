@@ -8,7 +8,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventE
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AppointmentCreatedEvent
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.UpdateAppointmentEvent
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AppointmentUpdatedEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toAppointmentCreatedDomainEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toAppointmentUpdatedDomainEvent
 import java.time.OffsetDateTime
@@ -26,7 +26,7 @@ class AppointmentEventService(
 
   fun getEvent(eventId: UUID) = appointmentEventEntityRepository.findByIdOrNull(eventId)
 
-  fun hasUpdateAlreadyBeenSent(proposedUpdateDetails: UpdateAppointmentEvent): Boolean {
+  fun hasUpdateAlreadyBeenSent(proposedUpdateDetails: AppointmentUpdatedEvent): Boolean {
     val proposedUpdate = appointmentEventEntityFactory.buildUpdatedEvent(proposedUpdateDetails)
 
     return appointmentEventEntityRepository
@@ -54,7 +54,7 @@ class AppointmentEventService(
 
   @EventListener
   fun persistAndPublishAppointmentUpdateDomainEvent(
-    event: UpdateAppointmentEvent,
+    event: AppointmentUpdatedEvent,
   ) {
     persistAndPublishDomainEventOnTransactionCommit(appointmentEventEntityFactory.buildUpdatedEvent(event))
   }

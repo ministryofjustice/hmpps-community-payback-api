@@ -35,7 +35,7 @@ sealed interface CommunityPaybackSpringEvent {
     companion object
   }
 
-  data class CreateAdjustmentEvent(
+  data class AdjustmentCreatedEvent(
     val createDto: CreateAdjustmentDto,
     val appointmentEntity: AppointmentEntity,
     val reason: AdjustmentReasonEntity,
@@ -45,7 +45,7 @@ sealed interface CommunityPaybackSpringEvent {
     companion object
   }
 
-  data class UpdateAppointmentEvent(
+  data class AppointmentUpdatedEvent(
     val updateDto: AppointmentValidationService.ValidatedAppointment<UpdateAppointmentOutcomeDto>,
     val appointmentEntity: AppointmentEntity,
     val existingAppointment: AppointmentDto,
@@ -53,4 +53,18 @@ sealed interface CommunityPaybackSpringEvent {
   ) : CommunityPaybackSpringEvent {
     companion object
   }
+
+  /**
+   * Used to indicate that any NDelius entities/changes applied for a
+   * prior event should be rolled back. This will typically be raised
+   * when the corresponding thread of execution cannot complete
+   * (e.g. database transaction fails to commit)
+   *
+   * The handler function should _not_ be transacted to minimise the
+   * chance of failure (and this shouldn't be required anyway if
+   * just dealing with NDelius)
+   */
+  data class NDeliusRollbackRequired(
+    val event: CommunityPaybackSpringEvent,
+  ) : CommunityPaybackSpringEvent
 }
