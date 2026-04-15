@@ -38,7 +38,7 @@ class AdminAppointmentTaskController(
     produces = [MediaType.APPLICATION_JSON_VALUE],
   )
   @Operation(
-    description = "Get pending appointment tasks with optional filters",
+    description = "Get pending appointment tasks with optional filters. Supported sort fields are: createdAt, appointment.crn - Default sort: createdAt DESC, size: 50",
     responses = [
       ApiResponse(
         responseCode = "200",
@@ -57,14 +57,7 @@ class AdminAppointmentTaskController(
   )
   @PageableAsQueryParam
   fun getPendingAppointmentTasks(
-    @Parameter(
-      hidden = true,
-      description = "Pagination parameters. Default sort: createdAt DESC, size: 50",
-      schema = Schema(
-        implementation = Pageable::class,
-        description = "Pagination parameters for appointment tasks",
-      ),
-    )
+    @Parameter(hidden = true)
     @PageableDefault(size = 50, sort = ["createdAt"], direction = Sort.Direction.DESC) pageable: Pageable,
     @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) appointmentFromDate: LocalDate?,
     @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) appointmentToDate: LocalDate?,

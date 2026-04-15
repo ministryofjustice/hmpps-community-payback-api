@@ -18,7 +18,6 @@ interface AppointmentTaskEntityRepository : JpaRepository<AppointmentTaskEntity,
     AND ((cast(:fromDate as date) IS NULL) OR (appointment.date >= :fromDate))
     AND ((cast(:toDate as date) IS NULL) OR (appointment.date <= :toDate))
     AND ((cast(:providerCode as string) IS NULL) OR (appointment.providerCode = :providerCode))
-    ORDER BY task.createdAt DESC
     """,
   )
   fun findPendingTasksWithFiltersAndAppointments(

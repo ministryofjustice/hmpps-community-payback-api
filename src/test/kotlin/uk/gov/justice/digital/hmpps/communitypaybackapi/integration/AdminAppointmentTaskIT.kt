@@ -113,6 +113,83 @@ class AdminAppointmentTaskIT : IntegrationTestBase() {
     }
 
     @Test
+    fun `should support sorting`() {
+      val appointment1 = AppointmentEntity.valid().copy(
+        deliusId = 101L,
+        crn = "CRN111",
+      ).persist(ctx)
+      val task1 = saveTask(appointment1)
+
+      val appointment2 = appointmentEntityRepository.save(
+        AppointmentEntity.valid().copy(
+          deliusId = 102L,
+          crn = "CRN999",
+        ),
+      ).persist(ctx)
+      val task2 = saveTask(appointment2)
+
+      val appointment3 = appointmentEntityRepository.save(
+        AppointmentEntity.valid().copy(
+          deliusId = 103L,
+          crn = "CRN222",
+        ),
+      ).persist(ctx)
+      val task3 = saveTask(appointment3)
+
+      CommunityPaybackAndDeliusMockServer.setupGetAppointmentsResponse(
+        username = "theusername",
+        appointmentIds = listOf(
+          appointment1.deliusId,
+          appointment2.deliusId,
+          appointment3.deliusId,
+        ),
+        appointments = listOf(
+          NDAppointmentSummary.forAppointment(appointment1),
+          NDAppointmentSummary.forAppointment(appointment2),
+          NDAppointmentSummary.forAppointment(appointment3),
+        ),
+        sortString = "name,desc",
+        pageSize = 3,
+      )
+
+      fun invokeEndpointWithSort(sort: String) = webTestClient.get()
+        .uri("/admin/appointment-tasks/pending?page=0&size=10&sort=$sort")
+        .addAdminUiAuthHeader("theusername")
+        .exchange()
+        .expectStatus()
+        .isOk
+        .bodyAsObject<PageResponse<AppointmentTaskSummaryDto>>()
+
+      invokeEndpointWithSort("appointment.crn,asc").apply {
+        assertThat(content).hasSize(3)
+        assertThat(content[0].appointment.offender.crn).isEqualTo("CRN111")
+        assertThat(content[1].appointment.offender.crn).isEqualTo("CRN222")
+        assertThat(content[2].appointment.offender.crn).isEqualTo("CRN999")
+      }
+
+      invokeEndpointWithSort("appointment.crn,desc").apply {
+        assertThat(content).hasSize(3)
+        assertThat(content[0].appointment.offender.crn).isEqualTo("CRN999")
+        assertThat(content[1].appointment.offender.crn).isEqualTo("CRN222")
+        assertThat(content[2].appointment.offender.crn).isEqualTo("CRN111")
+      }
+
+      invokeEndpointWithSort("createdAt,asc").apply {
+        assertThat(content).hasSize(3)
+        assertThat(content[0].taskId).isEqualTo(task1.id)
+        assertThat(content[1].taskId).isEqualTo(task2.id)
+        assertThat(content[2].taskId).isEqualTo(task3.id)
+      }
+
+      invokeEndpointWithSort("createdAt,desc").apply {
+        assertThat(content).hasSize(3)
+        assertThat(content[0].taskId).isEqualTo(task3.id)
+        assertThat(content[1].taskId).isEqualTo(task2.id)
+        assertThat(content[2].taskId).isEqualTo(task1.id)
+      }
+    }
+
+    @Test
     fun `should support filtering by multiple parameters`() {
       val fromDate = LocalDate.now().minusDays(7)
       val toDate = LocalDate.now()
@@ -173,6 +250,12 @@ class AdminAppointmentTaskIT : IntegrationTestBase() {
         taskType = AppointmentTaskType.ADJUSTMENT_TRAVEL_TIME,
         taskStatus = AppointmentTaskStatus.PENDING,
       ),
+    )
+
+    fun NDAppointmentSummary.Companion.forAppointment(appointment: AppointmentEntity) = NDAppointmentSummary.valid(ctx).copy(
+      id = appointment.deliusId,
+      case = NDCaseSummary.valid().copy(crn = appointment.crn),
+      date = appointment.date,
     )
   }
 
