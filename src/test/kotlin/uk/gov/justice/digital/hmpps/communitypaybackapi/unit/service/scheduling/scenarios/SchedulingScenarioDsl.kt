@@ -261,7 +261,7 @@ class AppointmentBuilder {
   fun until(time: String) {
     endTime = LocalTime.parse(time)
   }
-  fun pending() {
+  fun pendingOutcome() {
     hasOutcome = false
     creditedTime = null
   }
@@ -322,7 +322,7 @@ class ExpectedAppointmentBuilder {
   fun todayWithOffsetDays(offsetDays: Int) {
     this@ExpectedAppointmentBuilder.offsetDays = offsetDays
   }
-  fun todayWithOffsetDays() {
+  fun today() {
     offsetDays = 0
   }
   fun from(time: String) {

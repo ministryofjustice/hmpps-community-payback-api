@@ -75,14 +75,14 @@ class SchedulingAllocChangeTriggerBehavioursTest {
             appointment {
               projectCode("PROJ2")
               allocation("ALLOC2")
-              todayWithOffsetDays()
+              today()
               from("12:00")
               until("20:00")
             }
             appointment {
               projectCode("PROJ3")
               allocation("ALLOC3")
-              todayWithOffsetDays()
+              today()
               from("10:00")
               until("18:00")
             }
@@ -176,14 +176,14 @@ class SchedulingAllocChangeTriggerBehavioursTest {
             appointment {
               projectCode("PROJ2")
               allocation("ALLOC2")
-              todayWithOffsetDays()
+              today()
               from("12:00")
               until("20:00")
             }
             appointment {
               projectCode("PROJ3")
               allocation("ALLOC3")
-              todayWithOffsetDays()
+              today()
               from("10:00")
               until("18:00")
             }
@@ -254,7 +254,7 @@ class SchedulingAllocChangeTriggerBehavioursTest {
             today()
             from("10:00")
             until("14:00")
-            pending()
+            pendingOutcome()
           }
         }
 
@@ -339,7 +339,7 @@ class SchedulingAllocChangeTriggerBehavioursTest {
             appointment {
               projectCode("PROJ1")
               allocation("ALLOC1")
-              todayWithOffsetDays()
+              today()
               from("10:00")
               until("14:00")
             }

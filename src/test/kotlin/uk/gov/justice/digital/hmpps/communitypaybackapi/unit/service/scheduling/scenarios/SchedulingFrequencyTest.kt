@@ -49,7 +49,7 @@ class SchedulingFrequencyTest {
             appointment {
               projectCode("PROJ1")
               allocation("ALLOC1")
-              todayWithOffsetDays()
+              today()
               from("12:00")
               until("20:00")
             }
@@ -199,7 +199,7 @@ class SchedulingFrequencyTest {
             appointment {
               projectCode("PROJ1")
               allocation("ALLOC1")
-              todayWithOffsetDays()
+              today()
               from("10:00")
               until("20:00")
             }
@@ -244,7 +244,7 @@ class SchedulingFrequencyTest {
             appointment {
               projectCode("PROJ1")
               allocation("ALLOC1")
-              todayWithOffsetDays()
+              today()
               from("10:00")
               until("20:00")
             }
@@ -843,7 +843,7 @@ class SchedulingFrequencyTest {
             appointment {
               projectCode("PROJ1")
               allocation("ALLOC1")
-              todayWithOffsetDays()
+              today()
               from("10:00")
               until("12:00")
             }

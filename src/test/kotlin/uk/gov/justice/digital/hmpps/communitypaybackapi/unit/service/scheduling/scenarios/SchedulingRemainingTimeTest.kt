@@ -76,7 +76,7 @@ class SchedulingRemainingTimeTest {
           appointment {
             projectCode("PROJ1")
             allocation("ALLOC1")
-            todayWithOffsetDays()
+            today()
             from("10:00")
             until("18:00")
           }
@@ -120,7 +120,7 @@ class SchedulingRemainingTimeTest {
           appointment {
             projectCode("PROJ1")
             allocation("ALLOC1")
-            todayWithOffsetDays()
+            today()
             from("10:00")
             until("14:00")
           }
@@ -164,7 +164,7 @@ class SchedulingRemainingTimeTest {
           today(-6)
           from("16:00")
           until("20:00")
-          pending()
+          pendingOutcome()
         }
       }
 
@@ -173,7 +173,7 @@ class SchedulingRemainingTimeTest {
           appointment {
             projectCode("PROJ1")
             allocation("ALLOC1")
-            todayWithOffsetDays()
+            today()
             from("10:00")
             until("18:00")
           }
@@ -226,7 +226,7 @@ class SchedulingRemainingTimeTest {
           appointment {
             projectCode("PROJ1")
             allocation("ALLOC1")
-            todayWithOffsetDays()
+            today()
             from("10:00")
             until("18:00")
           }
@@ -280,7 +280,7 @@ class SchedulingRemainingTimeTest {
           appointment {
             projectCode("PROJ1")
             allocation("ALLOC1")
-            todayWithOffsetDays()
+            today()
             from("10:00")
             until("18:00")
           }
@@ -324,7 +324,7 @@ class SchedulingRemainingTimeTest {
           today(-6)
           from("10:00")
           until("14:00")
-          pending()
+          pendingOutcome()
         }
       }
 
@@ -333,7 +333,7 @@ class SchedulingRemainingTimeTest {
           appointment {
             projectCode("PROJ1")
             allocation("ALLOC1")
-            todayWithOffsetDays()
+            today()
             from("10:00")
             until("16:30")
           }
@@ -386,7 +386,7 @@ class SchedulingRemainingTimeTest {
           appointment {
             projectCode("PROJ1")
             allocation("ALLOC1")
-            todayWithOffsetDays()
+            today()
             from("10:00")
             until("17:00")
           }
@@ -466,7 +466,7 @@ class SchedulingRemainingTimeTest {
           today()
           from("10:00")
           until("18:00")
-          pending()
+          pendingOutcome()
         }
 
         appointment {
@@ -475,7 +475,7 @@ class SchedulingRemainingTimeTest {
           today(1)
           from("16:00")
           until("20:00")
-          pending()
+          pendingOutcome()
         }
       }
 

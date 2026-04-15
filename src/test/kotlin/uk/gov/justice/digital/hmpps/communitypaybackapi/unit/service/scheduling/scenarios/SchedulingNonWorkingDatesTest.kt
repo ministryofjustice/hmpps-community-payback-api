@@ -68,7 +68,7 @@ class SchedulingNonWorkingDatesTest {
           appointment {
             projectCode("PROJ1")
             allocation("ALLOC1")
-            todayWithOffsetDays()
+            today()
             from("10:00")
             until("18:00")
           }
@@ -126,7 +126,7 @@ class SchedulingNonWorkingDatesTest {
           appointment {
             projectCode("PROJ1")
             allocation("ALLOC1")
-            todayWithOffsetDays()
+            today()
             from("10:00")
             until("18:00")
           }

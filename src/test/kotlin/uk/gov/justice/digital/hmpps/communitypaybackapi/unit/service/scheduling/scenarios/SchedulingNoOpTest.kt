@@ -39,7 +39,7 @@ class SchedulingNoOpTest {
           today()
           from("12:00")
           until("20:00")
-          pending()
+          pendingOutcome()
         }
       }
 
@@ -109,7 +109,7 @@ class SchedulingNoOpTest {
           today()
           from("10:00")
           until("16:30")
-          pending()
+          pendingOutcome()
         }
       }
 
@@ -179,7 +179,7 @@ class SchedulingNoOpTest {
           today(-1)
           from("10:00")
           until("18:30")
-          pending()
+          pendingOutcome()
         }
       }
 
@@ -286,7 +286,7 @@ class SchedulingNoOpTest {
           today(-1)
           from("08:00")
           until("12:00")
-          pending()
+          pendingOutcome()
         }
 
         appointment {
@@ -295,7 +295,7 @@ class SchedulingNoOpTest {
           today(6)
           from("08:00")
           until("12:00")
-          pending()
+          pendingOutcome()
         }
       }
 
@@ -412,7 +412,7 @@ class SchedulingNoOpTest {
             today(offset)
             from("12:00")
             until("20:00")
-            pending()
+            pendingOutcome()
           }
         }
 
@@ -423,7 +423,7 @@ class SchedulingNoOpTest {
             today(offset)
             from("10:00")
             until("14:00")
-            pending()
+            pendingOutcome()
           }
         }
       }
@@ -487,7 +487,7 @@ class SchedulingNoOpTest {
           today()
           from("01:00")
           until("09:00")
-          pending()
+          pendingOutcome()
         }
 
         appointment {
@@ -496,7 +496,7 @@ class SchedulingNoOpTest {
           today(10)
           from("01:30")
           until("09:30")
-          pending()
+          pendingOutcome()
         }
 
         appointment {
@@ -505,7 +505,7 @@ class SchedulingNoOpTest {
           today(20)
           from("02:00")
           until("10:00")
-          pending()
+          pendingOutcome()
         }
       }
 
