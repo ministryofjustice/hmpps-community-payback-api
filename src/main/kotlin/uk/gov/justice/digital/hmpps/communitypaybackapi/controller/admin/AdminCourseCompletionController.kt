@@ -27,6 +27,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.controller.internal.notF
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionRecommendationDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionResolutionDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EteCourseCompletionEventDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EteCourseCompletionEventStatusDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EteCourseCompletionResolutionStatusDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.EteService
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
@@ -74,16 +75,28 @@ class AdminCourseCompletionController(val eteService: EteService) {
     @Parameter(description = "If not defined both resolved and unresolved completions will be returned")
     resolutionStatus: EteCourseCompletionResolutionStatusDto?,
     @RequestParam
+    @Parameter(description = "Filter results by course completion outcome (either 'Passed' or 'Failed'). If not provided, defaults to 'Passed'.")
+    status: EteCourseCompletionEventStatusDto?,
+    @RequestParam
+    @Parameter(description = "Filter results by the attempt number if provided.")
+    attempts: Int?,
+    @RequestParam
+    @Parameter(description = "Filter by the external reference supplied by Community Campus.")
+    externalReference: String?,
+    @RequestParam
     @Parameter(description = "From date, inclusive", example = "2025-09-01")
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) dateFrom: LocalDate?,
     @RequestParam
     @Parameter(description = "To date, inclusive", example = "2025-09-01")
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) dateTo: LocalDate?,
-  ): Page<EteCourseCompletionEventDto> = eteService.getPassedCourseCompletionEvents(
+  ): Page<EteCourseCompletionEventDto> = eteService.getCourseCompletionEvents(
     providerCode,
     pduId,
     office,
     resolutionStatus = resolutionStatus,
+    completionStatus = status ?: EteCourseCompletionEventStatusDto.Passed,
+    attempts,
+    externalReference,
     dateFrom?.atFirstSecondOfDay(),
     dateTo?.atLastSecondOfDay(),
     pageable,

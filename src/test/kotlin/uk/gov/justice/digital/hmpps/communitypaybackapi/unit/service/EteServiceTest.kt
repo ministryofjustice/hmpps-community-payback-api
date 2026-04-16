@@ -14,10 +14,12 @@ import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.atFirstSecondOfDay
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.atLastSecondOfDay
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EteCourseCompletionEventStatusDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntityRepository.ResolutionStatus
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventResolutionRepository
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventStatus
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.listener.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseCompletionMessage
@@ -81,16 +83,21 @@ class EteServiceTest {
       val pduId = UUID.randomUUID()
       val providerCode = "PC01"
       val offices = listOf("office1", "office2")
+      val attempts = 1
+      val externalReference = "EXT-REF-123456"
       val fromDate = LocalDate.of(2026, 1, 1).atFirstSecondOfDay()
       val toDate = LocalDate.of(2026, 12, 31).atLastSecondOfDay()
 
       every {
-        eteCourseCompletionEventEntityRepository.findAllPassedWithFilters(
+        eteCourseCompletionEventEntityRepository.findAllWithFilters(
           providerCode = providerCode,
           pduId = pduId,
           officesCount = 2,
           offices = offices,
           resolutionStatus = ResolutionStatus.ANY,
+          completionStatus = EteCourseCompletionEventStatus.PASSED,
+          attempts = attempts,
+          externalReference = externalReference,
           fromDate = fromDate,
           toDate = toDate,
           pageable = pageable,
@@ -103,11 +110,14 @@ class EteServiceTest {
         ),
       )
 
-      val result = eteService.getPassedCourseCompletionEvents(
+      val result = eteService.getCourseCompletionEvents(
         providerCode = providerCode,
         pduId = pduId,
         offices = offices,
         resolutionStatus = null,
+        completionStatus = EteCourseCompletionEventStatusDto.Passed,
+        attempts = attempts,
+        externalReference = externalReference,
         fromDate = fromDate,
         toDate = toDate,
         pageable = pageable,

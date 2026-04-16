@@ -11,12 +11,14 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionReso
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionResolutionTypeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.DeliusAppointmentIdDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EteCourseCompletionEventDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EteCourseCompletionEventStatusDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EteCourseCompletionResolutionStatusDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntityRepository.ResolutionStatus
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventResolutionRepository
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventStatus
 import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseCompletionMessage
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.EteMappers
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
@@ -40,18 +42,21 @@ class EteService(
     eteCourseCompletionEventEntityRepository.save(eteMapper.toCourseCompletionEventEntity(message))
   }
 
-  fun getPassedCourseCompletionEvents(
+  fun getCourseCompletionEvents(
     providerCode: String,
     pduId: UUID?,
     offices: List<String>?,
     resolutionStatus: EteCourseCompletionResolutionStatusDto?,
+    completionStatus: EteCourseCompletionEventStatusDto,
+    attempts: Int?,
+    externalReference: String?,
     fromDate: OffsetDateTime?,
     toDate: OffsetDateTime?,
     pageable: Pageable,
   ): Page<EteCourseCompletionEventDto> {
     val officesNormalised = offices ?: emptyList()
 
-    val page = eteCourseCompletionEventEntityRepository.findAllPassedWithFilters(
+    val page = eteCourseCompletionEventEntityRepository.findAllWithFilters(
       providerCode,
       pduId,
       officesNormalised.size,
@@ -61,6 +66,12 @@ class EteService(
         EteCourseCompletionResolutionStatusDto.Unresolved -> ResolutionStatus.UNRESOLVED
         null -> ResolutionStatus.ANY
       },
+      completionStatus = when (completionStatus) {
+        EteCourseCompletionEventStatusDto.Passed -> EteCourseCompletionEventStatus.PASSED
+        EteCourseCompletionEventStatusDto.Failed -> EteCourseCompletionEventStatus.FAILED
+      },
+      attempts,
+      externalReference,
       fromDate,
       toDate,
       pageable,
