@@ -42,7 +42,8 @@ class AdminCourseCompletionController(val eteService: EteService) {
 
   @GetMapping("/providers/{providerCode}/course-completions", produces = [MediaType.APPLICATION_JSON_VALUE])
   @Operation(
-    description = "Get course completions for a specific provider (region) where the course status is 'Passed'",
+    description = "Get course completions for a specific provider (region) where the course status is 'Passed'. " +
+      "Supported sort fields are: courseName, firstName, lastName, completionDateTime - Default sort: firstname, lastname DESC, size: 50",
     responses = [
       ApiResponse(
         responseCode = "200",
@@ -61,14 +62,7 @@ class AdminCourseCompletionController(val eteService: EteService) {
   )
   @PageableAsQueryParam
   fun getCourseCompletions(
-    @Parameter(
-      hidden = true,
-      description = "Pagination and sorting parameters. Supported sort fields: courseName, firstName, lastName, completionDateTime - Default sort: firstname, lastname DESC, size: 50",
-      schema = Schema(
-        implementation = Pageable::class,
-        description = "courseName, firstName, lastName, completionDateTime are supported for sorting",
-      ),
-    )
+    @Parameter(hidden = true)
     @PageableDefault(size = 50, sort = ["firstName", "lastName"], direction = Sort.Direction.DESC) pageable: Pageable,
     @PathVariable providerCode: String,
     @RequestParam
