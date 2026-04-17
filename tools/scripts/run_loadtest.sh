@@ -92,6 +92,7 @@ fi
 # ---------- resolve namespace and secret ----------
 NAMESPACE="hmpps-community-payback-${ENV_NAME}"
 SECRET_NAME="hmpps-community-payback-ui-client-creds"
+SUPERVISOR_SECRET_NAME="hmpps-community-payback-supervisors-ui-client-creds"
 
 # ---------- fetch credentials from Kubernetes (if not overridden) ----------
 if [[ -z "$CLIENT_ID" || -z "$CLIENT_SECRET" ]]; then
@@ -107,6 +108,18 @@ if [[ -z "$CLIENT_ID" || -z "$CLIENT_SECRET" ]]; then
   [[ -n "$CLIENT_SECRET" ]] || die "CLIENT_CREDS_CLIENT_SECRET missing or empty in secret ${SECRET_NAME}"
 fi
 
+# ---------- fetch supervisor credentials from Kubernetes ----------
+echo "Fetching supervisor client credentials from Kubernetes: ns=${NAMESPACE}, secret=${SUPERVISOR_SECRET_NAME} ..."
+SUPERVISOR_SECRET_JSON="$(kubectl -n "${NAMESPACE}" get secret "${SUPERVISOR_SECRET_NAME}" -o json || echo "")"
+if [[ -n "$SUPERVISOR_SECRET_JSON" ]]; then
+  SUPERVISOR_CLIENT_ID="$(echo "$SUPERVISOR_SECRET_JSON" | jq -r '.data["CLIENT_CREDS_CLIENT_ID"]' | base64 --decode || true)"
+  SUPERVISOR_CLIENT_SECRET="$(echo "$SUPERVISOR_SECRET_JSON" | jq -r '.data["CLIENT_CREDS_CLIENT_SECRET"]' | base64 --decode || true)"
+else
+  echo "Warning: Supervisor secret ${SUPERVISOR_SECRET_NAME} not found. Using standard credentials for supervisor journey as fallback."
+  SUPERVISOR_CLIENT_ID="$CLIENT_ID"
+  SUPERVISOR_CLIENT_SECRET="$CLIENT_SECRET"
+fi
+
 # ---------- assemble Gradle args ----------
 GRADLE_ARGS=(
   "gatling:gatlingRunCi"
@@ -119,6 +132,8 @@ GRADLE_ARGS=(
   "-PconstantUsersPerSecDuring=${CONSTANT_USERS_PER_SEC_DURING}"
   "-PCLIENT_ID=${CLIENT_ID}"
   "-PCLIENT_SECRET=${CLIENT_SECRET}"
+  "-PSUPERVISOR_CLIENT_ID=${SUPERVISOR_CLIENT_ID}"
+  "-PSUPERVISOR_CLIENT_SECRET=${SUPERVISOR_CLIENT_SECRET}"
 )
 
 if [[ -n "${SIMULATION_FQN}" ]]; then
