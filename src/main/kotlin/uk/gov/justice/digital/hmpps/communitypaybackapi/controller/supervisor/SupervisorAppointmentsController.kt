@@ -161,7 +161,7 @@ class SupervisorAppointmentsController(
     )
   }
 
-  @PostMapping(
+  @PutMapping(
     path = ["/bulk"],
     consumes = [MediaType.APPLICATION_JSON_VALUE],
   )
@@ -195,4 +195,36 @@ class SupervisorAppointmentsController(
       triggeredBy = contextService.getUserName(),
     ),
   )
+
+  @PostMapping(
+    path = ["/bulk"],
+    consumes = [MediaType.APPLICATION_JSON_VALUE],
+  )
+  @Operation(
+    deprecated = true,
+    description = """
+      Deprecated, use `PUT /supervisor/projects/{projectCode}/appointments/bulk` instead.
+      
+      Records one or more appointment outcomes. Note that if 200 is returned the response body must be checked to ensure all appointments have been updated
+    """,
+    responses = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Check the result JSON to check the outcome for each appointment update",
+      ),
+      ApiResponse(
+        responseCode = "400",
+        description = "Validation error. If this occurs then no appointments have been updated",
+        content = [
+          Content(
+            schema = Schema(implementation = ErrorResponse::class),
+          ),
+        ],
+      ),
+    ],
+  )
+  fun updateAppointmentsOutcomes(
+    @PathVariable projectCode: String,
+    @RequestBody request: UpdateAppointmentsDto,
+  ) = updateAppointments(projectCode, request)
 }
