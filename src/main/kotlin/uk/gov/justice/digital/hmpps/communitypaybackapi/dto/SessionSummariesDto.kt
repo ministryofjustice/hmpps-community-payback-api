@@ -4,8 +4,17 @@ import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate
 
 data class SessionSummariesDto(
-  @param:Schema(description = "List of project allocations")
+  @param:Schema(
+    deprecated = true,
+    description = """
+      Deprecated: use the `content` property instead.
+      
+      List of project allocations
+    """,
+  )
   val allocations: List<SessionSummaryDto>,
+  val content: List<SessionSummaryDto>,
+  val page: PageMetaDto,
 )
 
 data class SessionSummaryDto(
