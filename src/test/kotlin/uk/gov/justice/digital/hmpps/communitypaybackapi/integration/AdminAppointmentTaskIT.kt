@@ -111,6 +111,67 @@ class AdminAppointmentTaskIT : IntegrationTestBase() {
     }
 
     @Test
+    fun `should return pending appointment tasks with multiple pages`() {
+      val appointment = AppointmentEntity.valid().copy(
+        deliusId = 101L,
+        providerCode = "PROVIDER1",
+        date = LocalDate.now(),
+      ).persist(ctx)
+      saveTask(appointment)
+
+      val appointment2 = AppointmentEntity.valid().copy(
+        deliusId = 102L,
+        providerCode = "PROVIDER1",
+        date = LocalDate.now(),
+      ).persist(ctx)
+      saveTask(appointment2)
+
+      val appointment3 = AppointmentEntity.valid().copy(
+        deliusId = 103L,
+        providerCode = "PROVIDER1",
+        date = LocalDate.now(),
+      ).persist(ctx)
+      saveTask(appointment3)
+
+      val appointment4 = AppointmentEntity.valid().copy(
+        deliusId = 104L,
+        providerCode = "PROVIDER1",
+        date = LocalDate.now(),
+      ).persist(ctx)
+      saveTask(appointment4)
+
+      val appointment5 = AppointmentEntity.valid().copy(
+        deliusId = 105L,
+        providerCode = "PROVIDER1",
+        date = LocalDate.now(),
+      ).persist(ctx)
+      saveTask(appointment5)
+
+      CommunityPaybackAndDeliusMockServer.setupGetAppointmentsResponse(
+        username = "theusername",
+        appointments = listOf(NDAppointmentSummary.forAppointment(appointment)),
+        appointmentIds = listOf(101L),
+        sortString = "name,desc",
+        pageSize = 1,
+      )
+
+      val pageResponse = webTestClient.get()
+        .uri("/admin/appointment-tasks/pending?page=2&size=2")
+        .addAdminUiAuthHeader("theusername")
+        .exchange()
+        .expectStatus()
+        .isOk
+        .bodyAsObject<PageResponse<AppointmentTaskSummaryDto>>()
+
+      assertThat(pageResponse.content).hasSize(1)
+      assertThat(pageResponse.content[0].appointment.id).isEqualTo(101L)
+      assertThat(pageResponse.page.size).isEqualTo(2)
+      assertThat(pageResponse.page.totalPages).isEqualTo(3)
+      assertThat(pageResponse.page.totalElements).isEqualTo(5)
+      assertThat(pageResponse.page.number).isEqualTo(2)
+    }
+
+    @Test
     fun `should support sorting`() {
       val appointment1 = AppointmentEntity.valid().copy(
         deliusId = 101L,

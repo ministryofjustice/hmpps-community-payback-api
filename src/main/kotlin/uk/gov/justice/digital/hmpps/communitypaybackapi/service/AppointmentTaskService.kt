@@ -114,13 +114,14 @@ class AppointmentTaskService(
     providerCode: String? = null,
     pageable: Pageable,
   ): Page<AppointmentTaskSummaryDto> {
-    val orderedTasks = appointmentTaskEntityRepository.findPendingTasksWithFiltersAndAppointments(
+    val pagedTasks = appointmentTaskEntityRepository.findPendingTasksWithFiltersAndAppointments(
       fromDate = fromDate,
       toDate = toDate,
       providerCode = providerCode,
       pageable = pageable,
-    ).toList()
+    )
 
+    val orderedTasks = pagedTasks.toList()
     if (orderedTasks.isEmpty()) {
       return PageImpl(emptyList(), pageable, 0)
     }
@@ -130,11 +131,12 @@ class AppointmentTaskService(
       deliusAppointmentIds = deliusAppointmentIds.sorted(),
       pageable = PageRequest.of(0, deliusAppointmentIds.size, Sort.by(Sort.Direction.DESC, "name")),
     )
-
-    val orderedTaskSummaries = orderedTasks.map { task ->
-      AppointmentTaskSummaryDto(taskId = task.id, appointment = appointments.content.first { it.id == task.appointment.deliusId })
-    }
-
-    return PageImpl(orderedTaskSummaries, pageable, orderedTasks.size.toLong())
+    return PageImpl(
+      pagedTasks.content.map { task ->
+        AppointmentTaskSummaryDto(taskId = task.id, appointment = appointments.content.first { it.id == task.appointment.deliusId })
+      },
+      pageable,
+      pagedTasks.totalElements,
+    )
   }
 }
