@@ -9,9 +9,13 @@ import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Sort
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSessionSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSessionSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.PageResponse
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeGroupDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.BadRequestException
@@ -61,12 +65,21 @@ class SessionServiceTest {
           startDate = LocalDate.of(2025, 1, 1),
           endDate = LocalDate.of(2025, 1, 9),
           projectTypeGroup = null,
+          pageable = Pageable.unpaged(),
         )
       }.isInstanceOf(BadRequestException::class.java).hasMessage("Date range cannot be greater than 7 days")
     }
 
     @Test
     fun `success path`() {
+      val pageNumber = 0
+      val pageSize = 20
+      val sessions = listOf(
+        NDSessionSummary.valid(),
+        NDSessionSummary.valid(),
+        NDSessionSummary.valid(),
+      )
+
       every {
         projectService.projectTypesForGroup(ProjectTypeGroupDto.GROUP)
       } returns listOf(ProjectTypeDto.valid().copy(code = "PT1"))
@@ -78,12 +91,13 @@ class SessionServiceTest {
           startDate = LocalDate.of(2025, 1, 1),
           endDate = LocalDate.of(2025, 1, 5),
           typeCode = listOf("PT1"),
+          params = mapOf("page" to pageNumber.toString(), "size" to pageSize.toString(), "sort" to "projectName,asc"),
         )
       } returns NDSessionSummaries.valid().copy(
-        sessions = listOf(
-          NDSessionSummary.valid(),
-          NDSessionSummary.valid(),
-          NDSessionSummary.valid(),
+        sessions = sessions,
+        pageResponse = PageResponse(
+          content = sessions,
+          PageResponse.PageMeta(pageSize, pageNumber, 3, 1),
         ),
       )
 
@@ -93,9 +107,15 @@ class SessionServiceTest {
         startDate = LocalDate.of(2025, 1, 1),
         endDate = LocalDate.of(2025, 1, 5),
         projectTypeGroup = ProjectTypeGroupDto.GROUP,
+        pageable = PageRequest.of(pageNumber, pageSize, Sort.by(Sort.Direction.ASC, "projectName")),
       )
 
       assertThat(result.allocations).hasSize(3)
+      assertThat(result.content).hasSize(3)
+      assertThat(result.page.totalElements).isEqualTo(3)
+      assertThat(result.page.totalPages).isEqualTo(1)
+      assertThat(result.page.number).isEqualTo(pageNumber)
+      assertThat(result.page.size).isEqualTo(pageSize)
     }
   }
 }

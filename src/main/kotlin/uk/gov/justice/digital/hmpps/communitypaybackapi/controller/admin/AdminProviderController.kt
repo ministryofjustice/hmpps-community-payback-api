@@ -123,6 +123,7 @@ class AdminProviderController(
     @PathVariable teamCode: String,
   ): SupervisorSummariesDto = providerService.getTeamSupervisors(TeamId(providerCode, teamCode))
 
+  @PageableAsQueryParam
   @GetMapping("/{providerCode}/teams/{teamCode}/sessions")
   @Operation(
     description = "Get sessions within a date range for a specific team",
@@ -151,12 +152,15 @@ class AdminProviderController(
     @RequestParam
     @Parameter(description = "End date, inclusive", example = "2025-09-01")
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) endDate: LocalDate,
+    @Parameter(hidden = true)
+    @PageableDefault(size = 50, sort = ["projectName"], direction = Sort.Direction.ASC) pageable: Pageable,
   ) = sessionService.getSessions(
     providerCode,
     teamCode,
     startDate,
     endDate,
     ProjectTypeGroupDto.GROUP,
+    pageable,
   )
 
   @GetMapping("/{providerCode}/teams/{teamCode}/projects")

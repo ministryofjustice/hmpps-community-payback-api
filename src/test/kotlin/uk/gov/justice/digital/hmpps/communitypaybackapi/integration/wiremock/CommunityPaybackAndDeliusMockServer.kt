@@ -246,12 +246,16 @@ object CommunityPaybackAndDeliusMockServer {
     endDate: LocalDate,
     projectSessions: NDSessionSummaries,
     typeCode: List<String> = emptyList(),
+    sortString: String = "projectName,asc",
   ) {
     val url = buildString {
       append("/community-payback-and-delius/providers/$providerCode/teams/$teamCode/sessions?startDate=${startDate.toIsoDateString()}&endDate=${endDate.toIsoDateString()}")
       typeCode.forEach {
         append("&typeCode=$it")
       }
+      append("&page=${projectSessions.pageResponse.page.number}")
+      append("&size=${projectSessions.pageResponse.page.size}")
+      append("&sort=${URLEncoder.encode(sortString, "UTF-8")}")
     }
 
     WireMock.stubFor(

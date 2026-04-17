@@ -48,6 +48,7 @@ interface CommunityPaybackAndDeliusClient {
     @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) startDate: LocalDate,
     @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) endDate: LocalDate,
     @RequestParam typeCode: List<String>?,
+    @RequestParam params: Map<String, String>,
   ): NDSessionSummaries
 
   @Cacheable(CacheKey.Delius.GET_PROJECT)

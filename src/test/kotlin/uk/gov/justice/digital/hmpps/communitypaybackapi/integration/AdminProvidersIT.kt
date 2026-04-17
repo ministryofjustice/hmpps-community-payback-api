@@ -349,8 +349,60 @@ class AdminProvidersIT : IntegrationTestBase() {
         .bodyAsObject<SessionSummariesDto>()
 
       assertThat(sessionSearchResults.allocations).hasSize(2)
-      assertThat(sessionSearchResults.allocations[0].projectName).isEqualTo("Community Garden Maintenance")
-      assertThat(sessionSearchResults.allocations[1].projectName).isEqualTo("Park Cleanup")
+      assertThat(sessionSearchResults.allocations[0].projectName).isEqualTo(projectName1)
+      assertThat(sessionSearchResults.allocations[1].projectName).isEqualTo(projectName2)
+      assertThat(sessionSearchResults.content).hasSize(2)
+      assertThat(sessionSearchResults.content[0].projectName).isEqualTo(projectName1)
+      assertThat(sessionSearchResults.content[1].projectName).isEqualTo(projectName2)
+      assertThat(sessionSearchResults.page.size).isEqualTo(50)
+      assertThat(sessionSearchResults.page.totalPages).isEqualTo(1)
+      assertThat(sessionSearchResults.page.totalElements).isEqualTo(2)
+      assertThat(sessionSearchResults.page.number).isEqualTo(0)
+    }
+
+    @Test
+    fun `should return OK with paginated response when pagination parameters are provided`() {
+      val projectName1 = "Community Garden Maintenance"
+      val projectName2 = "Park Cleanup"
+      val sessions = listOf(
+        NDSessionSummary.valid().copy(project = NDProjectSummary.valid().copy(description = projectName1)),
+        NDSessionSummary.valid().copy(project = NDProjectSummary.valid().copy(description = projectName2)),
+      )
+
+      CommunityPaybackAndDeliusMockServer.setupGetSessionsResponse(
+        providerCode = "PC01",
+        teamCode = "999",
+        startDate = LocalDate.of(2025, 1, 9),
+        endDate = LocalDate.of(2025, 1, 12),
+        typeCode = listOf("NP1", "NP2", "PL"),
+        projectSessions = NDSessionSummaries(
+          sessions,
+          pageResponse = PageResponse(
+            content = sessions,
+            page = PageResponse.PageMeta(25, 0, 2, 1),
+          ),
+        ),
+        sortString = "projectName,desc",
+      )
+
+      val sessionSearchResults = webTestClient.get()
+        .uri("/admin/providers/PC01/teams/999/sessions?startDate=2025-01-09&endDate=2025-01-12&page=0&size=25&sort=projectName,desc")
+        .addAdminUiAuthHeader()
+        .exchange()
+        .expectStatus()
+        .isOk
+        .bodyAsObject<SessionSummariesDto>()
+
+      assertThat(sessionSearchResults.allocations).hasSize(2)
+      assertThat(sessionSearchResults.allocations[0].projectName).isEqualTo(projectName1)
+      assertThat(sessionSearchResults.allocations[1].projectName).isEqualTo(projectName2)
+      assertThat(sessionSearchResults.content).hasSize(2)
+      assertThat(sessionSearchResults.content[0].projectName).isEqualTo(projectName1)
+      assertThat(sessionSearchResults.content[1].projectName).isEqualTo(projectName2)
+      assertThat(sessionSearchResults.page.size).isEqualTo(25)
+      assertThat(sessionSearchResults.page.totalPages).isEqualTo(1)
+      assertThat(sessionSearchResults.page.totalElements).isEqualTo(2)
+      assertThat(sessionSearchResults.page.number).isEqualTo(0)
     }
 
     @Test
