@@ -12,6 +12,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAddress
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSessionSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSessionSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.PageResponse
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ContactOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectDto
@@ -44,28 +45,34 @@ class SessionMappersTest {
 
     @Test
     fun `should map ProjectAllocations to DTO correctly`() {
+      val sessions = listOf(
+        NDSessionSummary(
+          project = NDProjectSummary(
+            code = "cg",
+            description = "Community Garden",
+          ),
+          date = LocalDate.of(2025, 9, 1),
+          allocatedCount = 0,
+          outcomeCount = 1,
+          enforcementActionCount = 2,
+        ),
+        NDSessionSummary(
+          project = NDProjectSummary(
+            code = "pc",
+            description = "Park Cleanup",
+          ),
+          date = LocalDate.of(2025, 9, 8),
+          allocatedCount = 3,
+          outcomeCount = 4,
+          enforcementActionCount = 5,
+        ),
+      )
+
       val projectSessions = NDSessionSummaries(
-        listOf(
-          NDSessionSummary(
-            project = NDProjectSummary(
-              code = "cg",
-              description = "Community Garden",
-            ),
-            date = LocalDate.of(2025, 9, 1),
-            allocatedCount = 0,
-            outcomeCount = 1,
-            enforcementActionCount = 2,
-          ),
-          NDSessionSummary(
-            project = NDProjectSummary(
-              code = "pc",
-              description = "Park Cleanup",
-            ),
-            date = LocalDate.of(2025, 9, 8),
-            allocatedCount = 3,
-            outcomeCount = 4,
-            enforcementActionCount = 5,
-          ),
+        sessions,
+        pageResponse = PageResponse(
+          content = sessions,
+          page = PageResponse.PageMeta(50, 0, 2, 1),
         ),
       )
 

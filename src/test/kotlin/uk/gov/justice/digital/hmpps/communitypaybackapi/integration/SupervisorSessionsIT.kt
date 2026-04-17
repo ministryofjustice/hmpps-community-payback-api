@@ -11,6 +11,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSessionSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSessionSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.PageResponse
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionSummariesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionSummaryDto
@@ -234,6 +235,11 @@ class SupervisorSessionsIT : IntegrationTestBase() {
 
     @Test
     fun `should return OK with project session`() {
+      val sessions = listOf(
+        NDSessionSummary.valid().copy(project = NDProjectSummary.valid().copy(description = "Community Garden Maintenance")),
+        NDSessionSummary.valid().copy(project = NDProjectSummary.valid().copy(description = "Park Cleanup")),
+      )
+
       CommunityPaybackAndDeliusMockServer.setupGetSessionsResponse(
         providerCode = "P123",
         teamCode = "T456",
@@ -241,9 +247,10 @@ class SupervisorSessionsIT : IntegrationTestBase() {
         endDate = LocalDate.now().plusDays(7),
         typeCode = listOf("NP1", "NP2", "PL"),
         projectSessions = NDSessionSummaries(
-          listOf(
-            NDSessionSummary.valid().copy(project = NDProjectSummary.valid().copy(description = "Community Garden Maintenance")),
-            NDSessionSummary.valid().copy(project = NDProjectSummary.valid().copy(description = "Park Cleanup")),
+          sessions,
+          pageResponse = PageResponse(
+            content = sessions,
+            page = PageResponse.PageMeta(50, 0, 2, 1),
           ),
         ),
       )
