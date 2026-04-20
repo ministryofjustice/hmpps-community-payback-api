@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointment
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointmentPickUp
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointmentSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDContactOutcome
@@ -21,6 +22,9 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentSummaryDt
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AttendanceDataDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeResultType
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentsDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentsOutcomesResultDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentTaskEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity.Companion.CODE_ATTENDED_COMPLIED
@@ -425,6 +429,116 @@ class AdminAppointmentIT : IntegrationTestBase() {
       assertThat(pageResponse.page.totalPages).isEqualTo(1)
       assertThat(pageResponse.page.totalElements).isEqualTo(2)
       assertThat(pageResponse.page.number).isEqualTo(0)
+    }
+  }
+
+  @Nested
+  @DisplayName("PUT /admin/projects/{projectCode}/appointments/bulk")
+  inner class BulkUpdate {
+
+    @BeforeEach
+    fun setUp() {
+      appointmentOutcomeEntityRepository.deleteAll()
+    }
+
+    @Test
+    fun `should return unauthorized if no token`() {
+      webTestClient.put()
+        .uri("/admin/projects/PC01/appointments/bulk")
+        .bodyValue(UpdateAppointmentsDto.valid())
+        .exchange()
+        .expectStatus()
+        .isUnauthorized
+    }
+
+    @Test
+    fun `should return forbidden if no role`() {
+      webTestClient.put()
+        .uri("/admin/projects/PC01/appointments/bulk")
+        .headers(setAuthorisation())
+        .bodyValue(UpdateAppointmentsDto.valid())
+        .exchange()
+        .expectStatus()
+        .isForbidden
+    }
+
+    @Test
+    fun `should return forbidden if wrong role`() {
+      webTestClient.put()
+        .uri("/admin/projects/PC01/appointments/bulk")
+        .headers(setAuthorisation(roles = listOf("ROLE_WRONG")))
+        .bodyValue(UpdateAppointmentsDto.valid())
+        .exchange()
+        .expectStatus()
+        .isForbidden
+    }
+
+    @Test
+    fun `succeeds and calls upstream endpoint to update the appointment`() {
+      val projectAndLocation = NDProjectAndLocation.valid().copy(code = "PC01")
+      val project = NDProject.valid(ctx).copy(code = "PC01")
+      val pickup = NDAppointmentPickUp.valid()
+
+      CommunityPaybackAndDeliusMockServer.Aggregates.setupGetDataMocksForUpdateAppointment(
+        existingAppointment = NDAppointment.validNoOutcome(ctx).copy(
+          id = 1234L,
+          project = projectAndLocation,
+          date = LocalDate.now(),
+          event = NDEvent.valid().copy(number = EVENT_NUMBER),
+          case = NDCaseSummary.valid().copy(crn = CRN),
+          pickUpData = pickup,
+        ),
+        project = project,
+        username = "theusername",
+      )
+
+      CommunityPaybackAndDeliusMockServer.setupPutAppointmentResponse(
+        projectCode = "PC01",
+        appointmentId = 1234L,
+      )
+
+      CommunityPaybackAndDeliusMockServer.Aggregates.setupGetDataMocksForUpdateAppointment(
+        existingAppointment = NDAppointment.validNoOutcome(ctx).copy(
+          id = 5678L,
+          project = projectAndLocation,
+          date = LocalDate.now(),
+          event = NDEvent.valid().copy(number = EVENT_NUMBER),
+          case = NDCaseSummary.valid().copy(crn = CRN),
+          pickUpData = pickup,
+        ),
+        project = project,
+        username = "theusername",
+      )
+
+      CommunityPaybackAndDeliusMockServer.setupPutAppointmentResponse(
+        projectCode = "PC01",
+        appointmentId = 5678L,
+      )
+
+      val result = webTestClient.put()
+        .uri("/admin/projects/PC01/appointments/bulk")
+        .addAdminUiAuthHeader("theusername")
+        .bodyValue(
+          UpdateAppointmentsDto(
+            updates = listOf(
+              UpdateAppointmentDto.valid(ctx).copy(deliusId = 1234L),
+              UpdateAppointmentDto.valid(ctx).copy(deliusId = 5678L),
+            ),
+          ),
+        )
+        .exchange()
+        .expectStatus()
+        .isOk
+        .bodyAsObject<UpdateAppointmentsOutcomesResultDto>()
+
+      assertThat(result.results).hasSize(2)
+      assertThat(result.results[0].result).isEqualTo(UpdateAppointmentOutcomeResultType.SUCCESS)
+      assertThat(result.results[1].result).isEqualTo(UpdateAppointmentOutcomeResultType.SUCCESS)
+
+      CommunityPaybackAndDeliusMockServer.verifyPutAppointmentRequest("PC01", 1234L)
+      CommunityPaybackAndDeliusMockServer.verifyPutAppointmentRequest("PC01", 5678L)
+
+      domainEventAsserter.assertEventCount("community-payback.appointment.updated", 2)
     }
   }
 }
