@@ -5,6 +5,10 @@ import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
+import org.springdoc.core.converters.models.PageableAsQueryParam
+import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Sort
+import org.springframework.data.web.PageableDefault
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.GetMapping
@@ -50,6 +54,7 @@ class SupervisorSessionsController(
     @PathVariable supervisorCode: String,
   ) = sessionService.getNextAllocationForSupervisor(supervisorCode) ?: throw NotFoundException("There are no future sessions for supervisor $supervisorCode")
 
+  @PageableAsQueryParam
   @GetMapping(
     path = [ "/supervisor/providers/{providerCode}/teams/{teamCode}/sessions/future"],
     produces = [MediaType.APPLICATION_JSON_VALUE],
@@ -66,12 +71,15 @@ class SupervisorSessionsController(
   fun getFutureSessions(
     @PathVariable providerCode: String,
     @PathVariable teamCode: String,
+    @Parameter(hidden = true)
+    @PageableDefault(size = 50, sort = ["startDate"], direction = Sort.Direction.DESC) pageable: Pageable,
   ) = sessionService.getSessions(
     providerCode,
     teamCode,
     LocalDate.now(),
     LocalDate.now().plusDays(7),
     projectTypeGroup = ProjectTypeGroupDto.GROUP,
+    pageable = pageable,
   )
 
   @GetMapping(

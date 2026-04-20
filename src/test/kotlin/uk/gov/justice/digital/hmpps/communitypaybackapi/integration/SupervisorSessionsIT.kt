@@ -11,6 +11,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSessionSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSessionSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.PageResponse
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionSummariesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionSummaryDto
@@ -234,6 +235,14 @@ class SupervisorSessionsIT : IntegrationTestBase() {
 
     @Test
     fun `should return OK with project session`() {
+      val projectName1 = "Community Garden Maintenance"
+      val projectName2 = "Park Cleanup"
+
+      val sessions = listOf(
+        NDSessionSummary.valid().copy(project = NDProjectSummary.valid().copy(description = projectName1)),
+        NDSessionSummary.valid().copy(project = NDProjectSummary.valid().copy(description = projectName2)),
+      )
+
       CommunityPaybackAndDeliusMockServer.setupGetSessionsResponse(
         providerCode = "P123",
         teamCode = "T456",
@@ -241,11 +250,13 @@ class SupervisorSessionsIT : IntegrationTestBase() {
         endDate = LocalDate.now().plusDays(7),
         typeCode = listOf("NP1", "NP2", "PL"),
         projectSessions = NDSessionSummaries(
-          listOf(
-            NDSessionSummary.valid().copy(project = NDProjectSummary.valid().copy(description = "Community Garden Maintenance")),
-            NDSessionSummary.valid().copy(project = NDProjectSummary.valid().copy(description = "Park Cleanup")),
+          sessions,
+          pageResponse = PageResponse(
+            content = sessions,
+            page = PageResponse.PageMeta(50, 0, 2, 1),
           ),
         ),
+        sortString = "startDate,desc",
       )
 
       val result = webTestClient.get()
@@ -257,9 +268,62 @@ class SupervisorSessionsIT : IntegrationTestBase() {
         .bodyAsObject<SessionSummariesDto>()
 
       assertThat(result.allocations).hasSize(2)
-      assertThat(result.allocations[0].projectName).isEqualTo("Community Garden Maintenance")
-      assertThat(result.allocations[1].projectName).isEqualTo("Park Cleanup")
+      assertThat(result.allocations[0].projectName).isEqualTo(projectName1)
+      assertThat(result.allocations[1].projectName).isEqualTo(projectName2)
+      assertThat(result.content).hasSize(2)
+      assertThat(result.content[0].projectName).isEqualTo(projectName1)
+      assertThat(result.content[1].projectName).isEqualTo(projectName2)
+      assertThat(result.page.size).isEqualTo(50)
+      assertThat(result.page.totalPages).isEqualTo(1)
+      assertThat(result.page.totalElements).isEqualTo(2)
+      assertThat(result.page.number).isEqualTo(0)
     }
+  }
+
+  @Test
+  fun `should return OK with paginated response when pagination parameters are provided`() {
+    val projectName1 = "Community Garden Maintenance"
+    val projectName2 = "Park Cleanup"
+
+    val sessions = listOf(
+      NDSessionSummary.valid().copy(project = NDProjectSummary.valid().copy(description = projectName1)),
+      NDSessionSummary.valid().copy(project = NDProjectSummary.valid().copy(description = projectName2)),
+    )
+
+    CommunityPaybackAndDeliusMockServer.setupGetSessionsResponse(
+      providerCode = "P123",
+      teamCode = "T456",
+      startDate = LocalDate.now(),
+      endDate = LocalDate.now().plusDays(7),
+      typeCode = listOf("NP1", "NP2", "PL"),
+      projectSessions = NDSessionSummaries(
+        sessions,
+        pageResponse = PageResponse(
+          content = sessions,
+          page = PageResponse.PageMeta(25, 0, 2, 1),
+        ),
+      ),
+      sortString = "projectName,asc",
+    )
+
+    val result = webTestClient.get()
+      .uri("/supervisor/providers/P123/teams/T456/sessions/future?page=0&size=25&sort=projectName,asc")
+      .addSupervisorUiAuthHeader(username = "USER1")
+      .exchange()
+      .expectStatus()
+      .isOk
+      .bodyAsObject<SessionSummariesDto>()
+
+    assertThat(result.allocations).hasSize(2)
+    assertThat(result.allocations[0].projectName).isEqualTo(projectName1)
+    assertThat(result.allocations[1].projectName).isEqualTo(projectName2)
+    assertThat(result.content).hasSize(2)
+    assertThat(result.content[0].projectName).isEqualTo(projectName1)
+    assertThat(result.content[1].projectName).isEqualTo(projectName2)
+    assertThat(result.page.size).isEqualTo(25)
+    assertThat(result.page.totalPages).isEqualTo(1)
+    assertThat(result.page.totalElements).isEqualTo(2)
+    assertThat(result.page.number).isEqualTo(0)
   }
 
   private fun allocateSessionToSupervisor1(

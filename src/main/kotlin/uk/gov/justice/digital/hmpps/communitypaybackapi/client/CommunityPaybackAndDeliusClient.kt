@@ -3,6 +3,7 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.client
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.annotation.JsonUnwrapped
 import io.swagger.v3.oas.annotations.media.Schema
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.format.annotation.DateTimeFormat
@@ -47,6 +48,7 @@ interface CommunityPaybackAndDeliusClient {
     @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) startDate: LocalDate,
     @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) endDate: LocalDate,
     @RequestParam typeCode: List<String>?,
+    @RequestParam params: Map<String, String>,
   ): NDSessionSummaries
 
   @Cacheable(CacheKey.Delius.GET_PROJECT)
@@ -159,6 +161,8 @@ data class NDProviderTeamSummary(
 
 data class NDSessionSummaries(
   val sessions: List<NDSessionSummary>,
+  @get:JsonUnwrapped
+  val pageResponse: PageResponse<NDSessionSummary>,
 ) {
   companion object
 }
@@ -577,6 +581,7 @@ data class PageResponse<T>(
     val totalElements: Long,
     val totalPages: Int,
   )
+  companion object
 }
 
 data class NDCaseDetailsSummary(

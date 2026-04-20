@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.service
 
 import org.slf4j.LoggerFactory
 import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
@@ -15,6 +16,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.SessionSupervisorEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.SessionSupervisorEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.SessionSupervisorId
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.toHttpParams
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.SessionMappers
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
 import java.time.LocalDate
@@ -39,6 +41,7 @@ class SessionService(
     startDate: LocalDate,
     endDate: LocalDate,
     projectTypeGroup: ProjectTypeGroupDto?,
+    pageable: Pageable,
   ): SessionSummariesDto {
     if (ChronoUnit.DAYS.between(startDate, endDate) > 7) {
       badRequest("Date range cannot be greater than 7 days")
@@ -52,6 +55,7 @@ class SessionService(
       typeCode = projectTypeGroup?.let { projectTypeGroup ->
         projectService.projectTypesForGroup(projectTypeGroup).map { it.code }
       },
+      params = pageable.toHttpParams(),
     ).toDto()
   }
 
