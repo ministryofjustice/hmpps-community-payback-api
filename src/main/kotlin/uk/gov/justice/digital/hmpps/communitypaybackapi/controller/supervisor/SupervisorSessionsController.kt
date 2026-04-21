@@ -72,7 +72,7 @@ class SupervisorSessionsController(
     @PathVariable providerCode: String,
     @PathVariable teamCode: String,
     @Parameter(hidden = true)
-    @PageableDefault(size = 50, sort = ["startDate"], direction = Sort.Direction.DESC) pageable: Pageable,
+    @PageableDefault(size = 50, sort = ["date"], direction = Sort.Direction.DESC) pageable: Pageable,
   ) = sessionService.getSessions(
     providerCode,
     teamCode,
