@@ -256,7 +256,7 @@ class SupervisorSessionsIT : IntegrationTestBase() {
             page = PageResponse.PageMeta(50, 0, 2, 1),
           ),
         ),
-        sortString = "startDate,desc",
+        sortString = "date,desc",
       )
 
       val result = webTestClient.get()
