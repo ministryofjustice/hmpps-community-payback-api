@@ -63,7 +63,9 @@ data class AdjustmentEventEntity(
 
   override fun toString(): String = "AdjustmentEvent(id=$id)"
 
-  companion object
+  companion object {
+    fun generateId(): UUID = UUID.randomUUID()
+  }
 }
 
 enum class AdjustmentEventType {

@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAdjustmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsIdDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AdjustmentCreatedEvent
@@ -13,6 +14,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.SpringE
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toNDAdjustmentRequest
 import java.time.Clock
 import java.time.OffsetDateTime
+import java.util.UUID
 
 @Service
 class AdjustmentService(
@@ -20,6 +22,7 @@ class AdjustmentService(
   private val communityPaybackAndDeliusClient: CommunityPaybackAndDeliusClient,
   private val clock: Clock,
   private val springEventPublisher: SpringEventPublisher,
+  private val adjustmentIdGenerator: AdjustmentIdGenerator,
 ) {
 
   @Transactional
@@ -29,7 +32,7 @@ class AdjustmentService(
     username: String,
   ) {
     val validatedAdjustment = adjustmentValidationService.validateCreate(createAdjustment, upwDetailsId, username)
-
+    val adjustmentId = adjustmentIdGenerator.generateId()
     val (crn, deliusEventNumber) = upwDetailsId
 
     val deliusAdjustmentId = communityPaybackAndDeliusClient.postAdjustments(
@@ -39,12 +42,14 @@ class AdjustmentService(
           crn = crn,
           deliusEventNumber = deliusEventNumber,
           reason = validatedAdjustment.reason,
+          reference = adjustmentId,
         ),
       ),
     ).single().id
 
     springEventPublisher.publishEvent(
       AdjustmentCreatedEvent(
+        id = adjustmentId,
         createDto = createAdjustment,
         appointmentEntity = validatedAdjustment.task.appointment,
         reason = validatedAdjustment.reason,
@@ -67,4 +72,13 @@ class AdjustmentService(
       communityPaybackAndDeliusClient.deleteAdjustment(event.deliusAdjustmentId)
     }
   }
+}
+
+interface AdjustmentIdGenerator {
+  fun generateId(): UUID
+}
+
+@Service
+class DefaultAdjustmentIdGenerator : AdjustmentIdGenerator {
+  override fun generateId() = AdjustmentEventEntity.generateId()
 }

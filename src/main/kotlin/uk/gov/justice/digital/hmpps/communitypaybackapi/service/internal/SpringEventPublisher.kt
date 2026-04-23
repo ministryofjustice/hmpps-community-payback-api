@@ -11,6 +11,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentEventTrigger
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventTrigger
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService
+import java.util.UUID
 
 @Service
 class SpringEventPublisher(
@@ -41,6 +42,7 @@ sealed interface CommunityPaybackSpringEvent {
     val reason: AdjustmentReasonEntity,
     val deliusAdjustmentId: Long,
     val trigger: AdjustmentEventTrigger,
+    val id: UUID,
   ) : CommunityPaybackSpringEvent {
     companion object
   }

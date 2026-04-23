@@ -19,6 +19,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.config.ClockConfiguration
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentEventTrigger
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentIdGenerator
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentValidationService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AdjustmentCreatedEvent
@@ -41,6 +42,9 @@ class AdjustmentServiceTest {
   @RelaxedMockK
   private lateinit var springEventPublisher: SpringEventPublisher
 
+  @RelaxedMockK
+  lateinit var adjustmentIdGenerator: AdjustmentIdGenerator
+
   val clock: Clock = ClockConfiguration.MutableClock(Instant.now())
 
   @InjectMockKs
@@ -61,6 +65,7 @@ class AdjustmentServiceTest {
     fun success() {
       val reason = AdjustmentReasonEntity.valid().copy(maxMinutesAllowed = 50)
       val appointmentTask = AppointmentTaskEntity.valid()
+      val id = UUID.randomUUID()
 
       val request = CreateAdjustmentDto.valid().copy(
         adjustmentReasonId = REASON_ID,
@@ -68,6 +73,8 @@ class AdjustmentServiceTest {
       )
 
       val validatedAdjustment = AdjustmentValidationService.ValidatedCreateAdjustment(request, reason, appointmentTask)
+      every { adjustmentIdGenerator.generateId() } returns id
+
       every {
         adjustmentValidationService.validateCreate(request, UNPAID_WORK_DETAILS, USERNAME)
       } returns validatedAdjustment
@@ -80,6 +87,7 @@ class AdjustmentServiceTest {
               crn = CRN,
               deliusEventNumber = EVENT_NUMBER,
               reason = reason,
+              reference = id,
             ),
           ),
         )
@@ -94,6 +102,7 @@ class AdjustmentServiceTest {
       verify {
         springEventPublisher.publishEvent(
           AdjustmentCreatedEvent(
+            id = id,
             createDto = request,
             appointmentEntity = appointmentTask.appointment,
             reason = validatedAdjustment.reason,
