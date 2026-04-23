@@ -16,6 +16,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentEventT
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AdjustmentCreatedEvent
 import java.time.LocalDate
 import java.time.OffsetDateTime
+import java.util.UUID
 
 class AdjustmentEventEntityFactoryTest {
 
@@ -24,7 +25,7 @@ class AdjustmentEventEntityFactoryTest {
     val triggeredAt = OffsetDateTime.now()
     val appointment = AppointmentEntity.valid()
     val reason = AdjustmentReasonEntity.valid()
-
+    val id = UUID.randomUUID()
     val result = AdjustmentEventEntityFactory().buildAdjustmentCreated(
       AdjustmentCreatedEvent(
         createDto = CreateAdjustmentDto.valid().copy(
@@ -40,6 +41,7 @@ class AdjustmentEventEntityFactoryTest {
           triggerType = AdjustmentEventTriggerType.APPOINTMENT_TASK,
           triggeredBy = "task id",
         ),
+        id = id,
       ),
     )
 
@@ -53,5 +55,6 @@ class AdjustmentEventEntityFactoryTest {
     assertThat(result.adjustmentMinutes).isEqualTo(61)
     assertThat(result.adjustmentDate).isEqualTo(LocalDate.of(1971, 8, 23))
     assertThat(result.adjustmentReason).isEqualTo(reason)
+    assertThat(result.id).isEqualTo(id)
   }
 }

@@ -8,7 +8,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventTr
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AdjustmentCreatedEvent
 import java.time.OffsetDateTime
-import java.util.UUID
 
 @Service
 class AdjustmentEventEntityFactory {
@@ -16,7 +15,7 @@ class AdjustmentEventEntityFactory {
   fun buildAdjustmentCreated(
     details: AdjustmentCreatedEvent,
   ) = AdjustmentEventEntity(
-    id = UUID.randomUUID(),
+    id = details.id,
     eventType = AdjustmentEventType.CREATE,
     triggeredAt = details.trigger.triggeredAt,
     triggerType = details.trigger.triggerType,

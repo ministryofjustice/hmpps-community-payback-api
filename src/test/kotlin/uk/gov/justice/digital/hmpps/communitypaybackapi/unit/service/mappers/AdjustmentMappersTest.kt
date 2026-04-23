@@ -12,6 +12,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toNDAdjustmentRequest
 import java.time.LocalDate
+import java.util.UUID
 
 class AdjustmentMappersTest {
 
@@ -27,6 +28,7 @@ class AdjustmentMappersTest {
       typeDto: CreateAdjustmentTypeDto,
       expectedUpstreamType: NDAdjustmentType,
     ) {
+      val id = UUID.randomUUID()
       val result = CreateAdjustmentDto.valid().copy(
         dateOfAdjustment = LocalDate.of(2014, 11, 4),
         type = typeDto,
@@ -35,6 +37,7 @@ class AdjustmentMappersTest {
         crn = "CRN888",
         deliusEventNumber = 5,
         reason = AdjustmentReasonEntity.valid().copy(deliusCode = "REASON1"),
+        reference = id,
       )
 
       assertThat(result.crn).isEqualTo("CRN888")
@@ -43,6 +46,7 @@ class AdjustmentMappersTest {
       assertThat(result.date).isEqualTo(LocalDate.of(2014, 11, 4))
       assertThat(result.reason).isEqualTo("REASON1")
       assertThat(result.minutes).isEqualTo(5)
+      assertThat(result.reference).isEqualTo(id)
     }
   }
 }

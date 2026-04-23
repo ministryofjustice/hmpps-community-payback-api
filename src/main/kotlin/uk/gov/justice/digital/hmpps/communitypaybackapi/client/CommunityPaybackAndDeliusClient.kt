@@ -624,6 +624,7 @@ data class NDAdjustmentRequest(
   val date: LocalDate,
   val reason: String,
   val minutes: Int,
+  val reference: UUID,
 )
 
 enum class NDAdjustmentType(val code: String) {
