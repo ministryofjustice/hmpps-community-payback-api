@@ -19,6 +19,8 @@ import java.util.UUID
 @Service
 class AppointmentCreationService(
   private val appointmentValidationService: AppointmentValidationService,
+  private val offenderService: OffenderService,
+  private val projectService: ProjectService,
   private val communityPaybackAndDeliusClient: CommunityPaybackAndDeliusClient,
   private val appointmentEntityRepository: AppointmentEntityRepository,
   private val springEventPublisher: SpringEventPublisher,
@@ -48,6 +50,11 @@ class AppointmentCreationService(
     require(createAppointmentsDto.appointments.isNotEmpty()) { "At least one appointment must be provided" }
     require(createAppointmentsDto.appointments.count { it.projectCode != createAppointmentsDto.projectCode } == 0) { "All appointments must be for the same project code" }
 
+    val project = projectService.getProject(createAppointmentsDto.projectCode)
+    require(project != null) { "A valid project must be used" }
+    val projectType = projectService.getProjectTypeForCode(project.projectType.code)
+    require(projectType != null) { "A valid project type must be used" }
+
     val appointmentsToCreate = appointments.map {
       AppointmentToCreate(
         id = appointmentIdGenerator.generateId(),
@@ -62,10 +69,15 @@ class AppointmentCreationService(
 
     val appointmentEntities = appointmentEntityRepository.saveAll(
       appointmentsToCreate.map {
+        val name = offenderService.getNameIgnoringLimitedStatus(it.validatedAppointment.dto.crn)
+
         it.validatedAppointment.dto.toAppointmentEntity(
           id = it.id,
           deliusAppointmentId = creationResponse.findDeliusId(communityPaybackId = it.id),
           providerCode = it.validatedAppointment.project.providerCode,
+          firstName = name?.forename,
+          lastName = name?.surname,
+          projectType = projectType,
         )
       },
     )

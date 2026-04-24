@@ -15,8 +15,10 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCreateAppointme
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCreatedAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentsDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.OffenderNameDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntityRepository
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ProjectTypeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.validCreateAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
@@ -25,6 +27,8 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentIdGenerator
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService.ValidatedAppointment
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.OffenderService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ProjectService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AppointmentCreatedEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.SpringEventPublisher
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.ToAppointmentEntity.toAppointmentEntity
@@ -35,6 +39,12 @@ import java.util.UUID
 class AppointmentCreationServiceTest {
   @RelaxedMockK
   lateinit var appointmentValidationService: AppointmentValidationService
+
+  @RelaxedMockK
+  lateinit var offenderService: OffenderService
+
+  @RelaxedMockK
+  lateinit var projectService: ProjectService
 
   @RelaxedMockK
   lateinit var communityPaybackAndDeliusClient: CommunityPaybackAndDeliusClient
@@ -108,8 +118,16 @@ class AppointmentCreationServiceTest {
       val validatedCreateAppointment2 = ValidatedAppointment.validCreateAppointment().copy(dto = createAppointment2Dto, project = PROJECT)
       every { appointmentValidationService.validateCreate(createAppointment2Dto) } returns validatedCreateAppointment2
 
-      val appointmentEntity1 = createAppointment1Dto.toAppointmentEntity(appointment1Id, ND_APPT1_ID, PROVIDER_CODE)
-      val appointmentEntity2 = createAppointment2Dto.toAppointmentEntity(appointment2Id, ND_APPT2_ID, PROVIDER_CODE)
+      val projectType = ProjectTypeEntity.valid()
+      every { projectService.getProjectTypeForCode(PROJECT_CODE) } returns projectType
+
+      val name1 = OffenderNameDto.valid()
+      val name2 = OffenderNameDto.valid()
+      every { offenderService.getNameIgnoringLimitedStatus(validatedCreateAppointment1.dto.crn) } returns name1
+      every { offenderService.getNameIgnoringLimitedStatus(validatedCreateAppointment2.dto.crn) } returns name2
+
+      val appointmentEntity1 = createAppointment1Dto.toAppointmentEntity(appointment1Id, ND_APPT1_ID, PROVIDER_CODE, firstName = name1.forename, lastName = name1.surname, projectType = projectType)
+      val appointmentEntity2 = createAppointment2Dto.toAppointmentEntity(appointment2Id, ND_APPT2_ID, PROVIDER_CODE, firstName = name2.forename, lastName = name2.surname, projectType = projectType)
       every { appointmentEntityRepository.saveAll(listOf(appointmentEntity1, appointmentEntity2)) } returnsArgument 0
 
       every {
@@ -140,8 +158,8 @@ class AppointmentCreationServiceTest {
       verify {
         appointmentEntityRepository.saveAll(
           listOf(
-            createAppointment1Dto.toAppointmentEntity(appointment1Id, ND_APPT1_ID, PROVIDER_CODE),
-            createAppointment2Dto.toAppointmentEntity(appointment2Id, ND_APPT2_ID, PROVIDER_CODE),
+            createAppointment1Dto.toAppointmentEntity(appointment1Id, ND_APPT1_ID, PROVIDER_CODE, firstName = name1.forename, lastName = name1.surname, projectType = projectType),
+            createAppointment2Dto.toAppointmentEntity(appointment2Id, ND_APPT2_ID, PROVIDER_CODE, firstName = name2.forename, lastName = name2.surname, projectType = projectType),
           ),
         )
 
