@@ -39,6 +39,7 @@ generic-service:
     COMMUNITY_PAYBACK_EDUCATION_COURSE_INTEGRATION_ENABLED: true
 
     CLIENT_COMMUNITY_PAYBACK_AND_DELIUS_URL: "http://localhost:8080/mocks/community-payback-and-delius"
+    CLIENT_PROBATION_ACCESS_CONTROL_URL: "http://localhost:8080/mocks/probation-access-control"
 
   # Pre-existing kubernetes secrets to load as environment variables in the deployment.
   # namespace_secrets:
