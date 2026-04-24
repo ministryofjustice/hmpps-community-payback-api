@@ -692,6 +692,7 @@ class AppointmentMappersTest {
     @Test
     fun success() {
       val communityPaybackId = UUID.randomUUID()
+      val projectType = ProjectTypeEntity.valid()
       val result = CreateAppointmentDto.valid().copy(
         crn = "CRN777",
         deliusEventNumber = 90,
@@ -700,6 +701,9 @@ class AppointmentMappersTest {
         id = communityPaybackId,
         deliusAppointmentId = 91283,
         providerCode = "PROV1",
+        firstName = "Some",
+        lastName = "Name",
+        projectType = projectType,
       )
 
       assertThat(result.id).isEqualTo(communityPaybackId)
@@ -709,6 +713,9 @@ class AppointmentMappersTest {
       assertThat(result.createdByCommunityPayback).isEqualTo(true)
       assertThat(result.date).isEqualTo(LocalDate.of(2009, 8, 7))
       assertThat(result.providerCode).isEqualTo("PROV1")
+      assertThat(result.firstName).isEqualTo("Some")
+      assertThat(result.lastName).isEqualTo("Name")
+      assertThat(result.projectType).isEqualTo(projectType)
     }
   }
 

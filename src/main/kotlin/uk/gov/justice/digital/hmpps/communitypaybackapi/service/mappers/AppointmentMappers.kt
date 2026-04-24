@@ -237,6 +237,9 @@ object ToAppointmentEntity {
     id: UUID,
     deliusAppointmentId: Long,
     providerCode: String,
+    firstName: String?,
+    lastName: String?,
+    projectType: ProjectTypeEntity?,
   ): AppointmentEntity = AppointmentEntity(
     id = id,
     deliusId = deliusAppointmentId,
@@ -245,6 +248,9 @@ object ToAppointmentEntity {
     createdByCommunityPayback = true,
     date = this.date,
     providerCode = providerCode,
+    firstName = firstName,
+    lastName = lastName,
+    projectType = projectType,
   )
 
   fun AppointmentDto.toAppointmentEntity(
