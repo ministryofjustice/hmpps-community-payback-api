@@ -86,6 +86,11 @@ tasks {
     compilerOptions.jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_25
   }
 
+  named<Jar>("jar") {
+    archiveClassifier.set("")
+    enabled = true
+  }
+
   named<Test>("test") {
     finalizedBy(named("jacocoTestReport"))
   }
