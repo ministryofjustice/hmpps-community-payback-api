@@ -70,3 +70,10 @@ enum class OffenderType(@get:JsonValue val value: String) {
     fun forValue(value: String) = entries.first { it.value == value }
   }
 }
+
+data class OffenderNameDto(
+  val forename: String,
+  val surname: String,
+) {
+  companion object
+}
