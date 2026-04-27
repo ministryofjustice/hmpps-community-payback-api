@@ -247,7 +247,11 @@ object ToAppointmentEntity {
     providerCode = providerCode,
   )
 
-  fun AppointmentDto.toAppointmentEntity(): AppointmentEntity = AppointmentEntity(
+  fun AppointmentDto.toAppointmentEntity(
+    firstName: String?,
+    lastName: String?,
+    projectType: ProjectTypeEntity?,
+  ): AppointmentEntity = AppointmentEntity(
     id = this.communityPaybackId ?: AppointmentEntity.generateId(),
     deliusId = this.id,
     crn = this.offender.crn,
@@ -255,6 +259,9 @@ object ToAppointmentEntity {
     createdByCommunityPayback = this.communityPaybackId != null,
     date = this.date,
     providerCode = this.providerCode,
+    firstName = firstName,
+    lastName = lastName,
+    projectType = projectType,
   )
 }
 

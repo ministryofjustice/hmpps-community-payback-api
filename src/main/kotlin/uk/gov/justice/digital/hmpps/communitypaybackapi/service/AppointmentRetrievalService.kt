@@ -84,7 +84,7 @@ class AppointmentRetrievalService(
       existing.date = existingAppointment.date
       appointmentEntityRepository.save(existing)
     } else {
-      appointmentEntityRepository.save(existingAppointment.toAppointmentEntity())
+      appointmentEntityRepository.save(existingAppointment.toAppointmentEntity(null, null, null))
     }
   }
 }

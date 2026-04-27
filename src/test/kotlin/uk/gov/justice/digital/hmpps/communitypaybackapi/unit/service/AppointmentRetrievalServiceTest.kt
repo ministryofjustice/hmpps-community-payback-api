@@ -205,11 +205,11 @@ class AppointmentRetrievalServiceTest {
       val existingAppointment = AppointmentDto.valid()
 
       every { appointmentEntityRepository.findByDeliusId(existingAppointment.id) } returns null
-      every { appointmentEntityRepository.save(existingAppointment.toAppointmentEntity()) } returnsArgument 0
+      every { appointmentEntityRepository.save(existingAppointment.toAppointmentEntity(null, null, null)) } returnsArgument 0
 
       val result = service.getOrCreateAppointmentEntity(existingAppointment)
 
-      assertThat(result).isEqualTo(existingAppointment.toAppointmentEntity())
+      assertThat(result).isEqualTo(existingAppointment.toAppointmentEntity(null, null, null))
     }
 
     @Test
