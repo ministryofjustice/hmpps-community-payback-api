@@ -28,6 +28,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.DeliusAppointmentIdD
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeGroupDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventTrigger
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentService
@@ -249,4 +250,39 @@ class AdminAppointmentController(
       pageable = pageable,
     )
   }
+
+  @PutMapping(
+    path = ["/projects/{projectCode}/appointments/bulk"],
+    consumes = [MediaType.APPLICATION_JSON_VALUE],
+  )
+  @Operation(
+    description = """Records one or more appointment outcomes. Note that if 200 is returned the response body must be checked to ensure all appointments have been updated""",
+    responses = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Check the result JSON to check the outcome for each appointment update",
+      ),
+      ApiResponse(
+        responseCode = "400",
+        description = "Validation error. If this occurs then no appointments have been updated",
+        content = [
+          Content(
+            schema = Schema(implementation = ErrorResponse::class),
+          ),
+        ],
+      ),
+    ],
+  )
+  fun updateAppointments(
+    @PathVariable projectCode: String,
+    @RequestBody request: UpdateAppointmentsDto,
+  ) = appointmentService.updateAppointments(
+    projectCode = projectCode,
+    request = request.toUpdateAppointmentOutcomesDto(),
+    trigger = AppointmentEventTrigger(
+      triggeredAt = OffsetDateTime.now(),
+      triggerType = AppointmentEventTriggerType.USER,
+      triggeredBy = contextService.getUserName(),
+    ),
+  )
 }
