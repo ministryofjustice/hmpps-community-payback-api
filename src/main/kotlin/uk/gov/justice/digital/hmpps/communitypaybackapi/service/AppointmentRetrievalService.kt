@@ -23,6 +23,7 @@ class AppointmentRetrievalService(
   private val appointmentMappers: AppointmentMappers,
   private val contextService: ContextService,
   private val projectService: ProjectService,
+  private val offenderService: OffenderService,
   private val appointmentEntityRepository: AppointmentEntityRepository,
 ) {
 
@@ -71,6 +72,9 @@ class AppointmentRetrievalService(
     existingAppointment: AppointmentDto,
   ): AppointmentEntity {
     val existing = appointmentEntityRepository.findByDeliusId(existingAppointment.id)
+    val name = offenderService.getNameIgnoringLimitedStatus(existingAppointment.offender.crn)
+    val projectTypeCode = projectService.getProject(existingAppointment.projectCode)?.projectType?.code
+    val projectType = projectTypeCode?.let { projectService.getProjectTypeForCode(it) }
 
     return if (existing != null) {
       /**
@@ -82,9 +86,19 @@ class AppointmentRetrievalService(
        * in sync with NDelius without relying on user interactions to trigger this check
        */
       existing.date = existingAppointment.date
+
+      if (name != null) {
+        existing.firstName = name.forename
+        existing.lastName = name.surname
+      }
+
+      if (projectType != null) {
+        existing.projectType = projectType
+      }
+
       appointmentEntityRepository.save(existing)
     } else {
-      appointmentEntityRepository.save(existingAppointment.toAppointmentEntity())
+      appointmentEntityRepository.save(existingAppointment.toAppointmentEntity(name?.forename, name?.surname, projectType))
     }
   }
 }

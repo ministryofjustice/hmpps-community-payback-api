@@ -8,6 +8,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDName
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.OffenderDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toOffenderNameDto
 import java.time.LocalDate
 
 class CaseSummaryMapperTest {
@@ -62,5 +63,62 @@ class CaseSummaryMapperTest {
       assertThat(result).isInstanceOf(OffenderDto.OffenderLimitedDto::class.java)
       assertThat(result.crn).isEqualTo("CRN123")
     }
+  }
+
+  @Nested
+  inner class CaseSummaryToOffenderNameDto {
+    @Test
+    fun `If no limitations return OffenderNameDto`() {
+      val result = NDCaseSummary(
+        crn = "CRN123",
+        name = NDName(
+          forename = "thefore",
+          surname = "thesur",
+          middleNames = listOf("themid"),
+        ),
+        dateOfBirth = LocalDate.of(1983, 12, 11),
+        currentExclusion = false,
+        currentRestriction = false,
+      ).toOffenderNameDto()
+
+      assertThat(result.forename).isEqualTo("thefore")
+      assertThat(result.surname).isEqualTo("thesur")
+    }
+  }
+
+  @Test
+  fun `If exclusion return OffenderNameDto`() {
+    val result = NDCaseSummary(
+      crn = "CRN123",
+      name = NDName(
+        forename = "thefore",
+        surname = "thesur",
+        middleNames = listOf("themid"),
+      ),
+      dateOfBirth = LocalDate.of(1983, 12, 11),
+      currentExclusion = true,
+      currentRestriction = false,
+    ).toOffenderNameDto()
+
+    assertThat(result.forename).isEqualTo("thefore")
+    assertThat(result.surname).isEqualTo("thesur")
+  }
+
+  @Test
+  fun `If restriction return OffenderNameDto`() {
+    val result = NDCaseSummary(
+      crn = "CRN123",
+      name = NDName(
+        forename = "thefore",
+        surname = "thesur",
+        middleNames = listOf("themid"),
+      ),
+      dateOfBirth = LocalDate.of(1983, 12, 11),
+      currentExclusion = true,
+      currentRestriction = false,
+    ).toOffenderNameDto()
+
+    assertThat(result.forename).isEqualTo("thefore")
+    assertThat(result.surname).isEqualTo("thesur")
   }
 }

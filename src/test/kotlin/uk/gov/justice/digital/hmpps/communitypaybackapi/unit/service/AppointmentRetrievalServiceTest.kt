@@ -18,6 +18,8 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.PageResponse
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.DeliusAppointmentIdDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.OffenderNameDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeGroupDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
@@ -28,10 +30,12 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentRetrievalService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ContextService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.OffenderService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ProjectService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.toHttpParams
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.AppointmentMappers
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.ToAppointmentEntity.toAppointmentEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.unit.util.WebClientResponseExceptionFactory
 import java.time.LocalDate
 
@@ -49,6 +53,9 @@ class AppointmentRetrievalServiceTest {
 
   @RelaxedMockK
   private lateinit var projectService: ProjectService
+
+  @RelaxedMockK
+  private lateinit var offenderService: OffenderService
 
   @RelaxedMockK
   private lateinit var appointmentEntityRepository: AppointmentEntityRepository
@@ -203,13 +210,24 @@ class AppointmentRetrievalServiceTest {
     @Test
     fun `doesnt exist, save new entity`() {
       val existingAppointment = AppointmentDto.valid()
+      val projectType = ProjectTypeEntity.valid()
+      val project = ProjectDto.valid().copy(projectCode = existingAppointment.projectCode, projectType = projectType.toDto())
 
       every { appointmentEntityRepository.findByDeliusId(existingAppointment.id) } returns null
-      every { appointmentEntityRepository.save(existingAppointment.toAppointmentEntity()) } returnsArgument 0
+      every { appointmentEntityRepository.save(existingAppointment.toAppointmentEntity(null, null, null)) } returnsArgument 0
+      every { projectService.getProject(existingAppointment.projectCode) } returns project
+      every { projectService.getProjectTypeForCode(projectType.code) } returns projectType
+
+      val name = OffenderNameDto.valid()
+
+      every { offenderService.getNameIgnoringLimitedStatus(existingAppointment.offender.crn) } returns name
 
       val result = service.getOrCreateAppointmentEntity(existingAppointment)
 
-      assertThat(result).isEqualTo(existingAppointment.toAppointmentEntity())
+      assertThat(result).isEqualTo(existingAppointment.toAppointmentEntity(null, null, null))
+      assertThat(result.projectType).isEqualTo(projectType)
+      assertThat(result.firstName).isEqualTo(name.forename)
+      assertThat(result.lastName).isEqualTo(name.surname)
     }
 
     @Test
@@ -223,6 +241,43 @@ class AppointmentRetrievalServiceTest {
       val result = service.getOrCreateAppointmentEntity(existingAppointment)
 
       assertThat(result.date).isEqualTo(LocalDate.of(2022, 2, 2))
+    }
+
+    @Test
+    fun `does exist, update project type and return updated version`() {
+      val existingAppointment = AppointmentDto.valid().copy(date = LocalDate.of(2022, 2, 2))
+      val existingEntity = AppointmentEntity.valid().copy(date = LocalDate.of(2021, 1, 1))
+
+      every { appointmentEntityRepository.findByDeliusId(existingAppointment.id) } returns existingEntity
+      every { appointmentEntityRepository.save(existingEntity) } returnsArgument 0
+
+      val projectType = ProjectTypeEntity.valid()
+      val project = ProjectDto.valid().copy(projectCode = existingAppointment.projectCode, projectType = projectType.toDto())
+
+      every { projectService.getProject(existingAppointment.projectCode) } returns project
+      every { projectService.getProjectTypeForCode(projectType.code) } returns projectType
+
+      val result = service.getOrCreateAppointmentEntity(existingAppointment)
+
+      assertThat(result.projectType).isEqualTo(projectType)
+    }
+
+    @Test
+    fun `does exist, update first and last name and return updated version`() {
+      val existingAppointment = AppointmentDto.valid().copy(date = LocalDate.of(2022, 2, 2))
+      val existingEntity = AppointmentEntity.valid().copy(date = LocalDate.of(2021, 1, 1))
+
+      every { appointmentEntityRepository.findByDeliusId(existingAppointment.id) } returns existingEntity
+      every { appointmentEntityRepository.save(existingEntity) } returnsArgument 0
+
+      val name = OffenderNameDto.valid()
+
+      every { offenderService.getNameIgnoringLimitedStatus(existingAppointment.offender.crn) } returns name
+
+      val result = service.getOrCreateAppointmentEntity(existingAppointment)
+
+      assertThat(result.firstName).isEqualTo(name.forename)
+      assertThat(result.lastName).isEqualTo(name.surname)
     }
   }
 }

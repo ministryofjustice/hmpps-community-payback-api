@@ -184,4 +184,38 @@ class OffenderServiceTest {
 
     assertThat(result).isNull()
   }
+
+  @Nested
+  inner class GetNameIgnoringLimitedStatusTest {
+
+    @Test
+    fun `returns offender name when found`() {
+      val caseDetailsSummary = NDCaseDetailsSummary.valid().copy(
+        unpaidWorkDetails = listOf(
+          NDUpwDetails.valid(),
+          NDUpwDetails.valid(),
+          NDUpwDetails.valid(),
+          NDUpwDetails.valid(),
+        ),
+      )
+
+      every { communityPaybackAndDeliusClient.getUpwDetailsSummary(CRN, null) } returns caseDetailsSummary
+
+      val result = service.getNameIgnoringLimitedStatus(CRN)
+
+      assertThat(result).isNotNull
+      assertThat(result!!.forename).isEqualTo(caseDetailsSummary.case.name.forename)
+      assertThat(result.surname).isEqualTo(caseDetailsSummary.case.name.surname)
+      verify(exactly = 1) { communityPaybackAndDeliusClient.getUpwDetailsSummary(CRN, null) }
+    }
+
+    @Test
+    fun `returns null when offender not found`() {
+      every { communityPaybackAndDeliusClient.getUpwDetailsSummary(CRN, null) } throws WebClientResponseExceptionFactory.notFound()
+
+      val result = service.getNameIgnoringLimitedStatus(CRN)
+
+      assertThat(result).isNull()
+    }
+  }
 }

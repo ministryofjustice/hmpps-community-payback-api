@@ -62,7 +62,7 @@ class AppointmentUpdateServiceTest {
 
     @Test
     fun `if there's no existing entries for the delius appointment ids, persist new entry, raise domain event and invoke update endpoint`() {
-      val appointmentEntity = existingAppointment.toAppointmentEntity()
+      val appointmentEntity = existingAppointment.toAppointmentEntity(null, null, null)
       every { appointmentRetrievalService.getOrCreateAppointmentEntity(existingAppointment) } returns appointmentEntity
       val validatedUpdateAppointment = ValidatedAppointment.validUpdateAppointment().copy(dto = updateRequest)
       every { appointmentOutcomeValidationService.validateUpdate(any(), any()) } returns validatedUpdateAppointment

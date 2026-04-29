@@ -1,7 +1,9 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.entity
 
 import jakarta.persistence.Entity
+import jakarta.persistence.FetchType
 import jakarta.persistence.Id
+import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
 import org.hibernate.proxy.HibernateProxy
 import java.time.LocalDate
@@ -44,6 +46,12 @@ data class AppointmentEntity(
    */
   var date: LocalDate,
   var providerCode: String,
+  // Appointments created before the following fields were introduced may not have been updated
+  // and therefore have no values available.
+  var firstName: String? = null,
+  var lastName: String? = null,
+  @ManyToOne(fetch = FetchType.LAZY)
+  var projectType: ProjectTypeEntity? = null,
 ) {
   @Suppress("USELESS_IS_CHECK")
   override fun equals(other: Any?): Boolean {

@@ -237,6 +237,9 @@ object ToAppointmentEntity {
     id: UUID,
     deliusAppointmentId: Long,
     providerCode: String,
+    firstName: String?,
+    lastName: String?,
+    projectType: ProjectTypeEntity?,
   ): AppointmentEntity = AppointmentEntity(
     id = id,
     deliusId = deliusAppointmentId,
@@ -245,9 +248,16 @@ object ToAppointmentEntity {
     createdByCommunityPayback = true,
     date = this.date,
     providerCode = providerCode,
+    firstName = firstName,
+    lastName = lastName,
+    projectType = projectType,
   )
 
-  fun AppointmentDto.toAppointmentEntity(): AppointmentEntity = AppointmentEntity(
+  fun AppointmentDto.toAppointmentEntity(
+    firstName: String?,
+    lastName: String?,
+    projectType: ProjectTypeEntity?,
+  ): AppointmentEntity = AppointmentEntity(
     id = this.communityPaybackId ?: AppointmentEntity.generateId(),
     deliusId = this.id,
     crn = this.offender.crn,
@@ -255,6 +265,9 @@ object ToAppointmentEntity {
     createdByCommunityPayback = this.communityPaybackId != null,
     date = this.date,
     providerCode = this.providerCode,
+    firstName = firstName,
+    lastName = lastName,
+    projectType = projectType,
   )
 }
 

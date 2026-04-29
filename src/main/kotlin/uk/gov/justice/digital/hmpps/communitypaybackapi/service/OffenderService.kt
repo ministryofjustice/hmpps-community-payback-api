@@ -5,9 +5,11 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ArnsClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CaseDetailsSummaryDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.OffenderNameDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsIdDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toOffenderNameDto
 
 @Service
 class OffenderService(
@@ -31,5 +33,11 @@ class OffenderService(
     communityPaybackAndDeliusClient.getUpwDetailsSummary(crn, userName).toDto()
   } catch (_: WebClientResponseException.NotFound) {
     return null
+  }
+
+  fun getNameIgnoringLimitedStatus(crn: String): OffenderNameDto? = try {
+    communityPaybackAndDeliusClient.getUpwDetailsSummary(crn, null).case.toOffenderNameDto()
+  } catch (_: WebClientResponseException.NotFound) {
+    null
   }
 }
