@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.unit.service
 
 import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
+import io.mockk.impl.annotations.MockK
 import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.slot
@@ -9,6 +10,7 @@ import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.assertj.core.api.Assertions.within
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -19,6 +21,7 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.data.repository.findByIdOrNull
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentSummaryDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentTaskSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeGroupDto
@@ -39,10 +42,12 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentEventT
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentRetrievalService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentTaskService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService.ValidatedAppointment
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.CaseVisibilityService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ContextService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AdjustmentCreatedEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AppointmentCreatedEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AppointmentUpdatedEvent
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.AppointmentTaskMappers
 import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.time.temporal.ChronoUnit
@@ -60,11 +65,27 @@ class AppointmentTaskServiceTest {
   @RelaxedMockK
   private lateinit var contextService: ContextService
 
+  @RelaxedMockK
+  private lateinit var caseVisibilityService: CaseVisibilityService
+
+  @MockK
+  private lateinit var appointmentTaskMappers: AppointmentTaskMappers
+
   @InjectMockKs
   private lateinit var service: AppointmentTaskService
 
   private companion object {
     const val PROVIDER_CODE = "PROV123"
+  }
+
+  @BeforeEach
+  fun setup() {
+    every { appointmentTaskMappers.toDto(any(), any(), any()) } answers {
+      AppointmentTaskSummaryDto.valid().copy(
+        taskId = (args[0] as AppointmentTaskEntity).id,
+        appointment = args[2] as AppointmentSummaryDto,
+      )
+    }
   }
 
   @Nested
@@ -330,6 +351,8 @@ class AppointmentTaskServiceTest {
       assertThat(result.content[0].taskId).isEqualTo(taskId)
       assertThat(result.content[0].appointment).isEqualTo(appointmentSummary)
       assertThat(result.totalElements).isEqualTo(1L)
+
+      verify { appointmentTaskMappers.toDto(taskEntity, false, appointmentSummary) }
     }
 
     @Test
@@ -394,6 +417,8 @@ class AppointmentTaskServiceTest {
       assertThat(result.content[0].taskId).isEqualTo(taskId)
       assertThat(result.content[0].appointment).isEqualTo(appointmentSummary)
       assertThat(result.totalElements).isEqualTo(1L)
+
+      verify { appointmentTaskMappers.toDto(taskEntity, false, appointmentSummary) }
     }
 
     @Test
@@ -498,6 +523,9 @@ class AppointmentTaskServiceTest {
       assertThat(result.content[1].taskId).isEqualTo(task2Id)
       assertThat(result.content[1].appointment).isEqualTo(appointmentSummary2)
       assertThat(result.totalElements).isEqualTo(2L)
+
+      verify { appointmentTaskMappers.toDto(taskEntity1, false, appointmentSummary1) }
+      verify { appointmentTaskMappers.toDto(taskEntity2, false, appointmentSummary2) }
     }
 
     @Test
@@ -553,6 +581,72 @@ class AppointmentTaskServiceTest {
 
       assertThat(result.content).hasSize(1)
       assertThat(result.content[0].taskId).isEqualTo(taskId)
+
+      verify { appointmentTaskMappers.toDto(taskEntity, false, appointmentSummary) }
+    }
+
+    @Test
+    fun `uses case visibility to determine whether task mapping should be limited access`() {
+      val pageable = PageRequest.of(0, 10)
+      val taskId = UUID.randomUUID()
+      val appointmentId = UUID.randomUUID()
+      val deliusAppointmentId = 101L
+
+      val appointmentEntity = AppointmentEntity.valid().copy(
+        id = appointmentId,
+        deliusId = deliusAppointmentId,
+        providerCode = PROVIDER_CODE,
+        date = LocalDate.of(2026, 3, 27),
+      )
+
+      val taskEntity = AppointmentTaskEntity(
+        id = taskId,
+        appointment = appointmentEntity,
+        taskType = AppointmentTaskType.ADJUSTMENT_TRAVEL_TIME,
+        createdAt = OffsetDateTime.now(),
+        taskStatus = AppointmentTaskStatus.PENDING,
+      )
+
+      val appointmentSummary = AppointmentSummaryDto.valid().copy(id = deliusAppointmentId)
+
+      every {
+        appointmentTaskEntityRepository.findPendingTasksWithFiltersAndAppointments(
+          fromDate = null,
+          toDate = null,
+          providerCode = null,
+          pageable = pageable,
+        )
+      } returns PageImpl(listOf(taskEntity), pageable, 1L)
+
+      every {
+        appointmentRetrievalService.getAppointments(
+          crn = null,
+          fromDate = null,
+          toDate = null,
+          outcomeCodes = null,
+          projectCodes = null,
+          projectTypeGroup = null,
+          eventNumber = null,
+          deliusAppointmentIds = listOf(deliusAppointmentId),
+          pageable = PageRequest.of(0, 1, Sort.by(Sort.Direction.DESC, "name")),
+        )
+      } returns PageImpl(listOf(appointmentSummary), PageRequest.of(0, 1), 1L)
+
+      every { caseVisibilityService.isLimitedForCurrentUser(any()) } answers {
+        @Suppress("unchecked_cast")
+        val crns = args[0] as List<String>
+
+        crns.associateWith { true }
+      }
+
+      val result = service.getPendingAppointmentTasks(pageable = pageable)
+
+      assertThat(result.content).hasSize(1)
+      assertThat(result.content[0].taskId).isEqualTo(taskId)
+      assertThat(result.content[0].appointment).isEqualTo(appointmentSummary)
+      assertThat(result.totalElements).isEqualTo(1L)
+
+      verify { appointmentTaskMappers.toDto(taskEntity, true, appointmentSummary) }
     }
   }
 }
