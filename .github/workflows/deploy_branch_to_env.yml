@@ -10,6 +10,8 @@ on:
         options:
           - dev
           - test
+          - preprod
+          - prod
 
 permissions:
   contents: read

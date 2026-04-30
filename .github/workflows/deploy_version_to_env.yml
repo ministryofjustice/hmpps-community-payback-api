@@ -10,6 +10,8 @@ on:
         options:
           - dev
           - test
+          - preprod
+          - prod
         default: 'dev'
       version:
         description: version to be deployed to the environment - must already exist.

@@ -6,6 +6,7 @@ generic-service:
 
   ingress:
     host: community-payback-api-preprod.hmpps.service.justice.gov.uk
+    tlsSecretName: hmpps-community-payback-api-preprod-cert
 
   env:
     APPLICATIONINSIGHTS_CONFIGURATION_FILE: "applicationinsights.dev.json"
@@ -13,11 +14,31 @@ generic-service:
     SENTRY_ENVIRONMENT: preprod
     SPRING_PROFILES_ACTIVE: preprod
 
+
+    COMMUNITY_PAYBACK_DOMAIN_EVENTS_ENVIRONMENT: preprod
     COMMUNITY_PAYBACK_DOMAIN_EVENTS_DETAILS_URL_PATTERN: https://community-payback-api-preprod.hmpps.service.justice.gov.uk/domain-event-details/#type/#id
+    COMMUNITY_PAYBACK_EDUCATION_COURSE_INTEGRATION_LOG_MESSAGES: false
 
     CLIENT_ARNS_URL: https://assess-risks-and-needs-preprod.hmpps.service.justice.gov.uk
+    CLIENT_COMMUNITY_PAYBACK_AND_DELIUS_URL: https://community-payback-and-delius-preprod.hmpps.service.justice.gov.uk
 
+    SPRINGDOC_API_DOCS_ENABLED: false
+    SPRINGDOC_SWAGGER_UI_ENABLED: false
 # CloudPlatform AlertManager receiver to route prometheus alerts to slack
 # See https://user-guide.cloud-platform.service.justice.gov.uk/documentation/monitoring-an-app/how-to-create-alarms.html#creating-your-own-custom-alerts
 generic-prometheus-alerts:
   alertSeverity: hmpps-community-payback-nonprod
+  rdsAlertsDatabases:
+    cloud-platform-05aa0645d0cf9499: "community payback"
+  # API pool users = 20 per pod
+  # Max expected connections for 2 x pods = 40 + additional 10 (buffer for direct connections)
+  rdsAlertsConnectionThreshold: 50
+  sqsAlertsQueueNames:
+    - "hmpps-community-payback-live-preprod-course_completion_events_dlq"
+    - "hmpps-community-payback-live-preprod-course_completion_events_queue"
+    - "hmpps-community-payback-live-preprod-hmpps_cp_domain_events_dlq"
+    - "hmpps-community-payback-live-preprod-hmpps_cp_domain_events_queue"
+  sqsAlertsOldestThreshold: 30
+  sqsAlertsTotalMessagesThreshold: 10
+
+deploy_stubs: false
