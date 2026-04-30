@@ -2,12 +2,12 @@ import java.net.InetSocketAddress
 import java.net.Socket
 
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "10.1.2"
-  kotlin("plugin.spring") version "2.3.20"
-  kotlin("plugin.jpa") version "2.3.20"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "10.2.1"
+  kotlin("plugin.spring") version "2.3.21"
+  kotlin("plugin.jpa") version "2.3.21"
   id("dev.detekt") version "2.0.0-alpha.2"
   jacoco
-  id("io.sentry.jvm.gradle") version "6.3.0"
+  id("io.sentry.jvm.gradle") version "6.4.0"
 }
 
 configurations {
@@ -25,7 +25,7 @@ dependencies {
 
   implementation("org.springframework.boot:spring-boot-starter-webflux")
   implementation("org.springframework.boot:spring-boot-starter-webclient")
-  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.2")
+  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.3")
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
   implementation("org.springframework.boot:spring-boot-starter-hateoas")
   implementation("org.springframework.boot:spring-boot-starter-cache")
@@ -45,18 +45,18 @@ dependencies {
   testImplementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter-test:2.1.0")
   testImplementation("org.springframework.boot:spring-boot-starter-webflux-test")
   testImplementation("org.wiremock:wiremock-standalone:3.13.2")
-  testImplementation("io.swagger.parser.v3:swagger-parser:2.1.39") {
+  testImplementation("io.swagger.parser.v3:swagger-parser:2.1.40") {
     exclude(group = "io.swagger.core.v3")
   }
-  testImplementation("org.testcontainers:testcontainers-localstack:2.0.4")
-  testImplementation("org.testcontainers:testcontainers-postgresql:2.0.4")
+  testImplementation("org.testcontainers:testcontainers-localstack:2.0.5")
+  testImplementation("org.testcontainers:testcontainers-postgresql:2.0.5")
   testImplementation("com.redis:testcontainers-redis:2.2.4")
   testImplementation("org.awaitility:awaitility-kotlin:4.3.0")
   testImplementation("org.wiremock.integrations:wiremock-spring-boot:4.2.1")
   testImplementation("io.mockk:mockk:1.14.9")
   testImplementation("com.lemonappdev:konsist:0.17.3")
-  testImplementation("uk.gov.justice.service.hmpps:hmpps-subject-access-request-test-support:2.1.4")
-  testImplementation("org.zalando:logbook-spring-boot-starter:4.0.3")
+  testImplementation("uk.gov.justice.service.hmpps:hmpps-subject-access-request-test-support:2.2.1")
+  testImplementation("org.zalando:logbook-spring-boot-starter:4.0.4")
   testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
 }
 
