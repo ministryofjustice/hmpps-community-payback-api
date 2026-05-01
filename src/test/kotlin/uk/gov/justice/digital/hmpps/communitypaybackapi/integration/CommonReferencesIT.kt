@@ -201,7 +201,7 @@ class CommonReferencesIT : IntegrationTestBase() {
 
       assertThat(contactOutcomes.contactOutcomes).hasSize(3)
       assertThat(contactOutcomes.contactOutcomes).extracting("code")
-        .containsExactlyInAnyOrder("ATTC", "AFTC", "UAAB")
+        .containsExactlyInAnyOrder("ATTC", "AFTC", "UACP")
     }
   }
 
