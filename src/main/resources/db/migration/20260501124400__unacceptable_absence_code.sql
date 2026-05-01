@@ -1,1 +1,1 @@
-UPDATE contact_outcomes SET code = 'UACP' = TRUE WHERE code = 'UAAB';
+UPDATE contact_outcomes SET code = 'UACP' WHERE code = 'UAAB';
