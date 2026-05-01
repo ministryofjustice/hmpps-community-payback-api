@@ -60,6 +60,17 @@ data class ContactOutcomeEntity(
 
   companion object {
     const val CODE_ATTENDED_COMPLIED = "ATTC"
+
+    fun unknown(code: String): ContactOutcomeEntity = ContactOutcomeEntity(
+      id = UUID(0L, 0L),
+      code = code,
+      name = "Unknown ($code)",
+      enforceable = false,
+      attended = false,
+      groups = emptyList(),
+      createdAt = OffsetDateTime.now(),
+      updatedAt = OffsetDateTime.now(),
+    )
   }
 }
 

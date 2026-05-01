@@ -635,6 +635,22 @@ class AppointmentMappersTest {
 
       assertThat(result.attendanceData).isNull()
     }
+
+    @Test
+    fun `should gracefully handle unknown outcome codes`() {
+      val projectAppointment = NDAppointment.valid().copy(
+        outcome = NDContactOutcome.valid().copy(code = "UNKNOWN"),
+        enforcementAction = NDEnforcementAction.valid().copy(code = "ENFORCE1"),
+      )
+
+      every { contactOutcomeEntityRepository.findByCode("UNKNOWN") } returns null
+      every { enforcementActionEntityRepository.findByCode("ENFORCE1") } returns EnforcementActionEntity.valid()
+
+      val result = service.toDto(projectAppointment, ProjectTypeEntity.valid())
+
+      assertThat(result.contactOutcomeCode).isEqualTo("UNKNOWN")
+      assertThat(result.attendanceData).isNull()
+    }
   }
 
   @Nested
@@ -683,6 +699,21 @@ class AppointmentMappersTest {
       assertThat(result.projectTypeName).isEqualTo("PROJECTYPE1")
       assertThat(result.projectTypeCode).isEqualTo("PT1")
       assertThat(result.notes).isEqualTo("The notes")
+    }
+
+    @Test
+    fun `should gracefully handle unknown outcome codes`() {
+      val projectAppointment = NDAppointmentSummary.valid().copy(
+        outcome = NDContactOutcome.valid().copy(code = "UNKNOWN"),
+      )
+
+      every { contactOutcomeEntityRepository.findByCode("UNKNOWN") } returns null
+
+      val result = service.toSummaryDto(projectAppointment)
+
+      assertThat(result.contactOutcome).isNotNull
+      assertThat(result.contactOutcome!!.id).isEqualTo(UUID(0L, 0L))
+      assertThat(result.contactOutcome.code).isEqualTo("UNKNOWN")
     }
   }
 
