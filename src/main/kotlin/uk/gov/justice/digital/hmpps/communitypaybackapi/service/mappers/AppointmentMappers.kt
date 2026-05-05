@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers
 
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointmentBehaviour
@@ -27,6 +28,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.domainevent.Appointm
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.Behaviour
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EnforcementActionEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ProjectTypeEntity
@@ -40,12 +42,20 @@ class AppointmentMappers(
   private val enforcementActionEntityRepository: EnforcementActionEntityRepository,
 ) {
 
+  private val logger = LoggerFactory.getLogger(javaClass)
+
   fun toDto(
     appointment: NDAppointment,
     projectType: ProjectTypeEntity,
   ): AppointmentDto {
     val contactOutcomeEntity = appointment.outcome?.code?.let {
-      contactOutcomeEntityRepository.findByCode(it) ?: error("Can't find outcome for code $it")
+      val result = contactOutcomeEntityRepository.findByCode(it)
+
+      if (result == null) {
+        logger.warn("Can't find outcome for code $it")
+      }
+
+      result ?: ContactOutcomeEntity.unknown(it)
     }
 
     return AppointmentDto(
@@ -98,8 +108,14 @@ class AppointmentMappers(
   ) = AppointmentSummaryDto(
     id = appointmentSummary.id,
     contactOutcome = appointmentSummary.outcome?.code?.let {
-      contactOutcomeEntityRepository.findByCode(it)?.toDto() ?: error("Can't find outcome for code $it")
-    },
+      val result = contactOutcomeEntityRepository.findByCode(it)
+
+      if (result == null) {
+        logger.warn("Can't find outcome for code $it")
+      }
+
+      result ?: ContactOutcomeEntity.unknown(it)
+    }?.toDto(),
     requirementMinutes = appointmentSummary.requirementProgress.requiredMinutes,
     adjustmentMinutes = appointmentSummary.requirementProgress.adjustments,
     completedMinutes = appointmentSummary.requirementProgress.completedMinutes,
