@@ -8,9 +8,10 @@ import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.support.WebClientAdapter
 import org.springframework.web.service.invoker.HttpServiceProxyFactory
+import org.springframework.web.service.invoker.createClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ArnsClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
-import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.DomainEventListener
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProbationAccessControlClient
 import uk.gov.justice.hmpps.kotlin.auth.authorisedWebClient
 import uk.gov.justice.hmpps.kotlin.auth.healthWebClient
 import java.time.Duration
@@ -28,6 +29,9 @@ class WebClientConfiguration(
 
   @param:Value("\${client.arns.url}") val arnsUrl: String,
   @param:Value("\${client.arns.timeout:5s}") val arnsTimeout: Duration,
+
+  @param:Value("\${client.probation-access-control.url}") val probationAccessControlUrl: String,
+  @param:Value("\${client.probation-access-control.timeout:5s}") val probationAccessControlTimeout: Duration,
 ) {
 
   companion object {
@@ -55,7 +59,7 @@ class WebClientConfiguration(
   fun communityPaybackAndDeliusClient(communityPaybackAndDeliusWebClient: WebClient): CommunityPaybackAndDeliusClient = HttpServiceProxyFactory
     .builderFor(WebClientAdapter.create(communityPaybackAndDeliusWebClient))
     .build()
-    .createClient(CommunityPaybackAndDeliusClient::class.java)
+    .createClient<CommunityPaybackAndDeliusClient>()
 
   @Bean
   fun arnsWebClient(
@@ -74,5 +78,24 @@ class WebClientConfiguration(
   fun arnsClient(arnsWebClient: WebClient): ArnsClient = HttpServiceProxyFactory
     .builderFor(WebClientAdapter.create(arnsWebClient))
     .build()
-    .createClient(ArnsClient::class.java)
+    .createClient<ArnsClient>()
+
+  @Bean
+  fun probationAccessControlWebClient(
+    authorizedClientManager: OAuth2AuthorizedClientManager,
+    builder: WebClient.Builder,
+  ): WebClient = builder
+    .authorisedWebClient(
+      authorizedClientManager = authorizedClientManager,
+      registrationId = API_CLIENT_ID,
+      url = probationAccessControlUrl,
+      timeout = probationAccessControlTimeout,
+    )
+
+  @Bean
+  @DependsOn("probationAccessControlWebClient")
+  fun probationAccessControlClient(probationAccessControlWebClient: WebClient): ProbationAccessControlClient = HttpServiceProxyFactory
+    .builderFor(WebClientAdapter.create(probationAccessControlWebClient))
+    .build()
+    .createClient<ProbationAccessControlClient>()
 }
