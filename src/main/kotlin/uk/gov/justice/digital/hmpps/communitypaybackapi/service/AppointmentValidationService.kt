@@ -68,6 +68,10 @@ class AppointmentValidationService(
     val project = projectService.getProject(existingAppointment.projectCode) ?: error("Can't retrieve project ${existingAppointment.projectCode}")
     val upwDetailsId = UnpaidWorkDetailsIdDto(existingAppointment.offender.crn, existingAppointment.deliusEventNumber)
 
+    if (existingAppointment.sensitive == true && update.sensitive != true) {
+      badRequest("This appointment has previously been marked as sensitive so this cannot be changed")
+    }
+
     val ctx = ValidationContext(
       command = update,
       project = project,

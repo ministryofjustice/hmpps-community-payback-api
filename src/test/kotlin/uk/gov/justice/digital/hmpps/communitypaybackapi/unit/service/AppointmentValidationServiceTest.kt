@@ -1468,5 +1468,22 @@ class AppointmentValidationServiceTest {
         }
       }
     }
+
+    @Nested
+    inner class Sensitive {
+      @Test
+      fun `throws BadRequestException when existing appointment is sensitive but the update is not`() {
+        val existingAppointment = baselineExistingAppointment.copy(sensitive = true)
+        val update = baselineUpdate.copy(sensitive = false)
+
+        assertThatThrownBy {
+          service.validateUpdate(
+            existingAppointment = existingAppointment,
+            update = update,
+          )
+        }.isInstanceOf(BadRequestException::class.java)
+          .hasMessage("This appointment has previously been marked as sensitive so this cannot be changed")
+      }
+    }
   }
 }
