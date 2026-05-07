@@ -2,12 +2,12 @@ import java.net.InetSocketAddress
 import java.net.Socket
 
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "10.2.2"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "10.2.3"
   kotlin("plugin.spring") version "2.3.21"
   kotlin("plugin.jpa") version "2.3.21"
   id("dev.detekt") version "2.0.0-alpha.3"
   jacoco
-  id("io.sentry.jvm.gradle") version "6.5.0"
+  id("io.sentry.jvm.gradle") version "6.6.0"
 }
 
 configurations {
@@ -20,7 +20,7 @@ configurations {
 }
 
 dependencies {
-  implementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter:2.1.1")
+  implementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter:2.2.0")
   implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:7.3.1")
 
   implementation("org.springframework.boot:spring-boot-starter-webflux")
@@ -42,10 +42,10 @@ dependencies {
 
   runtimeOnly("org.flywaydb:flyway-database-postgresql")
 
-  testImplementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter-test:2.1.1")
+  testImplementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter-test:2.2.0")
   testImplementation("org.springframework.boot:spring-boot-starter-webflux-test")
   testImplementation("org.wiremock:wiremock-standalone:3.13.2")
-  testImplementation("io.swagger.parser.v3:swagger-parser:2.1.40") {
+  testImplementation("io.swagger.parser.v3:swagger-parser:2.1.41") {
     exclude(group = "io.swagger.core.v3")
   }
   testImplementation("org.testcontainers:testcontainers-localstack:2.0.5")
