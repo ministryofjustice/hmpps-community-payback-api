@@ -102,6 +102,10 @@ class AppointmentValidationServiceTest {
     val baselineUnpaidWorkDetails = UnpaidWorkDetailsDto.valid().copy(
       eventNumber = EVENT_NUMBER,
       sentenceDate = baselineCreate.date,
+      requiredMinutes = 3600,
+      completedMinutes = 1200,
+      completedEteMinutes = 1200,
+      adjustments = 0,
     )
 
     @BeforeEach
@@ -656,6 +660,73 @@ class AppointmentValidationServiceTest {
           .hasMessage("Pick Up Location not found for team 'TEAM1' and code 'PICKUP1'")
       }
     }
+
+    @Nested
+    inner class MinutesToCredit {
+      @Test
+      fun `throws BadRequestException when time credited is more than total required time`() {
+        every { appointmentCalculationService.minutesToCredit(any(), any(), any(), any()) } returns Duration.ofMinutes(61)
+        every { offenderService.getUnpaidWorkDetails(UPW_DETAILS_ID) } returns baselineUnpaidWorkDetails.copy(
+          requiredMinutes = 60,
+          completedMinutes = 0,
+          completedEteMinutes = 0,
+          adjustments = 0,
+        )
+
+        assertThatThrownBy {
+          service.validateCreate(baselineCreate)
+        }.isInstanceOf(BadRequestException::class.java)
+          .hasMessage("Credited minutes of '1 hours 1 minutes' exceeds the remaining time required of '1 hours 0 minutes'")
+      }
+
+      @Test
+      fun `throws BadRequestException when time credited is more than remaining required time`() {
+        every { appointmentCalculationService.minutesToCredit(any(), any(), any(), any()) } returns Duration.ofMinutes(61)
+        every { offenderService.getUnpaidWorkDetails(UPW_DETAILS_ID) } returns baselineUnpaidWorkDetails.copy(
+          requiredMinutes = 120,
+          completedMinutes = 60,
+          completedEteMinutes = 0,
+          adjustments = 0,
+        )
+
+        assertThatThrownBy {
+          service.validateCreate(baselineCreate)
+        }.isInstanceOf(BadRequestException::class.java)
+          .hasMessage("Credited minutes of '1 hours 1 minutes' exceeds the remaining time required of '1 hours 0 minutes'")
+      }
+
+      @Test
+      fun `throws BadRequestException when time credited is more than remaining required time (including ETE)`() {
+        every { appointmentCalculationService.minutesToCredit(any(), any(), any(), any()) } returns Duration.ofMinutes(61)
+        every { offenderService.getUnpaidWorkDetails(UPW_DETAILS_ID) } returns baselineUnpaidWorkDetails.copy(
+          requiredMinutes = 180,
+          completedMinutes = 60,
+          completedEteMinutes = 60,
+          adjustments = 0,
+        )
+
+        assertThatThrownBy {
+          service.validateCreate(baselineCreate)
+        }.isInstanceOf(BadRequestException::class.java)
+          .hasMessage("Credited minutes of '1 hours 1 minutes' exceeds the remaining time required of '1 hours 0 minutes'")
+      }
+
+      @Test
+      fun `throws BadRequestException when time credited is more than remaining required time (including adjustments)`() {
+        every { appointmentCalculationService.minutesToCredit(any(), any(), any(), any()) } returns Duration.ofMinutes(61)
+        every { offenderService.getUnpaidWorkDetails(UPW_DETAILS_ID) } returns baselineUnpaidWorkDetails.copy(
+          requiredMinutes = 180,
+          completedMinutes = 60,
+          completedEteMinutes = 0,
+          adjustments = -60,
+        )
+
+        assertThatThrownBy {
+          service.validateCreate(baselineCreate)
+        }.isInstanceOf(BadRequestException::class.java)
+          .hasMessage("Credited minutes of '1 hours 1 minutes' exceeds the remaining time required of '1 hours 0 minutes'")
+      }
+    }
   }
 
   @Nested
@@ -671,6 +742,7 @@ class AppointmentValidationServiceTest {
           deliusCode = PICK_UP_LOCATION_CODE,
         ),
       ),
+      minutesCredited = 0,
     )
     val baselineUpdate = UpdateAppointmentOutcomeDto.valid().copy(
       contactOutcomeCode = OUTCOME_CODE,
@@ -691,6 +763,10 @@ class AppointmentValidationServiceTest {
     val baselineUnpaidWorkDetails = UnpaidWorkDetailsDto.valid().copy(
       eventNumber = EVENT_NUMBER,
       sentenceDate = LocalDate.of(2025, 1, 1),
+      requiredMinutes = 3600,
+      completedMinutes = 1200,
+      completedEteMinutes = 1200,
+      adjustments = 0,
     )
 
     @BeforeEach
@@ -1483,6 +1559,89 @@ class AppointmentValidationServiceTest {
           )
         }.isInstanceOf(BadRequestException::class.java)
           .hasMessage("This appointment has previously been marked as sensitive so this cannot be changed")
+      }
+    }
+
+    @Nested
+    inner class MinutesToCredit {
+      @Test
+      fun `throws BadRequestException when time credited is more than total required time`() {
+        every { appointmentCalculationService.minutesToCredit(any(), any(), any(), any()) } returns Duration.ofMinutes(61)
+        every { offenderService.getUnpaidWorkDetails(UPW_DETAILS_ID) } returns baselineUnpaidWorkDetails.copy(
+          requiredMinutes = 60,
+          completedMinutes = 0,
+          completedEteMinutes = 0,
+          adjustments = 0,
+        )
+
+        assertThatThrownBy {
+          service.validateUpdate(baselineExistingAppointment, baselineUpdate)
+        }.isInstanceOf(BadRequestException::class.java)
+          .hasMessage("Credited minutes of '1 hours 1 minutes' exceeds the remaining time required of '1 hours 0 minutes'")
+      }
+
+      @Test
+      fun `throws BadRequestException when time credited is more than remaining required time`() {
+        every { appointmentCalculationService.minutesToCredit(any(), any(), any(), any()) } returns Duration.ofMinutes(61)
+        every { offenderService.getUnpaidWorkDetails(UPW_DETAILS_ID) } returns baselineUnpaidWorkDetails.copy(
+          requiredMinutes = 120,
+          completedMinutes = 60,
+          completedEteMinutes = 0,
+          adjustments = 0,
+        )
+
+        assertThatThrownBy {
+          service.validateUpdate(baselineExistingAppointment, baselineUpdate)
+        }.isInstanceOf(BadRequestException::class.java)
+          .hasMessage("Credited minutes of '1 hours 1 minutes' exceeds the remaining time required of '1 hours 0 minutes'")
+      }
+
+      @Test
+      fun `throws BadRequestException when time credited is more than remaining required time (including ETE)`() {
+        every { appointmentCalculationService.minutesToCredit(any(), any(), any(), any()) } returns Duration.ofMinutes(61)
+        every { offenderService.getUnpaidWorkDetails(UPW_DETAILS_ID) } returns baselineUnpaidWorkDetails.copy(
+          requiredMinutes = 180,
+          completedMinutes = 60,
+          completedEteMinutes = 60,
+          adjustments = 0,
+        )
+
+        assertThatThrownBy {
+          service.validateUpdate(baselineExistingAppointment, baselineUpdate)
+        }.isInstanceOf(BadRequestException::class.java)
+          .hasMessage("Credited minutes of '1 hours 1 minutes' exceeds the remaining time required of '1 hours 0 minutes'")
+      }
+
+      @Test
+      fun `throws BadRequestException when time credited is more than remaining required time (including adjustments)`() {
+        every { appointmentCalculationService.minutesToCredit(any(), any(), any(), any()) } returns Duration.ofMinutes(61)
+        every { offenderService.getUnpaidWorkDetails(UPW_DETAILS_ID) } returns baselineUnpaidWorkDetails.copy(
+          requiredMinutes = 180,
+          completedMinutes = 60,
+          completedEteMinutes = 0,
+          adjustments = -60,
+        )
+
+        assertThatThrownBy {
+          service.validateUpdate(baselineExistingAppointment, baselineUpdate)
+        }.isInstanceOf(BadRequestException::class.java)
+          .hasMessage("Credited minutes of '1 hours 1 minutes' exceeds the remaining time required of '1 hours 0 minutes'")
+      }
+
+      @Test
+      fun `Ensure existing minutes credited aren't 'double counted' when updating minutes credited`() {
+        every { appointmentCalculationService.minutesToCredit(any(), any(), any(), any()) } returns Duration.ofMinutes(100)
+        every { offenderService.getUnpaidWorkDetails(UPW_DETAILS_ID) } returns baselineUnpaidWorkDetails.copy(
+          requiredMinutes = 120,
+          completedMinutes = 20,
+          completedEteMinutes = 20,
+          adjustments = 0,
+        )
+
+        service.validateUpdate(
+          existingAppointment = baselineExistingAppointment.copy(minutesCredited = 20),
+          update = baselineUpdate,
+        )
       }
     }
   }

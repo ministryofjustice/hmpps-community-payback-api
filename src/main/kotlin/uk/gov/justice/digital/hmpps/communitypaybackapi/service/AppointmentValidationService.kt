@@ -103,6 +103,7 @@ class AppointmentValidationService(
     validateStartAndEndTime()
     validatePenaltyTime()
     validateNotes()
+    validateMinutesToCredit()
     validateEteAllowanceRemaining()
   }
 
@@ -180,6 +181,16 @@ class AppointmentValidationService(
   private fun ValidationContext.validateNotes() {
     validateLengthLessThan(command.notes, 4000) { _, _ ->
       "Notes must be fewer than 4000 characters"
+    }
+  }
+
+  private fun ValidationContext.validateMinutesToCredit() {
+    val minutesToCredit = calculateMinutesToCredit()
+    val requiredTime = Duration.ofMinutes(unpaidWorkDetails.requiredMinutes + unpaidWorkDetails.adjustments)
+    val completedTime = Duration.ofMinutes(unpaidWorkDetails.completedMinutes + unpaidWorkDetails.completedEteMinutes)
+    val remainingMinutesAllowance = requiredTime - completedTime + appointmentMinutesAlreadyCredited
+    if (minutesToCredit != null && minutesToCredit > remainingMinutesAllowance) {
+      badRequest("Credited minutes of '${minutesToCredit.formatForUser()}' exceeds the remaining time required of '${remainingMinutesAllowance.formatForUser()}'")
     }
   }
 
