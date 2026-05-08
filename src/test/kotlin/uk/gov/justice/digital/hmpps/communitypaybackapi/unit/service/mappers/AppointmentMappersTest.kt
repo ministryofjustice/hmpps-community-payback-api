@@ -485,6 +485,7 @@ class AppointmentMappersTest {
       val startTime = LocalTime.of(9, 0)
       val endTime = LocalTime.of(17, 0)
       val penaltyTime = HourMinuteDuration(Duration.ofMinutes(92))
+      val supervisorOfficerName = "Supervisor Officer"
       val supervisorOfficerCode = "CRN1"
       val respondBy = LocalDate.of(2025, 10, 1)
       val hiVisWorn = true
@@ -541,7 +542,7 @@ class AppointmentMappersTest {
         minutesCredited = 25L,
         supervisor = NDAppointmentSupervisor(
           code = supervisorOfficerCode,
-          name = NDName.valid(),
+          name = NDName.valid().copy(forename = "Supervisor", surname = "Officer"),
         ),
         outcome = NDContactOutcome.valid().copy(code = "OUTCOME1"),
         enforcementAction = NDEnforcementAction.valid().copy(
@@ -594,6 +595,7 @@ class AppointmentMappersTest {
       assertThat(result.enforcementData?.enforcementActionId).isEqualTo(enforcementActionId)
       assertThat(result.enforcementData?.respondBy).isEqualTo(respondBy)
 
+      assertThat(result.supervisorOfficerName).isEqualTo(supervisorOfficerName)
       assertThat(result.supervisorOfficerCode).isEqualTo(supervisorOfficerCode)
       assertThat(result.notes).isEqualTo(notes)
 

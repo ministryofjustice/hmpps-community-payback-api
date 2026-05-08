@@ -36,6 +36,7 @@ data class AppointmentDto(
   val contactOutcomeCode: String? = null,
   val attendanceData: AttendanceDataDto?,
   val enforcementData: EnforcementDto?,
+  val supervisorOfficerName: String,
   val supervisorOfficerCode: String,
   val notes: String?,
   val sensitive: Boolean?,

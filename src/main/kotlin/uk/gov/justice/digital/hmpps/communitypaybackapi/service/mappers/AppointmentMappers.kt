@@ -96,6 +96,7 @@ class AppointmentMappers(
           respondBy = it.respondBy,
         )
       },
+      supervisorOfficerName = appointment.supervisor.name.let { "${it.forename} ${it.surname}" },
       supervisorOfficerCode = appointment.supervisor.code,
       notes = appointment.notes,
       sensitive = appointment.sensitive,
