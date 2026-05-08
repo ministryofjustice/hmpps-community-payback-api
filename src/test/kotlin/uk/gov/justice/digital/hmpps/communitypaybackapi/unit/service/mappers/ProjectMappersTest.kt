@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAddress
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDBeneficiaryDetails
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCode
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDNameCode
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectAvailability
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectOutcomeStats
@@ -16,7 +16,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SchedulingDayOfWeekD
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SchedulingFrequencyDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ProjectTypeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
-import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
 import java.time.LocalDate
@@ -36,8 +35,8 @@ class ProjectMappersTest {
         name = "The Project Name",
         code = "The Project Code",
         type = NDProjectType.valid(),
-        provider = NDCode("provider code"),
-        team = NDCode("team code"),
+        provider = NDNameCode("provider name", "provider code"),
+        team = NDNameCode("team name", "team code"),
         location = location,
         beneficiary = NDBeneficiaryDetails(
           name = "ben name",
