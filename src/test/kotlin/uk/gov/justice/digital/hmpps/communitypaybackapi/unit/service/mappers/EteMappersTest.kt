@@ -14,6 +14,7 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.provider.ValueSource
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.toLocalTimeEuropeLondon
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentBehaviourDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentWorkQualityDto
@@ -40,7 +41,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.EteMappe
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.time.LocalTime
 import java.time.OffsetDateTime
 import java.time.temporal.ChronoUnit
 import java.util.UUID
@@ -129,10 +129,9 @@ class EteMappersTest {
     }
 
     @Test
-    fun `should set start time to 9am`() {
+    fun `should set end time to recorded completion time`() {
       val result = mapper.toCreateAppointmentDto(
         courseCompletionResolution = baselineCourseCompletionResolution.copy(
-
           creditTimeDetails = CourseCompletionCreditTimeDetailsDto.valid().copy(
             minutesToCredit = 60L,
           ),
@@ -140,14 +139,12 @@ class EteMappersTest {
         courseCompletionEvent = baselineCourseCompletionEvent,
       )
 
-      assertThat(result.startTime).isEqualTo(LocalTime.of(0, 0))
+      assertThat(result.endTime).isEqualTo(baselineCourseCompletionEvent.completionDateTime.toLocalTimeEuropeLondon())
     }
 
     @ParameterizedTest
     @ValueSource(longs = [30, 60, 120, 180, 240])
-    fun `should calculate end time as start time plus total time minutes`(
-      minutesToCredit: Long,
-    ) {
+    fun `should calculate start time as the number of credited minutes before the end time`(minutesToCredit: Long) {
       val result = mapper.toCreateAppointmentDto(
         courseCompletionResolution = baselineCourseCompletionResolution.copy(
           creditTimeDetails = CourseCompletionCreditTimeDetailsDto.valid().copy(
@@ -157,7 +154,8 @@ class EteMappersTest {
         courseCompletionEvent = baselineCourseCompletionEvent,
       )
 
-      assertThat(result.endTime).isEqualTo(LocalTime.of(0, 0).plusMinutes(minutesToCredit))
+      val expectedStartTime = baselineCourseCompletionEvent.completionDateTime.toLocalTimeEuropeLondon().minusMinutes(minutesToCredit)
+      assertThat(result.startTime).isEqualTo(expectedStartTime)
     }
 
     @Test
@@ -180,17 +178,17 @@ class EteMappersTest {
     }
 
     @Test
-    fun `should error if crediting minutes that would roll into next day`() {
+    fun `should error if crediting minutes that would roll into previous day`() {
       assertThatThrownBy {
         mapper.toCreateAppointmentDto(
           courseCompletionResolution = baselineCourseCompletionResolution.copy(
             creditTimeDetails = CourseCompletionCreditTimeDetailsDto.valid().copy(
-              minutesToCredit = 60L * 24,
+              minutesToCredit = (60L * 12L) + 16L,
             ),
           ),
           courseCompletionEvent = baselineCourseCompletionEvent,
         )
-      }.hasMessage("Cannot credit more than 1439 minutes")
+      }.hasMessage("Cannot credit more than 735 minutes")
     }
 
     @ParameterizedTest
@@ -283,7 +281,7 @@ class EteMappersTest {
     }
 
     @Test
-    fun `should set start time to first minute of the day`() {
+    fun `should set end time to recorded completion time`() {
       val existingAppointment = baselineExistingAppointment.copy()
 
       val result = mapper.toUpdateAppointmentDto(
@@ -296,14 +294,12 @@ class EteMappersTest {
         existingAppointment = existingAppointment,
       )
 
-      assertThat(result.startTime).isEqualTo(LocalTime.of(0, 0))
+      assertThat(result.endTime).isEqualTo(baselineCourseCompletionEvent.completionDateTime.toLocalTimeEuropeLondon())
     }
 
     @ParameterizedTest
     @ValueSource(longs = [30, 60, 120, 180, 240])
-    fun `should calculate end time as start time plus total time minutes`(
-      minutesToCredit: Long,
-    ) {
+    fun `should calculate start time as the number of credited minutes before the end time`(minutesToCredit: Long) {
       val existingAppointment = baselineExistingAppointment.copy()
 
       val result = mapper.toUpdateAppointmentDto(
@@ -316,22 +312,23 @@ class EteMappersTest {
         existingAppointment = existingAppointment,
       )
 
-      assertThat(result.endTime).isEqualTo(LocalTime.of(0, 0).plusMinutes(minutesToCredit))
+      val expectedStartTime = baselineCourseCompletionEvent.completionDateTime.toLocalTimeEuropeLondon().minusMinutes(minutesToCredit)
+      assertThat(result.startTime).isEqualTo(expectedStartTime)
     }
 
     @Test
-    fun `should error if crediting minutes that would roll into next day`() {
+    fun `should error if crediting minutes that would roll into previous day`() {
       assertThatThrownBy {
         mapper.toUpdateAppointmentDto(
           courseCompletionResolution = baselineCourseCompletionOutcome.copy(
             creditTimeDetails = baselineCourseCompletionOutcome.creditTimeDetails!!.copy(
-              minutesToCredit = 60L * 24,
+              minutesToCredit = (60L * 12L) + 16L,
             ),
           ),
           courseCompletionEvent = baselineCourseCompletionEvent,
           existingAppointment = baselineExistingAppointment,
         )
-      }.hasMessage("Cannot credit more than 1439 minutes")
+      }.hasMessage("Cannot credit more than 735 minutes")
     }
 
     @ParameterizedTest
