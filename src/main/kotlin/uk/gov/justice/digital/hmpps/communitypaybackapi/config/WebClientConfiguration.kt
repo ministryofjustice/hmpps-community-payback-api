@@ -118,9 +118,9 @@ inline fun <reified T> WebClient.logErrorResponses(enabled: Boolean): WebClient 
   return this.mutate()
     .filter(
       ExchangeFilterFunction.ofResponseProcessor { response ->
-        response.bodyToMono<String>().map { body ->
+        response.bodyToMono<String>().defaultIfEmpty("").map { body ->
           if (response.statusCode().isError) {
-            logger.warn("Downstream API returned ${response.statusCode()}: $body")
+            logger.warn("Downstream API returned ${response.statusCode()}: ${body.ifEmpty { "<empty>" }}")
           } else {
             logger.debug("Downstream API returned successful response")
           }
