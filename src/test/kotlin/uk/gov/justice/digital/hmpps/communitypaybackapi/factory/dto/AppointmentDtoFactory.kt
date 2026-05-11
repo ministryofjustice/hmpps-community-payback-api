@@ -33,6 +33,7 @@ fun AppointmentDto.Companion.valid() = AppointmentDto(
   contactOutcomeCode = "OUTCOME1",
   attendanceData = null,
   enforcementData = null,
+  supervisorOfficerName = String.random(),
   supervisorOfficerCode = String.random(),
   notes = null,
   sensitive = null,

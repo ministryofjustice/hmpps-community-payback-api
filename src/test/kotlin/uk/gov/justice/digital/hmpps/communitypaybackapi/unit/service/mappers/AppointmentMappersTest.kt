@@ -469,6 +469,7 @@ class AppointmentMappersTest {
       val crn = "CRN1"
       val eventNumber = 98
       val contactOutcomeCode = "OUTCOME1"
+      val enforcementActionName = "Enforcement action"
       val enforcementActionId = UUID.fromString("123e4567-e89b-12d3-a456-426614174001")
       val supervisingTeam = "Team Lincoln"
       val supervisingTeamCode = "TL01"
@@ -485,6 +486,7 @@ class AppointmentMappersTest {
       val startTime = LocalTime.of(9, 0)
       val endTime = LocalTime.of(17, 0)
       val penaltyTime = HourMinuteDuration(Duration.ofMinutes(92))
+      val supervisorOfficerName = "Supervisor Officer"
       val supervisorOfficerCode = "CRN1"
       val respondBy = LocalDate.of(2025, 10, 1)
       val hiVisWorn = true
@@ -541,7 +543,7 @@ class AppointmentMappersTest {
         minutesCredited = 25L,
         supervisor = NDAppointmentSupervisor(
           code = supervisorOfficerCode,
-          name = NDName.valid(),
+          name = NDName.valid().copy(forename = "Supervisor", surname = "Officer"),
         ),
         outcome = NDContactOutcome.valid().copy(code = "OUTCOME1"),
         enforcementAction = NDEnforcementAction.valid().copy(
@@ -558,7 +560,7 @@ class AppointmentMappersTest {
       )
 
       every { contactOutcomeEntityRepository.findByCode("OUTCOME1") } returns ContactOutcomeEntity.valid().copy(code = contactOutcomeCode, attended = true)
-      every { enforcementActionEntityRepository.findByCode("ENFORCE1") } returns EnforcementActionEntity.valid().copy(id = enforcementActionId)
+      every { enforcementActionEntityRepository.findByCode("ENFORCE1") } returns EnforcementActionEntity.valid().copy(id = enforcementActionId, name = enforcementActionName)
 
       val result = service.toDto(appointment, ProjectTypeEntity.valid())
 
@@ -591,9 +593,11 @@ class AppointmentMappersTest {
       assertThat(result.attendanceData?.behaviour).isEqualTo(AppointmentBehaviourDto.SATISFACTORY)
       assertThat(result.attendanceData?.workQuality).isEqualTo(AppointmentWorkQualityDto.SATISFACTORY)
       assertThat(result.attendanceData?.hiVisWorn).isEqualTo(hiVisWorn)
+      assertThat(result.enforcementData?.enforcementActionName).isEqualTo(enforcementActionName)
       assertThat(result.enforcementData?.enforcementActionId).isEqualTo(enforcementActionId)
       assertThat(result.enforcementData?.respondBy).isEqualTo(respondBy)
 
+      assertThat(result.supervisorOfficerName).isEqualTo(supervisorOfficerName)
       assertThat(result.supervisorOfficerCode).isEqualTo(supervisorOfficerCode)
       assertThat(result.notes).isEqualTo(notes)
 
