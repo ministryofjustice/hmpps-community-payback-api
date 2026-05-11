@@ -91,8 +91,11 @@ class AppointmentMappers(
         null
       },
       enforcementData = appointment.enforcementAction?.let {
+        val enforcementAction = enforcementActionEntityRepository.findByCode(it.code) ?: error("Can't find enforcement action for code ${it.code}")
+
         EnforcementDto(
-          enforcementActionId = enforcementActionEntityRepository.findByCode(it.code)?.id ?: error("Can't find enforcement action for code: ${it.code}"),
+          enforcementActionName = enforcementAction.name,
+          enforcementActionId = enforcementAction.id,
           respondBy = it.respondBy,
         )
       },
