@@ -34,7 +34,7 @@ fun NDUpwDetails.toDto(): UnpaidWorkDetailsDto {
     upwStatus = this.upwStatus,
     referralDate = this.referralDate,
     convictionDate = this.convictionDate,
-    court = this.court.toDto(),
+    court = this.court?.toDto(),
     mainOffence = this.mainOffence.toDto(),
   )
 }

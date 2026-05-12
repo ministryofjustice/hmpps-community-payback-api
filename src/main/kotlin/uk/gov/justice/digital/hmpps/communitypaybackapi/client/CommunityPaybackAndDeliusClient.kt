@@ -601,8 +601,8 @@ data class NDUpwDetails(
   val eventOutcome: String,
   val upwStatus: String?,
   val referralDate: LocalDate,
-  val convictionDate: LocalDate,
-  val court: NDCodeDescription,
+  val convictionDate: LocalDate?,
+  val court: NDCodeDescription?,
   val mainOffence: NDMainOffence,
 ) {
   companion object
