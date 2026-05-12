@@ -11,8 +11,8 @@ import org.springframework.hateoas.PagedModel
 import org.springframework.http.MediaType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseSummary
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCode
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDEvent
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDNameCode
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectAndLocation
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSupervisorSummaries
@@ -1128,7 +1128,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
       val teamCode = "TEAM1"
       val project = NDProject.valid(ctx).copy(
         code = projectCode,
-        team = NDCode(teamCode),
+        team = NDNameCode("team name", teamCode),
       )
       CommunityPaybackAndDeliusMockServer.setupGetProjectResponse(project)
 

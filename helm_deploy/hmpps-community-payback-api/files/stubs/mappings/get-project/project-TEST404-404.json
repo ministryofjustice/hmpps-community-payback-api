@@ -1,0 +1,14 @@
+{
+  "priority": 1,
+  "request": {
+    "method": "GET",
+    "urlPathPattern": "/projects/TEST404"
+  },
+  "response": {
+    "status": 404,
+    "body": "",
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}
