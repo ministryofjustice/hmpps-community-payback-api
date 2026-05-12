@@ -61,11 +61,11 @@ class AdminAppointmentTaskController(
     @PageableDefault(size = 50, sort = ["createdAt"], direction = Sort.Direction.DESC) pageable: Pageable,
     @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) appointmentFromDate: LocalDate?,
     @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) appointmentToDate: LocalDate?,
-    @RequestParam(required = false) appointmentProviderCode: String?,
+    @RequestParam(required = false) providerCode: String?,
   ): Page<AppointmentTaskSummaryDto> = appointmentTaskService.getPendingAppointmentTasks(
     fromDate = appointmentFromDate,
     toDate = appointmentToDate,
-    providerCode = appointmentProviderCode,
+    providerCode = providerCode,
     pageable = pageable,
   )
 
