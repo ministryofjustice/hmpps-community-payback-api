@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.formatForUser
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.toLocalDateTimeEuropeLondon
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.toLocalTimeEuropeLondon
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentBehaviourDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentWorkQualityDto
@@ -46,8 +47,8 @@ class EteMappers(
       allocationId = null,
       projectCode = creditTime.projectCode,
       date = creditTime.date,
-      startTime = APPOINTMENT_START_TIME,
-      endTime = calculateEndTime(creditTime.minutesToCredit),
+      startTime = calculateStartTime(creditTime.minutesToCredit, courseCompletionEvent),
+      endTime = courseCompletionEvent.completionDateTime.toLocalTimeEuropeLondon(),
       pickUpLocationCode = null,
       pickUpTime = null,
       contactOutcomeCode = creditTime.contactOutcomeCode,
@@ -72,8 +73,8 @@ class EteMappers(
       deliusId = existingAppointment.id,
       deliusVersionToUpdate = existingAppointment.version,
       date = courseCompletionResolution.creditTimeDetails.date,
-      startTime = APPOINTMENT_START_TIME,
-      endTime = calculateEndTime(creditTime.minutesToCredit),
+      startTime = calculateStartTime(creditTime.minutesToCredit, courseCompletionEvent),
+      endTime = courseCompletionEvent.completionDateTime.toLocalTimeEuropeLondon(),
       contactOutcomeCode = creditTime.contactOutcomeCode,
       attendanceData = createAttendanceData(),
       supervisorOfficerCode = existingAppointment.supervisorOfficerCode,
@@ -103,15 +104,14 @@ class EteMappers(
     }
   }.trimEnd()
 
-  private fun calculateEndTime(
-    minutesToCredit: Long,
-  ): LocalTime {
-    val creditLimit = ChronoUnit.MINUTES.between(APPOINTMENT_START_TIME, LocalTime.MIDNIGHT.minusMinutes(1))
+  private fun calculateStartTime(minutesToCredit: Long, courseCompletionEvent: EteCourseCompletionEventEntity): LocalTime {
+    val endTime = courseCompletionEvent.completionDateTime.toLocalTimeEuropeLondon()
+    val creditLimit = ChronoUnit.MINUTES.between(LocalTime.MIDNIGHT, endTime)
     if (minutesToCredit > creditLimit) {
       error("Cannot credit more than $creditLimit minutes")
     }
 
-    return APPOINTMENT_START_TIME.plusMinutes(minutesToCredit)
+    return endTime.minusMinutes(minutesToCredit)
   }
 
   fun createAttendanceData() = AttendanceDataDto(

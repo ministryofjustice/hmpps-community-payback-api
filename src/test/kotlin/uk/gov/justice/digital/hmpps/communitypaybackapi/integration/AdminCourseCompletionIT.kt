@@ -20,6 +20,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSupervisorSumma
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDUpwDetails
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.atFirstSecondOfDay
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.atLastSecondOfDay
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.toLocalTimeEuropeLondon
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionCreditTimeDetailsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionDontCreditTimeDetailsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionRecommendationDto
@@ -47,7 +48,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.Com
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.CommunityPaybackAndDeliusMockServer.ExpectedAppointmentCreate
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.CommunityPaybackAndDeliusMockServer.ExpectedAppointmentUpdate
 import java.time.LocalDate
-import java.time.LocalTime
 import java.time.OffsetDateTime
 import java.util.UUID
 
@@ -780,8 +780,8 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
         crn = CRN,
         eventNumber = DELIUS_EVENT_NUMBER,
         date = LocalDate.of(2021, 1, 30),
-        startTime = LocalTime.of(0, 0),
-        endTime = LocalTime.of(1, 30),
+        startTime = eventEntity.completionDateTime.toLocalTimeEuropeLondon().minusMinutes(90),
+        endTime = eventEntity.completionDateTime.toLocalTimeEuropeLondon(),
       )
 
       CommunityPaybackAndDeliusMockServer.verifyPostAppointmentsRequest(
@@ -847,8 +847,8 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
           projectCode = PROJECT_CODE,
           appointmentId = appointmentId,
           date = LocalDate.now().minusDays(5),
-          startTime = LocalTime.of(0, 0),
-          endTime = LocalTime.of(0, 30),
+          startTime = eventEntity.completionDateTime.toLocalTimeEuropeLondon().minusMinutes(30),
+          endTime = eventEntity.completionDateTime.toLocalTimeEuropeLondon(),
         ),
       )
 

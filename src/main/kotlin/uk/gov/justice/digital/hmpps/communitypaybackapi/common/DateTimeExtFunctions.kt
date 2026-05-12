@@ -39,3 +39,5 @@ fun Duration.formatForUser(): String = "${toHoursPart()} hours ${toMinutesPart()
 fun LocalTime.formatForUser(): String = format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT).withLocale(Locale.UK))
 
 fun OffsetDateTime.toLocalDateTimeEuropeLondon(): LocalDateTime = atZoneSameInstant(ZoneId.of("Europe/London")).toLocalDateTime()
+
+fun OffsetDateTime.toLocalTimeEuropeLondon(): LocalTime = toLocalDateTimeEuropeLondon().toLocalTime()
