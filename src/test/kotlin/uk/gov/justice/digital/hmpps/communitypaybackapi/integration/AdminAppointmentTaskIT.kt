@@ -322,7 +322,7 @@ class AdminAppointmentTaskIT : IntegrationTestBase() {
       )
 
       val pageResponse = webTestClient.get()
-        .uri("/admin/appointment-tasks/pending?appointmentFromDate=$fromDate&appointmentToDate=$toDate&appointmentProviderCode=$providerCode&page=0&size=10")
+        .uri("/admin/appointment-tasks/pending?appointmentFromDate=$fromDate&appointmentToDate=$toDate&providerCode=$providerCode&page=0&size=10")
         .addAdminUiAuthHeader("theusername")
         .exchange()
         .expectStatus()
