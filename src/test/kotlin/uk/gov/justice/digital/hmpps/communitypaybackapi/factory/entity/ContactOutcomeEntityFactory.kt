@@ -1,6 +1,9 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity
 
+import org.springframework.beans.factory.getBean
+import org.springframework.context.ApplicationContext
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.random
 import java.util.UUID
 
@@ -12,3 +15,5 @@ fun ContactOutcomeEntity.Companion.valid() = ContactOutcomeEntity(
   attended = false,
   groups = emptyList(),
 )
+
+fun ContactOutcomeEntity.persist(ctx: ApplicationContext): ContactOutcomeEntity = ctx.getBean<ContactOutcomeEntityRepository>().save(this)

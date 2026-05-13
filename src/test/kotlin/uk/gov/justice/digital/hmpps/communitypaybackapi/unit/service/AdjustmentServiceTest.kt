@@ -24,6 +24,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentServic
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentValidationService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AdjustmentCreatedEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.SpringEventPublisher
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toNDAdjustmentRequest
 import java.time.Clock
 import java.time.Instant
@@ -55,7 +56,6 @@ class AdjustmentServiceTest {
     const val EVENT_NUMBER: Int = 68
     val UNPAID_WORK_DETAILS: UnpaidWorkDetailsIdDto = UnpaidWorkDetailsIdDto(CRN, EVENT_NUMBER)
     const val USERNAME = "username"
-    val REASON_ID: UUID = UUID.fromString("74f0f62b-bbd4-49a4-9af8-1ce6cd94e3e1")
   }
 
   @Nested
@@ -68,7 +68,7 @@ class AdjustmentServiceTest {
       val id = UUID.randomUUID()
 
       val request = CreateAdjustmentDto.valid().copy(
-        adjustmentReasonId = REASON_ID,
+        adjustmentReason = reason.toDto(),
         minutes = 50,
       )
 

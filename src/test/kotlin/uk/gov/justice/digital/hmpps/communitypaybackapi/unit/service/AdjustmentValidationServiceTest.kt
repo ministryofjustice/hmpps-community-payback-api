@@ -21,6 +21,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentValidationService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.OffenderService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
 import java.util.UUID
 
 @ExtendWith(MockKExtension::class)
@@ -50,8 +51,9 @@ class AdjustmentValidationServiceTest {
   @Nested
   inner class CreateAdjustment {
 
+    private val reason = AdjustmentReasonEntity.valid().copy(id = REASON_ID, maxMinutesAllowed = 50)
     val baselineRequest = CreateAdjustmentDto.valid().copy(
-      adjustmentReasonId = REASON_ID,
+      adjustmentReason = reason.toDto(),
       minutes = 50,
       taskId = TASK_ID,
     )
