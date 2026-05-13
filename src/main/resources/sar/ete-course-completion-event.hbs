@@ -24,8 +24,3 @@
     <tr><td>Minutes Credited</td><td>{{ optionalValue resolution.minutesCredited }}</td></tr>
     <tr><td>Notes</td><td>{{ resolution.notes }}</td></tr>
 </table>
-
-{{#resolution.appointment}}
-    <h4>Related Appointment Event</h4>
-    {{> sar/appointment-event-table}}
-{{/resolution.appointment}}

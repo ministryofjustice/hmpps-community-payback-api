@@ -1,136 +1,4 @@
 {
-  "appointments": [
-    {
-      "date": "2025-01-01",
-      "createdByCommunityPayback": true,
-      "deliusEventNumber": 1,
-      "appointmentEvents": [
-        {
-          "triggeredAt": "2025-01-01T23:59:59Z",
-          "triggerType": "USER",
-          "triggeredByUsername": "username1",
-          "deliusEventNumber": 1,
-          "eventType": "CREATE",
-          "projectName": "The project name",
-          "date": "2025-01-01",
-          "startTime": "10:00:00",
-          "endTime": "15:00:00",
-          "pickupLocation": "The pickup location",
-          "pickupTime": "09:35:00",
-          "notes": "The notes",
-          "contactOutcome": "Acceptable Absence - Court/Legal",
-          "minutesCredited": 50,
-          "penaltyMinutes": 20,
-          "hiVisWorn": false,
-          "workedIntensively": false,
-          "workQuality": "SATISFACTORY",
-          "behaviour": "UNSATISFACTORY",
-          "alertActive": false,
-          "sensitive": true
-        },
-        {
-          "triggeredAt": "2025-01-02T23:59:59Z",
-          "triggerType": "USER",
-          "triggeredByUsername": "username1",
-          "deliusEventNumber": 1,
-          "eventType": "UPDATE",
-          "projectName": "The project name",
-          "date": "2025-01-01",
-          "startTime": "10:00:00",
-          "endTime": "15:00:00",
-          "pickupLocation": "The pickup location",
-          "pickupTime": "09:35:00",
-          "notes": "The notes",
-          "contactOutcome": "Acceptable Absence - Court/Legal",
-          "minutesCredited": 50,
-          "penaltyMinutes": 20,
-          "hiVisWorn": false,
-          "workedIntensively": false,
-          "workQuality": "SATISFACTORY",
-          "behaviour": "UNSATISFACTORY",
-          "alertActive": false,
-          "sensitive": true
-        },
-        {
-          "triggeredAt": "2025-01-02T23:59:59Z",
-          "triggerType": "ETE_COURSE_COMPLETION_RESOLUTION",
-          "triggeredByUsername": null,
-          "deliusEventNumber": 1,
-          "eventType": "CREATE",
-          "projectName": "project 2",
-          "date": "2025-05-01",
-          "startTime": "00:00:00",
-          "endTime": "01:00:00",
-          "pickupLocation": "The pickup location",
-          "pickupTime": "09:35:00",
-          "notes": "Some example notes",
-          "contactOutcome": "Acceptable Absence - Court/Legal",
-          "minutesCredited": 50,
-          "penaltyMinutes": 20,
-          "hiVisWorn": false,
-          "workedIntensively": false,
-          "workQuality": "SATISFACTORY",
-          "behaviour": "UNSATISFACTORY",
-          "alertActive": false,
-          "sensitive": true
-        }
-      ],
-      "adjustmentEvents": [
-        {
-          "triggeredAt": "2025-01-01T23:59:59Z",
-          "triggerType": "APPOINTMENT_TASK",
-          "deliusEventNumber": 1,
-          "eventType": "CREATE",
-          "adjustmentType": "POSITIVE",
-          "adjustmentMinutes": 20,
-          "adjustmentDate": "2026-03-02",
-          "adjustmentReason": "Travel Time"
-        }
-      ]
-    },
-    {
-      "date": "2025-02-15",
-      "createdByCommunityPayback": false,
-      "deliusEventNumber": 2,
-      "appointmentEvents": [
-        {
-          "triggeredAt": "2025-02-15T00:00:00Z",
-          "triggerType": "SCHEDULING",
-          "triggeredByUsername": null,
-          "deliusEventNumber": 2,
-          "eventType": "UPDATE",
-          "projectName": "Some other project name",
-          "date": "2026-03-04",
-          "startTime": "23:00:00",
-          "endTime": "23:59:00",
-          "pickupLocation": "Some other pickup location",
-          "pickupTime": "22:00:00",
-          "notes": "Some different notes",
-          "contactOutcome": null,
-          "minutesCredited": null,
-          "penaltyMinutes": null,
-          "hiVisWorn": null,
-          "workedIntensively": null,
-          "workQuality": null,
-          "behaviour": null,
-          "alertActive": null,
-          "sensitive": null
-        }
-      ],
-      "adjustmentEvents": [
-        {
-          "triggeredAt": "2025-02-15T00:00:00Z",
-          "triggerType": "APPOINTMENT_TASK",
-          "deliusEventNumber": 2,
-          "eventType": "CREATE",
-          "adjustmentType": "NEGATIVE",
-          "adjustmentMinutes": 30,
-          "adjustmentDate": "2026-03-04",
-          "adjustmentReason": "Travel Time"
-        }
-      ]
-    }
-  ],
   "eteCourseCompletionEvents": [
     {
       "receivedAt": "2025-02-15T00:00:00Z",
@@ -156,8 +24,7 @@
         "appointmentCreated": false,
         "appointmentUpdated": false,
         "minutesCredited": null,
-        "notes": null,
-        "appointment": null
+        "notes": null
       }
     },
     {
@@ -184,30 +51,7 @@
         "appointmentCreated": true,
         "appointmentUpdated": false,
         "minutesCredited": 101,
-        "notes": null,
-        "appointment": {
-          "triggeredAt": "2025-01-02T23:59:59Z",
-          "triggerType": "ETE_COURSE_COMPLETION_RESOLUTION",
-          "triggeredByUsername": null,
-          "deliusEventNumber": 1,
-          "eventType": "CREATE",
-          "projectName": "project 2",
-          "date": "2025-05-01",
-          "startTime": "00:00:00",
-          "endTime": "01:00:00",
-          "pickupLocation": "The pickup location",
-          "pickupTime": "09:35:00",
-          "notes": "Some example notes",
-          "contactOutcome": "Acceptable Absence - Court/Legal",
-          "minutesCredited": 50,
-          "penaltyMinutes": 20,
-          "hiVisWorn": false,
-          "workedIntensively": false,
-          "workQuality": "SATISFACTORY",
-          "behaviour": "UNSATISFACTORY",
-          "alertActive": false,
-          "sensitive": true
-        }
+        "notes": null
       }
     }
   ]
