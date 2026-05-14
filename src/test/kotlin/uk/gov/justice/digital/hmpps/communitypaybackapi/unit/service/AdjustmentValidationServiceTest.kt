@@ -50,8 +50,9 @@ class AdjustmentValidationServiceTest {
   @Nested
   inner class CreateAdjustment {
 
+    private val reason = AdjustmentReasonEntity.valid().copy(id = REASON_ID, maxMinutesAllowed = 50)
     val baselineRequest = CreateAdjustmentDto.valid().copy(
-      adjustmentReasonId = REASON_ID,
+      adjustmentReasonId = reason.id,
       minutes = 50,
       taskId = TASK_ID,
     )

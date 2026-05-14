@@ -55,7 +55,6 @@ class AdjustmentServiceTest {
     const val EVENT_NUMBER: Int = 68
     val UNPAID_WORK_DETAILS: UnpaidWorkDetailsIdDto = UnpaidWorkDetailsIdDto(CRN, EVENT_NUMBER)
     const val USERNAME = "username"
-    val REASON_ID: UUID = UUID.fromString("74f0f62b-bbd4-49a4-9af8-1ce6cd94e3e1")
   }
 
   @Nested
@@ -68,7 +67,7 @@ class AdjustmentServiceTest {
       val id = UUID.randomUUID()
 
       val request = CreateAdjustmentDto.valid().copy(
-        adjustmentReasonId = REASON_ID,
+        adjustmentReasonId = reason.id,
         minutes = 50,
       )
 

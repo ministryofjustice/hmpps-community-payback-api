@@ -35,7 +35,7 @@ class AppInsightsTelemetryService(private val telemetryClient: TelemetryClient =
     )
     telemetryClient.trackEvent(
       name,
-      properties.filterValues { it != null },
+      properties.filterValues { it != null }.toMutableMap(),
       metrics.filterValues { it != null },
     )
   }
