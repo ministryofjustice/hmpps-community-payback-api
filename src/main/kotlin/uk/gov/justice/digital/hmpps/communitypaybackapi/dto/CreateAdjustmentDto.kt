@@ -13,8 +13,7 @@ data class CreateAdjustmentDto(
   @param:Schema(description = "Adjustment minutes, must be greater than 0")
   val minutes: Int,
   val dateOfAdjustment: LocalDate,
-  val adjustmentReason: AdjustmentReasonDto,
-  val project: ProjectDto,
+  val adjustmentReasonId: UUID,
 ) {
   companion object
 }

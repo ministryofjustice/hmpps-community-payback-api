@@ -24,7 +24,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentServic
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentValidationService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AdjustmentCreatedEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.SpringEventPublisher
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toNDAdjustmentRequest
 import java.time.Clock
 import java.time.Instant
@@ -68,7 +67,7 @@ class AdjustmentServiceTest {
       val id = UUID.randomUUID()
 
       val request = CreateAdjustmentDto.valid().copy(
-        adjustmentReason = reason.toDto(),
+        adjustmentReasonId = reason.id,
         minutes = 50,
       )
 
