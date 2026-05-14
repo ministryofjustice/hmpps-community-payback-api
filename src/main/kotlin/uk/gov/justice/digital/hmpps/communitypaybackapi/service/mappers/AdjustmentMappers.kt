@@ -7,6 +7,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAdjustmentType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.domainevent.AdjustmentCreatedDomainEventDetailsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentReasonEntity
+import java.time.LocalDate
 import java.util.UUID
 
 fun CreateAdjustmentDto.toNDAdjustmentRequest(
@@ -14,6 +15,7 @@ fun CreateAdjustmentDto.toNDAdjustmentRequest(
   deliusEventNumber: Int,
   reason: AdjustmentReasonEntity,
   reference: UUID,
+  dateOfAdjustment: LocalDate,
 ) = NDAdjustmentRequest(
   crn = crn,
   eventNumber = deliusEventNumber,

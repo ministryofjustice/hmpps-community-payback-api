@@ -13,6 +13,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.Communi
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.SpringEventPublisher
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toNDAdjustmentRequest
 import java.time.Clock
+import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.UUID
 
@@ -43,6 +44,7 @@ class AdjustmentService(
           deliusEventNumber = deliusEventNumber,
           reason = validatedAdjustment.reason,
           reference = adjustmentId,
+          dateOfAdjustment = LocalDate.now(clock),
         ),
       ),
     ).single().id

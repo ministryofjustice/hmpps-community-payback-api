@@ -31,7 +31,6 @@ class AdjustmentEventEntityFactoryTest {
         createDto = CreateAdjustmentDto.valid().copy(
           type = CreateAdjustmentTypeDto.Negative,
           minutes = 61,
-          dateOfAdjustment = LocalDate.of(1971, 8, 23),
         ),
         appointmentEntity = appointment,
         reason = reason,
@@ -43,6 +42,7 @@ class AdjustmentEventEntityFactoryTest {
         ),
         id = id,
       ),
+      adjustmentDate = LocalDate.of(1971, 8, 23),
     )
 
     assertThat(result.eventType).isEqualTo(AdjustmentEventType.CREATE)
