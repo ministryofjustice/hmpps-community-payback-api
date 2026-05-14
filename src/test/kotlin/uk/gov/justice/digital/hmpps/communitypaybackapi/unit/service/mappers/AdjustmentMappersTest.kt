@@ -30,7 +30,6 @@ class AdjustmentMappersTest {
     ) {
       val id = UUID.randomUUID()
       val result = CreateAdjustmentDto.valid().copy(
-        dateOfAdjustment = LocalDate.of(2014, 11, 4),
         type = typeDto,
         minutes = 5,
       ).toNDAdjustmentRequest(
@@ -38,6 +37,7 @@ class AdjustmentMappersTest {
         deliusEventNumber = 5,
         reason = AdjustmentReasonEntity.valid().copy(deliusCode = "REASON1"),
         reference = id,
+        dateOfAdjustment = LocalDate.of(2014, 11, 4),
       )
 
       assertThat(result.crn).isEqualTo("CRN888")

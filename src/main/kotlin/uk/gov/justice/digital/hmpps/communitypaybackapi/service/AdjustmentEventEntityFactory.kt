@@ -7,6 +7,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventEn
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AdjustmentCreatedEvent
+import java.time.LocalDate
 import java.time.OffsetDateTime
 
 @Service
@@ -14,6 +15,7 @@ class AdjustmentEventEntityFactory {
 
   fun buildAdjustmentCreated(
     details: AdjustmentCreatedEvent,
+    adjustmentDate: LocalDate,
   ) = AdjustmentEventEntity(
     id = details.id,
     eventType = AdjustmentEventType.CREATE,
@@ -27,7 +29,7 @@ class AdjustmentEventEntityFactory {
       CreateAdjustmentTypeDto.Negative -> AdjustmentEventAdjustmentType.NEGATIVE
     },
     adjustmentMinutes = details.createDto.minutes,
-    adjustmentDate = details.createDto.dateOfAdjustment,
+    adjustmentDate = adjustmentDate,
     adjustmentReason = details.reason,
   )
 }

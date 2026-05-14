@@ -27,6 +27,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.SpringE
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toNDAdjustmentRequest
 import java.time.Clock
 import java.time.Instant
+import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.UUID
 
@@ -87,6 +88,7 @@ class AdjustmentServiceTest {
               deliusEventNumber = EVENT_NUMBER,
               reason = reason,
               reference = id,
+              dateOfAdjustment = LocalDate.now(clock),
             ),
           ),
         )
