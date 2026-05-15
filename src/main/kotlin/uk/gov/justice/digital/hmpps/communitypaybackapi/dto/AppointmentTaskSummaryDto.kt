@@ -15,6 +15,10 @@ data class AppointmentTaskSummaryDto(
   val date: LocalDate? = null,
   @param:Schema(description = "The name of the project attended in this appointment.")
   val projectTypeName: String? = null,
+  @param:Schema(description = "The id of the appointment in Delius.")
+  val deliusAppointmentId: Long,
+  @param:Schema(description = "The project code of the appointment.")
+  val projectCode: String,
 ) {
   companion object
 }
