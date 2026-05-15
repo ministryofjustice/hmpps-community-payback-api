@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.doAnswer
+import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.http.MediaType
@@ -23,6 +24,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.persist
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.DomainEventAsserter
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.CommunityPaybackAndDeliusMockServer
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentIdGenerator
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentService
 
 class AdminAdjustmentIT : IntegrationTestBase() {
@@ -35,6 +37,9 @@ class AdminAdjustmentIT : IntegrationTestBase() {
 
   @MockitoSpyBean
   lateinit var adjustmentService: AdjustmentService
+
+  @MockitoSpyBean
+  lateinit var adjustmentIdGenerator: AdjustmentIdGenerator
 
   companion object {
     const val CRN = "X123456"
@@ -103,6 +108,7 @@ class AdminAdjustmentIT : IntegrationTestBase() {
     fun `Rollback on unexpected request failure, ensuring previously created adjustments aren't rolled back too`() {
       val appointment = AppointmentEntity.valid().copy(crn = CRN, deliusEventNumber = DELIUS_EVENT_NUMBER).persist(ctx)
       val task = AppointmentTaskEntity.valid().copy(appointment = appointment).persist(ctx)
+      whenever(adjustmentIdGenerator.generateId()).thenReturn(task.id)
 
       setupGetUpwDetailsResponse()
       CommunityPaybackAndDeliusMockServer.setupPostAdjustmentResponse(username = "theusername", adjustmentId = 25L)
@@ -120,7 +126,7 @@ class AdminAdjustmentIT : IntegrationTestBase() {
         error("Test-managed exception used to test rollback behaviour")
       }.`when`(adjustmentService).createAdjustment(any(), any(), any())
 
-      CommunityPaybackAndDeliusMockServer.setupDeleteAdjustmentResponse(25)
+      CommunityPaybackAndDeliusMockServer.setupDeleteAdjustmentResponse(task.id)
 
       callCreateAdjustment(
         request = CreateAdjustmentDto.valid(ctx).copy(taskId = task.id),
@@ -129,7 +135,7 @@ class AdminAdjustmentIT : IntegrationTestBase() {
 
       // ensure both creations worked, but only one was deleted
       CommunityPaybackAndDeliusMockServer.verifyPostAdjustment(username = "theusername", count = 2)
-      CommunityPaybackAndDeliusMockServer.verifyDeleteAdjustment(adjustmentId = 25L, count = 1)
+      CommunityPaybackAndDeliusMockServer.verifyDeleteAdjustment(reference = task.id, count = 1)
 
       // only 1 domain event is published because the second transaction is rolled back
       domainEventAsserter.assertEventCount("community-payback.adjustment.created", 1)
