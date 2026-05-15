@@ -45,6 +45,7 @@ data class AppointmentEntity(
    * usage, and update from NDelius if absolute accuracy is required.
    */
   var date: LocalDate,
+  var projectCode: String,
   var providerCode: String,
   // Appointments created before the following fields were introduced may not have been updated
   // and therefore have no values available.

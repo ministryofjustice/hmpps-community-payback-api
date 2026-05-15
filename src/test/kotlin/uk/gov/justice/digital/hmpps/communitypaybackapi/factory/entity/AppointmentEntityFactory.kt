@@ -15,6 +15,7 @@ fun AppointmentEntity.Companion.valid() = AppointmentEntity(
   deliusEventNumber = Int.random(),
   createdByCommunityPayback = Boolean.random(),
   date = randomLocalDate(),
+  projectCode = String.random(5),
   providerCode = String.random(5),
 )
 
