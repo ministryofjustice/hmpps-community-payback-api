@@ -25,8 +25,8 @@ data class UnpaidWorkDetailsDto(
   val eventOutcome: String,
   val upwStatus: String?,
   val referralDate: LocalDate,
-  val convictionDate: LocalDate,
-  val court: CourtDto,
+  val convictionDate: LocalDate?,
+  val court: CourtDto?,
   val mainOffence: MainOffenceDto,
 ) {
   companion object

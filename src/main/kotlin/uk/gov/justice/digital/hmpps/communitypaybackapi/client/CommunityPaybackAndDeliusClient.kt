@@ -129,9 +129,9 @@ interface CommunityPaybackAndDeliusClient {
   @GetExchange("/case/{crn}/summary")
   fun getUpwDetailsSummary(@PathVariable crn: String, @RequestParam username: String?): NDCaseDetailsSummary
 
-  @DeleteExchange("/adjustments/{adjustmentId}")
+  @DeleteExchange("/adjustments/{reference}")
   fun deleteAdjustment(
-    @PathVariable adjustmentId: Long,
+    @PathVariable reference: UUID,
   )
 
   @PostExchange("/adjustments")
@@ -257,8 +257,8 @@ data class NDProject(
   val name: String,
   val code: String,
   val type: NDProjectType,
-  val team: NDCode,
-  val provider: NDCode,
+  val team: NDNameCode,
+  val provider: NDNameCode,
   val location: NDAddress,
   val beneficiary: NDBeneficiaryDetails,
   val hiVisRequired: Boolean,
@@ -601,8 +601,8 @@ data class NDUpwDetails(
   val eventOutcome: String,
   val upwStatus: String?,
   val referralDate: LocalDate,
-  val convictionDate: LocalDate,
-  val court: NDCodeDescription,
+  val convictionDate: LocalDate?,
+  val court: NDCodeDescription?,
   val mainOffence: NDMainOffence,
 ) {
   companion object

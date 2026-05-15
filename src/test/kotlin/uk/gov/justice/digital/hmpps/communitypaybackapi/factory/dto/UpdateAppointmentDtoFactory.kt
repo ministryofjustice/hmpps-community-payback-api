@@ -26,7 +26,7 @@ fun UpdateAppointmentDto.Companion.valid() = UpdateAppointmentDto(
   notes = String.random(400),
   attendanceData = AttendanceDataDto.valid(),
   alertActive = Boolean.random(),
-  sensitive = Boolean.random(),
+  sensitive = false,
 )
 
 fun UpdateAppointmentDto.Companion.valid(ctx: ApplicationContext) = UpdateAppointmentDto.valid().copy(

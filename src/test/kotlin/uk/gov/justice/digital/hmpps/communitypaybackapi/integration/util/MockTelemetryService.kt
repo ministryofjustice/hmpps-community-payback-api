@@ -12,7 +12,13 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.Telemet
 class MockTelemetryService : TelemetryService {
   var log: Logger = LoggerFactory.getLogger(this::class.java)
 
-  private val capturedEvents = mutableListOf<String>()
+  private val capturedEvents = mutableListOf<CapturedEvent>()
+
+  data class CapturedEvent(
+    val name: String,
+    val properties: Map<String, String?>,
+    val metrics: Map<String, Double?>,
+  )
 
   override fun trackEvent(
     name: String,
@@ -20,10 +26,12 @@ class MockTelemetryService : TelemetryService {
     metrics: Map<String, Double?>,
   ) {
     log.info("Telemetry event received with name $name")
-    capturedEvents.add(name)
+    capturedEvents.add(CapturedEvent(name, properties, metrics))
   }
 
-  fun hasEventsWithName(expectedName: String) = capturedEvents.contains(expectedName)
+  fun hasEventsWithName(expectedName: String) = capturedEvents.any { it.name == expectedName }
+
+  fun getEventsWithName(name: String) = capturedEvents.filter { it.name == name }
 
   @BeforeTestMethod
   fun beforeTestMethod() {

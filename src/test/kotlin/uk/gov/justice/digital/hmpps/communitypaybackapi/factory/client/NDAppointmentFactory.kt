@@ -69,6 +69,6 @@ fun NDAppointment.Companion.valid() = NDAppointment(
   workQuality = NDAppointmentWorkQuality.entries.toTypedArray().random(),
   behaviour = NDAppointmentBehaviour.entries.toTypedArray().random(),
   notes = String.random(),
-  sensitive = Boolean.random(),
+  sensitive = false,
   alertActive = Boolean.random(),
 )

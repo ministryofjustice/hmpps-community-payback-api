@@ -50,7 +50,7 @@ data class AppointmentEntity(
   // and therefore have no values available.
   var firstName: String? = null,
   var lastName: String? = null,
-  @ManyToOne(fetch = FetchType.LAZY)
+  @ManyToOne(fetch = FetchType.EAGER)
   var projectType: ProjectTypeEntity? = null,
 ) {
   @Suppress("USELESS_IS_CHECK")

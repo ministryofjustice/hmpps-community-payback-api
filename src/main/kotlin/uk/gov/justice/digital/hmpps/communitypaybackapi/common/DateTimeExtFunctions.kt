@@ -34,8 +34,10 @@ fun LocalDate.formatForUser(): String = format(DateTimeFormatter.ofLocalizedDate
 
 fun DayOfWeek.formatForUser(): String = getDisplayName(TextStyle.FULL, Locale.UK)
 
-fun Duration.formatForUser(): String = "${toHoursPart()} hours ${toMinutesPart()} minutes"
+fun Duration.formatForUser(): String = "${toHours()} hours ${toMinutesPart()} minutes"
 
 fun LocalTime.formatForUser(): String = format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT).withLocale(Locale.UK))
 
 fun OffsetDateTime.toLocalDateTimeEuropeLondon(): LocalDateTime = atZoneSameInstant(ZoneId.of("Europe/London")).toLocalDateTime()
+
+fun OffsetDateTime.toLocalTimeEuropeLondon(): LocalTime = toLocalDateTimeEuropeLondon().toLocalTime()

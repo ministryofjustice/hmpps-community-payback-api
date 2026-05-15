@@ -8,6 +8,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDMainOffence
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDUpwDetails
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourtDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.MainOffenceDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
 import java.time.LocalDate
 
@@ -67,6 +68,20 @@ class CaseDetailsSummaryMapperTest {
           description = "Court1",
         ),
       )
+    }
+
+    @Test
+    fun `maps correctly when court information is not provided`() {
+      val result = NDUpwDetails.valid().copy(court = null).toDto()
+
+      assertThat(result.court).isNull()
+    }
+
+    @Test
+    fun `maps correctly when conviction date is not provided`() {
+      val result = NDUpwDetails.valid().copy(convictionDate = null).toDto()
+
+      assertThat(result.convictionDate).isNull()
     }
   }
 }

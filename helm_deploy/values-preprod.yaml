@@ -9,7 +9,7 @@ generic-service:
     tlsSecretName: hmpps-community-payback-api-preprod-cert
 
   env:
-    APPLICATIONINSIGHTS_CONFIGURATION_FILE: "applicationinsights.dev.json"
+    APPLICATIONINSIGHTS_CONFIGURATION_FILE: "applicationinsights.json"
     HMPPS_AUTH_URL: "https://sign-in-preprod.hmpps.service.justice.gov.uk/auth"
     SENTRY_ENVIRONMENT: preprod
     SPRING_PROFILES_ACTIVE: preprod
@@ -21,6 +21,7 @@ generic-service:
 
     CLIENT_ARNS_URL: https://assess-risks-and-needs-preprod.hmpps.service.justice.gov.uk
     CLIENT_COMMUNITY_PAYBACK_AND_DELIUS_URL: https://community-payback-and-delius-preprod.hmpps.service.justice.gov.uk
+    CLIENT_PROBATION_ACCESS_CONTROL_URL: https://probation-access-control-preprod.hmpps.service.justice.gov.uk
 
     SPRINGDOC_API_DOCS_ENABLED: false
     SPRINGDOC_SWAGGER_UI_ENABLED: false

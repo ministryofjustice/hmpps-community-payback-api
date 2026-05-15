@@ -4,6 +4,7 @@ import java.time.LocalDate
 import java.util.UUID
 
 data class EnforcementDto(
+  val enforcementActionName: String,
   val enforcementActionId: UUID,
   val respondBy: LocalDate? = null,
 )

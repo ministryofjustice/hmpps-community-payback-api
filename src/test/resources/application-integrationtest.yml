@@ -94,3 +94,5 @@ client:
     url: http://localhost:${wiremock.server.port}/arns
   community-payback-and-delius:
     url: http://localhost:${wiremock.server.port}/community-payback-and-delius
+  probation-access-control:
+    url: http://localhost:${wiremock.server.port}/probation-access-control

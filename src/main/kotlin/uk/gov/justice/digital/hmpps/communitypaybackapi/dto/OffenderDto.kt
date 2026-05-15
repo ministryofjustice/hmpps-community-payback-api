@@ -48,10 +48,10 @@ sealed interface OffenderDto {
 
   data class OffenderFullDto(
     override val crn: String,
-    val forename: String,
-    val surname: String,
-    val middleNames: List<String>,
-    val dateOfBirth: LocalDate,
+    val forename: String?,
+    val surname: String?,
+    val middleNames: List<String>?,
+    val dateOfBirth: LocalDate?,
   ) : OffenderDto {
     override val objectType = OffenderType.FULL
   }

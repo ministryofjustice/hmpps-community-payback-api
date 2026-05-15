@@ -27,6 +27,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.SpringE
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toNDAdjustmentRequest
 import java.time.Clock
 import java.time.Instant
+import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.UUID
 
@@ -55,7 +56,6 @@ class AdjustmentServiceTest {
     const val EVENT_NUMBER: Int = 68
     val UNPAID_WORK_DETAILS: UnpaidWorkDetailsIdDto = UnpaidWorkDetailsIdDto(CRN, EVENT_NUMBER)
     const val USERNAME = "username"
-    val REASON_ID: UUID = UUID.fromString("74f0f62b-bbd4-49a4-9af8-1ce6cd94e3e1")
   }
 
   @Nested
@@ -68,7 +68,7 @@ class AdjustmentServiceTest {
       val id = UUID.randomUUID()
 
       val request = CreateAdjustmentDto.valid().copy(
-        adjustmentReasonId = REASON_ID,
+        adjustmentReasonId = reason.id,
         minutes = 50,
       )
 
@@ -88,6 +88,7 @@ class AdjustmentServiceTest {
               deliusEventNumber = EVENT_NUMBER,
               reason = reason,
               reference = id,
+              dateOfAdjustment = LocalDate.now(clock),
             ),
           ),
         )

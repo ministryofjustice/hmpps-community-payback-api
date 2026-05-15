@@ -56,7 +56,9 @@ class RedisLockService(
         log.trace("Have acquired lock '{}' with lease '{}'", key, leaseTime)
         return exec.invoke()
       } finally {
-        lock.unlock()
+        if (lock.isLocked) {
+          lock.unlock()
+        }
         log.trace("Have unlocked '{}'", key)
       }
     } else {

@@ -68,6 +68,10 @@ class AppointmentValidationService(
     val project = projectService.getProject(existingAppointment.projectCode) ?: error("Can't retrieve project ${existingAppointment.projectCode}")
     val upwDetailsId = UnpaidWorkDetailsIdDto(existingAppointment.offender.crn, existingAppointment.deliusEventNumber)
 
+    if (existingAppointment.sensitive == true && update.sensitive != true) {
+      badRequest("This appointment has previously been marked as sensitive so this cannot be changed")
+    }
+
     val ctx = ValidationContext(
       command = update,
       project = project,
@@ -99,6 +103,7 @@ class AppointmentValidationService(
     validateStartAndEndTime()
     validatePenaltyTime()
     validateNotes()
+    validateMinutesToCredit()
     validateEteAllowanceRemaining()
   }
 
@@ -176,6 +181,16 @@ class AppointmentValidationService(
   private fun ValidationContext.validateNotes() {
     validateLengthLessThan(command.notes, 4000) { _, _ ->
       "Notes must be fewer than 4000 characters"
+    }
+  }
+
+  private fun ValidationContext.validateMinutesToCredit() {
+    val minutesToCredit = calculateMinutesToCredit()
+    val requiredTime = Duration.ofMinutes(unpaidWorkDetails.requiredMinutes + unpaidWorkDetails.adjustments)
+    val completedTime = Duration.ofMinutes(unpaidWorkDetails.completedMinutes)
+    val remainingMinutesAllowance = requiredTime - completedTime + appointmentMinutesAlreadyCredited
+    if (minutesToCredit != null && minutesToCredit > remainingMinutesAllowance) {
+      badRequest("Credited minutes of '${minutesToCredit.formatForUser()}' exceeds the remaining time required of '${remainingMinutesAllowance.formatForUser()}'")
     }
   }
 

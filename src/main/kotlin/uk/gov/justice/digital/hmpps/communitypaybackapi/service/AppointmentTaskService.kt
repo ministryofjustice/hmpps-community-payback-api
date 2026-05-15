@@ -23,6 +23,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ProjectTypeGroup
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AdjustmentCreatedEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AppointmentCreatedEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AppointmentUpdatedEvent
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.AppointmentTaskMappers
 import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.UUID
@@ -32,6 +33,8 @@ class AppointmentTaskService(
   private val appointmentTaskEntityRepository: AppointmentTaskEntityRepository,
   private val appointmentRetrievalService: AppointmentRetrievalService,
   private val contextService: ContextService,
+  private val caseVisibilityService: CaseVisibilityService,
+  private val appointmentTaskMappers: AppointmentTaskMappers,
 ) {
 
   @EventListener
@@ -131,9 +134,16 @@ class AppointmentTaskService(
       deliusAppointmentIds = deliusAppointmentIds.sorted(),
       pageable = PageRequest.of(0, deliusAppointmentIds.size, Sort.by(Sort.Direction.DESC, "name")),
     )
+
+    val caseVisibility = caseVisibilityService.isLimitedForCurrentUser(orderedTasks.map { it.appointment.crn })
+
     return PageImpl(
       pagedTasks.content.map { task ->
-        AppointmentTaskSummaryDto(taskId = task.id, appointment = appointments.content.first { it.id == task.appointment.deliusId })
+        appointmentTaskMappers.toDto(
+          task = task,
+          isLimited = caseVisibility[task.appointment.crn] ?: false,
+          appointment = appointments.content.first { it.id == task.appointment.deliusId },
+        )
       },
       pageable,
       pagedTasks.totalElements,
