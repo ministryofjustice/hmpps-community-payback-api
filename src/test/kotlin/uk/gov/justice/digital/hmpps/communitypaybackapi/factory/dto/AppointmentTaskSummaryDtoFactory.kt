@@ -13,4 +13,6 @@ fun AppointmentTaskSummaryDto.Companion.valid() = AppointmentTaskSummaryDto(
   offender = OffenderDto.validFull().copy(middleNames = null, dateOfBirth = null),
   date = LocalDate.now(),
   projectTypeName = String.random(50),
+  deliusAppointmentId = Long.random(),
+  projectCode = String.random(5),
 )

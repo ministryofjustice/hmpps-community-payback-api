@@ -27,6 +27,8 @@ class AppointmentTaskMappers {
     },
     date = task.appointment.date,
     projectTypeName = task.appointment.projectType?.name,
+    deliusAppointmentId = appointment.id,
+    projectCode = task.appointment.projectCode,
     appointment = appointment,
   )
 }
