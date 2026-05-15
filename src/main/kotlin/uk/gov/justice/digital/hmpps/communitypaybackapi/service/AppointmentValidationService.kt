@@ -187,7 +187,7 @@ class AppointmentValidationService(
   private fun ValidationContext.validateMinutesToCredit() {
     val minutesToCredit = calculateMinutesToCredit()
     val requiredTime = Duration.ofMinutes(unpaidWorkDetails.requiredMinutes + unpaidWorkDetails.adjustments)
-    val completedTime = Duration.ofMinutes(unpaidWorkDetails.completedMinutes + unpaidWorkDetails.completedEteMinutes)
+    val completedTime = Duration.ofMinutes(unpaidWorkDetails.completedMinutes)
     val remainingMinutesAllowance = requiredTime - completedTime + appointmentMinutesAlreadyCredited
     if (minutesToCredit != null && minutesToCredit > remainingMinutesAllowance) {
       badRequest("Credited minutes of '${minutesToCredit.formatForUser()}' exceeds the remaining time required of '${remainingMinutesAllowance.formatForUser()}'")

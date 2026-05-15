@@ -696,22 +696,6 @@ class AppointmentValidationServiceTest {
       }
 
       @Test
-      fun `throws BadRequestException when time credited is more than remaining required time (including ETE)`() {
-        every { appointmentCalculationService.minutesToCredit(any(), any(), any(), any()) } returns Duration.ofMinutes(61)
-        every { offenderService.getUnpaidWorkDetails(UPW_DETAILS_ID) } returns baselineUnpaidWorkDetails.copy(
-          requiredMinutes = 180,
-          completedMinutes = 60,
-          completedEteMinutes = 60,
-          adjustments = 0,
-        )
-
-        assertThatThrownBy {
-          service.validateCreate(baselineCreate)
-        }.isInstanceOf(BadRequestException::class.java)
-          .hasMessage("Credited minutes of '1 hours 1 minutes' exceeds the remaining time required of '1 hours 0 minutes'")
-      }
-
-      @Test
       fun `throws BadRequestException when time credited is more than remaining required time (including adjustments)`() {
         every { appointmentCalculationService.minutesToCredit(any(), any(), any(), any()) } returns Duration.ofMinutes(61)
         every { offenderService.getUnpaidWorkDetails(UPW_DETAILS_ID) } returns baselineUnpaidWorkDetails.copy(
@@ -1587,22 +1571,6 @@ class AppointmentValidationServiceTest {
           requiredMinutes = 120,
           completedMinutes = 60,
           completedEteMinutes = 0,
-          adjustments = 0,
-        )
-
-        assertThatThrownBy {
-          service.validateUpdate(baselineExistingAppointment, baselineUpdate)
-        }.isInstanceOf(BadRequestException::class.java)
-          .hasMessage("Credited minutes of '1 hours 1 minutes' exceeds the remaining time required of '1 hours 0 minutes'")
-      }
-
-      @Test
-      fun `throws BadRequestException when time credited is more than remaining required time (including ETE)`() {
-        every { appointmentCalculationService.minutesToCredit(any(), any(), any(), any()) } returns Duration.ofMinutes(61)
-        every { offenderService.getUnpaidWorkDetails(UPW_DETAILS_ID) } returns baselineUnpaidWorkDetails.copy(
-          requiredMinutes = 180,
-          completedMinutes = 60,
-          completedEteMinutes = 60,
           adjustments = 0,
         )
 
