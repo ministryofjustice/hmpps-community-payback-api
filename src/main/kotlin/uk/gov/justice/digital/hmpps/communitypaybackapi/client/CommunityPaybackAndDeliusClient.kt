@@ -129,9 +129,9 @@ interface CommunityPaybackAndDeliusClient {
   @GetExchange("/case/{crn}/summary")
   fun getUpwDetailsSummary(@PathVariable crn: String, @RequestParam username: String?): NDCaseDetailsSummary
 
-  @DeleteExchange("/adjustments/{adjustmentId}")
+  @DeleteExchange("/adjustments/{reference}")
   fun deleteAdjustment(
-    @PathVariable adjustmentId: Long,
+    @PathVariable reference: UUID,
   )
 
   @PostExchange("/adjustments")
