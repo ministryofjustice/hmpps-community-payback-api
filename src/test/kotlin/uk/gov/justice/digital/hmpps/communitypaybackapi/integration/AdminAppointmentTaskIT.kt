@@ -137,7 +137,7 @@ class AdminAppointmentTaskIT : IntegrationTestBase() {
         .bodyAsObject<PageResponse<AppointmentTaskSummaryDto>>()
 
       assertThat(pageResponse.content).hasSize(1)
-      assertThat(pageResponse.content[0].appointment.id).isEqualTo(101L)
+      assertThat(pageResponse.content[0].deliusAppointmentId).isEqualTo(101L)
       assertThat(pageResponse.page.size).isEqualTo(50)
       assertThat(pageResponse.content[0].offender).isInstanceOf(OffenderDto.OffenderFullDto::class.java)
       val offender = pageResponse.content[0].offender as OffenderDto.OffenderFullDto
@@ -202,7 +202,7 @@ class AdminAppointmentTaskIT : IntegrationTestBase() {
         .bodyAsObject<PageResponse<AppointmentTaskSummaryDto>>()
 
       assertThat(pageResponse.content).hasSize(1)
-      assertThat(pageResponse.content[0].appointment.id).isEqualTo(101L)
+      assertThat(pageResponse.content[0].deliusAppointmentId).isEqualTo(101L)
       assertThat(pageResponse.page.size).isEqualTo(2)
       assertThat(pageResponse.page.totalPages).isEqualTo(3)
       assertThat(pageResponse.page.totalElements).isEqualTo(5)
@@ -259,16 +259,16 @@ class AdminAppointmentTaskIT : IntegrationTestBase() {
 
       invokeEndpointWithSort("appointment.crn,asc").apply {
         assertThat(content).hasSize(3)
-        assertThat(content[0].appointment.offender.crn).isEqualTo("CRN111")
-        assertThat(content[1].appointment.offender.crn).isEqualTo("CRN222")
-        assertThat(content[2].appointment.offender.crn).isEqualTo("CRN999")
+        assertThat(content[0].offender.crn).isEqualTo("CRN111")
+        assertThat(content[1].offender.crn).isEqualTo("CRN222")
+        assertThat(content[2].offender.crn).isEqualTo("CRN999")
       }
 
       invokeEndpointWithSort("appointment.crn,desc").apply {
         assertThat(content).hasSize(3)
-        assertThat(content[0].appointment.offender.crn).isEqualTo("CRN999")
-        assertThat(content[1].appointment.offender.crn).isEqualTo("CRN222")
-        assertThat(content[2].appointment.offender.crn).isEqualTo("CRN111")
+        assertThat(content[0].offender.crn).isEqualTo("CRN999")
+        assertThat(content[1].offender.crn).isEqualTo("CRN222")
+        assertThat(content[2].offender.crn).isEqualTo("CRN111")
       }
 
       invokeEndpointWithSort("createdAt,asc").apply {
@@ -330,8 +330,8 @@ class AdminAppointmentTaskIT : IntegrationTestBase() {
         .bodyAsObject<PageResponse<AppointmentTaskSummaryDto>>()
 
       assertThat(pageResponse.content).hasSize(1)
-      assertThat(pageResponse.content[0].appointment.id).isEqualTo(101L)
-      assertThat(pageResponse.content[0].appointment.date).isEqualTo(matchingAppointment.date)
+      assertThat(pageResponse.content[0].deliusAppointmentId).isEqualTo(101L)
+      assertThat(pageResponse.content[0].date).isEqualTo(matchingAppointment.date)
     }
 
     @Test
@@ -414,20 +414,20 @@ class AdminAppointmentTaskIT : IntegrationTestBase() {
 
       assertThat(pageResponse.content).hasSize(5)
       // Restricted or excluded, or both
-      assertThat(pageResponse.content[0].appointment.id).isEqualTo(101L)
+      assertThat(pageResponse.content[0].deliusAppointmentId).isEqualTo(101L)
       assertThat(pageResponse.content[0].offender).isInstanceOf(OffenderDto.OffenderLimitedDto::class.java)
-      assertThat(pageResponse.content[1].appointment.id).isEqualTo(102L)
+      assertThat(pageResponse.content[1].deliusAppointmentId).isEqualTo(102L)
       assertThat(pageResponse.content[1].offender).isInstanceOf(OffenderDto.OffenderLimitedDto::class.java)
-      assertThat(pageResponse.content[2].appointment.id).isEqualTo(103L)
+      assertThat(pageResponse.content[2].deliusAppointmentId).isEqualTo(103L)
       assertThat(pageResponse.content[2].offender).isInstanceOf(OffenderDto.OffenderLimitedDto::class.java)
       // Unrestricted
-      assertThat(pageResponse.content[3].appointment.id).isEqualTo(104L)
+      assertThat(pageResponse.content[3].deliusAppointmentId).isEqualTo(104L)
       assertThat(pageResponse.content[3].offender).isInstanceOf(OffenderDto.OffenderFullDto::class.java)
       var offender = pageResponse.content[3].offender as OffenderDto.OffenderFullDto
       assertThat(offender.crn).isEqualTo(appointment4.crn)
       assertThat(offender.forename).isNotNull
       assertThat(offender.surname).isNotNull
-      assertThat(pageResponse.content[4].appointment.id).isEqualTo(105L)
+      assertThat(pageResponse.content[4].deliusAppointmentId).isEqualTo(105L)
       assertThat(pageResponse.content[4].offender).isInstanceOf(OffenderDto.OffenderFullDto::class.java)
       offender = pageResponse.content[4].offender as OffenderDto.OffenderFullDto
       assertThat(offender.crn).isEqualTo(appointment5.crn)

@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers
 
 import org.springframework.stereotype.Service
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentTaskSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.OffenderDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentTaskEntity
@@ -11,7 +10,6 @@ class AppointmentTaskMappers {
   fun toDto(
     task: AppointmentTaskEntity,
     isLimited: Boolean,
-    appointment: AppointmentSummaryDto,
   ) = AppointmentTaskSummaryDto(
     taskId = task.id,
     offender = if (isLimited) {
@@ -27,8 +25,7 @@ class AppointmentTaskMappers {
     },
     date = task.appointment.date,
     projectTypeName = task.appointment.projectType?.name,
-    deliusAppointmentId = appointment.id,
+    deliusAppointmentId = task.appointment.deliusId,
     projectCode = task.appointment.projectCode,
-    appointment = appointment,
   )
 }

@@ -4,9 +4,7 @@ import jakarta.transaction.Transactional
 import org.springframework.context.event.EventListener
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
-import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
-import org.springframework.data.domain.Sort
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.badRequest
@@ -31,7 +29,6 @@ import java.util.UUID
 @Service
 class AppointmentTaskService(
   private val appointmentTaskEntityRepository: AppointmentTaskEntityRepository,
-  private val appointmentRetrievalService: AppointmentRetrievalService,
   private val contextService: ContextService,
   private val caseVisibilityService: CaseVisibilityService,
   private val appointmentTaskMappers: AppointmentTaskMappers,
@@ -129,12 +126,6 @@ class AppointmentTaskService(
       return PageImpl(emptyList(), pageable, 0)
     }
 
-    val deliusAppointmentIds = orderedTasks.map { it.appointment.deliusId }
-    val appointments = appointmentRetrievalService.getAppointments(
-      deliusAppointmentIds = deliusAppointmentIds.sorted(),
-      pageable = PageRequest.of(0, deliusAppointmentIds.size, Sort.by(Sort.Direction.DESC, "name")),
-    )
-
     val caseVisibility = caseVisibilityService.isLimitedForCurrentUser(orderedTasks.map { it.appointment.crn })
 
     return PageImpl(
@@ -142,7 +133,6 @@ class AppointmentTaskService(
         appointmentTaskMappers.toDto(
           task = task,
           isLimited = caseVisibility[task.appointment.crn] ?: false,
-          appointment = appointments.content.first { it.id == task.appointment.deliusId },
         )
       },
       pageable,
