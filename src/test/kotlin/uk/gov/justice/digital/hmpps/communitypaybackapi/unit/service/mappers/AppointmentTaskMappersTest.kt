@@ -6,7 +6,6 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.OffenderDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentTaskEntity
@@ -30,12 +29,10 @@ class AppointmentTaskMappersTest {
       val projectType = ProjectTypeEntity.valid()
       val appointment = AppointmentEntity.valid().copy(firstName = String.random(8), lastName = String.random(8), projectType = projectType)
       val task = AppointmentTaskEntity.validPending().copy(appointment = appointment)
-      val appointmentSummaryDto = AppointmentSummaryDto.valid().copy(id = appointment.deliusId)
 
-      val result = appointmentTaskMappers.toDto(task = task, isLimited = false, appointment = appointmentSummaryDto)
+      val result = appointmentTaskMappers.toDto(task = task, isLimited = false)
 
       assertThat(result.taskId).isEqualTo(task.id)
-      assertThat(result.appointment).isEqualTo(appointmentSummaryDto)
       assertThat(result.offender).isNotNull
       assertThat(result.offender).isInstanceOf(OffenderDto.OffenderFullDto::class.java)
       val offender = result.offender as OffenderDto.OffenderFullDto
@@ -49,12 +46,10 @@ class AppointmentTaskMappersTest {
     @Test
     fun `should map task with partial appointment when isLimited is false`() {
       val task = AppointmentTaskEntity.validPending()
-      val appointmentSummaryDto = AppointmentSummaryDto.valid()
 
-      val result = appointmentTaskMappers.toDto(task = task, isLimited = false, appointment = appointmentSummaryDto)
+      val result = appointmentTaskMappers.toDto(task = task, isLimited = false)
 
       assertThat(result.taskId).isEqualTo(task.id)
-      assertThat(result.appointment).isEqualTo(appointmentSummaryDto)
       assertThat(result.offender).isNotNull
       assertThat(result.offender).isInstanceOf(OffenderDto.OffenderFullDto::class.java)
       val offender = result.offender as OffenderDto.OffenderFullDto
@@ -70,12 +65,10 @@ class AppointmentTaskMappersTest {
       val projectType = ProjectTypeEntity.valid()
       val appointment = AppointmentEntity.valid().copy(firstName = String.random(8), lastName = String.random(8), projectType = projectType)
       val task = AppointmentTaskEntity.validPending().copy(appointment = appointment)
-      val appointmentSummaryDto = AppointmentSummaryDto.valid().copy(id = appointment.deliusId)
 
-      val result = appointmentTaskMappers.toDto(task = task, isLimited = true, appointment = appointmentSummaryDto)
+      val result = appointmentTaskMappers.toDto(task = task, isLimited = true)
 
       assertThat(result.taskId).isEqualTo(task.id)
-      assertThat(result.appointment).isEqualTo(appointmentSummaryDto)
       assertThat(result.offender).isInstanceOf(OffenderDto.OffenderLimitedDto::class.java)
       val offender = result.offender as OffenderDto.OffenderLimitedDto
       assertThat(offender.crn).isEqualTo(appointment.crn)
@@ -86,12 +79,10 @@ class AppointmentTaskMappersTest {
     @Test
     fun `should map task with partial appointment when isLimited is true`() {
       val task = AppointmentTaskEntity.validPending()
-      val appointmentSummaryDto = AppointmentSummaryDto.valid()
 
-      val result = appointmentTaskMappers.toDto(task = task, isLimited = true, appointment = appointmentSummaryDto)
+      val result = appointmentTaskMappers.toDto(task = task, isLimited = true)
 
       assertThat(result.taskId).isEqualTo(task.id)
-      assertThat(result.appointment).isEqualTo(appointmentSummaryDto)
       assertThat(result.offender).isInstanceOf(OffenderDto.OffenderLimitedDto::class.java)
       val offender = result.offender as OffenderDto.OffenderLimitedDto
       assertThat(offender.crn).isEqualTo(task.appointment.crn)
