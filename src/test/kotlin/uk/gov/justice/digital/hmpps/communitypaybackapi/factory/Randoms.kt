@@ -19,3 +19,12 @@ fun randomLocalDateTime(): java.time.LocalDateTime = java.time.LocalDateTime.of(
 fun randomOffsetDateTime(): OffsetDateTime = OffsetDateTime.of(randomLocalDate(), randomLocalTime(), ZoneOffset.UTC)
 fun randomDuration(): Duration = Duration.ofHours(Long.random(0, 12)).plusMinutes(Long.random(0, 60))
 fun randomHourMinuteDuration(): HourMinuteDuration = HourMinuteDuration(randomDuration())
+
+fun LocalDate.withRandomTime(from: LocalTime = LocalTime.MIN, to: LocalTime = LocalTime.MAX): OffsetDateTime = OffsetDateTime.of(this, LocalTime.MIN, ZoneOffset.UTC).withRandomTime(from, to)
+
+fun OffsetDateTime.withRandomTime(from: LocalTime = LocalTime.MIN, to: LocalTime = LocalTime.MAX): OffsetDateTime {
+  val second = Int.random(from.toSecondOfDay(), to.toSecondOfDay())
+  val time = LocalTime.ofSecondOfDay(second.toLong()).atOffset(this.offset)
+
+  return this.toLocalDate().atTime(time)
+}
