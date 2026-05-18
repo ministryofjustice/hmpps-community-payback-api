@@ -27,6 +27,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentServi
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.EteService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.EteValidationService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ProjectService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.SpringEventPublisher
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.EteMappers
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
 import java.time.LocalDate
@@ -55,6 +56,9 @@ class EteServiceTest {
   @RelaxedMockK
   lateinit var eteValidationService: EteValidationService
 
+  @RelaxedMockK
+  lateinit var springEventPublisher: SpringEventPublisher
+
   private lateinit var eteService: EteService
 
   @BeforeEach
@@ -66,6 +70,7 @@ class EteServiceTest {
       appointmentService,
       eteValidationService,
       projectService,
+      springEventPublisher,
       OffsetDateTime.parse("2026-01-01T00:00:00Z"),
     )
   }

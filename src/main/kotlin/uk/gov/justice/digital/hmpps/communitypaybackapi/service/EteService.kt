@@ -21,6 +21,8 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompleti
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventResolutionRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventStatus
 import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseCompletionMessage
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.CourseCompletionReceivedEvent
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.SpringEventPublisher
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.EteMappers
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
 import java.time.OffsetDateTime
@@ -34,6 +36,7 @@ class EteService(
   private val appointmentService: AppointmentService,
   private val eteValidationService: EteValidationService,
   private val projectService: ProjectService,
+  private val springEventPublisher: SpringEventPublisher,
   @Value("\${course.completions.available.from:2026-01-01T00:00:00Z}") private val courseCompletionsAvailableFrom: OffsetDateTime,
 ) {
   companion object {
@@ -41,7 +44,19 @@ class EteService(
   }
 
   fun recordCourseCompletionEvent(message: EducationCourseCompletionMessage) {
-    eteCourseCompletionEventEntityRepository.save(eteMapper.toCourseCompletionEventEntity(message))
+    val event = eteCourseCompletionEventEntityRepository.save(eteMapper.toCourseCompletionEventEntity(message))
+
+    springEventPublisher.publishEvent(
+      CourseCompletionReceivedEvent(
+        attempts = event.attempts,
+        courseName = event.courseName,
+        courseType = event.courseType,
+        provider = event.provider,
+        region = event.region,
+        triggeredAt = event.receivedAt,
+        triggeredBy = event.externalReference,
+      ),
+    )
   }
 
   fun getCourseCompletionEvents(

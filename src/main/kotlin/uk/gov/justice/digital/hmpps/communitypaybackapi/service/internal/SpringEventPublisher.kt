@@ -11,6 +11,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentEventTrigger
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventTrigger
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService
+import java.time.OffsetDateTime
 import java.util.UUID
 
 @Service
@@ -54,6 +55,19 @@ sealed interface CommunityPaybackSpringEvent {
     val existingAppointment: AppointmentDto,
     val trigger: AppointmentEventTrigger,
   ) : CommunityPaybackSpringEvent {
+    companion object
+  }
+
+  data class CourseCompletionReceivedEvent(
+    val attempts: Int?,
+    val courseName: String,
+    val courseType: String,
+    val provider: String,
+    val region: String,
+    val triggeredAt: OffsetDateTime,
+    val triggeredBy: String,
+  ) : CommunityPaybackSpringEvent,
+    DoesNotSupportRollbackEvent {
     companion object
   }
 

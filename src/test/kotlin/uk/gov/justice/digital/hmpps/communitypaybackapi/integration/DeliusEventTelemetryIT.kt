@@ -1,6 +1,8 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.integration
 
 import org.assertj.core.api.Assertions.assertThat
+import org.awaitility.Awaitility.await
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -8,6 +10,8 @@ import org.springframework.http.MediaType
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.request.ServletRequestAttributes
+import software.amazon.awssdk.services.sqs.model.SendMessageRequest
+import tools.jackson.databind.json.JsonMapper
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDEvent
@@ -24,18 +28,26 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentTaskEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ProjectTypeEntity.Companion.GROUP_PLACEMENT_NATIONAL_PROJECT_CODE
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.validNoOutcome
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.persist
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.listener.valid
+import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.DatabasePurgeUtils
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.MockTelemetryService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.CommunityPaybackAndDeliusMockServer
+import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseCompletionMessage
+import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseMessageAttributes
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentCreationService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventTrigger
+import uk.gov.justice.hmpps.sqs.HmppsQueueService
+import uk.gov.justice.hmpps.sqs.MissingQueueException
 import java.time.LocalDate
 import java.time.OffsetDateTime
+import java.util.concurrent.TimeUnit
 
 class DeliusEventTelemetryIT : IntegrationTestBase() {
 
@@ -45,7 +57,21 @@ class DeliusEventTelemetryIT : IntegrationTestBase() {
   @Autowired
   lateinit var appointmentCreationService: AppointmentCreationService
 
+  @Autowired
+  lateinit var jsonMapper: JsonMapper
+
+  @Autowired
+  lateinit var hmppsQueueService: HmppsQueueService
+
+  @Autowired
+  lateinit var eteCourseCompletionEventEntityRepository: EteCourseCompletionEventEntityRepository
+
+  @Autowired
+  lateinit var databasePurgeUtils: DatabasePurgeUtils
+
   companion object {
+    const val QUEUE_NAME = "educationcoursecompletionevents"
+
     const val CRN = "X123456"
     const val EVENT_NUMBER = 1
     const val PROJECT_CODE = "PROJ001"
@@ -59,6 +85,12 @@ class DeliusEventTelemetryIT : IntegrationTestBase() {
   @BeforeEach
   fun setUp() {
     mockTelemetryService.beforeTestMethod()
+    databasePurgeUtils.deleteAllEteData()
+  }
+
+  @AfterEach
+  fun tearDown() {
+    eteCourseCompletionEventEntityRepository.deleteAll()
   }
 
   @Test
@@ -203,5 +235,37 @@ class DeliusEventTelemetryIT : IntegrationTestBase() {
     assertThat(properties["triggeredAt"]).isNotNull()
     assertThat(properties["triggeredBy"]).isEqualTo(task.id.toString())
     assertThat(properties["eventType"]).isEqualTo("CREATED")
+  }
+
+  @Test
+  fun `should track telemetry when a course completion is received`() {
+    val queue = hmppsQueueService.findByQueueId(QUEUE_NAME)
+      ?: throw MissingQueueException("HmppsQueue $QUEUE_NAME not found")
+
+    val attributes = EducationCourseMessageAttributes.valid(ctx).copy()
+    val message = EducationCourseCompletionMessage.valid(ctx).copy(messageAttributes = attributes)
+
+    queue.sqsClient.sendMessage(
+      SendMessageRequest.builder()
+        .messageBody(jsonMapper.writeValueAsString(message))
+        .queueUrl(queue.queueUrl)
+        .build(),
+    )
+
+    await().atMost(10, TimeUnit.SECONDS).untilAsserted {
+      val events = mockTelemetryService.getEventsWithName("CourseCompletionEvent")
+      assertThat(events).hasSize(1)
+      val properties = events[0].properties
+
+      assertThat(properties["attempts"]).isNotNull
+      assertThat(properties["attempts"]).isEqualTo(attributes.attempts.toString())
+      assertThat(properties["courseName"]).isEqualTo(attributes.courseName)
+      assertThat(properties["courseType"]).isEqualTo(attributes.courseType)
+      assertThat(properties["provider"]).isEqualTo(attributes.provider)
+      assertThat(properties["region"]).isEqualTo(attributes.region)
+      assertThat(properties["triggeredAt"]).isNotNull()
+      assertThat(properties["triggeredBy"]).isEqualTo(attributes.externalReference)
+      assertThat(properties["eventType"]).isEqualTo("RECEIVED")
+    }
   }
 }
