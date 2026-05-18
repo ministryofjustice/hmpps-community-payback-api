@@ -244,21 +244,21 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
       eteCourseCompletionEventEntityRepository.save(
         EteCourseCompletionEventEntity.passed(ctx).copy(
           pdu = pdu,
-          completionDateTime = LocalDate.of(2025, 5, 9).atFirstSecondOfDay(),
+          completionDateTime = LocalDate.of(2026, 5, 9).atFirstSecondOfDay(),
         ),
       )
 
       val inRange1 = eteCourseCompletionEventEntityRepository.save(
         EteCourseCompletionEventEntity.passed(ctx).copy(
           pdu = pdu,
-          completionDateTime = LocalDate.of(2025, 5, 10).atFirstSecondOfDay(),
+          completionDateTime = LocalDate.of(2026, 5, 10).atFirstSecondOfDay(),
         ),
       )
 
       val inRange2 = eteCourseCompletionEventEntityRepository.save(
         EteCourseCompletionEventEntity.passed(ctx).copy(
           pdu = pdu,
-          completionDateTime = LocalDate.of(2025, 6, 20).atLastSecondOfDay(),
+          completionDateTime = LocalDate.of(2026, 6, 20).atLastSecondOfDay(),
         ),
       )
 
@@ -266,12 +266,12 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
       eteCourseCompletionEventEntityRepository.save(
         EteCourseCompletionEventEntity.passed(ctx).copy(
           pdu = pdu,
-          completionDateTime = LocalDate.of(2025, 6, 21).atFirstSecondOfDay(),
+          completionDateTime = LocalDate.of(2026, 6, 21).atFirstSecondOfDay(),
         ),
       )
 
       val pagedCourseCompletions = webTestClient.get()
-        .uri("/admin/providers/${pdu.providerCode}/course-completions?dateFrom=2025-05-10&dateTo=2025-06-20&sort=completionDateTime,asc")
+        .uri("/admin/providers/${pdu.providerCode}/course-completions?dateFrom=2026-05-10&dateTo=2026-06-20&sort=completionDateTime,asc")
         .addAdminUiAuthHeader()
         .exchange()
         .expectStatus()

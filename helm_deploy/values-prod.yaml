@@ -13,7 +13,7 @@ generic-service:
     HMPPS_AUTH_URL: "https://sign-in.hmpps.service.justice.gov.uk/auth"
     SENTRY_ENVIRONMENT: prod
     SPRING_PROFILES_ACTIVE: prod
-
+    COURSE_COMPLETIONS_AVAILABLE_FROM: "2026-05-20T00:00:00Z"
 
     COMMUNITY_PAYBACK_DOMAIN_EVENTS_ENVIRONMENT: prod
     COMMUNITY_PAYBACK_DOMAIN_EVENTS_DETAILS_URL_PATTERN: https://community-payback-api.hmpps.service.justice.gov.uk/domain-event-details/#type/#id

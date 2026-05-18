@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.service
 
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
@@ -33,6 +34,7 @@ class EteService(
   private val appointmentService: AppointmentService,
   private val eteValidationService: EteValidationService,
   private val projectService: ProjectService,
+  @Value("\${course.completions.available.from:2026-01-01T00:00:00Z}") private val courseCompletionsAvailableFrom: OffsetDateTime,
 ) {
   companion object {
     const val ETE_ALLOWANCE_OF_TOTAL_REQUIREMENT = 0.3
@@ -74,6 +76,7 @@ class EteService(
       externalReference,
       fromDate,
       toDate,
+      courseCompletionsAvailableFrom,
       pageable,
     )
 
