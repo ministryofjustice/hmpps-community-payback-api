@@ -1,11 +1,11 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.unit.service
 
 import io.mockk.every
-import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -30,6 +30,8 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ProjectService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.EteMappers
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
 import java.time.LocalDate
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 import java.util.UUID
 
 @ExtendWith(MockKExtension::class)
@@ -53,8 +55,20 @@ class EteServiceTest {
   @RelaxedMockK
   lateinit var eteValidationService: EteValidationService
 
-  @InjectMockKs
   private lateinit var eteService: EteService
+
+  @BeforeEach
+  fun setUp() {
+    eteService = EteService(
+      eteMappers,
+      eteCourseCompletionEventEntityRepository,
+      eteCourseCompletionEventResolutionRepository,
+      appointmentService,
+      eteValidationService,
+      projectService,
+      OffsetDateTime.parse("2026-01-01T00:00:00Z"),
+    )
+  }
 
   @Nested
   inner class HandleEducationCourseMessage {
@@ -100,6 +114,7 @@ class EteServiceTest {
           externalReference = externalReference,
           fromDate = fromDate,
           toDate = toDate,
+          availableFromDate = any(),
           pageable = pageable,
         )
       } returns PageImpl(
@@ -126,6 +141,23 @@ class EteServiceTest {
       assertThat(result.isEmpty).isFalse
       assertThat(result.content).hasSize(1)
       assertThat(result.content[0].completionDateTime).isEqualTo(LocalDate.of(2026, 6, 15).atFirstSecondOfDay())
+
+      verify {
+        eteCourseCompletionEventEntityRepository.findAllWithFilters(
+          providerCode = providerCode,
+          pduId = pduId,
+          officesCount = 2,
+          offices = offices,
+          resolutionStatus = ResolutionStatus.ANY,
+          completionStatus = EteCourseCompletionEventStatus.PASSED,
+          attempts = attempts,
+          externalReference = externalReference,
+          fromDate = fromDate,
+          toDate = toDate,
+          availableFromDate = OffsetDateTime.of(2026, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC),
+          pageable = pageable,
+        )
+      }
     }
   }
 
