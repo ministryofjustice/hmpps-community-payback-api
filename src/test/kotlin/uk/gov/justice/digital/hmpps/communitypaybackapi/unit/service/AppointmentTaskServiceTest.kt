@@ -44,6 +44,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ContextService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AdjustmentCreatedEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AppointmentCreatedEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AppointmentUpdatedEvent
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.SpringEventPublisher
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.AppointmentTaskMappers
 import java.time.LocalDate
 import java.time.OffsetDateTime
@@ -64,6 +65,9 @@ class AppointmentTaskServiceTest {
 
   @MockK
   private lateinit var appointmentTaskMappers: AppointmentTaskMappers
+
+  @RelaxedMockK
+  private lateinit var springEventPublisher: SpringEventPublisher
 
   @InjectMockKs
   private lateinit var service: AppointmentTaskService

@@ -23,16 +23,20 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProvider
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSupervisorSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSupervisorSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDTeam
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AttendanceDataDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionCreditTimeDetailsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionResolutionDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionResolutionTypeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAdjustmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentTaskEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentTaskType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity.Companion.CODE_ATTENDED_COMPLIED
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ProjectTypeEntity.Companion.GROUP_PLACEMENT_NATIONAL_PROJECT_CODE
@@ -53,6 +57,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEvent
 import uk.gov.justice.hmpps.sqs.HmppsQueueService
 import uk.gov.justice.hmpps.sqs.MissingQueueException
 import java.time.LocalDate
+import java.time.LocalTime
 import java.time.OffsetDateTime
 import java.util.concurrent.TimeUnit
 
@@ -326,5 +331,52 @@ class DeliusEventTelemetryIT : IntegrationTestBase() {
     assertThat(properties["triggeredAt"]).isNotNull
     assertThat(properties["triggeredBy"]).isEqualTo("theusername")
     assertThat(properties["eventType"]).isEqualTo("PROCESSED")
+  }
+
+  @Test
+  fun `should track telemetry when an appointment task is created`() {
+    CommunityPaybackAndDeliusMockServer.Aggregates.setupGetDataMocksForUpdateAppointment(
+      existingAppointment = NDAppointment.validNoOutcome(ctx).copy(
+        id = 1234L,
+        project = NDProjectAndLocation.valid().copy(code = "proj123"),
+        date = LocalDate.now(),
+        event = NDEvent.valid().copy(number = EVENT_NUMBER),
+        case = NDCaseSummary.valid().copy(crn = CRN),
+      ),
+      username = "theusername",
+      project = NDProject.valid(ctx).copy(code = "proj123", type = NDProjectType.valid().copy(code = GROUP_PLACEMENT_NATIONAL_PROJECT_CODE)),
+    )
+
+    CommunityPaybackAndDeliusMockServer.setupPutAppointmentResponse(
+      projectCode = "proj123",
+      appointmentId = 1234L,
+    )
+
+    webTestClient.post()
+      .uri("/admin/projects/proj123/appointments/1234/outcome")
+      .addAdminUiAuthHeader("theusername")
+      .bodyValue(
+        UpdateAppointmentOutcomeDto.valid(ctx).copy(
+          deliusId = 1234L,
+          attendanceData = AttendanceDataDto.valid(),
+          contactOutcomeCode = CODE_ATTENDED_COMPLIED,
+          startTime = LocalTime.of(0, 0),
+          endTime = LocalTime.of(1, 0),
+          notes = "Some notes",
+        ),
+      )
+      .exchange()
+      .expectStatus()
+      .isOk()
+
+    val events = mockTelemetryService.getEventsWithName("AppointmentTaskEvent")
+    assertThat(events).hasSize(1)
+    val properties = events[0].properties
+    assertThat(properties["crn"]).isEqualTo(CRN)
+    assertThat(properties["deliusAppointmentId"]).isEqualTo("1234")
+    assertThat(properties["taskType"]).isEqualTo(AppointmentTaskType.ADJUSTMENT_TRAVEL_TIME.name)
+    assertThat(properties["triggeredAt"]).isNotNull()
+    assertThat(properties["triggeredBy"]).isEqualTo("theusername")
+    assertThat(properties["eventType"]).isEqualTo("CREATED")
   }
 }

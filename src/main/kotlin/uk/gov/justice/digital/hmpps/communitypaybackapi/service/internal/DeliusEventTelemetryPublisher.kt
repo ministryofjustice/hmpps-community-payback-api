@@ -4,6 +4,7 @@ import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AdjustmentCreatedEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AppointmentCreatedEvent
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AppointmentTaskCreatedEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AppointmentUpdatedEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.CourseCompletionProcessedEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.CourseCompletionReceivedEvent
@@ -90,6 +91,21 @@ class DeliusEventTelemetryPublisher(
         "triggeredAt" to event.triggeredAt.toString(),
         "triggeredBy" to event.triggeredBy,
         "eventType" to "PROCESSED",
+      ),
+    )
+  }
+
+  @EventListener
+  fun onAppointmentTaskCreated(event: AppointmentTaskCreatedEvent) {
+    telemetryService.trackEvent(
+      "AppointmentTaskEvent",
+      properties = mapOf(
+        "crn" to event.crn,
+        "deliusAppointmentId" to event.deliusAppointmentId.toString(),
+        "taskType" to event.taskType.name,
+        "triggeredAt" to event.triggeredAt.toString(),
+        "triggeredBy" to event.triggeredBy,
+        "eventType" to "CREATED",
       ),
     )
   }
