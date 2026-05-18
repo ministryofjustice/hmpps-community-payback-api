@@ -21,6 +21,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ProjectTypeGroup
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AdjustmentCreatedEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AppointmentCreatedEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AppointmentTaskCreatedEvent
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AppointmentTaskUpdatedEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AppointmentUpdatedEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.SpringEventPublisher
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.AppointmentTaskMappers
@@ -79,6 +80,7 @@ class AppointmentTaskService(
       task.decisionMadeByUsername = contextService.getUserName()
       task.decisionDescription = "Task completed on adjustment creation"
       appointmentTaskEntityRepository.save(task)
+      publishAppointmentTaskUpdatedEvent(task)
     }
   }
 
@@ -94,6 +96,8 @@ class AppointmentTaskService(
     task.decisionMadeByUsername = contextService.getUserName()
     task.decisionDescription = "Task completed directly"
     appointmentTaskEntityRepository.save(task)
+
+    publishAppointmentTaskUpdatedEvent(task)
   }
 
   private fun createTravelTimeTaskIfRequired(
@@ -129,6 +133,20 @@ class AppointmentTaskService(
         ),
       )
     }
+  }
+
+  private fun publishAppointmentTaskUpdatedEvent(task: AppointmentTaskEntity) {
+    springEventPublisher.publishEvent(
+      AppointmentTaskUpdatedEvent(
+        crn = task.appointment.crn,
+        deliusAppointmentId = task.appointment.deliusId,
+        taskType = task.taskType,
+        taskStatus = task.taskStatus,
+        decision = task.decisionDescription,
+        triggeredAt = OffsetDateTime.now(),
+        triggeredBy = contextService.getUserName(),
+      ),
+    )
   }
 
   fun getPendingAppointmentTasks(

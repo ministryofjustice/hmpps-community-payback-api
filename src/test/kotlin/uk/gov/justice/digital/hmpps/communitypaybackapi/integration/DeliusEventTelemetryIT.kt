@@ -34,6 +34,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOut
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentTaskEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentTaskStatus
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentTaskType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity.Companion.CODE_ATTENDED_COMPLIED
@@ -46,6 +47,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.validNoOu
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.persist
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.validPending
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.listener.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.DatabasePurgeUtils
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.MockTelemetryService
@@ -378,5 +380,30 @@ class DeliusEventTelemetryIT : IntegrationTestBase() {
     assertThat(properties["triggeredAt"]).isNotNull()
     assertThat(properties["triggeredBy"]).isEqualTo("theusername")
     assertThat(properties["eventType"]).isEqualTo("CREATED")
+  }
+
+  @Test
+  fun `should track telemetry when an appointment task is updated`() {
+    val task = AppointmentTaskEntity.validPending().copy(
+      appointment = AppointmentEntity.valid().copy(crn = CRN, deliusId = 1234L).persist(ctx),
+    ).persist(ctx)
+
+    webTestClient.put()
+      .uri("/admin/appointment-tasks/${task.id}/complete")
+      .addAdminUiAuthHeader("theusername")
+      .exchange()
+      .expectStatus()
+      .isOk
+
+    val events = mockTelemetryService.getEventsWithName("AppointmentTaskEvent")
+    assertThat(events).hasSize(1)
+    val properties = events[0].properties
+    assertThat(properties["crn"]).isEqualTo(CRN)
+    assertThat(properties["deliusAppointmentId"]).isEqualTo("1234")
+    assertThat(properties["taskType"]).isEqualTo(AppointmentTaskType.ADJUSTMENT_TRAVEL_TIME.name)
+    assertThat(properties["taskStatus"]).isEqualTo(AppointmentTaskStatus.COMPLETE.name)
+    assertThat(properties["triggeredAt"]).isNotNull()
+    assertThat(properties["triggeredBy"]).isEqualTo("theusername")
+    assertThat(properties["eventType"]).isEqualTo("UPDATED")
   }
 }

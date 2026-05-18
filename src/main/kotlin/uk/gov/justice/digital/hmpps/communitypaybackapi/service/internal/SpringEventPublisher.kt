@@ -9,6 +9,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentReasonEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentTaskStatus
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentTaskType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentEventTrigger
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventTrigger
@@ -87,6 +88,18 @@ sealed interface CommunityPaybackSpringEvent {
     val crn: String,
     val deliusAppointmentId: Long,
     val taskType: AppointmentTaskType,
+    val triggeredAt: OffsetDateTime,
+    val triggeredBy: String,
+  ) : CommunityPaybackSpringEvent {
+    companion object
+  }
+
+  data class AppointmentTaskUpdatedEvent(
+    val crn: String,
+    val deliusAppointmentId: Long,
+    val taskType: AppointmentTaskType,
+    val taskStatus: AppointmentTaskStatus,
+    val decision: String?,
     val triggeredAt: OffsetDateTime,
     val triggeredBy: String,
   ) : CommunityPaybackSpringEvent {
