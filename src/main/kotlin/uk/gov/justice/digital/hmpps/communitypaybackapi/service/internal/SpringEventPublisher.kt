@@ -3,14 +3,18 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionResolutionTypeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAdjustmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentReasonEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentTaskStatus
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentTaskType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentEventTrigger
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventTrigger
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService
+import java.time.OffsetDateTime
 import java.util.UUID
 
 @Service
@@ -27,6 +31,7 @@ class SpringEventPublisher(
 }
 
 sealed interface CommunityPaybackSpringEvent {
+  sealed interface DoesNotSupportRollbackEvent : CommunityPaybackSpringEvent
 
   data class AppointmentCreatedEvent(
     val createDto: AppointmentValidationService.ValidatedAppointment<CreateAppointmentDto>,
@@ -52,6 +57,51 @@ sealed interface CommunityPaybackSpringEvent {
     val appointmentEntity: AppointmentEntity,
     val existingAppointment: AppointmentDto,
     val trigger: AppointmentEventTrigger,
+  ) : CommunityPaybackSpringEvent {
+    companion object
+  }
+
+  data class CourseCompletionReceivedEvent(
+    val attempts: Int?,
+    val courseName: String,
+    val courseType: String,
+    val provider: String,
+    val region: String,
+    val triggeredAt: OffsetDateTime,
+    val triggeredBy: String,
+  ) : CommunityPaybackSpringEvent,
+    DoesNotSupportRollbackEvent {
+    companion object
+  }
+
+  data class CourseCompletionProcessedEvent(
+    val crn: String?,
+    val externalReference: String,
+    val resolutionType: CourseCompletionResolutionTypeDto,
+    val triggeredAt: OffsetDateTime,
+    val triggeredBy: String,
+  ) : CommunityPaybackSpringEvent {
+    companion object
+  }
+
+  data class AppointmentTaskCreatedEvent(
+    val crn: String,
+    val deliusAppointmentId: Long,
+    val taskType: AppointmentTaskType,
+    val triggeredAt: OffsetDateTime,
+    val triggeredBy: String,
+  ) : CommunityPaybackSpringEvent {
+    companion object
+  }
+
+  data class AppointmentTaskUpdatedEvent(
+    val crn: String,
+    val deliusAppointmentId: Long,
+    val taskType: AppointmentTaskType,
+    val taskStatus: AppointmentTaskStatus,
+    val decision: String?,
+    val triggeredAt: OffsetDateTime,
+    val triggeredBy: String,
   ) : CommunityPaybackSpringEvent {
     companion object
   }

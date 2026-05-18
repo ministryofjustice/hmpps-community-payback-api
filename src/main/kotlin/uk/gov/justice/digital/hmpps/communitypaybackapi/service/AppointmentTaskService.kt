@@ -20,7 +20,10 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEnt
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ProjectTypeGroup
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AdjustmentCreatedEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AppointmentCreatedEvent
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AppointmentTaskCreatedEvent
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AppointmentTaskUpdatedEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AppointmentUpdatedEvent
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.SpringEventPublisher
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.AppointmentTaskMappers
 import java.time.LocalDate
 import java.time.OffsetDateTime
@@ -32,6 +35,7 @@ class AppointmentTaskService(
   private val contextService: ContextService,
   private val caseVisibilityService: CaseVisibilityService,
   private val appointmentTaskMappers: AppointmentTaskMappers,
+  private val springEventPublisher: SpringEventPublisher,
 ) {
 
   @EventListener
@@ -39,11 +43,13 @@ class AppointmentTaskService(
   fun createTravelTimeTaskOnAppointmentCreation(
     event: AppointmentCreatedEvent,
   ) {
-    createTravelTimeTaskIfRequired(
+    val task = createTravelTimeTaskIfRequired(
       appointment = event.appointmentEntity,
       outcome = event.createDto.contactOutcome,
       project = event.createDto.project,
     )
+
+    publishAppointmentTaskCreatedEventIfRequired(task)
   }
 
   @EventListener
@@ -51,11 +57,13 @@ class AppointmentTaskService(
   fun createTravelTimeTaskOnAppointmentUpdate(
     event: AppointmentUpdatedEvent,
   ) {
-    createTravelTimeTaskIfRequired(
+    val task = createTravelTimeTaskIfRequired(
       appointment = event.appointmentEntity,
       outcome = event.updateDto.contactOutcome,
       project = event.updateDto.project,
     )
+
+    publishAppointmentTaskCreatedEventIfRequired(task)
   }
 
   @EventListener
@@ -72,6 +80,7 @@ class AppointmentTaskService(
       task.decisionMadeByUsername = contextService.getUserName()
       task.decisionDescription = "Task completed on adjustment creation"
       appointmentTaskEntityRepository.save(task)
+      publishAppointmentTaskUpdatedEvent(task)
     }
   }
 
@@ -87,17 +96,19 @@ class AppointmentTaskService(
     task.decisionMadeByUsername = contextService.getUserName()
     task.decisionDescription = "Task completed directly"
     appointmentTaskEntityRepository.save(task)
+
+    publishAppointmentTaskUpdatedEvent(task)
   }
 
   private fun createTravelTimeTaskIfRequired(
     appointment: AppointmentEntity,
     outcome: ContactOutcomeEntity?,
     project: ProjectDto,
-  ) {
+  ): AppointmentTaskEntity? {
     val attended = outcome?.attended == true
     val projectSupportsTravelTime = project.projectType.group?.let { ProjectTypeGroup.fromDto(it).travelTimeSupported } == true
     if (attended && projectSupportsTravelTime) {
-      appointmentTaskEntityRepository.save(
+      return appointmentTaskEntityRepository.save(
         AppointmentTaskEntity(
           id = UUID.randomUUID(),
           appointment = appointment,
@@ -106,6 +117,36 @@ class AppointmentTaskService(
         ),
       )
     }
+
+    return null
+  }
+
+  private fun publishAppointmentTaskCreatedEventIfRequired(task: AppointmentTaskEntity?) {
+    if (task != null) {
+      springEventPublisher.publishEvent(
+        AppointmentTaskCreatedEvent(
+          crn = task.appointment.crn,
+          deliusAppointmentId = task.appointment.deliusId,
+          taskType = task.taskType,
+          triggeredAt = OffsetDateTime.now(),
+          triggeredBy = contextService.getUserName(),
+        ),
+      )
+    }
+  }
+
+  private fun publishAppointmentTaskUpdatedEvent(task: AppointmentTaskEntity) {
+    springEventPublisher.publishEvent(
+      AppointmentTaskUpdatedEvent(
+        crn = task.appointment.crn,
+        deliusAppointmentId = task.appointment.deliusId,
+        taskType = task.taskType,
+        taskStatus = task.taskStatus,
+        decision = task.decisionDescription,
+        triggeredAt = OffsetDateTime.now(),
+        triggeredBy = contextService.getUserName(),
+      ),
+    )
   }
 
   fun getPendingAppointmentTasks(
