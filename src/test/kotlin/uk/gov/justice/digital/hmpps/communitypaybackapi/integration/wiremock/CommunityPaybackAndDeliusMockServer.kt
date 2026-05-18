@@ -42,15 +42,16 @@ import java.net.URLEncoder
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
+import java.util.UUID
 import kotlin.Long
 
 object CommunityPaybackAndDeliusMockServer {
 
   val jsonMapper: JsonMapper = JsonMapper()
 
-  fun setupDeleteAdjustmentResponse(adjustmentId: Long) {
+  fun setupDeleteAdjustmentResponse(reference: UUID) {
     WireMock.stubFor(
-      delete("/community-payback-and-delius/adjustments/$adjustmentId")
+      delete("/community-payback-and-delius/adjustments/$reference")
         .willReturn(
           aResponse().withStatus(200),
         ),
@@ -506,8 +507,8 @@ object CommunityPaybackAndDeliusMockServer {
     WireMock.verify(count, postRequestedFor(urlEqualTo("/community-payback-and-delius/adjustments?username=$username")))
   }
 
-  fun verifyDeleteAdjustment(adjustmentId: Long, count: Int = 1) {
-    WireMock.verify(count, deleteRequestedFor(urlMatching("/community-payback-and-delius/adjustments/$adjustmentId")))
+  fun verifyDeleteAdjustment(reference: UUID, count: Int = 1) {
+    WireMock.verify(count, deleteRequestedFor(urlMatching("/community-payback-and-delius/adjustments/$reference")))
   }
 
   object Aggregates {

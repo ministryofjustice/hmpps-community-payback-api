@@ -71,7 +71,7 @@ class AdjustmentService(
   ) {
     val event = rollbackEvent.event
     if (event is AdjustmentCreatedEvent) {
-      communityPaybackAndDeliusClient.deleteAdjustment(event.deliusAdjustmentId)
+      communityPaybackAndDeliusClient.deleteAdjustment(event.id)
     }
   }
 }

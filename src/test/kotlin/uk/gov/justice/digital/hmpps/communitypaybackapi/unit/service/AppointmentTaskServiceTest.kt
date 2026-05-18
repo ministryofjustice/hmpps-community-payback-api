@@ -18,9 +18,7 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
-import org.springframework.data.domain.Sort
 import org.springframework.data.repository.findByIdOrNull
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentTaskSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeDto
@@ -39,7 +37,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.validPending
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.event.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentEventTrigger
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentRetrievalService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentTaskService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService.ValidatedAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.CaseVisibilityService
@@ -60,9 +57,6 @@ class AppointmentTaskServiceTest {
   private lateinit var appointmentTaskEntityRepository: AppointmentTaskEntityRepository
 
   @RelaxedMockK
-  private lateinit var appointmentRetrievalService: AppointmentRetrievalService
-
-  @RelaxedMockK
   private lateinit var contextService: ContextService
 
   @RelaxedMockK
@@ -80,10 +74,9 @@ class AppointmentTaskServiceTest {
 
   @BeforeEach
   fun setup() {
-    every { appointmentTaskMappers.toDto(any(), any(), any()) } answers {
+    every { appointmentTaskMappers.toDto(any(), any()) } answers {
       AppointmentTaskSummaryDto.valid().copy(
         taskId = (args[0] as AppointmentTaskEntity).id,
-        appointment = args[2] as AppointmentSummaryDto,
       )
     }
   }
@@ -320,8 +313,6 @@ class AppointmentTaskServiceTest {
         taskStatus = AppointmentTaskStatus.PENDING,
       )
 
-      val appointmentSummary = AppointmentSummaryDto.valid().copy(id = deliusAppointmentId)
-
       every {
         appointmentTaskEntityRepository.findPendingTasksWithFiltersAndAppointments(
           fromDate = null,
@@ -331,28 +322,13 @@ class AppointmentTaskServiceTest {
         )
       } returns PageImpl(listOf(taskEntity), pageable, 1L)
 
-      every {
-        appointmentRetrievalService.getAppointments(
-          crn = null,
-          fromDate = null,
-          toDate = null,
-          outcomeCodes = null,
-          projectCodes = null,
-          projectTypeGroup = null,
-          eventNumber = null,
-          deliusAppointmentIds = listOf(deliusAppointmentId),
-          pageable = PageRequest.of(0, 1, Sort.by(Sort.Direction.DESC, "name")),
-        )
-      } returns PageImpl(listOf(appointmentSummary), PageRequest.of(0, 1), 1L)
-
       val result = service.getPendingAppointmentTasks(pageable = pageable)
 
       assertThat(result.content).hasSize(1)
       assertThat(result.content[0].taskId).isEqualTo(taskId)
-      assertThat(result.content[0].appointment).isEqualTo(appointmentSummary)
       assertThat(result.totalElements).isEqualTo(1L)
 
-      verify { appointmentTaskMappers.toDto(taskEntity, false, appointmentSummary) }
+      verify { appointmentTaskMappers.toDto(taskEntity, false) }
     }
 
     @Test
@@ -381,8 +357,6 @@ class AppointmentTaskServiceTest {
         taskStatus = AppointmentTaskStatus.PENDING,
       )
 
-      val appointmentSummary = AppointmentSummaryDto.valid().copy(id = deliusAppointmentId)
-
       every {
         appointmentTaskEntityRepository.findPendingTasksWithFiltersAndAppointments(
           fromDate = fromDate,
@@ -391,20 +365,6 @@ class AppointmentTaskServiceTest {
           pageable = pageable,
         )
       } returns PageImpl(listOf(taskEntity), pageable, 1L)
-
-      every {
-        appointmentRetrievalService.getAppointments(
-          crn = null,
-          fromDate = null,
-          toDate = null,
-          outcomeCodes = null,
-          projectCodes = null,
-          projectTypeGroup = null,
-          eventNumber = null,
-          deliusAppointmentIds = listOf(deliusAppointmentId),
-          pageable = PageRequest.of(0, 1, Sort.by(Sort.Direction.DESC, "name")),
-        )
-      } returns PageImpl(listOf(appointmentSummary), PageRequest.of(0, 1), 1L)
 
       val result = service.getPendingAppointmentTasks(
         fromDate = fromDate,
@@ -415,10 +375,9 @@ class AppointmentTaskServiceTest {
 
       assertThat(result.content).hasSize(1)
       assertThat(result.content[0].taskId).isEqualTo(taskId)
-      assertThat(result.content[0].appointment).isEqualTo(appointmentSummary)
       assertThat(result.totalElements).isEqualTo(1L)
 
-      verify { appointmentTaskMappers.toDto(taskEntity, false, appointmentSummary) }
+      verify { appointmentTaskMappers.toDto(taskEntity, false) }
     }
 
     @Test
@@ -482,9 +441,6 @@ class AppointmentTaskServiceTest {
         taskStatus = AppointmentTaskStatus.PENDING,
       )
 
-      val appointmentSummary1 = AppointmentSummaryDto.valid().copy(id = deliusAppointment1Id)
-      val appointmentSummary2 = AppointmentSummaryDto.valid().copy(id = deliusAppointment2Id)
-
       every {
         appointmentTaskEntityRepository.findPendingTasksWithFiltersAndAppointments(
           fromDate = null,
@@ -501,31 +457,15 @@ class AppointmentTaskServiceTest {
         2L,
       )
 
-      every {
-        appointmentRetrievalService.getAppointments(
-          crn = null,
-          fromDate = null,
-          toDate = null,
-          outcomeCodes = null,
-          projectCodes = null,
-          projectTypeGroup = null,
-          eventNumber = null,
-          deliusAppointmentIds = any(),
-          pageable = PageRequest.of(0, 2, Sort.by(Sort.Direction.DESC, "name")),
-        )
-      } returns PageImpl(listOf(appointmentSummary1, appointmentSummary2), PageRequest.of(0, 2), 2L)
-
       val result = service.getPendingAppointmentTasks(pageable = pageable)
 
       assertThat(result.content).hasSize(2)
       assertThat(result.content[0].taskId).isEqualTo(task1Id)
-      assertThat(result.content[0].appointment).isEqualTo(appointmentSummary1)
       assertThat(result.content[1].taskId).isEqualTo(task2Id)
-      assertThat(result.content[1].appointment).isEqualTo(appointmentSummary2)
       assertThat(result.totalElements).isEqualTo(2L)
 
-      verify { appointmentTaskMappers.toDto(taskEntity1, false, appointmentSummary1) }
-      verify { appointmentTaskMappers.toDto(taskEntity2, false, appointmentSummary2) }
+      verify { appointmentTaskMappers.toDto(taskEntity1, false) }
+      verify { appointmentTaskMappers.toDto(taskEntity2, false) }
     }
 
     @Test
@@ -552,8 +492,6 @@ class AppointmentTaskServiceTest {
         taskStatus = AppointmentTaskStatus.PENDING,
       )
 
-      val appointmentSummary = AppointmentSummaryDto.valid().copy(id = deliusAppointmentId)
-
       every {
         appointmentTaskEntityRepository.findPendingTasksWithFiltersAndAppointments(
           fromDate = fromDate,
@@ -563,26 +501,12 @@ class AppointmentTaskServiceTest {
         )
       } returns PageImpl(listOf(taskEntity), pageable, 1L)
 
-      every {
-        appointmentRetrievalService.getAppointments(
-          crn = null,
-          fromDate = null,
-          toDate = null,
-          outcomeCodes = null,
-          projectCodes = null,
-          projectTypeGroup = null,
-          eventNumber = null,
-          deliusAppointmentIds = listOf(deliusAppointmentId),
-          pageable = PageRequest.of(0, 1, Sort.by(Sort.Direction.DESC, "name")),
-        )
-      } returns PageImpl(listOf(appointmentSummary), PageRequest.of(0, 1), 1L)
-
       val result = service.getPendingAppointmentTasks(fromDate = fromDate, pageable = pageable)
 
       assertThat(result.content).hasSize(1)
       assertThat(result.content[0].taskId).isEqualTo(taskId)
 
-      verify { appointmentTaskMappers.toDto(taskEntity, false, appointmentSummary) }
+      verify { appointmentTaskMappers.toDto(taskEntity, false) }
     }
 
     @Test
@@ -607,8 +531,6 @@ class AppointmentTaskServiceTest {
         taskStatus = AppointmentTaskStatus.PENDING,
       )
 
-      val appointmentSummary = AppointmentSummaryDto.valid().copy(id = deliusAppointmentId)
-
       every {
         appointmentTaskEntityRepository.findPendingTasksWithFiltersAndAppointments(
           fromDate = null,
@@ -617,20 +539,6 @@ class AppointmentTaskServiceTest {
           pageable = pageable,
         )
       } returns PageImpl(listOf(taskEntity), pageable, 1L)
-
-      every {
-        appointmentRetrievalService.getAppointments(
-          crn = null,
-          fromDate = null,
-          toDate = null,
-          outcomeCodes = null,
-          projectCodes = null,
-          projectTypeGroup = null,
-          eventNumber = null,
-          deliusAppointmentIds = listOf(deliusAppointmentId),
-          pageable = PageRequest.of(0, 1, Sort.by(Sort.Direction.DESC, "name")),
-        )
-      } returns PageImpl(listOf(appointmentSummary), PageRequest.of(0, 1), 1L)
 
       every { caseVisibilityService.isLimitedForCurrentUser(any()) } answers {
         @Suppress("unchecked_cast")
@@ -643,10 +551,9 @@ class AppointmentTaskServiceTest {
 
       assertThat(result.content).hasSize(1)
       assertThat(result.content[0].taskId).isEqualTo(taskId)
-      assertThat(result.content[0].appointment).isEqualTo(appointmentSummary)
       assertThat(result.totalElements).isEqualTo(1L)
 
-      verify { appointmentTaskMappers.toDto(taskEntity, true, appointmentSummary) }
+      verify { appointmentTaskMappers.toDto(taskEntity, true) }
     }
   }
 }
