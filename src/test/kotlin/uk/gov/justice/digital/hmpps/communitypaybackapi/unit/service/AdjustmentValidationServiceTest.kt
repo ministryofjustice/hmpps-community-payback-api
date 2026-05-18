@@ -51,7 +51,7 @@ class AdjustmentValidationServiceTest {
   @Nested
   inner class CreateAdjustment {
 
-    private val reason = AdjustmentReasonEntity.valid().copy(id = REASON_ID, maxMinutesAllowed = 50)
+    private val reason = AdjustmentReasonEntity.valid().copy(id = REASON_ID, maxMinutesAllowed = 180)
     val baselineRequest = CreateAdjustmentDto.valid().copy(
       adjustmentReasonId = reason.id,
       minutes = 50,
@@ -62,7 +62,7 @@ class AdjustmentValidationServiceTest {
     fun setupBaselineMocks() {
       every {
         adjustmentReasonEntityRepository.findByIdOrNull(REASON_ID)
-      } returns AdjustmentReasonEntity.valid().copy(maxMinutesAllowed = 50)
+      } returns AdjustmentReasonEntity.valid().copy(maxMinutesAllowed = 180)
 
       every { appointmentTaskEntityRepository.findByIdOrNull(TASK_ID) } returns AppointmentTaskEntity.valid()
     }
@@ -117,8 +117,8 @@ class AdjustmentValidationServiceTest {
     @Test
     fun `If minutes more than remaining time required return bad request exception`() {
       val details = UnpaidWorkDetailsDto.valid().copy(
-        requiredMinutes = 100,
-        completedMinutes = 110,
+        requiredMinutes = 240,
+        completedMinutes = 120,
         adjustments = 0,
       )
       every { offenderService.ensureUnpaidWorkDetailsExist(any(), any()) } returns details
@@ -126,13 +126,13 @@ class AdjustmentValidationServiceTest {
       assertThatThrownBy {
         service.validateCreate(
           createAdjustment = baselineRequest.copy(
-            minutes = 50,
+            minutes = 180,
           ),
           upwDetailsId = UNPAID_WORK_DETAILS,
           username = USERNAME,
         )
       }.isInstanceOf(BadRequestException::class.java)
-        .hasMessage("Credited minutes of '0 hours 50 minutes' exceeds the remaining time required of '0 hours 40 minutes'")
+        .hasMessage("Credited minutes of '3 hours 0 minutes' exceeds the remaining time required of '2 hours 0 minutes'")
     }
 
     @Test

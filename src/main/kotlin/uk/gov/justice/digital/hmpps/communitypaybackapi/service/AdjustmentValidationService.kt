@@ -59,7 +59,7 @@ class AdjustmentValidationService(
 
   private fun validateMinutesToCredit(createAdjustment: CreateAdjustmentDto, unpaidWorkDetails: UnpaidWorkDetailsDto) {
     val adjustmentMinutes = Duration.ofMinutes(createAdjustment.minutes.toLong())
-    val requiredTime = Duration.ofMinutes(unpaidWorkDetails.requiredMinutes + unpaidWorkDetails.adjustments + createAdjustment.minutes.toLong())
+    val requiredTime = Duration.ofMinutes(unpaidWorkDetails.requiredMinutes + unpaidWorkDetails.adjustments)
     val completedTime = Duration.ofMinutes(unpaidWorkDetails.completedMinutes)
     val remainingMinutesAllowance = requiredTime - completedTime
     if (adjustmentMinutes > remainingMinutesAllowance) {
