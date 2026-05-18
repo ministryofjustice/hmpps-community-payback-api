@@ -33,6 +33,8 @@ class NDeliusRollbackService(
 
   @EventListener
   fun captureEvent(event: CommunityPaybackSpringEvent) {
+    if (event is CommunityPaybackSpringEvent.DoesNotSupportRollbackEvent) return
+
     getRequestScopedEvents().add(event)
   }
 

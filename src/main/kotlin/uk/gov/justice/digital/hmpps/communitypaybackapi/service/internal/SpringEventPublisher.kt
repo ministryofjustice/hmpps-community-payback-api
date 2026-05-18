@@ -27,6 +27,7 @@ class SpringEventPublisher(
 }
 
 sealed interface CommunityPaybackSpringEvent {
+  sealed interface DoesNotSupportRollbackEvent : CommunityPaybackSpringEvent
 
   data class AppointmentCreatedEvent(
     val createDto: AppointmentValidationService.ValidatedAppointment<CreateAppointmentDto>,
