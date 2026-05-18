@@ -146,7 +146,12 @@ class AdminAdjustmentIT : IntegrationTestBase() {
         crn = CRN,
         case = NDCaseSummary.valid(),
         unpaidWorkDetails = listOf(
-          NDUpwDetails.valid().copy(eventNumber = DELIUS_EVENT_NUMBER),
+          NDUpwDetails.valid().copy(
+            eventNumber = DELIUS_EVENT_NUMBER,
+            requiredMinutes = 1000,
+            completedMinutes = 0,
+            adjustments = 0,
+          ),
         ),
         username = "theusername",
       )

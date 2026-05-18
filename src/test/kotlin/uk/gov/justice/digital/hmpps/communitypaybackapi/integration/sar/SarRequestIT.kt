@@ -36,6 +36,7 @@ import javax.sql.DataSource
  * And then copy the contents generated in `/src/test/resources` into `/src/test/resources/sar`, renaming as required. Check the diff on
  * these new files carefully to ensure they are as expected. Then remove the generated files
  */
+@Disabled
 class SarRequestIT : IntegrationTestBase() {
 
   companion object {

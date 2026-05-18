@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.data.repository.findByIdOrNull
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAdjustmentDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsIdDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.BadRequestException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentReasonEntity
@@ -114,7 +115,34 @@ class AdjustmentValidationServiceTest {
     }
 
     @Test
+    fun `If minutes more than remaining time required return bad request exception`() {
+      val details = UnpaidWorkDetailsDto.valid().copy(
+        requiredMinutes = 100,
+        completedMinutes = 110,
+        adjustments = 0,
+      )
+      every { offenderService.ensureUnpaidWorkDetailsExist(any(), any()) } returns details
+
+      assertThatThrownBy {
+        service.validateCreate(
+          createAdjustment = baselineRequest.copy(
+            minutes = 50,
+          ),
+          upwDetailsId = UNPAID_WORK_DETAILS,
+          username = USERNAME,
+        )
+      }.isInstanceOf(BadRequestException::class.java)
+        .hasMessage("Credited minutes of '0 hours 50 minutes' exceeds the remaining time required of '0 hours 40 minutes'")
+    }
+
+    @Test
     fun success() {
+      every { offenderService.ensureUnpaidWorkDetailsExist(any(), any()) } returns UnpaidWorkDetailsDto.valid().copy(
+        requiredMinutes = 100,
+        completedMinutes = 0,
+        adjustments = 0,
+      )
+
       service.validateCreate(
         createAdjustment = baselineRequest,
         upwDetailsId = UNPAID_WORK_DETAILS,

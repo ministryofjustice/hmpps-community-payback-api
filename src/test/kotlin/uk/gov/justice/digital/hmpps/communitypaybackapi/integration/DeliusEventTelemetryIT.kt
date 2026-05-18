@@ -23,6 +23,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProvider
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSupervisorSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSupervisorSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDTeam
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDUpwDetails
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AttendanceDataDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionCreditTimeDetailsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionResolutionDto
@@ -222,7 +223,14 @@ class DeliusEventTelemetryIT : IntegrationTestBase() {
       crn = CRN,
       username = "theusername",
       case = NDCaseSummary.valid(),
-      unpaidWorkDetails = emptyList(),
+      unpaidWorkDetails = listOf(
+        NDUpwDetails.valid().copy(
+          eventNumber = EVENT_NUMBER,
+          requiredMinutes = 1000,
+          completedMinutes = 0,
+          adjustments = 0,
+        ),
+      ),
     )
     CommunityPaybackAndDeliusMockServer.setupPostAdjustmentResponse(username = "theusername")
 

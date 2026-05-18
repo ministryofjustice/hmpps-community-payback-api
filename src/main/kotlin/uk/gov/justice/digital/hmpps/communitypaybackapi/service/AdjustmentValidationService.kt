@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.badRequest
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.formatForUser
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAdjustmentDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsIdDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentReasonEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentReasonEntityRepository
@@ -30,7 +31,8 @@ class AdjustmentValidationService(
 
     val task = appointmentTaskEntityRepository.findByIdOrNull(createAdjustment.taskId) ?: badRequest("Task not found for ID '${createAdjustment.taskId}'")
 
-    offenderService.ensureUnpaidWorkDetailsExist(upwDetailsId, username)
+    val unpaidWorkDetails = offenderService.ensureUnpaidWorkDetailsExist(upwDetailsId, username)
+      ?: badRequest("Unpaid Work Details not found for CRN ${upwDetailsId.crn} and event number ${upwDetailsId.deliusEventNumber}")
     val requestedMinutes = createAdjustment.minutes
 
     val maxMinutesAllowed = reason.maxMinutesAllowed
@@ -39,6 +41,8 @@ class AdjustmentValidationService(
       val maxMinutesDuration = Duration.ofMinutes(maxMinutesAllowed.toLong())
       badRequest("Requested adjustment of '${requestedDuration.formatForUser()}' exceeds the maximum allowed time '${maxMinutesDuration.formatForUser()}' for adjustment reason '${reason.name}'")
     }
+
+    validateMinutesToCredit(createAdjustment, unpaidWorkDetails)
 
     return ValidatedCreateAdjustment(
       createAdjustment,
@@ -52,4 +56,14 @@ class AdjustmentValidationService(
     val reason: AdjustmentReasonEntity,
     val task: AppointmentTaskEntity,
   )
+
+  private fun validateMinutesToCredit(createAdjustment: CreateAdjustmentDto, unpaidWorkDetails: UnpaidWorkDetailsDto) {
+    val adjustmentMinutes = Duration.ofMinutes(createAdjustment.minutes.toLong())
+    val requiredTime = Duration.ofMinutes(unpaidWorkDetails.requiredMinutes + unpaidWorkDetails.adjustments + createAdjustment.minutes.toLong())
+    val completedTime = Duration.ofMinutes(unpaidWorkDetails.completedMinutes)
+    val remainingMinutesAllowance = requiredTime - completedTime
+    if (adjustmentMinutes > remainingMinutesAllowance) {
+      badRequest("Credited minutes of '${adjustmentMinutes.formatForUser()}' exceeds the remaining time required of '${remainingMinutesAllowance.formatForUser()}'")
+    }
+  }
 }

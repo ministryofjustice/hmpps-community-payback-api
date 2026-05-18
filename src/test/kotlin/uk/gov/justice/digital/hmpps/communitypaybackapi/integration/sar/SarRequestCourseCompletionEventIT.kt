@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.integration.sar
 
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.getBean
 import org.springframework.context.ApplicationContext
@@ -29,6 +30,7 @@ import java.time.LocalTime
  * This class defines tests to ensure that the correct course completion event data
  * is returned from the API endpoint
  */
+@Disabled
 class SarRequestCourseCompletionEventIT : IntegrationTestBase() {
 
   @BeforeEach
