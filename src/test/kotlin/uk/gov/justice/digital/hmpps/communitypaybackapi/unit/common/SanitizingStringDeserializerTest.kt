@@ -19,6 +19,18 @@ class SanitizingStringDeserializerTest {
     assertThat(result.notes).isEqualTo("a note with some script")
   }
 
+  @Test
+  fun `does not HTML encode the resulting string`() {
+    val result = jacksonObjectMapper().readValue(
+      """
+        {"notes": "don't encode the single quote or these <>@&"}
+      """.trimIndent(),
+      MyRequestDto::class.java,
+    )
+
+    assertThat(result.notes).isEqualTo("don't encode the single quote or these <>@&")
+  }
+
   data class MyRequestDto(
     @field:JsonDeserialize(using = SanitizingStringDeserializer::class)
     val notes: String,

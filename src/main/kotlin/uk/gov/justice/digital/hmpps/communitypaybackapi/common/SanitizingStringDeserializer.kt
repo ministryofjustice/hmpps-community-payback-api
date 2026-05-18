@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.common
 
+import org.owasp.html.Encoding
 import org.owasp.html.PolicyFactory
 import org.owasp.html.Sanitizers
 import tools.jackson.core.JsonParser
@@ -17,5 +18,5 @@ class SanitizingStringDeserializer : StdScalarDeserializer<String>(String::class
   override fun deserialize(
     p: JsonParser,
     ctxt: DeserializationContext,
-  ): String? = POLICY.sanitize(p.valueAsString)
+  ): String? = Encoding.decodeHtml(POLICY.sanitize(p.valueAsString), false)
 }
