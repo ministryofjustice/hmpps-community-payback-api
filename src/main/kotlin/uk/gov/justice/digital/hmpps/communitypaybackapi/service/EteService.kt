@@ -21,6 +21,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompleti
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventResolutionRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventStatus
 import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseCompletionMessage
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.CourseCompletionProcessedEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.CourseCompletionReceivedEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.SpringEventPublisher
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.EteMappers
@@ -36,6 +37,7 @@ class EteService(
   private val appointmentService: AppointmentService,
   private val eteValidationService: EteValidationService,
   private val projectService: ProjectService,
+  private val contextService: ContextService,
   private val springEventPublisher: SpringEventPublisher,
   @Value("\${course.completions.available.from:2026-01-01T00:00:00Z}") private val courseCompletionsAvailableFrom: OffsetDateTime,
 ) {
@@ -138,6 +140,16 @@ class EteService(
       CourseCompletionResolutionTypeDto.CREDIT_TIME -> creditTime(courseCompletionResolution, courseCompletionEvent)
       CourseCompletionResolutionTypeDto.DONT_CREDIT_TIME -> dontCreditTime(courseCompletionResolution, courseCompletionEvent)
     }
+
+    springEventPublisher.publishEvent(
+      CourseCompletionProcessedEvent(
+        crn = courseCompletionResolution.crn,
+        externalReference = courseCompletionEvent.externalReference,
+        resolutionType = courseCompletionResolution.type,
+        triggeredAt = OffsetDateTime.now(),
+        triggeredBy = contextService.getUserName(),
+      ),
+    )
   }
 
   private fun creditTime(

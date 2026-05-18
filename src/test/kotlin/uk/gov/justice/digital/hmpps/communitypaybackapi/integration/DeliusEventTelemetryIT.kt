@@ -20,7 +20,12 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectAndLocation
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProvider
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSupervisorSummaries
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSupervisorSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDTeam
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionCreditTimeDetailsDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionResolutionDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionResolutionTypeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAdjustmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentDto
@@ -28,8 +33,10 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentTaskEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ProjectTypeEntity.Companion.GROUP_PLACEMENT_NATIONAL_PROJECT_CODE
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.unallocated
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.validNoOutcome
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.valid
@@ -267,5 +274,57 @@ class DeliusEventTelemetryIT : IntegrationTestBase() {
       assertThat(properties["triggeredBy"]).isEqualTo(attributes.externalReference)
       assertThat(properties["eventType"]).isEqualTo("RECEIVED")
     }
+  }
+
+  @Test
+  fun `should track telemetry when a course completion is processed`() {
+    val project = NDProject.valid(ctx).copy(code = PROJECT_CODE, actualEndDateExclusive = null)
+    CommunityPaybackAndDeliusMockServer.setupGetProjectResponse(project)
+    CommunityPaybackAndDeliusMockServer.setupGetTeamSupervisorsResponse(
+      forProject = project,
+      supervisorSummaries = NDSupervisorSummaries(listOf(NDSupervisorSummary.unallocated())),
+    )
+
+    val eventEntity = eteCourseCompletionEventEntityRepository.save(
+      EteCourseCompletionEventEntity.valid(ctx).copy(),
+    )
+
+    val resolution = CourseCompletionResolutionDto.valid(ctx).copy(
+      type = CourseCompletionResolutionTypeDto.CREDIT_TIME,
+      crn = CRN,
+      creditTimeDetails = CourseCompletionCreditTimeDetailsDto.valid(ctx).copy(
+        date = LocalDate.of(2021, 1, 30),
+        deliusEventNumber = EVENT_NUMBER,
+        appointmentIdToUpdate = null,
+        projectCode = PROJECT_CODE,
+        minutesToCredit = 90,
+        notes = "Some notes",
+      ),
+    )
+
+    CommunityPaybackAndDeliusMockServer.Aggregates.setupGetDataMocksForCreateAppointment(
+      crn = CRN,
+      eventNumber = EVENT_NUMBER,
+      project = NDProject.valid(ctx).copy(code = PROJECT_CODE, actualEndDateExclusive = null),
+    )
+    CommunityPaybackAndDeliusMockServer.setupPostAppointmentsResponse(projectCode = PROJECT_CODE, appointmentCount = 1)
+
+    webTestClient.post()
+      .uri("/admin/course-completions/${eventEntity.id}/resolution")
+      .addAdminUiAuthHeader("theusername")
+      .contentType(MediaType.APPLICATION_JSON)
+      .bodyValue(resolution)
+      .exchange()
+      .expectStatus()
+      .isNoContent
+
+    val events = mockTelemetryService.getEventsWithName("CourseCompletionEvent")
+    assertThat(events).hasSize(1)
+    val properties = events[0].properties
+    assertThat(properties["crn"]).isEqualTo(CRN)
+    assertThat(properties["resolutionType"]).isEqualTo(resolution.type.name)
+    assertThat(properties["triggeredAt"]).isNotNull
+    assertThat(properties["triggeredBy"]).isEqualTo("theusername")
+    assertThat(properties["eventType"]).isEqualTo("PROCESSED")
   }
 }

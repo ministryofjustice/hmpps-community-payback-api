@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AdjustmentCreatedEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AppointmentCreatedEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AppointmentUpdatedEvent
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.CourseCompletionProcessedEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.CourseCompletionReceivedEvent
 
 @Service
@@ -75,6 +76,20 @@ class DeliusEventTelemetryPublisher(
         "triggeredAt" to event.triggeredAt.toString(),
         "triggeredBy" to event.triggeredBy,
         "eventType" to "RECEIVED",
+      ),
+    )
+  }
+
+  @EventListener
+  fun onCourseCompletionProcessed(event: CourseCompletionProcessedEvent) {
+    telemetryService.trackEvent(
+      "CourseCompletionEvent",
+      properties = mapOf(
+        "crn" to event.crn,
+        "resolutionType" to event.resolutionType.name,
+        "triggeredAt" to event.triggeredAt.toString(),
+        "triggeredBy" to event.triggeredBy,
+        "eventType" to "PROCESSED",
       ),
     )
   }

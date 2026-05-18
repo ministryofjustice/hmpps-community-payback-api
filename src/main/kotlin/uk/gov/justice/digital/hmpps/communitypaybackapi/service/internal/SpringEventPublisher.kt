@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionResolutionTypeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAdjustmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
@@ -68,6 +69,16 @@ sealed interface CommunityPaybackSpringEvent {
     val triggeredBy: String,
   ) : CommunityPaybackSpringEvent,
     DoesNotSupportRollbackEvent {
+    companion object
+  }
+
+  data class CourseCompletionProcessedEvent(
+    val crn: String?,
+    val externalReference: String,
+    val resolutionType: CourseCompletionResolutionTypeDto,
+    val triggeredAt: OffsetDateTime,
+    val triggeredBy: String,
+  ) : CommunityPaybackSpringEvent {
     companion object
   }
 
