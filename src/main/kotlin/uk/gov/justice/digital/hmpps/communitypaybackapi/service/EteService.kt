@@ -40,6 +40,7 @@ class EteService(
   private val contextService: ContextService,
   private val springEventPublisher: SpringEventPublisher,
   @Value("\${course.completions.available.from:2026-01-01T00:00:00Z}") private val courseCompletionsAvailableFrom: OffsetDateTime,
+  @Value("\${course.completions.available.to:#{null}}") private val courseCompletionsAvailableTo: OffsetDateTime?,
 ) {
   companion object {
     const val ETE_ALLOWANCE_OF_TOTAL_REQUIREMENT = 0.3
@@ -94,6 +95,7 @@ class EteService(
       fromDate,
       toDate,
       courseCompletionsAvailableFrom,
+      courseCompletionsAvailableTo,
       pageable,
     )
 
