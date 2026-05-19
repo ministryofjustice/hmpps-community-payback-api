@@ -2,6 +2,7 @@
 
 # Set environment
 env=dev
+USERNAME=${1:-"theusername"}
 
 echo "Getting client credentials from Kubernetes..."
 CREDENTIALS=$(kubectl -n hmpps-community-payback-$env get secrets hmpps-community-payback-ui-client-creds -o json | jq ".data | map_values(@base64d)")
@@ -17,10 +18,12 @@ if [ -z "$CLIENT_ID" ] || [ -z "$CLIENT_SECRET" ]; then
     exit 1
 fi
 
-echo "Getting access token..."
-TOKEN=$(curl -s -X "POST" "https://sign-in-dev.hmpps.service.justice.gov.uk/auth/oauth/token?grant_type=client_credentials" \
-   -H 'Content-Type: application/json' \
-   -u "$CLIENT_ID:$CLIENT_SECRET" | jq -r '.access_token')
+echo "Getting access token for user: $USERNAME..."
+TOKEN=$(curl -s -X "POST" "https://sign-in-dev.hmpps.service.justice.gov.uk/auth/oauth/token" \
+   -H 'Content-Type: application/x-www-form-urlencoded' \
+   -u "$CLIENT_ID:$CLIENT_SECRET" \
+   -d "grant_type=client_credentials" \
+   -d "username=$USERNAME" | jq -r '.access_token')
 
 if [ -z "$TOKEN" ] || [ "$TOKEN" = "null" ]; then
     echo "Error: Failed to get access token"
