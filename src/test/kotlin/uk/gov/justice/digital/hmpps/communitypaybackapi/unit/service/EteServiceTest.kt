@@ -77,6 +77,7 @@ class EteServiceTest {
       contextService,
       springEventPublisher,
       OffsetDateTime.parse("2026-01-01T00:00:00Z"),
+      null,
     )
   }
 
@@ -125,6 +126,7 @@ class EteServiceTest {
           fromDate = fromDate,
           toDate = toDate,
           availableFromDate = any(),
+          availableToDate = any(),
           pageable = pageable,
         )
       } returns PageImpl(
@@ -165,6 +167,7 @@ class EteServiceTest {
           fromDate = fromDate,
           toDate = toDate,
           availableFromDate = OffsetDateTime.of(2026, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC),
+          availableToDate = null,
           pageable = pageable,
         )
       }
