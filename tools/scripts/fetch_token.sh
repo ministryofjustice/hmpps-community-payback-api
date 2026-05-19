@@ -18,7 +18,7 @@ if [ -z "$CLIENT_ID" ] || [ -z "$CLIENT_SECRET" ]; then
 fi
 
 echo "Getting access token..."
-TOKEN=$(curl -s -X "POST" "https://sign-in-dev.hmpps.service.justice.gov.uk/auth/oauth/token?grant_type=client_credentials" \
+TOKEN=$(curl -s -X "POST" "https://sign-in-dev.hmpps.service.justice.gov.uk/auth/oauth/token?grant_type=client_credentials " \
    -H 'Content-Type: application/json' \
    -u "$CLIENT_ID:$CLIENT_SECRET" | jq -r '.access_token')
 
