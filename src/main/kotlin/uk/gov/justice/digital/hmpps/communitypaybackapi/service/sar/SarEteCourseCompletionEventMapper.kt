@@ -1,11 +1,8 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.service.sar
 
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntity
 
-fun EteCourseCompletionEventEntity.toSarEntry(
-  appointmentEvent: AppointmentEventEntity?,
-) = mapOf(
+fun EteCourseCompletionEventEntity.toSarEntry() = mapOf(
   "receivedAt" to receivedAt,
   "firstName" to firstName,
   "lastName" to lastName,
@@ -31,7 +28,6 @@ fun EteCourseCompletionEventEntity.toSarEntry(
       "appointmentUpdated" to (deliusAppointmentCreated == false),
       "minutesCredited" to minutesCredited,
       "notes" to notes,
-      "appointment" to appointmentEvent?.toSarEntry(),
     )
   },
 )
