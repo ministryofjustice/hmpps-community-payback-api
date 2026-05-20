@@ -115,7 +115,6 @@ class SarRequestIT : IntegrationTestBase() {
     override fun getDataSourceInstance() = dataSource
   }
 
-
   @Nested
   inner class JpaEntitiesTest : SarJpaEntitiesTest {
     override fun getSarHelper() = sarIntegrationTestHelper
