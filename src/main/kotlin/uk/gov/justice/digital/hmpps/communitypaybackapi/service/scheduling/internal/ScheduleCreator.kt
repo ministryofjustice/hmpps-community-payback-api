@@ -24,7 +24,7 @@ object ScheduleCreator {
     schedulingRequest: SchedulingRequest,
     remainingMinutesToBeScheduled: Duration,
   ): Schedule {
-    val today = schedulingRequest.today
+    val today = schedulingRequest.now.toLocalDate()
     val cutOffDate = today.plusDays(CUT_OFF_LIMIT_DAYS)
     val nonWorkingDates = schedulingRequest.nonWorkingDates
 

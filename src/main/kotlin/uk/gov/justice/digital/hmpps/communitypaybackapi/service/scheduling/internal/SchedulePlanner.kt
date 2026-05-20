@@ -8,7 +8,7 @@ object SchedulePlanner {
     schedulingRequest: SchedulingRequest,
     schedule: Schedule,
   ): SchedulePlan {
-    val today = schedulingRequest.today
+    val today = schedulingRequest.now.toLocalDate()
     val existingAppointments = schedulingRequest.existingAppointments.appointments
 
     val toCreate = schedule.requiredAppointmentsAsOfToday

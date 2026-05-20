@@ -32,7 +32,7 @@ class Scheduler {
     request: SchedulingRequest,
   ): SchedulerOutcome {
     val remainingMinutesAsOfToday = RequirementRemainingMinutesCalculator.calculateRemainingMinutesAsOfToday(
-      request.today,
+      request.now.toLocalDate(),
       request.requirement,
       request.existingAppointments,
     )

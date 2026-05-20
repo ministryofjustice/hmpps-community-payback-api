@@ -26,6 +26,7 @@ import java.time.DayOfWeek
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
+import java.time.OffsetDateTime
 import java.time.temporal.TemporalAdjusters
 
 @DslMarker
@@ -33,7 +34,7 @@ annotation class SchedulingScenarioDslMarker
 
 @SchedulingScenarioDslMarker
 class SchedulingScenarioBuilder {
-  private var today: LocalDate = LocalDate.now()
+  private var now: OffsetDateTime = OffsetDateTime.now()
   private var requirementLength: Duration? = null
   private val allocations = mutableListOf<SchedulingAllocation>()
   private val existingAppointments = mutableListOf<SchedulingExistingAppointment>()
@@ -52,7 +53,7 @@ class SchedulingScenarioBuilder {
 
   fun then(init: ThenContext.() -> Unit) {
     val request = SchedulingRequest.valid().copy(
-      today = today,
+      now = now,
       trigger = SchedulingTrigger(
         type = triggerType ?: error("Trigger type must be defined"),
         description = "Unit Test: $scenarioId",
@@ -70,7 +71,7 @@ class SchedulingScenarioBuilder {
   @SchedulingScenarioDslMarker
   inner class GivenContext {
     fun todayIs(dayOfWeek: DayOfWeek) {
-      this@SchedulingScenarioBuilder.today = LocalDate.now().with(TemporalAdjusters.nextOrSame(dayOfWeek))
+      this@SchedulingScenarioBuilder.now = OffsetDateTime.now().with(TemporalAdjusters.nextOrSame(dayOfWeek))
     }
 
     fun projectExistsWithCode(code: String, init: ProjectBuilder.() -> Unit = {}) {
@@ -83,7 +84,7 @@ class SchedulingScenarioBuilder {
       val builder = AllocationBuilder()
       builder.apply(init)
       this@SchedulingScenarioBuilder.allocations.add(
-        builder.build(this@SchedulingScenarioBuilder.today, this@SchedulingScenarioBuilder.projects),
+        builder.build(this@SchedulingScenarioBuilder.now, this@SchedulingScenarioBuilder.projects),
       )
     }
 
@@ -92,7 +93,7 @@ class SchedulingScenarioBuilder {
       builder.apply(init)
       this@SchedulingScenarioBuilder.existingAppointments.add(
         builder.build(
-          this@SchedulingScenarioBuilder.today,
+          this@SchedulingScenarioBuilder.now,
           this@SchedulingScenarioBuilder.allocations,
         ),
       )
@@ -100,7 +101,7 @@ class SchedulingScenarioBuilder {
 
     fun nonWorkingDate(offsetDays: Int) {
       this@SchedulingScenarioBuilder.nonWorkingDates.add(
-        this@SchedulingScenarioBuilder.today.plusDays(offsetDays.toLong()),
+        this@SchedulingScenarioBuilder.now.toLocalDate().plusDays(offsetDays.toLong()),
       )
     }
 
@@ -141,7 +142,7 @@ class SchedulingScenarioBuilder {
 
       val insufficient = result as SchedulerOutcome.ExistingAppointmentsInsufficient
       val expectedActions = ExpectedActionsBuilder(
-        this@SchedulingScenarioBuilder.today,
+        this@SchedulingScenarioBuilder.now,
         this@SchedulingScenarioBuilder.projects,
         request.allocations.allocations,
       )
@@ -215,7 +216,7 @@ class AllocationBuilder {
     endDate = days
   }
 
-  fun build(today: LocalDate, projects: Map<String, SchedulingProject>): SchedulingAllocation {
+  fun build(now: OffsetDateTime, projects: Map<String, SchedulingProject>): SchedulingAllocation {
     val project = projects[projectCode] ?: error("Project $projectCode not found")
     return SchedulingAllocation.valid().copy(
       id = alias.hashCode().toLong(),
@@ -223,8 +224,8 @@ class AllocationBuilder {
       project = project,
       frequency = frequency,
       dayOfWeek = dayOfWeek,
-      startDateInclusive = startDate?.let { today.plusDays(it.toLong()) } ?: today,
-      endDateInclusive = endDate?.let { today.plusDays(it.toLong()) },
+      startDateInclusive = startDate?.let { now.toLocalDate().plusDays(it.toLong()) } ?: now.toLocalDate(),
+      endDateInclusive = endDate?.let { now.toLocalDate().plusDays(it.toLong()) },
       startTime = startTime ?: error("Start time must be specified for allocation $alias"),
       endTime = endTime ?: error("End time must be specified for allocation $alias"),
     )
@@ -274,7 +275,7 @@ class AppointmentBuilder {
     creditedTime = null
   }
 
-  fun build(today: LocalDate, allocations: List<SchedulingAllocation>): SchedulingExistingAppointment {
+  fun build(now: OffsetDateTime, allocations: List<SchedulingAllocation>): SchedulingExistingAppointment {
     val allocation = allocationAlias?.let { id ->
       allocations.find { it.id == id.hashCode().toLong() }
     }
@@ -282,7 +283,7 @@ class AppointmentBuilder {
     return SchedulingExistingAppointment(
       id = Long.random(),
       projectCode = projectCode ?: error("Project code must be specified for appointment"),
-      date = today.plusDays(date.toLong()),
+      date = now.toLocalDate().plusDays(date.toLong()),
       startTime = startTime ?: error("Start time must be specified for appointment"),
       endTime = endTime ?: error("End time must be specified for appointment"),
       hasOutcome = hasOutcome,
@@ -293,7 +294,7 @@ class AppointmentBuilder {
 }
 
 class ExpectedActionsBuilder(
-  private val today: LocalDate,
+  private val now: OffsetDateTime,
   private val projects: Map<String, SchedulingProject>,
   private val allocations: List<SchedulingAllocation>,
 ) {
@@ -302,7 +303,7 @@ class ExpectedActionsBuilder(
   fun appointment(init: ExpectedAppointmentBuilder.() -> Unit) {
     val builder = ExpectedAppointmentBuilder()
     builder.apply(init)
-    actions.add(builder.build(today, projects, allocations))
+    actions.add(builder.build(now, projects, allocations))
   }
 }
 
@@ -332,14 +333,14 @@ class ExpectedAppointmentBuilder {
     endTime = LocalTime.parse(time)
   }
 
-  fun build(today: LocalDate, projects: Map<String, SchedulingProject>, allocations: List<SchedulingAllocation>): SchedulingAction.CreateAppointment {
+  fun build(now: OffsetDateTime, projects: Map<String, SchedulingProject>, allocations: List<SchedulingAllocation>): SchedulingAction.CreateAppointment {
     val project = projects[projectCode] ?: error("Project $projectCode not found")
     val allocation = allocations.find { it.id == allocationAlias.hashCode().toLong() }
       ?: error("Allocation $allocationAlias not found")
 
     return SchedulingAction.CreateAppointment(
       toCreate = SchedulingRequiredAppointment(
-        date = today.plusDays(offsetDays.toLong()),
+        date = now.toLocalDate().plusDays(offsetDays.toLong()),
         startTime = startTime ?: error("Start time must be specified for appointment"),
         endTime = endTime ?: error("End time must be specified for appointment"),
         project = project,

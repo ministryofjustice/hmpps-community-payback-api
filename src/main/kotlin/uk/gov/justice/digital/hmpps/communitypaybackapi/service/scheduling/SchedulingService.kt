@@ -18,7 +18,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.inter
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.toSchedulingExistingAppointments
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.toSchedulingRequirement
 import java.time.Clock
-import java.time.LocalDate
+import java.time.OffsetDateTime
 import java.util.UUID
 
 /**
@@ -68,7 +68,7 @@ class SchedulingService(
     val requirement = communityPaybackAndDeliusClient.getUnpaidWorkRequirement(crn, eventNumber)
 
     val schedulingRequest = SchedulingRequest(
-      today = LocalDate.now(clock),
+      now = OffsetDateTime.now(clock),
       trigger = trigger,
       requirement = requirement.requirementProgress.toSchedulingRequirement(crn, eventNumber),
       allocations = requirement.allocations.toSchedulingAllocations(),
