@@ -1,6 +1,6 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.factory.scheduling
 
-import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.randomLocalDate
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.randomOffsetDateTime
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.SchedulingAllocations
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.SchedulingExistingAppointments
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.SchedulingNonWorkingDates
@@ -9,7 +9,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.inter
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal.SchedulingTrigger
 
 fun SchedulingRequest.Companion.valid() = SchedulingRequest(
-  today = randomLocalDate(),
+  now = randomOffsetDateTime(),
   trigger = SchedulingTrigger.valid(),
   requirement = SchedulingRequirement.valid(),
   allocations = SchedulingAllocations(emptyList()),

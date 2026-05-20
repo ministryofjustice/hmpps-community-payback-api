@@ -4,11 +4,12 @@ import java.time.DayOfWeek
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
+import java.time.OffsetDateTime
 import java.util.UUID
 
 data class SchedulingRequest(
   val id: UUID = UUID.randomUUID(),
-  val today: LocalDate,
+  val now: OffsetDateTime,
   val trigger: SchedulingTrigger,
   val requirement: SchedulingRequirement,
   val allocations: SchedulingAllocations,
