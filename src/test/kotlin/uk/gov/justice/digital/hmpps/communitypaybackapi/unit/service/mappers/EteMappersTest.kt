@@ -38,6 +38,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourse
 import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseMessageAttributes
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ContextService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.EteMappers
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.EteMappers.Companion.DEFAULT_APPOINTMENT_START_TIME
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -143,7 +144,7 @@ class EteMappersTest {
     }
 
     @ParameterizedTest
-    @ValueSource(longs = [30, 60, 120, 180, 240])
+    @ValueSource(longs = [30, 60, 90, 120, 180, 240])
     fun `should calculate start time as the number of credited minutes before the end time`(minutesToCredit: Long) {
       val result = mapper.toCreateAppointmentDto(
         courseCompletionResolution = baselineCourseCompletionResolution.copy(
@@ -178,17 +179,18 @@ class EteMappersTest {
     }
 
     @Test
-    fun `should error if crediting minutes that would roll into previous day`() {
-      assertThatThrownBy {
-        mapper.toCreateAppointmentDto(
-          courseCompletionResolution = baselineCourseCompletionResolution.copy(
-            creditTimeDetails = CourseCompletionCreditTimeDetailsDto.valid().copy(
-              minutesToCredit = (60L * 12L) + 16L,
-            ),
+    fun `should use start time as 00 01 and end time = start time + credit minutes, if crediting minutes would roll into previous day`() {
+      val minutesToCredit = (60L * 12L) + 16L
+      val result = mapper.toCreateAppointmentDto(
+        courseCompletionResolution = baselineCourseCompletionResolution.copy(
+          creditTimeDetails = CourseCompletionCreditTimeDetailsDto.valid().copy(
+            minutesToCredit = (60L * 12L) + 16L,
           ),
-          courseCompletionEvent = baselineCourseCompletionEvent,
-        )
-      }.hasMessage("Cannot credit more than 735 minutes")
+        ),
+        courseCompletionEvent = baselineCourseCompletionEvent,
+      )
+      assertThat(result.startTime).isEqualTo(DEFAULT_APPOINTMENT_START_TIME)
+      assertThat(result.endTime).isEqualTo(DEFAULT_APPOINTMENT_START_TIME.plusMinutes(minutesToCredit))
     }
 
     @ParameterizedTest
@@ -314,21 +316,23 @@ class EteMappersTest {
 
       val expectedStartTime = baselineCourseCompletionEvent.completionDateTime.toLocalTimeEuropeLondon().minusMinutes(minutesToCredit)
       assertThat(result.startTime).isEqualTo(expectedStartTime)
+      assertThat(result.endTime).isEqualTo(baselineCourseCompletionEvent.completionDateTime.toLocalTimeEuropeLondon())
     }
 
     @Test
-    fun `should error if crediting minutes that would roll into previous day`() {
-      assertThatThrownBy {
-        mapper.toUpdateAppointmentDto(
-          courseCompletionResolution = baselineCourseCompletionOutcome.copy(
-            creditTimeDetails = baselineCourseCompletionOutcome.creditTimeDetails!!.copy(
-              minutesToCredit = (60L * 12L) + 16L,
-            ),
+    fun `should use start time as 00 01 and end time = start time + credit minutes, if crediting minutes would roll into previous day`() {
+      val minutesToCredit = (60L * 12L) + 16L
+      val result = mapper.toUpdateAppointmentDto(
+        courseCompletionResolution = baselineCourseCompletionOutcome.copy(
+          creditTimeDetails = baselineCourseCompletionOutcome.creditTimeDetails!!.copy(
+            minutesToCredit = minutesToCredit,
           ),
-          courseCompletionEvent = baselineCourseCompletionEvent,
-          existingAppointment = baselineExistingAppointment,
-        )
-      }.hasMessage("Cannot credit more than 735 minutes")
+        ),
+        courseCompletionEvent = baselineCourseCompletionEvent,
+        existingAppointment = baselineExistingAppointment,
+      )
+      assertThat(result.startTime).isEqualTo(DEFAULT_APPOINTMENT_START_TIME)
+      assertThat(result.endTime).isEqualTo(DEFAULT_APPOINTMENT_START_TIME.plusMinutes(minutesToCredit))
     }
 
     @ParameterizedTest

@@ -33,7 +33,7 @@ class EteMappers(
 ) {
 
   companion object {
-    val APPOINTMENT_START_TIME: LocalTime = LocalTime.of(0, 0)
+    val DEFAULT_APPOINTMENT_START_TIME: LocalTime = LocalTime.of(0, 1)
   }
 
   fun toCreateAppointmentDto(
@@ -41,14 +41,15 @@ class EteMappers(
     courseCompletionEvent: EteCourseCompletionEventEntity,
   ): CreateAppointmentDto {
     val creditTime = courseCompletionResolution.creditTimeDetails!!
+    val appointmentTimesPair = calculateAppointmentTimes(creditTime.minutesToCredit, courseCompletionEvent)
     return CreateAppointmentDto(
       crn = courseCompletionResolution.crn!!,
       deliusEventNumber = creditTime.deliusEventNumber,
       allocationId = null,
       projectCode = creditTime.projectCode,
       date = creditTime.date,
-      startTime = calculateStartTime(creditTime.minutesToCredit, courseCompletionEvent),
-      endTime = courseCompletionEvent.completionDateTime.toLocalTimeEuropeLondon(),
+      startTime = appointmentTimesPair.first,
+      endTime = appointmentTimesPair.second,
       pickUpLocationCode = null,
       pickUpTime = null,
       contactOutcomeCode = creditTime.contactOutcomeCode,
@@ -68,13 +69,13 @@ class EteMappers(
     val creditTime = requireNotNull(courseCompletionResolution.creditTimeDetails) {
       "Missing credit time details"
     }
-
+    val appointmentTimesPair = calculateAppointmentTimes(creditTime.minutesToCredit, courseCompletionEvent)
     return UpdateAppointmentOutcomeDto(
       deliusId = existingAppointment.id,
       deliusVersionToUpdate = existingAppointment.version,
       date = courseCompletionResolution.creditTimeDetails.date,
-      startTime = calculateStartTime(creditTime.minutesToCredit, courseCompletionEvent),
-      endTime = courseCompletionEvent.completionDateTime.toLocalTimeEuropeLondon(),
+      startTime = appointmentTimesPair.first,
+      endTime = appointmentTimesPair.second,
       contactOutcomeCode = creditTime.contactOutcomeCode,
       attendanceData = createAttendanceData(),
       supervisorOfficerCode = existingAppointment.supervisorOfficerCode,
@@ -104,14 +105,14 @@ class EteMappers(
     }
   }.trimEnd()
 
-  private fun calculateStartTime(minutesToCredit: Long, courseCompletionEvent: EteCourseCompletionEventEntity): LocalTime {
+  private fun calculateAppointmentTimes(minutesToCredit: Long, courseCompletionEvent: EteCourseCompletionEventEntity): Pair<LocalTime, LocalTime> {
     val endTime = courseCompletionEvent.completionDateTime.toLocalTimeEuropeLondon()
     val creditLimit = ChronoUnit.MINUTES.between(LocalTime.MIDNIGHT, endTime)
-    if (minutesToCredit > creditLimit) {
-      error("Cannot credit more than $creditLimit minutes")
+    return if (minutesToCredit > creditLimit) {
+      Pair(DEFAULT_APPOINTMENT_START_TIME, DEFAULT_APPOINTMENT_START_TIME.plusMinutes(minutesToCredit))
+    } else {
+      Pair(endTime.minusMinutes(minutesToCredit), endTime)
     }
-
-    return endTime.minusMinutes(minutesToCredit)
   }
 
   fun createAttendanceData() = AttendanceDataDto(
