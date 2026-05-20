@@ -55,9 +55,9 @@ dependencies {
   testImplementation("org.wiremock.integrations:wiremock-spring-boot:4.2.1")
   testImplementation("io.mockk:mockk:1.14.9")
   testImplementation("com.lemonappdev:konsist:0.17.3")
-  testImplementation("uk.gov.justice.service.hmpps:hmpps-subject-access-request-test-support:2.4.0")
+  testImplementation("uk.gov.justice.service.hmpps:hmpps-subject-access-request-test-support:2.4.1")
   testImplementation("org.zalando:logbook-spring-boot-starter:4.0.4")
-  testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
+  testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0")
 }
 
 kotlin {
