@@ -2,7 +2,6 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.integration.sar
 
 import jakarta.persistence.EntityManager
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -36,9 +35,9 @@ import javax.sql.DataSource
 class SarRequestIT : IntegrationTestBase() {
 
   companion object {
-    const val CRN = "CRN12345"
-    val RANGE_TEST_FROM_DATE: LocalDate = LocalDate.of(2025, 1, 2)
-    val RANGE_TEST_TO_DATE: LocalDate = LocalDate.of(2025, 2, 15)
+    const val CRN = "X995728"
+    val RANGE_TEST_FROM_DATE: LocalDate = LocalDate.of(2026, 6, 1)
+    val RANGE_TEST_TO_DATE: LocalDate = LocalDate.of(2026, 6, 15)
   }
 
   @Autowired
@@ -62,7 +61,6 @@ class SarRequestIT : IntegrationTestBase() {
 
     @BeforeEach
     fun clearTestData() {
-      val findAll = courseCompletionEventEntityRepository.findAll()
       this@SarRequestIT.clearTestData()
     }
 
@@ -111,16 +109,13 @@ class SarRequestIT : IntegrationTestBase() {
     override fun getSarHelper() = sarIntegrationTestHelper
   }
 
-  // flyway schema checks are disabled whilst we are iterating and finalising the data models
-  @Disabled
   @Nested
   inner class FlywaySchemaTest : SarFlywaySchemaTest {
     override fun getSarHelper() = sarIntegrationTestHelper
     override fun getDataSourceInstance() = dataSource
   }
 
-  // jpa entity checks are disabled whilst we are iterating and finalising the data models
-  @Disabled
+
   @Nested
   inner class JpaEntitiesTest : SarJpaEntitiesTest {
     override fun getSarHelper() = sarIntegrationTestHelper
