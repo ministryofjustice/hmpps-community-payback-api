@@ -3,10 +3,6 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.service.sar
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventEntityRepository
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntityRepository
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntityRepository
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntityRepository
 import uk.gov.justice.hmpps.kotlin.sar.HmppsProbationSubjectAccessRequestService
 import uk.gov.justice.hmpps.kotlin.sar.HmppsSubjectAccessRequestContent
@@ -15,9 +11,6 @@ import java.time.ZoneId
 
 @Service
 class SarService(
-  val adjustmentEventEntityRepository: AdjustmentEventEntityRepository,
-  val appointmentEntityRepository: AppointmentEntityRepository,
-  val appointmentEventEntityRepository: AppointmentEventEntityRepository,
   val eteCourseCompletionEventEntityRepository: EteCourseCompletionEventEntityRepository,
 ) : HmppsProbationSubjectAccessRequestService {
 
@@ -33,10 +26,12 @@ class SarService(
     val fromDateInclusive = fromDate?.atStartOfDay(ZoneId.systemDefault())?.toOffsetDateTime()
     val toDateTimeExclusive = toDate?.plusDays(1)?.atStartOfDay(ZoneId.systemDefault())?.toOffsetDateTime()
 
-    log.debug("Subject Access Request for CRN '{}' from '{}' inclusive to '{}' exclusive", crn, fromDateInclusive, toDateTimeExclusive)
-
-    val appointmentIds = appointmentEntityRepository.findAppointmentIdsWithEventsInRange(crn, fromDateInclusive, toDateTimeExclusive)
-    val appointmentEntities = appointmentEntityRepository.findAllByIdOrderByDateAsc(appointmentIds)
+    log.debug(
+      "Subject Access Request for CRN '{}' from '{}' inclusive to '{}' exclusive",
+      crn,
+      fromDateInclusive,
+      toDateTimeExclusive,
+    )
 
     val courseCompletionEvents = eteCourseCompletionEventEntityRepository.findByCrnAndReceivedAt(
       crn = crn,
@@ -44,29 +39,14 @@ class SarService(
       toDateTimeExclusive = toDateTimeExclusive,
     )
 
-    val appointments = appointmentEntities.map { appointment ->
-      appointment.toSarEntry(
-        adjustmentEvents = adjustmentEventEntityRepository.findByAppointmentOrderByCreatedAtAsc(appointment),
-        appointmentEvents = appointmentEventEntityRepository.findByAppointmentOrderByCreatedAtAsc(appointment),
-      )
-    }
-
-    if (appointments.isEmpty() && courseCompletionEvents.isEmpty()) {
+    if (courseCompletionEvents.isEmpty()) {
       return null
     }
 
     return HmppsSubjectAccessRequestContent(
       content = mapOf(
-        "appointments" to appointments,
         "eteCourseCompletionEvents" to courseCompletionEvents.map { completionEvent ->
-          completionEvent.toSarEntry(
-            appointmentEvent = completionEvent.resolution?.let { resolution ->
-              appointmentEventEntityRepository.findByTriggerTypeAndTriggeredBy(
-                triggerType = AppointmentEventTriggerType.ETE_COURSE_COMPLETION_RESOLUTION,
-                triggeredBy = resolution.id.toString(),
-              )
-            },
-          )
+          completionEvent.toSarEntry()
         },
       ),
       attachments = null,

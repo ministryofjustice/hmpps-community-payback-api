@@ -1,15 +1,11 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.integration.sar
 
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.getBean
 import org.springframework.context.ApplicationContext
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.atFirstSecondOfDay
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.atLastSecondOfDay
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntityRepository
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.CommunityCampusPduEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntityRepository
@@ -22,7 +18,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.sar.SarReque
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.sar.SarRequestIT.Companion.RANGE_TEST_FROM_DATE
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.sar.SarRequestIT.Companion.RANGE_TEST_TO_DATE
 import java.time.LocalDate
-import java.time.LocalTime
 
 /**
  * Top level SAR tests are defined in [SarRequestIT]
@@ -30,7 +25,6 @@ import java.time.LocalTime
  * This class defines tests to ensure that the correct course completion event data
  * is returned from the API endpoint
  */
-@Disabled
 class SarRequestCourseCompletionEventIT : IntegrationTestBase() {
 
   @BeforeEach
@@ -118,10 +112,8 @@ class SarRequestCourseCompletionEventIT : IntegrationTestBase() {
   class FixtureFactory(
     private val ctx: ApplicationContext,
   ) {
-    val appointmentEventRepository = ctx.getBean<AppointmentEventEntityRepository>()
     val eteCourseCompletionEventEntityRepository = ctx.getBean<EteCourseCompletionEventEntityRepository>()
     val pduEntityRepository = ctx.getBean<CommunityCampusPduEntityRepository>()
-    val appointmentEventFixtureFactory = SarRequestAppointmentEventIT.FixtureFactory(ctx)
 
     fun clearTestData() {
       eteCourseCompletionEventEntityRepository.deleteAll()
@@ -208,22 +200,8 @@ class SarRequestCourseCompletionEventIT : IntegrationTestBase() {
       )
     }
 
-    fun setupReportTestData(appointment: AppointmentEntity) {
+    fun setupReportTestData() {
       val hasAppointment = baselineCourseCompletion().run {
-        appointmentEventRepository.save(
-          appointmentEventFixtureFactory.baselineAppointmentEvent().copy(
-            appointment = appointment,
-            triggerType = AppointmentEventTriggerType.ETE_COURSE_COMPLETION_RESOLUTION,
-            triggeredBy = resolution!!.id.toString(),
-            triggeredAt = RANGE_TEST_FROM_DATE.atLastSecondOfDay(),
-            projectName = "project 2",
-            date = LocalDate.of(2025, 5, 1),
-            startTime = LocalTime.of(0, 0),
-            endTime = LocalTime.of(1, 0),
-            notes = "Some example notes",
-          ),
-        )
-
         copy(
           receivedAt = RANGE_TEST_FROM_DATE.atFirstSecondOfDay(),
           firstName = "has",
