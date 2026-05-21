@@ -12,6 +12,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentReasonE
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentTaskEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentTaskEntityRepository
 import java.time.Duration
+import java.time.LocalDate
 
 @Suppress("ThrowsCount")
 @Service
@@ -40,6 +41,10 @@ class AdjustmentValidationService(
       val requestedDuration = Duration.ofMinutes(requestedMinutes.toLong())
       val maxMinutesDuration = Duration.ofMinutes(maxMinutesAllowed.toLong())
       badRequest("Requested adjustment of '${requestedDuration.formatForUser()}' exceeds the maximum allowed time '${maxMinutesDuration.formatForUser()}' for adjustment reason '${reason.name}'")
+    }
+
+    if (createAdjustment.adjustmentDate != null && createAdjustment.adjustmentDate.isAfter(LocalDate.now())) {
+      badRequest("Adjustment date must not be in the future")
     }
 
     validateMinutesToCredit(createAdjustment, unpaidWorkDetails)
