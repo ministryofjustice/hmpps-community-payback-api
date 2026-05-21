@@ -44,7 +44,7 @@ class AdjustmentService(
           deliusEventNumber = deliusEventNumber,
           reason = validatedAdjustment.reason,
           reference = adjustmentId,
-          dateOfAdjustment = LocalDate.now(clock),
+          dateOfAdjustment = validatedAdjustment.createAdjustment.adjustmentDate ?: LocalDate.now(clock),
         ),
       ),
     ).single().id
