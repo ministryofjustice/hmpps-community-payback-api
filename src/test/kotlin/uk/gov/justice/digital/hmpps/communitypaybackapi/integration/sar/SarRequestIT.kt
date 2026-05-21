@@ -36,8 +36,8 @@ class SarRequestIT : IntegrationTestBase() {
 
   companion object {
     const val CRN = "X995728"
-    val RANGE_TEST_FROM_DATE: LocalDate = LocalDate.of(2026, 6, 1)
-    val RANGE_TEST_TO_DATE: LocalDate = LocalDate.of(2026, 6, 15)
+    val RANGE_TEST_FROM_DATE: LocalDate = LocalDate.of(2025, 1, 2)
+    val RANGE_TEST_TO_DATE: LocalDate = LocalDate.of(2025, 2, 15)
   }
 
   @Autowired

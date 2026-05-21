@@ -198,12 +198,15 @@ class SarRequestCourseCompletionEventIT : IntegrationTestBase() {
           },
         ),
       )
+
+      val all = eteCourseCompletionEventEntityRepository.findAll()
+      println(all)
     }
 
     fun setupReportTestData() {
       val courseCompletion = baselineCourseCompletion().run {
         copy(
-          receivedAt = LocalDate.of(2026, 6, 1).atFirstSecondOfDay(),
+          receivedAt = LocalDate.of(2025, 6, 1).atFirstSecondOfDay(),
           firstName = "Rosemary",
           lastName = "Thompson",
           dateOfBirth = LocalDate.of(1976, 6, 1),
@@ -214,7 +217,7 @@ class SarRequestCourseCompletionEventIT : IntegrationTestBase() {
           courseName = "Effective Communication",
           courseType = "Certified",
           provider = "Moodle",
-          completionDateTime = LocalDate.of(2026, 6, 1).atFirstSecondOfDay(),
+          completionDateTime = LocalDate.of(2025, 6, 1).atFirstSecondOfDay(),
           status = EteCourseCompletionEventStatus.PASSED,
           totalTimeMinutes = 60,
           expectedTimeMinutes = 60,
@@ -233,7 +236,7 @@ class SarRequestCourseCompletionEventIT : IntegrationTestBase() {
 
       val courseCompletion2 = baselineCourseCompletion().run {
         copy(
-          receivedAt = LocalDate.of(2026, 6, 3).atFirstSecondOfDay(),
+          receivedAt = LocalDate.of(2025, 6, 3).atFirstSecondOfDay(),
           firstName = "Rosemary",
           lastName = "Thompson",
           dateOfBirth = LocalDate.of(1976, 6, 1),
@@ -244,7 +247,7 @@ class SarRequestCourseCompletionEventIT : IntegrationTestBase() {
           courseName = "Building a Professional Brand on LinkedIn",
           courseType = "Accredited",
           provider = "Moodle",
-          completionDateTime = LocalDate.of(2026, 6, 3).atFirstSecondOfDay(),
+          completionDateTime = LocalDate.of(2025, 6, 3).atFirstSecondOfDay(),
           status = EteCourseCompletionEventStatus.PASSED,
           totalTimeMinutes = 120,
           expectedTimeMinutes = 120,
@@ -262,7 +265,7 @@ class SarRequestCourseCompletionEventIT : IntegrationTestBase() {
 
       val courseCompletion3 = baselineCourseCompletion().run {
         copy(
-          receivedAt = LocalDate.of(2026, 6, 4).atFirstSecondOfDay(),
+          receivedAt = LocalDate.of(2025, 6, 4).atFirstSecondOfDay(),
           firstName = "Rosemary",
           lastName = "Thompson",
           dateOfBirth = LocalDate.of(1976, 6, 1),
@@ -273,7 +276,7 @@ class SarRequestCourseCompletionEventIT : IntegrationTestBase() {
           courseName = "Building your path: A Career in Construction",
           courseType = "Accredited",
           provider = "Alison",
-          completionDateTime = LocalDate.of(2026, 6, 4).atFirstSecondOfDay(),
+          completionDateTime = LocalDate.of(2025, 6, 4).atFirstSecondOfDay(),
           status = EteCourseCompletionEventStatus.PASSED,
           totalTimeMinutes = 240,
           expectedTimeMinutes = 240,
