@@ -1,10 +1,13 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling.internal
 
 import org.slf4j.LoggerFactory
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.atFirstSecondOfDay
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.atLastSecondOfDay
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.minutesBetween
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.shortestOf
 import java.time.Duration
 import java.time.LocalDate
+import java.time.OffsetDateTime
 
 object ScheduleCreator {
   private val log = LoggerFactory.getLogger(this::class.java)
@@ -25,7 +28,7 @@ object ScheduleCreator {
     remainingMinutesToBeScheduled: Duration,
   ): Schedule {
     val today = schedulingRequest.now.toLocalDate()
-    val cutOffDate = today.plusDays(CUT_OFF_LIMIT_DAYS)
+    val cutOffDate = today.plusDays(CUT_OFF_LIMIT_DAYS).atLastSecondOfDay()
     val nonWorkingDates = schedulingRequest.nonWorkingDates
 
     val ctx = SchedulingContext(
@@ -34,17 +37,17 @@ object ScheduleCreator {
     )
 
     val startingDay = nonWorkingDates.nextWorkingDayAsOf(today.minusDays(1))
-    var dayBeingConsidered = startingDay
+    var dayBeingConsidered = if (startingDay == today) schedulingRequest.now else startingDay.atFirstSecondOfDay()
     while (
       ctx.moreAppointmentsRequired() &&
       ctx.getAllocations().anyPotentialAppointmentsOnOrAfter(
         alreadyScheduledAppointments = ctx.getScheduledAppointments(),
-        onOrAfter = dayBeingConsidered,
+        onOrAfter = dayBeingConsidered.toLocalDate(),
       )
     ) {
       scheduleDay(ctx, dayBeingConsidered)
 
-      dayBeingConsidered = nonWorkingDates.nextWorkingDayAsOf(dayBeingConsidered)
+      dayBeingConsidered = nonWorkingDates.nextWorkingDayAsOf(dayBeingConsidered.toLocalDate()).atFirstSecondOfDay()
       if (dayBeingConsidered.isAfter(cutOffDate)) {
         log.warn("Scheduling is still being applied after $CUT_OFF_LIMIT_DAYS days - this shouldn't really happen! We won't attempt to schedule anything else.")
         break
@@ -56,15 +59,15 @@ object ScheduleCreator {
 
   private fun scheduleDay(
     ctx: SchedulingContext,
-    day: LocalDate,
+    day: OffsetDateTime,
   ) {
     log.trace("Scheduling day {} ({}) with a remaining short fall of {}", day, day.dayOfWeek, ctx.getRemainingMinutesToBeScheduled())
 
-    if (!ctx.getAllocations().anyPotentialAppointmentsOn(day, ctx.getScheduledAppointments())) {
+    if (!ctx.getAllocations().anyPotentialAppointmentsOn(day.toLocalDate(), ctx.getScheduledAppointments())) {
       return
     }
 
-    val existingAppointmentsToday = ctx.getExistingAppointments().filter { it.date == day }
+    val existingAppointmentsToday = ctx.getExistingAppointments().filter { it.date == day.toLocalDate() }
     /*
      If scheduling is triggered by an appointment change and appointment(s) already exists
      on a day we want to schedule an appointment on, we retain those existing appointments
@@ -79,13 +82,13 @@ object ScheduleCreator {
         ctx.addForcedRetentionAppointment(it)
       }
     } else {
-      val allocationsEarliestTimeFirst = ctx.getAllocations().allocations.sortedBy { it.startTime }
+      val allocationsEarliestTimeFirst = ctx.getAllocations().allocations.sortedBy { it.startTime }.filter { !it.startTime.isBefore(day.toLocalTime()) }
       allocationsEarliestTimeFirst.forEach { allocation ->
         if (
           ctx.moreAppointmentsRequired() &&
-          allocation.nextPotentialAppointmentDateOnOrAfter(day, ctx.getScheduledAppointments()) == day
+          allocation.nextPotentialAppointmentDateOnOrAfter(day.toLocalDate(), ctx.getScheduledAppointments()) == day.toLocalDate()
         ) {
-          scheduleAppointment(ctx, allocation, day)
+          scheduleAppointment(ctx, allocation, day.toLocalDate())
         }
       }
     }

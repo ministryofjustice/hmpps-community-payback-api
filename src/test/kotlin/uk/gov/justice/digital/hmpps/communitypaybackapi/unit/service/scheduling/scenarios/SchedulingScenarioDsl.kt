@@ -27,6 +27,7 @@ import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.OffsetDateTime
+import java.time.temporal.ChronoUnit
 import java.time.temporal.TemporalAdjusters
 
 @DslMarker
@@ -34,7 +35,7 @@ annotation class SchedulingScenarioDslMarker
 
 @SchedulingScenarioDslMarker
 class SchedulingScenarioBuilder {
-  private var now: OffsetDateTime = OffsetDateTime.now()
+  private var now: OffsetDateTime = OffsetDateTime.now().truncatedTo(ChronoUnit.DAYS)
   private var requirementLength: Duration? = null
   private val allocations = mutableListOf<SchedulingAllocation>()
   private val existingAppointments = mutableListOf<SchedulingExistingAppointment>()
@@ -71,7 +72,11 @@ class SchedulingScenarioBuilder {
   @SchedulingScenarioDslMarker
   inner class GivenContext {
     fun todayIs(dayOfWeek: DayOfWeek) {
-      this@SchedulingScenarioBuilder.now = OffsetDateTime.now().with(TemporalAdjusters.nextOrSame(dayOfWeek))
+      this@SchedulingScenarioBuilder.now = this@SchedulingScenarioBuilder.now.with(TemporalAdjusters.nextOrSame(dayOfWeek))
+    }
+
+    fun timeIs(hour: Int, minute: Int) {
+      this@SchedulingScenarioBuilder.now = this@SchedulingScenarioBuilder.now.withHour(hour).withMinute(minute)
     }
 
     fun projectExistsWithCode(code: String, init: ProjectBuilder.() -> Unit = {}) {
