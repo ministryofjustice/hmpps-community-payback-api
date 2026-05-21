@@ -22,6 +22,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentValidationService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.OffenderService
+import java.time.LocalDate
 import java.util.UUID
 
 @ExtendWith(MockKExtension::class)
@@ -133,6 +134,26 @@ class AdjustmentValidationServiceTest {
         )
       }.isInstanceOf(BadRequestException::class.java)
         .hasMessage("Credited minutes of '3 hours 0 minutes' exceeds the remaining time required of '2 hours 0 minutes'")
+    }
+
+    @Test
+    fun `If adjustment date is in the future then return bad request exception`() {
+      every { offenderService.ensureUnpaidWorkDetailsExist(any(), any()) } returns UnpaidWorkDetailsDto.valid().copy(
+        requiredMinutes = 100,
+        completedMinutes = 0,
+        adjustments = 0,
+      )
+
+      assertThatThrownBy {
+        service.validateCreate(
+          createAdjustment = baselineRequest.copy(
+            adjustmentDate = LocalDate.now().plusDays(1),
+          ),
+          upwDetailsId = UNPAID_WORK_DETAILS,
+          username = USERNAME,
+        )
+      }.isInstanceOf(BadRequestException::class.java)
+        .hasMessage("Adjustment date must not be in the future")
     }
 
     @Test

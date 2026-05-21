@@ -7,6 +7,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.random
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.randomPastLocalDate
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentEventTrigger
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AdjustmentCreatedEvent
 import java.time.OffsetDateTime
@@ -19,6 +20,7 @@ fun AdjustmentCreatedEvent.Companion.valid() = AdjustmentCreatedEvent(
   deliusAdjustmentId = Long.random(),
   trigger = AdjustmentEventTrigger.valid(),
   id = UUID.randomUUID(),
+  adjustmentDate = randomPastLocalDate(),
 )
 
 fun AdjustmentEventTrigger.Companion.valid() = AdjustmentEventTrigger(

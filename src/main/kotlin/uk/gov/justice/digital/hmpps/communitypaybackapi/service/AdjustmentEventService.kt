@@ -8,8 +8,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventEn
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AdjustmentCreatedEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toAdjustmentCreatedDomainEvent
-import java.time.Clock
-import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.UUID
 
@@ -18,7 +16,6 @@ class AdjustmentEventService(
   private val adjustmentEventEntityRepository: AdjustmentEventEntityRepository,
   private val adjustmentEventEntityFactory: AdjustmentEventEntityFactory,
   private val domainEventService: DomainEventService,
-  private val clock: Clock,
 ) {
   fun getCreatedDomainEventDetails(id: UUID) = adjustmentEventEntityRepository.findByIdOrNullForDomainEventDetails(id, AdjustmentEventType.CREATE)?.toAdjustmentCreatedDomainEvent()
 
@@ -27,7 +24,7 @@ class AdjustmentEventService(
   @EventListener
   fun persistAndPublishCreateAdjustmentDomainEvent(event: AdjustmentCreatedEvent) {
     val persistedEvent = adjustmentEventEntityRepository.save(
-      adjustmentEventEntityFactory.buildAdjustmentCreated(event, LocalDate.now(clock)),
+      adjustmentEventEntityFactory.buildAdjustmentCreated(event),
     )
 
     domainEventService.publishOnTransactionCommit(

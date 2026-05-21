@@ -66,10 +66,12 @@ class AdjustmentServiceTest {
       val reason = AdjustmentReasonEntity.valid().copy(maxMinutesAllowed = 50)
       val appointmentTask = AppointmentTaskEntity.valid()
       val id = UUID.randomUUID()
+      val dateOfAdjustment = LocalDate.now().minusDays(3)
 
       val request = CreateAdjustmentDto.valid().copy(
         adjustmentReasonId = reason.id,
         minutes = 50,
+        adjustmentDate = dateOfAdjustment,
       )
 
       val validatedAdjustment = AdjustmentValidationService.ValidatedCreateAdjustment(request, reason, appointmentTask)
@@ -88,7 +90,7 @@ class AdjustmentServiceTest {
               deliusEventNumber = EVENT_NUMBER,
               reason = reason,
               reference = id,
-              dateOfAdjustment = LocalDate.now(clock),
+              dateOfAdjustment = dateOfAdjustment,
             ),
           ),
         )
@@ -113,6 +115,7 @@ class AdjustmentServiceTest {
               triggerType = AdjustmentEventTriggerType.APPOINTMENT_TASK,
               triggeredBy = appointmentTask.id.toString(),
             ),
+            adjustmentDate = dateOfAdjustment,
           ),
         )
       }
