@@ -115,6 +115,7 @@ class AdjustmentServiceTest {
               triggerType = AdjustmentEventTriggerType.APPOINTMENT_TASK,
               triggeredBy = appointmentTask.id.toString(),
             ),
+            adjustmentDate = dateOfAdjustment,
           ),
         )
       }

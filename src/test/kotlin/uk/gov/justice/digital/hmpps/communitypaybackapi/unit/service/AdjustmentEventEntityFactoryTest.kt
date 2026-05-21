@@ -41,8 +41,8 @@ class AdjustmentEventEntityFactoryTest {
           triggeredBy = "task id",
         ),
         id = id,
+        adjustmentDate = LocalDate.of(1971, 8, 23),
       ),
-      adjustmentDate = LocalDate.of(1971, 8, 23),
     )
 
     assertThat(result.eventType).isEqualTo(AdjustmentEventType.CREATE)

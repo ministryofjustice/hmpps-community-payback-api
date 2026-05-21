@@ -35,6 +35,7 @@ class AdjustmentService(
     val validatedAdjustment = adjustmentValidationService.validateCreate(createAdjustment, upwDetailsId, username)
     val adjustmentId = adjustmentIdGenerator.generateId()
     val (crn, deliusEventNumber) = upwDetailsId
+    val adjustmentDate = validatedAdjustment.createAdjustment.adjustmentDate ?: LocalDate.now(clock)
 
     val deliusAdjustmentId = communityPaybackAndDeliusClient.postAdjustments(
       username,
@@ -44,7 +45,7 @@ class AdjustmentService(
           deliusEventNumber = deliusEventNumber,
           reason = validatedAdjustment.reason,
           reference = adjustmentId,
-          dateOfAdjustment = validatedAdjustment.createAdjustment.adjustmentDate ?: LocalDate.now(clock),
+          dateOfAdjustment = adjustmentDate,
         ),
       ),
     ).single().id
@@ -61,6 +62,7 @@ class AdjustmentService(
           triggerType = AdjustmentEventTriggerType.APPOINTMENT_TASK,
           triggeredBy = validatedAdjustment.task.id.toString(),
         ),
+        adjustmentDate = adjustmentDate,
       ),
     )
   }

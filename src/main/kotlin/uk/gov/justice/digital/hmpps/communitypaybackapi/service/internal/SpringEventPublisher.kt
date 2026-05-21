@@ -14,6 +14,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentTaskTy
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentEventTrigger
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventTrigger
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService
+import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.UUID
 
@@ -48,6 +49,7 @@ sealed interface CommunityPaybackSpringEvent {
     val deliusAdjustmentId: Long,
     val trigger: AdjustmentEventTrigger,
     val id: UUID,
+    val adjustmentDate: LocalDate,
   ) : CommunityPaybackSpringEvent {
     companion object
   }
