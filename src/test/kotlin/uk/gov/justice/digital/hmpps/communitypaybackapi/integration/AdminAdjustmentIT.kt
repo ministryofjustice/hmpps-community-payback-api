@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.doAnswer
+import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.repository.findByIdOrNull
@@ -108,7 +109,7 @@ class AdminAdjustmentIT : IntegrationTestBase() {
     fun `Rollback on unexpected request failure, ensuring previously created adjustments aren't rolled back too`() {
       val appointment = AppointmentEntity.valid().copy(crn = CRN, deliusEventNumber = DELIUS_EVENT_NUMBER).persist(ctx)
       val task = AppointmentTaskEntity.valid().copy(appointment = appointment).persist(ctx)
-      whenever(adjustmentIdGenerator.generateId()).thenReturn(task.id)
+      doReturn(task.id).whenever(adjustmentIdGenerator).generateId(any())
 
       setupGetUpwDetailsResponse()
       CommunityPaybackAndDeliusMockServer.setupPostAdjustmentResponse(username = "theusername", adjustmentId = 25L)

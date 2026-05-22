@@ -75,7 +75,7 @@ class AdjustmentServiceTest {
       )
 
       val validatedAdjustment = AdjustmentValidationService.ValidatedCreateAdjustment(request, reason, appointmentTask)
-      every { adjustmentIdGenerator.generateId() } returns id
+      every { adjustmentIdGenerator.generateId(request) } returns id
 
       every {
         adjustmentValidationService.validateCreate(request, UNPAID_WORK_DETAILS, USERNAME)
