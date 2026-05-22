@@ -198,69 +198,105 @@ class SarRequestCourseCompletionEventIT : IntegrationTestBase() {
           },
         ),
       )
+
+      val all = eteCourseCompletionEventEntityRepository.findAll()
+      println(all)
     }
 
     fun setupReportTestData() {
-      val hasAppointment = baselineCourseCompletion().run {
+      val courseCompletion = baselineCourseCompletion().run {
         copy(
-          receivedAt = RANGE_TEST_FROM_DATE.atFirstSecondOfDay(),
-          firstName = "has",
-          lastName = "appointment",
-          dateOfBirth = LocalDate.of(2020, 1, 1),
-          region = "region one",
-          pdu = pduEntityRepository.findByName("Cardiff and Vale")!!,
-          office = "office one",
-          email = "email one",
-          courseName = "course one",
-          courseType = "course type one",
-          provider = "provider one",
+          receivedAt = LocalDate.of(2025, 6, 1).atFirstSecondOfDay(),
+          firstName = "Rosemary",
+          lastName = "Thompson",
+          dateOfBirth = LocalDate.of(1976, 6, 1),
+          region = "East of England",
+          pdu = pduEntityRepository.findByName("North Essex")!!,
+          office = "Chelmsford",
+          email = "Rosemary.Thompson@example.com",
+          courseName = "Effective Communication",
+          courseType = "Certified",
+          provider = "Moodle",
           completionDateTime = LocalDate.of(2025, 6, 1).atFirstSecondOfDay(),
           status = EteCourseCompletionEventStatus.PASSED,
-          totalTimeMinutes = 10,
-          expectedTimeMinutes = 20,
-          attempts = 2,
+          totalTimeMinutes = 60,
+          expectedTimeMinutes = 60,
+          attempts = 1,
           resolution = resolution!!.copy(
             createdAt = RANGE_TEST_FROM_DATE.atLastSecondOfDay(),
-            createdByUsername = "user1",
+            createdByUsername = "isaac.mitchell",
             resolution = EteCourseCompletionResolution.CREDIT_TIME,
-            minutesCredited = 101,
+            minutesCredited = 60,
             deliusAppointmentCreated = true,
+            crn = "X995728",
+            notes = "Candidate completed course successfully.",
           ),
         )
       }
 
-      val hasNoAppointment = baselineCourseCompletion().run {
+      val courseCompletion2 = baselineCourseCompletion().run {
         copy(
-          receivedAt = RANGE_TEST_TO_DATE.atFirstSecondOfDay(),
-          firstName = "has no",
-          lastName = "appointment",
-          dateOfBirth = LocalDate.of(2020, 1, 2),
-          region = "region two",
-          pdu = pduEntityRepository.findByName("Cwm Taf Morgannwg")!!,
-          office = "office two",
-          email = "email two",
-          courseName = "course two",
-          courseType = "course type two",
-          provider = "provider two",
-          completionDateTime = LocalDate.of(2025, 6, 2).atFirstSecondOfDay(),
+          receivedAt = LocalDate.of(2025, 6, 3).atFirstSecondOfDay(),
+          firstName = "Rosemary",
+          lastName = "Thompson",
+          dateOfBirth = LocalDate.of(1976, 6, 1),
+          region = "East of England",
+          pdu = pduEntityRepository.findByName("North Essex")!!,
+          office = "Chelmsford",
+          email = "Rosemary.Thompson@example.com",
+          courseName = "Building a Professional Brand on LinkedIn",
+          courseType = "Accredited",
+          provider = "Moodle",
+          completionDateTime = LocalDate.of(2025, 6, 3).atFirstSecondOfDay(),
           status = EteCourseCompletionEventStatus.PASSED,
-          totalTimeMinutes = 30,
-          expectedTimeMinutes = 40,
-          attempts = null,
+          totalTimeMinutes = 120,
+          expectedTimeMinutes = 120,
+          attempts = 1,
           resolution = resolution!!.copy(
-            createdAt = RANGE_TEST_TO_DATE.atLastSecondOfDay(),
-            createdByUsername = "user2",
-            resolution = EteCourseCompletionResolution.DONT_CREDIT_TIME,
-            minutesCredited = null,
-            deliusAppointmentCreated = null,
+            createdAt = RANGE_TEST_FROM_DATE.atLastSecondOfDay(),
+            createdByUsername = "isaac.mitchell",
+            resolution = EteCourseCompletionResolution.CREDIT_TIME,
+            minutesCredited = 120,
+            deliusAppointmentCreated = false,
+            crn = "X995728",
+          ),
+        )
+      }
+
+      val courseCompletion3 = baselineCourseCompletion().run {
+        copy(
+          receivedAt = LocalDate.of(2025, 6, 4).atFirstSecondOfDay(),
+          firstName = "Rosemary",
+          lastName = "Thompson",
+          dateOfBirth = LocalDate.of(1976, 6, 1),
+          region = "East of England",
+          pdu = pduEntityRepository.findByName("North Essex")!!,
+          office = "Chelmsford",
+          email = "Rosemary.Thompson@example.com",
+          courseName = "Building your path: A Career in Construction",
+          courseType = "Accredited",
+          provider = "Alison",
+          completionDateTime = LocalDate.of(2025, 6, 4).atFirstSecondOfDay(),
+          status = EteCourseCompletionEventStatus.PASSED,
+          totalTimeMinutes = 240,
+          expectedTimeMinutes = 240,
+          attempts = 1,
+          resolution = resolution!!.copy(
+            createdAt = RANGE_TEST_FROM_DATE.atLastSecondOfDay(),
+            createdByUsername = "isaac.mitchell",
+            resolution = EteCourseCompletionResolution.CREDIT_TIME,
+            minutesCredited = 240,
+            deliusAppointmentCreated = true,
+            crn = "X995728",
           ),
         )
       }
 
       eteCourseCompletionEventEntityRepository.saveAll(
         listOf(
-          hasAppointment,
-          hasNoAppointment,
+          courseCompletion,
+          courseCompletion2,
+          courseCompletion3,
         ),
 
       )
