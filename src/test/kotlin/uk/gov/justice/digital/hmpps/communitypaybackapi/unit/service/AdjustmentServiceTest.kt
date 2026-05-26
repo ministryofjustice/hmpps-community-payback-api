@@ -5,6 +5,7 @@ import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.verify
+import io.mockk.verifyOrder
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -101,6 +102,15 @@ class AdjustmentServiceTest {
         createAdjustment = request,
         username = USERNAME,
       )
+
+      verifyOrder {
+        communityPaybackAndDeliusClient.deleteAdjustment(id)
+
+        communityPaybackAndDeliusClient.postAdjustments(
+          username = any(),
+          adjustmentRequests = match { it.size == 1 && it.first().reference == id },
+        )
+      }
 
       verify {
         springEventPublisher.publishEvent(

@@ -2,7 +2,9 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.service
 
 import jakarta.transaction.Transactional
 import org.springframework.context.event.EventListener
+import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
+import org.springframework.web.reactive.function.client.WebClientResponseException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.IdGenerator
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAdjustmentDto
@@ -34,6 +36,9 @@ class AdjustmentService(
   ) {
     val validatedAdjustment = adjustmentValidationService.validateCreate(createAdjustment, upwDetailsId, username)
     val adjustmentId = adjustmentIdGenerator.generateId(createAdjustment)
+
+    deleteOrphanedAdjustmentIfExists(adjustmentId)
+
     val (crn, deliusEventNumber) = upwDetailsId
     val adjustmentDate = validatedAdjustment.createAdjustment.adjustmentDate ?: LocalDate.now(clock)
 
@@ -74,6 +79,16 @@ class AdjustmentService(
     val event = rollbackEvent.event
     if (event is AdjustmentCreatedEvent) {
       communityPaybackAndDeliusClient.deleteAdjustment(event.id)
+    }
+  }
+
+  private fun deleteOrphanedAdjustmentIfExists(reference: UUID) {
+    try {
+      communityPaybackAndDeliusClient.deleteAdjustment(reference)
+    } catch (e: WebClientResponseException) {
+      if (e.statusCode != HttpStatus.NOT_FOUND) {
+        throw e
+      }
     }
   }
 }

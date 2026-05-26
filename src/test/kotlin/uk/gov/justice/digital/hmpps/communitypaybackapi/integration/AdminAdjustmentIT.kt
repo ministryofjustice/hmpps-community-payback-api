@@ -120,6 +120,8 @@ class AdminAdjustmentIT : IntegrationTestBase() {
         expectedStatus = 200,
       )
       CommunityPaybackAndDeliusMockServer.verifyPostAdjustment(username = "theusername", count = 1)
+      // preemptive attempt to delete orphaned adjustment with the same reference
+      CommunityPaybackAndDeliusMockServer.verifyDeleteAdjustment(reference = task.id, count = 1)
 
       // setup request that fails after adjustment is created
       doAnswer { invocation ->
@@ -128,6 +130,7 @@ class AdminAdjustmentIT : IntegrationTestBase() {
       }.`when`(adjustmentService).createAdjustment(any(), any(), any())
 
       CommunityPaybackAndDeliusMockServer.setupDeleteAdjustmentResponse(task.id)
+      CommunityPaybackAndDeliusMockServer.resetDeleteAdjustmentRequestCount(task.id)
 
       callCreateAdjustment(
         request = CreateAdjustmentDto.valid(ctx).copy(taskId = task.id),
@@ -136,7 +139,8 @@ class AdminAdjustmentIT : IntegrationTestBase() {
 
       // ensure both creations worked, but only one was deleted
       CommunityPaybackAndDeliusMockServer.verifyPostAdjustment(username = "theusername", count = 2)
-      CommunityPaybackAndDeliusMockServer.verifyDeleteAdjustment(reference = task.id, count = 1)
+      // one delete for an orphaned adjustment and one for the actual rollback
+      CommunityPaybackAndDeliusMockServer.verifyDeleteAdjustment(reference = task.id, count = 2)
 
       // only 1 domain event is published because the second transaction is rolled back
       domainEventAsserter.assertEventCount("community-payback.adjustment.created", 1)
