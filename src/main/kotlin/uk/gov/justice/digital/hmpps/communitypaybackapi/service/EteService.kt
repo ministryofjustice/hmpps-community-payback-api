@@ -41,7 +41,7 @@ class EteService(
   private val springEventPublisher: SpringEventPublisher,
 
   // The dates below are temporary, during the initial stages of private beta
-  @Value("\${course.completions.available.from:#{null}") private val courseCompletionsAvailableFrom: OffsetDateTime?,
+  @Value("\${course.completions.available.from:#{null}}") private val courseCompletionsAvailableFrom: OffsetDateTime?,
   @Value("\${course.completions.available.to:#{null}}") private val courseCompletionsAvailableTo: OffsetDateTime?,
   // London - N07
   @Value("\${course.completions.london.available.from:#{null}}") private val londonAvailableFrom: OffsetDateTime?,
