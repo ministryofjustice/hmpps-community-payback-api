@@ -26,10 +26,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.Communi
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.SpringEventPublisher
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.EteMappers
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
-import java.time.LocalDate
-import java.time.LocalTime
 import java.time.OffsetDateTime
-import java.time.ZoneId
 import java.util.UUID
 
 @Service
@@ -44,7 +41,7 @@ class EteService(
   private val springEventPublisher: SpringEventPublisher,
 
   // The dates below are temporary, during the initial stages of private beta
-  @Value("\${course.completions.available.from:#{null}") private val courseCompletionsAvailableFrom: OffsetDateTime,
+  @Value("\${course.completions.available.from:#{null}") private val courseCompletionsAvailableFrom: OffsetDateTime?,
   @Value("\${course.completions.available.to:#{null}}") private val courseCompletionsAvailableTo: OffsetDateTime?,
   // London - N07
   @Value("\${course.completions.london.available.from:#{null}}") private val londonAvailableFrom: OffsetDateTime?,

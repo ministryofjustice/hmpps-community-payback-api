@@ -33,7 +33,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.EteMappe
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
 import java.time.LocalDate
 import java.time.OffsetDateTime
-import java.time.ZoneOffset
 import java.util.UUID
 
 @ExtendWith(MockKExtension::class)
@@ -65,6 +64,13 @@ class EteServiceTest {
 
   private lateinit var eteService: EteService
 
+  val londonDateFrom: OffsetDateTime = OffsetDateTime.parse("2026-05-26T00:00:00Z")
+  val londonDateTo: OffsetDateTime = OffsetDateTime.parse("2026-05-26T23:59:59.999999Z")
+  val southCentralDateFrom: OffsetDateTime = OffsetDateTime.parse("2026-05-26T00:00:00Z")
+  val southCentralTo: OffsetDateTime = OffsetDateTime.parse("2026-05-26T23:59:59.999999Z")
+  val defaultDateFrom: OffsetDateTime = OffsetDateTime.parse("2026-05-20T00:00:00Z")
+  val defaultDateTo: OffsetDateTime = OffsetDateTime.parse("2026-05-20T23:59:59.999999Z")
+
   @BeforeEach
   fun setUp() {
     eteService = EteService(
@@ -76,8 +82,12 @@ class EteServiceTest {
       projectService,
       contextService,
       springEventPublisher,
-      OffsetDateTime.parse("2026-01-01T00:00:00Z"),
-      null,
+      defaultDateFrom,
+      defaultDateTo,
+      londonDateFrom,
+      londonDateTo,
+      southCentralDateFrom,
+      southCentralTo,
     )
   }
 
@@ -112,6 +122,23 @@ class EteServiceTest {
       val externalReference = "EXT-REF-123456"
       val fromDate = LocalDate.of(2026, 1, 1).atFirstSecondOfDay()
       val toDate = LocalDate.of(2026, 12, 31).atLastSecondOfDay()
+
+      eteService = EteService(
+        eteMappers,
+        eteCourseCompletionEventEntityRepository,
+        eteCourseCompletionEventResolutionRepository,
+        appointmentService,
+        eteValidationService,
+        projectService,
+        contextService,
+        springEventPublisher,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+      )
 
       every {
         eteCourseCompletionEventEntityRepository.findAllWithFilters(
@@ -166,8 +193,139 @@ class EteServiceTest {
           externalReference = externalReference,
           fromDate = fromDate,
           toDate = toDate,
-          availableFromDate = OffsetDateTime.of(2026, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC),
+          availableFromDate = null,
           availableToDate = null,
+          pageable = pageable,
+        )
+      }
+    }
+
+    @Test
+    fun `use correct available dates when configured for London`() {
+      val pageable = Pageable.unpaged()
+      val providerCode = "N07"
+
+      every {
+        eteCourseCompletionEventEntityRepository.findAllWithFilters(
+          any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(),
+        )
+      } returns PageImpl(emptyList())
+
+      eteService.getCourseCompletionEvents(
+        providerCode = providerCode,
+        pduId = null,
+        offices = null,
+        resolutionStatus = null,
+        completionStatus = EteCourseCompletionEventStatusDto.Passed,
+        attempts = null,
+        externalReference = null,
+        fromDate = null,
+        toDate = null,
+        pageable = pageable,
+      )
+
+      verify {
+        eteCourseCompletionEventEntityRepository.findAllWithFilters(
+          providerCode = providerCode,
+          pduId = null,
+          officesCount = 0,
+          offices = emptyList(),
+          resolutionStatus = ResolutionStatus.ANY,
+          completionStatus = EteCourseCompletionEventStatus.PASSED,
+          attempts = null,
+          externalReference = null,
+          fromDate = null,
+          toDate = null,
+          availableFromDate = londonDateFrom,
+          availableToDate = londonDateTo,
+          pageable = pageable,
+        )
+      }
+    }
+
+    @Test
+    fun `use correct availableFromDate when configured for South Central`() {
+      val pageable = Pageable.unpaged()
+      val providerCode = "N59"
+
+      every {
+        eteCourseCompletionEventEntityRepository.findAllWithFilters(
+          any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(),
+        )
+      } returns PageImpl(emptyList())
+
+      eteService.getCourseCompletionEvents(
+        providerCode = providerCode,
+        pduId = null,
+        offices = null,
+        resolutionStatus = null,
+        completionStatus = EteCourseCompletionEventStatusDto.Passed,
+        attempts = null,
+        externalReference = null,
+        fromDate = null,
+        toDate = null,
+        pageable = pageable,
+      )
+
+      verify {
+        eteCourseCompletionEventEntityRepository.findAllWithFilters(
+          providerCode = providerCode,
+          pduId = null,
+          officesCount = 0,
+          offices = emptyList(),
+          resolutionStatus = ResolutionStatus.ANY,
+          completionStatus = EteCourseCompletionEventStatus.PASSED,
+          attempts = null,
+          externalReference = null,
+          fromDate = null,
+          toDate = null,
+          availableFromDate = southCentralDateFrom,
+          availableToDate = southCentralTo,
+          pageable = pageable,
+        )
+      }
+    }
+
+    @Test
+    fun `use default availableFromDate for other regions even on production`() {
+      val pageable = Pageable.unpaged()
+      val providerCode = "OTHER"
+      val defaultDateFrom = OffsetDateTime.parse("2026-05-20T00:00:00Z")
+      val defaultDateTo = OffsetDateTime.parse("2026-05-20T23:59:59.999999Z")
+
+      every {
+        eteCourseCompletionEventEntityRepository.findAllWithFilters(
+          any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(),
+        )
+      } returns PageImpl(emptyList())
+
+      eteService.getCourseCompletionEvents(
+        providerCode = providerCode,
+        pduId = null,
+        offices = null,
+        resolutionStatus = null,
+        completionStatus = EteCourseCompletionEventStatusDto.Passed,
+        attempts = null,
+        externalReference = null,
+        fromDate = null,
+        toDate = null,
+        pageable = pageable,
+      )
+
+      verify {
+        eteCourseCompletionEventEntityRepository.findAllWithFilters(
+          providerCode = providerCode,
+          pduId = null,
+          officesCount = 0,
+          offices = emptyList(),
+          resolutionStatus = ResolutionStatus.ANY,
+          completionStatus = EteCourseCompletionEventStatus.PASSED,
+          attempts = null,
+          externalReference = null,
+          fromDate = null,
+          toDate = null,
+          availableFromDate = defaultDateFrom,
+          availableToDate = defaultDateTo,
           pageable = pageable,
         )
       }
