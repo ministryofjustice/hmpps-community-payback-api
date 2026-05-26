@@ -14,7 +14,7 @@ object SchedulingRenderer {
     request: SchedulingRequest,
     remainingMinutesAsOfToday: Duration,
   ): String {
-    val today = request.today
+    val today = request.now.toLocalDate()
     val trigger = request.trigger
 
     return buildString {
@@ -53,7 +53,7 @@ object SchedulingRenderer {
       append("* Non Working Dates as of Scheduling Date: ")
       appendLine(
         request.nonWorkingDates.dates
-          .filter { it.onOrAfter(request.today) }
+          .filter { it.onOrAfter(request.now.toLocalDate()) }
           .sorted(),
       )
     }
@@ -74,7 +74,7 @@ object SchedulingRenderer {
     schedule: Schedule,
     plan: SchedulePlan,
   ): String {
-    val today = request.today
+    val today = request.now.toLocalDate()
 
     return buildString {
       append(requestSummary("Schedule and Plan", request, remainingMinutesAsOfToday))
