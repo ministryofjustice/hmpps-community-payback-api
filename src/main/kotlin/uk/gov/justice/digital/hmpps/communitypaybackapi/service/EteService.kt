@@ -84,17 +84,7 @@ class EteService(
   ): Page<EteCourseCompletionEventDto> {
     val officesNormalised = offices ?: emptyList()
 
-    val effectiveAvailableFromDate = when (providerCode) {
-      "N07" -> londonAvailableFrom
-      "N59" -> southCentralAvailableFrom
-      else -> courseCompletionsAvailableFrom
-    }
-
-    val effectiveAvailableToDate = when (providerCode) {
-      "N07" -> londonAvailableTo ?: courseCompletionsAvailableTo
-      "N59" -> southCentralAvailableTo ?: courseCompletionsAvailableTo
-      else -> courseCompletionsAvailableTo
-    }
+    val (effectiveAvailableFromDate, effectiveAvailableToDate) = getEffectiveAvailableDates(providerCode)
 
     val page = eteCourseCompletionEventEntityRepository.findAllWithFilters(
       providerCode,
@@ -236,4 +226,11 @@ class EteService(
   }
 
   private fun getEventOrError(id: UUID) = eteCourseCompletionEventEntityRepository.findByIdOrNull(id) ?: error("Can't find course completion event $id")
+
+  // The dates below are temporary, during the initial stages of private beta
+  private fun getEffectiveAvailableDates(providerCode: String): Pair<OffsetDateTime?, OffsetDateTime?> = when (providerCode) {
+    "N07" -> Pair(londonAvailableFrom, londonAvailableTo ?: courseCompletionsAvailableTo)
+    "N59" -> Pair(southCentralAvailableFrom, southCentralAvailableTo ?: courseCompletionsAvailableTo)
+    else -> Pair(courseCompletionsAvailableFrom, courseCompletionsAvailableTo)
+  }
 }
