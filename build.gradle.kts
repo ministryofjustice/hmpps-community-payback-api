@@ -2,12 +2,12 @@ import java.net.InetSocketAddress
 import java.net.Socket
 
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "10.2.3"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "10.3.1"
   kotlin("plugin.spring") version "2.3.21"
   kotlin("plugin.jpa") version "2.3.21"
   id("dev.detekt") version "2.0.0-alpha.3"
   jacoco
-  id("io.sentry.jvm.gradle") version "6.6.0"
+  id("io.sentry.jvm.gradle") version "6.7.1"
 }
 
 configurations {
@@ -20,8 +20,8 @@ configurations {
 }
 
 dependencies {
-  implementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter:2.2.0")
-  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:7.3.1")
+  implementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter:2.3.0")
+  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:7.3.2")
 
   implementation("org.springframework.boot:spring-boot-starter-webflux")
   implementation("org.springframework.boot:spring-boot-starter-webclient")
@@ -33,7 +33,7 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-flyway")
   implementation("org.postgresql:postgresql")
 
-  implementation("org.redisson:redisson-spring-boot-starter:4.3.1")
+  implementation("org.redisson:redisson-spring-boot-starter:4.4.0")
   implementation("com.github.ben-manes.caffeine:caffeine:3.2.4")
   implementation("net.javacrumbs.shedlock:shedlock-spring:7.7.0")
   implementation("net.javacrumbs.shedlock:shedlock-provider-redis-spring:7.7.0")
@@ -42,10 +42,10 @@ dependencies {
 
   runtimeOnly("org.flywaydb:flyway-database-postgresql")
 
-  testImplementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter-test:2.2.0")
+  testImplementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter-test:2.3.0")
   testImplementation("org.springframework.boot:spring-boot-starter-webflux-test")
   testImplementation("org.wiremock:wiremock-standalone:3.13.2")
-  testImplementation("io.swagger.parser.v3:swagger-parser:2.1.41") {
+  testImplementation("io.swagger.parser.v3:swagger-parser:2.1.42") {
     exclude(group = "io.swagger.core.v3")
   }
   testImplementation("org.testcontainers:testcontainers-localstack:2.0.5")
@@ -55,9 +55,9 @@ dependencies {
   testImplementation("org.wiremock.integrations:wiremock-spring-boot:4.2.1")
   testImplementation("io.mockk:mockk:1.14.9")
   testImplementation("com.lemonappdev:konsist:0.17.3")
-  testImplementation("uk.gov.justice.service.hmpps:hmpps-subject-access-request-test-support:2.4.0")
+  testImplementation("uk.gov.justice.service.hmpps:hmpps-subject-access-request-test-support:2.4.2")
   testImplementation("org.zalando:logbook-spring-boot-starter:4.0.4")
-  testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
+  testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0")
 }
 
 kotlin {
