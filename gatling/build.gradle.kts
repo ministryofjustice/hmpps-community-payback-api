@@ -2,7 +2,7 @@ plugins {
   kotlin("jvm")
   kotlin("plugin.allopen")
   id("org.jlleitschuh.gradle.ktlint")
-  id("io.gatling.gradle") version "3.15.0.1"
+  id("io.gatling.gradle") version "3.15.0.3"
 }
 
 gatling {
