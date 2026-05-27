@@ -157,6 +157,25 @@ class AdjustmentValidationServiceTest {
     }
 
     @Test
+    fun `If adjustment date is before the sentence date then return bad request exception`() {
+      every { offenderService.ensureUnpaidWorkDetailsExist(any(), any()) } returns UnpaidWorkDetailsDto.valid().copy(
+        requiredMinutes = 100,
+        completedMinutes = 0,
+        adjustments = 0,
+        sentenceDate = LocalDate.now().minusMonths(1),
+      )
+
+      assertThatThrownBy {
+        service.validateCreate(
+          createAdjustment = baselineRequest.copy(adjustmentDate = LocalDate.now().minusMonths(1).minusDays(1)),
+          upwDetailsId = UNPAID_WORK_DETAILS,
+          username = USERNAME,
+        )
+      }.isInstanceOf(BadRequestException::class.java)
+        .hasMessage("Adjustment date must not be before the sentence date")
+    }
+
+    @Test
     fun success() {
       every { offenderService.ensureUnpaidWorkDetailsExist(any(), any()) } returns UnpaidWorkDetailsDto.valid().copy(
         requiredMinutes = 100,
