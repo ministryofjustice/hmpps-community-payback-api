@@ -12,14 +12,14 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionReso
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionResolutionTypeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.DeliusAppointmentIdDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EteCourseCompletionEventDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EteCourseCompletionEventStatusDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EteCourseCompletionResolutionStatusDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EteCourseCompletionShowCourseFailuresDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntityRepository
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntityRepository.CourseFailureFilter
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntityRepository.ResolutionStatus
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventResolutionRepository
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventStatus
 import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseCompletionMessage
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.CourseCompletionProcessedEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.CourseCompletionReceivedEvent
@@ -75,8 +75,7 @@ class EteService(
     pduId: UUID?,
     offices: List<String>?,
     resolutionStatus: EteCourseCompletionResolutionStatusDto?,
-    completionStatus: EteCourseCompletionEventStatusDto,
-    attempts: Int?,
+    showCourseFailures: EteCourseCompletionShowCourseFailuresDto?,
     externalReference: String?,
     fromDate: OffsetDateTime?,
     toDate: OffsetDateTime?,
@@ -96,11 +95,11 @@ class EteService(
         EteCourseCompletionResolutionStatusDto.Unresolved -> ResolutionStatus.UNRESOLVED
         null -> ResolutionStatus.ANY
       },
-      completionStatus = when (completionStatus) {
-        EteCourseCompletionEventStatusDto.Passed -> EteCourseCompletionEventStatus.PASSED
-        EteCourseCompletionEventStatusDto.Failed -> EteCourseCompletionEventStatus.FAILED
+      courseFailures = when (showCourseFailures) {
+        null, EteCourseCompletionShowCourseFailuresDto.No -> CourseFailureFilter.HIDE
+        EteCourseCompletionShowCourseFailuresDto.Yes -> CourseFailureFilter.SHOW_ALL
+        EteCourseCompletionShowCourseFailuresDto.OnlyWhenMaxAttemptsReached -> CourseFailureFilter.SHOW_ONLY_WHEN_MAX_ATTEMPTS_REACHED
       },
-      attempts,
       externalReference,
       fromDate,
       toDate,
