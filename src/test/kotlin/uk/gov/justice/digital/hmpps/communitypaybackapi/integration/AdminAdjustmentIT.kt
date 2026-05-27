@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.doAnswer
+import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.repository.findByIdOrNull
@@ -108,7 +109,7 @@ class AdminAdjustmentIT : IntegrationTestBase() {
     fun `Rollback on unexpected request failure, ensuring previously created adjustments aren't rolled back too`() {
       val appointment = AppointmentEntity.valid().copy(crn = CRN, deliusEventNumber = DELIUS_EVENT_NUMBER).persist(ctx)
       val task = AppointmentTaskEntity.valid().copy(appointment = appointment).persist(ctx)
-      whenever(adjustmentIdGenerator.generateId()).thenReturn(task.id)
+      doReturn(task.id).whenever(adjustmentIdGenerator).generateId(any())
 
       setupGetUpwDetailsResponse()
       CommunityPaybackAndDeliusMockServer.setupPostAdjustmentResponse(username = "theusername", adjustmentId = 25L)
@@ -119,6 +120,8 @@ class AdminAdjustmentIT : IntegrationTestBase() {
         expectedStatus = 200,
       )
       CommunityPaybackAndDeliusMockServer.verifyPostAdjustment(username = "theusername", count = 1)
+      // preemptive attempt to delete orphaned adjustment with the same reference
+      CommunityPaybackAndDeliusMockServer.verifyDeleteAdjustment(reference = task.id, count = 1)
 
       // setup request that fails after adjustment is created
       doAnswer { invocation ->
@@ -127,6 +130,7 @@ class AdminAdjustmentIT : IntegrationTestBase() {
       }.`when`(adjustmentService).createAdjustment(any(), any(), any())
 
       CommunityPaybackAndDeliusMockServer.setupDeleteAdjustmentResponse(task.id)
+      CommunityPaybackAndDeliusMockServer.resetDeleteAdjustmentRequestCount(task.id)
 
       callCreateAdjustment(
         request = CreateAdjustmentDto.valid(ctx).copy(taskId = task.id),
@@ -135,7 +139,8 @@ class AdminAdjustmentIT : IntegrationTestBase() {
 
       // ensure both creations worked, but only one was deleted
       CommunityPaybackAndDeliusMockServer.verifyPostAdjustment(username = "theusername", count = 2)
-      CommunityPaybackAndDeliusMockServer.verifyDeleteAdjustment(reference = task.id, count = 1)
+      // one delete for an orphaned adjustment and one for the actual rollback
+      CommunityPaybackAndDeliusMockServer.verifyDeleteAdjustment(reference = task.id, count = 2)
 
       // only 1 domain event is published because the second transaction is rolled back
       domainEventAsserter.assertEventCount("community-payback.adjustment.created", 1)

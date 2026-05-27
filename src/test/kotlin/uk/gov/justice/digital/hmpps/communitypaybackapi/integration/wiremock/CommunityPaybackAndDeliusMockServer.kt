@@ -58,6 +58,14 @@ object CommunityPaybackAndDeliusMockServer {
     )
   }
 
+  fun resetDeleteAdjustmentRequestCount(reference: UUID) {
+    WireMock.removeServeEvents(
+      deleteRequestedFor(
+        urlMatching("/community-payback-and-delius/adjustments/$reference"),
+      ),
+    )
+  }
+
   fun setupGetAppointment404Response(
     projectCode: String,
     appointmentId: Long,
