@@ -47,6 +47,10 @@ class AdjustmentValidationService(
       badRequest("Adjustment date must not be in the future")
     }
 
+    if (createAdjustment.adjustmentDate != null && createAdjustment.adjustmentDate.isBefore(unpaidWorkDetails.sentenceDate)) {
+      badRequest("Adjustment date must not be before the sentence date")
+    }
+
     validateMinutesToCredit(createAdjustment, unpaidWorkDetails)
 
     return ValidatedCreateAdjustment(

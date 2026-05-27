@@ -6,7 +6,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAdjustmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAdjustmentTypeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentReasonEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.random
-import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.randomPastLocalDate
+import java.time.LocalDate
 import java.util.UUID
 
 fun CreateAdjustmentDto.Companion.valid() = CreateAdjustmentDto(
@@ -14,7 +14,7 @@ fun CreateAdjustmentDto.Companion.valid() = CreateAdjustmentDto(
   type = CreateAdjustmentTypeDto.entries.random(),
   minutes = Int.random(1, 180),
   adjustmentReasonId = UUID.randomUUID(),
-  adjustmentDate = randomPastLocalDate(),
+  adjustmentDate = LocalDate.now(),
 )
 
 fun CreateAdjustmentDto.Companion.valid(ctx: ApplicationContext) = CreateAdjustmentDto.valid().copy(

@@ -7,6 +7,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDMainOffence
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDUpwDetails
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.random
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.randomLocalDate
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.randomPastLocalDate
 import kotlin.random.Random
 
 fun NDCaseDetailsSummary.Companion.valid() = NDCaseDetailsSummary(
@@ -16,7 +17,7 @@ fun NDCaseDetailsSummary.Companion.valid() = NDCaseDetailsSummary(
 
 fun NDUpwDetails.Companion.valid() = NDUpwDetails(
   eventNumber = Random.nextInt(1, 6),
-  sentenceDate = randomLocalDate(),
+  sentenceDate = randomPastLocalDate(),
   requiredMinutes = Random.nextLong(100, 301),
   completedMinutes = Random.nextLong(150, 250),
   adjustments = Random.nextLong(25, 51),

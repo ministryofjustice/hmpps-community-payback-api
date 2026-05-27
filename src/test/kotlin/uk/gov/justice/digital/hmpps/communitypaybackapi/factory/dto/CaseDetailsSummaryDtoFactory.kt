@@ -7,6 +7,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.OffenderDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.random
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.randomLocalDate
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.randomPastLocalDate
 import kotlin.Long
 
 fun CaseDetailsSummaryDto.Companion.valid() = CaseDetailsSummaryDto(
@@ -18,7 +19,7 @@ fun CaseDetailsSummaryDto.Companion.valid() = CaseDetailsSummaryDto(
 
 fun UnpaidWorkDetailsDto.Companion.valid() = UnpaidWorkDetailsDto(
   eventNumber = Int.random(),
-  sentenceDate = randomLocalDate(),
+  sentenceDate = randomPastLocalDate(),
   requiredMinutes = Long.random(3600, 7200),
   completedMinutes = Long.random(0, 3600),
   adjustments = Long.random(),
