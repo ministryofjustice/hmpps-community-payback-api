@@ -201,14 +201,14 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
     }
 
     @Test
-    fun `should exclude failed completions when completion status of 'passed' requested`() {
+    fun `should exclude failed completions when show course failures is not requested`() {
       val pdu = communityCampusPduEntityRepository.findByNameIgnoreCase("Dyfed Powys")!!
 
       val completionPassed = eteCourseCompletionEventEntityRepository.save(EteCourseCompletionEventEntity.passed(ctx).copy(pdu = pdu))
       eteCourseCompletionEventEntityRepository.save(EteCourseCompletionEventEntity.failed(ctx).copy(pdu = pdu))
 
       val pagedCourseCompletions = webTestClient.get()
-        .uri("/admin/providers/${pdu.providerCode}/course-completions?status=Passed")
+        .uri("/admin/providers/${pdu.providerCode}/course-completions?showCourseFailures=No")
         .addAdminUiAuthHeader()
         .exchange()
         .expectStatus()
@@ -219,21 +219,43 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
     }
 
     @Test
-    fun `should exclude passed completions when completion status of 'failed' requested`() {
+    fun `should show all completions when show course failures requested`() {
       val pdu = communityCampusPduEntityRepository.findByNameIgnoreCase("Dyfed Powys")!!
 
-      eteCourseCompletionEventEntityRepository.save(EteCourseCompletionEventEntity.passed(ctx).copy(pdu = pdu))
-      val completionFailed = eteCourseCompletionEventEntityRepository.save(EteCourseCompletionEventEntity.failed(ctx).copy(pdu = pdu))
+      val completionPassed = eteCourseCompletionEventEntityRepository.save(EteCourseCompletionEventEntity.passed(ctx).copy(pdu = pdu))
+      val completionFailed1 = eteCourseCompletionEventEntityRepository.save(EteCourseCompletionEventEntity.failed(ctx).copy(pdu = pdu, attempts = 1))
+      val completionFailed2 = eteCourseCompletionEventEntityRepository.save(EteCourseCompletionEventEntity.failed(ctx).copy(pdu = pdu, attempts = 2))
+      val completionFailed3 = eteCourseCompletionEventEntityRepository.save(EteCourseCompletionEventEntity.failed(ctx).copy(pdu = pdu, attempts = 3))
 
       val pagedCourseCompletions = webTestClient.get()
-        .uri("/admin/providers/${pdu.providerCode}/course-completions?status=Failed")
+        .uri("/admin/providers/${pdu.providerCode}/course-completions?showCourseFailures=Yes")
         .addAdminUiAuthHeader()
         .exchange()
         .expectStatus()
         .isOk
         .bodyAsObject<PagedModel<EteCourseCompletionEventDto>>()
 
-      assertThat(pagedCourseCompletions.content.map { it.id }).containsExactly(completionFailed.id)
+      assertThat(pagedCourseCompletions.content.map { it.id }).containsExactlyInAnyOrder(completionPassed.id, completionFailed1.id, completionFailed2.id, completionFailed3.id)
+    }
+
+    @Test
+    fun `should show only failures on the third attempt when 'OnlyWhenMaxAttemptsReached' requested`() {
+      val pdu = communityCampusPduEntityRepository.findByNameIgnoreCase("Dyfed Powys")!!
+
+      val completionPassed = eteCourseCompletionEventEntityRepository.save(EteCourseCompletionEventEntity.passed(ctx).copy(pdu = pdu))
+      eteCourseCompletionEventEntityRepository.save(EteCourseCompletionEventEntity.failed(ctx).copy(pdu = pdu, attempts = 1))
+      eteCourseCompletionEventEntityRepository.save(EteCourseCompletionEventEntity.failed(ctx).copy(pdu = pdu, attempts = 2))
+      val completionFailed3 = eteCourseCompletionEventEntityRepository.save(EteCourseCompletionEventEntity.failed(ctx).copy(pdu = pdu, attempts = 3))
+
+      val pagedCourseCompletions = webTestClient.get()
+        .uri("/admin/providers/${pdu.providerCode}/course-completions?showCourseFailures=OnlyWhenMaxAttemptsReached")
+        .addAdminUiAuthHeader()
+        .exchange()
+        .expectStatus()
+        .isOk
+        .bodyAsObject<PagedModel<EteCourseCompletionEventDto>>()
+
+      assertThat(pagedCourseCompletions.content.map { it.id }).containsExactlyInAnyOrder(completionPassed.id, completionFailed3.id)
     }
 
     @Test
@@ -399,25 +421,6 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
         .bodyAsObject<PagedModel<EteCourseCompletionEventDto>>()
 
       assertThat(result.content.map { it.id }).containsExactlyInAnyOrder(firstAttemptCompletion.id, secondAttemptCompletion.id, thirdAttemptCompletion.id)
-    }
-
-    @Test
-    fun `should only return results with the requested attempt count`() {
-      val pdu = communityCampusPduEntityRepository.findAll().first()
-
-      eteCourseCompletionEventEntityRepository.save(EteCourseCompletionEventEntity.passed(ctx).copy(pdu = pdu, attempts = 1))
-      eteCourseCompletionEventEntityRepository.save(EteCourseCompletionEventEntity.passed(ctx).copy(pdu = pdu, attempts = 2))
-      val thirdAttemptCompletion = eteCourseCompletionEventEntityRepository.save(EteCourseCompletionEventEntity.passed(ctx).copy(pdu = pdu, attempts = 3))
-
-      val result = webTestClient.get()
-        .uri("/admin/providers/${pdu.providerCode}/course-completions?attempts=3")
-        .addAdminUiAuthHeader()
-        .exchange()
-        .expectStatus()
-        .isOk
-        .bodyAsObject<PagedModel<EteCourseCompletionEventDto>>()
-
-      assertThat(result.content.map { it.id }).containsExactlyInAnyOrder(thirdAttemptCompletion.id)
     }
 
     @Test

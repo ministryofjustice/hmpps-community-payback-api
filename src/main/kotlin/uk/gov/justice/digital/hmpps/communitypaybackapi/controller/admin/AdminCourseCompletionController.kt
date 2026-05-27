@@ -28,8 +28,8 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.controller.internal.notF
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionRecommendationDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionResolutionDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EteCourseCompletionEventDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EteCourseCompletionEventStatusDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EteCourseCompletionResolutionStatusDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EteCourseCompletionShowCourseFailuresDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.EteService
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 import java.time.LocalDate
@@ -76,11 +76,19 @@ class AdminCourseCompletionController(val eteService: EteService) {
     @Parameter(description = "If not defined both resolved and unresolved completions will be returned")
     resolutionStatus: EteCourseCompletionResolutionStatusDto?,
     @RequestParam
-    @Parameter(description = "Filter results by course completion outcome (either 'Passed' or 'Failed'). If not provided, defaults to 'Passed'.")
-    status: EteCourseCompletionEventStatusDto?,
-    @RequestParam
-    @Parameter(description = "Filter results by the attempt number if provided.")
-    attempts: Int?,
+    @Parameter(
+      description = """
+        If present, determines when failed course completions are shown:
+        
+        - `No`: Failed course completions will not be shown.
+        - `Yes`: All course completions will be shown, including failed ones.
+        - `OnlyWhenMaxAttemptsReached`: Failed course completions are only shown when it was the last allowed attempt
+          at the course in Community Campus.
+        
+        If not present, the default value is `No`.
+      """,
+    )
+    showCourseFailures: EteCourseCompletionShowCourseFailuresDto?,
     @RequestParam
     @Parameter(description = "Filter by the external reference supplied by Community Campus.")
     externalReference: String?,
@@ -95,8 +103,7 @@ class AdminCourseCompletionController(val eteService: EteService) {
     pduId,
     office,
     resolutionStatus = resolutionStatus,
-    completionStatus = status ?: EteCourseCompletionEventStatusDto.Passed,
-    attempts,
+    showCourseFailures = showCourseFailures,
     externalReference,
     dateFrom?.atFirstSecondOfDay(),
     dateTo?.atLastSecondOfDay(),

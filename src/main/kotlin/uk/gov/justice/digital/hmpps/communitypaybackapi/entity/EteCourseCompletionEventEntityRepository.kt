@@ -15,12 +15,11 @@ interface EteCourseCompletionEventEntityRepository : JpaRepository<EteCourseComp
     """
     SELECT e FROM EteCourseCompletionEventEntity e
     LEFT JOIN e.resolution r
-    WHERE e.status = :completionStatus
-    AND e.pdu.providerCode = :providerCode 
+    WHERE e.pdu.providerCode = :providerCode 
     AND ((CAST(:pduId AS uuid) IS NULL) OR (e.pdu.id = :pduId))
     AND (:officesCount = 0 OR e.office IN :offices)
     AND ((:#{#resolutionStatus.name()} = 'ANY') OR (:#{#resolutionStatus.name()} = 'RESOLVED' AND r IS NOT NULL) OR (:#{#resolutionStatus.name()} = 'UNRESOLVED' AND r IS NULL))
-    AND (:attempts IS NULL OR e.attempts = :attempts)
+    AND (e.status = 'PASSED' OR (:#{#courseFailures.name()} = 'SHOW_ALL') OR (:#{#courseFailures.name()} = 'SHOW_ONLY_WHEN_MAX_ATTEMPTS_REACHED' AND MOD(e.attempts, 3) = 0))
     AND (:externalReference IS NULL OR e.externalReference = :externalReference)
     AND (cast(:fromDate as timestamp) IS NULL OR e.completionDateTime >= :fromDate)
     AND (cast(:toDate as timestamp) IS NULL OR e.completionDateTime <= :toDate)
@@ -34,8 +33,7 @@ interface EteCourseCompletionEventEntityRepository : JpaRepository<EteCourseComp
     officesCount: Int,
     offices: List<String>,
     resolutionStatus: ResolutionStatus,
-    completionStatus: EteCourseCompletionEventStatus,
-    attempts: Int?,
+    courseFailures: CourseFailureFilter,
     externalReference: String?,
     fromDate: OffsetDateTime?,
     toDate: OffsetDateTime?,
@@ -61,5 +59,11 @@ interface EteCourseCompletionEventEntityRepository : JpaRepository<EteCourseComp
     ANY,
     RESOLVED,
     UNRESOLVED,
+  }
+
+  enum class CourseFailureFilter {
+    HIDE,
+    SHOW_ALL,
+    SHOW_ONLY_WHEN_MAX_ATTEMPTS_REACHED,
   }
 }

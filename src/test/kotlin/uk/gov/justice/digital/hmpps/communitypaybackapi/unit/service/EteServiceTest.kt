@@ -14,12 +14,12 @@ import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.atFirstSecondOfDay
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.atLastSecondOfDay
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EteCourseCompletionEventStatusDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EteCourseCompletionShowCourseFailuresDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntityRepository
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntityRepository.CourseFailureFilter
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntityRepository.ResolutionStatus
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventResolutionRepository
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventStatus
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.listener.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseCompletionMessage
@@ -147,8 +147,7 @@ class EteServiceTest {
           officesCount = 2,
           offices = offices,
           resolutionStatus = ResolutionStatus.ANY,
-          completionStatus = EteCourseCompletionEventStatus.PASSED,
-          attempts = attempts,
+          courseFailures = CourseFailureFilter.SHOW_ONLY_WHEN_MAX_ATTEMPTS_REACHED,
           externalReference = externalReference,
           fromDate = fromDate,
           toDate = toDate,
@@ -169,8 +168,7 @@ class EteServiceTest {
         pduId = pduId,
         offices = offices,
         resolutionStatus = null,
-        completionStatus = EteCourseCompletionEventStatusDto.Passed,
-        attempts = attempts,
+        showCourseFailures = EteCourseCompletionShowCourseFailuresDto.OnlyWhenMaxAttemptsReached,
         externalReference = externalReference,
         fromDate = fromDate,
         toDate = toDate,
@@ -188,8 +186,7 @@ class EteServiceTest {
           officesCount = 2,
           offices = offices,
           resolutionStatus = ResolutionStatus.ANY,
-          completionStatus = EteCourseCompletionEventStatus.PASSED,
-          attempts = attempts,
+          courseFailures = CourseFailureFilter.SHOW_ONLY_WHEN_MAX_ATTEMPTS_REACHED,
           externalReference = externalReference,
           fromDate = fromDate,
           toDate = toDate,
@@ -207,7 +204,7 @@ class EteServiceTest {
 
       every {
         eteCourseCompletionEventEntityRepository.findAllWithFilters(
-          any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(),
+          any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(),
         )
       } returns PageImpl(emptyList())
 
@@ -216,8 +213,7 @@ class EteServiceTest {
         pduId = null,
         offices = null,
         resolutionStatus = null,
-        completionStatus = EteCourseCompletionEventStatusDto.Passed,
-        attempts = null,
+        showCourseFailures = EteCourseCompletionShowCourseFailuresDto.OnlyWhenMaxAttemptsReached,
         externalReference = null,
         fromDate = null,
         toDate = null,
@@ -231,8 +227,7 @@ class EteServiceTest {
           officesCount = 0,
           offices = emptyList(),
           resolutionStatus = ResolutionStatus.ANY,
-          completionStatus = EteCourseCompletionEventStatus.PASSED,
-          attempts = null,
+          courseFailures = CourseFailureFilter.SHOW_ONLY_WHEN_MAX_ATTEMPTS_REACHED,
           externalReference = null,
           fromDate = null,
           toDate = null,
@@ -250,7 +245,7 @@ class EteServiceTest {
 
       every {
         eteCourseCompletionEventEntityRepository.findAllWithFilters(
-          any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(),
+          any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(),
         )
       } returns PageImpl(emptyList())
 
@@ -259,8 +254,7 @@ class EteServiceTest {
         pduId = null,
         offices = null,
         resolutionStatus = null,
-        completionStatus = EteCourseCompletionEventStatusDto.Passed,
-        attempts = null,
+        showCourseFailures = EteCourseCompletionShowCourseFailuresDto.OnlyWhenMaxAttemptsReached,
         externalReference = null,
         fromDate = null,
         toDate = null,
@@ -274,8 +268,7 @@ class EteServiceTest {
           officesCount = 0,
           offices = emptyList(),
           resolutionStatus = ResolutionStatus.ANY,
-          completionStatus = EteCourseCompletionEventStatus.PASSED,
-          attempts = null,
+          courseFailures = CourseFailureFilter.SHOW_ONLY_WHEN_MAX_ATTEMPTS_REACHED,
           externalReference = null,
           fromDate = null,
           toDate = null,
@@ -295,7 +288,7 @@ class EteServiceTest {
 
       every {
         eteCourseCompletionEventEntityRepository.findAllWithFilters(
-          any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(),
+          any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(),
         )
       } returns PageImpl(emptyList())
 
@@ -304,8 +297,7 @@ class EteServiceTest {
         pduId = null,
         offices = null,
         resolutionStatus = null,
-        completionStatus = EteCourseCompletionEventStatusDto.Passed,
-        attempts = null,
+        showCourseFailures = EteCourseCompletionShowCourseFailuresDto.OnlyWhenMaxAttemptsReached,
         externalReference = null,
         fromDate = null,
         toDate = null,
@@ -319,8 +311,7 @@ class EteServiceTest {
           officesCount = 0,
           offices = emptyList(),
           resolutionStatus = ResolutionStatus.ANY,
-          completionStatus = EteCourseCompletionEventStatus.PASSED,
-          attempts = null,
+          courseFailures = CourseFailureFilter.SHOW_ONLY_WHEN_MAX_ATTEMPTS_REACHED,
           externalReference = null,
           fromDate = null,
           toDate = null,
