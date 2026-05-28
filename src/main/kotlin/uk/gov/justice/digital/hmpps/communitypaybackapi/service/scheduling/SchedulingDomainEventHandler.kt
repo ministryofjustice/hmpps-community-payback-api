@@ -3,6 +3,8 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.service.scheduling
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.retry.annotation.Backoff
+import org.springframework.retry.annotation.Retryable
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
@@ -36,6 +38,11 @@ class SchedulingDomainEventHandler(
     val log: Logger = LoggerFactory.getLogger(this::class.java)
   }
 
+  @Retryable(
+    retryFor = [IllegalStateException::class],
+    maxAttempts = 3,
+    backoff = Backoff(delay = 500),
+  )
   fun handleAppointmentEvent(
     eventId: UUID,
     maxProcessingTime: Duration,
@@ -60,6 +67,11 @@ class SchedulingDomainEventHandler(
     appointmentEventService.recordSchedulingRan(eventId, schedulingId)
   }
 
+  @Retryable(
+    retryFor = [IllegalStateException::class],
+    maxAttempts = 3,
+    backoff = Backoff(delay = 500),
+  )
   fun handleAdjustmentEvent(
     eventId: UUID,
     maxProcessingTime: Duration,
