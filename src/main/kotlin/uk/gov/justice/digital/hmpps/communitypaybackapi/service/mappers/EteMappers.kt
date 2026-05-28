@@ -1,5 +1,7 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers
 
+import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.formatForUser
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.toLocalDateTimeEuropeLondon
@@ -15,6 +17,9 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOut
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.CommunityCampusPduEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntityRepository
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntityRepository.CourseFailureFilter
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntityRepository.ResolutionStatus
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventResolutionEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventStatus
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionResolution
@@ -30,6 +35,7 @@ class EteMappers(
   private val contextService: ContextService,
   private val contactOutcomeEntityRepository: ContactOutcomeEntityRepository,
   private val communityCampusPduEntityRepository: CommunityCampusPduEntityRepository,
+  private val eteCourseCompletionEventEntityRepository: EteCourseCompletionEventEntityRepository,
 ) {
 
   companion object {
@@ -89,16 +95,22 @@ class EteMappers(
     userNotes: String?,
     courseCompletionEvent: EteCourseCompletionEventEntity,
   ) = buildString {
-    val completionDateLocal = courseCompletionEvent.completionDateTime.toLocalDateTimeEuropeLondon()
+    for (event in getAllAttemptsForCourseCompletionEvent(courseCompletionEvent)) {
+      val completionDateLocal = event.completionDateTime.toLocalDateTimeEuropeLondon()
 
-    append("'")
-    append(courseCompletionEvent.courseName)
-    append("' was completed on ")
-    append(courseCompletionEvent.provider)
-    append(" at ")
-    append(completionDateLocal.toLocalDate().formatForUser())
-    append(" on ")
-    appendLine(completionDateLocal.toLocalTime().formatForUser())
+      append("'")
+      append(event.courseName)
+      append("' was completed on ")
+      append(event.provider)
+      append(" at ")
+      append(completionDateLocal.toLocalTime().formatForUser())
+      append(" on ")
+      append(completionDateLocal.toLocalDate().formatForUser())
+      append(" and resulted in a ")
+      append(event.status.formatForUser())
+      append(" on attempt ")
+      appendLine(event.attempts)
+    }
 
     if (userNotes?.isNotBlank() == true) {
       appendLine(userNotes)
@@ -199,6 +211,21 @@ class EteMappers(
       receivedAt = OffsetDateTime.now(),
     )
   }
+
+  private fun getAllAttemptsForCourseCompletionEvent(courseCompletionEvent: EteCourseCompletionEventEntity) = eteCourseCompletionEventEntityRepository.findAllWithFilters(
+    providerCode = courseCompletionEvent.pdu.providerCode,
+    pduId = null,
+    officesCount = 0,
+    offices = listOf(),
+    resolutionStatus = ResolutionStatus.UNRESOLVED,
+    courseFailures = CourseFailureFilter.SHOW_ALL,
+    externalReference = courseCompletionEvent.externalReference,
+    fromDate = null,
+    toDate = null,
+    availableFromDate = null,
+    availableToDate = null,
+    pageable = Pageable.unpaged(Sort.by(Sort.Order.asc("createdAt"))),
+  ).toList()
 }
 
 fun EteCourseCompletionEventEntity.toDto() = EteCourseCompletionEventDto(
@@ -222,3 +249,8 @@ fun EteCourseCompletionEventEntity.toDto() = EteCourseCompletionEventDto(
   importedOn = receivedAt.toLocalDateTime(),
   resolved = resolution != null,
 )
+
+fun EteCourseCompletionEventStatus.formatForUser(): String = when (this) {
+  EteCourseCompletionEventStatus.PASSED -> "pass"
+  EteCourseCompletionEventStatus.FAILED -> "fail"
+}
