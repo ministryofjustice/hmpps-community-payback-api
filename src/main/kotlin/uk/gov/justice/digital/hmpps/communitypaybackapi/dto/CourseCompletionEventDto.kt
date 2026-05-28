@@ -74,3 +74,9 @@ enum class EteCourseCompletionResolutionStatusDto {
   Resolved,
   Unresolved,
 }
+
+enum class EteCourseCompletionShowCourseFailuresDto {
+  No,
+  Yes,
+  OnlyWhenMaxAttemptsReached,
+}
