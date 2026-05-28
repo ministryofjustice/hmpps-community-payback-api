@@ -1,0 +1,164 @@
+#!/bin/bash
+
+print_help () {
+  echo "send-course-completion-event [f:l:c:PFn:x:h]"
+  echo "  Posts a course completion event to the LocalStack SQS queue."
+  echo
+  echo "Usage:"
+  echo "  -f <first name>   If not provided a random first name is picked"
+  echo "  -l <last name>    If not provided a random last name is picked"
+  echo "  -c <course name>  If not provided a random course name is picked"
+  echo
+  echo "  -P                Flag the course as being passed (default)"
+  echo "  -F                Flag the course as being failed"
+  echo "  -n <attempt>      The attempt number. If not provided 1 is used"
+  echo "  -x <reference>    The external reference. Randomly picked if not provided"
+  echo
+  echo "  -h                Display this help message"
+}
+
+while getopts "f:l:c:PFn:x:h" opt; do
+  case $opt in
+    f)
+      firstName="$OPTARG"
+      ;;
+    l)
+      lastName="$OPTARG"
+      ;;
+    c)
+      courseName="$OPTARG"
+      ;;
+    P)
+      status="Completed"
+      ;;
+    F)
+      status="Failed"
+      ;;
+    n)
+      attemptNumber="$OPTARG"
+      ;;
+    x)
+      externalReference="$OPTARG"
+      ;;
+    \?)
+      echo "Invalid option: -$OPTARG" >&2
+      print_help
+      exit 1
+      ;;
+    h)
+      print_help
+      exit 0
+      ;;
+  esac
+done
+
+uuid () {
+  uuidgen | tr '[:upper:]' '[:lower:]'
+}
+
+rng () {
+  # Get four random bytes
+  echo $(od -vAn -N4 -tu4 < /dev/urandom)
+}
+
+now () {
+  echo $(date +%s)
+}
+
+randomFromList () {
+  items=("$@")
+  index=$((($(rng) % $#)))
+  echo ${items[$index]}
+}
+
+randomDob () {
+  # 18 - 80 years old
+  years=$((($(rng) % 52) + 18))
+  days=$(($(rng) % 365))
+
+  d=$((($years * 31536000) + (days * 86400)))
+  epoch=$(($(now) - $d))
+  echo $(date -r "$epoch" +%F)
+}
+
+messageId="$(uuid)"
+
+if [ -z $firstName ]; then
+  firstName="$(randomFromList "Alec" "Becky" "Charles" "Dianne" "Eric" "Fiona" "Gary" "Hetty")"
+fi
+
+if [ -z $lastName ]; then
+  lastName="$(randomFromList "Anderson" "Bridges" "Chorley" "Dreyfus" "Etherton" "Fanshaw" "Gardener" "Hill")"
+fi
+
+dateOfBirth="$(randomDob)"
+
+if [ -z $courseName ]; then
+  courseName="How To $(randomFromList "Butter Toast" "Suck Eggs" "Bake Bread" "Roll Cheese")"
+fi
+
+completedOn="$(date +%FT%T%z)"
+
+if [ -z $status ]; then
+  status="Completed"
+fi
+
+totalTimeMinutes="$(($(rng) % 120))"
+
+if [ -z $attemptNumber ]; then
+  attemptNumber="1"
+fi
+
+if [ -z $externalReference ]; then
+  externalReference="$(uuid)"
+fi
+
+message=$(cat <<EOF
+{
+  "messageId": "$messageId",
+  "eventType": "educationCourseCompletionCreated",
+  "messageAttributes": {
+    "firstName": "$firstName",
+    "lastName": "$lastName",
+    "dateOfBirth": "$dateOfBirth",
+    "region": "East of England",
+    "pdu": "North Essex",
+    "office": "Chelmsford",
+    "email": "$firstName.$lastName@example.org",
+    "courseName": "$courseName",
+    "courseType": "Online",
+    "provider": "Example Online Course Provider Ltd",
+    "completionDateTime": "$completedOn",
+    "status": "$status",
+    "totalTimeMinutes": $totalTimeMinutes,
+    "attempts": $attemptNumber,
+    "expectedTimeMinutes": 120,
+    "externalReference": "$externalReference"
+  }
+}
+EOF
+)
+
+echo -e "Posting event to LocalStack SQS:\n\n$message\n"
+
+# Stringify the message JSON
+message=${message//\\/\\\\}
+message=${message//\"/\\\"}
+message=${message//$'\n'/\\n}
+
+payload=$(cat <<EOF
+{
+  "QueueUrl": "http://sqs.eu-west-2.localhost.localstack.cloud:4566/000000000000/cp_stack_course_completion_events/",
+  "MessageBody": "$message"
+}
+EOF
+)
+
+response=$(curl -s -H 'X-Amz-Target: AmazonSQS.SendMessage' --json "$payload" 'localhost:4566')
+
+if [ $? ]; then
+  echo -e "Event successfully sent! Response was:\n\n$response"
+else
+  echo -e "Event failed to send! Response was:\n\n$response" >&2
+  exit 1
+fi
