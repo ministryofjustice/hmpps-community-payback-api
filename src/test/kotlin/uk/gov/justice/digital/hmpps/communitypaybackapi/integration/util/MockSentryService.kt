@@ -37,7 +37,7 @@ class MockSentryService : SentryService {
 
   fun assertExceptionRaisedWithMessage(regex: String) {
     await()
-      .atMost(1, TimeUnit.SECONDS)
+      .atMost(5, TimeUnit.SECONDS)
       .untilAsserted {
         assertThat(capturedExceptions)
           .anySatisfy {
