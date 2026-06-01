@@ -36,7 +36,6 @@ class EteService(
   private val eteCourseCompletionEventResolutionRepository: EteCourseCompletionEventResolutionRepository,
   private val appointmentService: AppointmentService,
   private val eteValidationService: EteValidationService,
-  private val projectService: ProjectService,
   private val contextService: ContextService,
   private val springEventPublisher: SpringEventPublisher,
 
@@ -117,22 +116,13 @@ class EteService(
     val courseCompletionEvent = getEventOrError(id)
 
     val email = courseCompletionEvent.email
-    val courseName = courseCompletionEvent.courseName
-    val office = courseCompletionEvent.office
 
     val crn: String? =
       eteCourseCompletionEventResolutionRepository
         .findFirstByEteCourseCompletionEventEmailOrderByCreatedAtDesc(email)
         ?.crn
 
-    val projectCode: String? =
-      eteCourseCompletionEventResolutionRepository
-        .findFirstByEteCourseCompletionEventOfficeAndEteCourseCompletionEventCourseNameOrderByCreatedAtDesc(office, courseName)
-        ?.projectCode
-
-    val project = projectCode?.let { projectService.getProject(it) }
-
-    return CourseCompletionRecommendationDto(crn, project)
+    return CourseCompletionRecommendationDto(crn)
   }
 
   @Transactional
