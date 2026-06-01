@@ -7,6 +7,7 @@ import io.mockk.junit5.MockKExtension
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.assertj.core.api.Assertions.within
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -14,6 +15,7 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.provider.ValueSource
+import org.springframework.data.domain.PageImpl
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.toLocalTimeEuropeLondon
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentBehaviourDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
@@ -27,6 +29,9 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.CommunityCampusPd
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntityRepository
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntityRepository.CourseFailureFilter
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntityRepository.ResolutionStatus
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventResolutionEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventStatus
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionResolution
@@ -43,6 +48,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
+import java.time.ZoneOffset
 import java.time.temporal.ChronoUnit
 import java.util.UUID
 
@@ -58,6 +64,9 @@ class EteMappersTest {
   @RelaxedMockK
   private lateinit var communityCampusPduEntityRepository: CommunityCampusPduEntityRepository
 
+  @RelaxedMockK
+  private lateinit var eteCourseCompletionEventEntityRepository: EteCourseCompletionEventEntityRepository
+
   @InjectMockKs
   private lateinit var mapper: EteMappers
 
@@ -67,6 +76,27 @@ class EteMappersTest {
     const val PROJECT_CODE = "PROJ123"
     const val DELIUS_APPOINTMENT_ID = 5L
     const val DELIUS_EVENT_NUMBER = 52
+  }
+
+  fun setupGetAllAttemptsForCourseCompletionEvent(vararg courseCompletionEvents: EteCourseCompletionEventEntity) {
+    val courseCompletionEvent = courseCompletionEvents.last()
+
+    every {
+      eteCourseCompletionEventEntityRepository.findAllWithFilters(
+        providerCode = courseCompletionEvent.pdu.providerCode,
+        pduId = null,
+        officesCount = 0,
+        offices = emptyList(),
+        resolutionStatus = ResolutionStatus.UNRESOLVED,
+        courseFailures = CourseFailureFilter.SHOW_ALL,
+        externalReference = courseCompletionEvent.externalReference,
+        fromDate = null,
+        toDate = null,
+        availableFromDate = null,
+        availableToDate = null,
+        pageable = any(),
+      )
+    } returns PageImpl(courseCompletionEvents.toList())
   }
 
   @Nested
@@ -87,7 +117,13 @@ class EteMappersTest {
       courseName = "The course name",
       provider = "Provider1",
       completionDateTime = OffsetDateTime.parse("2021-05-04T12:15:00.000+01:00"),
+      status = EteCourseCompletionEventStatus.PASSED,
     )
+
+    @BeforeEach
+    fun setup() {
+      setupGetAllAttemptsForCourseCompletionEvent(baselineCourseCompletionEvent)
+    }
 
     @ParameterizedTest
     @CsvSource(
@@ -117,7 +153,7 @@ class EteMappersTest {
       assertThat(result.date).isEqualTo(baselineCourseCompletionResolution.creditTimeDetails.date)
       assertThat(result.notes).isEqualTo(
         """
-        |'The course name' was completed on Provider1 at 04/05/2021 on 12:15
+        |'The course name' was completed on Provider1 at 12:15 on 04/05/2021 and resulted in a pass on attempt 1
         |the provided notes
         """.trimMargin(),
       )
@@ -196,10 +232,10 @@ class EteMappersTest {
     @ParameterizedTest
     @CsvSource(
       value = [
-        "2020-01-02T12:15:15.125+00:00,'The course name' was completed on Provider1 at 02/01/2020 on 12:15",
-        "2020-01-02T12:15:00.000Z,'The course name' was completed on Provider1 at 02/01/2020 on 12:15",
-        "2021-05-04T12:15:00.000+01:00,'The course name' was completed on Provider1 at 04/05/2021 on 12:15",
-        "2021-05-04T12:15:00.000Z,'The course name' was completed on Provider1 at 04/05/2021 on 13:15",
+        "2020-01-02T12:15:15.125+00:00,'The course name' was completed on Provider1 at 12:15 on 02/01/2020 and resulted in a pass on attempt 1",
+        "2020-01-02T12:15:00.000Z,'The course name' was completed on Provider1 at 12:15 on 02/01/2020 and resulted in a pass on attempt 1",
+        "2021-05-04T12:15:00.000+01:00,'The course name' was completed on Provider1 at 12:15 on 04/05/2021 and resulted in a pass on attempt 1",
+        "2021-05-04T12:15:00.000Z,'The course name' was completed on Provider1 at 13:15 on 04/05/2021 and resulted in a pass on attempt 1",
       ],
       quoteCharacter = '"',
     )
@@ -207,16 +243,57 @@ class EteMappersTest {
       completionDateTime: OffsetDateTime,
       expectedNote: String,
     ) {
+      val courseCompletionEvent = baselineCourseCompletionEvent.copy(
+        completionDateTime = completionDateTime,
+      )
+
+      setupGetAllAttemptsForCourseCompletionEvent(courseCompletionEvent)
+
       val result = mapper.toCreateAppointmentDto(
         courseCompletionResolution = baselineCourseCompletionResolution.copy(
           creditTimeDetails = baselineCourseCompletionResolution.creditTimeDetails!!.copy(notes = null),
         ),
-        courseCompletionEvent = baselineCourseCompletionEvent.copy(
-          completionDateTime = completionDateTime,
-        ),
+        courseCompletionEvent = courseCompletionEvent,
       )
 
       assertThat(result.notes).isEqualTo(expectedNote)
+    }
+
+    @Test
+    fun `should use all course completion attempts to build notes`() {
+      val courseCompletionAttempt1 = baselineCourseCompletionEvent.copy(
+        completionDateTime = OffsetDateTime.of(2025, 11, 20, 13, 35, 0, 0, ZoneOffset.UTC),
+        status = EteCourseCompletionEventStatus.FAILED,
+        attempts = 1,
+      )
+      val courseCompletionAttempt2 = baselineCourseCompletionEvent.copy(
+        completionDateTime = OffsetDateTime.of(2025, 11, 21, 11, 20, 0, 0, ZoneOffset.UTC),
+        status = EteCourseCompletionEventStatus.FAILED,
+        attempts = 2,
+      )
+      val courseCompletionAttempt3 = baselineCourseCompletionEvent.copy(
+        completionDateTime = OffsetDateTime.of(2025, 11, 22, 14, 10, 0, 0, ZoneOffset.UTC),
+        status = EteCourseCompletionEventStatus.PASSED,
+        attempts = 3,
+      )
+
+      setupGetAllAttemptsForCourseCompletionEvent(courseCompletionAttempt1, courseCompletionAttempt2, courseCompletionAttempt3)
+
+      val result = mapper.toCreateAppointmentDto(
+        courseCompletionResolution = baselineCourseCompletionResolution.copy(
+          creditTimeDetails = baselineCourseCompletionResolution.creditTimeDetails!!.copy(notes = "the provided notes"),
+        ),
+        courseCompletionEvent = courseCompletionAttempt3,
+      )
+
+      assertThat(result.notes).isEqualTo(
+        """
+        |'The course name' was completed on Provider1 at 13:35 on 20/11/2025 and resulted in a fail on attempt 1
+        |'The course name' was completed on Provider1 at 11:20 on 21/11/2025 and resulted in a fail on attempt 2
+        |'The course name' was completed on Provider1 at 14:10 on 22/11/2025 and resulted in a pass on attempt 3
+        |the provided notes
+        """.trimMargin(),
+      )
     }
   }
 
@@ -240,7 +317,13 @@ class EteMappersTest {
       courseName = "The course name",
       provider = "Provider1",
       completionDateTime = OffsetDateTime.parse("2021-05-04T12:15:00.000+01:00"),
+      status = EteCourseCompletionEventStatus.PASSED,
     )
+
+    @BeforeEach
+    fun setup() {
+      setupGetAllAttemptsForCourseCompletionEvent(baselineCourseCompletionEvent)
+    }
 
     @ParameterizedTest
     @CsvSource(
@@ -274,7 +357,7 @@ class EteMappersTest {
       assertThat(result.supervisorOfficerCode).isEqualTo(existingAppointment.supervisorOfficerCode)
       assertThat(result.notes).isEqualTo(
         """
-        |'The course name' was completed on Provider1 at 04/05/2021 on 12:15
+        |'The course name' was completed on Provider1 at 12:15 on 04/05/2021 and resulted in a pass on attempt 1
         |the provided notes
         """.trimMargin(),
       )
@@ -338,10 +421,10 @@ class EteMappersTest {
     @ParameterizedTest
     @CsvSource(
       value = [
-        "2020-01-02T12:15:00.000+00:00,'The course name' was completed on Provider1 at 02/01/2020 on 12:15",
-        "2020-01-02T12:15:00.000Z,'The course name' was completed on Provider1 at 02/01/2020 on 12:15",
-        "2021-05-04T12:15:00.000+01:00,'The course name' was completed on Provider1 at 04/05/2021 on 12:15",
-        "2021-05-04T12:15:00.000Z,'The course name' was completed on Provider1 at 04/05/2021 on 13:15",
+        "2020-01-02T12:15:00.000+00:00,'The course name' was completed on Provider1 at 12:15 on 02/01/2020 and resulted in a pass on attempt 1",
+        "2020-01-02T12:15:00.000Z,'The course name' was completed on Provider1 at 12:15 on 02/01/2020 and resulted in a pass on attempt 1",
+        "2021-05-04T12:15:00.000+01:00,'The course name' was completed on Provider1 at 12:15 on 04/05/2021 and resulted in a pass on attempt 1",
+        "2021-05-04T12:15:00.000Z,'The course name' was completed on Provider1 at 13:15 on 04/05/2021 and resulted in a pass on attempt 1",
       ],
       quoteCharacter = '"',
     )
@@ -349,17 +432,59 @@ class EteMappersTest {
       completionDateTime: OffsetDateTime,
       expectedNote: String,
     ) {
+      val courseCompletionEvent = baselineCourseCompletionEvent.copy(
+        completionDateTime = completionDateTime,
+      )
+
+      setupGetAllAttemptsForCourseCompletionEvent(courseCompletionEvent)
+
       val result = mapper.toUpdateAppointmentDto(
         courseCompletionResolution = baselineCourseCompletionOutcome.copy(
           creditTimeDetails = baselineCourseCompletionOutcome.creditTimeDetails!!.copy(notes = null),
         ),
-        courseCompletionEvent = baselineCourseCompletionEvent.copy(
-          completionDateTime = completionDateTime,
-        ),
+        courseCompletionEvent = courseCompletionEvent,
         existingAppointment = baselineExistingAppointment,
       )
 
       assertThat(result.notes).isEqualTo(expectedNote)
+    }
+
+    @Test
+    fun `should use all course completion attempts to build notes`() {
+      val courseCompletionAttempt1 = baselineCourseCompletionEvent.copy(
+        completionDateTime = OffsetDateTime.of(2025, 11, 20, 13, 35, 0, 0, ZoneOffset.UTC),
+        status = EteCourseCompletionEventStatus.FAILED,
+        attempts = 1,
+      )
+      val courseCompletionAttempt2 = baselineCourseCompletionEvent.copy(
+        completionDateTime = OffsetDateTime.of(2025, 11, 21, 11, 20, 0, 0, ZoneOffset.UTC),
+        status = EteCourseCompletionEventStatus.FAILED,
+        attempts = 2,
+      )
+      val courseCompletionAttempt3 = baselineCourseCompletionEvent.copy(
+        completionDateTime = OffsetDateTime.of(2025, 11, 22, 14, 10, 0, 0, ZoneOffset.UTC),
+        status = EteCourseCompletionEventStatus.PASSED,
+        attempts = 3,
+      )
+
+      setupGetAllAttemptsForCourseCompletionEvent(courseCompletionAttempt1, courseCompletionAttempt2, courseCompletionAttempt3)
+
+      val result = mapper.toUpdateAppointmentDto(
+        courseCompletionResolution = baselineCourseCompletionOutcome.copy(
+          creditTimeDetails = baselineCourseCompletionOutcome.creditTimeDetails!!.copy(notes = "the provided notes"),
+        ),
+        courseCompletionEvent = courseCompletionAttempt3,
+        existingAppointment = baselineExistingAppointment,
+      )
+
+      assertThat(result.notes).isEqualTo(
+        """
+        |'The course name' was completed on Provider1 at 13:35 on 20/11/2025 and resulted in a fail on attempt 1
+        |'The course name' was completed on Provider1 at 11:20 on 21/11/2025 and resulted in a fail on attempt 2
+        |'The course name' was completed on Provider1 at 14:10 on 22/11/2025 and resulted in a pass on attempt 3
+        |the provided notes
+        """.trimMargin(),
+      )
     }
   }
 
