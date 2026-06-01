@@ -153,9 +153,9 @@ class AdminCourseCompletionController(val eteService: EteService) {
 
   @GetMapping("/course-completions/{id}/recommended-selection", produces = [MediaType.APPLICATION_JSON_VALUE])
   @Operation(
-    description = "Get recommendations for course completion detail based on the course completion id.",
+    description = "Gets the recommended CRN for this course completion based on previous course completions with the same user email.",
     responses = [
-      ApiResponse(responseCode = "200", description = "Recommendations for CRN, Project Code and UPW Team."),
+      ApiResponse(responseCode = "200", description = "Recommendation of a CRN for this course completion"),
       ApiResponse(responseCode = "404", description = "Course completion not found", content = [Content(schema = Schema(implementation = ErrorResponse::class))]),
     ],
   )

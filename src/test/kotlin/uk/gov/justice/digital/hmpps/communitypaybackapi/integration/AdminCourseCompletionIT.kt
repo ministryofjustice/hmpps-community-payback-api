@@ -1144,8 +1144,6 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
         .bodyAsObject<CourseCompletionRecommendationDto>()
 
       assertThat(recommendation.crn).isEqualTo(crn)
-      assertThat(recommendation.project?.projectCode).isEqualTo(projectCode)
-      assertThat(recommendation.project?.teamCode).isEqualTo(teamCode)
     }
 
     @Test
@@ -1163,8 +1161,6 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
         .bodyAsObject<CourseCompletionRecommendationDto>()
 
       assertThat(recommendation.crn).isNull()
-      assertThat(recommendation.project?.projectCode).isNull()
-      assertThat(recommendation.project?.teamCode).isNull()
     }
   }
 }
