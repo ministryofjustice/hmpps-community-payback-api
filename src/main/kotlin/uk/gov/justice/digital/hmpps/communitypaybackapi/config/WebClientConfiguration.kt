@@ -141,24 +141,22 @@ inline fun <reified T> WebClient.logErrorResponses(enabled: Boolean): WebClient 
     .build()
 }
 
-fun WebClient.retryGet(maxAttempts: Long, backoff: Duration): WebClient {
-  return this.mutate()
-    .filter { request, next ->
-      val responseMono = next.exchange(request)
-      if (request.method() == HttpMethod.GET) {
-        responseMono.retryWhen(
-          Retry.backoff(maxAttempts, backoff)
-            .filter { it.isTimeoutException() },
-        )
-      } else {
-        responseMono
-      }
+fun WebClient.retryGet(maxAttempts: Long, backoff: Duration): WebClient = this.mutate()
+  .filter { request, next ->
+    val responseMono = next.exchange(request)
+    if (request.method() == HttpMethod.GET) {
+      responseMono.retryWhen(
+        Retry.backoff(maxAttempts, backoff)
+          .filter { it.isTimeoutException() },
+      )
+    } else {
+      responseMono
     }
-    .build()
-}
+  }
+  .build()
 
-private fun Throwable.isTimeoutException(): Boolean = this.hasExactCauseType<ReadTimeoutException>()
-  || this.hasExactCauseType<ConnectTimeoutException>()
+private fun Throwable.isTimeoutException(): Boolean = this.hasExactCauseType<ReadTimeoutException>() ||
+  this.hasExactCauseType<ConnectTimeoutException>()
 
 private inline fun <reified T : Throwable> Throwable.hasExactCauseType(): Boolean {
   var current: Throwable? = this
