@@ -11,6 +11,7 @@ import org.springframework.http.HttpMethod
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction
 import org.springframework.web.reactive.function.client.WebClient
+import org.springframework.web.reactive.function.client.WebClientRequestException
 import org.springframework.web.reactive.function.client.bodyToMono
 import org.springframework.web.reactive.function.client.support.WebClientAdapter
 import org.springframework.web.service.invoker.HttpServiceProxyFactory
@@ -147,7 +148,7 @@ fun WebClient.retryGet(maxAttempts: Long, backoff: Duration): WebClient = this.m
     if (request.method() == HttpMethod.GET) {
       responseMono.retryWhen(
         Retry.backoff(maxAttempts, backoff)
-          .filter { it.isTimeoutException() },
+          .filter { it is WebClientRequestException && it.isTimeoutException() },
       )
     } else {
       responseMono
