@@ -27,7 +27,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentServi
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ContextService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.EteService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.EteValidationService
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ProjectService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.SpringEventPublisher
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.EteMappers
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
@@ -46,9 +45,6 @@ class EteServiceTest {
 
   @RelaxedMockK
   lateinit var appointmentService: AppointmentService
-
-  @RelaxedMockK
-  lateinit var projectService: ProjectService
 
   @RelaxedMockK
   lateinit var eteMappers: EteMappers
@@ -79,7 +75,6 @@ class EteServiceTest {
       eteCourseCompletionEventResolutionRepository,
       appointmentService,
       eteValidationService,
-      projectService,
       contextService,
       springEventPublisher,
       defaultDateFrom,
@@ -129,7 +124,6 @@ class EteServiceTest {
         eteCourseCompletionEventResolutionRepository,
         appointmentService,
         eteValidationService,
-        projectService,
         contextService,
         springEventPublisher,
         null,

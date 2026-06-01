@@ -1,17 +1,22 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.config
 
+import io.netty.channel.ConnectTimeoutException
+import io.netty.handler.timeout.ReadTimeoutException
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.DependsOn
+import org.springframework.http.HttpMethod
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction
 import org.springframework.web.reactive.function.client.WebClient
+import org.springframework.web.reactive.function.client.WebClientRequestException
 import org.springframework.web.reactive.function.client.bodyToMono
 import org.springframework.web.reactive.function.client.support.WebClientAdapter
 import org.springframework.web.service.invoker.HttpServiceProxyFactory
 import org.springframework.web.service.invoker.createClient
+import reactor.util.retry.Retry
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ArnsClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProbationAccessControlClient
@@ -41,6 +46,8 @@ class WebClientConfiguration(
 
   companion object {
     const val API_CLIENT_ID: String = "api-client"
+    const val DEFAULT_RETRY_MAX_ATTEMPTS: Long = 3
+    val DEFAULT_RETRY_BACKOFF_DURATION: Duration = Duration.ofMillis(100)
   }
 
   // HMPPS Auth health ping is required if your service calls HMPPS Auth to get a token to call other services
@@ -58,6 +65,7 @@ class WebClientConfiguration(
       url = communityPaybackAndDeliusUrl,
       timeout = communityPaybackAndDeliusTimeout,
     )
+    .retryGet(DEFAULT_RETRY_MAX_ATTEMPTS, DEFAULT_RETRY_BACKOFF_DURATION)
     .logErrorResponses<CommunityPaybackAndDeliusClient>(logDownstreamErrorResponses)
 
   @Bean
@@ -78,6 +86,7 @@ class WebClientConfiguration(
       url = arnsUrl,
       timeout = arnsTimeout,
     )
+    .retryGet(DEFAULT_RETRY_MAX_ATTEMPTS, DEFAULT_RETRY_BACKOFF_DURATION)
     .logErrorResponses<ArnsClient>(logDownstreamErrorResponses)
 
   @Bean
@@ -98,6 +107,7 @@ class WebClientConfiguration(
       url = probationAccessControlUrl,
       timeout = probationAccessControlTimeout,
     )
+    .retryGet(DEFAULT_RETRY_MAX_ATTEMPTS, DEFAULT_RETRY_BACKOFF_DURATION)
     .logErrorResponses<ProbationAccessControlClient>(logDownstreamErrorResponses)
 
   @Bean
@@ -130,4 +140,32 @@ inline fun <reified T> WebClient.logErrorResponses(enabled: Boolean): WebClient 
       },
     )
     .build()
+}
+
+fun WebClient.retryGet(maxAttempts: Long, backoff: Duration): WebClient = this.mutate()
+  .filter { request, next ->
+    val responseMono = next.exchange(request)
+    if (request.method() == HttpMethod.GET) {
+      responseMono.retryWhen(
+        Retry.backoff(maxAttempts, backoff)
+          .filter { it is WebClientRequestException && it.isTimeoutException() },
+      )
+    } else {
+      responseMono
+    }
+  }
+  .build()
+
+private fun Throwable.isTimeoutException(): Boolean = this.hasExactCauseType<ReadTimeoutException>() ||
+  this.hasExactCauseType<ConnectTimeoutException>()
+
+private inline fun <reified T : Throwable> Throwable.hasExactCauseType(): Boolean {
+  var current: Throwable? = this
+  while (current != null) {
+    if (current.javaClass == T::class.java) {
+      return true
+    }
+    current = current.cause
+  }
+  return false
 }
