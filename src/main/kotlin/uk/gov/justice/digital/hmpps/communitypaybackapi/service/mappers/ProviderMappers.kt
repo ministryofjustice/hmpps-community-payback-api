@@ -17,10 +17,10 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProviderTeamSummaryD
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SupervisorSummariesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SupervisorSummaryDto
 
-fun NDProviderSummaries.toDto() = ProviderSummariesDto(this.providers.map { it.toDto() })
+fun NDProviderSummaries.toDto() = ProviderSummariesDto(this.providers.sortedBy { it.description }.map { it.toDto() })
 fun NDProviderSummary.toDto() = ProviderSummaryDto(this.code, this.description)
 
-fun NDProviderTeamSummaries.toDto() = ProviderTeamSummariesDto(this.teams.map { it.toDto() })
+fun NDProviderTeamSummaries.toDto() = ProviderTeamSummariesDto(this.teams.sortedBy { it.description }.map { it.toDto() })
 fun NDProviderTeamSummary.toDto() = ProviderTeamSummaryDto(this.code, this.description)
 
 fun NDSupervisorSummaries.toDto() = SupervisorSummariesDto(

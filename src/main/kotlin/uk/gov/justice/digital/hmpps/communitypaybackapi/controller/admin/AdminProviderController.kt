@@ -192,7 +192,7 @@ class AdminProviderController(
         description = "Only projectName. numberOfAppointmentsOverdue and oldestOverdueAppointmentInDays fields are supported for sorting",
       ),
     )
-    @PageableDefault(size = 100, sort = ["name"], direction = Sort.Direction.DESC) pageable: Pageable,
+    @PageableDefault(size = 100, sort = ["name"], direction = Sort.Direction.ASC) pageable: Pageable,
     @PathVariable providerCode: String,
     @PathVariable teamCode: String,
     @RequestParam projectTypeGroup: ProjectTypeGroupDto,

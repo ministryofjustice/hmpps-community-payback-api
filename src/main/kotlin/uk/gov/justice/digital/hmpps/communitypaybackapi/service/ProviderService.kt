@@ -21,7 +21,7 @@ class ProviderService(
 
   fun getPickupLocations(teamId: TeamId) = try {
     PickUpLocationsDto(
-      communityPaybackAndDeliusClient.getTeamLocations(teamId.teamCode).locations.map { it.toDto() },
+      communityPaybackAndDeliusClient.getTeamLocations(teamId.teamCode).locations.sortedBy { it.description }.map { it.toDto() },
     )
   } catch (_: WebClientResponseException.NotFound) {
     null

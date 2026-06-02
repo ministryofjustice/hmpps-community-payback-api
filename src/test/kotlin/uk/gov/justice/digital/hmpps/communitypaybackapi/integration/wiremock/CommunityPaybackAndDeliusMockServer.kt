@@ -200,7 +200,7 @@ object CommunityPaybackAndDeliusMockServer {
     response: List<NDProjectOutcomeStats>,
     pageNumber: Int = 0,
     pageSize: Int = 100,
-    sortString: String = "name,desc",
+    sortString: String = "name,asc",
   ) {
     val url = buildString {
       append("/community-payback-and-delius/providers/$providerCode/teams/$teamCode/projects?")
