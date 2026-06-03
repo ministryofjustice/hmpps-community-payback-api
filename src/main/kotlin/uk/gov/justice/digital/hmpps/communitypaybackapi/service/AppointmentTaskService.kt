@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.service
 
 import jakarta.transaction.Transactional
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.event.EventListener
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
@@ -36,6 +37,7 @@ class AppointmentTaskService(
   private val caseVisibilityService: CaseVisibilityService,
   private val appointmentTaskMappers: AppointmentTaskMappers,
   private val springEventPublisher: SpringEventPublisher,
+  @Value("\${tasks.travel-time.enabled:false}") private val enableTravelTimeTasks: Boolean,
 ) {
 
   @EventListener
@@ -43,6 +45,10 @@ class AppointmentTaskService(
   fun createTravelTimeTaskOnAppointmentCreation(
     event: AppointmentCreatedEvent,
   ) {
+    if (!enableTravelTimeTasks) {
+      return
+    }
+
     val task = createTravelTimeTaskIfRequired(
       appointment = event.appointmentEntity,
       outcome = event.createDto.contactOutcome,
@@ -57,6 +63,10 @@ class AppointmentTaskService(
   fun createTravelTimeTaskOnAppointmentUpdate(
     event: AppointmentUpdatedEvent,
   ) {
+    if (!enableTravelTimeTasks) {
+      return
+    }
+
     val task = createTravelTimeTaskIfRequired(
       appointment = event.appointmentEntity,
       outcome = event.updateDto.contactOutcome,
@@ -71,6 +81,10 @@ class AppointmentTaskService(
   fun closeTravelTimeTaskOnAdjustmentCreation(
     event: AdjustmentCreatedEvent,
   ) {
+    if (!enableTravelTimeTasks) {
+      return
+    }
+
     val trigger = event.trigger
     if (trigger.triggerType == AdjustmentEventTriggerType.APPOINTMENT_TASK) {
       val taskId = UUID.fromString(trigger.triggeredBy)
