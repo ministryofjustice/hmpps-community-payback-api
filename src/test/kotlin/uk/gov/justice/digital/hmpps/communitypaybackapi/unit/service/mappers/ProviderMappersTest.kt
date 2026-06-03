@@ -3,7 +3,10 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.unit.service.mappers
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.description
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDGrade
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDPickUpLocation
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDPickUpLocationsResponse
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProviderSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProviderSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProviderTeamSummaries
@@ -164,6 +167,56 @@ class ProviderMappersTest {
       assertThat(teamSummariesDto.providers[1].name).isEqualTo("LMN team")
       assertThat(teamSummariesDto.providers[2].code).isEqualTo("ZYX987")
       assertThat(teamSummariesDto.providers[2].name).isEqualTo("ZYX team")
+    }
+  }
+
+  @Nested
+  inner class PickUpLocationsMapper {
+    fun `should map using toDto() correctly`() {
+      val pickUpLocations = NDPickUpLocationsResponse(
+        listOf(
+          NDPickUpLocation(
+            code = "CDE345",
+            description = "Charlie House",
+            streetName = null,
+            buildingName = null,
+            addressNumber = null,
+            townCity = null,
+            county = null,
+            postCode = null,
+          ),
+          NDPickUpLocation(
+            code = "ABC123",
+            description = "Alpha House",
+            streetName = null,
+            buildingName = null,
+            addressNumber = null,
+            townCity = null,
+            county = null,
+            postCode = null,
+          ),
+          NDPickUpLocation(
+            code = "BCD234",
+            description = "Bravo House",
+            streetName = null,
+            buildingName = null,
+            addressNumber = null,
+            townCity = null,
+            county = null,
+            postCode = null,
+          ),
+        ),
+      )
+
+      val pickUpLocationsDto = pickUpLocations.toDto()
+
+      assertThat(pickUpLocationsDto.locations).hasSize(3)
+      assertThat(pickUpLocationsDto.locations[0].deliusCode).isEqualTo("ABC123")
+      assertThat(pickUpLocationsDto.locations[0].description).isEqualTo("Alpha House")
+      assertThat(pickUpLocationsDto.locations[1].deliusCode).isEqualTo("BCD234")
+      assertThat(pickUpLocationsDto.locations[1].description).isEqualTo("Bravo House")
+      assertThat(pickUpLocationsDto.locations[2].deliusCode).isEqualTo("CDE345")
+      assertThat(pickUpLocationsDto.locations[2].description).isEqualTo("Charlie House")
     }
   }
 }
