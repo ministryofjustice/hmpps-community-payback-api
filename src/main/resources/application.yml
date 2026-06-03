@@ -92,3 +92,7 @@ hmpps:
     # see https://github.com/ministryofjustice/hmpps-spring-boot-sqs
     # maxReceiveCount = 3
     defaultErrorVisibilityTimeout: 10, 60
+
+tasks:
+  travel-time:
+    enabled: false
