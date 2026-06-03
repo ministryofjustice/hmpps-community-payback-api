@@ -25,7 +25,7 @@ fun NDProviderTeamSummary.toDto() = ProviderTeamSummaryDto(this.code, this.descr
 
 fun NDSupervisorSummaries.toDto() = SupervisorSummariesDto(
   this.supervisors
-    .sortedBy { "${it.name.surname}${it.name.forename}".lowercase() }
+    .sortedWith(compareBy({ it.name.forename.lowercase() }, { it.name.surname.lowercase() }))
     .map { it.toDto() },
 )
 

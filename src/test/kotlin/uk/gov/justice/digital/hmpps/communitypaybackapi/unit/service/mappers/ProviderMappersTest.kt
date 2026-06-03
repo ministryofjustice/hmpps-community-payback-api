@@ -90,15 +90,15 @@ class ProviderMappersTest {
       val supervisorSummariesDto = supervisorSummaries.toDto()
 
       assertThat(supervisorSummariesDto.supervisors).hasSize(3)
-      assertThat(supervisorSummariesDto.supervisors[0].code).isEqualTo("FF01")
-      assertThat(supervisorSummariesDto.supervisors[0].fullName).isEqualTo("Fred Flintstone [PO - PO Description]")
-      assertThat(supervisorSummariesDto.supervisors[0].unallocated).isFalse
-      assertThat(supervisorSummariesDto.supervisors[1].code).isEqualTo("WF01")
-      assertThat(supervisorSummariesDto.supervisors[1].fullName).isEqualTo("wilma flintstone [S1 - S1 Description]")
+      assertThat(supervisorSummariesDto.supervisors[0].code).isEqualTo("BR01")
+      assertThat(supervisorSummariesDto.supervisors[0].fullName).isEqualTo("Barney Rubble")
+      assertThat(supervisorSummariesDto.supervisors[0].unallocated).isTrue
+      assertThat(supervisorSummariesDto.supervisors[1].code).isEqualTo("FF01")
+      assertThat(supervisorSummariesDto.supervisors[1].fullName).isEqualTo("Fred Flintstone [PO - PO Description]")
       assertThat(supervisorSummariesDto.supervisors[1].unallocated).isFalse
-      assertThat(supervisorSummariesDto.supervisors[2].code).isEqualTo("BR01")
-      assertThat(supervisorSummariesDto.supervisors[2].fullName).isEqualTo("Barney Rubble")
-      assertThat(supervisorSummariesDto.supervisors[2].unallocated).isTrue
+      assertThat(supervisorSummariesDto.supervisors[2].code).isEqualTo("WF01")
+      assertThat(supervisorSummariesDto.supervisors[2].fullName).isEqualTo("wilma flintstone [S1 - S1 Description]")
+      assertThat(supervisorSummariesDto.supervisors[2].unallocated).isFalse
     }
 
     @Test
