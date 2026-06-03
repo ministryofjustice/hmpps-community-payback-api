@@ -3,7 +3,6 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.service
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.PickUpLocationsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
 
@@ -20,9 +19,7 @@ class ProviderService(
   fun getTeamUnallocatedSupervisor(teamId: TeamId) = getTeamSupervisors(teamId).supervisors.firstOrNull { it.unallocated } ?: error("Can't find unallocated supervisor for team '$teamId'")
 
   fun getPickupLocations(teamId: TeamId) = try {
-    PickUpLocationsDto(
-      communityPaybackAndDeliusClient.getTeamLocations(teamId.teamCode).locations.sortedBy { it.description }.map { it.toDto() },
-    )
+    communityPaybackAndDeliusClient.getTeamLocations(teamId.teamCode).toDto()
   } catch (_: WebClientResponseException.NotFound) {
     null
   }
