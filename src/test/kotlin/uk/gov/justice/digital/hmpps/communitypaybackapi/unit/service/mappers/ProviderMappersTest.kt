@@ -6,6 +6,8 @@ import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDGrade
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProviderSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProviderSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProviderTeamSummaries
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProviderTeamSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSupervisorName
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSupervisorSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSupervisorSummary
@@ -24,9 +26,9 @@ class ProviderMappersTest {
     fun `should map using toDto() correctly`() {
       val providersSummaries = NDProviderSummaries(
         listOf(
-          NDProviderSummary(code = "ABC123", "East of England"),
-          NDProviderSummary(code = "DEF123", "North East Region"),
           NDProviderSummary(code = "GHI123", "North West Region"),
+          NDProviderSummary(code = "DEF123", "North East Region"),
+          NDProviderSummary(code = "ABC123", "East of England"),
         ),
       )
       val providerSummariesDto = providersSummaries.toDto()
@@ -138,6 +140,30 @@ class ProviderMappersTest {
       val supervisorSummariesDto = supervisorSummaries.toDto()
 
       assertThat(supervisorSummariesDto.supervisors).isEmpty()
+    }
+  }
+
+  @Nested
+  inner class TeamSummariesMapper {
+    @Test
+    fun `should map using toDto() correctly`() {
+      val teamSummaries = NDProviderTeamSummaries(
+        listOf(
+          NDProviderTeamSummary("LMN456", "LMN team"),
+          NDProviderTeamSummary("ZYX987", "ZYX team"),
+          NDProviderTeamSummary("ABC123", "ABC team"),
+        ),
+      )
+
+      val teamSummariesDto = teamSummaries.toDto()
+
+      assertThat(teamSummariesDto.providers).hasSize(3)
+      assertThat(teamSummariesDto.providers[0].code).isEqualTo("ABC123")
+      assertThat(teamSummariesDto.providers[0].name).isEqualTo("ABC team")
+      assertThat(teamSummariesDto.providers[1].code).isEqualTo("LMN456")
+      assertThat(teamSummariesDto.providers[1].name).isEqualTo("LMN team")
+      assertThat(teamSummariesDto.providers[2].code).isEqualTo("ZYX987")
+      assertThat(teamSummariesDto.providers[2].name).isEqualTo("ZYX team")
     }
   }
 }
