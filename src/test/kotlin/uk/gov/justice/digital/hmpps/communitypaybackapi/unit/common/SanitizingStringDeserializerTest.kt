@@ -1,22 +1,35 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.unit.common
 
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
+import tools.jackson.databind.DatabindException
 import tools.jackson.databind.annotation.JsonDeserialize
 import tools.jackson.module.kotlin.jacksonObjectMapper
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.SanitizingStringDeserializer
 
 class SanitizingStringDeserializerTest {
-  @Test
-  fun `sanitise html`() {
-    val result = jacksonObjectMapper().readValue(
-      """
-        {"notes": "a note with some script<script>alert('hello')</script>"}
-      """.trimIndent(),
-      MyRequestDto::class.java,
-    )
+  @ParameterizedTest
+  @CsvSource(
+    value = [
+      "a note with some script<script>alert('hello')</script>,Tag '<script>' is not allowed",
+      "a note with a <a href='https://example.com/'>link</a>,Tag '<a>' is not allowed",
+      "a note with <h1>big text</h1>,Tag '<h1>' is not allowed",
+    ],
+  )
+  fun `validates that html tags are not present`(notes: String, expectedMessage: String) {
+    val ex = assertThrows(DatabindException::class.java) {
+      jacksonObjectMapper().readValue(
+        """
+          {"notes": "$notes"}
+        """.trimIndent(),
+        MyRequestDto::class.java,
+      )
+    }
 
-    assertThat(result.notes).isEqualTo("a note with some script")
+    assertThat(ex).hasMessageStartingWith(expectedMessage)
   }
 
   @Test
