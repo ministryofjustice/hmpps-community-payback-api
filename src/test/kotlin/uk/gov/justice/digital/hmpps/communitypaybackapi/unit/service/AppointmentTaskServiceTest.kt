@@ -363,6 +363,28 @@ class AppointmentTaskServiceTest {
 
   @Nested
   inner class GetPendingAppointmentTasks {
+    @Test
+    fun `does not return travel time tasks when they are disabled in the config`() {
+      setupService(enableTravelTimeTasks = false)
+
+      val pageable = PageRequest.of(0, 10)
+
+      val result = service.getPendingAppointmentTasks(pageable = pageable)
+
+      assertThat(result.content).hasSize(0)
+
+      verify {
+        appointmentTaskEntityRepository.findPendingTasksWithFiltersAndAppointments(
+          fromDate = null,
+          toDate = null,
+          providerCode = null,
+          taskTypes = emptyList(),
+          pageable = pageable,
+        )
+      }
+
+      verify(exactly = 0) { appointmentTaskMappers.toDto(any(), any()) }
+    }
 
     @Test
     fun `returns paginated appointment task summaries without filters`() {
@@ -391,6 +413,7 @@ class AppointmentTaskServiceTest {
           fromDate = null,
           toDate = null,
           providerCode = null,
+          taskTypes = listOf(AppointmentTaskType.ADJUSTMENT_TRAVEL_TIME),
           pageable = pageable,
         )
       } returns PageImpl(listOf(taskEntity), pageable, 1L)
@@ -435,6 +458,7 @@ class AppointmentTaskServiceTest {
           fromDate = fromDate,
           toDate = toDate,
           providerCode = providerCode,
+          taskTypes = listOf(AppointmentTaskType.ADJUSTMENT_TRAVEL_TIME),
           pageable = pageable,
         )
       } returns PageImpl(listOf(taskEntity), pageable, 1L)
@@ -462,6 +486,7 @@ class AppointmentTaskServiceTest {
           fromDate = null,
           toDate = null,
           providerCode = null,
+          taskTypes = listOf(AppointmentTaskType.ADJUSTMENT_TRAVEL_TIME),
           pageable = pageable,
         )
       } returns PageImpl(emptyList(), pageable, 0L)
@@ -519,6 +544,7 @@ class AppointmentTaskServiceTest {
           fromDate = null,
           toDate = null,
           providerCode = null,
+          taskTypes = listOf(AppointmentTaskType.ADJUSTMENT_TRAVEL_TIME),
           pageable = pageable,
         )
       } returns PageImpl(
@@ -570,6 +596,7 @@ class AppointmentTaskServiceTest {
           fromDate = fromDate,
           toDate = null,
           providerCode = null,
+          taskTypes = listOf(AppointmentTaskType.ADJUSTMENT_TRAVEL_TIME),
           pageable = pageable,
         )
       } returns PageImpl(listOf(taskEntity), pageable, 1L)
@@ -609,6 +636,7 @@ class AppointmentTaskServiceTest {
           fromDate = null,
           toDate = null,
           providerCode = null,
+          taskTypes = listOf(AppointmentTaskType.ADJUSTMENT_TRAVEL_TIME),
           pageable = pageable,
         )
       } returns PageImpl(listOf(taskEntity), pageable, 1L)

@@ -173,6 +173,7 @@ class AppointmentTaskService(
       fromDate = fromDate,
       toDate = toDate,
       providerCode = providerCode,
+      taskTypes = getConfiguredTaskTypes(),
       pageable = pageable,
     )
 
@@ -194,4 +195,7 @@ class AppointmentTaskService(
       pagedTasks.totalElements,
     )
   }
+
+  private fun getConfiguredTaskTypes(): List<AppointmentTaskType> = mutableListOf<AppointmentTaskType>()
+    .apply { if (enableTravelTimeTasks) this += AppointmentTaskType.ADJUSTMENT_TRAVEL_TIME }
 }
