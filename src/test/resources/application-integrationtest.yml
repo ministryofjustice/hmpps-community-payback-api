@@ -96,3 +96,7 @@ client:
     url: http://localhost:${wiremock.server.port}/community-payback-and-delius
   probation-access-control:
     url: http://localhost:${wiremock.server.port}/probation-access-control
+
+tasks:
+  travel-time:
+    enabled: true

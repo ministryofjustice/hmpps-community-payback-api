@@ -15,6 +15,7 @@ interface AppointmentTaskEntityRepository : JpaRepository<AppointmentTaskEntity,
     SELECT task FROM AppointmentTaskEntity task
     JOIN FETCH task.appointment appointment
     WHERE task.taskStatus = 'PENDING'
+    AND (task.taskType IN :taskTypes)
     AND ((cast(:fromDate as date) IS NULL) OR (appointment.date >= :fromDate))
     AND ((cast(:toDate as date) IS NULL) OR (appointment.date <= :toDate))
     AND ((cast(:providerCode as string) IS NULL) OR (appointment.providerCode = :providerCode))
@@ -24,6 +25,7 @@ interface AppointmentTaskEntityRepository : JpaRepository<AppointmentTaskEntity,
     fromDate: LocalDate?,
     toDate: LocalDate?,
     providerCode: String?,
+    taskTypes: List<AppointmentTaskType>,
     pageable: Pageable,
   ): Page<AppointmentTaskEntity>
 }

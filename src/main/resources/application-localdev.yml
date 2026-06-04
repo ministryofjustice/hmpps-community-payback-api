@@ -15,3 +15,7 @@ logging:
     #reactor.netty.http.client.HttpClientConnect: DEBUG
   request:
     include-headers: true
+
+tasks:
+  travel-time:
+    enabled: true

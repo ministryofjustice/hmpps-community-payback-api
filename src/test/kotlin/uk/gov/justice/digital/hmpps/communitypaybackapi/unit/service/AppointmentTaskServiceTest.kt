@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.unit.service
 
 import io.mockk.every
-import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
 import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.junit5.MockKExtension
@@ -69,7 +68,6 @@ class AppointmentTaskServiceTest {
   @RelaxedMockK
   private lateinit var springEventPublisher: SpringEventPublisher
 
-  @InjectMockKs
   private lateinit var service: AppointmentTaskService
 
   private companion object {
@@ -83,6 +81,19 @@ class AppointmentTaskServiceTest {
         taskId = (args[0] as AppointmentTaskEntity).id,
       )
     }
+
+    setupService(enableTravelTimeTasks = true)
+  }
+
+  private fun setupService(enableTravelTimeTasks: Boolean) {
+    service = AppointmentTaskService(
+      appointmentTaskEntityRepository,
+      contextService,
+      caseVisibilityService,
+      appointmentTaskMappers,
+      springEventPublisher,
+      enableTravelTimeTasks,
+    )
   }
 
   @Nested
@@ -125,6 +136,24 @@ class AppointmentTaskServiceTest {
           project = ProjectDto.valid().copy(projectType = ProjectTypeDto.valid().copy(group = projectTypeGroup)),
         ),
       )
+
+      service.createTravelTimeTaskOnAppointmentCreation(event)
+
+      verify(exactly = 0) { appointmentTaskEntityRepository.save(any()) }
+    }
+
+    @Test
+    fun `travel time tasks are disabled in the config, do nothing`() {
+      setupService(enableTravelTimeTasks = false)
+
+      val event = AppointmentCreatedEvent.valid().copy(
+        createDto = ValidatedAppointment.validCreateAppointment().copy(
+          contactOutcome = ContactOutcomeEntity.valid().copy(attended = true),
+          project = ProjectDto.valid().copy(projectType = ProjectTypeDto.valid().copy(group = ProjectTypeGroupDto.GROUP)),
+        ),
+      )
+
+      every { appointmentTaskEntityRepository.save(any()) } returnsArgument 0
 
       service.createTravelTimeTaskOnAppointmentCreation(event)
 
@@ -201,6 +230,24 @@ class AppointmentTaskServiceTest {
       verify(exactly = 0) { appointmentTaskEntityRepository.save(any()) }
     }
 
+    @Test
+    fun `travel time tasks are disabled in the config, do nothing`() {
+      setupService(enableTravelTimeTasks = false)
+
+      val event = AppointmentUpdatedEvent.valid().copy(
+        updateDto = ValidatedAppointment.validUpdateAppointment().copy(
+          contactOutcome = ContactOutcomeEntity.valid().copy(attended = true),
+          project = ProjectDto.valid().copy(projectType = ProjectTypeDto.valid().copy(group = ProjectTypeGroupDto.GROUP)),
+        ),
+      )
+
+      every { appointmentTaskEntityRepository.save(any()) } returnsArgument 0
+
+      service.createTravelTimeTaskOnAppointmentUpdate(event)
+
+      verify(exactly = 0) { appointmentTaskEntityRepository.save(any()) }
+    }
+
     @ParameterizedTest
     @CsvSource("GROUP", "INDIVIDUAL")
     fun `only create task if outcome is attended and project group type supports travel time`(
@@ -227,6 +274,28 @@ class AppointmentTaskServiceTest {
 
   @Nested
   inner class CompleteTravelTimeTaskOnAdjustmentCreation {
+    @Test
+    fun `travel time tasks are disabled in the config, do nothing`() {
+      setupService(enableTravelTimeTasks = false)
+
+      val task = AppointmentTaskEntity.validPending()
+      val triggeredAt = OffsetDateTime.now()
+
+      every { appointmentTaskEntityRepository.findByIdOrNull(task.id) } returns task
+      every { contextService.getUserName() } returns "currentUsername"
+      every { appointmentTaskEntityRepository.save(any()) } returnsArgument 0
+
+      service.closeTravelTimeTaskOnAdjustmentCreation(
+        AdjustmentCreatedEvent.valid().copy(
+          trigger = AdjustmentEventTrigger.valid().copy(
+            triggeredAt = triggeredAt,
+            triggeredBy = task.id.toString(),
+          ),
+        ),
+      )
+
+      verify(exactly = 0) { appointmentTaskEntityRepository.save(any()) }
+    }
 
     @Test
     fun `complete task linked to the adjustment`() {
@@ -294,6 +363,28 @@ class AppointmentTaskServiceTest {
 
   @Nested
   inner class GetPendingAppointmentTasks {
+    @Test
+    fun `does not return travel time tasks when they are disabled in the config`() {
+      setupService(enableTravelTimeTasks = false)
+
+      val pageable = PageRequest.of(0, 10)
+
+      val result = service.getPendingAppointmentTasks(pageable = pageable)
+
+      assertThat(result.content).hasSize(0)
+
+      verify {
+        appointmentTaskEntityRepository.findPendingTasksWithFiltersAndAppointments(
+          fromDate = null,
+          toDate = null,
+          providerCode = null,
+          taskTypes = emptyList(),
+          pageable = pageable,
+        )
+      }
+
+      verify(exactly = 0) { appointmentTaskMappers.toDto(any(), any()) }
+    }
 
     @Test
     fun `returns paginated appointment task summaries without filters`() {
@@ -322,6 +413,7 @@ class AppointmentTaskServiceTest {
           fromDate = null,
           toDate = null,
           providerCode = null,
+          taskTypes = listOf(AppointmentTaskType.ADJUSTMENT_TRAVEL_TIME),
           pageable = pageable,
         )
       } returns PageImpl(listOf(taskEntity), pageable, 1L)
@@ -366,6 +458,7 @@ class AppointmentTaskServiceTest {
           fromDate = fromDate,
           toDate = toDate,
           providerCode = providerCode,
+          taskTypes = listOf(AppointmentTaskType.ADJUSTMENT_TRAVEL_TIME),
           pageable = pageable,
         )
       } returns PageImpl(listOf(taskEntity), pageable, 1L)
@@ -393,6 +486,7 @@ class AppointmentTaskServiceTest {
           fromDate = null,
           toDate = null,
           providerCode = null,
+          taskTypes = listOf(AppointmentTaskType.ADJUSTMENT_TRAVEL_TIME),
           pageable = pageable,
         )
       } returns PageImpl(emptyList(), pageable, 0L)
@@ -450,6 +544,7 @@ class AppointmentTaskServiceTest {
           fromDate = null,
           toDate = null,
           providerCode = null,
+          taskTypes = listOf(AppointmentTaskType.ADJUSTMENT_TRAVEL_TIME),
           pageable = pageable,
         )
       } returns PageImpl(
@@ -501,6 +596,7 @@ class AppointmentTaskServiceTest {
           fromDate = fromDate,
           toDate = null,
           providerCode = null,
+          taskTypes = listOf(AppointmentTaskType.ADJUSTMENT_TRAVEL_TIME),
           pageable = pageable,
         )
       } returns PageImpl(listOf(taskEntity), pageable, 1L)
@@ -540,6 +636,7 @@ class AppointmentTaskServiceTest {
           fromDate = null,
           toDate = null,
           providerCode = null,
+          taskTypes = listOf(AppointmentTaskType.ADJUSTMENT_TRAVEL_TIME),
           pageable = pageable,
         )
       } returns PageImpl(listOf(taskEntity), pageable, 1L)
