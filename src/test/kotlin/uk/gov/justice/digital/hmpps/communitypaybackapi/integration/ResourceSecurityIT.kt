@@ -27,6 +27,7 @@ class ResourceSecurityIT : IntegrationTestBase() {
     "POST /it/idempotency/success",
     "POST /it/idempotency/client-error",
     "POST /it/idempotency/use-body-as-status-code",
+    "POST /it/sanitizing-strings/item",
   )
 
   @Test

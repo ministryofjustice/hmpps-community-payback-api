@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus.FORBIDDEN
 import org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR
 import org.springframework.http.HttpStatus.NOT_FOUND
 import org.springframework.http.ResponseEntity
+import org.springframework.http.converter.HttpMessageNotReadableException
 import org.springframework.security.access.AccessDeniedException
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.MissingServletRequestParameterException
@@ -34,6 +35,7 @@ class CommunityPaybackApiExceptionHandler(
     BadRequestException::class,
     MethodArgumentNotValidException::class,
     MethodArgumentTypeMismatchException::class,
+    HttpMessageNotReadableException::class,
   )
   fun validationError(e: Exception): ResponseEntity<ErrorResponse> = ResponseEntity
     .status(BAD_REQUEST)
