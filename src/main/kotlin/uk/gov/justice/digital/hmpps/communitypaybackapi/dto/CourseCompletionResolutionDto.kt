@@ -35,6 +35,7 @@ data class CourseCompletionCreditTimeDetailsDto(
 }
 
 data class CourseCompletionDontCreditTimeDetailsDto(
+  @field:JsonDeserialize(using = SanitizingStringDeserializer::class)
   val notes: String?,
 ) {
   companion object

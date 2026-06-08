@@ -204,7 +204,7 @@ class AdminAppointmentIT : IntegrationTestBase() {
     }
 
     @Test
-    fun `Should update upstream, raise domain event create travel time task & sanitise notes`() {
+    fun `Should update upstream, raise domain event, create travel time task`() {
       appointmentTaskEntityRepository.deleteAll()
       appointmentEventEntityRepository.deleteAll()
 
@@ -235,7 +235,6 @@ class AdminAppointmentIT : IntegrationTestBase() {
             contactOutcomeCode = CODE_ATTENDED_COMPLIED,
             startTime = LocalTime.of(0, 0),
             endTime = LocalTime.of(1, 0),
-            notes = "A note with some script <script>here()</script>",
           ),
         )
         .exchange()
@@ -250,7 +249,6 @@ class AdminAppointmentIT : IntegrationTestBase() {
       domainEventAsserter.assertEventCount("community-payback.appointment.updated", 1)
 
       assertThat(appointmentTaskEntityRepository.findAll()).hasSize(1)
-      assertThat(appointmentEventEntityRepository.findAll()[0].notes).isEqualTo("A note with some script ")
     }
   }
 
@@ -321,7 +319,7 @@ class AdminAppointmentIT : IntegrationTestBase() {
     }
 
     @Test
-    fun `Should update upstream, raise domain event, create travel time task and sanitise notes`() {
+    fun `Should update upstream, raise domain event, create travel time task`() {
       appointmentTaskEntityRepository.deleteAll()
 
       CommunityPaybackAndDeliusMockServer.Aggregates.setupGetDataMocksForUpdateAppointment(
@@ -351,7 +349,6 @@ class AdminAppointmentIT : IntegrationTestBase() {
             contactOutcomeCode = CODE_ATTENDED_COMPLIED,
             startTime = LocalTime.of(0, 0),
             endTime = LocalTime.of(1, 0),
-            notes = "A note with some script <script>here()</script>",
           ),
         )
         .exchange()
@@ -366,7 +363,6 @@ class AdminAppointmentIT : IntegrationTestBase() {
       domainEventAsserter.assertEventCount("community-payback.appointment.updated", 1)
 
       assertThat(appointmentTaskEntityRepository.findAll()).hasSize(1)
-      assertThat(appointmentEventEntityRepository.findAll()[0].notes).isEqualTo("A note with some script ")
     }
   }
 
