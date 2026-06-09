@@ -27,7 +27,7 @@ fun EteCourseCompletionEventEntity.Companion.valid() = EteCourseCompletionEventE
   courseType = String.random(20),
   provider = String.random(5),
   status = EteCourseCompletionEventStatus.entries.random(),
-  completionDateTime = randomLocalDate().withRandomTime(from = LocalTime.of(12, 0), to = LocalTime.MAX),
+  completionDateTime = randomLocalDate().withRandomTime(from = LocalTime.of(6, 0), to = LocalTime.of(21, 0)),
   totalTimeMinutes = Random.nextLong(10, 100),
   attempts = 1,
   expectedTimeMinutes = Random.nextLong(30, 240),
