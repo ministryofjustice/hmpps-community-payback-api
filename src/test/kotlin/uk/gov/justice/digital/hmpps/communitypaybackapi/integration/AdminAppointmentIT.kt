@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.integration
 
+import com.github.tomakehurst.wiremock.client.WireMock
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
@@ -535,6 +536,125 @@ class AdminAppointmentIT : IntegrationTestBase() {
       CommunityPaybackAndDeliusMockServer.verifyPutAppointmentRequest("PC01", 5678L)
 
       domainEventAsserter.assertEventCount("community-payback.appointment.updated", 2)
+    }
+
+    @Test
+    fun `fails one appointment due to validation failure and returns 400`() {
+      val projectAndLocation = NDProjectAndLocation.valid().copy(code = "PC01")
+      val project = NDProject.valid(ctx).copy(code = "PC01")
+      val pickup = NDAppointmentPickUp.valid()
+
+      // Appointment 1: Valid
+      CommunityPaybackAndDeliusMockServer.Aggregates.setupGetDataMocksForUpdateAppointment(
+        existingAppointment = NDAppointment.validNoOutcome(ctx).copy(
+          id = 1234L,
+          project = projectAndLocation,
+          date = LocalDate.now(),
+          event = NDEvent.valid().copy(number = EVENT_NUMBER),
+          case = NDCaseSummary.valid().copy(crn = CRN),
+          pickUpData = pickup,
+        ),
+        project = project,
+        username = "theusername",
+      )
+
+      // Appointment 2: Sensitive mismatch (Validation failure)
+      CommunityPaybackAndDeliusMockServer.Aggregates.setupGetDataMocksForUpdateAppointment(
+        existingAppointment = NDAppointment.validNoOutcome(ctx).copy(
+          id = 5678L,
+          project = projectAndLocation,
+          date = LocalDate.now(),
+          event = NDEvent.valid().copy(number = EVENT_NUMBER),
+          case = NDCaseSummary.valid().copy(crn = CRN),
+          pickUpData = pickup,
+          sensitive = true,
+        ),
+        project = project,
+        username = "theusername",
+      )
+
+      webTestClient.put()
+        .uri("/admin/projects/PC01/appointments/bulk")
+        .addAdminUiAuthHeader("theusername")
+        .bodyValue(
+          UpdateAppointmentsDto(
+            updates = listOf(
+              UpdateAppointmentDto.valid(ctx).copy(deliusId = 1234L, sensitive = true),
+              UpdateAppointmentDto.valid(ctx).copy(deliusId = 5678L, sensitive = false),
+            ),
+          ),
+        )
+        .exchange()
+        .expectStatus()
+        .isBadRequest
+        .bodyAsObject<ErrorResponse>()
+
+      domainEventAsserter.assertEventCount("community-payback.appointment.updated", 0)
+    }
+
+    @Test
+    fun `fails one appointment due to upstream failure and returns SERVER_ERROR for that appointment`() {
+      val projectAndLocation = NDProjectAndLocation.valid().copy(code = "PC01")
+      val project = NDProject.valid(ctx).copy(code = "PC01")
+      val pickup = NDAppointmentPickUp.valid()
+
+      // Appointment 1: Valid
+      CommunityPaybackAndDeliusMockServer.Aggregates.setupGetDataMocksForUpdateAppointment(
+        existingAppointment = NDAppointment.validNoOutcome(ctx).copy(
+          id = 1234L,
+          project = projectAndLocation,
+          date = LocalDate.now(),
+          event = NDEvent.valid().copy(number = EVENT_NUMBER),
+          case = NDCaseSummary.valid().copy(crn = CRN),
+          pickUpData = pickup,
+        ),
+        project = project,
+        username = "theusername",
+      )
+      CommunityPaybackAndDeliusMockServer.setupPutAppointmentResponse("PC01", 1234L)
+
+      // Appointment 2: Upstream failure
+      CommunityPaybackAndDeliusMockServer.Aggregates.setupGetDataMocksForUpdateAppointment(
+        existingAppointment = NDAppointment.validNoOutcome(ctx).copy(
+          id = 5678L,
+          project = projectAndLocation,
+          date = LocalDate.now(),
+          event = NDEvent.valid().copy(number = EVENT_NUMBER),
+          case = NDCaseSummary.valid().copy(crn = CRN),
+          pickUpData = pickup,
+        ),
+        project = project,
+        username = "theusername",
+      )
+      // Setup 500 from upstream for 5678
+      WireMock.stubFor(
+        WireMock.put("/community-payback-and-delius/projects/PC01/appointments/5678")
+          .willReturn(WireMock.aResponse().withStatus(500)),
+      )
+
+      val result = webTestClient.put()
+        .uri("/admin/projects/PC01/appointments/bulk")
+        .addAdminUiAuthHeader("theusername")
+        .bodyValue(
+          UpdateAppointmentsDto(
+            updates = listOf(
+              UpdateAppointmentDto.valid(ctx).copy(deliusId = 1234L),
+              UpdateAppointmentDto.valid(ctx).copy(deliusId = 5678L),
+            ),
+          ),
+        )
+        .exchange()
+        .expectStatus()
+        .isOk
+        .bodyAsObject<UpdateAppointmentsOutcomesResultDto>()
+
+      assertThat(result.results).hasSize(2)
+      assertThat(result.results[0].deliusId).isEqualTo(1234L)
+      assertThat(result.results[0].result).isEqualTo(UpdateAppointmentOutcomeResultType.SUCCESS)
+      assertThat(result.results[1].deliusId).isEqualTo(5678L)
+      assertThat(result.results[1].result).isEqualTo(UpdateAppointmentOutcomeResultType.SERVER_ERROR)
+
+      domainEventAsserter.assertEventCount("community-payback.appointment.updated", 1)
     }
   }
 }
