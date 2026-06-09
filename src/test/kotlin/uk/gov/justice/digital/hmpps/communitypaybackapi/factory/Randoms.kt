@@ -5,7 +5,9 @@ import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.OffsetDateTime
+import java.time.ZoneId
 import java.time.ZoneOffset
+import java.time.ZonedDateTime
 import kotlin.random.Random
 
 fun Boolean.Companion.random() = Random.nextBoolean()
@@ -21,7 +23,7 @@ fun randomOffsetDateTime(): OffsetDateTime = OffsetDateTime.of(randomLocalDate()
 fun randomDuration(): Duration = Duration.ofHours(Long.random(0, 12)).plusMinutes(Long.random(0, 60))
 fun randomHourMinuteDuration(): HourMinuteDuration = HourMinuteDuration(randomDuration())
 
-fun LocalDate.withRandomTime(from: LocalTime = LocalTime.MIN, to: LocalTime = LocalTime.MAX): OffsetDateTime = OffsetDateTime.of(this, LocalTime.MIN, ZoneOffset.UTC).withRandomTime(from, to)
+fun LocalDate.withRandomTime(from: LocalTime = LocalTime.MIN, to: LocalTime = LocalTime.MAX): OffsetDateTime = ZonedDateTime.of(this, LocalTime.MIN, ZoneId.of("Europe/London")).toOffsetDateTime().withRandomTime(from, to)
 
 fun OffsetDateTime.withRandomTime(from: LocalTime = LocalTime.MIN, to: LocalTime = LocalTime.MAX): OffsetDateTime {
   val second = Int.random(from.toSecondOfDay(), to.toSecondOfDay())
