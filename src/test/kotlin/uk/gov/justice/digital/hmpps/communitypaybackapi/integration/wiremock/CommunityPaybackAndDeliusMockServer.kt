@@ -17,7 +17,9 @@ import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
 import com.github.tomakehurst.wiremock.client.WireMock.urlMatching
 import com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo
 import tools.jackson.databind.json.JsonMapper
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAdjustment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAdjustmentPostResponse
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAdjustmentResponse
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointmentSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseDetailsSummary
@@ -99,9 +101,10 @@ object CommunityPaybackAndDeliusMockServer {
     fromDate: LocalDate? = null,
     toDate: LocalDate? = null,
     projectCodes: List<String> = emptyList(),
+    eventNumber: Int? = null,
     pageNumber: Int = 0,
     pageSize: Int = 50,
-    sortString: String = "name,desc",
+    sortString: String? = "name,desc",
     appointmentIds: List<Long> = emptyList(),
     appointments: List<NDAppointmentSummary> = emptyList(),
   ) {
@@ -115,12 +118,13 @@ object CommunityPaybackAndDeliusMockServer {
       projectCodes.forEach {
         append("&projectCodes=$it")
       }
+      eventNumber?.let { append("&eventNumber=$it") }
       appointmentIds.forEach {
         append("&appointmentIds=$it")
       }
       append("&page=$pageNumber")
       append("&size=$pageSize")
-      append("&sort=${URLEncoder.encode(sortString, "UTF-8")}")
+      sortString?.let { append("&sort=${URLEncoder.encode(it, "UTF-8")}") }
     }
 
     val pageResponse = PageResponse(appointments, PageResponse.PageMeta(pageSize, pageNumber, appointments.size.toLong(), 1))
@@ -393,6 +397,22 @@ object CommunityPaybackAndDeliusMockServer {
           .withHeader("Content-Type", "application/json")
           .withBody(jsonMapper.writeValueAsString(ndCaseDetailsSummary)),
       ),
+    )
+  }
+
+  fun setupGetAdjustmentsResponse(
+    crn: String,
+    eventNumber: Int,
+    adjustments: List<NDAdjustment>,
+  ) {
+    WireMock.stubFor(
+      get("/community-payback-and-delius/adjustments?crn=$crn&eventNumber=$eventNumber")
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withBody(jsonMapper.writer().writeValueAsString(NDAdjustmentResponse(adjustments)))
+            .withTransformers("response-template"),
+        ),
     )
   }
 
