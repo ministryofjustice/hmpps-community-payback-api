@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.unit.service.internal
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.toHttpParams
 
@@ -91,5 +92,16 @@ class PageableUtilsTest {
 
     assertThat(resultAsc["sort"]).isEqualTo("field,asc")
     assertThat(resultDesc["sort"]).isEqualTo("field,desc")
+  }
+
+  @Test
+  fun `toHttpParams should handle unpaged pageable`() {
+    val pageable = Pageable.unpaged(Sort.by(Sort.Direction.ASC, "field"))
+
+    val result = pageable.toHttpParams()
+
+    assertThat(result["page"]).isEqualTo("0")
+    assertThat(result["size"]).isEqualTo(Integer.MAX_VALUE.toString())
+    assertThat(result["sort"]).isEqualTo("field,asc")
   }
 }
