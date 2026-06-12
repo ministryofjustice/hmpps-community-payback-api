@@ -36,6 +36,9 @@ generic-service:
 
   postgresDatabaseRestore:
     enabled: true
+    timeout: 10800
+    schedule: "30 7 * * 1-5"
+    jobName: "db-refresh-job"
     namespace_secrets:
       rds-postgresql-instance-output:
         DB_NAME: "database_name"
