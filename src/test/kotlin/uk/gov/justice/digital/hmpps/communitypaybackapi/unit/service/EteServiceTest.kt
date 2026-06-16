@@ -362,7 +362,22 @@ class EteServiceTest {
       val allEvents = listOf(e100, e101, e102, e125)
 
       every { eteCourseCompletionEventEntityRepository.findByIdOrNull(id102) } returns e102
-      every { eteCourseCompletionEventEntityRepository.findAllByExternalReferenceOrderByCompletionDateTimeAscAttemptsAsc(externalReference) } returns allEvents
+      every {
+        eteCourseCompletionEventEntityRepository.findAllWithFilters(
+          providerCode = e102.pdu.providerCode,
+          pduId = null,
+          officesCount = 0,
+          offices = emptyList(),
+          resolutionStatus = ResolutionStatus.ANY,
+          courseFailures = CourseFailureFilter.SHOW_ALL,
+          externalReference = externalReference,
+          fromDate = null,
+          toDate = null,
+          availableFromDate = null,
+          availableToDate = null,
+          pageable = any(),
+        )
+      } returns PageImpl(allEvents.subList(0, 3))
 
       val result = eteService.getCourseCompletionBlock(id102, 3)
 
@@ -385,7 +400,22 @@ class EteServiceTest {
       val allEvents = listOf(e100, e101, e102, e125)
 
       every { eteCourseCompletionEventEntityRepository.findByIdOrNull(id125) } returns e125
-      every { eteCourseCompletionEventEntityRepository.findAllByExternalReferenceOrderByCompletionDateTimeAscAttemptsAsc(externalReference) } returns allEvents
+      every {
+        eteCourseCompletionEventEntityRepository.findAllWithFilters(
+          providerCode = e125.pdu.providerCode,
+          pduId = null,
+          officesCount = 0,
+          offices = emptyList(),
+          resolutionStatus = ResolutionStatus.ANY,
+          courseFailures = CourseFailureFilter.SHOW_ALL,
+          externalReference = externalReference,
+          fromDate = null,
+          toDate = null,
+          availableFromDate = null,
+          availableToDate = null,
+          pageable = any(),
+        )
+      } returns PageImpl(allEvents.subList(0, 3)) andThen PageImpl(allEvents.subList(3, 4))
 
       val result = eteService.getCourseCompletionBlock(id125, 3)
 
@@ -399,11 +429,26 @@ class EteServiceTest {
       val event = EteCourseCompletionEventEntity.valid().copy(id = id, externalReference = externalReference)
 
       every { eteCourseCompletionEventEntityRepository.findByIdOrNull(id) } returns event
-      every { eteCourseCompletionEventEntityRepository.findAllByExternalReferenceOrderByCompletionDateTimeAscAttemptsAsc(externalReference) } returns emptyList()
+      every {
+        eteCourseCompletionEventEntityRepository.findAllWithFilters(
+          providerCode = event.pdu.providerCode,
+          pduId = null,
+          officesCount = 0,
+          offices = emptyList(),
+          resolutionStatus = ResolutionStatus.ANY,
+          courseFailures = CourseFailureFilter.SHOW_ALL,
+          externalReference = externalReference,
+          fromDate = null,
+          toDate = null,
+          availableFromDate = null,
+          availableToDate = null,
+          pageable = any(),
+        )
+      } returns PageImpl(listOf(event))
 
       val result = eteService.getCourseCompletionBlock(id, 3)
 
-      assertThat(result).isEmpty()
+      assertThat(result.map { it.id }).containsExactly(id)
     }
 
     @Test

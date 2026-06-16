@@ -55,8 +55,6 @@ interface EteCourseCompletionEventEntityRepository : JpaRepository<EteCourseComp
     toDateTimeExclusive: OffsetDateTime?,
   ): List<EteCourseCompletionEventEntity>
 
-  fun findAllByExternalReferenceOrderByCompletionDateTimeAscAttemptsAsc(externalReference: String): List<EteCourseCompletionEventEntity>
-
   enum class ResolutionStatus {
     ANY,
     RESOLVED,
