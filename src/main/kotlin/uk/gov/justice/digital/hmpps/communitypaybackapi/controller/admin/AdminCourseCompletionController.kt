@@ -166,5 +166,21 @@ class AdminCourseCompletionController(val eteService: EteService) {
     return eteService.getCourseCompletionRecommendation(id) ?: notFound("Course completion event", id.toString())
   }
 
+  @GetMapping("/course-completions/{id}/history-block", produces = [MediaType.APPLICATION_JSON_VALUE])
+  @Operation(
+    description = "Gets the history of course attempts for this course completion in a block of a specific size.",
+    responses = [
+      ApiResponse(responseCode = "200", description = "List of course completion events in the block"),
+      ApiResponse(responseCode = "404", description = "Course completion not found", content = [Content(schema = Schema(implementation = ErrorResponse::class))]),
+    ],
+  )
+  fun getCourseCompletionHistoryBlock(
+    @PathVariable id: UUID,
+    @RequestParam(defaultValue = "3") blockSize: Int,
+  ): List<EteCourseCompletionEventDto> {
+    ensureCourseCompletionExists(id)
+    return eteService.getCourseCompletionBlock(id, blockSize)
+  }
+
   private fun ensureCourseCompletionExists(id: UUID) = eteService.getCourseCompletionEvent(id) ?: notFound("Course completion event", id.toString())
 }
