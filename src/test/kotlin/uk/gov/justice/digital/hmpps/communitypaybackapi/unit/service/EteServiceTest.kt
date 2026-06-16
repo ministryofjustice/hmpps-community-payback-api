@@ -416,5 +416,14 @@ class EteServiceTest {
       }
       assertThat(exception.message).isEqualTo("Can't find course completion event $id")
     }
+
+    @Test
+    fun `should throw exception if block size is less than 1`() {
+      val id = UUID.randomUUID()
+      val exception = org.junit.jupiter.api.assertThrows<IllegalArgumentException> {
+        eteService.getCourseCompletionBlock(id, 0)
+      }
+      assertThat(exception.message).isEqualTo("blockSize must be greater than 0")
+    }
   }
 }

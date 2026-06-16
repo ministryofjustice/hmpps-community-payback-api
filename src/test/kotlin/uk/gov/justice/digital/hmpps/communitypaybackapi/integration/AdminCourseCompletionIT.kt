@@ -1206,12 +1206,60 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
       val externalReference = "EXT-REF-3"
       val pdu = communityCampusPduEntityRepository.findAll().first()
 
-      val courseCompletion1 = eteCourseCompletionEventEntityRepository.save(EteCourseCompletionEventEntity.failed(ctx).copy(id = UUID.randomUUID(), externalReference = externalReference, completionDateTime = OffsetDateTime.parse("2026-06-15T17:00:00Z"), attempts = 1, pdu = pdu))
-      val courseCompletion2 = eteCourseCompletionEventEntityRepository.save(EteCourseCompletionEventEntity.failed(ctx).copy(id = UUID.randomUUID(), externalReference = externalReference, completionDateTime = OffsetDateTime.parse("2026-06-15T17:15:00Z"), attempts = 2, pdu = pdu))
-      val courseCompletion3 = eteCourseCompletionEventEntityRepository.save(EteCourseCompletionEventEntity.failed(ctx).copy(id = UUID.randomUUID(), externalReference = externalReference, completionDateTime = OffsetDateTime.parse("2026-06-15T17:24:00Z"), attempts = 3, pdu = pdu))
-      val courseCompletion4 = eteCourseCompletionEventEntityRepository.save(EteCourseCompletionEventEntity.failed(ctx).copy(id = UUID.randomUUID(), externalReference = externalReference, completionDateTime = OffsetDateTime.parse("2026-06-17T12:00:00Z"), attempts = 1, pdu = pdu))
-      val courseCompletion5 = eteCourseCompletionEventEntityRepository.save(EteCourseCompletionEventEntity.failed(ctx).copy(id = UUID.randomUUID(), externalReference = externalReference, completionDateTime = OffsetDateTime.parse("2026-06-18T12:00:00Z"), attempts = 2, pdu = pdu))
-      val courseCompletion6 = eteCourseCompletionEventEntityRepository.save(EteCourseCompletionEventEntity.passed(ctx).copy(id = UUID.randomUUID(), externalReference = externalReference, completionDateTime = OffsetDateTime.parse("2026-06-19T12:00:00Z"), attempts = 3, pdu = pdu))
+      val courseCompletion1 = eteCourseCompletionEventEntityRepository.save(
+        EteCourseCompletionEventEntity.failed(ctx).copy(
+          id = UUID.randomUUID(),
+          externalReference = externalReference,
+          completionDateTime = OffsetDateTime.parse("2026-06-15T17:00:00Z"),
+          attempts = 1,
+          pdu = pdu,
+        ),
+      )
+      val courseCompletion2 = eteCourseCompletionEventEntityRepository.save(
+        EteCourseCompletionEventEntity.failed(ctx).copy(
+          id = UUID.randomUUID(),
+          externalReference = externalReference,
+          completionDateTime = OffsetDateTime.parse("2026-06-15T17:15:00Z"),
+          attempts = 2,
+          pdu = pdu,
+        ),
+      )
+      val courseCompletion3 = eteCourseCompletionEventEntityRepository.save(
+        EteCourseCompletionEventEntity.failed(ctx).copy(
+          id = UUID.randomUUID(),
+          externalReference = externalReference,
+          completionDateTime = OffsetDateTime.parse("2026-06-15T17:24:00Z"),
+          attempts = 3,
+          pdu = pdu,
+        ),
+      )
+      val courseCompletion4 = eteCourseCompletionEventEntityRepository.save(
+        EteCourseCompletionEventEntity.failed(ctx).copy(
+          id = UUID.randomUUID(),
+          externalReference = externalReference,
+          completionDateTime = OffsetDateTime.parse("2026-06-17T12:00:00Z"),
+          attempts = 1,
+          pdu = pdu,
+        ),
+      )
+      val courseCompletion5 = eteCourseCompletionEventEntityRepository.save(
+        EteCourseCompletionEventEntity.failed(ctx).copy(
+          id = UUID.randomUUID(),
+          externalReference = externalReference,
+          completionDateTime = OffsetDateTime.parse("2026-06-18T12:00:00Z"),
+          attempts = 2,
+          pdu = pdu,
+        ),
+      )
+      val courseCompletion6 = eteCourseCompletionEventEntityRepository.save(
+        EteCourseCompletionEventEntity.passed(ctx).copy(
+          id = UUID.randomUUID(),
+          externalReference = externalReference,
+          completionDateTime = OffsetDateTime.parse("2026-06-19T12:00:00Z"),
+          attempts = 3,
+          pdu = pdu,
+        ),
+      )
 
       val block1 = webTestClient.get()
         .uri("/admin/course-completions/${courseCompletion3.id}/history-block")
@@ -1239,10 +1287,38 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
       val externalReference = "EXT-REF-CUSTOM"
       val pdu = communityCampusPduEntityRepository.findAll().first()
 
-      val courseCompletion1 = eteCourseCompletionEventEntityRepository.save(EteCourseCompletionEventEntity.failed(ctx).copy(id = UUID.randomUUID(), externalReference = externalReference, completionDateTime = OffsetDateTime.parse("2026-06-15T17:00:00Z"), pdu = pdu))
-      val courseCompletion2 = eteCourseCompletionEventEntityRepository.save(EteCourseCompletionEventEntity.failed(ctx).copy(id = UUID.randomUUID(), externalReference = externalReference, completionDateTime = OffsetDateTime.parse("2026-06-15T17:15:00Z"), pdu = pdu))
-      val courseCompletion3 = eteCourseCompletionEventEntityRepository.save(EteCourseCompletionEventEntity.failed(ctx).copy(id = UUID.randomUUID(), externalReference = externalReference, completionDateTime = OffsetDateTime.parse("2026-06-15T17:24:00Z"), pdu = pdu))
-      val courseCompletion4 = eteCourseCompletionEventEntityRepository.save(EteCourseCompletionEventEntity.passed(ctx).copy(id = UUID.randomUUID(), externalReference = externalReference, completionDateTime = OffsetDateTime.parse("2026-06-17T12:00:00Z"), pdu = pdu))
+      val courseCompletion1 = eteCourseCompletionEventEntityRepository.save(
+        EteCourseCompletionEventEntity.failed(ctx).copy(
+          id = UUID.randomUUID(),
+          externalReference = externalReference,
+          completionDateTime = OffsetDateTime.parse("2026-06-15T17:00:00Z"),
+          pdu = pdu,
+        ),
+      )
+      val courseCompletion2 = eteCourseCompletionEventEntityRepository.save(
+        EteCourseCompletionEventEntity.failed(ctx).copy(
+          id = UUID.randomUUID(),
+          externalReference = externalReference,
+          completionDateTime = OffsetDateTime.parse("2026-06-15T17:15:00Z"),
+          pdu = pdu,
+        ),
+      )
+      val courseCompletion3 = eteCourseCompletionEventEntityRepository.save(
+        EteCourseCompletionEventEntity.failed(ctx).copy(
+          id = UUID.randomUUID(),
+          externalReference = externalReference,
+          completionDateTime = OffsetDateTime.parse("2026-06-15T17:24:00Z"),
+          pdu = pdu,
+        ),
+      )
+      val courseCompletion4 = eteCourseCompletionEventEntityRepository.save(
+        EteCourseCompletionEventEntity.passed(ctx).copy(
+          id = UUID.randomUUID(),
+          externalReference = externalReference,
+          completionDateTime = OffsetDateTime.parse("2026-06-17T12:00:00Z"),
+          pdu = pdu,
+        ),
+      )
 
       val block = webTestClient.get()
         .uri("/admin/course-completions/${courseCompletion1.id}/history-block?blockSize=2")
@@ -1263,6 +1339,21 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
         .bodyAsObject<List<EteCourseCompletionEventDto>>()
 
       assertThat(block2.map { it.id }).containsExactly(courseCompletion3.id, courseCompletion4.id)
+    }
+
+    @Test
+    fun `should return 400 when block size is less than 1`() {
+      val pdu = communityCampusPduEntityRepository.findAll().first()
+      val event = eteCourseCompletionEventEntityRepository.save(
+        EteCourseCompletionEventEntity.failed(ctx).copy(id = UUID.randomUUID(), pdu = pdu),
+      )
+
+      webTestClient.get()
+        .uri("/admin/course-completions/${event.id}/history-block?blockSize=0")
+        .addAdminUiAuthHeader()
+        .exchange()
+        .expectStatus()
+        .isBadRequest
     }
   }
 }
