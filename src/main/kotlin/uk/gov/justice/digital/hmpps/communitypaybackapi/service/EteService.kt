@@ -2,9 +2,7 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.service
 
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.domain.Page
-import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
-import org.springframework.data.domain.Sort
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -117,37 +115,18 @@ class EteService(
   fun getCourseCompletionBlock(id: UUID, blockSize: Int): List<EteCourseCompletionEventDto> {
     require(blockSize > 0) { "blockSize must be greater than 0" }
     val event = getEventOrError(id)
+    val attempts = event.attempts ?: 1
 
-    val sort = Sort.by(Sort.Order.asc("completionDateTime"), Sort.Order.asc("attempts"))
+    val startAttempt = ((attempts - 1) / blockSize) * blockSize + 1
+    val endAttempt = startAttempt + blockSize - 1
 
-    var pageNumber = 0
-    var courseCompletions = getCourseCompletionsByBlockSize(event, pageNumber, blockSize, sort)
-    while (!courseCompletions.content.contains(event)) {
-      pageNumber++
-      courseCompletions = getCourseCompletionsByBlockSize(event, pageNumber, blockSize, sort)
-    }
-    return courseCompletions.content.map { it.toDto() }
+    return eteCourseCompletionEventEntityRepository.findBlock(
+      event.pdu.providerCode,
+      event.externalReference,
+      startAttempt,
+      endAttempt,
+    ).map { it.toDto() }
   }
-
-  private fun getCourseCompletionsByBlockSize(
-    event: EteCourseCompletionEventEntity,
-    pageNumber: Int,
-    blockSize: Int,
-    sort: Sort,
-  ): Page<EteCourseCompletionEventEntity> = eteCourseCompletionEventEntityRepository.findAllWithFilters(
-    providerCode = event.pdu.providerCode,
-    pduId = null,
-    officesCount = 0,
-    offices = emptyList(),
-    resolutionStatus = ResolutionStatus.ANY,
-    courseFailures = CourseFailureFilter.SHOW_ALL,
-    externalReference = event.externalReference,
-    fromDate = null,
-    toDate = null,
-    availableFromDate = null,
-    availableToDate = null,
-    pageable = PageRequest.of(pageNumber, blockSize, sort),
-  )
 
   fun getCourseCompletionRecommendation(id: UUID): CourseCompletionRecommendationDto? {
     val courseCompletionEvent = getEventOrError(id)

@@ -1238,7 +1238,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
           id = UUID.randomUUID(),
           externalReference = externalReference,
           completionDateTime = OffsetDateTime.parse("2026-06-17T12:00:00Z"),
-          attempts = 1,
+          attempts = 4,
           pdu = pdu,
         ),
       )
@@ -1247,7 +1247,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
           id = UUID.randomUUID(),
           externalReference = externalReference,
           completionDateTime = OffsetDateTime.parse("2026-06-18T12:00:00Z"),
-          attempts = 2,
+          attempts = 5,
           pdu = pdu,
         ),
       )
@@ -1256,7 +1256,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
           id = UUID.randomUUID(),
           externalReference = externalReference,
           completionDateTime = OffsetDateTime.parse("2026-06-19T12:00:00Z"),
-          attempts = 3,
+          attempts = 6,
           pdu = pdu,
         ),
       )
@@ -1292,6 +1292,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
           id = UUID.randomUUID(),
           externalReference = externalReference,
           completionDateTime = OffsetDateTime.parse("2026-06-15T17:00:00Z"),
+          attempts = 1,
           pdu = pdu,
         ),
       )
@@ -1300,6 +1301,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
           id = UUID.randomUUID(),
           externalReference = externalReference,
           completionDateTime = OffsetDateTime.parse("2026-06-15T17:15:00Z"),
+          attempts = 2,
           pdu = pdu,
         ),
       )
@@ -1308,6 +1310,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
           id = UUID.randomUUID(),
           externalReference = externalReference,
           completionDateTime = OffsetDateTime.parse("2026-06-15T17:24:00Z"),
+          attempts = 3,
           pdu = pdu,
         ),
       )
@@ -1316,6 +1319,7 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
           id = UUID.randomUUID(),
           externalReference = externalReference,
           completionDateTime = OffsetDateTime.parse("2026-06-17T12:00:00Z"),
+          attempts = 4,
           pdu = pdu,
         ),
       )

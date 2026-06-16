@@ -363,25 +363,49 @@ class EteServiceTest {
 
       every { eteCourseCompletionEventEntityRepository.findByIdOrNull(id102) } returns e102
       every {
-        eteCourseCompletionEventEntityRepository.findAllWithFilters(
+        eteCourseCompletionEventEntityRepository.findBlock(
           providerCode = e102.pdu.providerCode,
-          pduId = null,
-          officesCount = 0,
-          offices = emptyList(),
-          resolutionStatus = ResolutionStatus.ANY,
-          courseFailures = CourseFailureFilter.SHOW_ALL,
           externalReference = externalReference,
-          fromDate = null,
-          toDate = null,
-          availableFromDate = null,
-          availableToDate = null,
-          pageable = any(),
+          startAttempt = 1,
+          endAttempt = 3,
         )
-      } returns PageImpl(allEvents.subList(0, 3))
+      } returns listOf(e100, e101, e102)
 
       val result = eteService.getCourseCompletionBlock(id102, 3)
 
       assertThat(result.map { it.id }).containsExactly(id100, id101, id102)
+    }
+
+    @Test
+    fun `should return correct block when an attempt is missing`() {
+      val externalReference = "EXT-REF-1"
+      val id101 = UUID.randomUUID()
+      val id102 = UUID.randomUUID()
+      val id103 = UUID.randomUUID()
+
+      val e101 = EteCourseCompletionEventEntity.valid().copy(id = id101, externalReference = externalReference, attempts = 2)
+      val e102 = EteCourseCompletionEventEntity.valid().copy(id = id102, externalReference = externalReference, attempts = 3)
+      val e103 = EteCourseCompletionEventEntity.valid().copy(id = id103, externalReference = externalReference, attempts = 4)
+
+      // Attempt 1 is missing.
+      // Block for attempts 1-3 should contain only e101 and e102.
+
+      every { eteCourseCompletionEventEntityRepository.findByIdOrNull(id101) } returns e101
+
+      every {
+        eteCourseCompletionEventEntityRepository.findBlock(
+          providerCode = e101.pdu.providerCode,
+          externalReference = externalReference,
+          startAttempt = 1,
+          endAttempt = 3,
+        )
+      } returns listOf(e101, e102)
+
+      val result = eteService.getCourseCompletionBlock(id101, 3)
+
+      // Currently, it will return [e101, e102, e103] because Page 0 (size 3) contains all 3.
+      // But it should return [e101, e102].
+      assertThat(result.map { it.id }).containsExactly(id101, id102)
     }
 
     @Test
@@ -401,21 +425,13 @@ class EteServiceTest {
 
       every { eteCourseCompletionEventEntityRepository.findByIdOrNull(id125) } returns e125
       every {
-        eteCourseCompletionEventEntityRepository.findAllWithFilters(
+        eteCourseCompletionEventEntityRepository.findBlock(
           providerCode = e125.pdu.providerCode,
-          pduId = null,
-          officesCount = 0,
-          offices = emptyList(),
-          resolutionStatus = ResolutionStatus.ANY,
-          courseFailures = CourseFailureFilter.SHOW_ALL,
           externalReference = externalReference,
-          fromDate = null,
-          toDate = null,
-          availableFromDate = null,
-          availableToDate = null,
-          pageable = any(),
+          startAttempt = 4,
+          endAttempt = 6,
         )
-      } returns PageImpl(allEvents.subList(0, 3)) andThen PageImpl(allEvents.subList(3, 4))
+      } returns listOf(e125)
 
       val result = eteService.getCourseCompletionBlock(id125, 3)
 
@@ -430,25 +446,38 @@ class EteServiceTest {
 
       every { eteCourseCompletionEventEntityRepository.findByIdOrNull(id) } returns event
       every {
-        eteCourseCompletionEventEntityRepository.findAllWithFilters(
+        eteCourseCompletionEventEntityRepository.findBlock(
           providerCode = event.pdu.providerCode,
-          pduId = null,
-          officesCount = 0,
-          offices = emptyList(),
-          resolutionStatus = ResolutionStatus.ANY,
-          courseFailures = CourseFailureFilter.SHOW_ALL,
           externalReference = externalReference,
-          fromDate = null,
-          toDate = null,
-          availableFromDate = null,
-          availableToDate = null,
-          pageable = any(),
+          startAttempt = 1,
+          endAttempt = 3,
         )
-      } returns PageImpl(listOf(event))
+      } returns listOf(event)
 
       val result = eteService.getCourseCompletionBlock(id, 3)
 
       assertThat(result.map { it.id }).containsExactly(id)
+    }
+
+    @Test
+    fun `should return correct block even if attempts is null`() {
+      val externalReference = "EXT-REF-1"
+      val id = UUID.randomUUID()
+      val event = EteCourseCompletionEventEntity.valid().copy(id = id, externalReference = externalReference, attempts = null)
+
+      every { eteCourseCompletionEventEntityRepository.findByIdOrNull(id) } returns event
+      every {
+        eteCourseCompletionEventEntityRepository.findBlock(
+          providerCode = event.pdu.providerCode,
+          externalReference = externalReference,
+          startAttempt = 1,
+          endAttempt = 3,
+        )
+      } returns listOf(event.copy(attempts = 1)) // Simulate it being found or treated as 1
+
+      val result = eteService.getCourseCompletionBlock(id, 3)
+
+      assertThat(result).isNotEmpty
     }
 
     @Test
