@@ -55,6 +55,22 @@ interface EteCourseCompletionEventEntityRepository : JpaRepository<EteCourseComp
     toDateTimeExclusive: OffsetDateTime?,
   ): List<EteCourseCompletionEventEntity>
 
+  @Query(
+    """
+    SELECT e FROM EteCourseCompletionEventEntity e
+    WHERE e.pdu.providerCode = :providerCode 
+    AND e.externalReference = :externalReference
+    AND e.attempts BETWEEN :startAttempt AND :endAttempt
+    ORDER BY e.attempts ASC
+  """,
+  )
+  fun findBlock(
+    providerCode: String,
+    externalReference: String,
+    startAttempt: Int,
+    endAttempt: Int,
+  ): List<EteCourseCompletionEventEntity>
+
   enum class ResolutionStatus {
     ANY,
     RESOLVED,

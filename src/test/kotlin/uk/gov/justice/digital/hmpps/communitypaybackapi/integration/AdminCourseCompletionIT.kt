@@ -1159,4 +1159,205 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
       assertThat(recommendation.crn).isNull()
     }
   }
+
+  @Nested
+  @DisplayName("GET /course-completions/{id}/history-block")
+  inner class GetCourseCompletionHistoryBlockEndpoint {
+
+    @BeforeEach
+    fun setUp() {
+      databasePurgeUtils.deleteAllEteData()
+    }
+
+    @Test
+    fun `should return unauthorized if no token`() {
+      val id = UUID.randomUUID()
+      webTestClient.get()
+        .uri("/admin/course-completions/$id/history-block")
+        .exchange()
+        .expectStatus()
+        .isUnauthorized
+    }
+
+    @Test
+    fun `should return forbidden if no role`() {
+      val id = UUID.randomUUID()
+      webTestClient.get()
+        .uri("/admin/course-completions/$id/history-block")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .isForbidden
+    }
+
+    @Test
+    fun `should return 404 when course completion not found`() {
+      val id = UUID.randomUUID()
+      webTestClient.get()
+        .uri("/admin/course-completions/$id/history-block")
+        .addAdminUiAuthHeader()
+        .exchange()
+        .expectStatus()
+        .isNotFound
+    }
+
+    @Test
+    fun `should return block of 3 completions by default`() {
+      val externalReference = "EXT-REF-3"
+      val pdu = communityCampusPduEntityRepository.findAll().first()
+
+      val courseCompletion1 = eteCourseCompletionEventEntityRepository.save(
+        EteCourseCompletionEventEntity.failed(ctx).copy(
+          id = UUID.randomUUID(),
+          externalReference = externalReference,
+          completionDateTime = OffsetDateTime.parse("2026-06-15T17:00:00Z"),
+          attempts = 1,
+          pdu = pdu,
+        ),
+      )
+      val courseCompletion2 = eteCourseCompletionEventEntityRepository.save(
+        EteCourseCompletionEventEntity.failed(ctx).copy(
+          id = UUID.randomUUID(),
+          externalReference = externalReference,
+          completionDateTime = OffsetDateTime.parse("2026-06-15T17:15:00Z"),
+          attempts = 2,
+          pdu = pdu,
+        ),
+      )
+      val courseCompletion3 = eteCourseCompletionEventEntityRepository.save(
+        EteCourseCompletionEventEntity.failed(ctx).copy(
+          id = UUID.randomUUID(),
+          externalReference = externalReference,
+          completionDateTime = OffsetDateTime.parse("2026-06-15T17:24:00Z"),
+          attempts = 3,
+          pdu = pdu,
+        ),
+      )
+      val courseCompletion4 = eteCourseCompletionEventEntityRepository.save(
+        EteCourseCompletionEventEntity.failed(ctx).copy(
+          id = UUID.randomUUID(),
+          externalReference = externalReference,
+          completionDateTime = OffsetDateTime.parse("2026-06-17T12:00:00Z"),
+          attempts = 4,
+          pdu = pdu,
+        ),
+      )
+      val courseCompletion5 = eteCourseCompletionEventEntityRepository.save(
+        EteCourseCompletionEventEntity.failed(ctx).copy(
+          id = UUID.randomUUID(),
+          externalReference = externalReference,
+          completionDateTime = OffsetDateTime.parse("2026-06-18T12:00:00Z"),
+          attempts = 5,
+          pdu = pdu,
+        ),
+      )
+      val courseCompletion6 = eteCourseCompletionEventEntityRepository.save(
+        EteCourseCompletionEventEntity.passed(ctx).copy(
+          id = UUID.randomUUID(),
+          externalReference = externalReference,
+          completionDateTime = OffsetDateTime.parse("2026-06-19T12:00:00Z"),
+          attempts = 6,
+          pdu = pdu,
+        ),
+      )
+
+      val block1 = webTestClient.get()
+        .uri("/admin/course-completions/${courseCompletion3.id}/history-block")
+        .addAdminUiAuthHeader()
+        .exchange()
+        .expectStatus()
+        .isOk
+        .bodyAsObject<List<EteCourseCompletionEventDto>>()
+
+      assertThat(block1.map { it.id }).containsExactly(courseCompletion1.id, courseCompletion2.id, courseCompletion3.id)
+
+      val block2 = webTestClient.get()
+        .uri("/admin/course-completions/${courseCompletion6.id}/history-block")
+        .addAdminUiAuthHeader()
+        .exchange()
+        .expectStatus()
+        .isOk
+        .bodyAsObject<List<EteCourseCompletionEventDto>>()
+
+      assertThat(block2.map { it.id }).containsExactly(courseCompletion4.id, courseCompletion5.id, courseCompletion6.id)
+    }
+
+    @Test
+    fun `should return block of custom size`() {
+      val externalReference = "EXT-REF-CUSTOM"
+      val pdu = communityCampusPduEntityRepository.findAll().first()
+
+      val courseCompletion1 = eteCourseCompletionEventEntityRepository.save(
+        EteCourseCompletionEventEntity.failed(ctx).copy(
+          id = UUID.randomUUID(),
+          externalReference = externalReference,
+          completionDateTime = OffsetDateTime.parse("2026-06-15T17:00:00Z"),
+          attempts = 1,
+          pdu = pdu,
+        ),
+      )
+      val courseCompletion2 = eteCourseCompletionEventEntityRepository.save(
+        EteCourseCompletionEventEntity.failed(ctx).copy(
+          id = UUID.randomUUID(),
+          externalReference = externalReference,
+          completionDateTime = OffsetDateTime.parse("2026-06-15T17:15:00Z"),
+          attempts = 2,
+          pdu = pdu,
+        ),
+      )
+      val courseCompletion3 = eteCourseCompletionEventEntityRepository.save(
+        EteCourseCompletionEventEntity.failed(ctx).copy(
+          id = UUID.randomUUID(),
+          externalReference = externalReference,
+          completionDateTime = OffsetDateTime.parse("2026-06-15T17:24:00Z"),
+          attempts = 3,
+          pdu = pdu,
+        ),
+      )
+      val courseCompletion4 = eteCourseCompletionEventEntityRepository.save(
+        EteCourseCompletionEventEntity.passed(ctx).copy(
+          id = UUID.randomUUID(),
+          externalReference = externalReference,
+          completionDateTime = OffsetDateTime.parse("2026-06-17T12:00:00Z"),
+          attempts = 4,
+          pdu = pdu,
+        ),
+      )
+
+      val block = webTestClient.get()
+        .uri("/admin/course-completions/${courseCompletion1.id}/history-block?blockSize=2")
+        .addAdminUiAuthHeader()
+        .exchange()
+        .expectStatus()
+        .isOk
+        .bodyAsObject<List<EteCourseCompletionEventDto>>()
+
+      assertThat(block.map { it.id }).containsExactly(courseCompletion1.id, courseCompletion2.id)
+
+      val block2 = webTestClient.get()
+        .uri("/admin/course-completions/${courseCompletion4.id}/history-block?blockSize=2")
+        .addAdminUiAuthHeader()
+        .exchange()
+        .expectStatus()
+        .isOk
+        .bodyAsObject<List<EteCourseCompletionEventDto>>()
+
+      assertThat(block2.map { it.id }).containsExactly(courseCompletion3.id, courseCompletion4.id)
+    }
+
+    @Test
+    fun `should return 400 when block size is less than 1`() {
+      val pdu = communityCampusPduEntityRepository.findAll().first()
+      val event = eteCourseCompletionEventEntityRepository.save(
+        EteCourseCompletionEventEntity.failed(ctx).copy(id = UUID.randomUUID(), pdu = pdu),
+      )
+
+      webTestClient.get()
+        .uri("/admin/course-completions/${event.id}/history-block?blockSize=0")
+        .addAdminUiAuthHeader()
+        .exchange()
+        .expectStatus()
+        .isBadRequest
+    }
+  }
 }

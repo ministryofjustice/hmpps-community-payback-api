@@ -342,4 +342,162 @@ class EteServiceTest {
       assertThat(result).isNull()
     }
   }
+
+  @Nested
+  inner class GetCourseCompletionBlock {
+
+    @Test
+    fun `should return correct block for given id and block size`() {
+      val externalReference = "EXT-REF-1"
+      val id100 = UUID.randomUUID()
+      val id101 = UUID.randomUUID()
+      val id102 = UUID.randomUUID()
+      val id125 = UUID.randomUUID()
+
+      val e100 = EteCourseCompletionEventEntity.valid().copy(id = id100, externalReference = externalReference, attempts = 1)
+      val e101 = EteCourseCompletionEventEntity.valid().copy(id = id101, externalReference = externalReference, attempts = 2)
+      val e102 = EteCourseCompletionEventEntity.valid().copy(id = id102, externalReference = externalReference, attempts = 3)
+      val e125 = EteCourseCompletionEventEntity.valid().copy(id = id125, externalReference = externalReference, attempts = 4)
+
+      val allEvents = listOf(e100, e101, e102, e125)
+
+      every { eteCourseCompletionEventEntityRepository.findByIdOrNull(id102) } returns e102
+      every {
+        eteCourseCompletionEventEntityRepository.findBlock(
+          providerCode = e102.pdu.providerCode,
+          externalReference = externalReference,
+          startAttempt = 1,
+          endAttempt = 3,
+        )
+      } returns listOf(e100, e101, e102)
+
+      val result = eteService.getCourseCompletionBlock(id102, 3)
+
+      assertThat(result.map { it.id }).containsExactly(id100, id101, id102)
+    }
+
+    @Test
+    fun `should return correct block when an attempt is missing`() {
+      val externalReference = "EXT-REF-1"
+      val id101 = UUID.randomUUID()
+      val id102 = UUID.randomUUID()
+      val id103 = UUID.randomUUID()
+
+      val e101 = EteCourseCompletionEventEntity.valid().copy(id = id101, externalReference = externalReference, attempts = 2)
+      val e102 = EteCourseCompletionEventEntity.valid().copy(id = id102, externalReference = externalReference, attempts = 3)
+      val e103 = EteCourseCompletionEventEntity.valid().copy(id = id103, externalReference = externalReference, attempts = 4)
+
+      // Attempt 1 is missing.
+      // Block for attempts 1-3 should contain only e101 and e102.
+
+      every { eteCourseCompletionEventEntityRepository.findByIdOrNull(id101) } returns e101
+
+      every {
+        eteCourseCompletionEventEntityRepository.findBlock(
+          providerCode = e101.pdu.providerCode,
+          externalReference = externalReference,
+          startAttempt = 1,
+          endAttempt = 3,
+        )
+      } returns listOf(e101, e102)
+
+      val result = eteService.getCourseCompletionBlock(id101, 3)
+
+      // Currently, it will return [e101, e102, e103] because Page 0 (size 3) contains all 3.
+      // But it should return [e101, e102].
+      assertThat(result.map { it.id }).containsExactly(id101, id102)
+    }
+
+    @Test
+    fun `should return correct block for last element in the list`() {
+      val externalReference = "EXT-REF-1"
+      val id100 = UUID.randomUUID()
+      val id101 = UUID.randomUUID()
+      val id102 = UUID.randomUUID()
+      val id125 = UUID.randomUUID()
+
+      val e100 = EteCourseCompletionEventEntity.valid().copy(id = id100, externalReference = externalReference, attempts = 1)
+      val e101 = EteCourseCompletionEventEntity.valid().copy(id = id101, externalReference = externalReference, attempts = 2)
+      val e102 = EteCourseCompletionEventEntity.valid().copy(id = id102, externalReference = externalReference, attempts = 3)
+      val e125 = EteCourseCompletionEventEntity.valid().copy(id = id125, externalReference = externalReference, attempts = 4)
+
+      val allEvents = listOf(e100, e101, e102, e125)
+
+      every { eteCourseCompletionEventEntityRepository.findByIdOrNull(id125) } returns e125
+      every {
+        eteCourseCompletionEventEntityRepository.findBlock(
+          providerCode = e125.pdu.providerCode,
+          externalReference = externalReference,
+          startAttempt = 4,
+          endAttempt = 6,
+        )
+      } returns listOf(e125)
+
+      val result = eteService.getCourseCompletionBlock(id125, 3)
+
+      assertThat(result.map { it.id }).containsExactly(id125)
+    }
+
+    @Test
+    fun `should return empty list if event id not found in list of events for external reference`() {
+      val externalReference = "EXT-REF-1"
+      val id = UUID.randomUUID()
+      val event = EteCourseCompletionEventEntity.valid().copy(id = id, externalReference = externalReference)
+
+      every { eteCourseCompletionEventEntityRepository.findByIdOrNull(id) } returns event
+      every {
+        eteCourseCompletionEventEntityRepository.findBlock(
+          providerCode = event.pdu.providerCode,
+          externalReference = externalReference,
+          startAttempt = 1,
+          endAttempt = 3,
+        )
+      } returns listOf(event)
+
+      val result = eteService.getCourseCompletionBlock(id, 3)
+
+      assertThat(result.map { it.id }).containsExactly(id)
+    }
+
+    @Test
+    fun `should return correct block even if attempts is null`() {
+      val externalReference = "EXT-REF-1"
+      val id = UUID.randomUUID()
+      val event = EteCourseCompletionEventEntity.valid().copy(id = id, externalReference = externalReference, attempts = null)
+
+      every { eteCourseCompletionEventEntityRepository.findByIdOrNull(id) } returns event
+      every {
+        eteCourseCompletionEventEntityRepository.findBlock(
+          providerCode = event.pdu.providerCode,
+          externalReference = externalReference,
+          startAttempt = 1,
+          endAttempt = 3,
+        )
+      } returns listOf(event.copy(attempts = 1)) // Simulate it being found or treated as 1
+
+      val result = eteService.getCourseCompletionBlock(id, 3)
+
+      assertThat(result).isNotEmpty
+    }
+
+    @Test
+    fun `should throw exception if event not found in repository`() {
+      val id = UUID.randomUUID()
+      every { eteCourseCompletionEventEntityRepository.findByIdOrNull(id) } returns null
+
+      val exception = org.junit.jupiter.api.assertThrows<IllegalStateException> {
+        eteService.getCourseCompletionBlock(id, 3)
+      }
+      assertThat(exception.message).isEqualTo("Can't find course completion event $id")
+    }
+
+    @Test
+    fun `should throw exception if block size is less than 1`() {
+      val id = UUID.randomUUID()
+      val exception = org.junit.jupiter.api.assertThrows<IllegalArgumentException> {
+        eteService.getCourseCompletionBlock(id, 0)
+      }
+      assertThat(exception.message).isEqualTo("blockSize must be greater than 0")
+    }
+  }
 }

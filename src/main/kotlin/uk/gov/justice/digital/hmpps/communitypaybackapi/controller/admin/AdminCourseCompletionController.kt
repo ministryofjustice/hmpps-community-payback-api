@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import jakarta.validation.Valid
+import jakarta.validation.constraints.Min
 import org.springdoc.core.converters.models.PageableAsQueryParam
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -15,6 +16,7 @@ import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
+import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -36,6 +38,7 @@ import java.time.LocalDate
 import java.util.UUID
 
 @AdminUiController
+@Validated
 @RequestMapping(
   "/admin",
   produces = [MediaType.APPLICATION_JSON_VALUE],
@@ -164,6 +167,22 @@ class AdminCourseCompletionController(val eteService: EteService) {
   ): CourseCompletionRecommendationDto {
     ensureCourseCompletionExists(id)
     return eteService.getCourseCompletionRecommendation(id) ?: notFound("Course completion event", id.toString())
+  }
+
+  @GetMapping("/course-completions/{id}/history-block", produces = [MediaType.APPLICATION_JSON_VALUE])
+  @Operation(
+    description = "Gets the history of course attempts for this course completion in a block of a specific size.",
+    responses = [
+      ApiResponse(responseCode = "200", description = "List of course completion events in the block"),
+      ApiResponse(responseCode = "404", description = "Course completion not found", content = [Content(schema = Schema(implementation = ErrorResponse::class))]),
+    ],
+  )
+  fun getCourseCompletionHistoryBlock(
+    @PathVariable id: UUID,
+    @RequestParam(defaultValue = "3") @Min(1) blockSize: Int,
+  ): List<EteCourseCompletionEventDto> {
+    ensureCourseCompletionExists(id)
+    return eteService.getCourseCompletionBlock(id, blockSize)
   }
 
   private fun ensureCourseCompletionExists(id: UUID) = eteService.getCourseCompletionEvent(id) ?: notFound("Course completion event", id.toString())

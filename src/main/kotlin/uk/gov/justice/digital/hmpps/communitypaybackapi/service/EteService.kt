@@ -112,6 +112,22 @@ class EteService(
 
   fun getCourseCompletionEvent(id: UUID) = eteCourseCompletionEventEntityRepository.findByIdOrNull(id)?.toDto()
 
+  fun getCourseCompletionBlock(id: UUID, blockSize: Int): List<EteCourseCompletionEventDto> {
+    require(blockSize > 0) { "blockSize must be greater than 0" }
+    val event = getEventOrError(id)
+    val attempts = event.attempts ?: 1
+
+    val startAttempt = ((attempts - 1) / blockSize) * blockSize + 1
+    val endAttempt = startAttempt + blockSize - 1
+
+    return eteCourseCompletionEventEntityRepository.findBlock(
+      event.pdu.providerCode,
+      event.externalReference,
+      startAttempt,
+      endAttempt,
+    ).map { it.toDto() }
+  }
+
   fun getCourseCompletionRecommendation(id: UUID): CourseCompletionRecommendationDto? {
     val courseCompletionEvent = getEventOrError(id)
 
