@@ -129,6 +129,9 @@ interface CommunityPaybackAndDeliusClient {
   @GetExchange("/case/{crn}/summary")
   fun getUpwDetailsSummary(@PathVariable crn: String, @RequestParam username: String?): NDCaseDetailsSummary
 
+  @GetExchange("/adjustments")
+  fun getAdjustments(@RequestParam crn: String, @RequestParam eventNumber: Int): NDAdjustmentResponse
+
   @DeleteExchange("/adjustments/{reference}")
   fun deleteAdjustment(
     @PathVariable reference: UUID,
@@ -630,6 +633,21 @@ data class NDAdjustmentRequest(
 enum class NDAdjustmentType(val code: String) {
   POSITIVE("POSITIVE"),
   NEGATIVE("NEGATIVE"),
+}
+
+data class NDAdjustmentResponse(
+  val adjustments: List<NDAdjustment>,
+)
+
+data class NDAdjustment(
+  val id: Long,
+  val reference: UUID?,
+  val type: NDAdjustmentType,
+  val date: LocalDate,
+  val reason: NDNameCode,
+  val minutes: Int,
+) {
+  companion object
 }
 
 data class NDAdjustmentPostResponse(
