@@ -1,15 +1,18 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.integration
 
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointmentSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCodeDescription
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDContactOutcome
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDRequirementProgress
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDRequirementSubType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDUnpaidWorkRequirement
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDUpwDetails
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.bodyAsObject
@@ -24,6 +27,18 @@ import java.time.LocalTime
 class IncentiveSchemeIT : IntegrationTestBase() {
   @Autowired
   lateinit var contactOutcomeEntityRepository: ContactOutcomeEntityRepository
+
+  private val caseSummary = NDCaseSummary.valid()
+  private val unpaidWorkDetails by lazy { listOf(validUpwDetails()) }
+
+  private fun validUpwDetails(
+    eventNumber: Int? = null,
+    eventOutcomeCode: String? = null,
+    requirementCode: String? = null,
+  ): NDUpwDetails = NDUpwDetails.valid(ctx)
+    .copy(eventNumber = eventNumber ?: EVENT_NUMBER)
+    .let { if (eventOutcomeCode != null) it.copy(eventOutcomeCode = eventOutcomeCode) else it }
+    .let { if (requirementCode != null) it.copy(unpaidWorkRequirements = listOf(NDRequirementSubType(subType = NDCodeDescription.valid().copy(code = requirementCode)))) else it }
 
   companion object {
     private const val CRN = "X123456"
@@ -62,12 +77,14 @@ class IncentiveSchemeIT : IntegrationTestBase() {
         .isForbidden
     }
 
-    @Disabled("Eligibility is not yet implemented")
     @Test
     fun `should return OK with correct response when ineligible`() {
       val requirementProgress = NDRequirementProgress.valid().copy(requiredMinutes = 6000)
       val requirement = NDUnpaidWorkRequirement.valid().copy(requirementProgress = requirementProgress)
 
+      val unpaidWorkDetails = listOf(validUpwDetails(eventOutcomeCode = "SDO"))
+
+      CommunityPaybackAndDeliusMockServer.setupGetUpwDetailsSummaryResponse(CRN, caseSummary, unpaidWorkDetails)
       CommunityPaybackAndDeliusMockServer.setupGetUnpaidWorkRequirementResponse(CRN, EVENT_NUMBER, requirement)
       CommunityPaybackAndDeliusMockServer.setupGetAppointmentsResponse(
         crn = CRN,
@@ -106,6 +123,7 @@ class IncentiveSchemeIT : IntegrationTestBase() {
       val qualifyingContactOutcome = contactOutcomeEntityRepository.findAll().first { !it.enforceable }
       val disqualifyingContactOutcome = contactOutcomeEntityRepository.findAll().first { it.enforceable }
 
+      CommunityPaybackAndDeliusMockServer.setupGetUpwDetailsSummaryResponse(CRN, caseSummary, unpaidWorkDetails)
       CommunityPaybackAndDeliusMockServer.setupGetUnpaidWorkRequirementResponse(CRN, EVENT_NUMBER, requirement)
       CommunityPaybackAndDeliusMockServer.setupGetAppointmentsResponse(
         crn = CRN,
@@ -158,6 +176,7 @@ class IncentiveSchemeIT : IntegrationTestBase() {
 
       val contactOutcome = contactOutcomeEntityRepository.findAll().first { !it.enforceable }
 
+      CommunityPaybackAndDeliusMockServer.setupGetUpwDetailsSummaryResponse(CRN, caseSummary, unpaidWorkDetails)
       CommunityPaybackAndDeliusMockServer.setupGetUnpaidWorkRequirementResponse(CRN, EVENT_NUMBER, requirement)
       CommunityPaybackAndDeliusMockServer.setupGetAppointmentsResponse(
         crn = CRN,
@@ -217,6 +236,7 @@ class IncentiveSchemeIT : IntegrationTestBase() {
 
       val contactOutcome = contactOutcomeEntityRepository.findAll().first { !it.enforceable }
 
+      CommunityPaybackAndDeliusMockServer.setupGetUpwDetailsSummaryResponse(CRN, caseSummary, unpaidWorkDetails)
       CommunityPaybackAndDeliusMockServer.setupGetUnpaidWorkRequirementResponse(CRN, EVENT_NUMBER, requirement)
       CommunityPaybackAndDeliusMockServer.setupGetAppointmentsResponse(
         crn = CRN,
