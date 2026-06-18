@@ -96,3 +96,8 @@ hmpps:
 tasks:
   travel-time:
     enabled: false
+
+course:
+  completions:
+    auto-resolution:
+      enabled: true

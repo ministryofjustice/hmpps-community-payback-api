@@ -25,6 +25,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.listener.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseCompletionMessage
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ContextService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.CourseCompletionAutoResolutionService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.EteService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.EteValidationService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.SpringEventPublisher
@@ -58,6 +59,9 @@ class EteServiceTest {
   @RelaxedMockK
   lateinit var springEventPublisher: SpringEventPublisher
 
+  @RelaxedMockK
+  lateinit var courseCompletionAutoResolutionService: CourseCompletionAutoResolutionService
+
   private lateinit var eteService: EteService
 
   val londonDateFrom: OffsetDateTime = OffsetDateTime.parse("2026-05-26T00:00:00Z")
@@ -77,12 +81,14 @@ class EteServiceTest {
       eteValidationService,
       contextService,
       springEventPublisher,
-      defaultDateFrom,
-      defaultDateTo,
-      londonDateFrom,
-      londonDateTo,
-      southCentralDateFrom,
-      southCentralTo,
+      courseCompletionAutoResolutionService,
+      courseCompletionsAvailableFrom = defaultDateFrom,
+      courseCompletionsAvailableTo = defaultDateTo,
+      londonAvailableFrom = londonDateFrom,
+      londonAvailableTo = londonDateTo,
+      southCentralAvailableFrom = southCentralDateFrom,
+      southCentralAvailableTo = southCentralTo,
+      courseCompletionAutoResolutionEnabled = false,
     )
   }
 
@@ -100,6 +106,68 @@ class EteServiceTest {
       eteService.recordCourseCompletionEvent(message)
 
       verify { eteCourseCompletionEventEntityRepository.save(mappingResult) }
+    }
+
+    @Test
+    fun `auto-resolution is called when enabled`() {
+      val message = EducationCourseCompletionMessage.valid()
+      val mappingResult = EteCourseCompletionEventEntity.valid()
+      every { eteMappers.toCourseCompletionEventEntity(message) } returns mappingResult
+      every { eteCourseCompletionEventEntityRepository.save(any()) } returnsArgument 0
+
+      eteService = EteService(
+        eteMappers,
+        eteCourseCompletionEventEntityRepository,
+        eteCourseCompletionEventResolutionRepository,
+        appointmentService,
+        eteValidationService,
+        contextService,
+        springEventPublisher,
+        courseCompletionAutoResolutionService,
+        courseCompletionsAvailableFrom = defaultDateFrom,
+        courseCompletionsAvailableTo = defaultDateTo,
+        londonAvailableFrom = londonDateFrom,
+        londonAvailableTo = londonDateTo,
+        southCentralAvailableFrom = southCentralDateFrom,
+        southCentralAvailableTo = southCentralTo,
+        courseCompletionAutoResolutionEnabled = true,
+      )
+
+      eteService.recordCourseCompletionEvent(message)
+
+      verify { courseCompletionAutoResolutionService.resolveAndPersistDraft(mappingResult) }
+    }
+
+    @Test
+    fun `auto-resolution failure is caught and logged`() {
+      val message = EducationCourseCompletionMessage.valid()
+      val mappingResult = EteCourseCompletionEventEntity.valid()
+      every { eteMappers.toCourseCompletionEventEntity(message) } returns mappingResult
+      every { eteCourseCompletionEventEntityRepository.save(any()) } returnsArgument 0
+      every { courseCompletionAutoResolutionService.resolveAndPersistDraft(any()) } throws RuntimeException("Search failed")
+
+      eteService = EteService(
+        eteMappers,
+        eteCourseCompletionEventEntityRepository,
+        eteCourseCompletionEventResolutionRepository,
+        appointmentService,
+        eteValidationService,
+        contextService,
+        springEventPublisher,
+        courseCompletionAutoResolutionService,
+        courseCompletionsAvailableFrom = defaultDateFrom,
+        courseCompletionsAvailableTo = defaultDateTo,
+        londonAvailableFrom = londonDateFrom,
+        londonAvailableTo = londonDateTo,
+        southCentralAvailableFrom = southCentralDateFrom,
+        southCentralAvailableTo = southCentralTo,
+        courseCompletionAutoResolutionEnabled = true,
+      )
+
+      // Should not throw exception
+      eteService.recordCourseCompletionEvent(message)
+
+      verify { courseCompletionAutoResolutionService.resolveAndPersistDraft(mappingResult) }
     }
   }
 
@@ -126,12 +194,14 @@ class EteServiceTest {
         eteValidationService,
         contextService,
         springEventPublisher,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
+        courseCompletionAutoResolutionService = io.mockk.mockk(),
+        courseCompletionsAvailableFrom = null,
+        courseCompletionsAvailableTo = null,
+        londonAvailableFrom = null,
+        londonAvailableTo = null,
+        southCentralAvailableFrom = null,
+        southCentralAvailableTo = null,
+        courseCompletionAutoResolutionEnabled = false,
       )
 
       every {

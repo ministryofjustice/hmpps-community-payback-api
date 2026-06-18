@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util
 
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionDraftResolutionRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventResolutionRepository
 
@@ -14,7 +15,11 @@ class DatabasePurgeUtils {
   @Autowired
   lateinit var eteCourseCompletionEventResolutionRepository: EteCourseCompletionEventResolutionRepository
 
+  @Autowired
+  lateinit var eteCourseCompletionDraftResolutionRepository: EteCourseCompletionDraftResolutionRepository
+
   fun deleteAllEteData() {
+    eteCourseCompletionDraftResolutionRepository.deleteAll()
     eteCourseCompletionEventEntityRepository.deleteAll()
   }
 }
