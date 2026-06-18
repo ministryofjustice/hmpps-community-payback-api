@@ -602,11 +602,13 @@ data class NDUpwDetails(
   val adjustments: Long,
   val completedEteMinutes: Long,
   val eventOutcome: String,
+  val eventOutcomeCode: String,
   val upwStatus: String?,
   val referralDate: LocalDate,
   val convictionDate: LocalDate?,
   val court: NDCodeDescription?,
   val mainOffence: NDMainOffence,
+  val unpaidWorkRequirements: List<NDRequirementSubType>,
 ) {
   companion object
 }
@@ -616,6 +618,12 @@ data class NDMainOffence(
   val count: Int,
   val code: String,
   val description: String,
+) {
+  companion object
+}
+
+data class NDRequirementSubType(
+  val subType: NDCodeDescription?,
 ) {
   companion object
 }

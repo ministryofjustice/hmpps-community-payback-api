@@ -4,6 +4,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseDetailsSumm
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCodeDescription
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDMainOffence
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDRequirementSubType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDUpwDetails
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.random
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.randomLocalDate
@@ -25,9 +26,11 @@ fun NDUpwDetails.Companion.valid() = NDUpwDetails(
   court = NDCodeDescription.Companion.valid(),
   mainOffence = NDMainOffence.Companion.valid(),
   eventOutcome = String.random(10),
+  eventOutcomeCode = String.random(4),
   upwStatus = String.random(10),
   referralDate = randomLocalDate(),
   convictionDate = randomLocalDate(),
+  unpaidWorkRequirements = listOf(NDRequirementSubType.valid()),
 )
 
 fun NDMainOffence.Companion.valid() = NDMainOffence(
@@ -35,4 +38,8 @@ fun NDMainOffence.Companion.valid() = NDMainOffence(
   description = String.random(100),
   date = randomLocalDate(),
   count = Random.nextInt(1, 100),
+)
+
+fun NDRequirementSubType.Companion.valid() = NDRequirementSubType(
+  subType = NDCodeDescription.valid(),
 )
