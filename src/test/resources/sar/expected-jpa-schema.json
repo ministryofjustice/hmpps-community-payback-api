@@ -152,6 +152,15 @@
     "formType": "String",
     "updatedAt": "OffsetDateTime"
   },
+  "IncentiveSchemeEligibilityScopeEntity": {
+    "code": "String",
+    "createdAt": "OffsetDateTime",
+    "description": "String",
+    "id": "UUID",
+    "isEligible": "boolean",
+    "scope": "IncentiveSchemeEligibilityScope",
+    "updatedAt": "OffsetDateTime"
+  },
   "ProjectTypeEntity": {
     "code": "String",
     "createdAt": "OffsetDateTime",
