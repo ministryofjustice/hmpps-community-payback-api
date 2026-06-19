@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.service
 
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -38,6 +39,7 @@ class EteService(
   private val eteValidationService: EteValidationService,
   private val contextService: ContextService,
   private val springEventPublisher: SpringEventPublisher,
+  private val courseCompletionAutoResolutionService: CourseCompletionAutoResolutionService,
 
   // The dates below are temporary, during the initial stages of private beta
   @Value("\${course.completions.available.from:#{null}}") private val courseCompletionsAvailableFrom: OffsetDateTime?,
@@ -48,13 +50,26 @@ class EteService(
   // South Central - N59
   @Value("\${course.completions.south-central.available.from:#{null}}") private val southCentralAvailableFrom: OffsetDateTime?,
   @Value("\${course.completions.south-central.available.to:#{null}}") private val southCentralAvailableTo: OffsetDateTime?,
+
+  @Value("\${course.completions.auto-resolution.enabled:false}")
+  private val courseCompletionAutoResolutionEnabled: Boolean,
 ) {
   companion object {
     const val ETE_ALLOWANCE_OF_TOTAL_REQUIREMENT = 0.3
+    private val log = LoggerFactory.getLogger(EteService::class.java)
   }
 
+  @Suppress("TooGenericExceptionCaught")
   fun recordCourseCompletionEvent(message: EducationCourseCompletionMessage) {
     val event = eteCourseCompletionEventEntityRepository.save(eteMapper.toCourseCompletionEventEntity(message))
+
+    if (courseCompletionAutoResolutionEnabled) {
+      try {
+        courseCompletionAutoResolutionService.resolveAndPersistDraft(event)
+      } catch (e: Exception) {
+        log.warn("Auto-resolution failed for event {} — draft will be empty; user must resolve manually", event.id, e)
+      }
+    }
 
     springEventPublisher.publishEvent(
       CourseCompletionReceivedEvent(

@@ -27,12 +27,13 @@ generic-service:
     CLIENT_ARNS_URL: https://assess-risks-and-needs.hmpps.service.justice.gov.uk
     CLIENT_COMMUNITY_PAYBACK_AND_DELIUS_URL: https://community-payback-and-delius.hmpps.service.justice.gov.uk
     CLIENT_PROBATION_ACCESS_CONTROL_URL: https://probation-access-control.hmpps.service.justice.gov.uk
+    CLIENT_PROBATION_OFFENDER_SEARCH_URL: https://probation-offender-search.hmpps.service.justice.gov.uk
 
     SPRINGDOC_API_DOCS_ENABLED: false
     SPRINGDOC_SWAGGER_UI_ENABLED: false
 
     TASKS_TRAVEL_TIME_ENABLED: false
-
+    COURSE_COMPLETIONS_AUTO_RESOLUTION_ENABLED: false
 
   postgresDatabaseRestore:
     enabled: true

@@ -20,6 +20,7 @@ import reactor.util.retry.Retry
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ArnsClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProbationAccessControlClient
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProbationOffenderSearchClient
 import uk.gov.justice.hmpps.kotlin.auth.authorisedWebClient
 import uk.gov.justice.hmpps.kotlin.auth.healthWebClient
 import java.time.Duration
@@ -40,6 +41,9 @@ class WebClientConfiguration(
 
   @param:Value("\${client.probation-access-control.url}") val probationAccessControlUrl: String,
   @param:Value("\${client.probation-access-control.timeout:5s}") val probationAccessControlTimeout: Duration,
+
+  @param:Value("\${client.probation-offender-search.url}") val probationOffenderSearchUrl: String,
+  @param:Value("\${client.probation-offender-search.timeout:5s}") val probationOffenderSearchTimeout: Duration,
 
   @param:Value("\${client.log-downstream-error-responses:false}") val logDownstreamErrorResponses: Boolean,
 ) {
@@ -116,6 +120,28 @@ class WebClientConfiguration(
     .builderFor(WebClientAdapter.create(probationAccessControlWebClient))
     .build()
     .createClient<ProbationAccessControlClient>()
+
+  @Bean
+  fun probationOffenderSearchWebClient(
+    authorizedClientManager: OAuth2AuthorizedClientManager,
+    builder: WebClient.Builder,
+  ): WebClient = builder
+    .authorisedWebClient(
+      authorizedClientManager = authorizedClientManager,
+      registrationId = API_CLIENT_ID,
+      url = probationOffenderSearchUrl,
+      timeout = probationOffenderSearchTimeout,
+    )
+    .logErrorResponses<ProbationOffenderSearchClient>(logDownstreamErrorResponses)
+
+  @Bean
+  @DependsOn("probationOffenderSearchWebClient")
+  fun probationOffenderSearchClient(
+    probationOffenderSearchWebClient: WebClient,
+  ): ProbationOffenderSearchClient = HttpServiceProxyFactory
+    .builderFor(WebClientAdapter.create(probationOffenderSearchWebClient))
+    .build()
+    .createClient<ProbationOffenderSearchClient>()
 }
 
 inline fun <reified T> WebClient.logErrorResponses(enabled: Boolean): WebClient {

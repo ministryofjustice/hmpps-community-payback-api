@@ -99,6 +99,15 @@
     "respondByDateRequired": "boolean",
     "updatedAt": "OffsetDateTime"
   },
+  "EteCourseCompletionDraftResolutionEntity": {
+    "appointmentIdToUpdate": "Long",
+    "createdAt": "OffsetDateTime",
+    "crn": "String",
+    "eteCourseCompletionEvent": "EteCourseCompletionEventEntity",
+    "id": "UUID",
+    "projectCode": "String",
+    "teamCode": "String"
+  },
   "EteCourseCompletionEventEntity": {
     "attempts": "Integer",
     "completionDateTime": "OffsetDateTime",

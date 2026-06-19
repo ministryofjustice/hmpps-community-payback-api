@@ -7,6 +7,7 @@ import org.springframework.context.ApplicationContext
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.atFirstSecondOfDay
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.atLastSecondOfDay
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.CommunityCampusPduEntityRepository
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionDraftResolutionRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventResolutionEntity
@@ -114,8 +115,10 @@ class SarRequestCourseCompletionEventIT : IntegrationTestBase() {
   ) {
     val eteCourseCompletionEventEntityRepository = ctx.getBean<EteCourseCompletionEventEntityRepository>()
     val pduEntityRepository = ctx.getBean<CommunityCampusPduEntityRepository>()
+    val eteCourseCompletionDraftResolutionRepository = ctx.getBean<EteCourseCompletionDraftResolutionRepository>()
 
     fun clearTestData() {
+      eteCourseCompletionDraftResolutionRepository.deleteAll()
       eteCourseCompletionEventEntityRepository.deleteAll()
     }
 
