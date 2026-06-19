@@ -33,7 +33,6 @@ generic-service:
     SPRINGDOC_SWAGGER_UI_ENABLED: false
 
     TASKS_TRAVEL_TIME_ENABLED: false
-
     COURSE_COMPLETIONS_AUTO_RESOLUTION_ENABLED: false
 
   postgresDatabaseRestore:

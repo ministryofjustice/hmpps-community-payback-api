@@ -29,6 +29,7 @@ generic-service:
     SPRINGDOC_SWAGGER_UI_ENABLED: true
 
     TASKS_TRAVEL_TIME_ENABLED: true
+    COURSE_COMPLETIONS_AUTO_RESOLUTION_ENABLED: true
 
 # CloudPlatform AlertManager receiver to route prometheus alerts to slack
 # See https://user-guide.cloud-platform.service.justice.gov.uk/documentation/monitoring-an-app/how-to-create-alarms.html#creating-your-own-custom-alerts

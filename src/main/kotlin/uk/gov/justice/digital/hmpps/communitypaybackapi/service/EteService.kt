@@ -51,7 +51,7 @@ class EteService(
   @Value("\${course.completions.south-central.available.from:#{null}}") private val southCentralAvailableFrom: OffsetDateTime?,
   @Value("\${course.completions.south-central.available.to:#{null}}") private val southCentralAvailableTo: OffsetDateTime?,
 
-  @Value("\${course.completions.auto-resolution.enabled:true}")
+  @Value("\${course.completions.auto-resolution.enabled:false}")
   private val courseCompletionAutoResolutionEnabled: Boolean,
 ) {
   companion object {
