@@ -7,6 +7,7 @@ data class UpdateAppointmentsOutcomesResultDto(
 data class UpdateAppointmentOutcomeResultDto(
   val deliusId: Long,
   val result: UpdateAppointmentOutcomeResultType,
+  val errorMessage: String? = null,
 )
 
 enum class UpdateAppointmentOutcomeResultType {
@@ -14,4 +15,5 @@ enum class UpdateAppointmentOutcomeResultType {
   NOT_FOUND,
   VERSION_CONFLICT,
   SERVER_ERROR,
+  VALIDATION_ERROR,
 }
