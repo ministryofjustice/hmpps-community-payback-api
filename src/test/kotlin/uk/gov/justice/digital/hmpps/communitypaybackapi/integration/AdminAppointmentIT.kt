@@ -539,7 +539,7 @@ class AdminAppointmentIT : IntegrationTestBase() {
     }
 
     @Test
-    fun `fails one appointment due to validation failure and returns 400`() {
+    fun `fails one appointment due to validation failure and returns VALIDATION_ERROR for that appointment`() {
       val projectAndLocation = NDProjectAndLocation.valid().copy(code = "PC01")
       val project = NDProject.valid(ctx).copy(code = "PC01")
       val pickup = NDAppointmentPickUp.valid()
@@ -557,6 +557,7 @@ class AdminAppointmentIT : IntegrationTestBase() {
         project = project,
         username = "theusername",
       )
+      CommunityPaybackAndDeliusMockServer.setupPutAppointmentResponse("PC01", 1234L)
 
       // Appointment 2: Sensitive mismatch (Validation failure)
       CommunityPaybackAndDeliusMockServer.Aggregates.setupGetDataMocksForUpdateAppointment(
@@ -573,7 +574,7 @@ class AdminAppointmentIT : IntegrationTestBase() {
         username = "theusername",
       )
 
-      webTestClient.put()
+      val result = webTestClient.put()
         .uri("/admin/projects/PC01/appointments/bulk")
         .addAdminUiAuthHeader("theusername")
         .bodyValue(
@@ -586,10 +587,18 @@ class AdminAppointmentIT : IntegrationTestBase() {
         )
         .exchange()
         .expectStatus()
-        .isBadRequest
-        .bodyAsObject<ErrorResponse>()
+        .isOk
+        .bodyAsObject<UpdateAppointmentsOutcomesResultDto>()
 
-      domainEventAsserter.assertEventCount("community-payback.appointment.updated", 0)
+      assertThat(result.results).hasSize(2)
+      assertThat(result.results[0].deliusId).isEqualTo(1234L)
+      assertThat(result.results[0].result).isEqualTo(UpdateAppointmentOutcomeResultType.SUCCESS)
+      assertThat(result.results[1].deliusId).isEqualTo(5678L)
+      assertThat(result.results[1].result).isEqualTo(UpdateAppointmentOutcomeResultType.VALIDATION_ERROR)
+      assertThat(result.results[1].errorMessage).isEqualTo("This appointment has previously been marked as sensitive so this cannot be changed")
+
+      CommunityPaybackAndDeliusMockServer.verifyPutAppointmentRequest("PC01", 1234L)
+      domainEventAsserter.assertEventCount("community-payback.appointment.updated", 1)
     }
 
     @Test
