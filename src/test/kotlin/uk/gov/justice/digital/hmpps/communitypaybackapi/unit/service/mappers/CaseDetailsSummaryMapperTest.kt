@@ -27,6 +27,7 @@ class CaseDetailsSummaryMapperTest {
         adjustments = 100,
         completedEteMinutes = 200,
         eventOutcome = "Event1",
+        eventOutcomeCode = "OUTC",
         upwStatus = "UPW1",
         referralDate = LocalDate.of(2022, 2, 12),
         convictionDate = LocalDate.of(2022, 2, 12),
@@ -40,6 +41,7 @@ class CaseDetailsSummaryMapperTest {
           code = "12345",
           description = "Court1",
         ),
+        unpaidWorkRequirements = emptyList(),
       ).toDto()
 
       assertThat(result.eventNumber).isEqualTo(1)
