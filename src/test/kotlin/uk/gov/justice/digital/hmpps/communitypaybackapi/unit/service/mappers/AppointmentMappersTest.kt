@@ -97,8 +97,6 @@ class AppointmentMappersTest {
           pickUpLocationCode = "PICKUP10",
           pickUpTime = LocalTime.of(13, 14, 15),
           attendanceData = AttendanceDataDto.valid().copy(
-            hiVisWorn = true,
-            workedIntensively = false,
             penaltyMinutes = 105,
             workQuality = AppointmentWorkQualityDto.NOT_APPLICABLE,
             behaviour = AppointmentBehaviourDto.UNSATISFACTORY,
@@ -123,8 +121,8 @@ class AppointmentMappersTest {
       assertThat(result.outcome?.code).isEqualTo("COE1")
       assertThat(result.supervisor?.code).isEqualTo("WO3736")
       assertThat(result.notes).isEqualTo("The notes")
-      assertThat(result.hiVisWorn).isTrue
-      assertThat(result.workedIntensively).isFalse
+      assertThat(result.hiVisWorn).isNull()
+      assertThat(result.workedIntensively).isNull()
       assertThat(result.penaltyMinutes).isEqualTo(105)
       assertThat(result.minutesCredited).isEqualTo(35)
       assertThat(result.workQuality).isEqualTo(NDAppointmentWorkQuality.NOT_APPLICABLE)
@@ -208,8 +206,6 @@ class AppointmentMappersTest {
           startTime = LocalTime.of(3, 2, 1),
           endTime = LocalTime.of(12, 11, 10),
           attendanceData = AttendanceDataDto.valid().copy(
-            hiVisWorn = true,
-            workedIntensively = false,
             penaltyMinutes = 105,
             workQuality = AppointmentWorkQualityDto.NOT_APPLICABLE,
             behaviour = AppointmentBehaviourDto.UNSATISFACTORY,
@@ -239,8 +235,8 @@ class AppointmentMappersTest {
           |The notes
         """.trimMargin(),
       )
-      assertThat(result.hiVisWorn).isTrue
-      assertThat(result.workedIntensively).isFalse
+      assertThat(result.hiVisWorn).isNull()
+      assertThat(result.workedIntensively).isNull()
       assertThat(result.penaltyMinutes).isEqualTo(105)
       assertThat(result.minutesCredited).isEqualTo(35)
       assertThat(result.workQuality).isEqualTo(NDAppointmentWorkQuality.NOT_APPLICABLE)
