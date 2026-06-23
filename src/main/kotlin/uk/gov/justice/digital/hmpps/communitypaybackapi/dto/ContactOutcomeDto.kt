@@ -22,4 +22,5 @@ data class ContactOutcomeDto(
 enum class ContactOutcomeGroupDto {
   AVAILABLE_TO_ADMIN,
   AVAILABLE_FOR_ETE,
+  AVAILABLE_TO_SUPERVISOR,
 }
