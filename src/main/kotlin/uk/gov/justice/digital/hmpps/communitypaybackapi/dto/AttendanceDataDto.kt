@@ -5,14 +5,18 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.common.HourMinuteDuratio
 import java.time.Duration
 
 data class AttendanceDataDto(
-  val hiVisWorn: Boolean,
-  val workedIntensively: Boolean,
+  @Deprecated("This property is no longer used as this is derived from the outcome.")
+  val hiVisWorn: Boolean?,
+  @Deprecated("This property is no longer used as this is derived from the outcome.")
+  val workedIntensively: Boolean?,
   @Deprecated("use penaltyMinutes")
   @param:Schema(description = "Deprecated, use penaltyMinutes instead", deprecated = true)
   val penaltyTime: HourMinuteDuration? = null,
   val penaltyMinutes: Long? = null,
-  val workQuality: AppointmentWorkQualityDto,
-  val behaviour: AppointmentBehaviourDto,
+  @Deprecated("This property is no longer used as this is derived from the outcome.")
+  val workQuality: AppointmentWorkQualityDto?,
+  @Deprecated("This property is no longer used as this is derived from the outcome.")
+  val behaviour: AppointmentBehaviourDto?,
 ) {
   companion object
 }

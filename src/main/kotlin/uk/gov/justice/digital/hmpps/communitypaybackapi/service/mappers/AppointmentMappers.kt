@@ -13,6 +13,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCreateAppointme
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDUpdateAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.formatForUser
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentBehaviourDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentCommandDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentWorkQualityDto
@@ -80,12 +81,12 @@ class AppointmentMappers(
       contactOutcomeCode = contactOutcomeEntity?.code,
       attendanceData = if (contactOutcomeEntity?.attended == true) {
         AttendanceDataDto(
-          hiVisWorn = appointment.hiVisWorn!!,
-          workedIntensively = appointment.workedIntensively!!,
+          hiVisWorn = appointment.hiVisWorn,
+          workedIntensively = appointment.workedIntensively,
           penaltyTime = appointment.penaltyHours,
           penaltyMinutes = appointment.penaltyHours?.duration?.toMinutes(),
-          workQuality = appointment.workQuality!!.toDto(),
-          behaviour = appointment.behaviour!!.toDto(),
+          workQuality = appointment.workQuality?.toDto(),
+          behaviour = appointment.behaviour?.toDto(),
         )
       } else {
         null
@@ -176,12 +177,12 @@ fun ValidatedAppointment<UpdateAppointmentOutcomeDto>.toNDUpdateAppointment(
     outcome = this.contactOutcome?.let { NDCode(it.code) },
     supervisor = NDCode(updateDto.supervisorOfficerCode),
     notes = buildUpdateNote(existingAppointment),
-    hiVisWorn = updateDto.attendanceData?.hiVisWorn,
-    workedIntensively = updateDto.attendanceData?.workedIntensively,
+    hiVisWorn = null,
+    workedIntensively = null,
     penaltyMinutes = updateDto.attendanceData?.derivePenaltyMinutesDuration()?.toMinutes(),
     minutesCredited = minutesToCredit?.toMinutes(),
-    workQuality = updateDto.attendanceData?.workQuality?.let { WorkQuality.fromDto(it).upstreamType },
-    behaviour = updateDto.attendanceData?.behaviour?.let { Behaviour.fromDto(it).upstreamType },
+    workQuality = updateDto.workQuality,
+    behaviour = updateDto.behaviour,
     sensitive = updateDto.sensitive,
     alertActive = updateDto.alertActive,
     pickUp = existingAppointment.pickUpData?.let { pickUpData ->
@@ -216,6 +217,10 @@ private fun ValidatedAppointment<UpdateAppointmentOutcomeDto>.buildUpdateNote(
     appendLine("Appointment End Time changed from ${existingEndTime.formatForUser()} to ${updatedEndTime.formatForUser()}")
   }
 
+  if (existingAppointment.contactOutcomeCode != updateDto.contactOutcomeCode) {
+    appendLine("Compliance information has been automatically set by the Community Payback service.")
+  }
+
   if (updateDto.notes?.isNotBlank() == true) {
     appendLine(updateDto.notes)
   }
@@ -234,13 +239,13 @@ fun ValidatedAppointment<CreateAppointmentDto>.toNDCreateAppointment(
     endTime = createDto.endTime,
     outcome = contactOutcome?.let { NDCode(it.code) },
     supervisor = createDto.supervisorOfficerCode?.let { NDCode(it) },
-    notes = createDto.notes,
-    hiVisWorn = createDto.attendanceData?.hiVisWorn,
-    workedIntensively = createDto.attendanceData?.workedIntensively,
+    notes = buildCreateNote(),
+    hiVisWorn = null,
+    workedIntensively = null,
     penaltyMinutes = createDto.attendanceData?.derivePenaltyMinutesDuration()?.toMinutes(),
     minutesCredited = minutesToCredit?.toMinutes(),
-    workQuality = createDto.attendanceData?.workQuality?.let { WorkQuality.fromDto(it).upstreamType },
-    behaviour = createDto.attendanceData?.behaviour?.let { Behaviour.fromDto(it).upstreamType },
+    workQuality = createDto.workQuality,
+    behaviour = createDto.behaviour,
     sensitive = createDto.sensitive,
     alertActive = createDto.alertActive,
     allocationId = null,
@@ -250,6 +255,16 @@ fun ValidatedAppointment<CreateAppointmentDto>.toNDCreateAppointment(
     ),
   )
 }
+
+private fun ValidatedAppointment<CreateAppointmentDto>.buildCreateNote() = buildString {
+  val createDto = dto
+
+  appendLine("Compliance information has been automatically set by the Community Payback service.")
+
+  if (createDto.notes?.isNotBlank() == true) {
+    appendLine(createDto.notes)
+  }
+}.trimEnd().ifBlank { null }
 
 object ToAppointmentEntity {
 
@@ -321,3 +336,17 @@ fun NDAppointmentBehaviour.toDto() = when (this) {
   NDAppointmentBehaviour.SATISFACTORY -> AppointmentBehaviourDto.SATISFACTORY
   NDAppointmentBehaviour.UNSATISFACTORY -> AppointmentBehaviourDto.UNSATISFACTORY
 }
+
+val AppointmentCommandDto.workQuality
+  get() = when (this.contactOutcomeCode) {
+    "ATTC" -> NDAppointmentWorkQuality.GOOD
+    "AFTC", "ATSH" -> NDAppointmentWorkQuality.POOR
+    else -> NDAppointmentWorkQuality.NOT_APPLICABLE
+  }
+
+val AppointmentCommandDto.behaviour
+  get() = when (this.contactOutcomeCode) {
+    "ATTC" -> NDAppointmentBehaviour.GOOD
+    "AFTC", "ATSH" -> NDAppointmentBehaviour.POOR
+    else -> NDAppointmentBehaviour.NOT_APPLICABLE
+  }
