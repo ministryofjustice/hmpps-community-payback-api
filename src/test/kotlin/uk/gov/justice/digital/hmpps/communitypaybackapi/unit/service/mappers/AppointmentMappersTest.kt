@@ -121,7 +121,12 @@ class AppointmentMappersTest {
       assertThat(result.endTime).isEqualTo(LocalTime.of(12, 11, 10))
       assertThat(result.outcome?.code).isEqualTo("COE1")
       assertThat(result.supervisor?.code).isEqualTo("WO3736")
-      assertThat(result.notes).isEqualTo("The notes")
+      assertThat(result.notes).isEqualTo(
+        """
+          |Compliance information has been automatically set by the Community Payback service.
+          |The notes
+        """.trimMargin(),
+      )
       assertThat(result.hiVisWorn).isNull()
       assertThat(result.workedIntensively).isNull()
       assertThat(result.penaltyMinutes).isEqualTo(105)
@@ -168,7 +173,7 @@ class AppointmentMappersTest {
       assertThat(result.endTime).isEqualTo(LocalTime.of(12, 11, 10))
       assertThat(result.outcome).isNull()
       assertThat(result.supervisor).isNull()
-      assertThat(result.notes).isNull()
+      assertThat(result.notes).isEqualTo("Compliance information has been automatically set by the Community Payback service.")
       assertThat(result.hiVisWorn).isNull()
       assertThat(result.workedIntensively).isNull()
       assertThat(result.penaltyMinutes).isNull()
@@ -200,7 +205,7 @@ class AppointmentMappersTest {
       )
 
       val dto = ValidatedAppointment.validUpdateAppointment().copy(
-        dto = UpdateAppointmentOutcomeDto.valid().copy(
+        dto = UpdateAppointmentOutcomeDto.valid("OUTCOME2").copy(
           deliusId = 101L,
           deliusVersionToUpdate = priorDeliusVersion,
           date = LocalDate.of(2018, 12, 9),
@@ -231,6 +236,7 @@ class AppointmentMappersTest {
           |Appointment Date changed from 02/01/2020 to 09/12/2018
           |Appointment Start Time changed from 02:02 to 03:02
           |Appointment End Time changed from 11:11 to 12:11
+          |Compliance information has been automatically set by the Community Payback service.
           |The notes
         """.trimMargin(),
       )
