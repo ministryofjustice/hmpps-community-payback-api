@@ -23,11 +23,14 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.common.atLastSecondOfDay
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.toLocalTimeEuropeLondon
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionCreditTimeDetailsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionDontCreditTimeDetailsDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionDraftResolutionDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionRecommendationDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionResolutionDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionResolutionTypeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EteCourseCompletionEventDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.CommunityCampusPduEntityRepository
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionDraftResolutionEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionDraftResolutionRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventResolutionEntity
@@ -61,6 +64,9 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
 
   @Autowired
   lateinit var eteCourseCompletionEventResolutionRepository: EteCourseCompletionEventResolutionRepository
+
+  @Autowired
+  lateinit var eteCourseCompletionDraftResolutionRepository: EteCourseCompletionDraftResolutionRepository
 
   @Autowired
   lateinit var domainEventAsserter: DomainEventAsserter
@@ -1358,6 +1364,85 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
         .exchange()
         .expectStatus()
         .isBadRequest
+    }
+  }
+
+  @Nested
+  @DisplayName("GET /course-completions/{id}/draft-resolution")
+  inner class GetCourseCompletionDraftResolutionEndpoint {
+
+    @BeforeEach
+    fun setUp() {
+      databasePurgeUtils.deleteAllEteData()
+    }
+
+    @Test
+    fun `should return unauthorized if no token`() {
+      val id = UUID.randomUUID()
+      webTestClient.get()
+        .uri("/admin/course-completions/$id/draft-resolution")
+        .exchange()
+        .expectStatus()
+        .isUnauthorized
+    }
+
+    @Test
+    fun `should return forbidden if no role`() {
+      val id = UUID.randomUUID()
+      webTestClient.get()
+        .uri("/admin/course-completions/$id/draft-resolution")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .isForbidden
+    }
+
+    @Test
+    fun `should return 404 when course completion not found`() {
+      val id = UUID.randomUUID()
+      webTestClient.get()
+        .uri("/admin/course-completions/$id/draft-resolution")
+        .addAdminUiAuthHeader()
+        .exchange()
+        .expectStatus()
+        .isNotFound
+    }
+
+    @Test
+    fun `should return draft resolution with all fields when available`() {
+      val crn = "X123456"
+
+      val targetEvent = eteCourseCompletionEventEntityRepository.save(
+        EteCourseCompletionEventEntity.valid(ctx),
+      )
+
+      eteCourseCompletionDraftResolutionRepository.save(
+        EteCourseCompletionDraftResolutionEntity.valid().copy(eteCourseCompletionEvent = targetEvent, crn = crn),
+      )
+
+      val result = webTestClient.get()
+        .uri("/admin/course-completions/${targetEvent.id}/draft-resolution")
+        .addAdminUiAuthHeader()
+        .exchange()
+        .expectStatus()
+        .isOk
+        .bodyAsObject<CourseCompletionDraftResolutionDto>()
+
+      assertThat(result.crn).isEqualTo(crn)
+    }
+
+    @Test
+    fun `should return 404 Not Found when no draft resolution is found`() {
+      val targetEvent = eteCourseCompletionEventEntityRepository.save(
+        EteCourseCompletionEventEntity.valid(ctx),
+      )
+
+      webTestClient.get()
+        .uri("/admin/course-completions/${targetEvent.id}/draft-resolution")
+        .addAdminUiAuthHeader()
+        .exchange()
+        .expectStatus()
+        .isNotFound
     }
   }
 }

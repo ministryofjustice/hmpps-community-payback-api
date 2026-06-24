@@ -27,6 +27,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.common.atFirstSecondOfDa
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.atLastSecondOfDay
 import uk.gov.justice.digital.hmpps.communitypaybackapi.controller.internal.SupportsIdempotencyKey
 import uk.gov.justice.digital.hmpps.communitypaybackapi.controller.internal.notFound
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionDraftResolutionDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionRecommendationDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionResolutionDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EteCourseCompletionEventDto
@@ -183,6 +184,21 @@ class AdminCourseCompletionController(val eteService: EteService) {
   ): List<EteCourseCompletionEventDto> {
     ensureCourseCompletionExists(id)
     return eteService.getCourseCompletionBlock(id, blockSize)
+  }
+
+  @GetMapping("/course-completions/{id}/draft-resolution", produces = [MediaType.APPLICATION_JSON_VALUE])
+  @Operation(
+    description = "Gets the draft resolution for this course completion.",
+    responses = [
+      ApiResponse(responseCode = "200", description = "Draft resolution for this course completion"),
+      ApiResponse(responseCode = "404", description = "Draft resolution not found", content = [Content(schema = Schema(implementation = ErrorResponse::class))]),
+    ],
+  )
+  fun getCourseCompletionDraftResolution(
+    @PathVariable id: UUID,
+  ): CourseCompletionDraftResolutionDto {
+    ensureCourseCompletionExists(id)
+    return eteService.getCourseCompletionDraftResolution(id) ?: notFound("Draft resolution", id.toString())
   }
 
   private fun ensureCourseCompletionExists(id: UUID) = eteService.getCourseCompletionEvent(id) ?: notFound("Course completion event", id.toString())
