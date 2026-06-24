@@ -9,11 +9,9 @@ import org.springframework.beans.factory.annotation.Autowired
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointmentSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectSummary
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSessionSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSessionSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.PageResponse
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionSummariesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.SessionSupervisorEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.SessionSupervisorEntityRepository
@@ -196,8 +194,8 @@ class SupervisorSessionsIT : IntegrationTestBase() {
   }
 
   @Nested
-  @DisplayName("GET /supervisor/supervisors/{supervisorCode}/sessions/future")
-  inner class GetFutureSessionEndpoint {
+  @DisplayName("GET /supervisor/sessions/future")
+  inner class GetFutureSessionsEndpoint {
 
     @BeforeEach
     fun setUp() {
@@ -207,7 +205,7 @@ class SupervisorSessionsIT : IntegrationTestBase() {
     @Test
     fun `should return unauthorized if no token`() {
       webTestClient.get()
-        .uri("/supervisor/providers/P123/teams/T456/sessions/future")
+        .uri("/supervisor/sessions/future?teamCodes=T456")
         .exchange()
         .expectStatus()
         .isUnauthorized
@@ -216,7 +214,7 @@ class SupervisorSessionsIT : IntegrationTestBase() {
     @Test
     fun `should return forbidden if no role`() {
       webTestClient.get()
-        .uri("/supervisor/providers/P123/teams/T456/sessions/future")
+        .uri("/supervisor/sessions/future?teamCodes=T456")
         .headers(setAuthorisation())
         .exchange()
         .expectStatus()
@@ -226,7 +224,7 @@ class SupervisorSessionsIT : IntegrationTestBase() {
     @Test
     fun `should return forbidden if wrong role`() {
       webTestClient.get()
-        .uri("/supervisor/providers/P123/teams/T456/sessions/future")
+        .uri("/supervisor/sessions/future?teamCodes=T456")
         .headers(setAuthorisation(roles = listOf("ROLE_WRONG")))
         .exchange()
         .expectStatus()
@@ -244,32 +242,25 @@ class SupervisorSessionsIT : IntegrationTestBase() {
       )
 
       CommunityPaybackAndDeliusMockServer.setupGetSessionsResponse(
-        providerCode = "P123",
-        teamCode = "T456",
+        teamCodes = listOf("T456"),
         startDate = LocalDate.now(),
         endDate = LocalDate.now().plusDays(7),
         typeCode = listOf("NP1", "NP2", "PL"),
-        projectSessions = NDSessionSummaries(
-          sessions,
-          pageResponse = PageResponse(
-            content = sessions,
-            page = PageResponse.PageMeta(50, 0, 2, 1),
-          ),
+        sessions = PageResponse(
+          content = sessions,
+          page = PageResponse.PageMeta(50, 0, 2, 1),
         ),
-        sortString = "date,desc",
+        sortString = "date,asc",
       )
 
       val result = webTestClient.get()
-        .uri("/supervisor/providers/P123/teams/T456/sessions/future")
+        .uri("/supervisor/sessions/future?teamCodes=T456")
         .addSupervisorUiAuthHeader(username = "USER1")
         .exchange()
         .expectStatus()
         .isOk
-        .bodyAsObject<SessionSummariesDto>()
+        .bodyAsObject<PageResponse<SessionSummaryDto>>()
 
-      assertThat(result.allocations).hasSize(2)
-      assertThat(result.allocations[0].projectName).isEqualTo(projectName1)
-      assertThat(result.allocations[1].projectName).isEqualTo(projectName2)
       assertThat(result.content).hasSize(2)
       assertThat(result.content[0].projectName).isEqualTo(projectName1)
       assertThat(result.content[1].projectName).isEqualTo(projectName2)
@@ -291,32 +282,25 @@ class SupervisorSessionsIT : IntegrationTestBase() {
     )
 
     CommunityPaybackAndDeliusMockServer.setupGetSessionsResponse(
-      providerCode = "P123",
-      teamCode = "T456",
+      teamCodes = listOf("T456"),
       startDate = LocalDate.now(),
       endDate = LocalDate.now().plusDays(7),
       typeCode = listOf("NP1", "NP2", "PL"),
-      projectSessions = NDSessionSummaries(
-        sessions,
-        pageResponse = PageResponse(
-          content = sessions,
-          page = PageResponse.PageMeta(25, 0, 2, 1),
-        ),
+      sessions = PageResponse(
+        content = sessions,
+        page = PageResponse.PageMeta(25, 0, 2, 1),
       ),
       sortString = "projectName,asc",
     )
 
     val result = webTestClient.get()
-      .uri("/supervisor/providers/P123/teams/T456/sessions/future?page=0&size=25&sort=projectName,asc")
+      .uri("/supervisor/sessions/future?teamCodes=T456&page=0&size=25&sort=projectName,asc")
       .addSupervisorUiAuthHeader(username = "USER1")
       .exchange()
       .expectStatus()
       .isOk
-      .bodyAsObject<SessionSummariesDto>()
+      .bodyAsObject<PageResponse<SessionSummaryDto>>()
 
-    assertThat(result.allocations).hasSize(2)
-    assertThat(result.allocations[0].projectName).isEqualTo(projectName1)
-    assertThat(result.allocations[1].projectName).isEqualTo(projectName2)
     assertThat(result.content).hasSize(2)
     assertThat(result.content[0].projectName).isEqualTo(projectName1)
     assertThat(result.content[1].projectName).isEqualTo(projectName2)
