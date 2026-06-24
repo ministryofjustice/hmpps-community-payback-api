@@ -1,12 +1,14 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.service
 
 import org.slf4j.LoggerFactory
+import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.asPage
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.badRequest
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeGroupDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionDto
@@ -35,6 +37,7 @@ class SessionService(
     private val log = LoggerFactory.getLogger(this::class.java)
   }
 
+  @Deprecated("This overload calls a deprecated endpoint.", replaceWith = ReplaceWith("getSessions(listOf(teamCode), startDate, endDate, projectTypeGroup, pageable)"))
   fun getSessions(
     providerCode: String,
     teamCode: String,
@@ -57,6 +60,30 @@ class SessionService(
       },
       params = pageable.toHttpParams(),
     ).toDto()
+  }
+
+  fun getSessions(
+    teamCodes: List<String>,
+    startDate: LocalDate,
+    endDate: LocalDate,
+    projectTypeGroup: ProjectTypeGroupDto?,
+    pageable: Pageable,
+  ): Page<SessionSummaryDto> {
+    if (ChronoUnit.DAYS.between(startDate, endDate) > 7) {
+      badRequest("Date range cannot be greater than 7 days")
+    }
+
+    val response = communityPaybackAndDeliusClient.getSessions(
+      teamCodes = teamCodes,
+      startDate = startDate,
+      endDate = endDate,
+      typeCode = projectTypeGroup?.let { projectTypeGroup ->
+        projectService.projectTypesForGroup(projectTypeGroup).map { it.code }
+      },
+      params = pageable.toHttpParams(),
+    )
+
+    return response.asPage(pageable) { it.toDto() }
   }
 
   fun getSession(
