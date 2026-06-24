@@ -28,6 +28,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.CommunityCampusPd
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.CommunityCampusPduEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionDraftResolutionEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntityRepository.CourseFailureFilter
@@ -730,6 +731,18 @@ class EteMappersTest {
       assertThat(result.completionDateTime).isEqualTo("2026-01-01T10:00:00Z")
       assertThat(result.externalReference).isEqualTo("EXT123")
       assertThat(result.receivedAt).isCloseTo(OffsetDateTime.now(), within(1, ChronoUnit.SECONDS))
+    }
+  }
+
+  @Nested
+  inner class EteCourseCompletionDraftResolutionEntityToCourseCompletionDraftResolutionDto {
+    @Test
+    fun `maps required fields`() {
+      val draftResolutionEntity = EteCourseCompletionDraftResolutionEntity.valid()
+
+      val result = draftResolutionEntity.toDto()
+
+      assertThat(result.crn).isEqualTo(draftResolutionEntity.crn)
     }
   }
 }
