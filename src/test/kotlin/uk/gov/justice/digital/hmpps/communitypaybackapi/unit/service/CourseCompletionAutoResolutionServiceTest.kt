@@ -19,6 +19,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompleti
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.CourseCompletionAutoResolutionService
+import java.util.UUID
 
 @ExtendWith(MockKExtension::class)
 class CourseCompletionAutoResolutionServiceTest {
@@ -117,6 +118,20 @@ class CourseCompletionAutoResolutionServiceTest {
       }
 
       verify(exactly = 0) { draftResolutionRepository.save(any()) }
+    }
+  }
+
+  @Nested
+  inner class GetDraftResolutionForCourseCompletion {
+    @Test
+    fun `delegates to repository method`() {
+      val courseCompletionEventId = UUID.randomUUID()
+      val expected = EteCourseCompletionDraftResolutionEntity.valid()
+      every { draftResolutionRepository.findByEteCourseCompletionEventId(courseCompletionEventId) } returns expected
+
+      val result = service.getDraftResolutionForCourseCompletion(courseCompletionEventId)
+
+      assertThat(result).isEqualTo(expected)
     }
   }
 }
