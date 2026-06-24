@@ -15,6 +15,7 @@ import org.springframework.data.repository.findByIdOrNull
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.atFirstSecondOfDay
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.atLastSecondOfDay
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EteCourseCompletionShowCourseFailuresDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionDraftResolutionEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntityRepository.CourseFailureFilter
@@ -568,6 +569,22 @@ class EteServiceTest {
         eteService.getCourseCompletionBlock(id, 0)
       }
       assertThat(exception.message).isEqualTo("blockSize must be greater than 0")
+    }
+  }
+
+  @Nested
+  inner class GetCourseCompletionDraftRecommendation {
+    @Test
+    fun `returns expected result for course completion`() {
+      val courseCompletionEvent = EteCourseCompletionEventEntity.valid()
+      val draftResolutionEntity = EteCourseCompletionDraftResolutionEntity.valid().copy(eteCourseCompletionEvent = courseCompletionEvent)
+
+      every { courseCompletionAutoResolutionService.getDraftResolutionForCourseCompletion(courseCompletionEvent.id) } returns draftResolutionEntity
+
+      val result = eteService.getCourseCompletionDraftResolution(courseCompletionEvent.id)
+
+      assertThat(result).isNotNull
+      assertThat(result!!.crn).isEqualTo(draftResolutionEntity.crn)
     }
   }
 }
