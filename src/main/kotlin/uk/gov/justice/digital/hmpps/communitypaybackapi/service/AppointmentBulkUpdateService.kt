@@ -1,13 +1,13 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.service
 
 import org.springframework.stereotype.Service
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.DeliusAppointmentIdDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeResultDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeResultType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentsOutcomesResultDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.BadRequestException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.ConflictException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.SentryService
 
@@ -23,51 +23,41 @@ class AppointmentBulkUpdateService(
     projectCode: String,
     request: UpdateAppointmentOutcomesDto,
     trigger: AppointmentEventTrigger,
-  ): UpdateAppointmentsOutcomesResultDto {
-    val internalRequests = request.validate(projectCode)
-    val outcomes = internalRequests.apply(trigger)
-    return UpdateAppointmentsOutcomesResultDto(outcomes)
-  }
-
-  private fun UpdateAppointmentOutcomesDto.validate(projectCode: String) = updates.map {
-    val id = DeliusAppointmentIdDto(projectCode, it.deliusId)
-    val existingAppointment = appointmentRetrievalService.getAppointment(id)
-
-    if (existingAppointment != null) {
-      appointmentUpdateValidationService.validateUpdate(existingAppointment, it)
-    }
-
-    AppointmentWithUpdateRequest(id, existingAppointment, it)
-  }
+  ): UpdateAppointmentsOutcomesResultDto = UpdateAppointmentsOutcomesResultDto(
+    results = request.updates.map { update -> updateAppointment(projectCode, update, trigger) },
+  )
 
   @SuppressWarnings("TooGenericExceptionCaught")
-  private fun List<AppointmentWithUpdateRequest>.apply(
+  private fun updateAppointment(
+    projectCode: String,
+    update: UpdateAppointmentOutcomeDto,
     trigger: AppointmentEventTrigger,
-  ) = map { internalUpdateRequest ->
-    val outcome = if (internalUpdateRequest.existingAppointment == null) {
-      UpdateAppointmentOutcomeResultType.NOT_FOUND
-    } else {
-      try {
-        appointmentUpdateService.updateAppointment(
-          existingAppointment = internalUpdateRequest.existingAppointment,
-          update = internalUpdateRequest.update,
-          trigger = trigger,
-        )
-        UpdateAppointmentOutcomeResultType.SUCCESS
-      } catch (_: ConflictException) {
-        UpdateAppointmentOutcomeResultType.VERSION_CONFLICT
-      } catch (t: Throwable) {
-        sentryService.captureException(t)
-        UpdateAppointmentOutcomeResultType.SERVER_ERROR
-      }
-    }
+  ): UpdateAppointmentOutcomeResultDto {
+    val id = DeliusAppointmentIdDto(projectCode, update.deliusId)
+    val existingAppointment = appointmentRetrievalService.getAppointment(id)
+      ?: return result(id, UpdateAppointmentOutcomeResultType.NOT_FOUND)
 
-    UpdateAppointmentOutcomeResultDto(internalUpdateRequest.id.deliusAppointmentId, outcome)
+    return try {
+      appointmentUpdateValidationService.validateUpdate(existingAppointment, update)
+      appointmentUpdateService.updateAppointment(
+        existingAppointment = existingAppointment,
+        update = update,
+        trigger = trigger,
+      )
+      result(id, UpdateAppointmentOutcomeResultType.SUCCESS)
+    } catch (e: BadRequestException) {
+      result(id, UpdateAppointmentOutcomeResultType.VALIDATION_ERROR, e.message)
+    } catch (_: ConflictException) {
+      result(id, UpdateAppointmentOutcomeResultType.VERSION_CONFLICT)
+    } catch (t: Throwable) {
+      sentryService.captureException(t)
+      result(id, UpdateAppointmentOutcomeResultType.SERVER_ERROR)
+    }
   }
 
-  private data class AppointmentWithUpdateRequest(
-    val id: DeliusAppointmentIdDto,
-    val existingAppointment: AppointmentDto?,
-    val update: UpdateAppointmentOutcomeDto,
-  )
+  private fun result(
+    id: DeliusAppointmentIdDto,
+    type: UpdateAppointmentOutcomeResultType,
+    message: String? = null,
+  ) = UpdateAppointmentOutcomeResultDto(id.deliusAppointmentId, type, message)
 }
