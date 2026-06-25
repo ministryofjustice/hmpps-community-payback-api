@@ -663,7 +663,7 @@ class AppointmentMappersTest {
 
     @Test
     fun success() {
-      every { contactOutcomeEntityRepository.findByCode("OUTCOME1") } returns ContactOutcomeEntity.valid().copy(name = "The outcome")
+      every { contactOutcomeEntityRepository.findByCode("OUTCOME1") } returns ContactOutcomeEntity.valid().copy(name = "The outcome", displayName = null)
 
       val result = service.toSummaryDto(
         appointmentSummary = NDAppointmentSummary(
