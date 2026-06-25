@@ -13,7 +13,6 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSessionSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSessionSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.PageResponse
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeDto
@@ -29,6 +28,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.SessionService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.SessionMappers
 import java.time.LocalDate
 
+@Suppress("unused") // Mocked objects that need to exist but aren't directly referenced
 @ExtendWith(MockKExtension::class)
 class SessionServiceTest {
 
@@ -60,8 +60,7 @@ class SessionServiceTest {
     fun `if date range greater than 7 days throw exception`() {
       assertThatThrownBy {
         service.getSessions(
-          providerCode = "provider code 1",
-          teamCode = "team code 1",
+          teamCodes = listOf("team code 1"),
           startDate = LocalDate.of(2025, 1, 1),
           endDate = LocalDate.of(2025, 1, 9),
           projectTypeGroup = null,
@@ -86,36 +85,30 @@ class SessionServiceTest {
 
       every {
         communityPaybackAndDeliusClient.getSessions(
-          providerCode = "provider code 1",
-          teamCode = "team code 1",
+          teamCodes = listOf("team code 1"),
           startDate = LocalDate.of(2025, 1, 1),
           endDate = LocalDate.of(2025, 1, 5),
           typeCode = listOf("PT1"),
           params = mapOf("page" to pageNumber.toString(), "size" to pageSize.toString(), "sort" to "projectName,asc"),
         )
-      } returns NDSessionSummaries.valid().copy(
-        sessions = sessions,
-        pageResponse = PageResponse(
-          content = sessions,
-          PageResponse.PageMeta(pageSize, pageNumber, 3, 1),
-        ),
+      } returns PageResponse(
+        content = sessions,
+        PageResponse.PageMeta(pageSize, pageNumber, 3, 1),
       )
 
       val result = service.getSessions(
-        providerCode = "provider code 1",
-        teamCode = "team code 1",
+        teamCodes = listOf("team code 1"),
         startDate = LocalDate.of(2025, 1, 1),
         endDate = LocalDate.of(2025, 1, 5),
         projectTypeGroup = ProjectTypeGroupDto.GROUP,
         pageable = PageRequest.of(pageNumber, pageSize, Sort.by(Sort.Direction.ASC, "projectName")),
       )
 
-      assertThat(result.allocations).hasSize(3)
       assertThat(result.content).hasSize(3)
-      assertThat(result.page.totalElements).isEqualTo(3)
-      assertThat(result.page.totalPages).isEqualTo(1)
-      assertThat(result.page.number).isEqualTo(pageNumber)
-      assertThat(result.page.size).isEqualTo(pageSize)
+      assertThat(result.totalElements).isEqualTo(3)
+      assertThat(result.totalPages).isEqualTo(1)
+      assertThat(result.number).isEqualTo(pageNumber)
+      assertThat(result.size).isEqualTo(pageSize)
     }
   }
 }

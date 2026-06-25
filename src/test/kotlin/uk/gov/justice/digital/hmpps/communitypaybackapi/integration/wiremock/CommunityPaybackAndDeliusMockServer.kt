@@ -31,6 +31,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectOutcomeS
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProviderSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProviderTeamSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSessionSummaries
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSessionSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSupervisor
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSupervisorSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSupervisorSummary
@@ -252,6 +253,7 @@ object CommunityPaybackAndDeliusMockServer {
     )
   }
 
+  @Deprecated("This mocks a deprecated endpoint.", replaceWith = ReplaceWith("setupGetSessionsResponse(listOf(teamCode), startDate, endDate, sessions, typeCode, sortString)"))
   fun setupGetSessionsResponse(
     providerCode: String,
     teamCode: String,
@@ -277,6 +279,38 @@ object CommunityPaybackAndDeliusMockServer {
           aResponse()
             .withHeader("Content-Type", "application/json")
             .withBody(jsonMapper.writeValueAsString(projectSessions)),
+        ),
+    )
+  }
+
+  fun setupGetSessionsResponse(
+    teamCodes: List<String>,
+    startDate: LocalDate,
+    endDate: LocalDate,
+    sessions: PageResponse<NDSessionSummary>,
+    typeCode: List<String> = emptyList(),
+    sortString: String,
+  ) {
+    val url = buildString {
+      append("/community-payback-and-delius/sessions?")
+      teamCodes.forEach {
+        append("teamCodes=$it&")
+      }
+      append("startDate=${startDate.toIsoDateString()}&endDate=${endDate.toIsoDateString()}")
+      typeCode.forEach {
+        append("&typeCode=$it")
+      }
+      append("&page=${sessions.page.number}")
+      append("&size=${sessions.page.size}")
+      append("&sort=${URLEncoder.encode(sortString, "UTF-8")}")
+    }
+
+    WireMock.stubFor(
+      get(url)
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withBody(jsonMapper.writeValueAsString(sessions)),
         ),
     )
   }

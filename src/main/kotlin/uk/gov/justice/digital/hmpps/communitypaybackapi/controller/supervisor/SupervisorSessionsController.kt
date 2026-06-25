@@ -14,6 +14,7 @@ import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import uk.gov.justice.digital.hmpps.communitypaybackapi.controller.internal.NotFoundException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeGroupDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.SessionService
@@ -54,6 +55,7 @@ class SupervisorSessionsController(
     @PathVariable supervisorCode: String,
   ) = sessionService.getNextAllocationForSupervisor(supervisorCode) ?: throw NotFoundException("There are no future sessions for supervisor $supervisorCode")
 
+  @Deprecated("The GET /supervisor/sessions/future endpoint should be used instead.")
   @PageableAsQueryParam
   @GetMapping(
     path = [ "/supervisor/providers/{providerCode}/teams/{teamCode}/sessions/future"],
@@ -80,6 +82,32 @@ class SupervisorSessionsController(
     LocalDate.now().plusDays(7),
     projectTypeGroup = ProjectTypeGroupDto.GROUP,
     pageable = pageable,
+  )
+
+  @PageableAsQueryParam
+  @GetMapping(
+    path = ["/supervisor/sessions/future"],
+    produces = [MediaType.APPLICATION_JSON_VALUE],
+  )
+  @Operation(
+    description = "Get group sessions scheduled for the next 7 days (including today) that belong to the given teams.",
+    responses = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Successful response",
+      ),
+    ],
+  )
+  fun getFutureSessions(
+    @RequestParam teamCodes: List<String> = emptyList(),
+    @Parameter(hidden = true)
+    @PageableDefault(size = 50, sort = ["date"], direction = Sort.Direction.ASC) pageable: Pageable,
+  ) = sessionService.getSessions(
+    teamCodes,
+    LocalDate.now(),
+    LocalDate.now().plusDays(7),
+    projectTypeGroup = ProjectTypeGroupDto.GROUP,
+    pageable,
   )
 
   @GetMapping(

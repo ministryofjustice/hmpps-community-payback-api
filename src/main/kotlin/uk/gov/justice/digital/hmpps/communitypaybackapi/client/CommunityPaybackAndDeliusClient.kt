@@ -41,6 +41,7 @@ interface CommunityPaybackAndDeliusClient {
   @GetExchange("/providers/{providerCode}/teams")
   fun getProviderTeams(@PathVariable providerCode: String): NDProviderTeamSummaries
 
+  @Deprecated("This overload calls a deprecated endpoint.", replaceWith = ReplaceWith("getSessions(listOf(teamCode), startDate, endDate, typeCode, params)"))
   @GetExchange("/providers/{providerCode}/teams/{teamCode}/sessions")
   fun getSessions(
     @PathVariable providerCode: String,
@@ -50,6 +51,15 @@ interface CommunityPaybackAndDeliusClient {
     @RequestParam typeCode: List<String>?,
     @RequestParam params: Map<String, String>,
   ): NDSessionSummaries
+
+  @GetExchange("/sessions")
+  fun getSessions(
+    @RequestParam teamCodes: List<String>,
+    @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) startDate: LocalDate,
+    @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) endDate: LocalDate,
+    @RequestParam typeCode: List<String>?,
+    @RequestParam params: Map<String, String>,
+  ): PageResponse<NDSessionSummary>
 
   @Cacheable(CacheKey.Delius.GET_PROJECT)
   @GetExchange("/projects/{projectCode}")

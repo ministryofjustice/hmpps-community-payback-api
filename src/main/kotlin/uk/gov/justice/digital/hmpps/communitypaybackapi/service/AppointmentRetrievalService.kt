@@ -1,11 +1,11 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.service
 
 import org.springframework.data.domain.Page
-import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.asPage
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.DeliusAppointmentIdDto
@@ -65,7 +65,7 @@ class AppointmentRetrievalService(
       appointmentIds = deliusAppointmentIds,
       params = pageable.toHttpParams(),
     )
-    return PageImpl(pageResponse.content.map { appointmentMappers.toSummaryDto(it) }, pageable, pageResponse.page.totalElements)
+    return pageResponse.asPage(pageable) { appointmentMappers.toSummaryDto(it) }
   }
 
   fun getOrCreateAppointmentEntity(
