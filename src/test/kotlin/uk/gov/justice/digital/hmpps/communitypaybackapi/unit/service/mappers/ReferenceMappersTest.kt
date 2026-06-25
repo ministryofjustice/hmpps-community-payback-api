@@ -151,6 +151,7 @@ class ReferenceMappersTest {
         ContactOutcomeEntity(
           id = UUID.fromString("b9391e9a-515a-4139-a956-20e0f0a129b9"),
           name = "Attended - Complied",
+          displayName = "Attended \u2013 complied",
           code = "ATTC",
           enforceable = false,
           attended = true,
@@ -159,6 +160,7 @@ class ReferenceMappersTest {
         ContactOutcomeEntity(
           id = UUID.fromString("f352472b-a277-4976-b8b4-224898d4a9b8"),
           name = "Attended - Failed to Comply",
+          displayName = "Attended \u2013 failed to comply",
           code = "AFTC",
           enforceable = true,
           attended = false,
@@ -167,6 +169,7 @@ class ReferenceMappersTest {
         ContactOutcomeEntity(
           id = UUID.fromString("5e8f3124-d794-43b1-b844-df0bb95814dc"),
           name = "Attended - Sent Home (behaviour)",
+          displayName = null,
           code = "ATSH",
           enforceable = true,
           attended = false,
@@ -199,6 +202,7 @@ class ReferenceMappersTest {
       val contactOutcome = ContactOutcomeEntity(
         id = UUID.fromString("b9391e9a-515a-4139-a956-20e0f0a129b9"),
         name = "Attended - Complied",
+        displayName = null,
         code = "ATTC",
         enforceable = false,
         attended = true,

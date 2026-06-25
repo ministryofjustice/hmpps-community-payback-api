@@ -27,6 +27,7 @@ data class ContactOutcomeEntity(
   @Column(unique = true)
   val code: String,
   val name: String,
+  val displayName: String?,
   val enforceable: Boolean,
   val attended: Boolean,
   @ElementCollection(fetch = FetchType.EAGER)
@@ -39,6 +40,8 @@ data class ContactOutcomeEntity(
   @UpdateTimestamp
   val updatedAt: OffsetDateTime = OffsetDateTime.now(),
 ) {
+  fun toDisplayString() = displayName ?: name
+
   @Suppress("USELESS_IS_CHECK")
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
@@ -65,6 +68,7 @@ data class ContactOutcomeEntity(
       id = UUID(0L, 0L),
       code = code,
       name = "Unknown ($code)",
+      displayName = null,
       enforceable = false,
       attended = false,
       groups = emptyList(),
