@@ -20,6 +20,8 @@ class CourseCompletionAutoResolutionService(
     val log: Logger = LoggerFactory.getLogger(CourseCompletionAutoResolutionService::class.java)
   }
 
+  fun getDraftResolutionForCourseCompletion(courseCompletionEventId: UUID): EteCourseCompletionDraftResolutionEntity? = draftResolutionRepository.findByEteCourseCompletionEventId(courseCompletionEventId)
+
   fun resolveAndPersistDraft(event: EteCourseCompletionEventEntity) {
     val crn = searchForCrn(event)
     draftResolutionRepository.save(

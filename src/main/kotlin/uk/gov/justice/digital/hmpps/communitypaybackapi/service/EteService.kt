@@ -8,6 +8,7 @@ import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.badRequest
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionDraftResolutionDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionRecommendationDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionResolutionDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionResolutionTypeDto
@@ -155,6 +156,8 @@ class EteService(
 
     return CourseCompletionRecommendationDto(crn)
   }
+
+  fun getCourseCompletionDraftResolution(courseCompletionEventId: UUID): CourseCompletionDraftResolutionDto? = courseCompletionAutoResolutionService.getDraftResolutionForCourseCompletion(courseCompletionEventId)?.toDto()
 
   @Transactional
   fun recordCourseCompletionResolution(
