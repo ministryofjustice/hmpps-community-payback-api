@@ -58,6 +58,8 @@ dependencies {
   testImplementation("uk.gov.justice.service.hmpps:hmpps-subject-access-request-test-support:2.5.0")
   testImplementation("org.zalando:logbook-spring-boot-starter:4.0.4")
   testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0")
+
+  testImplementation("org.junit.platform:junit-platform-launcher")
 }
 
 kotlin {
@@ -88,6 +90,12 @@ tasks {
 
   named<Test>("test") {
     finalizedBy(named("jacocoTestReport"))
+
+    jvmArgs = listOf(
+      "--add-opens=java.base/java.lang=ALL-UNNAMED",
+      "--add-opens=java.base/java.lang.invoke=ALL-UNNAMED",
+      "--add-opens=java.base/java.lang.reflect=ALL-UNNAMED",
+    )
   }
 
   val excludedFromCodeCoverage = listOf(
