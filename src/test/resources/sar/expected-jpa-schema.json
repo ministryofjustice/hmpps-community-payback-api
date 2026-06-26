@@ -85,6 +85,7 @@
     "attended": "boolean",
     "code": "String",
     "createdAt": "OffsetDateTime",
+    "displayName": "String",
     "enforceable": "boolean",
     "groups": "List",
     "id": "UUID",
