@@ -88,6 +88,7 @@
     "displayName": "String",
     "enforceable": "boolean",
     "groups": "List",
+    "hintText": "String",
     "id": "UUID",
     "name": "String",
     "updatedAt": "OffsetDateTime"
