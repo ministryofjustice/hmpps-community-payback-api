@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
+import org.junit.jupiter.params.provider.NullSource
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAddress
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointmentBehaviour
@@ -854,6 +855,7 @@ class AppointmentMappersTest {
   inner class AppointmentCommandDtoWorkQuality {
     @ParameterizedTest
     @CsvSource(
+      ",",
       "ATTC,GOOD",
       "AFTC,POOR",
       "ATSH,POOR",
@@ -864,7 +866,7 @@ class AppointmentMappersTest {
       "YYYY,NOT_APPLICABLE",
       "ZZZZ,NOT_APPLICABLE",
     )
-    fun `work quality is automatically determined by outcome code`(outcomeCode: String, expected: NDAppointmentWorkQuality) {
+    fun `work quality is automatically determined by outcome code`(outcomeCode: String?, expected: NDAppointmentWorkQuality?) {
       val createAppointmentDto = CreateAppointmentDto.valid().copy(contactOutcomeCode = outcomeCode)
       val updateAppointmentDto = UpdateAppointmentDto.valid().copy(contactOutcomeCode = outcomeCode)
 
@@ -877,6 +879,7 @@ class AppointmentMappersTest {
   inner class AppointmentCommandDtoBehaviour {
     @ParameterizedTest
     @CsvSource(
+      ",",
       "ATTC,GOOD",
       "AFTC,POOR",
       "ATSH,POOR",
@@ -887,7 +890,7 @@ class AppointmentMappersTest {
       "YYYY,NOT_APPLICABLE",
       "ZZZZ,NOT_APPLICABLE",
     )
-    fun `behaviour is automatically determined by outcome code`(outcomeCode: String, expected: NDAppointmentBehaviour) {
+    fun `behaviour is automatically determined by outcome code`(outcomeCode: String?, expected: NDAppointmentBehaviour?) {
       val createAppointmentDto = CreateAppointmentDto.valid().copy(contactOutcomeCode = outcomeCode)
       val updateAppointmentDto = UpdateAppointmentDto.valid().copy(contactOutcomeCode = outcomeCode)
 
