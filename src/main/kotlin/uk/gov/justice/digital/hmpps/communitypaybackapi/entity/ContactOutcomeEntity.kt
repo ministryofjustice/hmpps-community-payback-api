@@ -28,6 +28,7 @@ data class ContactOutcomeEntity(
   val code: String,
   val name: String,
   val displayName: String?,
+  val hintText: String?,
   val enforceable: Boolean,
   val attended: Boolean,
   @ElementCollection(fetch = FetchType.EAGER)
@@ -68,6 +69,7 @@ data class ContactOutcomeEntity(
       id = UUID(0L, 0L),
       code = code,
       name = "Unknown ($code)",
+      hintText = null,
       displayName = null,
       enforceable = false,
       attended = false,

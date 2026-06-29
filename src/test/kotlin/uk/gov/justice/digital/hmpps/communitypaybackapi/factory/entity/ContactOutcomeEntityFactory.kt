@@ -12,6 +12,7 @@ fun ContactOutcomeEntity.Companion.valid() = ContactOutcomeEntity(
   code = String.random(length = 3),
   name = String.random(length = 20),
   displayName = String.random(length = 20),
+  hintText = String.random(length = 50),
   enforceable = false,
   attended = false,
   groups = emptyList(),
