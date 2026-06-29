@@ -339,6 +339,7 @@ fun NDAppointmentBehaviour.toDto() = when (this) {
 
 val AppointmentCommandDto.workQuality
   get() = when (this.contactOutcomeCode) {
+    null -> null
     "ATTC" -> NDAppointmentWorkQuality.GOOD
     "AFTC", "ATSH" -> NDAppointmentWorkQuality.POOR
     else -> NDAppointmentWorkQuality.NOT_APPLICABLE
@@ -346,6 +347,7 @@ val AppointmentCommandDto.workQuality
 
 val AppointmentCommandDto.behaviour
   get() = when (this.contactOutcomeCode) {
+    null -> null
     "ATTC" -> NDAppointmentBehaviour.GOOD
     "AFTC", "ATSH" -> NDAppointmentBehaviour.POOR
     else -> NDAppointmentBehaviour.NOT_APPLICABLE
