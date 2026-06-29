@@ -17,6 +17,8 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProbationOffender
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionDraftResolutionEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionDraftResolutionRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.OfficeUpwTeamMappingEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.OfficeUpwTeamMappingRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.CourseCompletionAutoResolutionService
 import java.util.UUID
@@ -28,13 +30,20 @@ class CourseCompletionAutoResolutionServiceTest {
   lateinit var personSearchClient: ProbationOffenderSearchClient
 
   @RelaxedMockK
+  lateinit var officeUpwTeamMappingRepository: OfficeUpwTeamMappingRepository
+
+  @RelaxedMockK
   lateinit var draftResolutionRepository: EteCourseCompletionDraftResolutionRepository
 
   private lateinit var service: CourseCompletionAutoResolutionService
 
   @BeforeEach
   fun setUp() {
-    service = CourseCompletionAutoResolutionService(personSearchClient, draftResolutionRepository)
+    service = CourseCompletionAutoResolutionService(
+      personSearchClient,
+      officeUpwTeamMappingRepository,
+      draftResolutionRepository,
+    )
   }
 
   @Nested
@@ -103,6 +112,67 @@ class CourseCompletionAutoResolutionServiceTest {
         )
       }
       verify { draftResolutionRepository.save(any()) }
+    }
+
+    @Test
+    fun `persists draft with team code when office maps to a UPW team`() {
+      val event = EteCourseCompletionEventEntity.valid().copy(office = "St Albans")
+      every { personSearchClient.searchPerson(any()) } returns emptyList()
+      every {
+        officeUpwTeamMappingRepository.findByPduAndOffice(event.pdu, "St Albans")
+      } returns OfficeUpwTeamMappingEntity(
+        id = UUID.randomUUID(),
+        pdu = event.pdu,
+        office = "St Albans",
+        teamCode = "N56ST",
+      )
+
+      val saved = slot<EteCourseCompletionDraftResolutionEntity>()
+      every { draftResolutionRepository.save(capture(saved)) } answers { firstArg() }
+
+      service.resolveAndPersistDraft(event)
+
+      assertThat(saved.captured.teamCode).isEqualTo("N56ST")
+      verify {
+        officeUpwTeamMappingRepository.findByPduAndOffice(event.pdu, "St Albans")
+      }
+    }
+
+    @Test
+    fun `persists draft with null team code when office has no mapping`() {
+      val event = EteCourseCompletionEventEntity.valid().copy(office = "Watford")
+      every { personSearchClient.searchPerson(any()) } returns emptyList()
+      every {
+        officeUpwTeamMappingRepository.findByPduAndOffice(event.pdu, "Watford")
+      } returns null
+
+      val saved = slot<EteCourseCompletionDraftResolutionEntity>()
+      every { draftResolutionRepository.save(capture(saved)) } answers { firstArg() }
+
+      service.resolveAndPersistDraft(event)
+
+      assertThat(saved.captured.teamCode).isNull()
+    }
+
+    @Test
+    fun `persists draft with null team code when office mapping deliberately has no UPW team`() {
+      val event = EteCourseCompletionEventEntity.valid().copy(office = "Watford")
+      every { personSearchClient.searchPerson(any()) } returns emptyList()
+      every {
+        officeUpwTeamMappingRepository.findByPduAndOffice(event.pdu, "Watford")
+      } returns OfficeUpwTeamMappingEntity(
+        id = UUID.randomUUID(),
+        pdu = event.pdu,
+        office = "Watford",
+        teamCode = null,
+      )
+
+      val saved = slot<EteCourseCompletionDraftResolutionEntity>()
+      every { draftResolutionRepository.save(capture(saved)) } answers { firstArg() }
+
+      service.resolveAndPersistDraft(event)
+
+      assertThat(saved.captured.teamCode).isNull()
     }
 
     @Test

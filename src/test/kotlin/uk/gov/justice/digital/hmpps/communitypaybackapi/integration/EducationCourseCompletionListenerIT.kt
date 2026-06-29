@@ -11,6 +11,8 @@ import tools.jackson.databind.json.JsonMapper
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.CommunityCampusPduEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionDraftResolutionRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntityRepository
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.OfficeUpwTeamMappingEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.OfficeUpwTeamMappingRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.listener.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.DatabasePurgeUtils
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.ProbationOffenderSearchMockServer
@@ -18,6 +20,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourse
 import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseMessageAttributes
 import uk.gov.justice.hmpps.sqs.HmppsQueueService
 import uk.gov.justice.hmpps.sqs.MissingQueueException
+import java.util.UUID
 import java.util.concurrent.TimeUnit
 
 class EducationCourseCompletionListenerIT : IntegrationTestBase() {
@@ -38,6 +41,9 @@ class EducationCourseCompletionListenerIT : IntegrationTestBase() {
   lateinit var communityCampusPduEntityRepository: CommunityCampusPduEntityRepository
 
   @Autowired
+  lateinit var officeUpwTeamMappingRepository: OfficeUpwTeamMappingRepository
+
+  @Autowired
   lateinit var databasePurgeUtils: DatabasePurgeUtils
 
   companion object {
@@ -50,6 +56,7 @@ class EducationCourseCompletionListenerIT : IntegrationTestBase() {
     @BeforeEach
     fun before() {
       databasePurgeUtils.deleteAllEteData()
+      officeUpwTeamMappingRepository.deleteAll()
     }
 
     @Test
@@ -95,6 +102,41 @@ class EducationCourseCompletionListenerIT : IntegrationTestBase() {
       val draft = eteCourseCompletionDraftResolutionRepository.findAll().first()
       assertThat(draft.crn).isEqualTo("X12345")
       assertThat(draft.teamCode).isNull()
+      assertThat(draft.projectCode).isNull()
+      assertThat(draft.appointmentIdToUpdate).isNull()
+    }
+
+    @Test
+    fun `team code is populated in draft resolution when office maps to a UPW team`() {
+      ProbationOffenderSearchMockServer.stubNoMatches()
+
+      val pdu = communityCampusPduEntityRepository.findAll().minByOrNull { it.name }!!
+      val office = "St Albans ${UUID.randomUUID()}"
+      officeUpwTeamMappingRepository.save(
+        OfficeUpwTeamMappingEntity(
+          id = UUID.randomUUID(),
+          pdu = pdu,
+          office = office,
+          teamCode = "N56ST",
+        ),
+      )
+
+      sendMessage(
+        EducationCourseCompletionMessage.valid(ctx).copy(
+          messageAttributes = EducationCourseMessageAttributes.valid(ctx).copy(
+            pdu = pdu.name,
+            office = office,
+          ),
+        ),
+      )
+
+      await().atMost(10, TimeUnit.SECONDS).untilAsserted {
+        assertThat(eteCourseCompletionDraftResolutionRepository.count()).isEqualTo(1)
+      }
+
+      val draft = eteCourseCompletionDraftResolutionRepository.findAll().first()
+      assertThat(draft.crn).isNull()
+      assertThat(draft.teamCode).isEqualTo("N56ST")
       assertThat(draft.projectCode).isNull()
       assertThat(draft.appointmentIdToUpdate).isNull()
     }
