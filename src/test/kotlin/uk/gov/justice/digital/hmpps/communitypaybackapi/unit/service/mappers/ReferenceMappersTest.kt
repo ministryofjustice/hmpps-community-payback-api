@@ -187,14 +187,17 @@ class ReferenceMappersTest {
       assertThat(contactOutcomesDto.contactOutcomes[0].id).isEqualTo(UUID.fromString("b9391e9a-515a-4139-a956-20e0f0a129b9"))
       assertThat(contactOutcomesDto.contactOutcomes[0].name).isEqualTo("Attended \u2013 complied")
       assertThat(contactOutcomesDto.contactOutcomes[0].code).isEqualTo("ATTC")
+      assertThat(contactOutcomesDto.contactOutcomes[0].hintText).isNull()
 
       assertThat(contactOutcomesDto.contactOutcomes[1].id).isEqualTo(UUID.fromString("f352472b-a277-4976-b8b4-224898d4a9b8"))
       assertThat(contactOutcomesDto.contactOutcomes[1].name).isEqualTo("Attended \u2013 failed to comply")
       assertThat(contactOutcomesDto.contactOutcomes[1].code).isEqualTo("AFTC")
+      assertThat(contactOutcomesDto.contactOutcomes[1].hintText).isEqualTo("For example repeated lateness, arriving unfit or ill, leaving early without evidence, not wearing the right protective equipment")
 
       assertThat(contactOutcomesDto.contactOutcomes[2].id).isEqualTo(UUID.fromString("5e8f3124-d794-43b1-b844-df0bb95814dc"))
       assertThat(contactOutcomesDto.contactOutcomes[2].name).isEqualTo("Attended - Sent Home (behaviour)")
       assertThat(contactOutcomesDto.contactOutcomes[2].code).isEqualTo("ATSH")
+      assertThat(contactOutcomesDto.contactOutcomes[2].hintText).isEqualTo("For example aggression, substance influence, refusal to comply with instructions, unsafe behaviour")
     }
   }
 
@@ -218,6 +221,7 @@ class ReferenceMappersTest {
           id = UUID.fromString("b9391e9a-515a-4139-a956-20e0f0a129b9"),
           name = "Attended - Complied",
           code = "ATTC",
+          hintText = null,
           enforceable = false,
           attended = true,
           willAlertEnforcementDiary = false,

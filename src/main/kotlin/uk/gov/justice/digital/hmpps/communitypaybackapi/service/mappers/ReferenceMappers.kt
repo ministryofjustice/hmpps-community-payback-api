@@ -39,6 +39,7 @@ fun ContactOutcomeEntity.toDto() = ContactOutcomeDto(
   id = this.id,
   name = this.toDisplayString(),
   code = this.code,
+  hintText = this.hintText,
   enforceable = this.enforceable,
   attended = this.attended,
   willAlertEnforcementDiary = this.enforceable,

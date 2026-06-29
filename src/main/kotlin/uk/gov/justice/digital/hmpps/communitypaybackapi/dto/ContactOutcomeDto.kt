@@ -10,6 +10,8 @@ data class ContactOutcomeDto(
   val name: String,
   @param:Schema(description = "Contact outcome code", example = "ATTC")
   val code: String,
+  @param:Schema(description = "Hint text to be displayed to the user", example = "Usually preplanned before the session")
+  val hintText: String?,
   @param:Schema(description = "If this outcome requires an enforcement action to take place", example = "false")
   val enforceable: Boolean,
   @param:Schema(description = "If this outcome represents attendance, and as such attendance information is required", example = "false")
