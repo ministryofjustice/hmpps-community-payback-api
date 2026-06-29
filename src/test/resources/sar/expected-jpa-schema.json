@@ -163,6 +163,13 @@
     "scope": "IncentiveSchemeEligibilityScope",
     "updatedAt": "OffsetDateTime"
   },
+  "OfficeUpwTeamMappingEntity": {
+    "createdAt": "OffsetDateTime",
+    "id": "UUID",
+    "office": "String",
+    "pdu": "CommunityCampusPduEntity",
+    "teamCode": "String"
+  },
   "ProjectTypeEntity": {
     "code": "String",
     "createdAt": "OffsetDateTime",

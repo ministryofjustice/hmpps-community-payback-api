@@ -9,11 +9,13 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProbationOffender
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionDraftResolutionEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionDraftResolutionRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.OfficeUpwTeamMappingRepository
 import java.util.UUID
 
 @Service
 class CourseCompletionAutoResolutionService(
   private val personSearchClient: ProbationOffenderSearchClient,
+  private val officeUpwTeamMappingRepository: OfficeUpwTeamMappingRepository,
   private val draftResolutionRepository: EteCourseCompletionDraftResolutionRepository,
 ) {
   private companion object {
@@ -24,11 +26,14 @@ class CourseCompletionAutoResolutionService(
 
   fun resolveAndPersistDraft(event: EteCourseCompletionEventEntity) {
     val crn = searchForCrn(event)
+    val teamCode = resolveTeamCode(event)
+
     draftResolutionRepository.save(
       EteCourseCompletionDraftResolutionEntity(
         id = UUID.randomUUID(),
         eteCourseCompletionEvent = event,
         crn = crn,
+        teamCode = teamCode,
       ),
     )
   }
@@ -54,6 +59,18 @@ class CourseCompletionAutoResolutionService(
       is OffenderSearchResult.MultipleMatches -> {
         log.debug("Ambiguous CRN (multiple matches) for event {}", event.id)
         null
+      }
+    }
+  }
+
+  private fun resolveTeamCode(event: EteCourseCompletionEventEntity): String? {
+    val mapping = officeUpwTeamMappingRepository.findByPduAndOffice(event.pdu, event.office)
+
+    return mapping?.teamCode.also { teamCode ->
+      when {
+        teamCode != null -> log.debug("UPW team auto-resolved for event {}: {}", event.id, teamCode)
+        mapping != null -> log.debug("Office mapping has no UPW team for event {}", event.id)
+        else -> log.debug("No UPW team mapping for event {}", event.id)
       }
     }
   }
