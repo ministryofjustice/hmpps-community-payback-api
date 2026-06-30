@@ -1,6 +1,6 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.unit.service.incentivescheme.internal
 
-import org.assertj.core.api.Assertions
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AdjustmentDto
@@ -24,7 +24,7 @@ class IncentiveSchemeEventTest {
           AppointmentSummaryDto.valid().copy(date = LocalDate.of(2026, 6, 6), startTime = LocalTime.of(10, 0)),
         )
 
-        Assertions.assertThat(result.timestamp).isEqualTo(
+        assertThat(result.timestamp).isEqualTo(
           ZonedDateTime.of(2026, 6, 6, 10, 0, 0, 0, ZoneId.of("Europe/London")).toOffsetDateTime(),
         )
       }
@@ -38,7 +38,7 @@ class IncentiveSchemeEventTest {
           AppointmentSummaryDto.valid().copy(contactOutcome = ContactOutcomeDto.valid().copy(enforceable = true)),
         )
 
-        Assertions.assertThat(result.isDisqualifying).isTrue
+        assertThat(result.isDisqualifying).isTrue
       }
 
       @Test
@@ -47,7 +47,7 @@ class IncentiveSchemeEventTest {
           AppointmentSummaryDto.valid().copy(contactOutcome = ContactOutcomeDto.valid().copy(enforceable = false)),
         )
 
-        Assertions.assertThat(result.isDisqualifying).isFalse
+        assertThat(result.isDisqualifying).isFalse
       }
 
       @Test
@@ -56,7 +56,7 @@ class IncentiveSchemeEventTest {
           AppointmentSummaryDto.valid().copy(contactOutcome = null),
         )
 
-        Assertions.assertThat(result.isDisqualifying).isFalse
+        assertThat(result.isDisqualifying).isFalse
       }
     }
 
@@ -68,7 +68,7 @@ class IncentiveSchemeEventTest {
           AppointmentSummaryDto.valid().copy(contactOutcome = ContactOutcomeDto.valid()),
         )
 
-        Assertions.assertThat(result.isQualifying).isTrue
+        assertThat(result.isQualifying).isTrue
       }
 
       @Test
@@ -77,7 +77,7 @@ class IncentiveSchemeEventTest {
           AppointmentSummaryDto.valid().copy(contactOutcome = null),
         )
 
-        Assertions.assertThat(result.isQualifying).isFalse
+        assertThat(result.isQualifying).isFalse
       }
     }
 
@@ -89,7 +89,7 @@ class IncentiveSchemeEventTest {
           AppointmentSummaryDto.valid().copy(minutesCredited = 120),
         )
 
-        Assertions.assertThat(result.duration).isEqualTo(java.time.Duration.ofMinutes(120))
+        assertThat(result.duration).isEqualTo(java.time.Duration.ofMinutes(120))
       }
 
       @Test
@@ -98,7 +98,76 @@ class IncentiveSchemeEventTest {
           AppointmentSummaryDto.valid().copy(minutesCredited = null),
         )
 
-        Assertions.assertThat(result.duration).isEqualTo(java.time.Duration.ZERO)
+        assertThat(result.duration).isEqualTo(java.time.Duration.ZERO)
+      }
+    }
+  }
+
+  @Nested
+  inner class IncentiveSchemeCourseCompletionAppointmentEvent {
+    @Nested
+    inner class Timestamp {
+      @Test
+      fun `derived from appointment date and start time`() {
+        val result = IncentiveSchemeEvent.IncentiveSchemeCourseCompletionAppointmentEvent(
+          AppointmentSummaryDto.valid().copy(date = LocalDate.of(2026, 6, 6), startTime = LocalTime.of(10, 0)),
+        )
+
+        assertThat(result.timestamp).isEqualTo(
+          ZonedDateTime.of(2026, 6, 6, 10, 0, 0, 0, ZoneId.of("Europe/London")).toOffsetDateTime(),
+        )
+      }
+    }
+
+    @Nested
+    inner class IsDisqualifying {
+      @Test
+      fun `is always false`() {
+        val result = IncentiveSchemeEvent.IncentiveSchemeCourseCompletionAppointmentEvent(AppointmentSummaryDto.valid())
+
+        assertThat(result.isDisqualifying).isFalse
+      }
+    }
+
+    @Nested
+    inner class IsQualifying {
+      @Test
+      fun `is true when there is a contact outcome`() {
+        val result = IncentiveSchemeEvent.IncentiveSchemeCourseCompletionAppointmentEvent(
+          AppointmentSummaryDto.valid().copy(contactOutcome = ContactOutcomeDto.valid()),
+        )
+
+        assertThat(result.isQualifying).isTrue
+      }
+
+      @Test
+      fun `is false when there is no contact outcome`() {
+        val result = IncentiveSchemeEvent.IncentiveSchemeCourseCompletionAppointmentEvent(
+          AppointmentSummaryDto.valid().copy(contactOutcome = null),
+        )
+
+        assertThat(result.isQualifying).isFalse
+      }
+    }
+
+    @Nested
+    inner class Duration {
+      @Test
+      fun `is equal to the number of minutes credited when present`() {
+        val result = IncentiveSchemeEvent.IncentiveSchemeCourseCompletionAppointmentEvent(
+          AppointmentSummaryDto.valid().copy(minutesCredited = 120),
+        )
+
+        assertThat(result.duration).isEqualTo(java.time.Duration.ofMinutes(120))
+      }
+
+      @Test
+      fun `is zero when the number of minutes credit is not present`() {
+        val result = IncentiveSchemeEvent.IncentiveSchemeCourseCompletionAppointmentEvent(
+          AppointmentSummaryDto.valid().copy(minutesCredited = null),
+        )
+
+        assertThat(result.duration).isEqualTo(java.time.Duration.ZERO)
       }
     }
   }
@@ -113,7 +182,7 @@ class IncentiveSchemeEventTest {
           AdjustmentDto.valid().copy(date = LocalDate.of(2026, 6, 6)),
         )
 
-        Assertions.assertThat(result.timestamp)
+        assertThat(result.timestamp)
           .isEqualTo(ZonedDateTime.of(2026, 6, 6, 23, 59, 59, 0, ZoneId.of("Europe/London")).toOffsetDateTime())
       }
     }
@@ -124,7 +193,7 @@ class IncentiveSchemeEventTest {
       fun `is always false`() {
         val result = IncentiveSchemeEvent.IncentiveSchemeAdjustmentEvent(AdjustmentDto.valid())
 
-        Assertions.assertThat(result.isDisqualifying).isFalse
+        assertThat(result.isDisqualifying).isFalse
       }
     }
 
@@ -134,7 +203,7 @@ class IncentiveSchemeEventTest {
       fun `is always true`() {
         val result = IncentiveSchemeEvent.IncentiveSchemeAdjustmentEvent(AdjustmentDto.valid())
 
-        Assertions.assertThat(result.isQualifying).isTrue
+        assertThat(result.isQualifying).isTrue
       }
     }
 
@@ -148,7 +217,7 @@ class IncentiveSchemeEventTest {
         )
 
         // A positive credit of 20 minutes
-        Assertions.assertThat(result.duration).isEqualTo(java.time.Duration.ofMinutes(20))
+        assertThat(result.duration).isEqualTo(java.time.Duration.ofMinutes(20))
       }
     }
   }
