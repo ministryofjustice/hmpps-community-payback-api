@@ -39,7 +39,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.OffenderDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.PickUpDataDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntity
@@ -60,12 +59,10 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.random
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService.ValidatedAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.AppointmentMappers
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.ToAppointmentEntity.toAppointmentEntity
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.behaviour
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.fromDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toAppointmentUpdatedDomainEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toNDCreateAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toNDUpdateAppointment
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.workQuality
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
@@ -101,6 +98,8 @@ class AppointmentMappersTest {
           pickUpTime = LocalTime.of(13, 14, 15),
           attendanceData = AttendanceDataDto.valid().copy(
             penaltyMinutes = 105,
+            workQuality = AppointmentWorkQualityDto.NOT_APPLICABLE,
+            behaviour = AppointmentBehaviourDto.UNSATISFACTORY,
           ),
           supervisorOfficerCode = "WO3736",
           notes = "The notes",
@@ -132,7 +131,7 @@ class AppointmentMappersTest {
       assertThat(result.penaltyMinutes).isEqualTo(105)
       assertThat(result.minutesCredited).isEqualTo(35)
       assertThat(result.workQuality).isEqualTo(NDAppointmentWorkQuality.NOT_APPLICABLE)
-      assertThat(result.behaviour).isEqualTo(NDAppointmentBehaviour.NOT_APPLICABLE)
+      assertThat(result.behaviour).isEqualTo(NDAppointmentBehaviour.UNSATISFACTORY)
       assertThat(result.alertActive).isFalse
       assertThat(result.sensitive).isTrue
       assertThat(result.pickUp?.location?.code).isEqualTo("PICKUP10")
@@ -178,8 +177,8 @@ class AppointmentMappersTest {
       assertThat(result.workedIntensively).isNull()
       assertThat(result.penaltyMinutes).isNull()
       assertThat(result.minutesCredited).isNull()
-      assertThat(result.workQuality).isEqualTo(NDAppointmentWorkQuality.NOT_APPLICABLE)
-      assertThat(result.behaviour).isEqualTo(NDAppointmentBehaviour.NOT_APPLICABLE)
+      assertThat(result.workQuality).isNull()
+      assertThat(result.behaviour).isNull()
       assertThat(result.alertActive).isNull()
       assertThat(result.sensitive).isNull()
       assertThat(result.pickUp?.location).isNull()
@@ -213,6 +212,8 @@ class AppointmentMappersTest {
           endTime = LocalTime.of(12, 11, 10),
           attendanceData = AttendanceDataDto.valid().copy(
             penaltyMinutes = 105,
+            workQuality = AppointmentWorkQualityDto.NOT_APPLICABLE,
+            behaviour = AppointmentBehaviourDto.UNSATISFACTORY,
           ),
           supervisorOfficerCode = "WO3736",
           notes = "The notes",
@@ -245,7 +246,7 @@ class AppointmentMappersTest {
       assertThat(result.penaltyMinutes).isEqualTo(105)
       assertThat(result.minutesCredited).isEqualTo(35)
       assertThat(result.workQuality).isEqualTo(NDAppointmentWorkQuality.NOT_APPLICABLE)
-      assertThat(result.behaviour).isEqualTo(NDAppointmentBehaviour.NOT_APPLICABLE)
+      assertThat(result.behaviour).isEqualTo(NDAppointmentBehaviour.UNSATISFACTORY)
       assertThat(result.alertActive).isFalse
       assertThat(result.sensitive).isTrue
       assertThat(result.pickUp?.time).isEqualTo(LocalTime.of(1, 0, 0))
@@ -293,8 +294,8 @@ class AppointmentMappersTest {
       assertThat(result.workedIntensively).isNull()
       assertThat(result.penaltyMinutes).isNull()
       assertThat(result.minutesCredited).isNull()
-      assertThat(result.workQuality).isEqualTo(NDAppointmentWorkQuality.NOT_APPLICABLE)
-      assertThat(result.behaviour).isEqualTo(NDAppointmentBehaviour.NOT_APPLICABLE)
+      assertThat(result.workQuality).isNull()
+      assertThat(result.behaviour).isNull()
       assertThat(result.alertActive).isNull()
       assertThat(result.sensitive).isNull()
       assertThat(result.pickUp).isNull()
@@ -847,52 +848,6 @@ class AppointmentMappersTest {
       expectedValue: Behaviour,
     ) {
       assertThat(Behaviour.fromDto(sourceValue)).isEqualTo(expectedValue)
-    }
-  }
-
-  @Nested
-  inner class AppointmentCommandDtoWorkQuality {
-    @ParameterizedTest
-    @CsvSource(
-      "ATTC,GOOD",
-      "AFTC,POOR",
-      "ATSH,POOR",
-      "AAAA,NOT_APPLICABLE",
-      "BBBB,NOT_APPLICABLE",
-      "CCCC,NOT_APPLICABLE",
-      "XXXX,NOT_APPLICABLE",
-      "YYYY,NOT_APPLICABLE",
-      "ZZZZ,NOT_APPLICABLE",
-    )
-    fun `work quality is automatically determined by outcome code`(outcomeCode: String, expected: NDAppointmentWorkQuality) {
-      val createAppointmentDto = CreateAppointmentDto.valid().copy(contactOutcomeCode = outcomeCode)
-      val updateAppointmentDto = UpdateAppointmentDto.valid().copy(contactOutcomeCode = outcomeCode)
-
-      assertThat(createAppointmentDto.workQuality).isEqualTo(expected)
-      assertThat(updateAppointmentDto.workQuality).isEqualTo(expected)
-    }
-  }
-
-  @Nested
-  inner class AppointmentCommandDtoBehaviour {
-    @ParameterizedTest
-    @CsvSource(
-      "ATTC,GOOD",
-      "AFTC,POOR",
-      "ATSH,POOR",
-      "AAAA,NOT_APPLICABLE",
-      "BBBB,NOT_APPLICABLE",
-      "CCCC,NOT_APPLICABLE",
-      "XXXX,NOT_APPLICABLE",
-      "YYYY,NOT_APPLICABLE",
-      "ZZZZ,NOT_APPLICABLE",
-    )
-    fun `behaviour is automatically determined by outcome code`(outcomeCode: String, expected: NDAppointmentBehaviour) {
-      val createAppointmentDto = CreateAppointmentDto.valid().copy(contactOutcomeCode = outcomeCode)
-      val updateAppointmentDto = UpdateAppointmentDto.valid().copy(contactOutcomeCode = outcomeCode)
-
-      assertThat(createAppointmentDto.behaviour).isEqualTo(expected)
-      assertThat(updateAppointmentDto.behaviour).isEqualTo(expected)
     }
   }
 }

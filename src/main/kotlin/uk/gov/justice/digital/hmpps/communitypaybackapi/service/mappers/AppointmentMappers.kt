@@ -13,7 +13,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCreateAppointme
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDUpdateAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.formatForUser
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentBehaviourDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentCommandDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentWorkQualityDto
@@ -181,8 +180,8 @@ fun ValidatedAppointment<UpdateAppointmentOutcomeDto>.toNDUpdateAppointment(
     workedIntensively = null,
     penaltyMinutes = updateDto.attendanceData?.derivePenaltyMinutesDuration()?.toMinutes(),
     minutesCredited = minutesToCredit?.toMinutes(),
-    workQuality = updateDto.workQuality,
-    behaviour = updateDto.behaviour,
+    workQuality = updateDto.attendanceData?.workQuality?.let { WorkQuality.fromDto(it).upstreamType },
+    behaviour = updateDto.attendanceData?.behaviour?.let { Behaviour.fromDto(it).upstreamType },
     sensitive = updateDto.sensitive,
     alertActive = updateDto.alertActive,
     pickUp = existingAppointment.pickUpData?.let { pickUpData ->
@@ -244,8 +243,8 @@ fun ValidatedAppointment<CreateAppointmentDto>.toNDCreateAppointment(
     workedIntensively = null,
     penaltyMinutes = createDto.attendanceData?.derivePenaltyMinutesDuration()?.toMinutes(),
     minutesCredited = minutesToCredit?.toMinutes(),
-    workQuality = createDto.workQuality,
-    behaviour = createDto.behaviour,
+    workQuality = createDto.attendanceData?.workQuality?.let { WorkQuality.fromDto(it).upstreamType },
+    behaviour = createDto.attendanceData?.behaviour?.let { Behaviour.fromDto(it).upstreamType },
     sensitive = createDto.sensitive,
     alertActive = createDto.alertActive,
     allocationId = null,
@@ -336,17 +335,3 @@ fun NDAppointmentBehaviour.toDto() = when (this) {
   NDAppointmentBehaviour.SATISFACTORY -> AppointmentBehaviourDto.SATISFACTORY
   NDAppointmentBehaviour.UNSATISFACTORY -> AppointmentBehaviourDto.UNSATISFACTORY
 }
-
-val AppointmentCommandDto.workQuality
-  get() = when (this.contactOutcomeCode) {
-    "ATTC" -> NDAppointmentWorkQuality.GOOD
-    "AFTC", "ATSH" -> NDAppointmentWorkQuality.POOR
-    else -> NDAppointmentWorkQuality.NOT_APPLICABLE
-  }
-
-val AppointmentCommandDto.behaviour
-  get() = when (this.contactOutcomeCode) {
-    "ATTC" -> NDAppointmentBehaviour.GOOD
-    "AFTC", "ATSH" -> NDAppointmentBehaviour.POOR
-    else -> NDAppointmentBehaviour.NOT_APPLICABLE
-  }
