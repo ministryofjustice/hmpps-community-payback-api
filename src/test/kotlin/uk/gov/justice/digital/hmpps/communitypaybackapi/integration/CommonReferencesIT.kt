@@ -186,7 +186,7 @@ class CommonReferencesIT : IntegrationTestBase() {
         .isOk
         .bodyAsObject<ContactOutcomesDto>()
 
-      assertThat(contactOutcomes.contactOutcomes).hasSize(10)
+      assertThat(contactOutcomes.contactOutcomes).hasSize(9)
     }
 
     @Test
