@@ -29,15 +29,5 @@ sealed interface IncentiveSchemeEvent {
     override val duration: Duration = inner.amount.negated()
   }
 
-  companion object {
-    fun fromAppointmentsAndAdjustments(
-      appointments: List<AppointmentSummaryDto>,
-      adjustments: List<AdjustmentDto>,
-    ): List<IncentiveSchemeEvent> {
-      val appointmentEvents = appointments.map { IncentiveSchemeAppointmentEvent(it) }
-      val adjustmentEvents = adjustments.map { IncentiveSchemeAdjustmentEvent(it) }
-
-      return (adjustmentEvents + appointmentEvents).sortedBy { it.timestamp }
-    }
-  }
+  companion object
 }
