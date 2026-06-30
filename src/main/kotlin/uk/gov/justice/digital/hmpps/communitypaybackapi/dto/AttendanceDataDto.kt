@@ -13,10 +13,8 @@ data class AttendanceDataDto(
   @param:Schema(description = "Deprecated, use penaltyMinutes instead", deprecated = true)
   val penaltyTime: HourMinuteDuration? = null,
   val penaltyMinutes: Long? = null,
-  @Deprecated("This property is no longer used as this is derived from the outcome.")
-  val workQuality: AppointmentWorkQualityDto?,
-  @Deprecated("This property is no longer used as this is derived from the outcome.")
-  val behaviour: AppointmentBehaviourDto?,
+  val workQuality: AppointmentWorkQualityDto,
+  val behaviour: AppointmentBehaviourDto,
 ) {
   companion object
 }
