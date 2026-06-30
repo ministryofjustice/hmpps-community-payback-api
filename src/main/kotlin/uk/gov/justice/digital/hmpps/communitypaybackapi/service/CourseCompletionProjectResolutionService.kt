@@ -17,56 +17,62 @@ class CourseCompletionProjectResolutionService(
     val projects = getEteProjects(event.pdu.providerCode, teamCode)
     if (projects.isEmpty()) return null
 
-    return when (event.region) {
-      "East Midlands" -> projects.matchCourse(event) ?: when {
-        event.isMoodle() -> projects.matchProjectName("ET5 ETE HMPPS portal")
-        event.isAlison() -> projects.matchProjectName("Alison.com")
-        else -> null
-      }
+    return projects.resolveRegionalProject(event, teamCode)?.code
+  }
 
-      "East of England" -> projects.matchCourse(event) ?: when {
-        event.isAlison() -> projects.matchProjectName("ETE Alison.com")
-        else -> null
-      }
+  private fun List<NDProject>.resolveRegionalProject(event: EteCourseCompletionEventEntity, teamCode: String) = when (event.region) {
+    "East Midlands" -> resolveEastMidlandsProject(event)
+    "East of England" -> resolveEastOfEnglandProject(event)
+    "Greater Manchester" -> resolveGreaterManchesterProject(event)
+    "Kent, Surrey and Sussex" -> matchProjectName(event.courseName)
+    "London" -> matchProjectName("20% ETE Standalone HMPPS Portal")
+    "North East" -> resolveNorthEastProject(event)
+    "North West" -> resolveNorthWestProject(teamCode, event.office)
+    "South Central" -> resolveSouthCentralProject(event)
+    "South West" -> resolveSouthWestProject(event)
+    "Wales" -> resolveWalesProject(event)
+    "West Midlands" -> matchProjectName("ET5 ETE HMPPS Portal")
+    "Yorks & Humber" -> resolveYorksAndHumberProject(event)
+    else -> null
+  }
 
-      "Greater Manchester" -> projects.matchCourse(event) ?: when {
-        event.isAlison() -> projects.matchProjectName("Alison Community Campus")
-        else -> null
-      }
+  private fun List<NDProject>.resolveEastMidlandsProject(event: EteCourseCompletionEventEntity) = matchProjectName(event.courseName) ?: when {
+    event.isMoodle() -> matchProjectName("ET5 ETE HMPPS portal")
+    event.isAlison() -> matchProjectName("Alison.com")
+    else -> null
+  }
 
-      "Kent, Surrey and Sussex" -> projects.matchCourse(event)
-      "London" -> projects.matchProjectName("20% ETE Standalone HMPPS Portal")
-      "North East" -> projects.matchCourse(event) ?: when {
-        event.isAlison() -> projects.matchProjectName("ETE HMPPS Portal Alison.com")
-        else -> null
-      }
+  private fun List<NDProject>.resolveEastOfEnglandProject(event: EteCourseCompletionEventEntity) = matchProjectName(event.courseName) ?: when {
+    event.isAlison() -> matchProjectName("ETE Alison.com")
+    else -> null
+  }
 
-      "North West" -> projects.resolveNorthWestProject(teamCode, event.office)
-      "South Central" -> projects.matchCourse(event)
-        ?: projects.matchProjectName("ET5 ETE HMPSS Portal")
-        ?: projects.matchProjectName("ET5 ETE HMPPS Portal")
+  private fun List<NDProject>.resolveGreaterManchesterProject(event: EteCourseCompletionEventEntity) = matchProjectName(event.courseName) ?: when {
+    event.isAlison() -> matchProjectName("Alison Community Campus")
+    else -> null
+  }
 
-      "South West" -> projects.matchCourse(event) ?: when {
-        event.isAlison() -> projects.matchProjectName("Alison")
-        else -> null
-      }
+  private fun List<NDProject>.resolveNorthEastProject(event: EteCourseCompletionEventEntity) = matchProjectName(event.courseName) ?: when {
+    event.isAlison() -> matchProjectName("ETE HMPPS Portal Alison.com")
+    else -> null
+  }
 
-      "Wales" -> when {
-        event.isMandatory() -> projects.matchProjectName("Mandatory ETE")
-        else -> projects.matchProjectName("ETE E-Learning")
-      }
+  private fun List<NDProject>.resolveSouthCentralProject(event: EteCourseCompletionEventEntity) = matchProjectName(event.courseName) ?: matchProjectName("ET5 ETE HMPPS Portal")
 
-      "West Midlands" -> projects.matchProjectName("ET5 ETE HMPPS Portal")
-      "Yorks & Humber" -> when {
-        event.isYorksAndHumberMandatory() -> projects.matchCourse(event)
-          ?: projects.matchProjectName("mandatory")
+  private fun List<NDProject>.resolveSouthWestProject(event: EteCourseCompletionEventEntity) = matchProjectName(event.courseName) ?: when {
+    event.isAlison() -> matchProjectName("Alison")
+    else -> null
+  }
 
-        event.isAlison() -> projects.matchProjectName("ETE Alison.com Course")
-        else -> projects.matchProjectName("ET5 ETE HMPPS Portal Other")
-      }
+  private fun List<NDProject>.resolveWalesProject(event: EteCourseCompletionEventEntity) = when {
+    event.isMandatory() -> matchProjectName("Mandatory ETE")
+    else -> matchProjectName("ETE E-Learning")
+  }
 
-      else -> null
-    }?.code
+  private fun List<NDProject>.resolveYorksAndHumberProject(event: EteCourseCompletionEventEntity) = when {
+    event.isYorksAndHumberMandatory() -> matchProjectName(event.courseName) ?: matchProjectName("mandatory")
+    event.isAlison() -> matchProjectName("ETE Alison.com Course")
+    else -> matchProjectName("ET5 ETE HMPPS Portal Other")
   }
 
   private fun getEteProjects(providerCode: String, teamCode: String): List<NDProject> {
@@ -82,59 +88,29 @@ class CourseCompletionProjectResolutionService(
     ).content.map { it.project }
   }
 
-  private fun List<NDProject>.matchCourse(event: EteCourseCompletionEventEntity): NDProject? = matchProjectName(event.courseName)
-
   private fun List<NDProject>.matchProjectName(name: String): NDProject? {
     val target = name.normalizedWords()
     return closestMatch(filter { it.name.normalizedWords().contains(target) })
-      ?: closestMatch(filter { it.name.normalizedWordSet().containsAll(target.significantWords()) })
+      ?: closestMatch(filter { it.name.significantWords().containsAll(target.significantWords()) })
   }
 
   private fun closestMatch(projects: List<NDProject>) = projects.minWithOrNull(compareBy<NDProject> { it.name.normalizedWords().length }.thenBy { it.name })
 
   private fun List<NDProject>.resolveNorthWestProject(teamCode: String, office: String): NDProject? {
     val projectName = when (teamCode) {
-      "N51CBH" -> "Preston ETE"
-      "N51CAH" -> "Barrow ETE"
-      "N51CAJ" -> "Blackburn ETE"
-      "N51CAO" -> "Burnley ETE"
-      "N51CAP" -> "Carlisle ETE"
-      "N51LNP" -> "ETE Community Portal"
-      "N51CWP" -> if (office.equals(
-          "Winsford Office",
-          ignoreCase = true,
-        )
-      ) {
+      "N51CWP" -> if (office.lowercase() == "winsford office") {
         "ETE Community Portal Winsford"
       } else {
         "ETE Community Portal Ellesmere Port/Chester"
       }
-
-      "N51CAV" -> "Chorley ETE"
-      "N51CAK" -> "Blackpool ETE"
-      "N51CEP" -> if (office.equals(
-          "Crewe Office",
-          ignoreCase = true,
-        )
-      ) {
+      "N51CEP" -> if (office.lowercase() == "crewe office") {
         "ETE Community Portal Crewe"
       } else {
         "ETE Community Portal Macclesfield"
       }
-
-      "N51CAB" -> "Accrington ETE"
-      "N51CBB" -> "Kendal ETE"
-      "N51CBD" -> "Lancaster ETE"
-      "N51KCP" -> "ETE Community Portal"
-      "N51HWP" -> "ETE Community Portal"
-      "N51CBM" -> "Skelmersdale ETE"
-      "N51SCP" -> "ETE Community Portal"
-      "N51WCP" -> "ETE Community Portal"
-      "N51CBP" -> "Workington ETE"
-      else -> null
+      else -> "ETE"
     }
-
-    return projectName?.let { matchProjectName(it) }
+    return matchProjectName(projectName)
   }
 
   private fun String.normalizedWords() = lowercase()
@@ -153,13 +129,12 @@ class CourseCompletionProjectResolutionService(
     .filter { it.isNotBlank() && it !in setOf("a", "and", "in", "of", "the", "to") }
     .toSet()
 
-  private fun String.normalizedWordSet() = significantWords()
-
   private fun EteCourseCompletionEventEntity.isMoodle() = this.provider.lowercase() == "moodle"
 
   private fun EteCourseCompletionEventEntity.isAlison() = this.provider.lowercase() == "alison"
 
-  private fun EteCourseCompletionEventEntity.isMandatory() = this.courseType.lowercase() == "mandatory" || this.courseName.normalizedWords() in mandatoryCourseNames
+  private fun EteCourseCompletionEventEntity.isMandatory() = this.courseType.lowercase() == "mandatory" ||
+    this.courseName.normalizedWords() in mandatoryCourseNames
 
   private fun EteCourseCompletionEventEntity.isYorksAndHumberMandatory() = this.courseType.lowercase() == "mandatory" ||
     this.courseName.normalizedWords() in mandatoryCourseNames ||

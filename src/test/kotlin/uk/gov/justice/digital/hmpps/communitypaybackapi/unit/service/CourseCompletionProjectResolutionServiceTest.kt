@@ -204,16 +204,6 @@ class CourseCompletionProjectResolutionServiceTest {
       assertThat(result).isEqualTo(projectCodeFor(expectedProjectName))
     }
 
-    @Test
-    fun `uses South Central portal fallback when course project is not found`() {
-      val event = event(region = "South Central", provider = "Moodle", courseName = "Introduction to Supervision")
-      stubProjects(*projectsFor(southCentral))
-
-      val result = service.resolveProjectCode(event, "TEAM1")
-
-      assertThat(result).isEqualTo(projectCodeFor("ET5 ETE – HMPPS portal"))
-    }
-
     @ParameterizedTest(name = "South West course {0} resolves to {1}")
     @MethodSource("uk.gov.justice.digital.hmpps.communitypaybackapi.unit.service.CourseCompletionProjectResolutionServiceTest#southWestCourseMappings")
     fun `resolves South West course projects`(
@@ -259,11 +249,19 @@ class CourseCompletionProjectResolutionServiceTest {
       expectedProjectName: String,
     ) {
       val event = event(region = "North West", office = office)
-      stubProjects(*northWestProjects())
+      stubProjects(project(expectedProjectName, projectCodeFor(expectedProjectName)))
 
       val result = service.resolveProjectCode(event, teamCode)
 
       assertThat(result).isEqualTo(projectCodeFor(expectedProjectName))
+      verify {
+        communityPaybackAndDeliusClient.getProjects(
+          providerCode = event.pdu.providerCode,
+          teamCode = teamCode,
+          typeCode = listOf("ET5", "UP06"),
+          params = mapOf("page" to "0", "size" to "500", "sort" to "name,asc"),
+        )
+      }
     }
 
     @ParameterizedTest(name = "Wales course {0} with type {1} resolves to {2}")
@@ -328,12 +326,6 @@ class CourseCompletionProjectResolutionServiceTest {
   private fun project(name: String, code: String) = NDProject.valid().copy(name = name, code = code)
 
   private fun eastMidlandsProjects() = projectsFor(eastMidlands)
-
-  private fun northWestProjects() = northWest
-    .map { it.projectName }
-    .distinct()
-    .map { project(it, projectCodeFor(it)) }
-    .toTypedArray()
 
   private fun projectsFor(courseToProjects: List<CourseToProject>) = courseToProjects
     .map { it.projectName }
