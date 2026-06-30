@@ -21,6 +21,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.OfficeUpwTeamMapp
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.OfficeUpwTeamMappingRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.CourseCompletionAutoResolutionService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.CourseCompletionProjectResolutionService
 import java.util.UUID
 
 @ExtendWith(MockKExtension::class)
@@ -33,6 +34,9 @@ class CourseCompletionAutoResolutionServiceTest {
   lateinit var officeUpwTeamMappingRepository: OfficeUpwTeamMappingRepository
 
   @RelaxedMockK
+  lateinit var courseCompletionProjectResolutionService: CourseCompletionProjectResolutionService
+
+  @RelaxedMockK
   lateinit var draftResolutionRepository: EteCourseCompletionDraftResolutionRepository
 
   private lateinit var service: CourseCompletionAutoResolutionService
@@ -42,6 +46,7 @@ class CourseCompletionAutoResolutionServiceTest {
     service = CourseCompletionAutoResolutionService(
       personSearchClient,
       officeUpwTeamMappingRepository,
+      courseCompletionProjectResolutionService,
       draftResolutionRepository,
     )
   }
@@ -139,6 +144,52 @@ class CourseCompletionAutoResolutionServiceTest {
     }
 
     @Test
+    fun `persists draft with project code when team and project are resolved`() {
+      val event = EteCourseCompletionEventEntity.valid().copy(office = "St Albans")
+      every { personSearchClient.searchPerson(any()) } returns emptyList()
+      every {
+        officeUpwTeamMappingRepository.findByPduAndOffice(event.pdu, "St Albans")
+      } returns OfficeUpwTeamMappingEntity(
+        id = UUID.randomUUID(),
+        pdu = event.pdu,
+        office = "St Albans",
+        teamCode = "N56ST",
+      )
+      every { courseCompletionProjectResolutionService.resolveProjectCode(event, "N56ST") } returns "PROJECT1"
+
+      val saved = slot<EteCourseCompletionDraftResolutionEntity>()
+      every { draftResolutionRepository.save(capture(saved)) } answers { firstArg() }
+
+      service.resolveAndPersistDraft(event)
+
+      assertThat(saved.captured.teamCode).isEqualTo("N56ST")
+      assertThat(saved.captured.projectCode).isEqualTo("PROJECT1")
+    }
+
+    @Test
+    fun `persists draft with team code and null project code when project resolution fails`() {
+      val event = EteCourseCompletionEventEntity.valid().copy(office = "St Albans")
+      every { personSearchClient.searchPerson(any()) } returns emptyList()
+      every {
+        officeUpwTeamMappingRepository.findByPduAndOffice(event.pdu, "St Albans")
+      } returns OfficeUpwTeamMappingEntity(
+        id = UUID.randomUUID(),
+        pdu = event.pdu,
+        office = "St Albans",
+        teamCode = "N56ST",
+      )
+      every { courseCompletionProjectResolutionService.resolveProjectCode(event, "N56ST") } throws RuntimeException("Project lookup failed")
+
+      val saved = slot<EteCourseCompletionDraftResolutionEntity>()
+      every { draftResolutionRepository.save(capture(saved)) } answers { firstArg() }
+
+      service.resolveAndPersistDraft(event)
+
+      assertThat(saved.captured.teamCode).isEqualTo("N56ST")
+      assertThat(saved.captured.projectCode).isNull()
+    }
+
+    @Test
     fun `persists draft with null team code when office has no mapping`() {
       val event = EteCourseCompletionEventEntity.valid().copy(office = "Watford")
       every { personSearchClient.searchPerson(any()) } returns emptyList()
@@ -152,6 +203,7 @@ class CourseCompletionAutoResolutionServiceTest {
       service.resolveAndPersistDraft(event)
 
       assertThat(saved.captured.teamCode).isNull()
+      verify(exactly = 0) { courseCompletionProjectResolutionService.resolveProjectCode(any(), any()) }
     }
 
     @Test
