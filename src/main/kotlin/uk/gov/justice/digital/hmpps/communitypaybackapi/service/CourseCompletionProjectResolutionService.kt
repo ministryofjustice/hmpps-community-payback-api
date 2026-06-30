@@ -82,8 +82,7 @@ class CourseCompletionProjectResolutionService(
     ).content.map { it.project }
   }
 
-  private fun List<NDProject>.matchCourse(event: EteCourseCompletionEventEntity): NDProject? =
-    matchProjectName(event.courseName)
+  private fun List<NDProject>.matchCourse(event: EteCourseCompletionEventEntity): NDProject? = matchProjectName(event.courseName)
 
   private fun List<NDProject>.matchProjectName(name: String): NDProject? {
     val target = name.normalizedWords()
@@ -91,8 +90,7 @@ class CourseCompletionProjectResolutionService(
       ?: closestMatch(filter { it.name.normalizedWordSet().containsAll(target.significantWords()) })
   }
 
-  private fun closestMatch(projects: List<NDProject>) =
-    projects.minWithOrNull(compareBy<NDProject> { it.name.normalizedWords().length }.thenBy { it.name })
+  private fun closestMatch(projects: List<NDProject>) = projects.minWithOrNull(compareBy<NDProject> { it.name.normalizedWords().length }.thenBy { it.name })
 
   private fun List<NDProject>.resolveNorthWestProject(teamCode: String, office: String): NDProject? {
     val projectName = when (teamCode) {
@@ -106,7 +104,11 @@ class CourseCompletionProjectResolutionService(
           "Winsford Office",
           ignoreCase = true,
         )
-      ) "ETE Community Portal Winsford" else "ETE Community Portal Ellesmere Port/Chester"
+      ) {
+        "ETE Community Portal Winsford"
+      } else {
+        "ETE Community Portal Ellesmere Port/Chester"
+      }
 
       "N51CAV" -> "Chorley ETE"
       "N51CAK" -> "Blackpool ETE"
@@ -114,7 +116,11 @@ class CourseCompletionProjectResolutionService(
           "Crewe Office",
           ignoreCase = true,
         )
-      ) "ETE Community Portal Crewe" else "ETE Community Portal Macclesfield"
+      ) {
+        "ETE Community Portal Crewe"
+      } else {
+        "ETE Community Portal Macclesfield"
+      }
 
       "N51CAB" -> "Accrington ETE"
       "N51CBB" -> "Kendal ETE"
@@ -153,13 +159,11 @@ class CourseCompletionProjectResolutionService(
 
   private fun EteCourseCompletionEventEntity.isAlison() = this.provider.lowercase() == "alison"
 
-  private fun EteCourseCompletionEventEntity.isMandatory() =
-    this.courseType.lowercase() == "mandatory" || this.courseName.normalizedWords() in mandatoryCourseNames
+  private fun EteCourseCompletionEventEntity.isMandatory() = this.courseType.lowercase() == "mandatory" || this.courseName.normalizedWords() in mandatoryCourseNames
 
-  private fun EteCourseCompletionEventEntity.isYorksAndHumberMandatory() =
-    this.courseType.lowercase() == "mandatory" ||
-      this.courseName.normalizedWords() in mandatoryCourseNames ||
-      (this.courseName.normalizedWords() == "employability" && this.courseType.normalizedWords().contains("unemployed"))
+  private fun EteCourseCompletionEventEntity.isYorksAndHumberMandatory() = this.courseType.lowercase() == "mandatory" ||
+    this.courseName.normalizedWords() in mandatoryCourseNames ||
+    (this.courseName.normalizedWords() == "employability" && this.courseType.normalizedWords().contains("unemployed"))
 
   companion object {
     private val mandatoryCourseNames = setOf(

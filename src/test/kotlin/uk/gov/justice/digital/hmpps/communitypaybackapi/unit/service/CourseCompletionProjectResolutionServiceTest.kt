@@ -355,7 +355,6 @@ class CourseCompletionProjectResolutionServiceTest {
     )
   }
 
-
   companion object {
     @JvmStatic
     fun eastMidlandsCourseMappings(): Stream<Arguments> = courseMappingsFor(eastMidlands)
