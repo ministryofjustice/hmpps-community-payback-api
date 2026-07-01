@@ -21,6 +21,14 @@ sealed interface IncentiveSchemeEvent {
     override val duration: Duration = Duration.ofMinutes(inner.minutesCredited ?: 0)
   }
 
+  data class IncentiveSchemeCourseCompletionAppointmentEvent(private val inner: AppointmentSummaryDto) : IncentiveSchemeEvent {
+    override val name: String = "Course completion appointment ${inner.id}"
+    override val timestamp: OffsetDateTime = inner.date.atTime(inner.startTime).atZone(ZoneId.of("Europe/London")).toOffsetDateTime()
+    override val isDisqualifying: Boolean = false
+    override val isQualifying: Boolean = inner.hasOutcome()
+    override val duration: Duration = Duration.ofMinutes(inner.minutesCredited ?: 0)
+  }
+
   data class IncentiveSchemeAdjustmentEvent(private val inner: AdjustmentDto) : IncentiveSchemeEvent {
     override val name: String = "Adjustment ${inner.deliusId}"
     override val timestamp: OffsetDateTime = inner.date.atTime(23, 59, 59).atZone(ZoneId.of("Europe/London")).toOffsetDateTime()
@@ -29,15 +37,5 @@ sealed interface IncentiveSchemeEvent {
     override val duration: Duration = inner.amount.negated()
   }
 
-  companion object {
-    fun fromAppointmentsAndAdjustments(
-      appointments: List<AppointmentSummaryDto>,
-      adjustments: List<AdjustmentDto>,
-    ): List<IncentiveSchemeEvent> {
-      val appointmentEvents = appointments.map { IncentiveSchemeAppointmentEvent(it) }
-      val adjustmentEvents = adjustments.map { IncentiveSchemeAdjustmentEvent(it) }
-
-      return (adjustmentEvents + appointmentEvents).sortedBy { it.timestamp }
-    }
-  }
+  companion object
 }
