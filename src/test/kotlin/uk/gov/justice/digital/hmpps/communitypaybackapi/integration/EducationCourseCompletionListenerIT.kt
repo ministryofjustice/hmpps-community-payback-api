@@ -8,13 +8,17 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import software.amazon.awssdk.services.sqs.model.SendMessageRequest
 import tools.jackson.databind.json.JsonMapper
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProject
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectOutcomeStats
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.CommunityCampusPduEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionDraftResolutionRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.OfficeUpwTeamMappingEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.OfficeUpwTeamMappingRepository
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.listener.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.DatabasePurgeUtils
+import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.CommunityPaybackAndDeliusMockServer
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.ProbationOffenderSearchMockServer
 import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseCompletionMessage
 import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseMessageAttributes
@@ -110,7 +114,7 @@ class EducationCourseCompletionListenerIT : IntegrationTestBase() {
     fun `team code is populated in draft resolution when office maps to a UPW team`() {
       ProbationOffenderSearchMockServer.stubNoMatches()
 
-      val pdu = communityCampusPduEntityRepository.findAll().minByOrNull { it.name }!!
+      val pdu = communityCampusPduEntityRepository.findByName("Hertfordshire")!!
       val office = "St Albans ${UUID.randomUUID()}"
       officeUpwTeamMappingRepository.save(
         OfficeUpwTeamMappingEntity(
@@ -120,12 +124,28 @@ class EducationCourseCompletionListenerIT : IntegrationTestBase() {
           teamCode = "N56ST",
         ),
       )
+      CommunityPaybackAndDeliusMockServer.setupGetProjectsResponse(
+        providerCode = pdu.providerCode,
+        teamCode = "N56ST",
+        projectTypeCodes = listOf("ET1", "ET3", "ET5", "UP06"),
+        response = listOf(
+          NDProjectOutcomeStats.valid().copy(
+            project = NDProject.valid(ctx).copy(
+              name = "ETE Portal - Health & Safety in Construction",
+              code = "PROJECT1",
+            ),
+          ),
+        ),
+        pageSize = 500,
+      )
 
       sendMessage(
         EducationCourseCompletionMessage.valid(ctx).copy(
           messageAttributes = EducationCourseMessageAttributes.valid(ctx).copy(
+            region = "East of England",
             pdu = pdu.name,
             office = office,
+            courseName = "Health and Safety in Construction",
           ),
         ),
       )
@@ -137,7 +157,7 @@ class EducationCourseCompletionListenerIT : IntegrationTestBase() {
       val draft = eteCourseCompletionDraftResolutionRepository.findAll().first()
       assertThat(draft.crn).isNull()
       assertThat(draft.teamCode).isEqualTo("N56ST")
-      assertThat(draft.projectCode).isNull()
+      assertThat(draft.projectCode).isEqualTo("PROJECT1")
       assertThat(draft.appointmentIdToUpdate).isNull()
     }
 
