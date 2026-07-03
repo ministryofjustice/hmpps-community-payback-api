@@ -16,6 +16,7 @@ import java.util.UUID
 class CourseCompletionAutoResolutionService(
   private val personSearchClient: ProbationOffenderSearchClient,
   private val officeUpwTeamMappingRepository: OfficeUpwTeamMappingRepository,
+  private val courseCompletionProjectResolutionService: CourseCompletionProjectResolutionService,
   private val draftResolutionRepository: EteCourseCompletionDraftResolutionRepository,
 ) {
   private companion object {
@@ -27,6 +28,7 @@ class CourseCompletionAutoResolutionService(
   fun resolveAndPersistDraft(event: EteCourseCompletionEventEntity) {
     val crn = searchForCrn(event)
     val teamCode = resolveTeamCode(event)
+    val projectCode = teamCode?.let { resolveProjectCode(event, it) }
 
     draftResolutionRepository.save(
       EteCourseCompletionDraftResolutionEntity(
@@ -34,6 +36,7 @@ class CourseCompletionAutoResolutionService(
         eteCourseCompletionEvent = event,
         crn = crn,
         teamCode = teamCode,
+        projectCode = projectCode,
       ),
     )
   }
@@ -73,5 +76,13 @@ class CourseCompletionAutoResolutionService(
         else -> log.debug("No UPW team mapping for event {}", event.id)
       }
     }
+  }
+
+  @Suppress("TooGenericExceptionCaught")
+  private fun resolveProjectCode(event: EteCourseCompletionEventEntity, teamCode: String): String? = try {
+    courseCompletionProjectResolutionService.resolveProjectCode(event, teamCode)
+  } catch (e: Exception) {
+    log.warn("Project auto-resolution failed for event {}; project will be left blank", event.id, e)
+    null
   }
 }
