@@ -13,6 +13,7 @@ import org.springframework.data.domain.Sort
 import org.springframework.data.web.PageableDefault
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.MediaType
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -24,6 +25,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.common.badRequest
 import uk.gov.justice.digital.hmpps.communitypaybackapi.controller.internal.notFound
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentSummaryDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.DeliusAppointmentIdDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeGroupDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentDto
@@ -34,6 +36,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ContextService
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
+import java.net.URI
 import java.time.LocalDate
 import java.time.OffsetDateTime
 
@@ -175,6 +178,45 @@ class AdminAppointmentController(
         triggeredBy = contextService.getUserName(),
       ),
     )
+  }
+
+  @PostMapping(
+    path = ["/appointments"],
+    consumes = [MediaType.APPLICATION_JSON_VALUE],
+  )
+  @Operation(
+    description = "Create a new appointment",
+    responses = [
+      ApiResponse(
+        responseCode = "201",
+        description = "Appointment was successfully created",
+      ),
+      ApiResponse(
+        responseCode = "400",
+        description = "Validation error. If this occurs then the appointment was not created",
+        content = [
+          Content(
+            schema = Schema(implementation = ErrorResponse::class),
+          ),
+        ],
+      ),
+    ],
+  )
+  fun createAppointment(
+    @RequestBody createAppointment: CreateAppointmentDto,
+  ): ResponseEntity<Unit> {
+    val deliusAppointmentId = appointmentService.createAppointment(
+      createAppointment,
+      AppointmentEventTrigger(
+        triggeredAt = OffsetDateTime.now(),
+        triggerType = AppointmentEventTriggerType.USER,
+        triggeredBy = contextService.getUserName(),
+      ),
+    )
+
+    return ResponseEntity
+      .created(URI("/admin/projects/${createAppointment.projectCode}/appointments/$deliusAppointmentId"))
+      .build()
   }
 
   @GetMapping(

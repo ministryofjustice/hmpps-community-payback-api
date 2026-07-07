@@ -50,17 +50,17 @@ class AppointmentCreationService(
     require(createAppointmentsDto.appointments.isNotEmpty()) { "At least one appointment must be provided" }
     require(createAppointmentsDto.appointments.count { it.projectCode != createAppointmentsDto.projectCode } == 0) { "All appointments must be for the same project code" }
 
-    val project = projectService.getProject(createAppointmentsDto.projectCode)
-    require(project != null) { "A valid project must be used" }
-    val projectType = projectService.getProjectTypeForCode(project.projectType.code)
-    require(projectType != null) { "A valid project type must be used" }
-
     val appointmentsToCreate = appointments.map {
       AppointmentToCreate(
         id = appointmentIdGenerator.generateId(),
         validatedAppointment = appointmentValidationService.validateCreate(it),
       )
     }
+
+    val project = projectService.getProject(createAppointmentsDto.projectCode)
+    require(project != null) { "A valid project must be used" }
+    val projectType = projectService.getProjectTypeForCode(project.projectType.code)
+    require(projectType != null) { "A valid project type must be used" }
 
     val creationResponse = communityPaybackAndDeliusClient.createAppointments(
       projectCode = projectCode,
