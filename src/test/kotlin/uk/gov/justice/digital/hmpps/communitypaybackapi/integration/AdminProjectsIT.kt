@@ -5,10 +5,12 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProject
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectAvailability
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.bodyAsObject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.CommunityPaybackAndDeliusMockServer
+import java.time.LocalTime
 
 class AdminProjectsIT : IntegrationTestBase() {
 
@@ -61,10 +63,16 @@ class AdminProjectsIT : IntegrationTestBase() {
 
     @Test
     fun `Should return existing project`() {
+      val availability = NDProjectAvailability.valid().copy(
+        startTime = LocalTime.of(9, 30),
+        endTime = LocalTime.of(16, 45),
+      )
+
       CommunityPaybackAndDeliusMockServer.setupGetProjectResponse(
         project = NDProject.valid(ctx).copy(
           code = "PC01",
           name = "the project name",
+          availability = listOf(availability),
         ),
       )
 
@@ -77,6 +85,9 @@ class AdminProjectsIT : IntegrationTestBase() {
         .bodyAsObject<ProjectDto>()
 
       assertThat(response.projectName).isEqualTo("the project name")
+      assertThat(response.availability).hasSize(1)
+      assertThat(response.availability[0].startTime).isEqualTo(LocalTime.of(9, 30))
+      assertThat(response.availability[0].endTime).isEqualTo(LocalTime.of(16, 45))
     }
   }
 }
