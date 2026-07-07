@@ -19,6 +19,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
 import java.time.LocalDate
+import java.time.LocalTime
 
 class ProjectMappersTest {
 
@@ -55,6 +56,8 @@ class ProjectMappersTest {
             dayOfWeek = NDSchedulingDayOfWeek.Saturday,
             startDateInclusive = LocalDate.of(2020, 10, 11),
             endDateExclusive = LocalDate.of(2035, 12, 30),
+            startTime = LocalTime.of(9, 30),
+            endTime = LocalTime.of(16, 45),
           ),
         ),
       ).toDto(projectTypeEntity)
@@ -83,6 +86,8 @@ class ProjectMappersTest {
       assertThat(result.availability[0].dayOfWeek).isEqualTo(SchedulingDayOfWeekDto.SATURDAY)
       assertThat(result.availability[0].startDateInclusive).isEqualTo(LocalDate.of(2020, 10, 11))
       assertThat(result.availability[0].endDateExclusive).isEqualTo(LocalDate.of(2035, 12, 30))
+      assertThat(result.availability[0].startTime).isEqualTo(LocalTime.of(9, 30))
+      assertThat(result.availability[0].endTime).isEqualTo(LocalTime.of(16, 45))
     }
   }
 

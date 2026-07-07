@@ -9,6 +9,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SchedulingDayOfWeekD
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SchedulingFrequencyDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.random
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.randomLocalDate
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.randomLocalTime
 import kotlin.String
 
 fun ProjectDto.Companion.valid() = ProjectDto(
@@ -52,4 +53,6 @@ fun ProjectAvailabilityDto.Companion.valid() = ProjectAvailabilityDto(
   dayOfWeek = SchedulingDayOfWeekDto.entries.random(),
   startDateInclusive = randomLocalDate(),
   endDateExclusive = randomLocalDate(),
+  startTime = randomLocalTime(),
+  endTime = randomLocalTime(),
 )

@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.dto
 
 import java.time.LocalDate
+import java.time.LocalTime
 
 data class ProjectDto(
   val projectName: String,
@@ -25,6 +26,8 @@ data class ProjectAvailabilityDto(
   val dayOfWeek: SchedulingDayOfWeekDto,
   val startDateInclusive: LocalDate?,
   val endDateExclusive: LocalDate?,
+  val startTime: LocalTime?,
+  val endTime: LocalTime?,
 ) {
   companion object
 }

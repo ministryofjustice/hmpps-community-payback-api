@@ -551,6 +551,8 @@ data class NDProjectAvailability(
   val dayOfWeek: NDSchedulingDayOfWeek,
   val startDateInclusive: LocalDate?,
   val endDateExclusive: LocalDate?,
+  val startTime: LocalTime?,
+  val endTime: LocalTime?,
 ) {
   companion object
 }
