@@ -30,6 +30,8 @@ data class UpdateAppointmentDto(
   override val contactOutcomeCode: String?,
   override val attendanceData: AttendanceDataDto?,
   val supervisorOfficerCode: String,
+  val supervisorTeamCode: String? = null,
+  val projectCode: String? = null,
   @field:JsonDeserialize(using = SanitizingStringDeserializer::class)
   override val notes: String? = null,
   val alertActive: Boolean?,
@@ -47,6 +49,8 @@ data class UpdateAppointmentDto(
     contactOutcomeCode = contactOutcomeCode,
     attendanceData = attendanceData,
     supervisorOfficerCode = supervisorOfficerCode,
+    supervisorTeamCode = supervisorTeamCode,
+    projectCode = projectCode,
     notes = notes,
     alertActive = alertActive,
     sensitive = sensitive,

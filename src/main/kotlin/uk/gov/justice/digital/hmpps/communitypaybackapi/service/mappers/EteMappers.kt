@@ -87,6 +87,8 @@ class EteMappers(
       contactOutcomeCode = creditTime.contactOutcomeCode,
       attendanceData = createAttendanceData(),
       supervisorOfficerCode = existingAppointment.supervisorOfficerCode,
+      supervisorTeamCode = existingAppointment.supervisingTeamCode,
+      projectCode = creditTime.projectCode,
       notes = buildNote(creditTime.notes, courseCompletionEvent),
       alertActive = creditTime.alertActive,
       sensitive = creditTime.sensitive,

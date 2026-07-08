@@ -492,6 +492,7 @@ data class NDUpdateAppointment(
   val outcome: NDCode?,
   val supervisor: NDCode,
   val supervisorTeam: NDCode,
+  val project: NDCode,
   val notes: String?,
   val hiVisWorn: Boolean?,
   val workedIntensively: Boolean?,

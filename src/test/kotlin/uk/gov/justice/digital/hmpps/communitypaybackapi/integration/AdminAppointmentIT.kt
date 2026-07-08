@@ -354,6 +354,8 @@ class AdminAppointmentIT : IntegrationTestBase() {
             deliusId = 1234L,
             attendanceData = AttendanceDataDto.valid(),
             contactOutcomeCode = CODE_ATTENDED_COMPLIED,
+            supervisorTeamCode = "TEAM123",
+            projectCode = "proj123",
             startTime = LocalTime.of(0, 0),
             endTime = LocalTime.of(1, 0),
           ),
@@ -363,8 +365,15 @@ class AdminAppointmentIT : IntegrationTestBase() {
         .isOk()
 
       CommunityPaybackAndDeliusMockServer.verifyPutAppointmentRequest(
-        projectCode = "proj123",
-        appointmentId = 1234L,
+        CommunityPaybackAndDeliusMockServer.ExpectedAppointmentUpdate(
+          projectCode = "proj123",
+          appointmentId = 1234L,
+          date = LocalDate.now(),
+          startTime = LocalTime.of(0, 0),
+          endTime = LocalTime.of(1, 0),
+          updatedProjectCode = "proj123",
+          supervisorTeamCode = "TEAM123",
+        ),
       )
 
       domainEventAsserter.assertEventCount("community-payback.appointment.updated", 1)

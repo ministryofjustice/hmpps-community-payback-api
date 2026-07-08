@@ -189,6 +189,7 @@ class AppointmentMappersTest {
       val priorDeliusVersion = UUID.randomUUID()
 
       val existingAppointment = AppointmentDto.valid().copy(
+        projectCode = "PROJECT1",
         supervisingTeamCode = "TEAM1",
         date = LocalDate.of(2020, 1, 2),
         startTime = LocalTime.of(2, 2, 1),
@@ -212,6 +213,8 @@ class AppointmentMappersTest {
             behaviour = AppointmentBehaviourDto.UNSATISFACTORY,
           ),
           supervisorOfficerCode = "WO3736",
+          supervisorTeamCode = "TEAM2",
+          projectCode = "PROJECT2",
           notes = "The notes",
           alertActive = false,
           sensitive = true,
@@ -228,7 +231,8 @@ class AppointmentMappersTest {
       assertThat(result.endTime).isEqualTo(LocalTime.of(12, 11, 10))
       assertThat(result.outcome!!.code).isEqualTo("COE1")
       assertThat(result.supervisor.code).isEqualTo("WO3736")
-      assertThat(result.supervisorTeam.code).isEqualTo("TEAM1")
+      assertThat(result.supervisorTeam.code).isEqualTo("TEAM2")
+      assertThat(result.project.code).isEqualTo("PROJECT2")
       assertThat(result.notes).isEqualTo(
         """
           |Appointment Date changed from 02/01/2020 to 09/12/2018
@@ -254,6 +258,7 @@ class AppointmentMappersTest {
       val priorDeliusVersion = UUID.randomUUID()
 
       val existingAppointment = AppointmentDto.valid().copy(
+        projectCode = "PROJECT1",
         supervisingTeamCode = "TEAM1",
         date = LocalDate.of(2020, 1, 2),
         startTime = LocalTime.of(3, 2, 1),
@@ -270,6 +275,8 @@ class AppointmentMappersTest {
           endTime = LocalTime.of(12, 11, 10),
           attendanceData = null,
           supervisorOfficerCode = "WO3736",
+          supervisorTeamCode = "TEAM2",
+          projectCode = "PROJECT2",
           notes = null,
           alertActive = null,
           sensitive = null,
@@ -286,7 +293,8 @@ class AppointmentMappersTest {
       assertThat(result.endTime).isEqualTo(LocalTime.of(12, 11, 10))
       assertThat(result.outcome).isNull()
       assertThat(result.supervisor.code).isEqualTo("WO3736")
-      assertThat(result.supervisorTeam.code).isEqualTo("TEAM1")
+      assertThat(result.supervisorTeam.code).isEqualTo("TEAM2")
+      assertThat(result.project.code).isEqualTo("PROJECT2")
       assertThat(result.notes).isNull()
       assertThat(result.hiVisWorn).isNull()
       assertThat(result.workedIntensively).isNull()

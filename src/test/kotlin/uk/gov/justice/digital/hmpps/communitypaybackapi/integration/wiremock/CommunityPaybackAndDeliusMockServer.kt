@@ -513,7 +513,15 @@ object CommunityPaybackAndDeliusMockServer {
             "$.endTime",
             equalTo(expectedUpdate.endTime.format(DateTimeFormatter.ISO_TIME)),
           ),
-        ),
+        )
+        .apply {
+          expectedUpdate.updatedProjectCode?.let {
+            withRequestBody(matchingJsonPath("$.project.code", equalTo(it)))
+          }
+          expectedUpdate.supervisorTeamCode?.let {
+            withRequestBody(matchingJsonPath("$.supervisorTeam.code", equalTo(it)))
+          }
+        },
     )
   }
 
@@ -523,6 +531,8 @@ object CommunityPaybackAndDeliusMockServer {
     val date: LocalDate,
     val startTime: LocalTime,
     val endTime: LocalTime,
+    val updatedProjectCode: String? = null,
+    val supervisorTeamCode: String? = null,
   )
 
   fun verifyPostAppointmentsRequest(
