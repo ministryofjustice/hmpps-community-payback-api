@@ -11,17 +11,29 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.IDs
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointmentSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseDetailsSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDUpwDetails
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.OffenderDetail
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.PageResponse
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.PageResponse.PageMeta
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProbationOffenderSearchClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionDraftResolutionEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionDraftResolutionRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.OfficeUpwTeamMappingEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.OfficeUpwTeamMappingRepository
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ProjectTypeEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ProjectTypeEntityRepository
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ProjectTypeGroup
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.CourseCompletionAutoResolutionService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.CourseCompletionProjectResolutionService
+import java.time.LocalDate
+import java.time.LocalTime
 import java.util.UUID
 
 @ExtendWith(MockKExtension::class)
@@ -39,6 +51,12 @@ class CourseCompletionAutoResolutionServiceTest {
   @RelaxedMockK
   lateinit var draftResolutionRepository: EteCourseCompletionDraftResolutionRepository
 
+  @RelaxedMockK
+  lateinit var communityPaybackAndDeliusClient: CommunityPaybackAndDeliusClient
+
+  @RelaxedMockK
+  lateinit var projectTypeEntityRepository: ProjectTypeEntityRepository
+
   private lateinit var service: CourseCompletionAutoResolutionService
 
   @BeforeEach
@@ -48,6 +66,8 @@ class CourseCompletionAutoResolutionServiceTest {
       officeUpwTeamMappingRepository,
       courseCompletionProjectResolutionService,
       draftResolutionRepository,
+      communityPaybackAndDeliusClient,
+      projectTypeEntityRepository,
     )
   }
 
@@ -240,6 +260,221 @@ class CourseCompletionAutoResolutionServiceTest {
       }
 
       verify(exactly = 0) { draftResolutionRepository.save(any()) }
+    }
+
+    @Test
+    fun `persists draft with appointment ID when a future unresolved appointment exists for the CRN and project code`() {
+      val event = EteCourseCompletionEventEntity.valid().copy(office = "St Albans")
+      every { personSearchClient.searchPerson(any()) } returns listOf(
+        OffenderDetail(otherIds = IDs(crn = "X12345")),
+      )
+      every {
+        officeUpwTeamMappingRepository.findByPduAndOffice(event.pdu, "St Albans")
+      } returns OfficeUpwTeamMappingEntity(
+        id = UUID.randomUUID(),
+        pdu = event.pdu,
+        office = "St Albans",
+        teamCode = "N56ST",
+      )
+      every { courseCompletionProjectResolutionService.resolveProjectCode(event, "N56ST") } returns "PROJECT1"
+
+      every { communityPaybackAndDeliusClient.getUpwDetailsSummary("X12345", null) } returns NDCaseDetailsSummary.valid()
+      every { projectTypeEntityRepository.findByProjectTypeGroupOrderByCodeAsc(ProjectTypeGroup.ETE) } returns listOf(
+        ProjectTypeEntity.valid().copy(code = "ETE_TYPE"),
+      )
+
+      every {
+        communityPaybackAndDeliusClient.getAppointments(
+          username = "",
+          crn = "X12345",
+          fromDate = LocalDate.now(),
+          toDate = null,
+          outcomeCodes = listOf("NO_OUTCOME"),
+          projectCodes = listOf("PROJECT1"),
+          projectTypeCodes = listOf("ETE_TYPE"),
+          eventNumber = any(),
+          appointmentIds = null,
+          params = any(),
+        )
+      } returns PageResponse(listOf(NDAppointmentSummary.valid().copy(id = 1234L, outcome = null)), PageMeta(1, 0, 1, 1))
+
+      val saved = slot<EteCourseCompletionDraftResolutionEntity>()
+      every { draftResolutionRepository.save(capture(saved)) } answers { firstArg() }
+
+      service.resolveAndPersistDraft(event)
+
+      assertThat(saved.captured.teamCode).isEqualTo("N56ST")
+      assertThat(saved.captured.projectCode).isEqualTo("PROJECT1")
+      assertThat(saved.captured.appointmentIdToUpdate).isEqualTo(1234L)
+    }
+
+    @Test
+    fun `persists draft with the ID of the soonest appointment when multiple suitable appointments exist`() {
+      val event = EteCourseCompletionEventEntity.valid().copy(office = "St Albans")
+      every { personSearchClient.searchPerson(any()) } returns listOf(
+        OffenderDetail(otherIds = IDs(crn = "X12345")),
+      )
+      every {
+        officeUpwTeamMappingRepository.findByPduAndOffice(event.pdu, "St Albans")
+      } returns OfficeUpwTeamMappingEntity(
+        id = UUID.randomUUID(),
+        pdu = event.pdu,
+        office = "St Albans",
+        teamCode = "N56ST",
+      )
+      every { courseCompletionProjectResolutionService.resolveProjectCode(event, "N56ST") } returns "PROJECT1"
+
+      every { communityPaybackAndDeliusClient.getUpwDetailsSummary("X12345", null) } returns NDCaseDetailsSummary.valid()
+      every { projectTypeEntityRepository.findByProjectTypeGroupOrderByCodeAsc(ProjectTypeGroup.ETE) } returns listOf(
+        ProjectTypeEntity.valid().copy(code = "ETE_TYPE"),
+      )
+
+      every {
+        communityPaybackAndDeliusClient.getAppointments(
+          username = "",
+          crn = "X12345",
+          fromDate = LocalDate.now(),
+          toDate = null,
+          outcomeCodes = listOf("NO_OUTCOME"),
+          projectCodes = listOf("PROJECT1"),
+          projectTypeCodes = listOf("ETE_TYPE"),
+          eventNumber = any(),
+          appointmentIds = null,
+          params = any(),
+        )
+      } returns PageResponse(
+        listOf(
+          NDAppointmentSummary.valid().copy(id = 1234L, outcome = null, date = LocalDate.now().plusDays(2)),
+          NDAppointmentSummary.valid().copy(id = 2345L, outcome = null, date = LocalDate.now().plusDays(1), startTime = LocalTime.now().plusHours(1)),
+          NDAppointmentSummary.valid().copy(id = 3456L, outcome = null, date = LocalDate.now().plusDays(1), startTime = LocalTime.now()),
+        ),
+        PageMeta(3, 0, 3, 1),
+      )
+
+      val saved = slot<EteCourseCompletionDraftResolutionEntity>()
+      every { draftResolutionRepository.save(capture(saved)) } answers { firstArg() }
+
+      service.resolveAndPersistDraft(event)
+
+      assertThat(saved.captured.teamCode).isEqualTo("N56ST")
+      assertThat(saved.captured.projectCode).isEqualTo("PROJECT1")
+      assertThat(saved.captured.appointmentIdToUpdate).isEqualTo(3456L)
+    }
+
+    @Test
+    fun `persists draft without appointment ID when no suitable appointments are found`() {
+      val event = EteCourseCompletionEventEntity.valid().copy(office = "St Albans")
+      every { personSearchClient.searchPerson(any()) } returns listOf(
+        OffenderDetail(otherIds = IDs(crn = "X12345")),
+      )
+      every {
+        officeUpwTeamMappingRepository.findByPduAndOffice(event.pdu, "St Albans")
+      } returns OfficeUpwTeamMappingEntity(
+        id = UUID.randomUUID(),
+        pdu = event.pdu,
+        office = "St Albans",
+        teamCode = "N56ST",
+      )
+      every { courseCompletionProjectResolutionService.resolveProjectCode(event, "N56ST") } returns "PROJECT1"
+
+      every { communityPaybackAndDeliusClient.getUpwDetailsSummary("X12345", null) } returns NDCaseDetailsSummary.valid()
+      every { projectTypeEntityRepository.findByProjectTypeGroupOrderByCodeAsc(ProjectTypeGroup.ETE) } returns listOf(
+        ProjectTypeEntity.valid().copy(code = "ETE_TYPE"),
+      )
+
+      every {
+        communityPaybackAndDeliusClient.getAppointments(
+          username = "",
+          crn = "X12345",
+          fromDate = LocalDate.now(),
+          toDate = null,
+          outcomeCodes = listOf("NO_OUTCOME"),
+          projectCodes = listOf("PROJECT1"),
+          projectTypeCodes = listOf("ETE_TYPE"),
+          eventNumber = any(),
+          appointmentIds = null,
+          params = any(),
+        )
+      } returns PageResponse(
+        emptyList(),
+        PageMeta(0, 0, 0, 0),
+      )
+
+      val saved = slot<EteCourseCompletionDraftResolutionEntity>()
+      every { draftResolutionRepository.save(capture(saved)) } answers { firstArg() }
+
+      service.resolveAndPersistDraft(event)
+
+      assertThat(saved.captured.teamCode).isEqualTo("N56ST")
+      assertThat(saved.captured.projectCode).isEqualTo("PROJECT1")
+      assertThat(saved.captured.appointmentIdToUpdate).isNull()
+    }
+
+    @Test
+    fun `persists draft without appointment ID when no events are found for the CRN`() {
+      val event = EteCourseCompletionEventEntity.valid().copy(office = "St Albans")
+      every { personSearchClient.searchPerson(any()) } returns listOf(
+        OffenderDetail(otherIds = IDs(crn = "X12345")),
+      )
+      every {
+        officeUpwTeamMappingRepository.findByPduAndOffice(event.pdu, "St Albans")
+      } returns OfficeUpwTeamMappingEntity(
+        id = UUID.randomUUID(),
+        pdu = event.pdu,
+        office = "St Albans",
+        teamCode = "N56ST",
+      )
+      every { courseCompletionProjectResolutionService.resolveProjectCode(event, "N56ST") } returns "PROJECT1"
+
+      every { communityPaybackAndDeliusClient.getUpwDetailsSummary("X12345", null) } returns NDCaseDetailsSummary.valid().copy(unpaidWorkDetails = emptyList())
+      every { projectTypeEntityRepository.findByProjectTypeGroupOrderByCodeAsc(ProjectTypeGroup.ETE) } returns listOf(
+        ProjectTypeEntity.valid().copy(code = "ETE_TYPE"),
+      )
+
+      val saved = slot<EteCourseCompletionDraftResolutionEntity>()
+      every { draftResolutionRepository.save(capture(saved)) } answers { firstArg() }
+
+      service.resolveAndPersistDraft(event)
+
+      assertThat(saved.captured.teamCode).isEqualTo("N56ST")
+      assertThat(saved.captured.projectCode).isEqualTo("PROJECT1")
+      assertThat(saved.captured.appointmentIdToUpdate).isNull()
+    }
+
+    @Test
+    fun `persists draft without appointment ID when multiple events are found for the CRN`() {
+      val event = EteCourseCompletionEventEntity.valid().copy(office = "St Albans")
+      every { personSearchClient.searchPerson(any()) } returns listOf(
+        OffenderDetail(otherIds = IDs(crn = "X12345")),
+      )
+      every {
+        officeUpwTeamMappingRepository.findByPduAndOffice(event.pdu, "St Albans")
+      } returns OfficeUpwTeamMappingEntity(
+        id = UUID.randomUUID(),
+        pdu = event.pdu,
+        office = "St Albans",
+        teamCode = "N56ST",
+      )
+      every { courseCompletionProjectResolutionService.resolveProjectCode(event, "N56ST") } returns "PROJECT1"
+
+      every { communityPaybackAndDeliusClient.getUpwDetailsSummary("X12345", null) } returns NDCaseDetailsSummary.valid().copy(
+        unpaidWorkDetails = listOf(
+          NDUpwDetails.valid(),
+          NDUpwDetails.valid(),
+        ),
+      )
+      every { projectTypeEntityRepository.findByProjectTypeGroupOrderByCodeAsc(ProjectTypeGroup.ETE) } returns listOf(
+        ProjectTypeEntity.valid().copy(code = "ETE_TYPE"),
+      )
+
+      val saved = slot<EteCourseCompletionDraftResolutionEntity>()
+      every { draftResolutionRepository.save(capture(saved)) } answers { firstArg() }
+
+      service.resolveAndPersistDraft(event)
+
+      assertThat(saved.captured.teamCode).isEqualTo("N56ST")
+      assertThat(saved.captured.projectCode).isEqualTo("PROJECT1")
+      assertThat(saved.captured.appointmentIdToUpdate).isNull()
     }
   }
 
