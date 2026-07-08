@@ -356,6 +356,8 @@ class EteMappersTest {
       assertThat(result.date).isEqualTo(LocalDate.of(2025, 1, 1))
       assertThat(result.contactOutcomeCode).isEqualTo(CONTACT_OUTCOME_CODE)
       assertThat(result.supervisorOfficerCode).isEqualTo(existingAppointment.supervisorOfficerCode)
+      assertThat(result.supervisorTeamCode).isEqualTo(existingAppointment.supervisingTeamCode)
+      assertThat(result.projectCode).isEqualTo(baselineCourseCompletionOutcome.creditTimeDetails!!.projectCode)
       assertThat(result.notes).isEqualTo(
         """
         |'The course name' was completed on Provider1 at 12:15 on 04/05/2021 and resulted in a pass on attempt 1
