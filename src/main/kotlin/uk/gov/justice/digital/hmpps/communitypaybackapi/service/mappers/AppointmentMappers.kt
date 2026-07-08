@@ -175,6 +175,7 @@ fun ValidatedAppointment<UpdateAppointmentOutcomeDto>.toNDUpdateAppointment(
     endTime = updateDto.endTime,
     outcome = this.contactOutcome?.let { NDCode(it.code) },
     supervisor = NDCode(updateDto.supervisorOfficerCode),
+    supervisorTeam = NDCode(existingAppointment.supervisingTeamCode),
     notes = buildUpdateNote(existingAppointment),
     hiVisWorn = null,
     workedIntensively = null,

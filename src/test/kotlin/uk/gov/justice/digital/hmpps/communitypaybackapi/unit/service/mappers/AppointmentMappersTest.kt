@@ -189,6 +189,7 @@ class AppointmentMappersTest {
       val priorDeliusVersion = UUID.randomUUID()
 
       val existingAppointment = AppointmentDto.valid().copy(
+        supervisingTeamCode = "TEAM1",
         date = LocalDate.of(2020, 1, 2),
         startTime = LocalTime.of(2, 2, 1),
         endTime = LocalTime.of(11, 11, 10),
@@ -227,6 +228,7 @@ class AppointmentMappersTest {
       assertThat(result.endTime).isEqualTo(LocalTime.of(12, 11, 10))
       assertThat(result.outcome!!.code).isEqualTo("COE1")
       assertThat(result.supervisor.code).isEqualTo("WO3736")
+      assertThat(result.supervisorTeam.code).isEqualTo("TEAM1")
       assertThat(result.notes).isEqualTo(
         """
           |Appointment Date changed from 02/01/2020 to 09/12/2018
@@ -252,6 +254,7 @@ class AppointmentMappersTest {
       val priorDeliusVersion = UUID.randomUUID()
 
       val existingAppointment = AppointmentDto.valid().copy(
+        supervisingTeamCode = "TEAM1",
         date = LocalDate.of(2020, 1, 2),
         startTime = LocalTime.of(3, 2, 1),
         endTime = LocalTime.of(12, 11, 10),
@@ -283,6 +286,7 @@ class AppointmentMappersTest {
       assertThat(result.endTime).isEqualTo(LocalTime.of(12, 11, 10))
       assertThat(result.outcome).isNull()
       assertThat(result.supervisor.code).isEqualTo("WO3736")
+      assertThat(result.supervisorTeam.code).isEqualTo("TEAM1")
       assertThat(result.notes).isNull()
       assertThat(result.hiVisWorn).isNull()
       assertThat(result.workedIntensively).isNull()
