@@ -55,7 +55,7 @@ class SupervisorSessionsController(
     @PathVariable supervisorCode: String,
   ) = sessionService.getNextAllocationForSupervisor(supervisorCode) ?: throw NotFoundException("There are no future sessions for supervisor $supervisorCode")
 
-  @Deprecated("The GET /supervisor/sessions/future endpoint should be used instead.")
+  @Deprecated("The GET /supervisor/sessions/recent endpoint should be used instead.")
   @PageableAsQueryParam
   @GetMapping(
     path = [ "/supervisor/providers/{providerCode}/teams/{teamCode}/sessions/future"],
@@ -86,11 +86,11 @@ class SupervisorSessionsController(
 
   @PageableAsQueryParam
   @GetMapping(
-    path = ["/supervisor/sessions/future"],
+    path = ["/supervisor/sessions/recent"],
     produces = [MediaType.APPLICATION_JSON_VALUE],
   )
   @Operation(
-    description = "Get group sessions scheduled for the next 7 days (including today) that belong to the given teams.",
+    description = "Get recent group sessions that belong to the given teams.",
     responses = [
       ApiResponse(
         responseCode = "200",
@@ -98,14 +98,16 @@ class SupervisorSessionsController(
       ),
     ],
   )
-  fun getFutureSessions(
+  fun getRecentSessions(
     @RequestParam teamCodes: List<String> = emptyList(),
+    @RequestParam(defaultValue = "1") daysBefore: Long,
+    @RequestParam(defaultValue = "0") daysAfter: Long,
     @Parameter(hidden = true)
-    @PageableDefault(size = 50, sort = ["date"], direction = Sort.Direction.ASC) pageable: Pageable,
+    @PageableDefault(size = 50, sort = ["date"], direction = Sort.Direction.DESC) pageable: Pageable,
   ) = sessionService.getSessions(
     teamCodes,
-    LocalDate.now(),
-    LocalDate.now().plusDays(7),
+    LocalDate.now().minusDays(daysBefore),
+    LocalDate.now().plusDays(daysAfter),
     projectTypeGroup = ProjectTypeGroupDto.GROUP,
     pageable,
   )
