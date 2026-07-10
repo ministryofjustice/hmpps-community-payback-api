@@ -7,6 +7,7 @@ print_help () {
   echo "Usage:"
   echo "  -f <first name>   If not provided a random first name is picked"
   echo "  -l <last name>    If not provided a random last name is picked"
+  echo "  -b <YYYY-MM-DD>   If not provided a random date of birth is used"
   echo "  -c <course name>  If not provided a random course name is picked"
   echo
   echo "  -P                Flag the course as being passed (default)"
@@ -17,13 +18,16 @@ print_help () {
   echo "  -h                Display this help message"
 }
 
-while getopts "f:l:c:PFn:x:h" opt; do
+while getopts "f:l:b:c:PFn:x:h" opt; do
   case $opt in
     f)
       firstName="$OPTARG"
       ;;
     l)
       lastName="$OPTARG"
+      ;;
+    b)
+      dateOfBirth="$OPTARG"
       ;;
     c)
       courseName="$OPTARG"
@@ -91,7 +95,9 @@ if [ -z $lastName ]; then
   lastName="$(randomFromList "Anderson" "Bridges" "Chorley" "Dreyfus" "Etherton" "Fanshaw" "Gardener" "Hill")"
 fi
 
-dateOfBirth="$(randomDob)"
+if [ -z $dateOfBirth ]; then
+  dateOfBirth="$(randomDob)"
+fi
 
 if [ -z $courseName ]; then
   courseName="How To $(randomFromList "Butter Toast" "Suck Eggs" "Bake Bread" "Roll Cheese")"
