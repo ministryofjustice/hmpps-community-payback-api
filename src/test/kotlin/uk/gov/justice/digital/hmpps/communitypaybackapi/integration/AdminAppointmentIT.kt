@@ -513,6 +513,7 @@ class AdminAppointmentIT : IntegrationTestBase() {
         crn = "CRN000",
         username = "theusername",
         appointments = listOf(appointment1, appointment2),
+        sortString = "name,desc",
       )
 
       val pageResponse = webTestClient.get()

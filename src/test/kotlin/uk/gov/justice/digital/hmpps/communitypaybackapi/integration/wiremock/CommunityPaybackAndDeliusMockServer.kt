@@ -105,7 +105,7 @@ object CommunityPaybackAndDeliusMockServer {
     eventNumber: Int? = null,
     pageNumber: Int = 0,
     pageSize: Int = 50,
-    sortString: String? = "name,desc",
+    sortString: String? = "name,asc",
     appointmentIds: List<Long> = emptyList(),
     appointments: List<NDAppointmentSummary> = emptyList(),
   ) {
