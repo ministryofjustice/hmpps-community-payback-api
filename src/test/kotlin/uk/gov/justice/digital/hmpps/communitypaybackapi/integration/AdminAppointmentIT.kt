@@ -531,6 +531,35 @@ class AdminAppointmentIT : IntegrationTestBase() {
       assertThat(pageResponse.page.totalElements).isEqualTo(2)
       assertThat(pageResponse.page.number).isEqualTo(0)
     }
+
+    @Test
+    fun `should automatically add name alphabetical order sorting as a tiebreak if sorting by name is not specified`() {
+      val appointment1 = NDAppointmentSummary.valid(ctx)
+      val appointment2 = NDAppointmentSummary.valid(ctx)
+
+      CommunityPaybackAndDeliusMockServer.setupGetAppointmentsResponse(
+        crn = "CRN000",
+        username = "theusername",
+        appointments = listOf(appointment1, appointment2),
+        sortStrings = arrayOf("date,asc", "name,asc"),
+      )
+
+      val pageResponse = webTestClient.get()
+        .uri("/admin/appointments?crn=CRN000&sort=date,asc")
+        .addAdminUiAuthHeader("theusername")
+        .exchange()
+        .expectStatus()
+        .isOk
+        .bodyAsObject<PageResponse<AppointmentSummaryDto>>()
+
+      assertThat(pageResponse.content).hasSize(2)
+      assertThat(pageResponse.content[0].id).isEqualTo(appointment1.id)
+      assertThat(pageResponse.content[1].id).isEqualTo(appointment2.id)
+      assertThat(pageResponse.page.size).isEqualTo(50)
+      assertThat(pageResponse.page.totalPages).isEqualTo(1)
+      assertThat(pageResponse.page.totalElements).isEqualTo(2)
+      assertThat(pageResponse.page.number).isEqualTo(0)
+    }
   }
 
   @Nested

@@ -12,7 +12,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.DeliusAppointmentIdD
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeGroupDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntityRepository
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.toHttpParams
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.toMultiValueHttpParams
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.AppointmentMappers
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.ToAppointmentEntity.toAppointmentEntity
 import java.time.LocalDate
@@ -63,7 +63,7 @@ class AppointmentRetrievalService(
       projectTypeCodes = projectTypeGroup?.let { projectTypeGroup -> projectService.projectTypesForGroup(projectTypeGroup).map { it.code } },
       eventNumber = eventNumber,
       appointmentIds = deliusAppointmentIds,
-      params = pageable.toHttpParams(),
+      params = pageable.toMultiValueHttpParams(),
     )
     return pageResponse.asPage(pageable) { appointmentMappers.toSummaryDto(it) }
   }

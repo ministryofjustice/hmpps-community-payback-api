@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import org.springdoc.core.converters.models.PageableAsQueryParam
 import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.data.web.PageableDefault
@@ -251,7 +252,7 @@ class AdminAppointmentController(
         description = "Only crn, name, date, startTime, endTime and daysOverdue fields are supported for sorting",
       ),
     )
-    @PageableDefault(size = 50, sort = ["name"], direction = Sort.Direction.DESC) pageable: Pageable,
+    @PageableDefault(size = 50, sort = ["name"], direction = Sort.Direction.ASC) pageable: Pageable,
     @RequestParam(required = false) crn: String?,
     @Parameter(
       description = "Filter by one or more project codes",
@@ -278,6 +279,13 @@ class AdminAppointmentController(
 
     if (!hasFilter) {
       badRequest("At least one filter parameter must be provided")
+    }
+
+    val pageable = if (pageable.sort.getOrderFor("name") == null) {
+      val sort = pageable.sort.and(Sort.by(Sort.Direction.ASC, "name"))
+      PageRequest.of(pageable.pageNumber, pageable.pageSize, sort)
+    } else {
+      pageable
     }
 
     return appointmentService.getAppointments(

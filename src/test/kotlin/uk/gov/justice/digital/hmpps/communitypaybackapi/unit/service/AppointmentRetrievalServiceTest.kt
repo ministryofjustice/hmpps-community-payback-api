@@ -32,7 +32,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentRetri
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ContextService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.OffenderService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ProjectService
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.toHttpParams
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.toMultiValueHttpParams
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.AppointmentMappers
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.ToAppointmentEntity.toAppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
@@ -133,7 +133,7 @@ class AppointmentRetrievalServiceTest {
           projectTypeCodes = null,
           eventNumber = null,
           appointmentIds = null,
-          params = pageable.toHttpParams(),
+          params = pageable.toMultiValueHttpParams(),
         )
       } returns pageResponse
 
@@ -183,7 +183,7 @@ class AppointmentRetrievalServiceTest {
           projectTypeCodes = listOf("PT1"),
           eventNumber = null,
           appointmentIds = null,
-          params = pageable.toHttpParams(),
+          params = pageable.toMultiValueHttpParams(),
         )
       } returns pageResponse
 

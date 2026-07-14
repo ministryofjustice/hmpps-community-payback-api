@@ -15,7 +15,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompleti
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.OfficeUpwTeamMappingRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ProjectTypeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ProjectTypeGroup
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.toHttpParams
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.toMultiValueHttpParams
 import java.time.LocalDate
 import java.util.UUID
 
@@ -119,7 +119,7 @@ class CourseCompletionAutoResolutionService(
       projectTypeCodes = eteProjectTypeCodes,
       eventNumber = eventNumber,
       appointmentIds = null,
-      params = Pageable.unpaged().toHttpParams(), // Unsorted because the PI API does not support sorting by both date and start time
+      params = Pageable.unpaged().toMultiValueHttpParams(), // Unsorted because the PI API does not support sorting by both date and start time
     ).content
       // Perform the sorting that was unable to be done through the client.
       .sortedWith(compareBy<NDAppointmentSummary> { it.date }.thenBy { it.startTime })
