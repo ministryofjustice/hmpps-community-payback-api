@@ -93,8 +93,6 @@ class EteMappersTest {
         externalReference = courseCompletionEvent.externalReference,
         fromDate = null,
         toDate = null,
-        availableFromDate = null,
-        availableToDate = null,
         pageable = any(),
       )
     } returns PageImpl(courseCompletionEvents.toList())
