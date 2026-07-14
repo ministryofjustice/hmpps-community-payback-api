@@ -23,8 +23,6 @@ interface EteCourseCompletionEventEntityRepository : JpaRepository<EteCourseComp
     AND (:externalReference IS NULL OR e.externalReference = :externalReference)
     AND (cast(:fromDate as timestamp) IS NULL OR e.completionDateTime >= :fromDate)
     AND (cast(:toDate as timestamp) IS NULL OR e.completionDateTime <= :toDate)
-    AND (cast(:availableFromDate as timestamp) IS NULL OR e.completionDateTime >= :availableFromDate)
-    AND (cast(:availableToDate as timestamp) IS NULL OR e.completionDateTime <= :availableToDate)
   """,
   )
   fun findAllWithFilters(
@@ -37,8 +35,6 @@ interface EteCourseCompletionEventEntityRepository : JpaRepository<EteCourseComp
     externalReference: String?,
     fromDate: OffsetDateTime?,
     toDate: OffsetDateTime?,
-    availableFromDate: OffsetDateTime?,
-    availableToDate: OffsetDateTime?,
     pageable: Pageable,
   ): Page<EteCourseCompletionEventEntity>
 

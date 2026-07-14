@@ -42,16 +42,6 @@ class EteService(
   private val springEventPublisher: SpringEventPublisher,
   private val courseCompletionAutoResolutionService: CourseCompletionAutoResolutionService,
 
-  // The dates below are temporary, during the initial stages of private beta
-  @Value("\${course.completions.available.from:#{null}}") private val courseCompletionsAvailableFrom: OffsetDateTime?,
-  @Value("\${course.completions.available.to:#{null}}") private val courseCompletionsAvailableTo: OffsetDateTime?,
-  // London - N07
-  @Value("\${course.completions.london.available.from:#{null}}") private val londonAvailableFrom: OffsetDateTime?,
-  @Value("\${course.completions.london.available.to:#{null}}") private val londonAvailableTo: OffsetDateTime?,
-  // South Central - N59
-  @Value("\${course.completions.south-central.available.from:#{null}}") private val southCentralAvailableFrom: OffsetDateTime?,
-  @Value("\${course.completions.south-central.available.to:#{null}}") private val southCentralAvailableTo: OffsetDateTime?,
-
   @Value("\${course.completions.auto-resolution.enabled:false}")
   private val courseCompletionAutoResolutionEnabled: Boolean,
 ) {
@@ -98,8 +88,6 @@ class EteService(
   ): Page<EteCourseCompletionEventDto> {
     val officesNormalised = offices ?: emptyList()
 
-    val (effectiveAvailableFromDate, effectiveAvailableToDate) = getEffectiveAvailableDates(providerCode)
-
     val page = eteCourseCompletionEventEntityRepository.findAllWithFilters(
       providerCode,
       pduId,
@@ -118,8 +106,6 @@ class EteService(
       externalReference,
       fromDate,
       toDate,
-      effectiveAvailableFromDate,
-      effectiveAvailableToDate,
       pageable,
     )
 
@@ -249,11 +235,4 @@ class EteService(
   }
 
   private fun getEventOrError(id: UUID) = eteCourseCompletionEventEntityRepository.findByIdOrNull(id) ?: error("Can't find course completion event $id")
-
-  // The dates below are temporary, during the initial stages of private beta
-  private fun getEffectiveAvailableDates(providerCode: String): Pair<OffsetDateTime?, OffsetDateTime?> = when (providerCode) {
-    "N07" -> Pair(londonAvailableFrom, londonAvailableTo ?: courseCompletionsAvailableTo)
-    "N59" -> Pair(southCentralAvailableFrom, southCentralAvailableTo ?: courseCompletionsAvailableTo)
-    else -> Pair(courseCompletionsAvailableFrom, courseCompletionsAvailableTo)
-  }
 }

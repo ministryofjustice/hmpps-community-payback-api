@@ -226,8 +226,6 @@ class EteMappers(
     externalReference = courseCompletionEvent.externalReference,
     fromDate = null,
     toDate = null,
-    availableFromDate = null,
-    availableToDate = null,
     pageable = Pageable.unpaged(Sort.by(Sort.Order.asc("createdAt"))),
   ).toList()
 }
