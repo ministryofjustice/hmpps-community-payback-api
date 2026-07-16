@@ -1145,21 +1145,23 @@ class AppointmentValidationServiceTest {
       }
 
       @Test
-      fun `existing contact outcome cannot be modified`() {
+      fun `existing contact outcome can be modified`() {
         every { contactOutcomeEntityRepository.findByCode("outcome1") } returns ContactOutcomeEntity.valid().copy(code = "outcome1", name = "outcome 1")
         every { contactOutcomeEntityRepository.findByCode("outcome2") } returns ContactOutcomeEntity.valid().copy(code = "outcome2")
+        val existingAppointment = baselineExistingAppointment.copy(
+          contactOutcomeCode = "outcome1",
+          startTime = LocalTime.of(10, 0),
+          endTime = LocalTime.of(11, 0),
+        )
 
-        assertThatThrownBy {
-          service.validateUpdate(
-            existingAppointment = baselineExistingAppointment.copy(
-              contactOutcomeCode = "outcome1",
-            ),
-            update = baselineUpdate.copy(
-              contactOutcomeCode = "outcome2",
-            ),
-          )
-        }.isInstanceOf(BadRequestException::class.java)
-          .hasMessage("The existing contact outcome of 'outcome 1' cannot be modified")
+        service.validateUpdate(
+          existingAppointment = existingAppointment,
+          update = baselineUpdate.copy(
+            contactOutcomeCode = "outcome2",
+            startTime = existingAppointment.startTime,
+            endTime = existingAppointment.endTime,
+          ),
+        )
       }
     }
 

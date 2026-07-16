@@ -149,10 +149,6 @@ class AppointmentValidationService(
         }
       }
     }
-
-    if (existingContactOutcome != null && contactOutcome != existingContactOutcome) {
-      badRequest("The existing contact outcome of '${existingContactOutcome.name}' cannot be modified")
-    }
   }
 
   private fun ValidationContext.validateStartAndEndTime() {
