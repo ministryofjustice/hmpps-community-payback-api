@@ -149,7 +149,6 @@ class AppointmentValidationService(
         }
       }
     }
-
   }
 
   private fun ValidationContext.validateStartAndEndTime() {
