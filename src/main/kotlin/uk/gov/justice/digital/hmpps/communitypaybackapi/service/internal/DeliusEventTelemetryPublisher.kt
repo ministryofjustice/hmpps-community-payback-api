@@ -47,6 +47,22 @@ class DeliusEventTelemetryPublisher(
         "eventType" to "UPDATED",
       ),
     )
+
+    val previousContactOutcome = event.existingAppointment.contactOutcomeCode
+    val updatedContactOutcome = event.updateDto.contactOutcome?.code
+    if (previousContactOutcome != null && previousContactOutcome != updatedContactOutcome) {
+      telemetryService.trackEvent(
+        "AppointmentOutcomeChangedEvent",
+        properties = mapOf(
+          "crn" to event.appointmentEntity.crn,
+          "deliusAppointmentId" to event.appointmentEntity.deliusId.toString(),
+          "previousContactOutcome" to previousContactOutcome,
+          "updatedContactOutcome" to updatedContactOutcome,
+          "triggeredAt" to event.trigger.triggeredAt.toString(),
+          "triggeredBy" to event.trigger.triggeredBy,
+        ),
+      )
+    }
   }
 
   @EventListener
