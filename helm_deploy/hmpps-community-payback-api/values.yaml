@@ -89,3 +89,16 @@ deploy_stubs: false
 retryDlqCronjob:
   enabled: false
   retryDlqSchedule: "*/20 * * * *"
+
+# Override this configuration in the environment-specific Values files.
+# Set `enabled` to `true` to run the scheduled tasks on the database for that environment.
+# Set `schedule` to override the schedule for that environment. The default is '0 3 * * *', which runs at 3am every morning.
+dbScheduledTasks:
+  enabled: false
+  #schedule: "0 3 * * *"
+  namespace_secrets:
+    rds-postgresql-instance-output:
+      DB_USER: "database_username"
+      DB_PASS: "database_password"
+      DB_HOST: "rds_instance_endpoint"
+      DB_NAME: "database_name"

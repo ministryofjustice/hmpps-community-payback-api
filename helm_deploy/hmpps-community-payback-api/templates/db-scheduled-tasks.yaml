@@ -1,0 +1,75 @@
+{{- if .Values.dbScheduledTasks.enabled -}}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "hmpps-community-api-db-scheduled-tasks-files"
+data:
+  entrypoint.sh: |-
+    #!/bin/bash
+    set -ue
+
+    psql_exec() { psql -h "$DB_HOST" -U "$DB_USER" -d "$DB_NAME" -At -c "$@"; }
+
+    echo "${DB_HOST}:5432:${DB_NAME}:${DB_USER}:${DB_PASS}" > ~/.pgpass
+    chmod 0600 ~/.pgpass
+
+{{ range $path, $_ := .Files.Glob "files/db-scheduled-tasks/*.sql" }}
+{{- $sql := $.Files.Get $path }}
+{{ print "# " $path | indent 4 }}
+{{ print "psql_exec '" ($sql | replace "'" "'\"'\"'") "'" | indent 4 }}
+{{ print "# END " $path | indent 4 }}
+{{ end }}
+---
+
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: "hmpps-community-api-db-scheduled-tasks"
+spec:
+  schedule: {{ .Values.dbScheduledTasks.schedule | default "0 3 * * *" }}
+  concurrencyPolicy: "Forbid"
+  successfulJobsHistoryLimit: 5
+  failedJobsHistoryLimit: 5
+  jobTemplate:
+    spec:
+      # Tidy up all jobs after 4 days
+      ttlSecondsAfterFinished: 345600
+      backoffLimit: 0
+      activeDeadlineSeconds: 2400
+      template:
+        spec:
+          containers:
+            - name: "hmpps-community-api-db-scheduled-tasks"
+              image: "ghcr.io/ministryofjustice/hmpps-postgres-tools:main"
+              command:
+                - /bin/entrypoint.sh
+              volumeMounts:
+                - name: "hmpps-community-api-db-scheduled-tasks"
+                  mountPath: /bin/entrypoint.sh
+                  readOnly: true
+                  subPath: entrypoint.sh
+              securityContext:
+                capabilities:
+                  drop:
+                    - ALL
+                runAsNonRoot: true
+                allowPrivilegeEscalation: false
+                seccompProfile:
+                  type: RuntimeDefault
+              resources:
+                limits:
+                  cpu: 500m
+                  memory: 500Mi
+                requests:
+                  cpu: 500m
+                  memory: 500Mi
+    {{- include "dbScheduledTasks.envs" .Values | nindent 14 }}
+          restartPolicy: "Never"
+          serviceAccountName: {{ .Values.dbScheduledTasks.serviceAccountName | default (index .Values "generic-service").serviceAccountName }}
+          volumes:
+            - name: "hmpps-community-api-db-scheduled-tasks"
+              configMap:
+                name: "hmpps-community-api-db-scheduled-tasks"
+                defaultMode: 0755
+{{- end }}
