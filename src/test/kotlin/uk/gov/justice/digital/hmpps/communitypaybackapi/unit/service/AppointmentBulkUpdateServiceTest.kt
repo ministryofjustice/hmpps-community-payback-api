@@ -62,7 +62,8 @@ class AppointmentBulkUpdateServiceTest {
       val update2 = UpdateAppointmentOutcomeDto.valid().copy(deliusId = 2L)
 
       every { appointmentRetrievalService.getAppointment(DeliusAppointmentIdDto(PROJECT_CODE, update1.deliusId)) } returns appointment1Dto
-      every { appointmentUpdateValidationService.validateUpdate(appointment1Dto, update1) } returns ValidatedAppointment.validUpdateAppointment().copy(dto = update1)
+      val validatedUpdate1 = ValidatedAppointment.validUpdateAppointment().copy(dto = update1)
+      every { appointmentUpdateValidationService.validateUpdate(appointment1Dto, update1) } returns validatedUpdate1
       every { appointmentRetrievalService.getAppointment(DeliusAppointmentIdDto(PROJECT_CODE, update2.deliusId)) } returns appointment2Dto
       every { appointmentUpdateValidationService.validateUpdate(appointment2Dto, update2) } throws BadRequestException("oh dear")
 
@@ -80,8 +81,8 @@ class AppointmentBulkUpdateServiceTest {
       assertThat(result.results[1].result).isEqualTo(UpdateAppointmentOutcomeResultType.VALIDATION_ERROR)
       assertThat(result.results[1].errorMessage).isEqualTo("oh dear")
 
-      verify(exactly = 1) { appointmentUpdateService.updateAppointment(appointment1Dto, update1, TRIGGER) }
-      verify(exactly = 0) { appointmentUpdateService.updateAppointment(appointment2Dto, update2, TRIGGER) }
+      verify(exactly = 1) { appointmentUpdateService.updateAppointment(appointment1Dto, validatedUpdate1, TRIGGER) }
+      verify(exactly = 0) { appointmentUpdateService.updateAppointment(appointment2Dto, any<ValidatedAppointment<UpdateAppointmentOutcomeDto>>(), TRIGGER) }
     }
 
     @Test
@@ -109,8 +110,9 @@ class AppointmentBulkUpdateServiceTest {
       val update1 = UpdateAppointmentOutcomeDto.valid().copy(deliusId = 1L)
 
       every { appointmentRetrievalService.getAppointment(DeliusAppointmentIdDto(PROJECT_CODE, update1.deliusId)) } returns appointment1Dto
-      every { appointmentUpdateValidationService.validateUpdate(appointment1Dto, update1) } returns ValidatedAppointment.validUpdateAppointment().copy(dto = update1)
-      every { appointmentUpdateService.updateAppointment(appointment1Dto, update1, TRIGGER) } throws ConflictException("oh no")
+      val validatedUpdate1 = ValidatedAppointment.validUpdateAppointment().copy(dto = update1)
+      every { appointmentUpdateValidationService.validateUpdate(appointment1Dto, update1) } returns validatedUpdate1
+      every { appointmentUpdateService.updateAppointment(appointment1Dto, validatedUpdate1, TRIGGER) } throws ConflictException("oh no")
 
       val result = service.updateAppointments(
         projectCode = PROJECT_CODE,
@@ -129,10 +131,11 @@ class AppointmentBulkUpdateServiceTest {
       val update1 = UpdateAppointmentOutcomeDto.valid().copy(deliusId = 1L)
 
       every { appointmentRetrievalService.getAppointment(DeliusAppointmentIdDto(PROJECT_CODE, update1.deliusId)) } returns appointment1Dto
-      every { appointmentUpdateValidationService.validateUpdate(appointment1Dto, update1) } returns ValidatedAppointment.validUpdateAppointment().copy(dto = update1)
+      val validatedUpdate1 = ValidatedAppointment.validUpdateAppointment().copy(dto = update1)
+      every { appointmentUpdateValidationService.validateUpdate(appointment1Dto, update1) } returns validatedUpdate1
 
       val exceptionReturned = IllegalStateException("oh no")
-      every { appointmentUpdateService.updateAppointment(appointment1Dto, update1, TRIGGER) } throws exceptionReturned
+      every { appointmentUpdateService.updateAppointment(appointment1Dto, validatedUpdate1, TRIGGER) } throws exceptionReturned
 
       val result = service.updateAppointments(
         projectCode = PROJECT_CODE,
@@ -153,7 +156,8 @@ class AppointmentBulkUpdateServiceTest {
       val update1 = UpdateAppointmentOutcomeDto.valid().copy(deliusId = 1L)
 
       every { appointmentRetrievalService.getAppointment(DeliusAppointmentIdDto(PROJECT_CODE, update1.deliusId)) } returns appointment1Dto
-      every { appointmentUpdateValidationService.validateUpdate(appointment1Dto, update1) } returns ValidatedAppointment.validUpdateAppointment().copy(dto = update1)
+      val validatedUpdate1 = ValidatedAppointment.validUpdateAppointment().copy(dto = update1)
+      every { appointmentUpdateValidationService.validateUpdate(appointment1Dto, update1) } returns validatedUpdate1
 
       val result = service.updateAppointments(
         projectCode = PROJECT_CODE,
@@ -165,7 +169,7 @@ class AppointmentBulkUpdateServiceTest {
       assertThat(result.results[0].deliusId).isEqualTo(1L)
       assertThat(result.results[0].result).isEqualTo(UpdateAppointmentOutcomeResultType.SUCCESS)
 
-      verify { appointmentUpdateService.updateAppointment(appointment1Dto, update1, TRIGGER) }
+      verify { appointmentUpdateService.updateAppointment(appointment1Dto, validatedUpdate1, TRIGGER) }
     }
 
     @Test
@@ -187,13 +191,16 @@ class AppointmentBulkUpdateServiceTest {
       every { appointmentRetrievalService.getAppointment(DeliusAppointmentIdDto(PROJECT_CODE, update4.deliusId)) } returns existing4
       every { appointmentRetrievalService.getAppointment(DeliusAppointmentIdDto(PROJECT_CODE, update5.deliusId)) } returns existing5
 
-      every { appointmentUpdateValidationService.validateUpdate(existing2, update2) } returns ValidatedAppointment.validUpdateAppointment().copy(dto = update2)
+      val validatedUpdate2 = ValidatedAppointment.validUpdateAppointment().copy(dto = update2)
+      val validatedUpdate4 = ValidatedAppointment.validUpdateAppointment().copy(dto = update4)
+      val validatedUpdate5 = ValidatedAppointment.validUpdateAppointment().copy(dto = update5)
+      every { appointmentUpdateValidationService.validateUpdate(existing2, update2) } returns validatedUpdate2
       every { appointmentUpdateValidationService.validateUpdate(existing3, update3) } throws BadRequestException("validation failed")
-      every { appointmentUpdateValidationService.validateUpdate(existing4, update4) } returns ValidatedAppointment.validUpdateAppointment().copy(dto = update4)
-      every { appointmentUpdateValidationService.validateUpdate(existing5, update5) } returns ValidatedAppointment.validUpdateAppointment().copy(dto = update5)
+      every { appointmentUpdateValidationService.validateUpdate(existing4, update4) } returns validatedUpdate4
+      every { appointmentUpdateValidationService.validateUpdate(existing5, update5) } returns validatedUpdate5
 
-      every { appointmentUpdateService.updateAppointment(existing2, update2, TRIGGER) } throws ConflictException("oh no")
-      every { appointmentUpdateService.updateAppointment(existing4, update4, TRIGGER) } throws IllegalStateException("oh no")
+      every { appointmentUpdateService.updateAppointment(existing2, validatedUpdate2, TRIGGER) } throws ConflictException("oh no")
+      every { appointmentUpdateService.updateAppointment(existing4, validatedUpdate4, TRIGGER) } throws IllegalStateException("oh no")
 
       val result = service.updateAppointments(
         projectCode = PROJECT_CODE,
