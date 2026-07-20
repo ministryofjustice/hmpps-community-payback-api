@@ -352,9 +352,28 @@ class DeliusEventTelemetryIT : IntegrationTestBase() {
         date = LocalDate.now(),
         event = NDEvent.valid().copy(number = EVENT_NUMBER),
         case = NDCaseSummary.valid().copy(crn = CRN),
+        minutesCredited = 100,
       ),
       username = "theusername",
-      project = NDProject.valid(ctx).copy(code = "proj123", type = NDProjectType.valid().copy(code = GROUP_PLACEMENT_NATIONAL_PROJECT_CODE)),
+      project = NDProject.valid(ctx).copy(
+        code = "proj123",
+        type = NDProjectType.valid().copy(code = GROUP_PLACEMENT_NATIONAL_PROJECT_CODE),
+        actualEndDateExclusive = null,
+      ),
+    )
+
+    CommunityPaybackAndDeliusMockServer.setupGetUpwDetailsSummaryResponse(
+      crn = CRN,
+      case = NDCaseSummary.valid(),
+      unpaidWorkDetails = listOf(
+        NDUpwDetails.valid().copy(
+          eventNumber = EVENT_NUMBER,
+          sentenceDate = LocalDate.now().minusYears(10),
+          requiredMinutes = 1000,
+          completedMinutes = 0,
+          adjustments = 0,
+        ),
+      ),
     )
 
     CommunityPaybackAndDeliusMockServer.setupPutAppointmentResponse(
