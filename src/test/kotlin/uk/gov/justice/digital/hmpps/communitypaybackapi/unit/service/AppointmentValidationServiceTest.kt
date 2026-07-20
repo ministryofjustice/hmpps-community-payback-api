@@ -330,8 +330,8 @@ class AppointmentValidationServiceTest {
         assertThatThrownBy {
           service.validateCreate(
             baselineCreate.copy(
-              date = LocalDate.now(),
-              startTime = LocalTime.now().plusMinutes(1),
+              date = LocalDate.now().plusDays(1),
+              startTime = LocalTime.NOON,
             ),
           )
         }.isInstanceOf(BadRequestException::class.java)
@@ -346,8 +346,8 @@ class AppointmentValidationServiceTest {
         assertThatThrownBy {
           service.validateCreate(
             baselineCreate.copy(
-              date = LocalDate.now(),
-              startTime = LocalTime.now().plusMinutes(1),
+              date = LocalDate.now().plusDays(1),
+              startTime = LocalTime.NOON,
             ),
           )
         }.isInstanceOf(BadRequestException::class.java)
@@ -361,8 +361,8 @@ class AppointmentValidationServiceTest {
 
         service.validateCreate(
           baselineCreate.copy(
-            date = LocalDate.now(),
-            startTime = LocalTime.now().plusMinutes(1),
+            date = LocalDate.now().plusDays(1),
+            startTime = LocalTime.NOON,
           ),
         )
       }
@@ -737,6 +737,7 @@ class AppointmentValidationServiceTest {
     val baselineOutcome = ContactOutcomeEntity.valid().copy(code = OUTCOME_CODE)
     val baselinePickUpLocation = PickUpLocationDto.valid()
     val baselineProject = ProjectDto.valid().copy(
+      actualEndDateExclusive = null,
       projectType = ProjectTypeDto.valid().copy(group = ProjectTypeGroupDto.INDIVIDUAL),
       availability = SchedulingDayOfWeekDto.entries.map { dayOfWeek ->
         ProjectAvailabilityDto.valid().copy(dayOfWeek = dayOfWeek)
@@ -1066,8 +1067,8 @@ class AppointmentValidationServiceTest {
           service.validateUpdate(
             existingAppointment = baselineExistingAppointment,
             update = baselineUpdate.copy(
-              date = LocalDate.now(),
-              startTime = LocalTime.now().plusMinutes(1),
+              date = LocalDate.now().plusDays(1),
+              startTime = LocalTime.NOON,
             ),
           )
         }.isInstanceOf(BadRequestException::class.java)
@@ -1083,8 +1084,8 @@ class AppointmentValidationServiceTest {
           service.validateUpdate(
             existingAppointment = baselineExistingAppointment,
             update = baselineUpdate.copy(
-              date = LocalDate.now(),
-              startTime = LocalTime.now().plusMinutes(1),
+              date = LocalDate.now().plusDays(1),
+              startTime = LocalTime.NOON,
             ),
           )
         }.isInstanceOf(BadRequestException::class.java)
@@ -1097,9 +1098,10 @@ class AppointmentValidationServiceTest {
         every { contactOutcomeEntityRepository.findByCode(outcome.code) } returns outcome
 
         service.validateUpdate(
-          existingAppointment = baselineExistingAppointment.copy(date = LocalDate.now()),
+          existingAppointment = baselineExistingAppointment,
           update = baselineUpdate.copy(
-            startTime = LocalTime.now().plusMinutes(1),
+            date = LocalDate.now().plusDays(1),
+            startTime = LocalTime.NOON,
           ),
         )
       }
