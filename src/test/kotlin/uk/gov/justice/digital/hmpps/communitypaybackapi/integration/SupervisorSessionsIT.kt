@@ -194,8 +194,8 @@ class SupervisorSessionsIT : IntegrationTestBase() {
   }
 
   @Nested
-  @DisplayName("GET /supervisor/sessions/future")
-  inner class GetFutureSessionsEndpoint {
+  @DisplayName("GET /supervisor/sessions/recent")
+  inner class GetRecentSessionsEndpoint {
 
     @BeforeEach
     fun setUp() {
@@ -205,7 +205,7 @@ class SupervisorSessionsIT : IntegrationTestBase() {
     @Test
     fun `should return unauthorized if no token`() {
       webTestClient.get()
-        .uri("/supervisor/sessions/future?teamCodes=T456")
+        .uri("/supervisor/sessions/recent?teamCodes=T456")
         .exchange()
         .expectStatus()
         .isUnauthorized
@@ -214,7 +214,7 @@ class SupervisorSessionsIT : IntegrationTestBase() {
     @Test
     fun `should return forbidden if no role`() {
       webTestClient.get()
-        .uri("/supervisor/sessions/future?teamCodes=T456")
+        .uri("/supervisor/sessions/recent?teamCodes=T456")
         .headers(setAuthorisation())
         .exchange()
         .expectStatus()
@@ -224,7 +224,7 @@ class SupervisorSessionsIT : IntegrationTestBase() {
     @Test
     fun `should return forbidden if wrong role`() {
       webTestClient.get()
-        .uri("/supervisor/sessions/future?teamCodes=T456")
+        .uri("/supervisor/sessions/recent?teamCodes=T456")
         .headers(setAuthorisation(roles = listOf("ROLE_WRONG")))
         .exchange()
         .expectStatus()
@@ -243,18 +243,18 @@ class SupervisorSessionsIT : IntegrationTestBase() {
 
       CommunityPaybackAndDeliusMockServer.setupGetSessionsResponse(
         teamCodes = listOf("T456"),
-        startDate = LocalDate.now(),
-        endDate = LocalDate.now().plusDays(7),
+        startDate = LocalDate.now().minusDays(1),
+        endDate = LocalDate.now(),
         typeCode = listOf("NP1", "NP2", "PL"),
         sessions = PageResponse(
           content = sessions,
           page = PageResponse.PageMeta(50, 0, 2, 1),
         ),
-        sortString = "date,asc",
+        sortString = "date,desc",
       )
 
       val result = webTestClient.get()
-        .uri("/supervisor/sessions/future?teamCodes=T456")
+        .uri("/supervisor/sessions/recent?teamCodes=T456")
         .addSupervisorUiAuthHeader(username = "USER1")
         .exchange()
         .expectStatus()
@@ -272,6 +272,45 @@ class SupervisorSessionsIT : IntegrationTestBase() {
   }
 
   @Test
+  fun `should return OK with filtered response when daysBefore and daysAfter parameters are provided`() {
+    val projectName1 = "Community Garden Maintenance"
+    val projectName2 = "Park Cleanup"
+
+    val sessions = listOf(
+      NDSessionSummary.valid().copy(project = NDProjectSummary.valid().copy(description = projectName1)),
+      NDSessionSummary.valid().copy(project = NDProjectSummary.valid().copy(description = projectName2)),
+    )
+
+    CommunityPaybackAndDeliusMockServer.setupGetSessionsResponse(
+      teamCodes = listOf("T456"),
+      startDate = LocalDate.now().minusDays(2),
+      endDate = LocalDate.now().plusDays(3),
+      typeCode = listOf("NP1", "NP2", "PL"),
+      sessions = PageResponse(
+        content = sessions,
+        page = PageResponse.PageMeta(50, 0, 2, 1),
+      ),
+      sortString = "date,desc",
+    )
+
+    val result = webTestClient.get()
+      .uri("/supervisor/sessions/recent?teamCodes=T456&daysBefore=2&daysAfter=3")
+      .addSupervisorUiAuthHeader(username = "USER1")
+      .exchange()
+      .expectStatus()
+      .isOk
+      .bodyAsObject<PageResponse<SessionSummaryDto>>()
+
+    assertThat(result.content).hasSize(2)
+    assertThat(result.content[0].projectName).isEqualTo(projectName1)
+    assertThat(result.content[1].projectName).isEqualTo(projectName2)
+    assertThat(result.page.size).isEqualTo(50)
+    assertThat(result.page.totalPages).isEqualTo(1)
+    assertThat(result.page.totalElements).isEqualTo(2)
+    assertThat(result.page.number).isEqualTo(0)
+  }
+
+  @Test
   fun `should return OK with paginated response when pagination parameters are provided`() {
     val projectName1 = "Community Garden Maintenance"
     val projectName2 = "Park Cleanup"
@@ -283,8 +322,8 @@ class SupervisorSessionsIT : IntegrationTestBase() {
 
     CommunityPaybackAndDeliusMockServer.setupGetSessionsResponse(
       teamCodes = listOf("T456"),
-      startDate = LocalDate.now(),
-      endDate = LocalDate.now().plusDays(7),
+      startDate = LocalDate.now().minusDays(1),
+      endDate = LocalDate.now(),
       typeCode = listOf("NP1", "NP2", "PL"),
       sessions = PageResponse(
         content = sessions,
@@ -294,7 +333,7 @@ class SupervisorSessionsIT : IntegrationTestBase() {
     )
 
     val result = webTestClient.get()
-      .uri("/supervisor/sessions/future?teamCodes=T456&page=0&size=25&sort=projectName,asc")
+      .uri("/supervisor/sessions/recent?teamCodes=T456&page=0&size=25&sort=projectName,asc")
       .addSupervisorUiAuthHeader(username = "USER1")
       .exchange()
       .expectStatus()

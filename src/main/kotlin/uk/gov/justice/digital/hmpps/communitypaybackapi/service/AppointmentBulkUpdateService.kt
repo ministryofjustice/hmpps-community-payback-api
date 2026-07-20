@@ -38,10 +38,10 @@ class AppointmentBulkUpdateService(
       ?: return result(id, UpdateAppointmentOutcomeResultType.NOT_FOUND)
 
     return try {
-      appointmentUpdateValidationService.validateUpdate(existingAppointment, update)
+      val validatedUpdate = appointmentUpdateValidationService.validateUpdate(existingAppointment, update)
       appointmentUpdateService.updateAppointment(
         existingAppointment = existingAppointment,
-        update = update,
+        validatedUpdate = validatedUpdate,
         trigger = trigger,
       )
       result(id, UpdateAppointmentOutcomeResultType.SUCCESS)

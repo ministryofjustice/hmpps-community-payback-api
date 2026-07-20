@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonUnwrapped
 import io.swagger.v3.oas.annotations.media.Schema
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.format.annotation.DateTimeFormat
+import org.springframework.util.MultiValueMap
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
@@ -133,7 +134,7 @@ interface CommunityPaybackAndDeliusClient {
     @RequestParam projectTypeCodes: List<String>?,
     @RequestParam eventNumber: String?,
     @RequestParam appointmentIds: List<Long>?,
-    @RequestParam params: Map<String, String>,
+    @RequestParam params: MultiValueMap<String, String>,
   ): PageResponse<NDAppointmentSummary>
 
   @GetExchange("/case/{crn}/summary")
@@ -491,6 +492,8 @@ data class NDUpdateAppointment(
   val endTime: LocalTime,
   val outcome: NDCode?,
   val supervisor: NDCode,
+  val supervisorTeam: NDCode,
+  val project: NDCode,
   val notes: String?,
   val hiVisWorn: Boolean?,
   val workedIntensively: Boolean?,
@@ -551,6 +554,8 @@ data class NDProjectAvailability(
   val dayOfWeek: NDSchedulingDayOfWeek,
   val startDateInclusive: LocalDate?,
   val endDateExclusive: LocalDate?,
+  val startTime: LocalTime?,
+  val endTime: LocalTime?,
 ) {
   companion object
 }

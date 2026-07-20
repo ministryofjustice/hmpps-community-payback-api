@@ -175,6 +175,8 @@ fun ValidatedAppointment<UpdateAppointmentOutcomeDto>.toNDUpdateAppointment(
     endTime = updateDto.endTime,
     outcome = this.contactOutcome?.let { NDCode(it.code) },
     supervisor = NDCode(updateDto.supervisorOfficerCode),
+    supervisorTeam = NDCode(updateDto.resolveSupervisorTeamCode(existingAppointment)),
+    project = NDCode(updateDto.resolveProjectCode(existingAppointment)),
     notes = buildUpdateNote(existingAppointment),
     hiVisWorn = null,
     workedIntensively = null,
@@ -216,10 +218,6 @@ private fun ValidatedAppointment<UpdateAppointmentOutcomeDto>.buildUpdateNote(
     appendLine("Appointment End Time changed from ${existingEndTime.formatForUser()} to ${updatedEndTime.formatForUser()}")
   }
 
-  if (existingAppointment.contactOutcomeCode != updateDto.contactOutcomeCode) {
-    appendLine("Compliance information has been automatically set by the Community Payback service.")
-  }
-
   if (updateDto.notes?.isNotBlank() == true) {
     appendLine(updateDto.notes)
   }
@@ -238,7 +236,7 @@ fun ValidatedAppointment<CreateAppointmentDto>.toNDCreateAppointment(
     endTime = createDto.endTime,
     outcome = contactOutcome?.let { NDCode(it.code) },
     supervisor = createDto.supervisorOfficerCode?.let { NDCode(it) },
-    notes = buildCreateNote(),
+    notes = createDto.notes,
     hiVisWorn = null,
     workedIntensively = null,
     penaltyMinutes = createDto.attendanceData?.derivePenaltyMinutesDuration()?.toMinutes(),
@@ -254,16 +252,6 @@ fun ValidatedAppointment<CreateAppointmentDto>.toNDCreateAppointment(
     ),
   )
 }
-
-private fun ValidatedAppointment<CreateAppointmentDto>.buildCreateNote() = buildString {
-  val createDto = dto
-
-  appendLine("Compliance information has been automatically set by the Community Payback service.")
-
-  if (createDto.notes?.isNotBlank() == true) {
-    appendLine(createDto.notes)
-  }
-}.trimEnd().ifBlank { null }
 
 object ToAppointmentEntity {
 

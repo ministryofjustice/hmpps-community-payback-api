@@ -156,6 +156,6 @@ class SessionService(
     fromDate = date,
     toDate = date,
     projectCodes = listOf(projectCode),
-    pageable = PageRequest.of(0, Int.MAX_VALUE, Sort.by("name").descending()),
+    pageable = PageRequest.of(0, Int.MAX_VALUE, Sort.by("name")),
   ).content
 }

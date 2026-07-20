@@ -65,7 +65,8 @@ class AppointmentValidationService(
     existingAppointment: AppointmentDto,
     update: UpdateAppointmentOutcomeDto,
   ): ValidatedAppointment<UpdateAppointmentOutcomeDto> {
-    val project = projectService.getProject(existingAppointment.projectCode) ?: error("Can't retrieve project ${existingAppointment.projectCode}")
+    val projectCode = update.resolveProjectCode(existingAppointment)
+    val project = projectService.getProject(projectCode) ?: error("Can't retrieve project $projectCode")
     val upwDetailsId = UnpaidWorkDetailsIdDto(existingAppointment.offender.crn, existingAppointment.deliusEventNumber)
 
     if (existingAppointment.sensitive == true && update.sensitive != true) {
@@ -147,10 +148,6 @@ class AppointmentValidationService(
           "Attendance data is required for contact outcomes that indicate attendance"
         }
       }
-    }
-
-    if (existingContactOutcome != null && contactOutcome != existingContactOutcome) {
-      badRequest("The existing contact outcome of '${existingContactOutcome.name}' cannot be modified")
     }
   }
 

@@ -65,13 +65,6 @@ class EteServiceTest {
 
   private lateinit var eteService: EteService
 
-  val londonDateFrom: OffsetDateTime = OffsetDateTime.parse("2026-05-26T00:00:00Z")
-  val londonDateTo: OffsetDateTime = OffsetDateTime.parse("2026-05-26T23:59:59.999999Z")
-  val southCentralDateFrom: OffsetDateTime = OffsetDateTime.parse("2026-05-26T00:00:00Z")
-  val southCentralTo: OffsetDateTime = OffsetDateTime.parse("2026-05-26T23:59:59.999999Z")
-  val defaultDateFrom: OffsetDateTime = OffsetDateTime.parse("2026-05-20T00:00:00Z")
-  val defaultDateTo: OffsetDateTime = OffsetDateTime.parse("2026-05-20T23:59:59.999999Z")
-
   @BeforeEach
   fun setUp() {
     eteService = EteService(
@@ -83,12 +76,6 @@ class EteServiceTest {
       contextService,
       springEventPublisher,
       courseCompletionAutoResolutionService,
-      courseCompletionsAvailableFrom = defaultDateFrom,
-      courseCompletionsAvailableTo = defaultDateTo,
-      londonAvailableFrom = londonDateFrom,
-      londonAvailableTo = londonDateTo,
-      southCentralAvailableFrom = southCentralDateFrom,
-      southCentralAvailableTo = southCentralTo,
       courseCompletionAutoResolutionEnabled = false,
     )
   }
@@ -125,12 +112,6 @@ class EteServiceTest {
         contextService,
         springEventPublisher,
         courseCompletionAutoResolutionService,
-        courseCompletionsAvailableFrom = defaultDateFrom,
-        courseCompletionsAvailableTo = defaultDateTo,
-        londonAvailableFrom = londonDateFrom,
-        londonAvailableTo = londonDateTo,
-        southCentralAvailableFrom = southCentralDateFrom,
-        southCentralAvailableTo = southCentralTo,
         courseCompletionAutoResolutionEnabled = true,
       )
 
@@ -156,12 +137,6 @@ class EteServiceTest {
         contextService,
         springEventPublisher,
         courseCompletionAutoResolutionService,
-        courseCompletionsAvailableFrom = defaultDateFrom,
-        courseCompletionsAvailableTo = defaultDateTo,
-        londonAvailableFrom = londonDateFrom,
-        londonAvailableTo = londonDateTo,
-        southCentralAvailableFrom = southCentralDateFrom,
-        southCentralAvailableTo = southCentralTo,
         courseCompletionAutoResolutionEnabled = true,
       )
 
@@ -196,12 +171,6 @@ class EteServiceTest {
         contextService,
         springEventPublisher,
         courseCompletionAutoResolutionService = io.mockk.mockk(),
-        courseCompletionsAvailableFrom = null,
-        courseCompletionsAvailableTo = null,
-        londonAvailableFrom = null,
-        londonAvailableTo = null,
-        southCentralAvailableFrom = null,
-        southCentralAvailableTo = null,
         courseCompletionAutoResolutionEnabled = false,
       )
 
@@ -216,8 +185,6 @@ class EteServiceTest {
           externalReference = externalReference,
           fromDate = fromDate,
           toDate = toDate,
-          availableFromDate = any(),
-          availableToDate = any(),
           pageable = pageable,
         )
       } returns PageImpl(
@@ -255,8 +222,6 @@ class EteServiceTest {
           externalReference = externalReference,
           fromDate = fromDate,
           toDate = toDate,
-          availableFromDate = null,
-          availableToDate = null,
           pageable = pageable,
         )
       }
@@ -269,7 +234,7 @@ class EteServiceTest {
 
       every {
         eteCourseCompletionEventEntityRepository.findAllWithFilters(
-          any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(),
+          any(), any(), any(), any(), any(), any(), any(), any(), any(), any(),
         )
       } returns PageImpl(emptyList())
 
@@ -296,8 +261,6 @@ class EteServiceTest {
           externalReference = null,
           fromDate = null,
           toDate = null,
-          availableFromDate = londonDateFrom,
-          availableToDate = londonDateTo,
           pageable = pageable,
         )
       }
@@ -310,7 +273,7 @@ class EteServiceTest {
 
       every {
         eteCourseCompletionEventEntityRepository.findAllWithFilters(
-          any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(),
+          any(), any(), any(), any(), any(), any(), any(), any(), any(), any(),
         )
       } returns PageImpl(emptyList())
 
@@ -337,8 +300,6 @@ class EteServiceTest {
           externalReference = null,
           fromDate = null,
           toDate = null,
-          availableFromDate = southCentralDateFrom,
-          availableToDate = southCentralTo,
           pageable = pageable,
         )
       }
@@ -353,7 +314,7 @@ class EteServiceTest {
 
       every {
         eteCourseCompletionEventEntityRepository.findAllWithFilters(
-          any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(),
+          any(), any(), any(), any(), any(), any(), any(), any(), any(), any(),
         )
       } returns PageImpl(emptyList())
 
@@ -380,8 +341,6 @@ class EteServiceTest {
           externalReference = null,
           fromDate = null,
           toDate = null,
-          availableFromDate = defaultDateFrom,
-          availableToDate = defaultDateTo,
           pageable = pageable,
         )
       }

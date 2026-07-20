@@ -87,6 +87,8 @@ class EteMappers(
       contactOutcomeCode = creditTime.contactOutcomeCode,
       attendanceData = createAttendanceData(),
       supervisorOfficerCode = existingAppointment.supervisorOfficerCode,
+      supervisorTeamCode = existingAppointment.supervisingTeamCode,
+      projectCode = creditTime.projectCode,
       notes = buildNote(creditTime.notes, courseCompletionEvent),
       alertActive = creditTime.alertActive,
       sensitive = creditTime.sensitive,
@@ -224,8 +226,6 @@ class EteMappers(
     externalReference = courseCompletionEvent.externalReference,
     fromDate = null,
     toDate = null,
-    availableFromDate = null,
-    availableToDate = null,
     pageable = Pageable.unpaged(Sort.by(Sort.Order.asc("createdAt"))),
   ).toList()
 }

@@ -8,11 +8,13 @@ import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import org.springdoc.core.converters.models.PageableAsQueryParam
 import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.data.web.PageableDefault
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.MediaType
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -24,6 +26,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.common.badRequest
 import uk.gov.justice.digital.hmpps.communitypaybackapi.controller.internal.notFound
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentSummaryDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.DeliusAppointmentIdDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeGroupDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentDto
@@ -34,6 +37,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ContextService
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
+import java.net.URI
 import java.time.LocalDate
 import java.time.OffsetDateTime
 
@@ -177,6 +181,45 @@ class AdminAppointmentController(
     )
   }
 
+  @PostMapping(
+    path = ["/appointments"],
+    consumes = [MediaType.APPLICATION_JSON_VALUE],
+  )
+  @Operation(
+    description = "Create a new appointment",
+    responses = [
+      ApiResponse(
+        responseCode = "201",
+        description = "Appointment was successfully created",
+      ),
+      ApiResponse(
+        responseCode = "400",
+        description = "Validation error. If this occurs then the appointment was not created",
+        content = [
+          Content(
+            schema = Schema(implementation = ErrorResponse::class),
+          ),
+        ],
+      ),
+    ],
+  )
+  fun createAppointment(
+    @RequestBody createAppointment: CreateAppointmentDto,
+  ): ResponseEntity<Unit> {
+    val deliusAppointmentId = appointmentService.createAppointment(
+      createAppointment,
+      AppointmentEventTrigger(
+        triggeredAt = OffsetDateTime.now(),
+        triggerType = AppointmentEventTriggerType.USER,
+        triggeredBy = contextService.getUserName(),
+      ),
+    )
+
+    return ResponseEntity
+      .created(URI("/admin/projects/${createAppointment.projectCode}/appointments/$deliusAppointmentId"))
+      .build()
+  }
+
   @GetMapping(
     path = ["/appointments"],
     produces = [MediaType.APPLICATION_JSON_VALUE],
@@ -209,7 +252,7 @@ class AdminAppointmentController(
         description = "Only crn, name, date, startTime, endTime and daysOverdue fields are supported for sorting",
       ),
     )
-    @PageableDefault(size = 50, sort = ["name"], direction = Sort.Direction.DESC) pageable: Pageable,
+    @PageableDefault(size = 50, sort = ["name"], direction = Sort.Direction.ASC) pageable: Pageable,
     @RequestParam(required = false) crn: String?,
     @Parameter(
       description = "Filter by one or more project codes",
@@ -236,6 +279,13 @@ class AdminAppointmentController(
 
     if (!hasFilter) {
       badRequest("At least one filter parameter must be provided")
+    }
+
+    val pageable = if (pageable.sort.getOrderFor("name") == null) {
+      val sort = pageable.sort.and(Sort.by(Sort.Direction.ASC, "name"))
+      PageRequest.of(pageable.pageNumber, pageable.pageSize, sort)
+    } else {
+      pageable
     }
 
     return appointmentService.getAppointments(

@@ -55,6 +55,8 @@ fun NDProjectAvailability.toDto() = ProjectAvailabilityDto(
   dayOfWeek = dayOfWeek.toDto(),
   startDateInclusive = startDateInclusive,
   endDateExclusive = endDateExclusive,
+  startTime = startTime,
+  endTime = endTime,
 )
 
 fun NDSchedulingFrequency.toDto() = when (this) {

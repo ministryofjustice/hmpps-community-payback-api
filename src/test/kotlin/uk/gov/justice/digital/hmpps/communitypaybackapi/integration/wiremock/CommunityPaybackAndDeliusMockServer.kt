@@ -38,6 +38,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSupervisorSumma
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDUnpaidWorkRequirement
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDUpwDetails
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.PageResponse
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.PageResponse.PageMeta
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.unallocated
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.random
@@ -105,7 +106,33 @@ object CommunityPaybackAndDeliusMockServer {
     eventNumber: Int? = null,
     pageNumber: Int = 0,
     pageSize: Int = 50,
-    sortString: String? = "name,desc",
+    sortString: String? = "name,asc",
+    appointmentIds: List<Long> = emptyList(),
+    appointments: List<NDAppointmentSummary> = emptyList(),
+  ): Unit = setupGetAppointmentsResponse(
+    crn,
+    username,
+    fromDate,
+    toDate,
+    projectCodes,
+    eventNumber,
+    pageNumber,
+    pageSize,
+    sortString?.let { arrayOf(it) } ?: emptyArray(),
+    appointmentIds,
+    appointments,
+  )
+
+  fun setupGetAppointmentsResponse(
+    crn: String? = null,
+    username: String,
+    fromDate: LocalDate? = null,
+    toDate: LocalDate? = null,
+    projectCodes: List<String> = emptyList(),
+    eventNumber: Int? = null,
+    pageNumber: Int = 0,
+    pageSize: Int = 50,
+    sortStrings: Array<String>,
     appointmentIds: List<Long> = emptyList(),
     appointments: List<NDAppointmentSummary> = emptyList(),
   ) {
@@ -125,10 +152,12 @@ object CommunityPaybackAndDeliusMockServer {
       }
       append("&page=$pageNumber")
       append("&size=$pageSize")
-      sortString?.let { append("&sort=${URLEncoder.encode(it, "UTF-8")}") }
+      sortStrings.forEach {
+        append("&sort=${URLEncoder.encode(it, "UTF-8")}")
+      }
     }
 
-    val pageResponse = PageResponse(appointments, PageResponse.PageMeta(pageSize, pageNumber, appointments.size.toLong(), 1))
+    val pageResponse = PageResponse(appointments, PageMeta(pageSize, pageNumber, appointments.size.toLong(), 1))
 
     WireMock.stubFor(
       get(url)
@@ -215,7 +244,7 @@ object CommunityPaybackAndDeliusMockServer {
       append("page=$pageNumber&size=$pageSize&sort=${URLEncoder.encode(sortString, "UTF-8")}")
     }
 
-    val pageResponse = PageResponse(response, PageResponse.PageMeta(pageSize, pageNumber, response.size.toLong(), 1))
+    val pageResponse = PageResponse(response, PageMeta(pageSize, pageNumber, response.size.toLong(), 1))
 
     WireMock.stubFor(
       get(url)
@@ -513,7 +542,15 @@ object CommunityPaybackAndDeliusMockServer {
             "$.endTime",
             equalTo(expectedUpdate.endTime.format(DateTimeFormatter.ISO_TIME)),
           ),
-        ),
+        )
+        .apply {
+          expectedUpdate.updatedProjectCode?.let {
+            withRequestBody(matchingJsonPath("$.project.code", equalTo(it)))
+          }
+          expectedUpdate.supervisorTeamCode?.let {
+            withRequestBody(matchingJsonPath("$.supervisorTeam.code", equalTo(it)))
+          }
+        },
     )
   }
 
@@ -523,6 +560,8 @@ object CommunityPaybackAndDeliusMockServer {
     val date: LocalDate,
     val startTime: LocalTime,
     val endTime: LocalTime,
+    val updatedProjectCode: String? = null,
+    val supervisorTeamCode: String? = null,
   )
 
   fun verifyPostAppointmentsRequest(

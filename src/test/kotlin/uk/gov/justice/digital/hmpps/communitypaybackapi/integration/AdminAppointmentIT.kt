@@ -17,15 +17,18 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectAndLocation
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectType
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDUpwDetails
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.PageResponse
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AttendanceDataDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeResultType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentsOutcomesResultDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentTaskEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity.Companion.CODE_ATTENDED_COMPLIED
@@ -52,6 +55,9 @@ class AdminAppointmentIT : IntegrationTestBase() {
 
   @Autowired
   lateinit var appointmentEventEntityRepository: AppointmentEventEntityRepository
+
+  @Autowired
+  lateinit var appointmentEntityRepository: AppointmentEntityRepository
 
   @Autowired
   lateinit var domainEventAsserter: DomainEventAsserter
@@ -348,6 +354,8 @@ class AdminAppointmentIT : IntegrationTestBase() {
             deliusId = 1234L,
             attendanceData = AttendanceDataDto.valid(),
             contactOutcomeCode = CODE_ATTENDED_COMPLIED,
+            supervisorTeamCode = "TEAM123",
+            projectCode = "proj123",
             startTime = LocalTime.of(0, 0),
             endTime = LocalTime.of(1, 0),
           ),
@@ -357,13 +365,109 @@ class AdminAppointmentIT : IntegrationTestBase() {
         .isOk()
 
       CommunityPaybackAndDeliusMockServer.verifyPutAppointmentRequest(
-        projectCode = "proj123",
-        appointmentId = 1234L,
+        CommunityPaybackAndDeliusMockServer.ExpectedAppointmentUpdate(
+          projectCode = "proj123",
+          appointmentId = 1234L,
+          date = LocalDate.now(),
+          startTime = LocalTime.of(0, 0),
+          endTime = LocalTime.of(1, 0),
+          updatedProjectCode = "proj123",
+          supervisorTeamCode = "TEAM123",
+        ),
       )
 
       domainEventAsserter.assertEventCount("community-payback.appointment.updated", 1)
 
       assertThat(appointmentTaskEntityRepository.findAll()).hasSize(1)
+    }
+  }
+
+  @Nested
+  @DisplayName("POST /admin/appointments")
+  inner class PostAppointment {
+
+    @BeforeEach
+    fun setUp() {
+      appointmentEventEntityRepository.deleteAll()
+      appointmentEntityRepository.deleteAll()
+    }
+
+    @Test
+    fun `should return unauthorized if no token`() {
+      webTestClient.post()
+        .uri("/admin/appointments")
+        .bodyValue(CreateAppointmentDto.valid())
+        .exchange()
+        .expectStatus()
+        .isUnauthorized
+    }
+
+    @Test
+    fun `should return forbidden if no role`() {
+      webTestClient.post()
+        .uri("/admin/appointments")
+        .bodyValue(CreateAppointmentDto.valid())
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .isForbidden
+    }
+
+    @Test
+    fun `should return forbidden if wrong role`() {
+      webTestClient.post()
+        .uri("/admin/appointments")
+        .bodyValue(CreateAppointmentDto.valid())
+        .headers(setAuthorisation(roles = listOf("ROLE_WRONG")))
+        .exchange()
+        .expectStatus()
+        .isForbidden
+    }
+
+    @Test
+    fun `Should return 400 Bad Request if project with given code can't be found`() {
+      CommunityPaybackAndDeliusMockServer.setupGetProject404Response("PC01")
+
+      val response = webTestClient.post()
+        .uri("/admin/appointments")
+        .addAdminUiAuthHeader("theusername")
+        .bodyValue(CreateAppointmentDto.valid().copy(projectCode = "PC01"))
+        .exchange()
+        .expectStatus()
+        .isBadRequest()
+        .bodyAsObject<ErrorResponse>()
+
+      assertThat(response.userMessage).isEqualTo("Validation failure: Project not found for ID 'PC01'")
+    }
+
+    @Test
+    fun `Should create new appointment with link to created appointment in Location header`() {
+      val appointment = CreateAppointmentDto.valid().copy(
+        contactOutcomeCode = null,
+        date = LocalDate.now().plusDays(7),
+        pickUpLocationCode = null,
+        pickUpTime = null,
+      )
+      val project = NDProject.valid(ctx).copy(code = appointment.projectCode)
+
+      CommunityPaybackAndDeliusMockServer.setupGetUpwDetailsSummaryResponse(
+        appointment.crn,
+        NDCaseSummary.valid().copy(crn = appointment.crn),
+        listOf(NDUpwDetails.valid(ctx).copy(eventNumber = appointment.deliusEventNumber)),
+      )
+      CommunityPaybackAndDeliusMockServer.setupGetProjectResponse(project)
+      CommunityPaybackAndDeliusMockServer.setupPostAppointmentsResponse(appointment.projectCode, 1)
+
+      val postResponse = webTestClient.post()
+        .uri("/admin/appointments")
+        .addAdminUiAuthHeader("theusername")
+        .bodyValue(appointment)
+        .exchange()
+        .expectStatus()
+        .isCreated
+        .returnResult()
+
+      assertThat(postResponse.responseHeaders.location).matches { it.toString().matches(Regex("/admin/projects/${appointment.projectCode}/appointments/\\d+")) }
     }
   }
 
@@ -413,6 +517,35 @@ class AdminAppointmentIT : IntegrationTestBase() {
 
       val pageResponse = webTestClient.get()
         .uri("/admin/appointments?crn=CRN000")
+        .addAdminUiAuthHeader("theusername")
+        .exchange()
+        .expectStatus()
+        .isOk
+        .bodyAsObject<PageResponse<AppointmentSummaryDto>>()
+
+      assertThat(pageResponse.content).hasSize(2)
+      assertThat(pageResponse.content[0].id).isEqualTo(appointment1.id)
+      assertThat(pageResponse.content[1].id).isEqualTo(appointment2.id)
+      assertThat(pageResponse.page.size).isEqualTo(50)
+      assertThat(pageResponse.page.totalPages).isEqualTo(1)
+      assertThat(pageResponse.page.totalElements).isEqualTo(2)
+      assertThat(pageResponse.page.number).isEqualTo(0)
+    }
+
+    @Test
+    fun `should automatically add name alphabetical order sorting as a tiebreak if sorting by name is not specified`() {
+      val appointment1 = NDAppointmentSummary.valid(ctx)
+      val appointment2 = NDAppointmentSummary.valid(ctx)
+
+      CommunityPaybackAndDeliusMockServer.setupGetAppointmentsResponse(
+        crn = "CRN000",
+        username = "theusername",
+        appointments = listOf(appointment1, appointment2),
+        sortStrings = arrayOf("date,asc", "name,asc"),
+      )
+
+      val pageResponse = webTestClient.get()
+        .uri("/admin/appointments?crn=CRN000&sort=date,asc")
         .addAdminUiAuthHeader("theusername")
         .exchange()
         .expectStatus()
