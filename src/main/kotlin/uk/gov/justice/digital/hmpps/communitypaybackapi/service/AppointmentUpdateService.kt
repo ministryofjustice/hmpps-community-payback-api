@@ -31,24 +31,33 @@ class AppointmentUpdateService(
     existingAppointment: AppointmentDto,
     update: UpdateAppointmentOutcomeDto,
     trigger: AppointmentEventTrigger,
+  ) = updateAppointment(
+    existingAppointment = existingAppointment,
+    validatedUpdate = appointmentUpdateValidationService.validateUpdate(existingAppointment, update),
+    trigger = trigger,
+  )
+
+  @Transactional
+  fun updateAppointment(
+    existingAppointment: AppointmentDto,
+    validatedUpdate: ValidatedAppointment<UpdateAppointmentOutcomeDto>,
+    trigger: AppointmentEventTrigger,
   ) {
     val appointmentEntity = appointmentRetrievalService.getOrCreateAppointmentEntity(existingAppointment)
 
-    val validatedUpdateDto = appointmentUpdateValidationService.validateUpdate(existingAppointment, update)
-
     val updateEventDetails = AppointmentUpdatedEvent(
-      updateDto = appointmentUpdateValidationService.validateUpdate(existingAppointment, update),
+      updateDto = validatedUpdate,
       appointmentEntity = appointmentEntity,
       existingAppointment = existingAppointment,
       trigger = trigger,
     )
 
     if (appointmentEventService.hasUpdateAlreadyBeenSent(updateEventDetails)) {
-      log.debug("Not applying update for appointment ${update.deliusId} because the most recent update is logically identical")
+      log.debug("Not applying update for appointment ${validatedUpdate.dto.deliusId} because the most recent update is logically identical")
       return
     }
 
-    updateDelius(existingAppointment, validatedUpdateDto)
+    updateDelius(existingAppointment, validatedUpdate)
 
     springEventPublisher.publishEvent(updateEventDetails)
   }
