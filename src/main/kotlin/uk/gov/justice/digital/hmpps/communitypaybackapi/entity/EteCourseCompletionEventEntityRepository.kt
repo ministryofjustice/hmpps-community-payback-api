@@ -67,6 +67,15 @@ interface EteCourseCompletionEventEntityRepository : JpaRepository<EteCourseComp
     endAttempt: Int,
   ): List<EteCourseCompletionEventEntity>
 
+  @Query(
+    """
+    SELECT e FROM EteCourseCompletionEventEntity e
+    WHERE e.resolution IS NULL
+    AND e.receivedAt < :timestamp
+    """,
+  )
+  fun getUnresolvedCourseCompletionsBefore(timestamp: OffsetDateTime): List<EteCourseCompletionEventEntity>
+
   enum class ResolutionStatus {
     ANY,
     RESOLVED,

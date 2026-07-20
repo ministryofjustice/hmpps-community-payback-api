@@ -5,4 +5,6 @@ import java.util.UUID
 
 interface EteCourseCompletionDraftResolutionRepository : JpaRepository<EteCourseCompletionDraftResolutionEntity, UUID> {
   fun findByEteCourseCompletionEventId(id: UUID): EteCourseCompletionDraftResolutionEntity?
+
+  fun findByEteCourseCompletionEventIdIn(ids: List<UUID>): List<EteCourseCompletionDraftResolutionEntity>
 }
