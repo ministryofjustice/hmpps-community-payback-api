@@ -23,6 +23,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProbationAccessCo
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ProbationOffenderSearchClient
 import uk.gov.justice.hmpps.kotlin.auth.authorisedWebClient
 import uk.gov.justice.hmpps.kotlin.auth.healthWebClient
+import java.io.IOException
 import java.time.Duration
 
 @Configuration
@@ -111,7 +112,9 @@ class WebClientConfiguration(
       url = probationAccessControlUrl,
       timeout = probationAccessControlTimeout,
     )
-    .retryGet(DEFAULT_RETRY_MAX_ATTEMPTS, DEFAULT_RETRY_BACKOFF_DURATION)
+    // The access endpoint is a read operation exposed as POST because it accepts a list of CRNs.
+    // It is therefore safe to retry on transient transport failures.
+    .retryRequests(setOf(HttpMethod.GET, HttpMethod.POST), DEFAULT_RETRY_MAX_ATTEMPTS, DEFAULT_RETRY_BACKOFF_DURATION)
     .logErrorResponses<ProbationAccessControlClient>(logDownstreamErrorResponses)
 
   @Bean
@@ -168,13 +171,15 @@ inline fun <reified T> WebClient.logErrorResponses(enabled: Boolean): WebClient 
     .build()
 }
 
-fun WebClient.retryGet(maxAttempts: Long, backoff: Duration): WebClient = this.mutate()
+fun WebClient.retryGet(maxAttempts: Long, backoff: Duration): WebClient = retryRequests(setOf(HttpMethod.GET), maxAttempts, backoff)
+
+fun WebClient.retryRequests(methods: Set<HttpMethod>, maxAttempts: Long, backoff: Duration): WebClient = this.mutate()
   .filter { request, next ->
     val responseMono = next.exchange(request)
-    if (request.method() == HttpMethod.GET) {
+    if (request.method() in methods) {
       responseMono.retryWhen(
         Retry.backoff(maxAttempts, backoff)
-          .filter { it is WebClientRequestException && it.isTimeoutException() },
+          .filter { it is WebClientRequestException && it.isTransientTransportException() },
       )
     } else {
       responseMono
@@ -182,8 +187,18 @@ fun WebClient.retryGet(maxAttempts: Long, backoff: Duration): WebClient = this.m
   }
   .build()
 
-private fun Throwable.isTimeoutException(): Boolean = this.hasExactCauseType<ReadTimeoutException>() ||
-  this.hasExactCauseType<ConnectTimeoutException>()
+private fun Throwable.isTransientTransportException(): Boolean = this.hasExactCauseType<ReadTimeoutException>() ||
+  this.hasExactCauseType<ConnectTimeoutException>() ||
+  this.hasCause { it is IOException && it.message?.contains("connection reset", ignoreCase = true) == true }
+
+private fun Throwable.hasCause(predicate: (Throwable) -> Boolean): Boolean {
+  var current: Throwable? = this
+  while (current != null) {
+    if (predicate(current)) return true
+    current = current.cause
+  }
+  return false
+}
 
 private inline fun <reified T : Throwable> Throwable.hasExactCauseType(): Boolean {
   var current: Throwable? = this
