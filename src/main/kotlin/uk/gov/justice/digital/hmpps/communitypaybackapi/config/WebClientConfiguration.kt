@@ -171,8 +171,7 @@ inline fun <reified T> WebClient.logErrorResponses(enabled: Boolean): WebClient 
     .build()
 }
 
-fun WebClient.retryGet(maxAttempts: Long, backoff: Duration): WebClient =
-  retryRequests(setOf(HttpMethod.GET), maxAttempts, backoff)
+fun WebClient.retryGet(maxAttempts: Long, backoff: Duration): WebClient = retryRequests(setOf(HttpMethod.GET), maxAttempts, backoff)
 
 fun WebClient.retryRequests(methods: Set<HttpMethod>, maxAttempts: Long, backoff: Duration): WebClient = this.mutate()
   .filter { request, next ->
