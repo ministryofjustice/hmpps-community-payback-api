@@ -140,6 +140,9 @@ interface CommunityPaybackAndDeliusClient {
   @GetExchange("/case/{crn}/summary")
   fun getUpwDetailsSummary(@PathVariable crn: String, @RequestParam username: String?): NDCaseDetailsSummary
 
+  @GetExchange("/case/{crn}/personal-circumstances")
+  fun getPersonalCircumstances(@PathVariable crn: String): List<NDPersonalCircumstances>
+
   @GetExchange("/adjustments")
   fun getAdjustments(@RequestParam crn: String, @RequestParam eventNumber: Int): NDAdjustmentResponse
 
@@ -680,3 +683,10 @@ data class NDAdjustmentPostResponse(
 data class NDPickUpLocationsResponse(
   val locations: List<NDPickUpLocation> = emptyList(),
 )
+
+data class NDPersonalCircumstances(
+  val type: NDCodeDescription,
+  val subType: NDCodeDescription?,
+) {
+  companion object
+}
