@@ -5,8 +5,10 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDPersonalCircumstances
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDUpwDetails
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CaseDetailsSummaryDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.PersonalCircumstancesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.bodyAsObject
@@ -142,6 +144,59 @@ class AdminOffenderIT : IntegrationTestBase() {
         .bodyAsObject<UnpaidWorkDetailsDto>()
 
       assertThat(result.eventNumber).isEqualTo(DELIUS_EVENT_NUMBER)
+    }
+  }
+
+  @Nested
+  @DisplayName("GET /admin/offenders/{crn}/personal-circumstances")
+  inner class GetPersonalCircumstances {
+    @Test
+    fun `should return unauthorized if no token`() {
+      webTestClient.get()
+        .uri("/admin/offenders/$CRN/personal-circumstances")
+        .exchange()
+        .expectStatus()
+        .isUnauthorized
+    }
+
+    @Test
+    fun `should return forbidden if no role`() {
+      webTestClient.get()
+        .uri("/admin/offenders/$CRN/personal-circumstances")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .isForbidden
+    }
+
+    @Test
+    fun `should return forbidden if wrong role`() {
+      webTestClient.get()
+        .uri("/admin/offenders/$CRN/personal-circumstances")
+        .headers(setAuthorisation(roles = listOf("ROLE_WRONG")))
+        .exchange()
+        .expectStatus()
+        .isForbidden
+    }
+
+    @Test
+    fun `should return OK with details of personal circumstances`() {
+      CommunityPaybackAndDeliusMockServer.setupGetPersonalCircumstancesResponse(
+        crn = CRN,
+        personalCircumstances = listOf(
+          NDPersonalCircumstances.valid("K", "K09"),
+        ),
+      )
+
+      val result = webTestClient.get()
+        .uri("/admin/offenders/$CRN/personal-circumstances")
+        .addAdminUiAuthHeader()
+        .exchange()
+        .expectStatus()
+        .isOk
+        .bodyAsObject<PersonalCircumstancesDto>()
+
+      assertThat(result.isAllowedTravelTime).isTrue
     }
   }
 }

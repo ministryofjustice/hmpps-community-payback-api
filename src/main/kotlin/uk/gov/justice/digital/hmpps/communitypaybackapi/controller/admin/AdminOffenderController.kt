@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import uk.gov.justice.digital.hmpps.communitypaybackapi.controller.internal.notFound
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CaseDetailsSummaryDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.PersonalCircumstancesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ContextService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.OffenderService
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
@@ -44,4 +45,28 @@ class AdminOffenderController(private val offenderService: OffenderService, priv
   )
   fun getOffenderSummary(@PathVariable crn: String): CaseDetailsSummaryDto = offenderService.getOffenderSummaryByCrn(crn, contextService.getUserName())
     ?: notFound("Offender Summary", crn)
+
+  @GetMapping(
+    path = ["/offenders/{crn}/personal-circumstances"],
+    produces = [MediaType.APPLICATION_JSON_VALUE],
+  )
+  @Operation(
+    description = "Get personal circumstances by CRN",
+    responses = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Successful response with details of personal circumstances",
+      ),
+      ApiResponse(
+        responseCode = "404",
+        description = "Offender not found for the given CRN",
+        content = [
+          Content(
+            schema = Schema(implementation = ErrorResponse::class),
+          ),
+        ],
+      ),
+    ],
+  )
+  fun getPersonalCircumstances(@PathVariable crn: String): PersonalCircumstancesDto = offenderService.getPersonalCircumstances(crn) ?: notFound("Personal Circumstances", crn)
 }
