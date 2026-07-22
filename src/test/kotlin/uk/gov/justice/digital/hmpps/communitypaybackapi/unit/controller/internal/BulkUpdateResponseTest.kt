@@ -31,10 +31,10 @@ class BulkUpdateResponseTest {
   }
 
   @Test
-  fun `returns bad request when every update has a validation error`() {
+  fun `returns bad request when every update has the same validation error`() {
     val result = bulkErrorResult(
-      UpdateAppointmentOutcomeResultType.VALIDATION_ERROR to "First validation error",
-      UpdateAppointmentOutcomeResultType.VALIDATION_ERROR to "Second validation error",
+      UpdateAppointmentOutcomeResultType.VALIDATION_ERROR to "Validation error",
+      UpdateAppointmentOutcomeResultType.VALIDATION_ERROR to "Validation error",
     )
 
     val response = result.toResponseEntity()
@@ -43,10 +43,23 @@ class BulkUpdateResponseTest {
     assertThat(response.body).isEqualTo(
       ErrorResponse(
         status = HttpStatus.BAD_REQUEST,
-        developerMessage = "First validation error; Second validation error",
-        userMessage = "Validation failure: First validation error; Second validation error",
+        developerMessage = "Validation error",
+        userMessage = "Validation failure: Validation error",
       ),
     )
+  }
+
+  @Test
+  fun `returns OK when every update has a validation error but the messages differ`() {
+    val result = bulkErrorResult(
+      UpdateAppointmentOutcomeResultType.VALIDATION_ERROR to "First validation error",
+      UpdateAppointmentOutcomeResultType.VALIDATION_ERROR to "Second validation error",
+    )
+
+    val response = result.toResponseEntity()
+
+    assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
+    assertThat(response.body).isEqualTo(result)
   }
 
   @Test

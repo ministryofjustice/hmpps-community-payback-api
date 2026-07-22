@@ -19,9 +19,10 @@ fun UpdateAppointmentsOutcomesResultDto.toResponseEntity(): ResponseEntity<*> = 
     )
   }
 
-  results.isNotEmpty() && results.all { it.result == UpdateAppointmentOutcomeResultType.VALIDATION_ERROR } -> {
-    val message = results.mapNotNull { it.errorMessage }.distinct().joinToString("; ")
-      .ifEmpty { "Every appointment update failed validation" }
+  results.isNotEmpty() &&
+    results.all { it.result == UpdateAppointmentOutcomeResultType.VALIDATION_ERROR } &&
+    results.map { it.errorMessage }.distinct().size == 1 -> {
+    val message = results.first().errorMessage ?: "Every appointment update failed validation"
     ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
       ErrorResponse(
         status = HttpStatus.BAD_REQUEST,
