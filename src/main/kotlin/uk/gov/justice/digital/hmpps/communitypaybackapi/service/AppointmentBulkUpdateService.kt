@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.service
 
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.DeliusAppointmentIdDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
@@ -18,6 +19,8 @@ class AppointmentBulkUpdateService(
   private val appointmentUpdateService: AppointmentUpdateService,
   private val sentryService: SentryService,
 ) {
+
+  private val log = LoggerFactory.getLogger(this::class.java)
 
   fun updateAppointments(
     projectCode: String,
@@ -46,13 +49,26 @@ class AppointmentBulkUpdateService(
       )
       result(id, UpdateAppointmentOutcomeResultType.SUCCESS)
     } catch (e: BadRequestException) {
+      logUpdateException(id, e)
       result(id, UpdateAppointmentOutcomeResultType.VALIDATION_ERROR, e.message)
-    } catch (_: ConflictException) {
+    } catch (e: ConflictException) {
+      logUpdateException(id, e)
       result(id, UpdateAppointmentOutcomeResultType.VERSION_CONFLICT)
     } catch (t: Throwable) {
+      logUpdateException(id, t)
       sentryService.captureException(t)
       result(id, UpdateAppointmentOutcomeResultType.SERVER_ERROR)
     }
+  }
+
+  private fun logUpdateException(id: DeliusAppointmentIdDto, exception: Throwable) {
+    log.info(
+      "Bulk update failed for project code {} and Delius appointment ID {} with {}: {}",
+      id.projectCode,
+      id.deliusAppointmentId,
+      exception.javaClass.simpleName,
+      exception.message,
+    )
   }
 
   private fun result(
