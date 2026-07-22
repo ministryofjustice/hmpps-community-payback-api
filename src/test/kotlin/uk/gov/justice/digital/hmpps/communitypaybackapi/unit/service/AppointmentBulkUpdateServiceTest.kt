@@ -146,6 +146,7 @@ class AppointmentBulkUpdateServiceTest {
       assertThat(result.results).hasSize(1)
       assertThat(result.results[0].deliusId).isEqualTo(1L)
       assertThat(result.results[0].result).isEqualTo(UpdateAppointmentOutcomeResultType.SERVER_ERROR)
+      assertThat(result.results[0].errorMessage).isEqualTo("oh no")
 
       verify { sentryService.captureException(exceptionReturned) }
     }

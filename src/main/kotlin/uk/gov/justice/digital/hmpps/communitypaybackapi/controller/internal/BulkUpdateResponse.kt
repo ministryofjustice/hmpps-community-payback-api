@@ -4,13 +4,32 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeResultType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentsOutcomesResultDto
+import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 
-fun UpdateAppointmentsOutcomesResultDto.toResponseEntity(): ResponseEntity<UpdateAppointmentsOutcomesResultDto> {
-  val status = when {
-    results.isNotEmpty() && results.all { it.result == UpdateAppointmentOutcomeResultType.SERVER_ERROR } -> HttpStatus.INTERNAL_SERVER_ERROR
-    results.isNotEmpty() && results.all { it.result == UpdateAppointmentOutcomeResultType.VALIDATION_ERROR } -> HttpStatus.BAD_REQUEST
-    else -> HttpStatus.OK
+fun UpdateAppointmentsOutcomesResultDto.toResponseEntity(): ResponseEntity<*> = when {
+  results.isNotEmpty() && results.all { it.result == UpdateAppointmentOutcomeResultType.SERVER_ERROR } -> {
+    val message = results.mapNotNull { it.errorMessage }.distinct().joinToString("; ")
+      .ifEmpty { "Every appointment update failed with a server error" }
+    ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+      ErrorResponse(
+        status = HttpStatus.INTERNAL_SERVER_ERROR,
+        userMessage = "Unexpected error: $message",
+        developerMessage = message,
+      ),
+    )
   }
 
-  return ResponseEntity.status(status).body(this)
+  results.isNotEmpty() && results.all { it.result == UpdateAppointmentOutcomeResultType.VALIDATION_ERROR } -> {
+    val message = results.mapNotNull { it.errorMessage }.distinct().joinToString("; ")
+      .ifEmpty { "Every appointment update failed validation" }
+    ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+      ErrorResponse(
+        status = HttpStatus.BAD_REQUEST,
+        userMessage = "Validation failure: $message",
+        developerMessage = message,
+      ),
+    )
+  }
+
+  else -> ResponseEntity.ok(this)
 }

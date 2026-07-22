@@ -57,7 +57,7 @@ class AppointmentBulkUpdateService(
     } catch (t: Throwable) {
       logUpdateException(id, t)
       sentryService.captureException(t)
-      result(id, UpdateAppointmentOutcomeResultType.SERVER_ERROR)
+      result(id, UpdateAppointmentOutcomeResultType.SERVER_ERROR, t.message)
     }
   }
 

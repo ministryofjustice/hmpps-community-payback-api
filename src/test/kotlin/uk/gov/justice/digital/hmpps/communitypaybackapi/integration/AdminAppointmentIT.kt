@@ -735,6 +735,51 @@ class AdminAppointmentIT : IntegrationTestBase() {
     }
 
     @Test
+    fun `returns bad request error response when every appointment fails validation`() {
+      val validationMessage = "This appointment has previously been marked as sensitive so this cannot be changed"
+      val projectAndLocation = NDProjectAndLocation.valid().copy(code = "PC01")
+      val project = NDProject.valid(ctx).copy(code = "PC01")
+      val pickup = NDAppointmentPickUp.valid()
+
+      listOf(1234L, 5678L).forEach { appointmentId ->
+        CommunityPaybackAndDeliusMockServer.Aggregates.setupGetDataMocksForUpdateAppointment(
+          existingAppointment = NDAppointment.validNoOutcome(ctx).copy(
+            id = appointmentId,
+            project = projectAndLocation,
+            date = LocalDate.now(),
+            event = NDEvent.valid().copy(number = EVENT_NUMBER),
+            case = NDCaseSummary.valid().copy(crn = CRN),
+            pickUpData = pickup,
+            sensitive = true,
+          ),
+          project = project,
+          username = "theusername",
+        )
+      }
+
+      val response = webTestClient.put()
+        .uri("/admin/projects/PC01/appointments/bulk")
+        .addAdminUiAuthHeader("theusername")
+        .bodyValue(
+          UpdateAppointmentsDto(
+            updates = listOf(
+              UpdateAppointmentDto.valid(ctx).copy(deliusId = 1234L, sensitive = false),
+              UpdateAppointmentDto.valid(ctx).copy(deliusId = 5678L, sensitive = false),
+            ),
+          ),
+        )
+        .exchange()
+        .expectStatus()
+        .isBadRequest
+        .bodyAsObject<ErrorResponse>()
+
+      assertThat(response.status).isEqualTo(400)
+      assertThat(response.developerMessage).isEqualTo(validationMessage)
+      assertThat(response.userMessage).isEqualTo("Validation failure: $validationMessage")
+      domainEventAsserter.assertEventCount("community-payback.appointment.updated", 0)
+    }
+
+    @Test
     fun `fails one appointment due to upstream failure and returns SERVER_ERROR for that appointment`() {
       val projectAndLocation = NDProjectAndLocation.valid().copy(code = "PC01")
       val project = NDProject.valid(ctx).copy(code = "PC01")
