@@ -13,7 +13,6 @@ fun UpdateAppointmentsOutcomesResultDto.toResponseEntity(): ResponseEntity<*> = 
     ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
       ErrorResponse(
         status = HttpStatus.INTERNAL_SERVER_ERROR,
-        userMessage = "Unexpected error: $message",
         developerMessage = message,
       ),
     )

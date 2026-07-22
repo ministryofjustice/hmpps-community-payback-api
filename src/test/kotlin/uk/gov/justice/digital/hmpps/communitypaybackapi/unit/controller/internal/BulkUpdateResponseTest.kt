@@ -25,7 +25,6 @@ class BulkUpdateResponseTest {
       ErrorResponse(
         status = HttpStatus.INTERNAL_SERVER_ERROR,
         developerMessage = "First server error; Second server error",
-        userMessage = "Unexpected error: First server error; Second server error",
       ),
     )
   }
