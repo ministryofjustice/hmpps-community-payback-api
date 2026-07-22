@@ -316,10 +316,12 @@ class AdminAppointmentController(
       ApiResponse(
         responseCode = "400",
         description = "Every appointment update failed validation",
+        content = [Content(schema = Schema(implementation = ErrorResponse::class))],
       ),
       ApiResponse(
         responseCode = "500",
         description = "Every appointment update failed with a server error",
+        content = [Content(schema = Schema(implementation = ErrorResponse::class))],
       ),
     ],
   )
