@@ -13,6 +13,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.AllRoshRisk
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ArnsClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseDetailsSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDPersonalCircumstances
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDUpwDetails
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.OverallRiskLevel
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.RiskRoshSummary
@@ -216,6 +217,28 @@ class OffenderServiceTest {
       val result = service.getNameIgnoringLimitedStatus(CRN)
 
       assertThat(result).isNull()
+    }
+  }
+
+  @Nested
+  inner class GetPersonalCircumstancesTest {
+    @Test
+    fun `returns null when offender not found`() {
+      every { communityPaybackAndDeliusClient.getPersonalCircumstances(CRN) } throws WebClientResponseExceptionFactory.notFound()
+
+      val result = service.getPersonalCircumstances(CRN)
+
+      assertThat(result).isNull()
+    }
+
+    @Test
+    fun `returns personal circumstances when offender is found`() {
+      every { communityPaybackAndDeliusClient.getPersonalCircumstances(CRN) } returns listOf(NDPersonalCircumstances.valid("K", "K09"))
+
+      val result = service.getPersonalCircumstances(CRN)
+
+      assertThat(result).isNotNull
+      assertThat(result!!.isAllowedTravelTime).isTrue
     }
   }
 }
