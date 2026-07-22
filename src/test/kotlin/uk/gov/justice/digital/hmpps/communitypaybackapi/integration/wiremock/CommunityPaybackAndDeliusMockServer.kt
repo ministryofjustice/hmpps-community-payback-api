@@ -24,6 +24,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointmentSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseDetailsSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDPersonalCircumstances
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDPickUpLocation
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDPickUpLocationsResponse
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProject
@@ -459,6 +460,21 @@ object CommunityPaybackAndDeliusMockServer {
         aResponse()
           .withHeader("Content-Type", "application/json")
           .withBody(jsonMapper.writeValueAsString(ndCaseDetailsSummary)),
+      ),
+    )
+  }
+
+  fun setupGetPersonalCircumstancesResponse(
+    crn: String,
+    personalCircumstances: List<NDPersonalCircumstances>,
+  ) {
+    val builder = get(urlPathEqualTo("/community-payback-and-delius/case/$crn/personal-circumstances"))
+
+    WireMock.stubFor(
+      builder.willReturn(
+        aResponse()
+          .withHeader("Content-Type", "application/json")
+          .withBody(jsonMapper.writeValueAsString(personalCircumstances)),
       ),
     )
   }

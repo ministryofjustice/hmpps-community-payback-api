@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.badRequest
 import uk.gov.justice.digital.hmpps.communitypaybackapi.controller.internal.notFound
+import uk.gov.justice.digital.hmpps.communitypaybackapi.controller.internal.toResponseEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
@@ -314,12 +315,11 @@ class AdminAppointmentController(
       ),
       ApiResponse(
         responseCode = "400",
-        description = "Validation error. If this occurs then no appointments have been updated",
-        content = [
-          Content(
-            schema = Schema(implementation = ErrorResponse::class),
-          ),
-        ],
+        description = "Every appointment update failed validation",
+      ),
+      ApiResponse(
+        responseCode = "500",
+        description = "Every appointment update failed with a server error",
       ),
     ],
   )
@@ -334,5 +334,5 @@ class AdminAppointmentController(
       triggerType = AppointmentEventTriggerType.USER,
       triggeredBy = contextService.getUserName(),
     ),
-  )
+  ).toResponseEntity()
 }

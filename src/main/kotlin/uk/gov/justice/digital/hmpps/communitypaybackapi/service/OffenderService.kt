@@ -6,6 +6,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ArnsClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CaseDetailsSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.OffenderNameDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.PersonalCircumstancesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsIdDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
@@ -37,6 +38,12 @@ class OffenderService(
 
   fun getNameIgnoringLimitedStatus(crn: String): OffenderNameDto? = try {
     communityPaybackAndDeliusClient.getUpwDetailsSummary(crn, null).case.toOffenderNameDto()
+  } catch (_: WebClientResponseException.NotFound) {
+    null
+  }
+
+  fun getPersonalCircumstances(crn: String): PersonalCircumstancesDto? = try {
+    communityPaybackAndDeliusClient.getPersonalCircumstances(crn).toDto()
   } catch (_: WebClientResponseException.NotFound) {
     null
   }
