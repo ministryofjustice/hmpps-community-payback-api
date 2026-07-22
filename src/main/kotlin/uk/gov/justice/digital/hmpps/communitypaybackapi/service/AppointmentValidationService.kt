@@ -23,7 +23,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDayOfW
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.time.LocalTime
 
 @Suppress("ThrowsCount")
 @Service
@@ -81,9 +80,6 @@ class AppointmentValidationService(
       unpaidWorkDetails = offenderService.getUnpaidWorkDetails(upwDetailsId) ?: badRequest("Cannot find unpaid work details for CRN ${upwDetailsId.crn} and event number ${upwDetailsId.deliusEventNumber}"),
       appointmentDate = update.resolveDate(existingAppointment),
       appointmentMinutesAlreadyCredited = existingAppointment.minutesCredited?.let { Duration.ofMinutes(it) } ?: Duration.ZERO,
-      existingContactOutcome = loadContactOutcome(existingAppointment.contactOutcomeCode),
-      existingStartTime = existingAppointment.startTime,
-      existingEndTime = existingAppointment.endTime,
     )
 
     ctx.applyValidations()
@@ -155,15 +151,6 @@ class AppointmentValidationService(
     if (command.endTime <= command.startTime) {
       badRequest("End Time '${command.endTime.formatForUser()}' must be after Start Time '${command.startTime.formatForUser()}'")
     }
-
-    if (existingContactOutcome != null) {
-      if (existingStartTime != null && existingStartTime != command.startTime) {
-        badRequest("The start time cannot be modified once a contact outcome has been set. Current start time is '${existingStartTime.formatForUser()}', proposed start time is '${command.startTime.formatForUser()}'")
-      }
-      if (existingEndTime != null && existingEndTime != command.endTime) {
-        badRequest("The end time cannot be modified once a contact outcome has been set. Current end time is '${existingEndTime.formatForUser()}', proposed end time is '${command.endTime.formatForUser()}'")
-      }
-    }
   }
 
   private fun ValidationContext.validatePenaltyTime() {
@@ -225,9 +212,6 @@ class AppointmentValidationService(
     val unpaidWorkDetails: UnpaidWorkDetailsDto,
     val appointmentDate: LocalDate,
     val appointmentMinutesAlreadyCredited: Duration = Duration.ZERO,
-    val existingContactOutcome: ContactOutcomeEntity? = null,
-    val existingStartTime: LocalTime? = null,
-    val existingEndTime: LocalTime? = null,
   ) {
     fun appointmentIsInFuture() = appointmentDate.atTime(command.startTime).isAfter(LocalDateTime.now())
     fun appointmentIsInPast() = appointmentDate.atTime(command.endTime).isBefore(LocalDateTime.now())
