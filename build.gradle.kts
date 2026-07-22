@@ -3,8 +3,8 @@ import java.net.Socket
 
 plugins {
   id("uk.gov.justice.hmpps.gradle-spring-boot") version "10.5.7"
-  kotlin("plugin.spring") version "2.4.0"
-  kotlin("plugin.jpa") version "2.4.0"
+  kotlin("plugin.spring") version "2.4.10"
+  kotlin("plugin.jpa") version "2.4.10"
   id("dev.detekt") version "2.0.0-alpha.5"
   jacoco
   id("io.sentry.jvm.gradle") version "6.14.0"
@@ -52,10 +52,10 @@ dependencies {
   testImplementation("org.testcontainers:testcontainers-postgresql:2.0.5")
   testImplementation("com.redis:testcontainers-redis:2.2.4")
   testImplementation("org.awaitility:awaitility-kotlin:4.3.0")
-  testImplementation("org.wiremock.integrations:wiremock-spring-boot:4.2.1")
+  testImplementation("org.wiremock.integrations:wiremock-spring-boot:4.2.2")
   testImplementation("io.mockk:mockk:1.14.11")
   testImplementation("com.lemonappdev:konsist:0.17.3")
-  testImplementation("uk.gov.justice.service.hmpps:hmpps-subject-access-request-test-support:2.6.1")
+  testImplementation("uk.gov.justice.service.hmpps:hmpps-subject-access-request-test-support:2.6.2")
   testImplementation("org.zalando:logbook-spring-boot-starter:4.0.4")
   testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0")
 
