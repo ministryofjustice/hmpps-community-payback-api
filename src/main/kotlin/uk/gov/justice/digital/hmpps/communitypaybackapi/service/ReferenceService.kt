@@ -2,12 +2,14 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.service
 
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ContactOutcomeGroupDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeGroupDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentReasonEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.CommunityCampusPduEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeGroup
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EnforcementActionEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ProjectTypeEntityRepository
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ProjectTypeGroup
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
 
 @Service
@@ -20,7 +22,11 @@ class ReferenceService(
 ) {
   fun getAdjustmentReasons() = adjustmentReasonEntity.findAllByOrderByNameAsc().toDto()
 
-  fun getProjectTypes() = projectTypeEntityRepository.findAllByOrderByNameAsc().toDto()
+  fun getProjectTypes(groups: List<ProjectTypeGroupDto>) = if (groups.isEmpty()) {
+    projectTypeEntityRepository.findAllByOrderByNameAsc().toDto()
+  } else {
+    projectTypeEntityRepository.findByProjectTypeGroupInOrderByNameAsc(groups.map { ProjectTypeGroup.fromDto(it) }).toDto()
+  }
 
   fun getContactOutcomes(
     group: ContactOutcomeGroupDto?,
