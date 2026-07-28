@@ -15,12 +15,15 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSessionSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.PageResponse
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ContactOutcomeDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.OffenderDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.OffenderDto.OffenderFullDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.OffenderDto.OffenderLimitedDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
-import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.valid
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.validFull
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.AppointmentMappers
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.SessionMappers
@@ -133,8 +136,9 @@ class SessionMappersTest {
         projectName = "Project Name 1",
       )
       val appointments = listOf(
-        AppointmentSummaryDto.valid(),
-        AppointmentSummaryDto.valid(),
+        AppointmentSummaryDto.valid().copy(offender = OffenderLimitedDto("X000000")),
+        AppointmentSummaryDto.valid().copy(offender = OffenderDto.validFull().copy(forename = "A", surname = "Z", crn = "X123456")),
+        AppointmentSummaryDto.valid().copy(offender = OffenderDto.validFull().copy(forename = "Z", surname = "A", crn = "X987654")),
       )
 
       val result = service.toSessionDto(
@@ -147,7 +151,15 @@ class SessionMappersTest {
       assertThat(result.projectName).isEqualTo("Project Name 1")
       assertThat(result.location).isEqualTo(project.location)
       assertThat(result.date).isEqualTo(LocalDate.of(2025, 9, 1))
-      assertThat(result.appointmentSummaries).isEqualTo(appointments)
+      assertThat(result.appointmentSummaries.size).isEqualTo(appointments.size)
+
+      assertThat(result.appointmentSummaries[0].offender).isInstanceOf(OffenderFullDto::class.java).extracting("forename").isEqualTo("Z")
+      assertThat(result.appointmentSummaries[0].offender).isInstanceOf(OffenderFullDto::class.java).extracting("surname").isEqualTo("A")
+      assertThat(result.appointmentSummaries[0].offender).isInstanceOf(OffenderFullDto::class.java).extracting { it.crn }.isEqualTo("X987654")
+      assertThat(result.appointmentSummaries[1].offender).isInstanceOf(OffenderFullDto::class.java).extracting("forename").isEqualTo("A")
+      assertThat(result.appointmentSummaries[1].offender).isInstanceOf(OffenderFullDto::class.java).extracting("surname").isEqualTo("Z")
+      assertThat(result.appointmentSummaries[1].offender).isInstanceOf(OffenderFullDto::class.java).extracting { it.crn }.isEqualTo("X123456")
+      assertThat(result.appointmentSummaries[2].offender).isInstanceOf(OffenderLimitedDto::class.java).extracting { it.crn }.isEqualTo("X000000")
 
       assertThat(result.projectLocation).isEqualTo("")
     }
