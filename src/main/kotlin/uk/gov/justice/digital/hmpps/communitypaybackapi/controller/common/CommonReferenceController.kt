@@ -13,6 +13,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CommunityCampusPdusD
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ContactOutcomeGroupDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ContactOutcomesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EnforcementActionsDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeGroupDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ReferenceService
 
@@ -47,7 +48,10 @@ class CommonReferenceController(val referenceService: ReferenceService) {
     ],
   )
   @Cacheable(CacheKey.Api.GET_PROJECT_TYPES)
-  fun getProjectTypes(): ProjectTypesDto = referenceService.getProjectTypes()
+  fun getProjectTypes(
+    @RequestParam("group", required = false)
+    groups: List<ProjectTypeGroupDto> = emptyList(),
+  ): ProjectTypesDto = referenceService.getProjectTypes(groups)
 
   @GetMapping("/contact-outcomes")
   @Operation(

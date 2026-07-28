@@ -11,6 +11,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ContactOutcomesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EnforcementActionsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ProjectTypeEntityRepository
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ProjectTypeGroup
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.bodyAsObject
 
 class CommonReferencesIT : IntegrationTestBase() {
@@ -100,7 +101,7 @@ class CommonReferencesIT : IntegrationTestBase() {
     }
 
     @Test
-    fun `should return OK with project types`() {
+    fun `should return OK with all project types when type group is not specified`() {
       val seededProjectTypes = projectTypeEntityRepository.findAll()
 
       val projectTypes = webTestClient.get()
@@ -117,6 +118,55 @@ class CommonReferencesIT : IntegrationTestBase() {
         assertThat(seededProjectTypes).anyMatch { seeded -> seeded.code == it.code }
         assertThat(seededProjectTypes).anyMatch { seeded -> seeded.name == it.name }
         assertThat(seededProjectTypes).anyMatch { seeded -> seeded.id == it.id }
+      }
+    }
+
+    @Test
+    fun `should return OK with project types filtered by a single type group`() {
+      val seededProjectTypes = projectTypeEntityRepository.findAll().filter { it.projectTypeGroup == ProjectTypeGroup.INDIVIDUAL }
+
+      assertThat(seededProjectTypes).isNotEmpty
+
+      val projectTypes = webTestClient.get()
+        .uri("/common/references/project-types?group=INDIVIDUAL")
+        .addAdminUiAuthHeader()
+        .exchange()
+        .expectStatus()
+        .isOk
+        .bodyAsObject<ProjectTypesDto>()
+
+      assertThat(projectTypes.projectTypes).hasSize(seededProjectTypes.size)
+
+      projectTypes.projectTypes.forEach {
+        assertThat(seededProjectTypes).anyMatch { seeded -> seeded.code == it.code }
+        assertThat(seededProjectTypes).anyMatch { seeded -> seeded.name == it.name }
+        assertThat(seededProjectTypes).anyMatch { seeded -> seeded.id == it.id }
+        assertThat(seededProjectTypes).allMatch { seeded -> seeded.projectTypeGroup?.name == "INDIVIDUAL" }
+      }
+    }
+
+    @Test
+    fun `should return OK with project types filtered by multiple type groups`() {
+      val seededProjectTypes = projectTypeEntityRepository.findAll().filter { it.projectTypeGroup == ProjectTypeGroup.INDIVIDUAL || it.projectTypeGroup == ProjectTypeGroup.ETE }
+
+      assertThat(seededProjectTypes.any { it.projectTypeGroup == ProjectTypeGroup.INDIVIDUAL }).isTrue
+      assertThat(seededProjectTypes.any { it.projectTypeGroup == ProjectTypeGroup.ETE }).isTrue
+
+      val projectTypes = webTestClient.get()
+        .uri("/common/references/project-types?group=INDIVIDUAL&group=ETE")
+        .addAdminUiAuthHeader()
+        .exchange()
+        .expectStatus()
+        .isOk
+        .bodyAsObject<ProjectTypesDto>()
+
+      assertThat(projectTypes.projectTypes).hasSize(seededProjectTypes.size)
+
+      projectTypes.projectTypes.forEach {
+        assertThat(seededProjectTypes).anyMatch { seeded -> seeded.code == it.code }
+        assertThat(seededProjectTypes).anyMatch { seeded -> seeded.name == it.name }
+        assertThat(seededProjectTypes).anyMatch { seeded -> seeded.id == it.id }
+        assertThat(seededProjectTypes).allMatch { seeded -> seeded.projectTypeGroup?.name == "INDIVIDUAL" || seeded.projectTypeGroup?.name == "ETE" }
       }
     }
   }

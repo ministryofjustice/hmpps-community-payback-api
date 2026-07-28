@@ -9,4 +9,5 @@ interface ProjectTypeEntityRepository : JpaRepository<ProjectTypeEntity, UUID> {
   fun getByCode(code: String): ProjectTypeEntity?
   fun findByProjectTypeGroupOrderByCodeAsc(projectTypeGroup: ProjectTypeGroup): List<ProjectTypeEntity>
   fun findAllByOrderByNameAsc(): List<ProjectTypeEntity>
+  fun findByProjectTypeGroupInOrderByNameAsc(projectTypeGroups: List<ProjectTypeGroup>): List<ProjectTypeEntity>
 }
