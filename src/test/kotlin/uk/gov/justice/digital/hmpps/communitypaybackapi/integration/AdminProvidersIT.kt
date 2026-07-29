@@ -355,6 +355,44 @@ class AdminProvidersIT : IntegrationTestBase() {
     }
 
     @Test
+    fun `should return OK with project session summaries for provided project type codes`() {
+      val projectName1 = "Community Garden Maintenance"
+      val projectName2 = "Park Cleanup"
+      val sessions = listOf(
+        NDSessionSummary.valid().copy(project = NDProjectSummary.valid().copy(description = projectName1)),
+        NDSessionSummary.valid().copy(project = NDProjectSummary.valid().copy(description = projectName2)),
+      )
+
+      CommunityPaybackAndDeliusMockServer.setupGetSessionsResponse(
+        listOf("999"),
+        LocalDate.of(2025, 1, 9),
+        LocalDate.of(2025, 1, 12),
+        sessions = PageResponse(
+          content = sessions,
+          page = PageMeta(50, 0, 2, 1),
+        ),
+        listOf("NP1"),
+        "projectName,asc",
+      )
+
+      val sessionSearchResults = webTestClient.get()
+        .uri("/admin/providers/PC01/teams/999/sessions?startDate=2025-01-09&endDate=2025-01-12&projectType=NP1")
+        .addAdminUiAuthHeader()
+        .exchange()
+        .expectStatus()
+        .isOk
+        .bodyAsObject<PageResponse<SessionSummaryDto>>()
+
+      assertThat(sessionSearchResults.content).hasSize(2)
+      assertThat(sessionSearchResults.content[0].projectName).isEqualTo(projectName1)
+      assertThat(sessionSearchResults.content[1].projectName).isEqualTo(projectName2)
+      assertThat(sessionSearchResults.page.size).isEqualTo(50)
+      assertThat(sessionSearchResults.page.totalPages).isEqualTo(1)
+      assertThat(sessionSearchResults.page.totalElements).isEqualTo(2)
+      assertThat(sessionSearchResults.page.number).isEqualTo(0)
+    }
+
+    @Test
     fun `should return OK with paginated response when pagination parameters are provided`() {
       val projectName1 = "Community Garden Maintenance"
       val projectName2 = "Park Cleanup"
