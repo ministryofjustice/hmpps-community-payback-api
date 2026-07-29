@@ -6,6 +6,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSessionSummarie
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSessionSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.PageResponse
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentSummaryDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.OffenderDto.OffenderFullDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.PageMetaDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionDto
@@ -13,12 +14,22 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionSummariesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
 import java.time.LocalDate
+import kotlin.comparisons.nullsLast
 
 @Service
 class SessionMappers(
   val appointmentMappers: AppointmentMappers,
   val contactOutcomeEntityRepository: ContactOutcomeEntityRepository,
 ) {
+
+  private val compareAppointmentsByPersonName: Comparator<AppointmentSummaryDto> = { a, b ->
+    val offenderA = a.offender as? OffenderFullDto
+    val offenderB = b.offender as? OffenderFullDto
+
+    val comparator = nullsLast(compareBy<OffenderFullDto> { it.surname }.thenBy { it.forename })
+
+    comparator.compare(offenderA, offenderB)
+  }
 
   fun toSessionDto(
     date: LocalDate,
@@ -29,7 +40,7 @@ class SessionMappers(
     projectName = project.projectName,
     location = project.location,
     date = date,
-    appointmentSummaries = appointments,
+    appointmentSummaries = appointments.sortedWith(compareAppointmentsByPersonName),
     // deprecated fields
     projectLocation = "",
   )
