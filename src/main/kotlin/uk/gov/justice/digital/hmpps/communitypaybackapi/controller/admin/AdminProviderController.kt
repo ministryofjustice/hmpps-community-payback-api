@@ -144,6 +144,7 @@ class AdminProviderController(
     ],
   )
   fun getSessions(
+    @Suppress("unused") // The provider code is no longer needed by the downstream API call but is kept for backwards compatibility
     @PathVariable providerCode: String,
     @PathVariable teamCode: String,
     @RequestParam
@@ -155,12 +156,11 @@ class AdminProviderController(
     @Parameter(hidden = true)
     @PageableDefault(size = 50, sort = ["projectName"], direction = Sort.Direction.ASC) pageable: Pageable,
   ) = sessionService.getSessions(
-    providerCode,
-    teamCode,
-    startDate,
-    endDate,
-    ProjectTypeGroupDto.GROUP,
-    pageable,
+    teamCodes = listOf(teamCode),
+    startDate = startDate,
+    endDate = endDate,
+    projectTypeGroup = ProjectTypeGroupDto.GROUP,
+    pageable = pageable,
   )
 
   @GetMapping("/{providerCode}/teams/{teamCode}/projects")

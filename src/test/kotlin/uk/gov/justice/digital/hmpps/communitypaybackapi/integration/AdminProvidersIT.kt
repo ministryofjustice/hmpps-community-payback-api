@@ -12,16 +12,16 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProviderSummari
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProviderSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProviderTeamSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProviderTeamSummary
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSessionSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSessionSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSupervisorSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSupervisorSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.PageResponse
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.PageResponse.PageMeta
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.PickUpLocationsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectOutcomeSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProviderSummariesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProviderTeamSummariesDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionSummariesDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SupervisorSummariesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.empty
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
@@ -326,18 +326,15 @@ class AdminProvidersIT : IntegrationTestBase() {
       )
 
       CommunityPaybackAndDeliusMockServer.setupGetSessionsResponse(
-        providerCode = "PC01",
-        teamCode = "999",
-        startDate = LocalDate.of(2025, 1, 9),
-        endDate = LocalDate.of(2025, 1, 12),
-        typeCode = listOf("NP1", "NP2", "PL"),
-        projectSessions = NDSessionSummaries(
-          sessions,
-          pageResponse = PageResponse(
-            content = sessions,
-            page = PageResponse.PageMeta(50, 0, 2, 1),
-          ),
+        listOf("999"),
+        LocalDate.of(2025, 1, 9),
+        LocalDate.of(2025, 1, 12),
+        sessions = PageResponse(
+          content = sessions,
+          page = PageMeta(50, 0, 2, 1),
         ),
+        listOf("NP1", "NP2", "PL"),
+        "projectName,asc",
       )
 
       val sessionSearchResults = webTestClient.get()
@@ -346,11 +343,8 @@ class AdminProvidersIT : IntegrationTestBase() {
         .exchange()
         .expectStatus()
         .isOk
-        .bodyAsObject<SessionSummariesDto>()
+        .bodyAsObject<PageResponse<SessionSummaryDto>>()
 
-      assertThat(sessionSearchResults.allocations).hasSize(2)
-      assertThat(sessionSearchResults.allocations[0].projectName).isEqualTo(projectName1)
-      assertThat(sessionSearchResults.allocations[1].projectName).isEqualTo(projectName2)
       assertThat(sessionSearchResults.content).hasSize(2)
       assertThat(sessionSearchResults.content[0].projectName).isEqualTo(projectName1)
       assertThat(sessionSearchResults.content[1].projectName).isEqualTo(projectName2)
@@ -370,19 +364,15 @@ class AdminProvidersIT : IntegrationTestBase() {
       )
 
       CommunityPaybackAndDeliusMockServer.setupGetSessionsResponse(
-        providerCode = "PC01",
-        teamCode = "999",
-        startDate = LocalDate.of(2025, 1, 9),
-        endDate = LocalDate.of(2025, 1, 12),
-        typeCode = listOf("NP1", "NP2", "PL"),
-        projectSessions = NDSessionSummaries(
-          sessions,
-          pageResponse = PageResponse(
-            content = sessions,
-            page = PageResponse.PageMeta(25, 0, 2, 1),
-          ),
+        listOf("999"),
+        LocalDate.of(2025, 1, 9),
+        LocalDate.of(2025, 1, 12),
+        sessions = PageResponse(
+          content = sessions,
+          page = PageMeta(25, 0, 2, 1),
         ),
-        sortString = "projectName,desc",
+        listOf("NP1", "NP2", "PL"),
+        "projectName,desc",
       )
 
       val sessionSearchResults = webTestClient.get()
@@ -391,11 +381,8 @@ class AdminProvidersIT : IntegrationTestBase() {
         .exchange()
         .expectStatus()
         .isOk
-        .bodyAsObject<SessionSummariesDto>()
+        .bodyAsObject<PageResponse<SessionSummaryDto>>()
 
-      assertThat(sessionSearchResults.allocations).hasSize(2)
-      assertThat(sessionSearchResults.allocations[0].projectName).isEqualTo(projectName1)
-      assertThat(sessionSearchResults.allocations[1].projectName).isEqualTo(projectName2)
       assertThat(sessionSearchResults.content).hasSize(2)
       assertThat(sessionSearchResults.content[0].projectName).isEqualTo(projectName1)
       assertThat(sessionSearchResults.content[1].projectName).isEqualTo(projectName2)
@@ -408,12 +395,12 @@ class AdminProvidersIT : IntegrationTestBase() {
     @Test
     fun `should return empty list when no session summaries found`() {
       CommunityPaybackAndDeliusMockServer.setupGetSessionsResponse(
-        providerCode = "PC01",
-        teamCode = "999",
+        listOf(element = "999"),
         startDate = LocalDate.of(2025, 1, 9),
         endDate = LocalDate.of(2025, 1, 11),
+        sessions = PageResponse.empty(),
         typeCode = listOf("NP1", "NP2", "PL"),
-        projectSessions = NDSessionSummaries(emptyList(), pageResponse = PageResponse.empty()),
+        sortString = "projectName,asc",
       )
 
       val sessionSummaries = webTestClient.get()
@@ -422,9 +409,9 @@ class AdminProvidersIT : IntegrationTestBase() {
         .exchange()
         .expectStatus()
         .isOk
-        .bodyAsObject<SessionSummariesDto>()
+        .bodyAsObject<PageResponse<SessionSummaryDto>>()
 
-      assertThat(sessionSummaries.allocations).isEmpty()
+      assertThat(sessionSummaries.content).isEmpty()
     }
   }
 
