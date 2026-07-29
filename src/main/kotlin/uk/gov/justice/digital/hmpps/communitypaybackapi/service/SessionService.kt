@@ -69,6 +69,20 @@ class SessionService(
     projectTypeGroup: ProjectTypeGroupDto?,
     pageable: Pageable,
   ): Page<SessionSummaryDto> {
+    val projectTypeCodes = projectTypeGroup?.let { projectTypeGroup ->
+      projectService.projectTypesForGroup(projectTypeGroup).map { it.code }
+    } ?: emptyList()
+
+    return getSessions(teamCodes, startDate, endDate, projectTypeCodes, pageable)
+  }
+
+  fun getSessions(
+    teamCodes: List<String>,
+    startDate: LocalDate,
+    endDate: LocalDate,
+    projectTypeCodes: List<String>,
+    pageable: Pageable,
+  ): Page<SessionSummaryDto> {
     if (ChronoUnit.DAYS.between(startDate, endDate) > 7) {
       badRequest("Date range cannot be greater than 7 days")
     }
@@ -77,9 +91,7 @@ class SessionService(
       teamCodes = teamCodes,
       startDate = startDate,
       endDate = endDate,
-      typeCode = projectTypeGroup?.let { projectTypeGroup ->
-        projectService.projectTypesForGroup(projectTypeGroup).map { it.code }
-      },
+      typeCode = projectTypeCodes,
       params = pageable.toHttpParams(),
     )
 

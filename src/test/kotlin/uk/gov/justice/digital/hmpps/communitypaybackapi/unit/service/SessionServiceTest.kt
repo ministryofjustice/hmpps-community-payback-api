@@ -54,7 +54,7 @@ class SessionServiceTest {
   private lateinit var service: SessionService
 
   @Nested
-  inner class GetSessions {
+  inner class GetSessionsByProjectTypeGroup {
 
     @Test
     fun `if date range greater than 7 days throw exception`() {
@@ -101,6 +101,61 @@ class SessionServiceTest {
         startDate = LocalDate.of(2025, 1, 1),
         endDate = LocalDate.of(2025, 1, 5),
         projectTypeGroup = ProjectTypeGroupDto.GROUP,
+        pageable = PageRequest.of(pageNumber, pageSize, Sort.by(Sort.Direction.ASC, "projectName")),
+      )
+
+      assertThat(result.content).hasSize(3)
+      assertThat(result.totalElements).isEqualTo(3)
+      assertThat(result.totalPages).isEqualTo(1)
+      assertThat(result.number).isEqualTo(pageNumber)
+      assertThat(result.size).isEqualTo(pageSize)
+    }
+  }
+
+  @Nested
+  inner class GetSessionsByProjectTypeCodes {
+
+    @Test
+    fun `if date range greater than 7 days throw exception`() {
+      assertThatThrownBy {
+        service.getSessions(
+          teamCodes = listOf("team code 1"),
+          startDate = LocalDate.of(2025, 1, 1),
+          endDate = LocalDate.of(2025, 1, 9),
+          projectTypeCodes = emptyList(),
+          pageable = Pageable.unpaged(),
+        )
+      }.isInstanceOf(BadRequestException::class.java).hasMessage("Date range cannot be greater than 7 days")
+    }
+
+    @Test
+    fun `success path`() {
+      val pageNumber = 0
+      val pageSize = 20
+      val sessions = listOf(
+        NDSessionSummary.valid(),
+        NDSessionSummary.valid(),
+        NDSessionSummary.valid(),
+      )
+
+      every {
+        communityPaybackAndDeliusClient.getSessions(
+          teamCodes = listOf("team code 1"),
+          startDate = LocalDate.of(2025, 1, 1),
+          endDate = LocalDate.of(2025, 1, 5),
+          typeCode = listOf("PT1", "PT2"),
+          params = mapOf("page" to pageNumber.toString(), "size" to pageSize.toString(), "sort" to "projectName,asc"),
+        )
+      } returns PageResponse(
+        content = sessions,
+        PageResponse.PageMeta(pageSize, pageNumber, 3, 1),
+      )
+
+      val result = service.getSessions(
+        teamCodes = listOf("team code 1"),
+        startDate = LocalDate.of(2025, 1, 1),
+        endDate = LocalDate.of(2025, 1, 5),
+        projectTypeCodes = listOf("PT1", "PT2"),
         pageable = PageRequest.of(pageNumber, pageSize, Sort.by(Sort.Direction.ASC, "projectName")),
       )
 
