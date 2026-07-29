@@ -10,9 +10,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAddress
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectSummary
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSessionSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSessionSummary
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.PageResponse
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ContactOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.OffenderDto
@@ -42,62 +40,6 @@ class SessionMappersTest {
 
   @InjectMockKs
   private lateinit var service: SessionMappers
-
-  @Nested
-  inner class SessionSummariesToSessionSummariesDto {
-
-    @Test
-    fun `should map ProjectAllocations to DTO correctly`() {
-      val sessions = listOf(
-        NDSessionSummary(
-          project = NDProjectSummary(
-            code = "cg",
-            description = "Community Garden",
-          ),
-          date = LocalDate.of(2025, 9, 1),
-          allocatedCount = 0,
-          outcomeCount = 1,
-          enforcementActionCount = 2,
-        ),
-        NDSessionSummary(
-          project = NDProjectSummary(
-            code = "pc",
-            description = "Park Cleanup",
-          ),
-          date = LocalDate.of(2025, 9, 8),
-          allocatedCount = 3,
-          outcomeCount = 4,
-          enforcementActionCount = 5,
-        ),
-      )
-
-      val projectSessions = NDSessionSummaries(
-        sessions,
-        pageResponse = PageResponse(
-          content = sessions,
-          page = PageResponse.PageMeta(50, 0, 2, 1),
-        ),
-      )
-
-      val projectAllocationsDto = projectSessions.toDto()
-
-      assertThat(projectAllocationsDto.allocations).hasSize(2)
-
-      assertThat(projectAllocationsDto.allocations[0].projectName).isEqualTo("Community Garden")
-      assertThat(projectAllocationsDto.allocations[0].date).isEqualTo(LocalDate.of(2025, 9, 1))
-      assertThat(projectAllocationsDto.allocations[0].projectCode).isEqualTo("cg")
-      assertThat(projectAllocationsDto.allocations[0].numberOfOffendersAllocated).isEqualTo(0)
-      assertThat(projectAllocationsDto.allocations[0].numberOfOffendersWithOutcomes).isEqualTo(1)
-      assertThat(projectAllocationsDto.allocations[0].numberOfOffendersWithEA).isEqualTo(2)
-
-      assertThat(projectAllocationsDto.allocations[1].projectName).isEqualTo("Park Cleanup")
-      assertThat(projectAllocationsDto.allocations[1].date).isEqualTo(LocalDate.of(2025, 9, 8))
-      assertThat(projectAllocationsDto.allocations[1].projectCode).isEqualTo("pc")
-      assertThat(projectAllocationsDto.allocations[1].numberOfOffendersAllocated).isEqualTo(3)
-      assertThat(projectAllocationsDto.allocations[1].numberOfOffendersWithOutcomes).isEqualTo(4)
-      assertThat(projectAllocationsDto.allocations[1].numberOfOffendersWithEA).isEqualTo(5)
-    }
-  }
 
   @Nested
   inner class SessionSummaryToSessionSummaryDto {

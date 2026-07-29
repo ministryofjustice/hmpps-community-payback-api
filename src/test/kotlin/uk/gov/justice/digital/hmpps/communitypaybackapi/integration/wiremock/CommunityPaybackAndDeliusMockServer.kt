@@ -31,7 +31,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectOutcomeStats
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProviderSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProviderTeamSummaries
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSessionSummaries
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSessionSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSupervisor
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSupervisorSummaries
@@ -280,36 +279,6 @@ object CommunityPaybackAndDeliusMockServer {
           .withHeader("Content-Type", "application/json")
           .withBody(jsonMapper.writeValueAsString(providerTeams)),
       ),
-    )
-  }
-
-  @Deprecated("This mocks a deprecated endpoint.", replaceWith = ReplaceWith("setupGetSessionsResponse(listOf(teamCode), startDate, endDate, sessions, typeCode, sortString)"))
-  fun setupGetSessionsResponse(
-    providerCode: String,
-    teamCode: String,
-    startDate: LocalDate,
-    endDate: LocalDate,
-    projectSessions: NDSessionSummaries,
-    typeCode: List<String> = emptyList(),
-    sortString: String = "projectName,asc",
-  ) {
-    val url = buildString {
-      append("/community-payback-and-delius/providers/$providerCode/teams/$teamCode/sessions?startDate=${startDate.toIsoDateString()}&endDate=${endDate.toIsoDateString()}")
-      typeCode.forEach {
-        append("&typeCode=$it")
-      }
-      append("&page=${projectSessions.pageResponse.page.number}")
-      append("&size=${projectSessions.pageResponse.page.size}")
-      append("&sort=${URLEncoder.encode(sortString, "UTF-8")}")
-    }
-
-    WireMock.stubFor(
-      get(url)
-        .willReturn(
-          aResponse()
-            .withHeader("Content-Type", "application/json")
-            .withBody(jsonMapper.writeValueAsString(projectSessions)),
-        ),
     )
   }
 

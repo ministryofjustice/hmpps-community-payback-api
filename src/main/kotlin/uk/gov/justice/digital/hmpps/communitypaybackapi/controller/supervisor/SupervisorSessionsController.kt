@@ -55,35 +55,6 @@ class SupervisorSessionsController(
     @PathVariable supervisorCode: String,
   ) = sessionService.getNextAllocationForSupervisor(supervisorCode) ?: throw NotFoundException("There are no future sessions for supervisor $supervisorCode")
 
-  @Deprecated("The GET /supervisor/sessions/recent endpoint should be used instead.")
-  @PageableAsQueryParam
-  @GetMapping(
-    path = [ "/supervisor/providers/{providerCode}/teams/{teamCode}/sessions/future"],
-    produces = [MediaType.APPLICATION_JSON_VALUE],
-  )
-  @Operation(
-    description = "Get sessions scheduled for the next 7 days (including today) that belong to a supervisor's provider and team.",
-    responses = [
-      ApiResponse(
-        responseCode = "200",
-        description = "Successful response",
-      ),
-    ],
-  )
-  fun getFutureSessions(
-    @PathVariable providerCode: String,
-    @PathVariable teamCode: String,
-    @Parameter(hidden = true)
-    @PageableDefault(size = 50, sort = ["date"], direction = Sort.Direction.DESC) pageable: Pageable,
-  ) = sessionService.getSessions(
-    providerCode,
-    teamCode,
-    LocalDate.now(),
-    LocalDate.now().plusDays(7),
-    projectTypeGroup = ProjectTypeGroupDto.GROUP,
-    pageable = pageable,
-  )
-
   @PageableAsQueryParam
   @GetMapping(
     path = ["/supervisor/sessions/recent"],
