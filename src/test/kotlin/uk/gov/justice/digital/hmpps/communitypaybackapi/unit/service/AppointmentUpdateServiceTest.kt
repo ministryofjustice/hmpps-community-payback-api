@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.ConflictException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.InternalServerErrorException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.valid
@@ -58,7 +58,7 @@ class AppointmentUpdateServiceTest {
   inner class UpdateAppointmentOutcome {
 
     val existingAppointment = AppointmentDto.valid().copy(id = DELIUS_APPOINTMENT_ID, projectCode = PROJECT_CODE)
-    val updateRequest = UpdateAppointmentOutcomeDto.valid().copy(deliusId = DELIUS_APPOINTMENT_ID)
+    val updateRequest = UpdateAppointmentDto.valid().copy(deliusId = DELIUS_APPOINTMENT_ID)
 
     @Test
     fun `if there's no existing entries for the delius appointment ids, persist new entry, raise domain event and invoke update endpoint`() {

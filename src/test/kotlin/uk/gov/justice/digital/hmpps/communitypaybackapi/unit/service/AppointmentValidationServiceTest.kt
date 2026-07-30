@@ -25,7 +25,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeGroupDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SchedulingDayOfWeekDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsIdDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.BadRequestException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
@@ -728,7 +728,7 @@ class AppointmentValidationServiceTest {
       ),
       minutesCredited = 0,
     )
-    val baselineUpdate = UpdateAppointmentOutcomeDto.valid().copy(
+    val baselineUpdate = UpdateAppointmentDto.valid().copy(
       contactOutcomeCode = OUTCOME_CODE,
       date = LocalDate.of(2025, 1, 1),
       startTime = LocalTime.MIN,
@@ -845,7 +845,7 @@ class AppointmentValidationServiceTest {
               date = LocalDate.of(2030, 5, 4),
             ),
             update = baselineUpdate.copy(
-              date = null,
+              date = LocalDate.of(2030, 5, 4),
             ),
           )
         }.isInstanceOf(BadRequestException::class.java)
@@ -881,7 +881,7 @@ class AppointmentValidationServiceTest {
               date = LocalDate.of(2030, 5, 5),
             ),
             update = baselineUpdate.copy(
-              date = null,
+              date = LocalDate.of(2030, 5, 5),
             ),
           )
         }.isInstanceOf(BadRequestException::class.java)
@@ -918,7 +918,7 @@ class AppointmentValidationServiceTest {
               date = LocalDate.of(2025, 1, 1),
             ),
             update = baselineUpdate.copy(
-              date = null,
+              date = LocalDate.of(2025, 1, 1),
             ),
           )
         }.isInstanceOf(BadRequestException::class.java)
@@ -962,7 +962,7 @@ class AppointmentValidationServiceTest {
               date = LocalDate.of(2026, 2, 25),
             ),
             update = baselineUpdate.copy(
-              date = null,
+              date = LocalDate.of(2026, 2, 25),
             ),
           )
         }.isInstanceOf(BadRequestException::class.java)

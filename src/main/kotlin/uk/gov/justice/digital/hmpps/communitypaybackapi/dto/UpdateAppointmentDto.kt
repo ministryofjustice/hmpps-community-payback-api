@@ -13,7 +13,7 @@ data class UpdateAppointmentsDto(
   companion object
 
   fun toUpdateAppointmentOutcomesDto() = UpdateAppointmentOutcomesDto(
-    updates.map { it.toUpdateAppointmentOutcomeDto() },
+    updates,
   )
 }
 
@@ -40,19 +40,6 @@ data class UpdateAppointmentDto(
 ) : AppointmentCommandDto {
   companion object
 
-  fun toUpdateAppointmentOutcomeDto() = UpdateAppointmentOutcomeDto(
-    deliusId = deliusId,
-    deliusVersionToUpdate = deliusVersionToUpdate,
-    date = date,
-    startTime = startTime,
-    endTime = endTime,
-    contactOutcomeCode = contactOutcomeCode,
-    attendanceData = attendanceData,
-    supervisorOfficerCode = supervisorOfficerCode,
-    supervisorTeamCode = supervisorTeamCode,
-    projectCode = projectCode,
-    notes = notes,
-    alertActive = alertActive,
-    sensitive = sensitive,
-  )
+  fun resolveSupervisorTeamCode(existingAppointment: AppointmentDto) = supervisorTeamCode ?: existingAppointment.supervisingTeamCode
+  fun resolveProjectCode(existingAppointment: AppointmentDto) = projectCode ?: existingAppointment.projectCode
 }

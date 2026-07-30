@@ -17,7 +17,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectAndLocat
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AttendanceDataDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeResultType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentsOutcomesResultDto
@@ -208,112 +207,6 @@ class SupervisorAppointmentsIT : IntegrationTestBase() {
         .addSupervisorUiAuthHeader("theusername")
         .bodyValue(
           UpdateAppointmentDto.valid(ctx).copy(
-            deliusId = 1234L,
-            attendanceData = AttendanceDataDto.valid(),
-          ),
-        )
-        .exchange()
-        .expectStatus()
-        .isOk()
-
-      CommunityPaybackAndDeliusMockServer.verifyPutAppointmentRequest(
-        projectCode = "PC01",
-        appointmentId = 1234L,
-      )
-
-      domainEventAsserter.assertEventCount("community-payback.appointment.updated", 1)
-    }
-  }
-
-  @Nested
-  @DisplayName("POST /supervisor/projects/{projectCode}/appointments/{deliusAppointmentId}/outcome")
-  inner class UpdateAppointmentOutcome {
-
-    @BeforeEach
-    fun setUp() {
-      appointmentOutcomeEntityRepository.deleteAll()
-    }
-
-    @Test
-    fun `should return unauthorized if no token`() {
-      webTestClient.post()
-        .uri("/supervisor/projects/PC01/appointments/1234/outcome")
-        .bodyValue(UpdateAppointmentOutcomeDto.valid())
-        .exchange()
-        .expectStatus()
-        .isUnauthorized
-    }
-
-    @Test
-    fun `should return forbidden if no role`() {
-      webTestClient.post()
-        .uri("/supervisor/projects/PC01/appointments/1234/outcome")
-        .bodyValue(UpdateAppointmentOutcomeDto.valid())
-        .headers(setAuthorisation())
-        .exchange()
-        .expectStatus()
-        .isForbidden
-    }
-
-    @Test
-    fun `should return forbidden if wrong role`() {
-      webTestClient.post()
-        .uri("/supervisor/projects/PC01/appointments/1234/outcome")
-        .bodyValue(UpdateAppointmentOutcomeDto.valid())
-        .headers(setAuthorisation(roles = listOf("ROLE_WRONG")))
-        .exchange()
-        .expectStatus()
-        .isForbidden
-    }
-
-    @Test
-    fun `Should return 404 if an appointment can't be found`() {
-      CommunityPaybackAndDeliusMockServer.setupPutAppointment404Response(
-        projectCode = "PC01",
-        appointmentId = 1234L,
-      )
-
-      val response = webTestClient.post()
-        .uri("/supervisor/projects/PC01/appointments/1234/outcome")
-        .addSupervisorUiAuthHeader()
-        .bodyValue(
-          UpdateAppointmentOutcomeDto.valid(ctx).copy(
-            deliusId = 1234L,
-            attendanceData = AttendanceDataDto.valid(),
-          ),
-        )
-        .exchange()
-        .expectStatus()
-        .isNotFound()
-        .bodyAsObject<ErrorResponse>()
-
-      assertThat(response.userMessage).isEqualTo("No resource found failure: Appointment not found for ID 'Project PC01, NDelius ID 1234'")
-    }
-
-    @Test
-    fun `Should send update upstream and delete corresponding form data`() {
-      CommunityPaybackAndDeliusMockServer.Aggregates.setupGetDataMocksForUpdateAppointment(
-        existingAppointment = NDAppointment.validNoOutcome(ctx).copy(
-          id = 1234L,
-          project = NDProjectAndLocation.valid().copy(code = "PC01"),
-          date = LocalDate.now(),
-          event = NDEvent.valid().copy(number = EVENT_NUMBER),
-          case = NDCaseSummary.valid().copy(crn = CRN),
-        ),
-        username = "theusername",
-        project = NDProject.valid(ctx).copy(code = "PC01"),
-      )
-
-      CommunityPaybackAndDeliusMockServer.setupPutAppointmentResponse(
-        projectCode = "PC01",
-        appointmentId = 1234L,
-      )
-
-      webTestClient.post()
-        .uri("/supervisor/projects/PC01/appointments/1234/outcome")
-        .addSupervisorUiAuthHeader("theusername")
-        .bodyValue(
-          UpdateAppointmentOutcomeDto.valid(ctx).copy(
             deliusId = 1234L,
             attendanceData = AttendanceDataDto.valid(),
           ),

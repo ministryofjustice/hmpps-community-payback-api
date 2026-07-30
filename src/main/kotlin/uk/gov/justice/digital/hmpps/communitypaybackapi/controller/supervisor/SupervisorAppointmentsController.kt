@@ -16,7 +16,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.controller.internal.notF
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.DeliusAppointmentIdDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventTrigger
@@ -101,47 +100,7 @@ class SupervisorAppointmentsController(
   fun updateAppointment(
     @PathVariable projectCode: String,
     @PathVariable deliusAppointmentId: Long,
-    @RequestBody outcome: UpdateAppointmentDto,
-  ) = updateAppointmentOutcome(projectCode, deliusAppointmentId, outcome.toUpdateAppointmentOutcomeDto())
-
-  @PostMapping(
-    path = ["/{deliusAppointmentId}/outcome"],
-    consumes = [MediaType.APPLICATION_JSON_VALUE],
-  )
-  @Operation(
-    deprecated = true,
-    description = """Deprecated, instead use PUT /supervisor/projects/{projectCode}/appointments/{deliusAppointmentId}""",
-    responses = [
-      ApiResponse(
-        responseCode = "200",
-        description = "Appointment update is (or has already) been recorded",
-      ),
-      ApiResponse(
-        responseCode = "404",
-        description = "Invalid appointment ID provided",
-        content = [
-          Content(
-            mediaType = "application/json",
-            schema = Schema(implementation = ErrorResponse::class),
-          ),
-        ],
-      ),
-      ApiResponse(
-        responseCode = "409",
-        description = "A newer version of the appointment exists in Delius",
-        content = [
-          Content(
-            mediaType = "application/json",
-            schema = Schema(implementation = ErrorResponse::class),
-          ),
-        ],
-      ),
-    ],
-  )
-  fun updateAppointmentOutcome(
-    @PathVariable projectCode: String,
-    @PathVariable deliusAppointmentId: Long,
-    @RequestBody update: UpdateAppointmentOutcomeDto,
+    @RequestBody update: UpdateAppointmentDto,
   ) {
     if (update.deliusId != deliusAppointmentId) {
       badRequest("ID in URL should match ID in payload")

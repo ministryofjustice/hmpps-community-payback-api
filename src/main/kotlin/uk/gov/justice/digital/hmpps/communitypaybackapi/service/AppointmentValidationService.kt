@@ -15,7 +15,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeGroupDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsIdDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.derivePenaltyMinutesDuration
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
@@ -62,8 +62,8 @@ class AppointmentValidationService(
 
   fun validateUpdate(
     existingAppointment: AppointmentDto,
-    update: UpdateAppointmentOutcomeDto,
-  ): ValidatedAppointment<UpdateAppointmentOutcomeDto> {
+    update: UpdateAppointmentDto,
+  ): ValidatedAppointment<UpdateAppointmentDto> {
     val projectCode = update.resolveProjectCode(existingAppointment)
     val project = projectService.getProject(projectCode) ?: error("Can't retrieve project $projectCode")
     val upwDetailsId = UnpaidWorkDetailsIdDto(existingAppointment.offender.crn, existingAppointment.deliusEventNumber)
@@ -78,7 +78,7 @@ class AppointmentValidationService(
       contactOutcome = loadContactOutcome(update.contactOutcomeCode),
       pickUpLocation = loadPickUpLocation(project, existingAppointment.pickUpData?.pickupLocation?.deliusCode),
       unpaidWorkDetails = offenderService.getUnpaidWorkDetails(upwDetailsId) ?: badRequest("Cannot find unpaid work details for CRN ${upwDetailsId.crn} and event number ${upwDetailsId.deliusEventNumber}"),
-      appointmentDate = update.resolveDate(existingAppointment),
+      appointmentDate = update.date,
       appointmentMinutesAlreadyCredited = existingAppointment.minutesCredited?.let { Duration.ofMinutes(it) } ?: Duration.ZERO,
     )
 

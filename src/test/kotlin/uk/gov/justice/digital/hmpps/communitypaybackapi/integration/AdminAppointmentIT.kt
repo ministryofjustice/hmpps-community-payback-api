@@ -24,7 +24,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentSummaryDt
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AttendanceDataDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeResultType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentsOutcomesResultDto
@@ -251,129 +250,6 @@ class AdminAppointmentIT : IntegrationTestBase() {
       CommunityPaybackAndDeliusMockServer.verifyPutAppointmentRequest(
         projectCode = "proj123",
         appointmentId = 1234L,
-      )
-
-      domainEventAsserter.assertEventCount("community-payback.appointment.updated", 1)
-
-      assertThat(appointmentTaskEntityRepository.findAll()).hasSize(1)
-    }
-  }
-
-  @Nested
-  @DisplayName("POST /admin/projects/{projectCode}/appointments/{deliusAppointmentId}/outcome")
-  inner class PostAppointmentOutcomeEndpoint {
-
-    @BeforeEach
-    fun setUp() {
-      appointmentOutcomeEntityRepository.deleteAll()
-    }
-
-    @Test
-    fun `should return unauthorized if no token`() {
-      webTestClient.post()
-        .uri("/admin/projects/proj123/appointments/1234/outcome")
-        .bodyValue(UpdateAppointmentOutcomeDto.valid())
-        .exchange()
-        .expectStatus()
-        .isUnauthorized
-    }
-
-    @Test
-    fun `should return forbidden if no role`() {
-      webTestClient.post()
-        .uri("/admin/projects/proj123/appointments/1234/outcome")
-        .bodyValue(UpdateAppointmentOutcomeDto.valid())
-        .headers(setAuthorisation())
-        .exchange()
-        .expectStatus()
-        .isForbidden
-    }
-
-    @Test
-    fun `should return forbidden if wrong role`() {
-      webTestClient.post()
-        .uri("/admin/projects/proj123/appointments/1234/outcome")
-        .bodyValue(UpdateAppointmentOutcomeDto.valid())
-        .headers(setAuthorisation(roles = listOf("ROLE_WRONG")))
-        .exchange()
-        .expectStatus()
-        .isForbidden
-    }
-
-    @Test
-    fun `Should return 404 if an appointment can't be found`() {
-      CommunityPaybackAndDeliusMockServer.setupGetAppointment404Response(
-        projectCode = "proj123",
-        appointmentId = 1234L,
-        username = "theusername",
-      )
-
-      val response = webTestClient.post()
-        .uri("/admin/projects/proj123/appointments/1234/outcome")
-        .addAdminUiAuthHeader("theusername")
-        .bodyValue(
-          UpdateAppointmentOutcomeDto.valid(ctx).copy(
-            deliusId = 1234L,
-            attendanceData = AttendanceDataDto.valid(),
-          ),
-        )
-        .exchange()
-        .expectStatus()
-        .isNotFound()
-        .bodyAsObject<ErrorResponse>()
-
-      assertThat(response.userMessage).isEqualTo("No resource found failure: Appointment not found for ID 'Project proj123, NDelius ID 1234'")
-    }
-
-    @Test
-    fun `Should update upstream, raise domain event, create travel time task`() {
-      appointmentTaskEntityRepository.deleteAll()
-
-      CommunityPaybackAndDeliusMockServer.Aggregates.setupGetDataMocksForUpdateAppointment(
-        existingAppointment = NDAppointment.validNoOutcome(ctx).copy(
-          id = 1234L,
-          project = NDProjectAndLocation.valid().copy(code = "proj123"),
-          date = LocalDate.now(),
-          event = NDEvent.valid().copy(number = EVENT_NUMBER),
-          case = NDCaseSummary.valid().copy(crn = CRN),
-        ),
-        username = "theusername",
-        project = NDProject.valid(ctx).copy(code = "proj123", type = NDProjectType.valid().copy(code = GROUP_PLACEMENT_NATIONAL_PROJECT_CODE)),
-      )
-
-      CommunityPaybackAndDeliusMockServer.setupPutAppointmentResponse(
-        projectCode = "proj123",
-        appointmentId = 1234L,
-      )
-
-      webTestClient.post()
-        .uri("/admin/projects/proj123/appointments/1234/outcome")
-        .addAdminUiAuthHeader("theusername")
-        .bodyValue(
-          UpdateAppointmentOutcomeDto.valid(ctx).copy(
-            deliusId = 1234L,
-            attendanceData = AttendanceDataDto.valid(),
-            contactOutcomeCode = CODE_ATTENDED_COMPLIED,
-            supervisorTeamCode = "TEAM123",
-            projectCode = "proj123",
-            startTime = LocalTime.of(0, 0),
-            endTime = LocalTime.of(1, 0),
-          ),
-        )
-        .exchange()
-        .expectStatus()
-        .isOk()
-
-      CommunityPaybackAndDeliusMockServer.verifyPutAppointmentRequest(
-        CommunityPaybackAndDeliusMockServer.ExpectedAppointmentUpdate(
-          projectCode = "proj123",
-          appointmentId = 1234L,
-          date = LocalDate.now(),
-          startTime = LocalTime.of(0, 0),
-          endTime = LocalTime.of(1, 0),
-          updatedProjectCode = "proj123",
-          supervisorTeamCode = "TEAM123",
-        ),
       )
 
       domainEventAsserter.assertEventCount("community-payback.appointment.updated", 1)

@@ -31,7 +31,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionReso
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAdjustmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentTaskEntity
@@ -381,11 +380,11 @@ class DeliusEventTelemetryIT : IntegrationTestBase() {
       appointmentId = 1234L,
     )
 
-    webTestClient.post()
-      .uri("/admin/projects/proj123/appointments/1234/outcome")
+    webTestClient.put()
+      .uri("/admin/projects/proj123/appointments/1234")
       .addAdminUiAuthHeader("theusername")
       .bodyValue(
-        UpdateAppointmentOutcomeDto.valid(ctx).copy(
+        UpdateAppointmentDto.valid(ctx).copy(
           deliusId = 1234L,
           attendanceData = AttendanceDataDto.valid(),
           contactOutcomeCode = CODE_ATTENDED_COMPLIED,

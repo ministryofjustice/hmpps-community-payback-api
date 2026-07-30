@@ -3,7 +3,7 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.service
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.DeliusAppointmentIdDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeResultDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeResultType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomesDto
@@ -33,7 +33,7 @@ class AppointmentBulkUpdateService(
   @SuppressWarnings("TooGenericExceptionCaught")
   private fun updateAppointment(
     projectCode: String,
-    update: UpdateAppointmentOutcomeDto,
+    update: UpdateAppointmentDto,
     trigger: AppointmentEventTrigger,
   ): UpdateAppointmentOutcomeResultDto {
     val id = DeliusAppointmentIdDto(projectCode, update.deliusId)

@@ -6,7 +6,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionResolutionTypeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAdjustmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentReasonEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentTaskStatus
@@ -55,7 +55,7 @@ sealed interface CommunityPaybackSpringEvent {
   }
 
   data class AppointmentUpdatedEvent(
-    val updateDto: AppointmentValidationService.ValidatedAppointment<UpdateAppointmentOutcomeDto>,
+    val updateDto: AppointmentValidationService.ValidatedAppointment<UpdateAppointmentDto>,
     val appointmentEntity: AppointmentEntity,
     val existingAppointment: AppointmentDto,
     val trigger: AppointmentEventTrigger,
