@@ -11,10 +11,6 @@ data class UpdateAppointmentsDto(
   val updates: List<UpdateAppointmentDto>,
 ) {
   companion object
-
-  fun toUpdateAppointmentOutcomesDto() = UpdateAppointmentOutcomesDto(
-    updates,
-  )
 }
 
 data class UpdateAppointmentDto(

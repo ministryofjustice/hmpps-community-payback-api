@@ -288,7 +288,7 @@ class AdminAppointmentController(
     @RequestBody request: UpdateAppointmentsDto,
   ) = appointmentService.updateAppointments(
     projectCode = projectCode,
-    request = request.toUpdateAppointmentOutcomesDto(),
+    request = request,
     trigger = AppointmentEventTrigger(
       triggeredAt = OffsetDateTime.now(),
       triggerType = AppointmentEventTriggerType.USER,

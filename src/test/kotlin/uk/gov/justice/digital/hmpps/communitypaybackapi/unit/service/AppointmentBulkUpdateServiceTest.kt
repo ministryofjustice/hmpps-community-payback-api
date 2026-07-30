@@ -13,7 +13,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.DeliusAppointmentIdDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeResultType
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomesDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.BadRequestException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.ConflictException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.valid
@@ -69,7 +69,7 @@ class AppointmentBulkUpdateServiceTest {
 
       val result = service.updateAppointments(
         projectCode = PROJECT_CODE,
-        request = UpdateAppointmentOutcomesDto(listOf(update1, update2)),
+        request = UpdateAppointmentsDto(listOf(update1, update2)),
         trigger = TRIGGER,
       )
 
@@ -95,7 +95,7 @@ class AppointmentBulkUpdateServiceTest {
 
       val result = service.updateAppointments(
         projectCode = PROJECT_CODE,
-        request = UpdateAppointmentOutcomesDto(listOf(update1)),
+        request = UpdateAppointmentsDto(listOf(update1)),
         trigger = TRIGGER,
       )
 
@@ -116,7 +116,7 @@ class AppointmentBulkUpdateServiceTest {
 
       val result = service.updateAppointments(
         projectCode = PROJECT_CODE,
-        request = UpdateAppointmentOutcomesDto(listOf(update1)),
+        request = UpdateAppointmentsDto(listOf(update1)),
         trigger = TRIGGER,
       )
 
@@ -139,7 +139,7 @@ class AppointmentBulkUpdateServiceTest {
 
       val result = service.updateAppointments(
         projectCode = PROJECT_CODE,
-        request = UpdateAppointmentOutcomesDto(listOf(update1)),
+        request = UpdateAppointmentsDto(listOf(update1)),
         trigger = TRIGGER,
       )
 
@@ -162,7 +162,7 @@ class AppointmentBulkUpdateServiceTest {
 
       val result = service.updateAppointments(
         projectCode = PROJECT_CODE,
-        request = UpdateAppointmentOutcomesDto(listOf(update1)),
+        request = UpdateAppointmentsDto(listOf(update1)),
         trigger = TRIGGER,
       )
 
@@ -205,7 +205,7 @@ class AppointmentBulkUpdateServiceTest {
 
       val result = service.updateAppointments(
         projectCode = PROJECT_CODE,
-        request = UpdateAppointmentOutcomesDto(listOf(update1, update2, update3, update4, update5)),
+        request = UpdateAppointmentsDto(listOf(update1, update2, update3, update4, update5)),
         trigger = TRIGGER,
       )
 

@@ -235,7 +235,7 @@ class SupervisorAppointmentsIT : IntegrationTestBase() {
 
     @Test
     fun `should return unauthorized if no token`() {
-      webTestClient.post()
+      webTestClient.put()
         .uri("/supervisor/projects/PC01/appointments/bulk")
         .bodyValue(UpdateAppointmentsDto.valid())
         .exchange()
@@ -245,7 +245,7 @@ class SupervisorAppointmentsIT : IntegrationTestBase() {
 
     @Test
     fun `should return forbidden if no role`() {
-      webTestClient.post()
+      webTestClient.put()
         .uri("/supervisor/projects/PC01/appointments/bulk")
         .headers(setAuthorisation())
         .bodyValue(UpdateAppointmentsDto.valid())
@@ -256,7 +256,7 @@ class SupervisorAppointmentsIT : IntegrationTestBase() {
 
     @Test
     fun `should return forbidden if wrong role`() {
-      webTestClient.post()
+      webTestClient.put()
         .uri("/supervisor/projects/PC01/appointments/bulk")
         .headers(setAuthorisation(roles = listOf("ROLE_WRONG")))
         .bodyValue(UpdateAppointmentsDto.valid())
@@ -307,7 +307,7 @@ class SupervisorAppointmentsIT : IntegrationTestBase() {
         appointmentId = 5678L,
       )
 
-      val result = webTestClient.post()
+      val result = webTestClient.put()
         .uri("/supervisor/projects/PC01/appointments/bulk")
         .addSupervisorUiAuthHeader("theusername")
         .bodyValue(

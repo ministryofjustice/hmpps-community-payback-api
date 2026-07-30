@@ -8,7 +8,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentsDt
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.DeliusAppointmentIdDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeGroupDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomesDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentsDto
 import java.time.LocalDate
 
 @Service
@@ -63,7 +63,7 @@ class AppointmentService(
 
   fun updateAppointments(
     projectCode: String,
-    request: UpdateAppointmentOutcomesDto,
+    request: UpdateAppointmentsDto,
     trigger: AppointmentEventTrigger,
   ) = appointmentBulkUpdateService.updateAppointments(projectCode, request, trigger)
 }

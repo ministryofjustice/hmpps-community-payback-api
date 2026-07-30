@@ -6,7 +6,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.DeliusAppointmentIdD
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeResultDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeResultType
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomesDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentsOutcomesResultDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.BadRequestException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.ConflictException
@@ -24,7 +24,7 @@ class AppointmentBulkUpdateService(
 
   fun updateAppointments(
     projectCode: String,
-    request: UpdateAppointmentOutcomesDto,
+    request: UpdateAppointmentsDto,
     trigger: AppointmentEventTrigger,
   ): UpdateAppointmentsOutcomesResultDto = UpdateAppointmentsOutcomesResultDto(
     results = request.updates.map { update -> updateAppointment(projectCode, update, trigger) },
