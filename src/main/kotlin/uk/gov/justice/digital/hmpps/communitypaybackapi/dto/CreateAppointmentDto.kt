@@ -16,7 +16,7 @@ data class CreateAppointmentDto(
   val deliusEventNumber: Int,
   val allocationId: Long?,
   val projectCode: String,
-  val date: LocalDate,
+  override val date: LocalDate,
   @param:Schema(example = "09:00", description = "The start local time of the appointment", pattern = "^([0-1][0-9]|2[0-3]):[0-5][0-9]$")
   override val startTime: LocalTime,
   @param:Schema(example = "14:00", description = "The end local time of the appointment", pattern = "^([0-1][0-9]|2[0-3]):[0-5][0-9]$")
