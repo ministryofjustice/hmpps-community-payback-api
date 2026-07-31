@@ -35,7 +35,7 @@ class WebClientConfiguration(
   /**
    * Before changing timeouts consider the impact on [DomainEventListener.MESSAGE_VISIBILITY_TIMEOUT]
    */
-  @param:Value("\${client.community-payback-and-delius.timeout:10s}") val communityPaybackAndDeliusTimeout: Duration,
+  @param:Value("\${client.community-payback-and-delius.timeout:30s}") val communityPaybackAndDeliusTimeout: Duration,
 
   @param:Value("\${client.arns.url}") val arnsUrl: String,
   @param:Value("\${client.arns.timeout:5s}") val arnsTimeout: Duration,
