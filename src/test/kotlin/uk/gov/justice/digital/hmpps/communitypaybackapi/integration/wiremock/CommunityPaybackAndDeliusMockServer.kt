@@ -513,11 +513,14 @@ object CommunityPaybackAndDeliusMockServer {
   fun setupPutAppointmentResponse(
     projectCode: String,
     appointmentId: Long,
+    fixedDelayMilliseconds: Int = 0,
   ) {
     WireMock.stubFor(
       put("/community-payback-and-delius/projects/$projectCode/appointments/$appointmentId")
         .willReturn(
-          aResponse().withStatus(200),
+          aResponse()
+            .withStatus(200)
+            .withFixedDelay(fixedDelayMilliseconds),
         ),
     )
   }

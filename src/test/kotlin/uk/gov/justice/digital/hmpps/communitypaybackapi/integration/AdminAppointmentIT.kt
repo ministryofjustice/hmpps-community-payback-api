@@ -44,6 +44,8 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.Com
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 import java.time.LocalDate
 import java.time.LocalTime
+import kotlin.time.Duration.Companion.seconds
+import kotlin.time.measureTimedValue
 
 class AdminAppointmentIT : IntegrationTestBase() {
 
@@ -669,6 +671,58 @@ class AdminAppointmentIT : IntegrationTestBase() {
       CommunityPaybackAndDeliusMockServer.verifyPutAppointmentRequest("PC01", 5678L)
 
       domainEventAsserter.assertEventCount("community-payback.appointment.updated", 2)
+    }
+
+    @Test
+    fun `updates appointments concurrently and preserves response order`() {
+      val projectAndLocation = NDProjectAndLocation.valid().copy(code = "PC01")
+      val project = NDProject.valid(ctx).copy(code = "PC01")
+      val pickup = NDAppointmentPickUp.valid()
+      val appointmentIds = listOf(1234L, 2345L, 3456L, 4567L)
+
+      appointmentIds.forEach { appointmentId ->
+        CommunityPaybackAndDeliusMockServer.Aggregates.setupGetDataMocksForUpdateAppointment(
+          existingAppointment = NDAppointment.validNoOutcome(ctx).copy(
+            id = appointmentId,
+            project = projectAndLocation,
+            date = LocalDate.now(),
+            event = NDEvent.valid().copy(number = EVENT_NUMBER),
+            case = NDCaseSummary.valid().copy(crn = "$CRN$appointmentId"),
+            pickUpData = pickup,
+          ),
+          project = project,
+          username = "theusername",
+        )
+        CommunityPaybackAndDeliusMockServer.setupPutAppointmentResponse(
+          projectCode = "PC01",
+          appointmentId = appointmentId,
+          fixedDelayMilliseconds = 1000,
+        )
+      }
+
+      val (result, elapsed) = measureTimedValue {
+        webTestClient.put()
+          .uri("/admin/projects/PC01/appointments/bulk")
+          .addAdminUiAuthHeader("theusername")
+          .bodyValue(
+            UpdateAppointmentsDto(
+              updates = appointmentIds.map { appointmentId ->
+                UpdateAppointmentDto.valid(ctx).copy(deliusId = appointmentId)
+              },
+            ),
+          )
+          .exchange()
+          .expectStatus()
+          .isOk
+          .bodyAsObject<UpdateAppointmentsOutcomesResultDto>()
+      }
+
+      assertThat(elapsed).isLessThan(3.seconds)
+      assertThat(result.results.map { it.deliusId }).containsExactlyElementsOf(appointmentIds)
+      assertThat(result.results.map { it.result }).containsOnly(UpdateAppointmentOutcomeResultType.SUCCESS)
+      appointmentIds.forEach { appointmentId ->
+        CommunityPaybackAndDeliusMockServer.verifyPutAppointmentRequest("PC01", appointmentId)
+      }
     }
 
     @Test

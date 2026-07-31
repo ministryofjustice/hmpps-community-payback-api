@@ -1,7 +1,14 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.service
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.runBlocking
 import org.slf4j.LoggerFactory
+import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
+import org.springframework.web.context.request.RequestContextHolder
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.runWithCallerContext
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.DeliusAppointmentIdDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeResultDto
@@ -19,6 +26,9 @@ class AppointmentBulkUpdateService(
   private val appointmentUpdateService: AppointmentUpdateService,
   private val sentryService: SentryService,
 ) {
+  private companion object {
+    const val MAX_CONCURRENT_UPDATES = 4
+  }
 
   private val log = LoggerFactory.getLogger(this::class.java)
 
@@ -26,9 +36,20 @@ class AppointmentBulkUpdateService(
     projectCode: String,
     request: UpdateAppointmentOutcomesDto,
     trigger: AppointmentEventTrigger,
-  ): UpdateAppointmentsOutcomesResultDto = UpdateAppointmentsOutcomesResultDto(
-    results = request.updates.map { update -> updateAppointment(projectCode, update, trigger) },
-  )
+  ): UpdateAppointmentsOutcomesResultDto = runBlocking {
+    val dispatcher = Dispatchers.IO.limitedParallelism(MAX_CONCURRENT_UPDATES)
+    val securityContext = SecurityContextHolder.getContext()
+    val requestAttributes = RequestContextHolder.getRequestAttributes()
+    val results = request.updates.map { update ->
+      async(dispatcher) {
+        runWithCallerContext(securityContext, requestAttributes) {
+          updateAppointment(projectCode, update, trigger)
+        }
+      }
+    }.awaitAll()
+
+    UpdateAppointmentsOutcomesResultDto(results)
+  }
 
   @SuppressWarnings("TooGenericExceptionCaught")
   private fun updateAppointment(
