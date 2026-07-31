@@ -67,9 +67,11 @@ class NDeliusRollbackService(
   proxyMode = ScopedProxyMode.TARGET_CLASS,
 )
 class RequestScopedEvents {
-  val events = mutableListOf<CommunityPaybackSpringEvent>()
+  private val events = mutableListOf<CommunityPaybackSpringEvent>()
 
+  @Synchronized
   fun add(event: CommunityPaybackSpringEvent) = events.add(event)
 
+  @Synchronized
   fun getAll() = events.toList()
 }

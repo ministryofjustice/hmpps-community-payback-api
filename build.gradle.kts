@@ -39,6 +39,7 @@ dependencies {
   implementation("net.javacrumbs.shedlock:shedlock-provider-redis-spring:7.7.0")
 
   implementation("com.googlecode.owasp-java-html-sanitizer:owasp-java-html-sanitizer:20260313.1")
+  implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0")
 
   runtimeOnly("org.flywaydb:flyway-database-postgresql")
 
@@ -57,8 +58,6 @@ dependencies {
   testImplementation("com.lemonappdev:konsist:0.17.3")
   testImplementation("uk.gov.justice.service.hmpps:hmpps-subject-access-request-test-support:2.6.2")
   testImplementation("org.zalando:logbook-spring-boot-starter:4.0.4")
-  testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0")
-
   testImplementation("org.junit.platform:junit-platform-launcher")
 }
 
