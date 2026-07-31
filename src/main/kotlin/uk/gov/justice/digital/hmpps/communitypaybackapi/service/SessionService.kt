@@ -13,7 +13,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.common.badRequest
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeGroupDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionIdDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionSummariesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.SessionSupervisorEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.SessionSupervisorEntityRepository
@@ -37,36 +36,25 @@ class SessionService(
     private val log = LoggerFactory.getLogger(this::class.java)
   }
 
-  @Deprecated("This overload calls a deprecated endpoint.", replaceWith = ReplaceWith("getSessions(listOf(teamCode), startDate, endDate, projectTypeGroup, pageable)"))
   fun getSessions(
-    providerCode: String,
-    teamCode: String,
+    teamCodes: List<String>,
     startDate: LocalDate,
     endDate: LocalDate,
     projectTypeGroup: ProjectTypeGroupDto?,
     pageable: Pageable,
-  ): SessionSummariesDto {
-    if (ChronoUnit.DAYS.between(startDate, endDate) > 7) {
-      badRequest("Date range cannot be greater than 7 days")
-    }
+  ): Page<SessionSummaryDto> {
+    val projectTypeCodes = projectTypeGroup?.let { projectTypeGroup ->
+      projectService.projectTypesForGroup(projectTypeGroup).map { it.code }
+    } ?: emptyList()
 
-    return communityPaybackAndDeliusClient.getSessions(
-      providerCode = providerCode,
-      teamCode = teamCode,
-      startDate = startDate,
-      endDate = endDate,
-      typeCode = projectTypeGroup?.let { projectTypeGroup ->
-        projectService.projectTypesForGroup(projectTypeGroup).map { it.code }
-      },
-      params = pageable.toHttpParams(),
-    ).toDto()
+    return getSessions(teamCodes, startDate, endDate, projectTypeCodes, pageable)
   }
 
   fun getSessions(
     teamCodes: List<String>,
     startDate: LocalDate,
     endDate: LocalDate,
-    projectTypeGroup: ProjectTypeGroupDto?,
+    projectTypeCodes: List<String>,
     pageable: Pageable,
   ): Page<SessionSummaryDto> {
     if (ChronoUnit.DAYS.between(startDate, endDate) > 7) {
@@ -77,9 +65,7 @@ class SessionService(
       teamCodes = teamCodes,
       startDate = startDate,
       endDate = endDate,
-      typeCode = projectTypeGroup?.let { projectTypeGroup ->
-        projectService.projectTypesForGroup(projectTypeGroup).map { it.code }
-      },
+      typeCode = projectTypeCodes,
       params = pageable.toHttpParams(),
     )
 

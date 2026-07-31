@@ -3,7 +3,6 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.client
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import com.fasterxml.jackson.annotation.JsonUnwrapped
 import io.swagger.v3.oas.annotations.media.Schema
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.format.annotation.DateTimeFormat
@@ -41,17 +40,6 @@ interface CommunityPaybackAndDeliusClient {
   @Cacheable(CacheKey.Delius.GET_PROVIDER_TEAMS)
   @GetExchange("/providers/{providerCode}/teams")
   fun getProviderTeams(@PathVariable providerCode: String): NDProviderTeamSummaries
-
-  @Deprecated("This overload calls a deprecated endpoint.", replaceWith = ReplaceWith("getSessions(listOf(teamCode), startDate, endDate, typeCode, params)"))
-  @GetExchange("/providers/{providerCode}/teams/{teamCode}/sessions")
-  fun getSessions(
-    @PathVariable providerCode: String,
-    @PathVariable teamCode: String,
-    @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) startDate: LocalDate,
-    @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) endDate: LocalDate,
-    @RequestParam typeCode: List<String>?,
-    @RequestParam params: Map<String, String>,
-  ): NDSessionSummaries
 
   @GetExchange("/sessions")
   fun getSessions(
@@ -175,14 +163,6 @@ data class NDProviderTeamSummary(
   val code: String,
   val description: String,
 )
-
-data class NDSessionSummaries(
-  val sessions: List<NDSessionSummary>,
-  @get:JsonUnwrapped
-  val pageResponse: PageResponse<NDSessionSummary>,
-) {
-  companion object
-}
 
 data class NDSessionSummary(
   val date: LocalDate,

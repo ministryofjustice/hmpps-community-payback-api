@@ -3,20 +3,6 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.dto
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate
 
-data class SessionSummariesDto(
-  @param:Schema(
-    deprecated = true,
-    description = """
-      Deprecated: use the `content` property instead.
-      
-      List of project allocations
-    """,
-  )
-  val allocations: List<SessionSummaryDto>,
-  val content: List<SessionSummaryDto>,
-  val page: PageMetaDto,
-)
-
 data class SessionSummaryDto(
   @param:Schema(description = "Project name", example = "Community Garden Maintenance")
   val projectName: String,
