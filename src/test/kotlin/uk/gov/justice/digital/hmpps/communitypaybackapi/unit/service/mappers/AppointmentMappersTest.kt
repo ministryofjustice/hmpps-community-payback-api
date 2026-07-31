@@ -39,7 +39,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.OffenderDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.PickUpDataDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.Behaviour
@@ -201,7 +201,8 @@ class AppointmentMappersTest {
       )
 
       val dto = ValidatedAppointment.validUpdateAppointment().copy(
-        dto = UpdateAppointmentOutcomeDto.valid("OUTCOME2").copy(
+        dto = UpdateAppointmentDto.valid().copy(
+          contactOutcomeCode = "OUTCOME2",
           deliusId = 101L,
           deliusVersionToUpdate = priorDeliusVersion,
           date = LocalDate.of(2018, 12, 9),
@@ -267,10 +268,10 @@ class AppointmentMappersTest {
       )
 
       val dto = ValidatedAppointment.validUpdateAppointment().copy(
-        dto = UpdateAppointmentOutcomeDto.valid().copy(
+        dto = UpdateAppointmentDto.valid().copy(
           deliusId = 101L,
           deliusVersionToUpdate = priorDeliusVersion,
-          date = null,
+          date = LocalDate.of(2020, 1, 2),
           startTime = LocalTime.of(3, 2, 1),
           endTime = LocalTime.of(12, 11, 10),
           attendanceData = null,
@@ -316,7 +317,7 @@ class AppointmentMappersTest {
       )
 
       val dto = ValidatedAppointment.validUpdateAppointment().copy(
-        dto = UpdateAppointmentOutcomeDto.valid().copy(
+        dto = UpdateAppointmentDto.valid().copy(
           date = LocalDate.of(2020, 1, 2),
           startTime = LocalTime.of(0, 1),
           endTime = LocalTime.of(12, 45),
@@ -343,7 +344,7 @@ class AppointmentMappersTest {
       )
 
       val dto = ValidatedAppointment.validUpdateAppointment().copy(
-        dto = UpdateAppointmentOutcomeDto.valid().copy(
+        dto = UpdateAppointmentDto.valid().copy(
           date = LocalDate.of(2021, 2, 3),
           startTime = LocalTime.of(0, 1),
           endTime = LocalTime.of(12, 45),
@@ -370,7 +371,7 @@ class AppointmentMappersTest {
       )
 
       val dto = ValidatedAppointment.validUpdateAppointment().copy(
-        dto = UpdateAppointmentOutcomeDto.valid().copy(
+        dto = UpdateAppointmentDto.valid().copy(
           date = LocalDate.of(2021, 2, 3),
           startTime = LocalTime.of(1, 2),
           endTime = LocalTime.of(13, 50),
@@ -397,7 +398,7 @@ class AppointmentMappersTest {
       )
 
       val dto = ValidatedAppointment.validUpdateAppointment().copy(
-        dto = UpdateAppointmentOutcomeDto.valid().copy(
+        dto = UpdateAppointmentDto.valid().copy(
           date = LocalDate.of(2018, 12, 9),
           startTime = LocalTime.of(3, 2, 1),
           endTime = LocalTime.of(12, 11, 10),

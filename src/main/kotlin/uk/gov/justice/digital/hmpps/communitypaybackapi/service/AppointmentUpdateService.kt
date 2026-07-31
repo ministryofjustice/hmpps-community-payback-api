@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.ConflictException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.InternalServerErrorException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService.ValidatedAppointment
@@ -29,7 +29,7 @@ class AppointmentUpdateService(
   @Transactional
   fun updateAppointment(
     existingAppointment: AppointmentDto,
-    update: UpdateAppointmentOutcomeDto,
+    update: UpdateAppointmentDto,
     trigger: AppointmentEventTrigger,
   ) = updateAppointment(
     existingAppointment = existingAppointment,
@@ -40,7 +40,7 @@ class AppointmentUpdateService(
   @Transactional
   fun updateAppointment(
     existingAppointment: AppointmentDto,
-    validatedUpdate: ValidatedAppointment<UpdateAppointmentOutcomeDto>,
+    validatedUpdate: ValidatedAppointment<UpdateAppointmentDto>,
     trigger: AppointmentEventTrigger,
   ) {
     val appointmentEntity = appointmentRetrievalService.getOrCreateAppointmentEntity(existingAppointment)
@@ -65,7 +65,7 @@ class AppointmentUpdateService(
   @SuppressWarnings("SwallowedException", "ThrowsCount")
   private fun updateDelius(
     existingAppointment: AppointmentDto,
-    validatedUpdateDto: ValidatedAppointment<UpdateAppointmentOutcomeDto>,
+    validatedUpdateDto: ValidatedAppointment<UpdateAppointmentDto>,
   ) {
     val deliusAppointmentId = validatedUpdateDto.dto.deliusId
     try {

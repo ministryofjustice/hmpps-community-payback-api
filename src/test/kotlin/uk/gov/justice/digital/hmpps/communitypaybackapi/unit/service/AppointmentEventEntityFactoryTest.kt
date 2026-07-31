@@ -21,7 +21,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.PickUpDataDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.PickUpLocationDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SupervisorSummaryDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventType
@@ -270,7 +270,7 @@ class AppointmentEventEntityFactoryTest {
       val result = factory.buildUpdatedEvent(
         AppointmentUpdatedEvent(
           updateDto = ValidatedAppointment.validUpdateAppointment().copy(
-            dto = UpdateAppointmentOutcomeDto(
+            dto = UpdateAppointmentDto(
               deliusId = 101L,
               deliusVersionToUpdate = deliusVersion,
               startTime = LocalTime.of(10, 1),
@@ -288,6 +288,7 @@ class AppointmentEventEntityFactoryTest {
               ),
               alertActive = false,
               sensitive = true,
+              date = LocalDate.of(2014, 6, 7),
             ),
             minutesToCredit = Duration.ofMinutes(334),
             project = PROJECT,
@@ -348,7 +349,7 @@ class AppointmentEventEntityFactoryTest {
       val result = factory.buildUpdatedEvent(
         AppointmentUpdatedEvent(
           updateDto = ValidatedAppointment.validUpdateAppointment().copy(
-            dto = UpdateAppointmentOutcomeDto(
+            dto = UpdateAppointmentDto(
               deliusId = 101L,
               deliusVersionToUpdate = deliusVersion,
               startTime = LocalTime.of(10, 1, 2),
@@ -359,6 +360,7 @@ class AppointmentEventEntityFactoryTest {
               attendanceData = null,
               alertActive = null,
               sensitive = null,
+              date = LocalDate.of(2014, 6, 7),
             ),
             minutesToCredit = null,
             project = PROJECT,
@@ -414,7 +416,7 @@ class AppointmentEventEntityFactoryTest {
       val result = factory.buildUpdatedEvent(
         AppointmentUpdatedEvent(
           updateDto = ValidatedAppointment.validUpdateAppointment().copy(
-            UpdateAppointmentOutcomeDto.valid().copy(
+            UpdateAppointmentDto.valid().copy(
               contactOutcomeCode = null,
               attendanceData = AttendanceDataDto.valid().copy(
                 penaltyMinutes = 150,
@@ -440,7 +442,7 @@ class AppointmentEventEntityFactoryTest {
       val result = factory.buildUpdatedEvent(
         AppointmentUpdatedEvent(
           updateDto = ValidatedAppointment.validUpdateAppointment().copy(
-            UpdateAppointmentOutcomeDto.valid().copy(
+            UpdateAppointmentDto.valid().copy(
               contactOutcomeCode = null,
               attendanceData = AttendanceDataDto.valid().copy(
                 penaltyMinutes = null,

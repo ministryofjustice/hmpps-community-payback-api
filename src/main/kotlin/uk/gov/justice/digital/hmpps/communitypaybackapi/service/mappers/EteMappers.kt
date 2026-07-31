@@ -14,7 +14,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionDraf
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionResolutionDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EteCourseCompletionEventDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.CommunityCampusPduEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionDraftResolutionEntity
@@ -73,12 +73,12 @@ class EteMappers(
     courseCompletionResolution: CourseCompletionResolutionDto,
     courseCompletionEvent: EteCourseCompletionEventEntity,
     existingAppointment: AppointmentDto,
-  ): UpdateAppointmentOutcomeDto {
+  ): UpdateAppointmentDto {
     val creditTime = requireNotNull(courseCompletionResolution.creditTimeDetails) {
       "Missing credit time details"
     }
     val appointmentTimesPair = calculateAppointmentTimes(creditTime.minutesToCredit, courseCompletionEvent)
-    return UpdateAppointmentOutcomeDto(
+    return UpdateAppointmentDto(
       deliusId = existingAppointment.id,
       deliusVersionToUpdate = existingAppointment.version,
       date = courseCompletionResolution.creditTimeDetails.date,

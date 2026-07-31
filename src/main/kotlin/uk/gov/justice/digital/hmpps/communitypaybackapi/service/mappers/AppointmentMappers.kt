@@ -20,7 +20,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AttendanceDataDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EnforcementDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.PickUpDataDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.derivePenaltyMinutesDuration
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.domainevent.AppointmentCreatedDomainEventDetailDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.domainevent.AppointmentDomainEventDetailDto
@@ -163,14 +163,14 @@ private fun AppointmentEventEntity.toAppointmentDomainEventDetail() = Appointmen
   behaviour = this.behaviour?.dtoType,
 )
 
-fun ValidatedAppointment<UpdateAppointmentOutcomeDto>.toNDUpdateAppointment(
+fun ValidatedAppointment<UpdateAppointmentDto>.toNDUpdateAppointment(
   existingAppointment: AppointmentDto,
 ): NDUpdateAppointment {
   val updateDto = dto
 
   return NDUpdateAppointment(
     version = updateDto.deliusVersionToUpdate,
-    date = updateDto.resolveDate(existingAppointment),
+    date = updateDto.date,
     startTime = updateDto.startTime,
     endTime = updateDto.endTime,
     outcome = this.contactOutcome?.let { NDCode(it.code) },
@@ -195,13 +195,13 @@ fun ValidatedAppointment<UpdateAppointmentOutcomeDto>.toNDUpdateAppointment(
   )
 }
 
-private fun ValidatedAppointment<UpdateAppointmentOutcomeDto>.buildUpdateNote(
+private fun ValidatedAppointment<UpdateAppointmentDto>.buildUpdateNote(
   existingAppointment: AppointmentDto,
 ) = buildString {
   val updateDto = dto
 
   val existingDate = existingAppointment.date
-  val updatedDate = updateDto.resolveDate(existingAppointment)
+  val updatedDate = updateDto.date
   if (updatedDate != existingDate) {
     appendLine("Appointment Date changed from ${existingDate.formatForUser()} to ${updatedDate.formatForUser()}")
   }

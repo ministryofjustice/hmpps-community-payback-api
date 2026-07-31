@@ -15,13 +15,12 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeGroupDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsIdDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.derivePenaltyMinutesDuration
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDayOfWeek
 import java.time.Duration
-import java.time.LocalDate
 import java.time.LocalDateTime
 
 @Suppress("ThrowsCount")
@@ -46,7 +45,6 @@ class AppointmentValidationService(
       contactOutcome = loadContactOutcome(create.contactOutcomeCode),
       pickUpLocation = loadPickUpLocation(project, create.pickUpLocationCode),
       unpaidWorkDetails = offenderService.getUnpaidWorkDetails(upwDetailsId) ?: badRequest("Cannot find unpaid work details for CRN ${upwDetailsId.crn} and event number ${upwDetailsId.deliusEventNumber}"),
-      appointmentDate = create.date,
     )
 
     ctx.applyValidations()
@@ -62,8 +60,8 @@ class AppointmentValidationService(
 
   fun validateUpdate(
     existingAppointment: AppointmentDto,
-    update: UpdateAppointmentOutcomeDto,
-  ): ValidatedAppointment<UpdateAppointmentOutcomeDto> {
+    update: UpdateAppointmentDto,
+  ): ValidatedAppointment<UpdateAppointmentDto> {
     val projectCode = update.resolveProjectCode(existingAppointment)
     val project = projectService.getProject(projectCode) ?: error("Can't retrieve project $projectCode")
     val upwDetailsId = UnpaidWorkDetailsIdDto(existingAppointment.offender.crn, existingAppointment.deliusEventNumber)
@@ -78,7 +76,6 @@ class AppointmentValidationService(
       contactOutcome = loadContactOutcome(update.contactOutcomeCode),
       pickUpLocation = loadPickUpLocation(project, existingAppointment.pickUpData?.pickupLocation?.deliusCode),
       unpaidWorkDetails = offenderService.getUnpaidWorkDetails(upwDetailsId) ?: badRequest("Cannot find unpaid work details for CRN ${upwDetailsId.crn} and event number ${upwDetailsId.deliusEventNumber}"),
-      appointmentDate = update.resolveDate(existingAppointment),
       appointmentMinutesAlreadyCredited = existingAppointment.minutesCredited?.let { Duration.ofMinutes(it) } ?: Duration.ZERO,
     )
 
@@ -108,19 +105,19 @@ class AppointmentValidationService(
     val projectEndDateExclusive = project.actualEndDateExclusive
 
     projectEndDateExclusive?.let {
-      if (appointmentDate.onOrAfter(projectEndDateExclusive)) {
-        badRequest("Appointment Date of ${appointmentDate.formatForUser()} must be before project end date ${projectEndDateExclusive.formatForUser()}")
+      if (command.date.onOrAfter(projectEndDateExclusive)) {
+        badRequest("Appointment Date of ${command.date.formatForUser()} must be before project end date ${projectEndDateExclusive.formatForUser()}")
       }
     }
 
     val sentenceDate = unpaidWorkDetails.sentenceDate
-    if (appointmentDate.isBefore(sentenceDate)) {
-      badRequest("Appointment Date of ${appointmentDate.formatForUser()} must be on or after sentence date of ${sentenceDate.formatForUser()}")
+    if (command.date.isBefore(sentenceDate)) {
+      badRequest("Appointment Date of ${command.date.formatForUser()} must be on or after sentence date of ${sentenceDate.formatForUser()}")
     }
   }
 
   private fun ValidationContext.validateAvailability() {
-    val appointmentDayOfWeek = appointmentDate.dayOfWeek
+    val appointmentDayOfWeek = command.date.dayOfWeek
     val availableDays = project.availability.map { it.dayOfWeek.toDayOfWeek() }
 
     if (!availableDays.contains(appointmentDayOfWeek)) {
@@ -131,11 +128,13 @@ class AppointmentValidationService(
 
   private fun ValidationContext.validateOutcome() {
     if (contactOutcome == null) {
-      if (appointmentIsInPast()) {
+      val appointmentIsInPast = command.date.atTime(command.endTime).isBefore(LocalDateTime.now())
+      if (appointmentIsInPast) {
         badRequest("As the appointment is now complete a contact outcome is required")
       }
     } else {
-      if (appointmentIsInFuture() && (contactOutcome.attended || contactOutcome.enforceable)) {
+      val appointmentIsInFuture = command.date.atTime(command.startTime).isAfter(LocalDateTime.now())
+      if (appointmentIsInFuture && (contactOutcome.attended || contactOutcome.enforceable)) {
         badRequest("As the appointment is in the future only acceptable absence outcomes can be recorded")
       }
 
@@ -210,12 +209,8 @@ class AppointmentValidationService(
     val contactOutcome: ContactOutcomeEntity?,
     val pickUpLocation: PickUpLocationDto?,
     val unpaidWorkDetails: UnpaidWorkDetailsDto,
-    val appointmentDate: LocalDate,
     val appointmentMinutesAlreadyCredited: Duration = Duration.ZERO,
-  ) {
-    fun appointmentIsInFuture() = appointmentDate.atTime(command.startTime).isAfter(LocalDateTime.now())
-    fun appointmentIsInPast() = appointmentDate.atTime(command.endTime).isBefore(LocalDateTime.now())
-  }
+  )
 
   data class ValidatedAppointment<T>(
     val dto: T,

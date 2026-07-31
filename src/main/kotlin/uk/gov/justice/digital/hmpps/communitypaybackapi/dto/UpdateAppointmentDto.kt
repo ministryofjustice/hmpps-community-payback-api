@@ -11,10 +11,6 @@ data class UpdateAppointmentsDto(
   val updates: List<UpdateAppointmentDto>,
 ) {
   companion object
-
-  fun toUpdateAppointmentOutcomesDto() = UpdateAppointmentOutcomesDto(
-    updates.map { it.toUpdateAppointmentOutcomeDto() },
-  )
 }
 
 data class UpdateAppointmentDto(
@@ -22,7 +18,7 @@ data class UpdateAppointmentDto(
   val deliusId: Long,
   @param:Schema(description = "The version of the appointment retrieved from delius this update is being applied to")
   val deliusVersionToUpdate: UUID,
-  val date: LocalDate,
+  override val date: LocalDate,
   @param:Schema(example = "09:00", description = "The start local time of the appointment", pattern = "^([0-1][0-9]|2[0-3]):[0-5][0-9]$")
   override val startTime: LocalTime,
   @param:Schema(example = "14:00", description = "The end local time of the appointment", pattern = "^([0-1][0-9]|2[0-3]):[0-5][0-9]$")
@@ -40,19 +36,6 @@ data class UpdateAppointmentDto(
 ) : AppointmentCommandDto {
   companion object
 
-  fun toUpdateAppointmentOutcomeDto() = UpdateAppointmentOutcomeDto(
-    deliusId = deliusId,
-    deliusVersionToUpdate = deliusVersionToUpdate,
-    date = date,
-    startTime = startTime,
-    endTime = endTime,
-    contactOutcomeCode = contactOutcomeCode,
-    attendanceData = attendanceData,
-    supervisorOfficerCode = supervisorOfficerCode,
-    supervisorTeamCode = supervisorTeamCode,
-    projectCode = projectCode,
-    notes = notes,
-    alertActive = alertActive,
-    sensitive = sensitive,
-  )
+  fun resolveSupervisorTeamCode(existingAppointment: AppointmentDto) = supervisorTeamCode ?: existingAppointment.supervisingTeamCode
+  fun resolveProjectCode(existingAppointment: AppointmentDto) = projectCode ?: existingAppointment.projectCode
 }
