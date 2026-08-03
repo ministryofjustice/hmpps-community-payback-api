@@ -32,6 +32,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.DeliusAppointmentIdD
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeGroupDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentsDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentsOutcomesResultDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventTrigger
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentService
@@ -270,6 +271,7 @@ class AdminAppointmentController(
       ApiResponse(
         responseCode = "200",
         description = "Check the result JSON to check the outcome for each appointment update",
+        content = [Content(schema = Schema(implementation = UpdateAppointmentsOutcomesResultDto::class))],
       ),
       ApiResponse(
         responseCode = "400",
