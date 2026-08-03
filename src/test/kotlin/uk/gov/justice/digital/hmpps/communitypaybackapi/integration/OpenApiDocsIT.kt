@@ -57,6 +57,20 @@ class OpenApiDocsIT : IntegrationTestBase() {
   }
 
   @Test
+  fun `bulk appointment outcome endpoints document their successful response`() {
+    webTestClient.get()
+      .uri("/v3/api-docs")
+      .accept(MediaType.APPLICATION_JSON)
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.paths['/admin/projects/{projectCode}/appointments/bulk'].put.responses['200'].content['application/json'].schema['${'$'}ref']")
+      .isEqualTo("#/components/schemas/UpdateAppointmentsOutcomesResultDto")
+      .jsonPath("$.paths['/supervisor/projects/{projectCode}/appointments/bulk'].put.responses['200'].content['application/json'].schema['${'$'}ref']")
+      .isEqualTo("#/components/schemas/UpdateAppointmentsOutcomesResultDto")
+  }
+
+  @Test
   fun `the open api json is valid`() {
     val result = OpenAPIV3Parser().readLocation("http://localhost:$port/v3/api-docs", null, null)
     assertThat(result.messages).isEmpty()
