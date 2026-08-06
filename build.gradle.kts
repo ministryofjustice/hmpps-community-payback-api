@@ -7,7 +7,7 @@ plugins {
   kotlin("plugin.jpa") version "2.4.10"
   id("dev.detekt") version "2.0.0-alpha.5"
   jacoco
-  id("io.sentry.jvm.gradle") version "6.14.0"
+  id("io.sentry.jvm.gradle") version "6.16.0"
 }
 
 configurations {
@@ -56,7 +56,7 @@ dependencies {
   testImplementation("io.mockk:mockk:1.14.11")
   testImplementation("com.lemonappdev:konsist:0.17.3")
   testImplementation("uk.gov.justice.service.hmpps:hmpps-subject-access-request-test-support:2.6.2")
-  testImplementation("org.zalando:logbook-spring-boot-starter:4.0.4")
+  testImplementation("org.zalando:logbook-spring-boot-starter:4.1.0")
   testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0")
 
   testImplementation("org.junit.platform:junit-platform-launcher")
