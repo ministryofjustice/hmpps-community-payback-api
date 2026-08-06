@@ -4,6 +4,7 @@ import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.junit5.MockKExtension
+import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -24,6 +25,8 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeGroupDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntityRepository
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ProjectTypeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.valid
@@ -59,6 +62,9 @@ class AppointmentRetrievalServiceTest {
 
   @RelaxedMockK
   private lateinit var appointmentEntityRepository: AppointmentEntityRepository
+
+  @RelaxedMockK
+  private lateinit var contactOutcomeEntityRepository: ContactOutcomeEntityRepository
 
   @InjectMockKs
   private lateinit var service: AppointmentRetrievalService
@@ -203,6 +209,50 @@ class AppointmentRetrievalServiceTest {
       )
 
       assertThat(result.content).containsExactly(appointmentSummaryDto)
+    }
+
+    @Test
+    fun `should replace WITH_OUTCOME with all UPW outcome codes`() {
+      val pageable = PageRequest.of(0, 10)
+      val outcomes = listOf(
+        ContactOutcomeEntity.valid().copy(code = "OUT1"),
+        ContactOutcomeEntity.valid().copy(code = "OUT2"),
+      )
+      every { contactOutcomeEntityRepository.findAll() } returns outcomes
+      every {
+        communityPaybackAndDeliusClient.getAppointments(
+          username = USERNAME,
+          crn = null,
+          fromDate = null,
+          toDate = null,
+          outcomeCodes = listOf("OUT1", "OUT2", "NO_OUTCOME"),
+          projectCodes = null,
+          projectTypeCodes = null,
+          eventNumber = null,
+          appointmentIds = null,
+          params = pageable.toMultiValueHttpParams(),
+        )
+      } returns PageResponse(emptyList(), PageResponse.PageMeta(10, 0, 0, 0))
+
+      service.getAppointments(
+        outcomeCodes = listOf("WITH_OUTCOME", "NO_OUTCOME"),
+        pageable = pageable,
+      )
+
+      verify(exactly = 1) {
+        communityPaybackAndDeliusClient.getAppointments(
+          username = USERNAME,
+          crn = null,
+          fromDate = null,
+          toDate = null,
+          outcomeCodes = listOf("OUT1", "OUT2", "NO_OUTCOME"),
+          projectCodes = null,
+          projectTypeCodes = null,
+          eventNumber = null,
+          appointmentIds = null,
+          params = pageable.toMultiValueHttpParams(),
+        )
+      }
     }
   }
 

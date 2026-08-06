@@ -226,7 +226,7 @@ class AdminAppointmentController(
     @Parameter(
       description = "Filter by one or more outcome codes",
       array = ArraySchema(schema = Schema(type = "string")),
-      example = "[\"ATTC\",\"NO_OUTCOME\"]",
+      example = "[\"WITH_OUTCOME\",\"NO_OUTCOME\"]",
     )
     @RequestParam(required = false) outcomeCodes: List<String>?,
     @RequestParam projectTypeGroup: ProjectTypeGroupDto?,
