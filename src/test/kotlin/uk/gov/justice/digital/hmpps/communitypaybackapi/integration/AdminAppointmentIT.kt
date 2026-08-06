@@ -387,12 +387,13 @@ class AdminAppointmentIT : IntegrationTestBase() {
 
       CommunityPaybackAndDeliusMockServer.setupGetAppointmentsResponse(
         crn = "CRN000",
+        eventNumber = 1,
         username = "theusername",
         appointments = listOf(appointment1, appointment2),
       )
 
       val pageResponse = webTestClient.get()
-        .uri("/admin/appointments?crn=CRN000")
+        .uri("/admin/appointments?crn=CRN000&eventNumber=1")
         .addAdminUiAuthHeader("theusername")
         .exchange()
         .expectStatus()
