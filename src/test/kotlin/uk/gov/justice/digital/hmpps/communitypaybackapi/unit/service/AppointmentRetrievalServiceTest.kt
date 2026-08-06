@@ -113,8 +113,9 @@ class AppointmentRetrievalServiceTest {
   inner class GetAppointments {
 
     @Test
-    fun `should get appointments with crn`() {
+    fun `should get appointments with crn and event number`() {
       val crn = "CRN1"
+      val eventNumber = "2"
       val pageable = PageRequest.of(0, 10)
       val ndAppointmentSummary = NDAppointmentSummary.valid()
       val pageResponse = PageResponse(
@@ -131,7 +132,7 @@ class AppointmentRetrievalServiceTest {
           outcomeCodes = null,
           projectCodes = null,
           projectTypeCodes = null,
-          eventNumber = null,
+          eventNumber = eventNumber,
           appointmentIds = null,
           params = pageable.toMultiValueHttpParams(),
         )
@@ -147,6 +148,7 @@ class AppointmentRetrievalServiceTest {
         outcomeCodes = null,
         projectCodes = null,
         projectTypeGroup = null,
+        eventNumber = eventNumber,
         pageable = pageable,
       )
 

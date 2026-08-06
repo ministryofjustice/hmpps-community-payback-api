@@ -214,6 +214,7 @@ class AdminAppointmentController(
     )
     @PageableDefault(size = 50, sort = ["name"], direction = Sort.Direction.ASC) pageable: Pageable,
     @RequestParam(required = false) crn: String?,
+    @RequestParam(required = false) eventNumber: String?,
     @Parameter(
       description = "Filter by one or more project codes",
       array = ArraySchema(schema = Schema(type = "string")),
@@ -231,6 +232,7 @@ class AdminAppointmentController(
     @RequestParam projectTypeGroup: ProjectTypeGroupDto?,
   ): Page<AppointmentSummaryDto> {
     val hasFilter = !crn.isNullOrBlank() ||
+      !eventNumber.isNullOrBlank() ||
       !projectCodes.isNullOrEmpty() ||
       fromDate != null ||
       toDate != null ||
@@ -255,7 +257,7 @@ class AdminAppointmentController(
       toDate = toDate,
       outcomeCodes = outcomeCodes,
       projectTypeGroup = projectTypeGroup,
-      eventNumber = null,
+      eventNumber = eventNumber,
       deliusAppointmentIds = null,
       pageable = pageable,
     )
