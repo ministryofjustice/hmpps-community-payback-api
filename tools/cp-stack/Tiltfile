@@ -2,7 +2,7 @@ docker_compose("./compose.yml")
 
 # default resource list
 resources = [
-    "localstack",
+    "floci",
     "wiremock",
     "postgres",
     "redis",
