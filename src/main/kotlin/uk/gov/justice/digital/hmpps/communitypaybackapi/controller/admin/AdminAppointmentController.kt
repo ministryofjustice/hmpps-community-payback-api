@@ -243,7 +243,9 @@ class AdminAppointmentController(
       badRequest("At least one filter parameter must be provided")
     }
 
-    val pageable = if (pageable.sort.getOrderFor("name") == null) {
+    val needsTiebreakerSort = listOf("name", "forename", "surname").all { pageable.sort.getOrderFor(it) == null }
+
+    val pageable = if (needsTiebreakerSort) {
       val sort = pageable.sort.and(Sort.by(Sort.Direction.ASC, "name"))
       PageRequest.of(pageable.pageNumber, pageable.pageSize, sort)
     } else {
