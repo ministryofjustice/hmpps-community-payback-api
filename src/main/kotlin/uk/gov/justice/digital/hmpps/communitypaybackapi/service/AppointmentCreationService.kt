@@ -7,12 +7,14 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCreateAppointme
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCreatedAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentsDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreatedAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService.ValidatedAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.SpringEventPublisher
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.ToAppointmentEntity.toAppointmentEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toNDCreateAppointment
 import java.util.UUID
 
@@ -31,7 +33,7 @@ class AppointmentCreationService(
   fun createAppointment(
     appointment: CreateAppointmentDto,
     trigger: AppointmentEventTrigger,
-  ): Long = createAppointmentsForProject(
+  ): CreatedAppointmentDto = createAppointmentsForProject(
     CreateAppointmentsDto(
       projectCode = appointment.projectCode,
       appointments = listOf(appointment),
@@ -43,7 +45,7 @@ class AppointmentCreationService(
   fun createAppointmentsForProject(
     createAppointmentsDto: CreateAppointmentsDto,
     trigger: AppointmentEventTrigger,
-  ): List<Long> {
+  ): List<CreatedAppointmentDto> {
     val projectCode = createAppointmentsDto.projectCode
     val appointments = createAppointmentsDto.appointments
 
@@ -92,7 +94,7 @@ class AppointmentCreationService(
       )
     }
 
-    return creationResponse.map { it.id }
+    return creationResponse.map { it.toDto() }
   }
 
   data class AppointmentToCreate(
