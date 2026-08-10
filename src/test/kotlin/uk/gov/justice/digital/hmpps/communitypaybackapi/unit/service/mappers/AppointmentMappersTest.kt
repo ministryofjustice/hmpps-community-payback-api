@@ -20,6 +20,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointmentWork
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCodeDescription
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDContactOutcome
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCreatedAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDEnforcementAction
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDName
@@ -61,6 +62,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.Appointm
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.ToAppointmentEntity.toAppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.fromDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toAppointmentUpdatedDomainEvent
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toNDCreateAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toNDUpdateAppointment
 import java.time.Duration
@@ -855,6 +857,19 @@ class AppointmentMappersTest {
       expectedValue: Behaviour,
     ) {
       assertThat(Behaviour.fromDto(sourceValue)).isEqualTo(expectedValue)
+    }
+  }
+
+  @Nested
+  inner class NDCreatedAppointmentToDto {
+    @Test
+    fun success() {
+      val createdAppointment = NDCreatedAppointment.valid()
+
+      val result = createdAppointment.toDto()
+
+      assertThat(result.id).isEqualTo(createdAppointment.reference)
+      assertThat(result.deliusId).isEqualTo(createdAppointment.id)
     }
   }
 }

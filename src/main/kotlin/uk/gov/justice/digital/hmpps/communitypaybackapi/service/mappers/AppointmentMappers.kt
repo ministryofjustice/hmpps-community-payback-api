@@ -10,6 +10,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointmentSumm
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointmentWorkQuality
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCode
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCreateAppointment
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCreatedAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDUpdateAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.formatForUser
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentBehaviourDto
@@ -18,6 +19,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentSummaryDt
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentWorkQualityDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AttendanceDataDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreatedAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EnforcementDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.PickUpDataDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentDto
@@ -323,3 +325,8 @@ fun NDAppointmentBehaviour.toDto() = when (this) {
   NDAppointmentBehaviour.SATISFACTORY -> AppointmentBehaviourDto.SATISFACTORY
   NDAppointmentBehaviour.UNSATISFACTORY -> AppointmentBehaviourDto.UNSATISFACTORY
 }
+
+fun NDCreatedAppointment.toDto() = CreatedAppointmentDto(
+  id = this.reference,
+  deliusId = this.id,
+)

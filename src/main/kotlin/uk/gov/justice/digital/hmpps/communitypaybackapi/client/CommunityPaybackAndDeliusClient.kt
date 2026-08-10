@@ -464,7 +464,9 @@ data class NDAppointmentPickUpData(val time: LocalTime?, val location: NDCode?)
 data class NDCreatedAppointment(
   val id: Long,
   val reference: UUID,
-)
+) {
+  companion object
+}
 
 data class NDUpdateAppointment(
   val version: UUID,
