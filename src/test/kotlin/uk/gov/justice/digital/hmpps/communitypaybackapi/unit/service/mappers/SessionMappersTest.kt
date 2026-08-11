@@ -105,6 +105,32 @@ class SessionMappersTest {
 
       assertThat(result.projectLocation).isEqualTo("")
     }
+
+    @Test
+    fun `should sort appointment summaries case-insensitively by name`() {
+      val project = ProjectDto.valid()
+      val appointments = listOf(
+        AppointmentSummaryDto.valid().copy(offender = OffenderDto.validFull().copy(forename = "John", surname = "STEVENS", crn = "X123456")),
+        AppointmentSummaryDto.valid().copy(offender = OffenderDto.validFull().copy(forename = "John", surname = "Smith", crn = "X987654")),
+      )
+
+      val result = service.toSessionDto(
+        date = LocalDate.of(2025, 9, 1),
+        project = project,
+        appointments = appointments,
+      )
+
+      assertThat(result.appointmentSummaries.size).isEqualTo(appointments.size)
+
+      assertThat(result.appointmentSummaries[0].offender).isInstanceOf(OffenderFullDto::class.java).extracting("forename").isEqualTo("John")
+      assertThat(result.appointmentSummaries[0].offender).isInstanceOf(OffenderFullDto::class.java).extracting("surname").isEqualTo("Smith")
+      assertThat(result.appointmentSummaries[0].offender).isInstanceOf(OffenderFullDto::class.java).extracting { it.crn }.isEqualTo("X987654")
+      assertThat(result.appointmentSummaries[1].offender).isInstanceOf(OffenderFullDto::class.java).extracting("forename").isEqualTo("John")
+      assertThat(result.appointmentSummaries[1].offender).isInstanceOf(OffenderFullDto::class.java).extracting("surname").isEqualTo("STEVENS")
+      assertThat(result.appointmentSummaries[1].offender).isInstanceOf(OffenderFullDto::class.java).extracting { it.crn }.isEqualTo("X123456")
+
+      assertThat(result.projectLocation).isEqualTo("")
+    }
   }
 
   @Nested
