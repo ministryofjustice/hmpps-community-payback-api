@@ -15,6 +15,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCreateAppointme
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCreatedAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentsDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreatedAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.OffenderNameDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntityRepository
@@ -153,7 +154,10 @@ class AppointmentCreationServiceTest {
         trigger = TRIGGER,
       )
 
-      assertThat(result).containsExactlyInAnyOrder(ND_APPT1_ID, ND_APPT2_ID)
+      assertThat(result).containsExactlyInAnyOrder(
+        CreatedAppointmentDto(appointment1Id, ND_APPT1_ID),
+        CreatedAppointmentDto(appointment2Id, ND_APPT2_ID),
+      )
 
       verify {
         appointmentEntityRepository.saveAll(

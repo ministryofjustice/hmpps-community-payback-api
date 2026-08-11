@@ -28,6 +28,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.controller.internal.toRe
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreatedAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.DeliusAppointmentIdDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeGroupDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentDto
@@ -165,8 +166,8 @@ class AdminAppointmentController(
   )
   fun createAppointment(
     @RequestBody createAppointment: CreateAppointmentDto,
-  ): ResponseEntity<Unit> {
-    val deliusAppointmentId = appointmentService.createAppointment(
+  ): ResponseEntity<CreatedAppointmentDto> {
+    val createdAppointment = appointmentService.createAppointment(
       createAppointment,
       AppointmentEventTrigger(
         triggeredAt = OffsetDateTime.now(),
@@ -176,8 +177,8 @@ class AdminAppointmentController(
     )
 
     return ResponseEntity
-      .created(URI("/admin/projects/${createAppointment.projectCode}/appointments/$deliusAppointmentId"))
-      .build()
+      .created(URI("/admin/projects/${createAppointment.projectCode}/appointments/${createdAppointment.deliusId}"))
+      .body(createdAppointment)
   }
 
   @GetMapping(

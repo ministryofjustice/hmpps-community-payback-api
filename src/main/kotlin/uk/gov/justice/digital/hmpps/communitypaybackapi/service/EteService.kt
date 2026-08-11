@@ -190,7 +190,7 @@ class EteService(
           courseCompletionEvent = courseCompletionEvent,
         ),
         trigger = appointmentEventTrigger,
-      )
+      ).deliusId
     } else {
       val appointmentId = DeliusAppointmentIdDto(
         projectCode = courseCompletionResolution.creditTimeDetails.projectCode,
