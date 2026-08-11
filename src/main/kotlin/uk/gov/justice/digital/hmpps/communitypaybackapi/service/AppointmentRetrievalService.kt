@@ -12,6 +12,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.DeliusAppointmentIdD
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeGroupDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntityRepository
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.toMultiValueHttpParams
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.AppointmentMappers
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.ToAppointmentEntity.toAppointmentEntity
@@ -25,6 +26,7 @@ class AppointmentRetrievalService(
   private val projectService: ProjectService,
   private val offenderService: OffenderService,
   private val appointmentEntityRepository: AppointmentEntityRepository,
+  private val contactOutcomeEntityRepository: ContactOutcomeEntityRepository,
 ) {
 
   fun getAppointment(id: DeliusAppointmentIdDto): AppointmentDto? = try {
@@ -58,7 +60,7 @@ class AppointmentRetrievalService(
       crn = crn,
       fromDate = fromDate,
       toDate = toDate,
-      outcomeCodes = outcomeCodes,
+      outcomeCodes = expandOutcomeCodes(outcomeCodes),
       projectCodes = projectCodes,
       projectTypeCodes = projectTypeGroup?.let { projectTypeGroup -> projectService.projectTypesForGroup(projectTypeGroup).map { it.code } },
       eventNumber = eventNumber,
@@ -67,6 +69,14 @@ class AppointmentRetrievalService(
     )
     return pageResponse.asPage(pageable) { appointmentMappers.toSummaryDto(it) }
   }
+
+  private fun expandOutcomeCodes(outcomeCodes: List<String>?): List<String>? = outcomeCodes?.flatMap { outcomeCode ->
+    if (outcomeCode == WITH_OUTCOME) {
+      contactOutcomeEntityRepository.findAll().map { it.code }
+    } else {
+      listOf(outcomeCode)
+    }
+  }?.distinct()
 
   fun getOrCreateAppointmentEntity(
     existingAppointment: AppointmentDto,
@@ -100,5 +110,9 @@ class AppointmentRetrievalService(
     } else {
       appointmentEntityRepository.save(existingAppointment.toAppointmentEntity(name?.forename, name?.surname, projectType))
     }
+  }
+
+  private companion object {
+    const val WITH_OUTCOME = "WITH_OUTCOME"
   }
 }

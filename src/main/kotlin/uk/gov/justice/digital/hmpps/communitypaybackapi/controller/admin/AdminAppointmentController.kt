@@ -214,6 +214,7 @@ class AdminAppointmentController(
     )
     @PageableDefault(size = 50, sort = ["name"], direction = Sort.Direction.ASC) pageable: Pageable,
     @RequestParam(required = false) crn: String?,
+    @RequestParam(required = false) eventNumber: String?,
     @Parameter(
       description = "Filter by one or more project codes",
       array = ArraySchema(schema = Schema(type = "string")),
@@ -225,12 +226,13 @@ class AdminAppointmentController(
     @Parameter(
       description = "Filter by one or more outcome codes",
       array = ArraySchema(schema = Schema(type = "string")),
-      example = "[\"ATTC\",\"NO_OUTCOME\"]",
+      example = "[\"WITH_OUTCOME\",\"NO_OUTCOME\"]",
     )
     @RequestParam(required = false) outcomeCodes: List<String>?,
     @RequestParam projectTypeGroup: ProjectTypeGroupDto?,
   ): Page<AppointmentSummaryDto> {
     val hasFilter = !crn.isNullOrBlank() ||
+      !eventNumber.isNullOrBlank() ||
       !projectCodes.isNullOrEmpty() ||
       fromDate != null ||
       toDate != null ||
@@ -241,7 +243,9 @@ class AdminAppointmentController(
       badRequest("At least one filter parameter must be provided")
     }
 
-    val pageable = if (pageable.sort.getOrderFor("name") == null) {
+    val needsTiebreakerSort = listOf("name", "forename", "surname").all { pageable.sort.getOrderFor(it) == null }
+
+    val pageable = if (needsTiebreakerSort) {
       val sort = pageable.sort.and(Sort.by(Sort.Direction.ASC, "name"))
       PageRequest.of(pageable.pageNumber, pageable.pageSize, sort)
     } else {
@@ -255,7 +259,7 @@ class AdminAppointmentController(
       toDate = toDate,
       outcomeCodes = outcomeCodes,
       projectTypeGroup = projectTypeGroup,
-      eventNumber = null,
+      eventNumber = eventNumber,
       deliusAppointmentIds = null,
       pageable = pageable,
     )

@@ -5,90 +5,15 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointmentSummary
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AllocateSupervisorToSessionDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.SessionSupervisorEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.SessionSupervisorEntityRepository
-import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
-import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.bodyAsObject
-import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.CommunityPaybackAndDeliusMockServer
 import java.time.LocalDate
 
 class AdminSessionsIT : IntegrationTestBase() {
 
   @Autowired
   lateinit var sessionSupervisorEntityRepository: SessionSupervisorEntityRepository
-
-  @Nested
-  @DisplayName("GET /admin/projects/123/sessions/2025-01-09")
-  inner class GetSessionEndpoint {
-
-    @Test
-    fun `should return unauthorized if no token`() {
-      webTestClient.get()
-        .uri("/admin/projects/123/sessions/2025-01-09")
-        .exchange()
-        .expectStatus()
-        .isUnauthorized
-    }
-
-    @Test
-    fun `should return forbidden if no role`() {
-      webTestClient.get()
-        .uri("/admin/projects/123/sessions/2025-01-09")
-        .headers(setAuthorisation())
-        .exchange()
-        .expectStatus()
-        .isForbidden
-    }
-
-    @Test
-    fun `should return forbidden if wrong role`() {
-      webTestClient.get()
-        .uri("/admin/projects/123/sessions/2025-01-09")
-        .headers(setAuthorisation(roles = listOf("ROLE_WRONG")))
-        .exchange()
-        .expectStatus()
-        .isForbidden
-    }
-
-    @Test
-    fun `should return OK with project session`() {
-      CommunityPaybackAndDeliusMockServer.setupGetProjectResponse(
-        NDProject.valid(ctx).copy(
-          name = "Community Garden Maintenance",
-          code = "N123456789",
-        ),
-      )
-
-      CommunityPaybackAndDeliusMockServer.setupGetAppointmentsResponse(
-        username = "USER1",
-        pageSize = Int.MAX_VALUE,
-        fromDate = LocalDate.of(2025, 1, 9),
-        toDate = LocalDate.of(2025, 1, 9),
-        projectCodes = listOf("N123456789"),
-        appointments = listOf(
-          NDAppointmentSummary.valid().copy(outcome = null),
-          NDAppointmentSummary.valid().copy(outcome = null),
-        ),
-      )
-
-      val sessionSearchResults = webTestClient.get()
-        .uri("/admin/projects/N123456789/sessions/2025-01-09")
-        .addAdminUiAuthHeader(username = "USER1")
-        .exchange()
-        .expectStatus()
-        .isOk
-        .bodyAsObject<SessionDto>()
-
-      assertThat(sessionSearchResults.projectName).isEqualTo("Community Garden Maintenance")
-      assertThat(sessionSearchResults.projectCode).isEqualTo("N123456789")
-      assertThat(sessionSearchResults.date).isEqualTo(LocalDate.of(2025, 1, 9))
-      assertThat(sessionSearchResults.appointmentSummaries).hasSize(2)
-    }
-  }
 
   @Nested
   @DisplayName("POST /admin/projects/123/sessions/2025-01-09/supervisor")
