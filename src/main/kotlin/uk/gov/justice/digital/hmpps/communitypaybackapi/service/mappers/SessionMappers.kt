@@ -24,7 +24,7 @@ class SessionMappers(
     val offenderA = a.offender as? OffenderFullDto
     val offenderB = b.offender as? OffenderFullDto
 
-    val comparator = nullsLast(compareBy<OffenderFullDto> { it.surname }.thenBy { it.forename })
+    val comparator = nullsLast(compareBy<OffenderFullDto> { it.surname?.lowercase() }.thenBy { it.forename?.lowercase() })
 
     comparator.compare(offenderA, offenderB)
   }
