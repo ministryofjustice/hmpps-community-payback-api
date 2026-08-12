@@ -230,7 +230,11 @@ class AdminAppointmentController(
       example = "[\"WITH_OUTCOME\",\"NO_OUTCOME\"]",
     )
     @RequestParam(required = false) outcomeCodes: List<String>?,
-    @RequestParam projectTypeGroup: ProjectTypeGroupDto?,
+    @Parameter(
+      description = "Filter by one or more project type groups",
+      array = ArraySchema(schema = Schema(implementation = ProjectTypeGroupDto::class)),
+    )
+    @RequestParam projectTypeGroup: List<ProjectTypeGroupDto>?,
   ): Page<AppointmentSummaryDto> {
     val hasFilter = !crn.isNullOrBlank() ||
       !eventNumber.isNullOrBlank() ||
@@ -238,7 +242,7 @@ class AdminAppointmentController(
       fromDate != null ||
       toDate != null ||
       !outcomeCodes.isNullOrEmpty() ||
-      projectTypeGroup != null
+      !projectTypeGroup.isNullOrEmpty()
 
     if (!hasFilter) {
       badRequest("At least one filter parameter must be provided")
