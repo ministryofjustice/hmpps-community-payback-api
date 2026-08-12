@@ -39,7 +39,7 @@ class AppointmentService(
     toDate: LocalDate? = null,
     outcomeCodes: List<String>? = null,
     projectCodes: List<String>? = null,
-    projectTypeGroup: ProjectTypeGroupDto? = null,
+    projectTypeGroup: List<ProjectTypeGroupDto>? = null,
     eventNumber: String? = null,
     deliusAppointmentIds: List<Long>? = null,
     pageable: Pageable,

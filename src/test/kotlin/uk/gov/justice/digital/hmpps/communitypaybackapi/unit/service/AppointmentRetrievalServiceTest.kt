@@ -168,11 +168,12 @@ class AppointmentRetrievalServiceTest {
       val toDate = LocalDate.now()
       val outcomeCodes = listOf("OUT1")
       val projectCodes = listOf("PROJ1")
-      val projectTypeGroup = ProjectTypeGroupDto.GROUP
+      val projectTypeGroups = listOf(ProjectTypeGroupDto.GROUP, ProjectTypeGroupDto.INDIVIDUAL)
       val pageable = PageRequest.of(0, 10)
 
       val projectTypeDtos = listOf(ProjectTypeDto.valid().copy(code = "PT1"))
-      every { projectService.projectTypesForGroup(projectTypeGroup) } returns projectTypeDtos
+      every { projectService.projectTypesForGroup(ProjectTypeGroupDto.GROUP) } returns projectTypeDtos
+      every { projectService.projectTypesForGroup(ProjectTypeGroupDto.INDIVIDUAL) } returns listOf(ProjectTypeDto.valid().copy(code = "PT2"))
 
       val ndAppointmentSummary = NDAppointmentSummary.valid()
       val pageResponse = PageResponse(
@@ -188,7 +189,7 @@ class AppointmentRetrievalServiceTest {
           toDate = toDate,
           outcomeCodes = outcomeCodes,
           projectCodes = projectCodes,
-          projectTypeCodes = listOf("PT1"),
+          projectTypeCodes = listOf("PT1", "PT2"),
           eventNumber = null,
           appointmentIds = null,
           params = pageable.toMultiValueHttpParams(),
@@ -204,7 +205,7 @@ class AppointmentRetrievalServiceTest {
         toDate = toDate,
         outcomeCodes = outcomeCodes,
         projectCodes = projectCodes,
-        projectTypeGroup = projectTypeGroup,
+        projectTypeGroup = projectTypeGroups,
         pageable = pageable,
       )
 
