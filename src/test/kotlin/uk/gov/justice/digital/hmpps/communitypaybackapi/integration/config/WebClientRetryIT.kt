@@ -17,8 +17,11 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.context.TestPropertySource
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCreateAppointments
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectOutcomeStats
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProviderSummaries
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.CommunityPaybackAndDeliusMockServer
 
 @TestPropertySource(
   properties = [
@@ -29,6 +32,29 @@ class WebClientRetryIT : IntegrationTestBase() {
 
   @Autowired
   private lateinit var communityPaybackAndDeliusClient: CommunityPaybackAndDeliusClient
+
+  @Test
+  fun `response larger than the default codec buffer is decoded`() {
+    val projects = (1..100).map { index ->
+      NDProjectOutcomeStats.valid().let { stats ->
+        stats.copy(project = stats.project.copy(code = "project-$index", name = "Project $index ${"x".repeat(3_000)}"))
+      }
+    }
+    CommunityPaybackAndDeliusMockServer.setupGetProjectsResponse(
+      providerCode = "N56",
+      teamCode = "N56CPB",
+      response = projects,
+    )
+
+    val response = communityPaybackAndDeliusClient.getProjects(
+      providerCode = "N56",
+      teamCode = "N56CPB",
+      typeCode = null,
+      params = mapOf("page" to "0", "size" to "100", "sort" to "name,asc"),
+    )
+
+    assertThat(response.content).hasSize(100)
+  }
 
   @Test
   fun `GET request is retried on timeout`() {
