@@ -15,6 +15,7 @@ data class CreateAdjustmentDto(
   val adjustmentReasonId: UUID,
   @param:Schema(description = "The date that should be recorded for the adjustment (e.g. the date of the appointment, or the current date).")
   val adjustmentDate: LocalDate?,
+  val appointmentId: UUID?,
 ) {
   companion object
 }
