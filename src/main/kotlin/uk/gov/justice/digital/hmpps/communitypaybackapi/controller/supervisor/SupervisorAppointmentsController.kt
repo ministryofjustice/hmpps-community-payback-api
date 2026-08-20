@@ -114,7 +114,7 @@ class SupervisorAppointmentsController(
       update = update,
       trigger = AppointmentEventTrigger(
         triggeredAt = OffsetDateTime.now(),
-        triggerType = AppointmentEventTriggerType.USER,
+        triggerType = AppointmentEventTriggerType.SUPERVISOR_USER,
         triggeredBy = contextService.getUserName(),
       ),
     )
@@ -151,7 +151,7 @@ class SupervisorAppointmentsController(
     request = request,
     trigger = AppointmentEventTrigger(
       triggeredAt = OffsetDateTime.now(),
-      triggerType = AppointmentEventTriggerType.USER,
+      triggerType = AppointmentEventTriggerType.SUPERVISOR_USER,
       triggeredBy = contextService.getUserName(),
     ),
   )

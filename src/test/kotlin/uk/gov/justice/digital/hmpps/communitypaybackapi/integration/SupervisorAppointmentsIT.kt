@@ -21,6 +21,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOut
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentsOutcomesResultDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntityRepository
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.validNoOutcome
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.valid
@@ -221,6 +222,10 @@ class SupervisorAppointmentsIT : IntegrationTestBase() {
       )
 
       domainEventAsserter.assertEventCount("community-payback.appointment.updated", 1)
+      assertThat(appointmentOutcomeEntityRepository.findAll())
+        .singleElement()
+        .extracting { it.triggerType }
+        .isEqualTo(AppointmentEventTriggerType.SUPERVISOR_USER)
     }
   }
 
@@ -331,6 +336,8 @@ class SupervisorAppointmentsIT : IntegrationTestBase() {
       CommunityPaybackAndDeliusMockServer.verifyPutAppointmentRequest("PC01", 5678L)
 
       domainEventAsserter.assertEventCount("community-payback.appointment.updated", 2)
+      assertThat(appointmentOutcomeEntityRepository.findAll())
+        .allMatch { it.triggerType == AppointmentEventTriggerType.SUPERVISOR_USER }
     }
   }
 }
