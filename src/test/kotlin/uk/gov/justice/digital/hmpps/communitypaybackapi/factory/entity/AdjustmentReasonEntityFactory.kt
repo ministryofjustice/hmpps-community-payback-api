@@ -9,4 +9,5 @@ fun AdjustmentReasonEntity.Companion.valid() = AdjustmentReasonEntity(
   deliusCode = String.random(5),
   name = String.random(50),
   maxMinutesAllowed = Int.random(1000),
+  needsLinkToAppointment = Boolean.random(),
 )
