@@ -31,6 +31,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionReso
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAdjustmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentTaskEntity
@@ -155,6 +156,7 @@ class DeliusEventTelemetryIT : IntegrationTestBase() {
     assertThat(properties["region"]).isEqualTo(PROVIDER_NAME)
     assertThat(properties["triggeredAt"]).isNotNull()
     assertThat(properties["triggeredBy"]).isEqualTo("theusername")
+    assertThat(properties["triggerType"]).isEqualTo(AppointmentEventTriggerType.USER.name)
     assertThat(properties["eventType"]).isEqualTo("CREATED")
   }
 
@@ -206,6 +208,7 @@ class DeliusEventTelemetryIT : IntegrationTestBase() {
     assertThat(properties["region"]).isEqualTo(PROVIDER_NAME)
     assertThat(properties["triggeredAt"]).isNotNull()
     assertThat(properties["triggeredBy"]).isEqualTo("theusername")
+    assertThat(properties["triggerType"]).isEqualTo(AppointmentEventTriggerType.USER.name)
     assertThat(properties["eventType"]).isEqualTo("UPDATED")
   }
 
@@ -255,6 +258,7 @@ class DeliusEventTelemetryIT : IntegrationTestBase() {
     assertThat(properties["providerCode"]).isEqualTo(PROVIDER_CODE)
     assertThat(properties["triggeredAt"]).isNotNull()
     assertThat(properties["triggeredBy"]).isEqualTo(task.id.toString())
+    assertThat(properties["triggerType"]).isEqualTo(AdjustmentEventTriggerType.APPOINTMENT_TASK.name)
     assertThat(properties["eventType"]).isEqualTo("CREATED")
   }
 

@@ -27,6 +27,7 @@ class DeliusEventTelemetryPublisher(
         "triggeredAt" to event.trigger.triggeredAt.toString(),
         "triggeredBy" to event.trigger.triggeredBy,
         "contactOutcome" to event.createDto.contactOutcome?.name,
+        "triggerType" to event.trigger.triggerType.name,
         "eventType" to "CREATED",
       ),
     )
@@ -44,6 +45,7 @@ class DeliusEventTelemetryPublisher(
         "triggeredAt" to event.trigger.triggeredAt.toString(),
         "triggeredBy" to event.trigger.triggeredBy,
         "contactOutcome" to event.updateDto.contactOutcome?.name,
+        "triggerType" to event.trigger.triggerType.name,
         "eventType" to "UPDATED",
       ),
     )
@@ -60,6 +62,7 @@ class DeliusEventTelemetryPublisher(
           "updatedContactOutcome" to updatedContactOutcome,
           "triggeredAt" to event.trigger.triggeredAt.toString(),
           "triggeredBy" to event.trigger.triggeredBy,
+          "triggerType" to event.trigger.triggerType.name,
         ),
       )
     }
@@ -76,6 +79,7 @@ class DeliusEventTelemetryPublisher(
         "providerCode" to event.appointmentEntity.providerCode,
         "triggeredAt" to event.trigger.triggeredAt.toString(),
         "triggeredBy" to event.trigger.triggeredBy,
+        "triggerType" to event.trigger.triggerType.name,
         "eventType" to "CREATED",
       ),
     )
