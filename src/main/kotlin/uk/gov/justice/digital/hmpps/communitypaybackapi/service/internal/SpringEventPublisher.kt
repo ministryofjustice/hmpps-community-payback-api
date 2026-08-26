@@ -44,7 +44,7 @@ sealed interface CommunityPaybackSpringEvent {
 
   data class AdjustmentCreatedEvent(
     val createDto: CreateAdjustmentDto,
-    val appointmentEntity: AppointmentEntity?,
+    val appointmentEntity: AppointmentEntity,
     val reason: AdjustmentReasonEntity,
     val deliusAdjustmentId: Long,
     val trigger: AdjustmentEventTrigger,

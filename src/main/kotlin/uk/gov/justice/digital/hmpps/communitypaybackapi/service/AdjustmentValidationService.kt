@@ -9,8 +9,8 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsIdDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentReasonEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentReasonEntityRepository
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntityRepository
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentTaskEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentTaskEntityRepository
 import java.time.Duration
 import java.time.LocalDate
 
@@ -18,7 +18,7 @@ import java.time.LocalDate
 @Service
 class AdjustmentValidationService(
   private val adjustmentReasonEntityRepository: AdjustmentReasonEntityRepository,
-  private val appointmentEntityRepository: AppointmentEntityRepository,
+  private val appointmentTaskEntityRepository: AppointmentTaskEntityRepository,
   private val offenderService: OffenderService,
 ) {
 
@@ -30,17 +30,7 @@ class AdjustmentValidationService(
     val reason = adjustmentReasonEntityRepository.findByIdOrNull(createAdjustment.adjustmentReasonId)
       ?: badRequest("Adjustment Reason not found for ID '${createAdjustment.adjustmentReasonId}'")
 
-    val appointment = if (reason.needsLinkToAppointment) {
-      if (createAdjustment.appointmentId == null) {
-        badRequest("Adjustment reason '${reason.name}' needs an appointment ID")
-      }
-
-      appointmentEntityRepository.findByIdOrNull(createAdjustment.appointmentId) ?: badRequest("Appointment not found for ID '${createAdjustment.appointmentId}'")
-    } else if (!reason.needsLinkToAppointment && createAdjustment.appointmentId != null) {
-      badRequest("Adjustment reason '${reason.name}' does not support linking to appointments")
-    } else {
-      null
-    }
+    val task = appointmentTaskEntityRepository.findByIdOrNull(createAdjustment.taskId) ?: badRequest("Task not found for ID '${createAdjustment.taskId}'")
 
     val unpaidWorkDetails = offenderService.ensureUnpaidWorkDetailsExist(upwDetailsId, username)
       ?: badRequest("Unpaid Work Details not found for CRN ${upwDetailsId.crn} and event number ${upwDetailsId.deliusEventNumber}")
@@ -66,14 +56,14 @@ class AdjustmentValidationService(
     return ValidatedCreateAdjustment(
       createAdjustment,
       reason,
-      appointment,
+      task,
     )
   }
 
   data class ValidatedCreateAdjustment(
     val createAdjustment: CreateAdjustmentDto,
     val reason: AdjustmentReasonEntity,
-    val appointment: AppointmentEntity?,
+    val task: AppointmentTaskEntity,
   )
 
   private fun validateMinutesToCredit(createAdjustment: CreateAdjustmentDto, unpaidWorkDetails: UnpaidWorkDetailsDto) {

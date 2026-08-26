@@ -73,10 +73,10 @@ class DeliusEventTelemetryPublisher(
     telemetryService.trackEvent(
       "AdjustmentEvent",
       properties = mapOf(
-        "crn" to event.appointmentEntity?.crn,
-        "deliusAppointmentId" to event.appointmentEntity?.deliusId.toString(),
+        "crn" to event.appointmentEntity.crn,
+        "deliusAppointmentId" to event.appointmentEntity.deliusId.toString(),
         "deliusAdjustmentId" to event.deliusAdjustmentId.toString(),
-        "providerCode" to event.appointmentEntity?.providerCode,
+        "providerCode" to event.appointmentEntity.providerCode,
         "triggeredAt" to event.trigger.triggeredAt.toString(),
         "triggeredBy" to event.trigger.triggeredBy,
         "triggerType" to event.trigger.triggerType.name,

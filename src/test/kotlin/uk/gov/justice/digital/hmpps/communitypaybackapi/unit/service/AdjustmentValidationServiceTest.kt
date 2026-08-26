@@ -16,8 +16,8 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsIdD
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.BadRequestException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentReasonEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentReasonEntityRepository
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntityRepository
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentTaskEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentTaskEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentValidationService
@@ -35,7 +35,7 @@ class AdjustmentValidationServiceTest {
   private lateinit var adjustmentReasonEntityRepository: AdjustmentReasonEntityRepository
 
   @RelaxedMockK
-  private lateinit var appointmentEntityRepository: AppointmentEntityRepository
+  private lateinit var appointmentTaskEntityRepository: AppointmentTaskEntityRepository
 
   @InjectMockKs
   private lateinit var service: AdjustmentValidationService
@@ -46,26 +46,26 @@ class AdjustmentValidationServiceTest {
     val UNPAID_WORK_DETAILS: UnpaidWorkDetailsIdDto = UnpaidWorkDetailsIdDto(CRN, EVENT_NUMBER)
     const val USERNAME = "username"
     val REASON_ID: UUID = UUID.fromString("74f0f62b-bbd4-49a4-9af8-1ce6cd94e3e1")
-    val APPOINTMENT_ID: UUID = UUID.fromString("84f0f62b-bbd4-49a4-9af8-1ce6cd94e3e1")
+    val TASK_ID: UUID = UUID.fromString("84f0f62b-bbd4-49a4-9af8-1ce6cd94e3e1")
   }
 
   @Nested
   inner class CreateAdjustment {
 
-    private val reason = AdjustmentReasonEntity.valid().copy(id = REASON_ID, maxMinutesAllowed = 180, needsLinkToAppointment = true)
+    private val reason = AdjustmentReasonEntity.valid().copy(id = REASON_ID, maxMinutesAllowed = 180)
     val baselineRequest = CreateAdjustmentDto.valid().copy(
       adjustmentReasonId = reason.id,
       minutes = 50,
-      appointmentId = APPOINTMENT_ID,
+      taskId = TASK_ID,
     )
 
     @BeforeEach
     fun setupBaselineMocks() {
       every {
         adjustmentReasonEntityRepository.findByIdOrNull(REASON_ID)
-      } returns reason
+      } returns AdjustmentReasonEntity.valid().copy(maxMinutesAllowed = 180)
 
-      every { appointmentEntityRepository.findByIdOrNull(APPOINTMENT_ID) } returns AppointmentEntity.valid()
+      every { appointmentTaskEntityRepository.findByIdOrNull(TASK_ID) } returns AppointmentTaskEntity.valid()
     }
 
     @Test
@@ -82,10 +82,8 @@ class AdjustmentValidationServiceTest {
     }
 
     @Test
-    fun `If adjustment reason needs an appointment and appointment not found return bad request exception`() {
-      every { adjustmentReasonEntityRepository.findByIdOrNull(REASON_ID) } returns reason.copy(needsLinkToAppointment = true)
-
-      every { appointmentEntityRepository.findByIdOrNull(APPOINTMENT_ID) } returns null
+    fun `If task not found return bad request exception`() {
+      every { appointmentTaskEntityRepository.findByIdOrNull(TASK_ID) } returns null
 
       assertThatThrownBy {
         service.validateCreate(
@@ -93,40 +91,14 @@ class AdjustmentValidationServiceTest {
           upwDetailsId = UNPAID_WORK_DETAILS,
           username = USERNAME,
         )
-      }.isInstanceOf(BadRequestException::class.java).hasMessage("Appointment not found for ID '84f0f62b-bbd4-49a4-9af8-1ce6cd94e3e1'")
-    }
-
-    @Test
-    fun `If adjustment reason needs an appointment and appointment ID is null return bad request exception`() {
-      every { adjustmentReasonEntityRepository.findByIdOrNull(REASON_ID) } returns reason.copy(name = "The reason name", needsLinkToAppointment = true)
-
-      assertThatThrownBy {
-        service.validateCreate(
-          createAdjustment = baselineRequest.copy(appointmentId = null),
-          upwDetailsId = UNPAID_WORK_DETAILS,
-          username = USERNAME,
-        )
-      }.isInstanceOf(BadRequestException::class.java).hasMessage("Adjustment reason 'The reason name' needs an appointment ID")
-    }
-
-    @Test
-    fun `If adjustment reason does not need an appointment and appointment ID is not null return bad request exception`() {
-      every { adjustmentReasonEntityRepository.findByIdOrNull(REASON_ID) } returns reason.copy(name = "The reason name", needsLinkToAppointment = false)
-
-      assertThatThrownBy {
-        service.validateCreate(
-          createAdjustment = baselineRequest,
-          upwDetailsId = UNPAID_WORK_DETAILS,
-          username = USERNAME,
-        )
-      }.isInstanceOf(BadRequestException::class.java).hasMessage("Adjustment reason 'The reason name' does not support linking to appointments")
+      }.isInstanceOf(BadRequestException::class.java).hasMessage("Task not found for ID '84f0f62b-bbd4-49a4-9af8-1ce6cd94e3e1'")
     }
 
     @Test
     fun `If minutes more than allowed for adjustment reason return bad request exception`() {
       every {
         adjustmentReasonEntityRepository.findByIdOrNull(REASON_ID)
-      } returns reason.copy(
+      } returns AdjustmentReasonEntity.valid().copy(
         name = "The reason name",
         maxMinutesAllowed = 50,
       )

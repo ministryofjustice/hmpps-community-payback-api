@@ -18,7 +18,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAdjustmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsIdDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentReasonEntity
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentTaskEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
@@ -89,7 +89,7 @@ class AdjustmentServiceTest {
     @Test
     fun success() {
       val reason = AdjustmentReasonEntity.valid().copy(maxMinutesAllowed = 50)
-      val appointment = AppointmentEntity.valid()
+      val appointmentTask = AppointmentTaskEntity.valid()
       val id = UUID.randomUUID()
       val dateOfAdjustment = LocalDate.now().minusDays(3)
 
@@ -99,7 +99,7 @@ class AdjustmentServiceTest {
         adjustmentDate = dateOfAdjustment,
       )
 
-      val validatedAdjustment = AdjustmentValidationService.ValidatedCreateAdjustment(request, reason, appointment)
+      val validatedAdjustment = AdjustmentValidationService.ValidatedCreateAdjustment(request, reason, appointmentTask)
       every { adjustmentIdGenerator.generateId(request) } returns id
 
       every {
@@ -141,13 +141,13 @@ class AdjustmentServiceTest {
           AdjustmentCreatedEvent(
             id = id,
             createDto = request,
-            appointmentEntity = appointment,
+            appointmentEntity = appointmentTask.appointment,
             reason = validatedAdjustment.reason,
             deliusAdjustmentId = 5L,
             trigger = AdjustmentEventTrigger(
               triggeredAt = OffsetDateTime.now(clock),
               triggerType = AdjustmentEventTriggerType.APPOINTMENT_TASK,
-              triggeredBy = appointment.id.toString(),
+              triggeredBy = appointmentTask.id.toString(),
             ),
             adjustmentDate = dateOfAdjustment,
           ),

@@ -219,6 +219,7 @@ class DeliusEventTelemetryIT : IntegrationTestBase() {
       deliusId = 1234L,
       providerCode = PROVIDER_CODE,
     ).persist(ctx)
+    val task = AppointmentTaskEntity.valid().copy(appointment = appointment).persist(ctx)
 
     CommunityPaybackAndDeliusMockServer.setupGetUpwDetailsSummaryResponse(
       crn = CRN,
@@ -241,7 +242,7 @@ class DeliusEventTelemetryIT : IntegrationTestBase() {
       .contentType(MediaType.APPLICATION_JSON)
       .bodyValue(
         CreateAdjustmentDto.valid(ctx).copy(
-          appointmentId = appointment.id,
+          taskId = task.id,
         ),
       )
       .exchange()
@@ -256,7 +257,7 @@ class DeliusEventTelemetryIT : IntegrationTestBase() {
     assertThat(properties["deliusAdjustmentId"]).isEqualTo("1")
     assertThat(properties["providerCode"]).isEqualTo(PROVIDER_CODE)
     assertThat(properties["triggeredAt"]).isNotNull()
-    assertThat(properties["triggeredBy"]).isEqualTo(appointment.id.toString())
+    assertThat(properties["triggeredBy"]).isEqualTo(task.id.toString())
     assertThat(properties["triggerType"]).isEqualTo(AdjustmentEventTriggerType.APPOINTMENT_TASK.name)
     assertThat(properties["eventType"]).isEqualTo("CREATED")
   }

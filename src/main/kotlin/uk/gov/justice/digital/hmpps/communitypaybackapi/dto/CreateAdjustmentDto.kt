@@ -6,8 +6,7 @@ import java.time.LocalDate
 import java.util.UUID
 
 data class CreateAdjustmentDto(
-  @param:Schema(deprecated = true, description = "Deprecated: use `appointmentId` instead")
-  val taskId: UUID?,
+  val taskId: UUID,
   @param:Schema(description = "Positive will increase minutes required. Negative will reduce minutes required.")
   val type: CreateAdjustmentTypeDto,
   @field:Min(value = 1)
@@ -16,7 +15,6 @@ data class CreateAdjustmentDto(
   val adjustmentReasonId: UUID,
   @param:Schema(description = "The date that should be recorded for the adjustment (e.g. the date of the appointment, or the current date).")
   val adjustmentDate: LocalDate?,
-  val appointmentId: UUID?,
 ) {
   companion object
 }

@@ -19,8 +19,7 @@
     "deliusCode": "String",
     "id": "UUID",
     "maxMinutesAllowed": "int",
-    "name": "String",
-    "needsLinkToAppointment": "boolean"
+    "name": "String"
   },
   "AppointmentEntity": {
     "createdByCommunityPayback": "boolean",

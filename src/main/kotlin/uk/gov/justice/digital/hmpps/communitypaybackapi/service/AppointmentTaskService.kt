@@ -88,15 +88,13 @@ class AppointmentTaskService(
     val trigger = event.trigger
     if (trigger.triggerType == AdjustmentEventTriggerType.APPOINTMENT_TASK) {
       val taskId = UUID.fromString(trigger.triggeredBy)
-      val task = appointmentTaskEntityRepository.findByIdOrNull(taskId)
-      if (task != null) {
-        task.taskStatus = AppointmentTaskStatus.COMPLETE
-        task.decisionMadeAt = trigger.triggeredAt
-        task.decisionMadeByUsername = contextService.getUserName()
-        task.decisionDescription = "Task completed on adjustment creation"
-        appointmentTaskEntityRepository.save(task)
-        publishAppointmentTaskUpdatedEvent(task)
-      }
+      val task = appointmentTaskEntityRepository.findByIdOrNull(taskId) ?: error("Can't find task with id $taskId for adjustment ${event.deliusAdjustmentId}")
+      task.taskStatus = AppointmentTaskStatus.COMPLETE
+      task.decisionMadeAt = trigger.triggeredAt
+      task.decisionMadeByUsername = contextService.getUserName()
+      task.decisionDescription = "Task completed on adjustment creation"
+      appointmentTaskEntityRepository.save(task)
+      publishAppointmentTaskUpdatedEvent(task)
     }
   }
 

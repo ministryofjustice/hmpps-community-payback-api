@@ -34,7 +34,7 @@ data class AdjustmentEventEntity(
   val deliusAdjustmentId: Long,
   @ManyToOne(fetch = FetchType.EAGER)
   @JoinColumn("appointment_id")
-  val appointment: AppointmentEntity?,
+  val appointment: AppointmentEntity,
   @Enumerated(EnumType.STRING)
   val adjustmentType: AdjustmentEventAdjustmentType,
   val adjustmentMinutes: Int,

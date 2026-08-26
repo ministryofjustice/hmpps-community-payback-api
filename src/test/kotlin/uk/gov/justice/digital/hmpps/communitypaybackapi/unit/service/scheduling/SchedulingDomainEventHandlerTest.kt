@@ -104,42 +104,6 @@ class SchedulingDomainEventHandlerTest {
         adjustmentEventService.recordSchedulingRan(EVENT_ID, SCHEDULE_ID)
       }
     }
-
-    @ParameterizedTest
-    @CsvSource(
-      "CREATE",
-    )
-    fun `scheduling is not triggered when there is no appointment on the event`(
-      eventType: AdjustmentEventType,
-    ) {
-      every {
-        adjustmentEventService.getEvent(EVENT_ID)
-      } returns AdjustmentEventEntity.valid().copy(
-        appointment = null,
-        eventType = eventType,
-        triggerType = AdjustmentEventTriggerType.APPOINTMENT_TASK,
-      )
-
-      every {
-        scheduleService.scheduleAppointments(any(), any(), any(), any())
-      } returns SCHEDULE_ID
-
-      service.handleAdjustmentEvent(
-        eventId = EVENT_ID,
-        maxProcessingTime = Duration.ofSeconds(30),
-      )
-
-      verify(exactly = 0) {
-        scheduleService.scheduleAppointments(
-          crn = any(),
-          eventNumber = any(),
-          trigger = any(),
-          dryRun = any(),
-        )
-
-        adjustmentEventService.recordSchedulingRan(any(), any())
-      }
-    }
   }
 
   @Nested

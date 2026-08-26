@@ -16,7 +16,6 @@ data class AdjustmentReasonEntity(
   val deliusCode: String,
   val name: String,
   val maxMinutesAllowed: Int,
-  val needsLinkToAppointment: Boolean,
 ) {
   @Suppress("USELESS_IS_CHECK")
   override fun equals(other: Any?): Boolean {

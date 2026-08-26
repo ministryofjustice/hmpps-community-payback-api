@@ -15,7 +15,6 @@ fun CreateAdjustmentDto.Companion.valid() = CreateAdjustmentDto(
   minutes = Int.random(1, 180),
   adjustmentReasonId = UUID.randomUUID(),
   adjustmentDate = LocalDate.now(),
-  appointmentId = null,
 )
 
 fun CreateAdjustmentDto.Companion.valid(ctx: ApplicationContext) = CreateAdjustmentDto.valid().copy(

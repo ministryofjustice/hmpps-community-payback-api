@@ -61,13 +61,13 @@ class AdjustmentService(
       AdjustmentCreatedEvent(
         id = adjustmentId,
         createDto = createAdjustment,
-        appointmentEntity = validatedAdjustment.appointment,
+        appointmentEntity = validatedAdjustment.task.appointment,
         reason = validatedAdjustment.reason,
         deliusAdjustmentId = deliusAdjustmentId,
         trigger = AdjustmentEventTrigger(
           triggeredAt = OffsetDateTime.now(clock),
           triggerType = AdjustmentEventTriggerType.APPOINTMENT_TASK,
-          triggeredBy = validatedAdjustment.appointment?.id.toString(),
+          triggeredBy = validatedAdjustment.task.id.toString(),
         ),
         adjustmentDate = adjustmentDate,
       ),
