@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.IdGenerator
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AdjustmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAdjustmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsIdDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventTriggerType
@@ -35,7 +36,7 @@ class AdjustmentService(
     upwDetailsId: UnpaidWorkDetailsIdDto,
     createAdjustment: CreateAdjustmentDto,
     username: String,
-  ) {
+  ): AdjustmentDto {
     val validatedAdjustment = adjustmentValidationService.validateCreate(createAdjustment, upwDetailsId, username)
     val adjustmentId = adjustmentIdGenerator.generateId(createAdjustment)
 
@@ -72,6 +73,8 @@ class AdjustmentService(
         adjustmentDate = adjustmentDate,
       ),
     )
+
+    return communityPaybackAndDeliusClient.getAdjustment(adjustmentId).toDto()
   }
 
   @EventListener

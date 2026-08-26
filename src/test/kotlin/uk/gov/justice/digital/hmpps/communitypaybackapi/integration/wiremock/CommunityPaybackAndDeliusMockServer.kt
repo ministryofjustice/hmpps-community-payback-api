@@ -464,6 +464,29 @@ object CommunityPaybackAndDeliusMockServer {
     )
   }
 
+  fun setupGetAdjustmentResponse(
+    reference: UUID,
+    adjustment: NDAdjustment,
+  ) {
+    WireMock.stubFor(
+      get("/community-payback-and-delius/adjustments/$reference")
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withBody(jsonMapper.writer().writeValueAsString(adjustment))
+            .withTransformers("response-template"),
+        ),
+    )
+    // Avoid the above stub trampling over the delete adjustment verification
+    WireMock.stubFor(
+      delete("/community-payback-and-delius/adjustments/$reference")
+        .willReturn(
+          aResponse()
+            .withStatus(204),
+        ),
+    )
+  }
+
   fun setupPostAdjustmentResponse(
     username: String,
     adjustmentId: Long = 1L,

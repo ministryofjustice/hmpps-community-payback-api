@@ -5,13 +5,18 @@ import org.awaitility.Awaitility.await
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.any
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.mock.web.MockHttpServletRequest
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.request.ServletRequestAttributes
 import software.amazon.awssdk.services.sqs.model.SendMessageRequest
 import tools.jackson.databind.json.JsonMapper
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAdjustment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDEvent
@@ -55,6 +60,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.MockTel
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.CommunityPaybackAndDeliusMockServer
 import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseCompletionMessage
 import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseMessageAttributes
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentIdGenerator
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentCreationService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventTrigger
 import uk.gov.justice.hmpps.sqs.HmppsQueueService
@@ -62,6 +68,7 @@ import uk.gov.justice.hmpps.sqs.MissingQueueException
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.OffsetDateTime
+import java.util.UUID
 import java.util.concurrent.TimeUnit
 
 class DeliusEventTelemetryIT : IntegrationTestBase() {
@@ -83,6 +90,9 @@ class DeliusEventTelemetryIT : IntegrationTestBase() {
 
   @Autowired
   lateinit var databasePurgeUtils: DatabasePurgeUtils
+
+  @MockitoSpyBean
+  lateinit var adjustmentIdGenerator: AdjustmentIdGenerator
 
   companion object {
     const val QUEUE_NAME = "educationcoursecompletionevents"
@@ -220,6 +230,9 @@ class DeliusEventTelemetryIT : IntegrationTestBase() {
       providerCode = PROVIDER_CODE,
     ).persist(ctx)
 
+    val adjustmentId = UUID.randomUUID()
+    doReturn(adjustmentId).whenever(adjustmentIdGenerator).generateId(any())
+
     CommunityPaybackAndDeliusMockServer.setupGetUpwDetailsSummaryResponse(
       crn = CRN,
       username = "theusername",
@@ -234,6 +247,7 @@ class DeliusEventTelemetryIT : IntegrationTestBase() {
       ),
     )
     CommunityPaybackAndDeliusMockServer.setupPostAdjustmentResponse(username = "theusername")
+    CommunityPaybackAndDeliusMockServer.setupGetAdjustmentResponse(adjustmentId, NDAdjustment.valid())
 
     webTestClient.post()
       .uri("/admin/offenders/$CRN/unpaid-work-details/$EVENT_NUMBER/adjustments")
@@ -246,7 +260,7 @@ class DeliusEventTelemetryIT : IntegrationTestBase() {
       )
       .exchange()
       .expectStatus()
-      .isOk
+      .isCreated
 
     val events = mockTelemetryService.getEventsWithName("AdjustmentEvent")
     assertThat(events).hasSize(1)
