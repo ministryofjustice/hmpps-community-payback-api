@@ -47,10 +47,11 @@ class AppointmentMappers(
   private val logger = LoggerFactory.getLogger(javaClass)
 
   fun toDto(
-    appointment: NDAppointment,
+    deliusAppointment: NDAppointment,
+    appointmentEntity: AppointmentEntity?,
     projectType: ProjectTypeEntity,
   ): AppointmentDto {
-    val contactOutcomeEntity = appointment.outcome?.code?.let {
+    val contactOutcomeEntity = deliusAppointment.outcome?.code?.let {
       val result = contactOutcomeEntityRepository.findByCode(it)
 
       if (result == null) {
@@ -61,38 +62,38 @@ class AppointmentMappers(
     }
 
     return AppointmentDto(
-      id = appointment.id,
-      communityPaybackId = appointment.reference,
-      version = appointment.version,
-      deliusEventNumber = appointment.event.number,
-      projectName = appointment.project.name,
-      projectCode = appointment.project.code,
-      projectTypeName = appointment.projectType.name,
-      projectTypeCode = appointment.projectType.code,
+      id = deliusAppointment.id,
+      communityPaybackId = deliusAppointment.reference ?: appointmentEntity?.id,
+      version = deliusAppointment.version,
+      deliusEventNumber = deliusAppointment.event.number,
+      projectName = deliusAppointment.project.name,
+      projectCode = deliusAppointment.project.code,
+      projectTypeName = deliusAppointment.projectType.name,
+      projectTypeCode = deliusAppointment.projectType.code,
       projectType = projectType.toDto(),
-      offender = appointment.case.toDto(),
-      supervisingTeam = appointment.team.name,
-      supervisingTeamCode = appointment.team.code,
-      providerCode = appointment.provider.code,
-      pickUpData = appointment.pickUpData?.toDto(),
-      date = appointment.date,
-      startTime = appointment.startTime,
-      endTime = appointment.endTime,
-      minutesCredited = appointment.minutesCredited,
+      offender = deliusAppointment.case.toDto(),
+      supervisingTeam = deliusAppointment.team.name,
+      supervisingTeamCode = deliusAppointment.team.code,
+      providerCode = deliusAppointment.provider.code,
+      pickUpData = deliusAppointment.pickUpData?.toDto(),
+      date = deliusAppointment.date,
+      startTime = deliusAppointment.startTime,
+      endTime = deliusAppointment.endTime,
+      minutesCredited = deliusAppointment.minutesCredited,
       contactOutcomeCode = contactOutcomeEntity?.code,
       attendanceData = if (contactOutcomeEntity?.attended == true) {
         AttendanceDataDto(
-          hiVisWorn = appointment.hiVisWorn,
-          workedIntensively = appointment.workedIntensively,
-          penaltyTime = appointment.penaltyHours,
-          penaltyMinutes = appointment.penaltyHours?.duration?.toMinutes(),
-          workQuality = appointment.workQuality!!.toDto(),
-          behaviour = appointment.behaviour!!.toDto(),
+          hiVisWorn = deliusAppointment.hiVisWorn,
+          workedIntensively = deliusAppointment.workedIntensively,
+          penaltyTime = deliusAppointment.penaltyHours,
+          penaltyMinutes = deliusAppointment.penaltyHours?.duration?.toMinutes(),
+          workQuality = deliusAppointment.workQuality!!.toDto(),
+          behaviour = deliusAppointment.behaviour!!.toDto(),
         )
       } else {
         null
       },
-      enforcementData = appointment.enforcementAction?.let {
+      enforcementData = deliusAppointment.enforcementAction?.let {
         val enforcementAction = enforcementActionEntityRepository.findByCode(it.code) ?: error("Can't find enforcement action for code ${it.code}")
 
         EnforcementDto(
@@ -101,11 +102,11 @@ class AppointmentMappers(
           respondBy = it.respondBy,
         )
       },
-      supervisorOfficerName = appointment.supervisor.name.let { "${it.forename} ${it.surname}" },
-      supervisorOfficerCode = appointment.supervisor.code,
-      notes = appointment.notes,
-      sensitive = appointment.sensitive,
-      alertActive = appointment.alertActive,
+      supervisorOfficerName = deliusAppointment.supervisor.name.let { "${it.forename} ${it.surname}" },
+      supervisorOfficerCode = deliusAppointment.supervisor.code,
+      notes = deliusAppointment.notes,
+      sensitive = deliusAppointment.sensitive,
+      alertActive = deliusAppointment.alertActive,
     )
   }
 

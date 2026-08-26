@@ -506,7 +506,7 @@ class AppointmentMappersTest {
       val behaviour = NDAppointmentBehaviour.SATISFACTORY
       val notes = "This is a test note"
 
-      val appointment = NDAppointment(
+      val deliusAppointment = NDAppointment(
         id = id,
         reference = communityPaybackId,
         version = version,
@@ -570,10 +570,12 @@ class AppointmentMappersTest {
         alertActive = true,
       )
 
+      val appointmentEntity = AppointmentEntity.valid()
+
       every { contactOutcomeEntityRepository.findByCode("OUTCOME1") } returns ContactOutcomeEntity.valid().copy(code = contactOutcomeCode, attended = true)
       every { enforcementActionEntityRepository.findByCode("ENFORCE1") } returns EnforcementActionEntity.valid().copy(id = enforcementActionId, name = enforcementActionName)
 
-      val result = service.toDto(appointment, ProjectTypeEntity.valid())
+      val result = service.toDto(deliusAppointment, appointmentEntity, ProjectTypeEntity.valid())
 
       assertThat(result.id).isEqualTo(id)
       assertThat(result.communityPaybackId).isEqualTo(communityPaybackId)
@@ -631,7 +633,7 @@ class AppointmentMappersTest {
       every { contactOutcomeEntityRepository.findByCode("OUTCOME1") } returns ContactOutcomeEntity.valid().copy(attended = true)
       every { enforcementActionEntityRepository.findByCode("ENFORCE1") } returns EnforcementActionEntity.valid()
 
-      val result = service.toDto(projectAppointment, ProjectTypeEntity.valid())
+      val result = service.toDto(projectAppointment, AppointmentEntity.valid(), ProjectTypeEntity.valid())
 
       assertThat(result.attendanceData).isNotNull()
     }
@@ -646,7 +648,7 @@ class AppointmentMappersTest {
       every { contactOutcomeEntityRepository.findByCode("OUTCOME1") } returns ContactOutcomeEntity.valid().copy(attended = false)
       every { enforcementActionEntityRepository.findByCode("ENFORCE1") } returns EnforcementActionEntity.valid()
 
-      val result = service.toDto(projectAppointment, ProjectTypeEntity.valid())
+      val result = service.toDto(projectAppointment, AppointmentEntity.valid(), ProjectTypeEntity.valid())
 
       assertThat(result.attendanceData).isNull()
     }
@@ -661,10 +663,41 @@ class AppointmentMappersTest {
       every { contactOutcomeEntityRepository.findByCode("UNKNOWN") } returns null
       every { enforcementActionEntityRepository.findByCode("ENFORCE1") } returns EnforcementActionEntity.valid()
 
-      val result = service.toDto(projectAppointment, ProjectTypeEntity.valid())
+      val result = service.toDto(projectAppointment, AppointmentEntity.valid(), ProjectTypeEntity.valid())
 
       assertThat(result.contactOutcomeCode).isEqualTo("UNKNOWN")
       assertThat(result.attendanceData).isNull()
+    }
+
+    @Test
+    fun `Community Payback ID should use Delius reference when available`() {
+      val expectedCommunityPaybackId = UUID.randomUUID()
+      val deliusAppointment = NDAppointment.valid().copy(reference = expectedCommunityPaybackId)
+      val appointmentEntity = AppointmentEntity.valid().copy(id = UUID.randomUUID())
+
+      val result = service.toDto(deliusAppointment, appointmentEntity, ProjectTypeEntity.valid())
+
+      assertThat(result.communityPaybackId).isEqualTo(expectedCommunityPaybackId)
+    }
+
+    @Test
+    fun `Community Payback ID should fallback to appointment entity ID if Delius appointment does not have a reference`() {
+      val expectedCommunityPaybackId = UUID.randomUUID()
+      val deliusAppointment = NDAppointment.valid().copy(reference = null)
+      val appointmentEntity = AppointmentEntity.valid().copy(id = expectedCommunityPaybackId)
+
+      val result = service.toDto(deliusAppointment, appointmentEntity, ProjectTypeEntity.valid())
+
+      assertThat(result.communityPaybackId).isEqualTo(expectedCommunityPaybackId)
+    }
+
+    @Test
+    fun `Community Payback ID should be null if Delius appointment does not have a reference and appointment entity is null`() {
+      val deliusAppointment = NDAppointment.valid().copy(reference = null)
+
+      val result = service.toDto(deliusAppointment, null, ProjectTypeEntity.valid())
+
+      assertThat(result.communityPaybackId).isNull()
     }
   }
 
