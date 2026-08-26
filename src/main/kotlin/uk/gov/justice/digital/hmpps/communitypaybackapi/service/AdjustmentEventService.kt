@@ -32,7 +32,7 @@ class AdjustmentEventService(
       type = when (persistedEvent.eventType) {
         AdjustmentEventType.CREATE -> DomainEventType.ADJUSTMENT_CREATED
       },
-      headers = persistedEvent.appointment.toDomainEventHeaders(),
+      headers = persistedEvent.appointment?.toDomainEventHeaders() ?: DomainEventService.EventHeaders(),
     )
   }
 

@@ -78,16 +78,18 @@ class SchedulingDomainEventHandler(
   ) {
     val adjustmentEvent = adjustmentEventService.getEvent(eventId) ?: error("Can't find adjustment event with id '$eventId'")
 
-    val schedulingId = triggerScheduling(
-      appointment = adjustmentEvent.appointment,
-      eventId = eventId,
-      maxProcessingTime = maxProcessingTime,
-      triggerType = when (adjustmentEvent.eventType) {
-        AdjustmentEventType.CREATE -> SchedulingTriggerType.AdjustmentCreated
-      },
-    )
+    if (adjustmentEvent.appointment != null) {
+      val schedulingId = triggerScheduling(
+        appointment = adjustmentEvent.appointment!!,
+        eventId = eventId,
+        maxProcessingTime = maxProcessingTime,
+        triggerType = when (adjustmentEvent.eventType) {
+          AdjustmentEventType.CREATE -> SchedulingTriggerType.AdjustmentCreated
+        },
+      )
 
-    adjustmentEventService.recordSchedulingRan(eventId, schedulingId)
+      adjustmentEventService.recordSchedulingRan(eventId, schedulingId)
+    }
   }
 
   private fun triggerScheduling(

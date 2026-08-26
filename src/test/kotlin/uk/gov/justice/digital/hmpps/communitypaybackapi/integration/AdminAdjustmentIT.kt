@@ -95,7 +95,7 @@ class AdminAdjustmentIT : IntegrationTestBase() {
       CommunityPaybackAndDeliusMockServer.setupPostAdjustmentResponse(username = "theusername")
 
       callCreateAdjustment(
-        request = CreateAdjustmentDto.valid(ctx).copy(taskId = task.id),
+        request = CreateAdjustmentDto.valid(ctx).copy(taskId = task.id, appointmentId = appointment.id),
         expectedStatus = 200,
       )
 
@@ -116,7 +116,7 @@ class AdminAdjustmentIT : IntegrationTestBase() {
 
       // successful request
       callCreateAdjustment(
-        request = CreateAdjustmentDto.valid(ctx).copy(taskId = task.id),
+        request = CreateAdjustmentDto.valid(ctx).copy(taskId = task.id, appointmentId = appointment.id),
         expectedStatus = 200,
       )
       CommunityPaybackAndDeliusMockServer.verifyPostAdjustment(username = "theusername", count = 1)
@@ -133,7 +133,7 @@ class AdminAdjustmentIT : IntegrationTestBase() {
       CommunityPaybackAndDeliusMockServer.resetDeleteAdjustmentRequestCount(task.id)
 
       callCreateAdjustment(
-        request = CreateAdjustmentDto.valid(ctx).copy(taskId = task.id),
+        request = CreateAdjustmentDto.valid(ctx).copy(taskId = task.id, appointmentId = appointment.id),
         expectedStatus = 500,
       )
 
