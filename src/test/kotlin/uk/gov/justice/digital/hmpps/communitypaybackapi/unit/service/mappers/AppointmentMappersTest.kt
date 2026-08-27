@@ -11,6 +11,7 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAddress
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAdjustment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointmentBehaviour
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointmentPickUp
@@ -575,7 +576,7 @@ class AppointmentMappersTest {
       every { contactOutcomeEntityRepository.findByCode("OUTCOME1") } returns ContactOutcomeEntity.valid().copy(code = contactOutcomeCode, attended = true)
       every { enforcementActionEntityRepository.findByCode("ENFORCE1") } returns EnforcementActionEntity.valid().copy(id = enforcementActionId, name = enforcementActionName)
 
-      val result = service.toDto(deliusAppointment, appointmentEntity, ProjectTypeEntity.valid())
+      val result = service.toDto(deliusAppointment, appointmentEntity, ProjectTypeEntity.valid(), emptyList())
 
       assertThat(result.id).isEqualTo(id)
       assertThat(result.communityPaybackId).isEqualTo(communityPaybackId)
@@ -633,7 +634,7 @@ class AppointmentMappersTest {
       every { contactOutcomeEntityRepository.findByCode("OUTCOME1") } returns ContactOutcomeEntity.valid().copy(attended = true)
       every { enforcementActionEntityRepository.findByCode("ENFORCE1") } returns EnforcementActionEntity.valid()
 
-      val result = service.toDto(projectAppointment, AppointmentEntity.valid(), ProjectTypeEntity.valid())
+      val result = service.toDto(projectAppointment, AppointmentEntity.valid(), ProjectTypeEntity.valid(), emptyList())
 
       assertThat(result.attendanceData).isNotNull()
     }
@@ -648,7 +649,7 @@ class AppointmentMappersTest {
       every { contactOutcomeEntityRepository.findByCode("OUTCOME1") } returns ContactOutcomeEntity.valid().copy(attended = false)
       every { enforcementActionEntityRepository.findByCode("ENFORCE1") } returns EnforcementActionEntity.valid()
 
-      val result = service.toDto(projectAppointment, AppointmentEntity.valid(), ProjectTypeEntity.valid())
+      val result = service.toDto(projectAppointment, AppointmentEntity.valid(), ProjectTypeEntity.valid(), emptyList())
 
       assertThat(result.attendanceData).isNull()
     }
@@ -663,7 +664,7 @@ class AppointmentMappersTest {
       every { contactOutcomeEntityRepository.findByCode("UNKNOWN") } returns null
       every { enforcementActionEntityRepository.findByCode("ENFORCE1") } returns EnforcementActionEntity.valid()
 
-      val result = service.toDto(projectAppointment, AppointmentEntity.valid(), ProjectTypeEntity.valid())
+      val result = service.toDto(projectAppointment, AppointmentEntity.valid(), ProjectTypeEntity.valid(), emptyList())
 
       assertThat(result.contactOutcomeCode).isEqualTo("UNKNOWN")
       assertThat(result.attendanceData).isNull()
@@ -675,7 +676,7 @@ class AppointmentMappersTest {
       val deliusAppointment = NDAppointment.valid().copy(reference = expectedCommunityPaybackId)
       val appointmentEntity = AppointmentEntity.valid().copy(id = UUID.randomUUID())
 
-      val result = service.toDto(deliusAppointment, appointmentEntity, ProjectTypeEntity.valid())
+      val result = service.toDto(deliusAppointment, appointmentEntity, ProjectTypeEntity.valid(), emptyList())
 
       assertThat(result.communityPaybackId).isEqualTo(expectedCommunityPaybackId)
     }
@@ -686,7 +687,7 @@ class AppointmentMappersTest {
       val deliusAppointment = NDAppointment.valid().copy(reference = null)
       val appointmentEntity = AppointmentEntity.valid().copy(id = expectedCommunityPaybackId)
 
-      val result = service.toDto(deliusAppointment, appointmentEntity, ProjectTypeEntity.valid())
+      val result = service.toDto(deliusAppointment, appointmentEntity, ProjectTypeEntity.valid(), emptyList())
 
       assertThat(result.communityPaybackId).isEqualTo(expectedCommunityPaybackId)
     }
@@ -695,9 +696,23 @@ class AppointmentMappersTest {
     fun `Community Payback ID should be null if Delius appointment does not have a reference and appointment entity is null`() {
       val deliusAppointment = NDAppointment.valid().copy(reference = null)
 
-      val result = service.toDto(deliusAppointment, null, ProjectTypeEntity.valid())
+      val result = service.toDto(deliusAppointment, null, ProjectTypeEntity.valid(), emptyList())
 
       assertThat(result.communityPaybackId).isNull()
+    }
+
+    @Test
+    fun `Maps adjustments when provided`() {
+      val deliusAppointment = NDAppointment.valid()
+      val adjustmentId = UUID.randomUUID()
+      val adjustments = listOf(
+        NDAdjustment.valid().copy(reference = adjustmentId),
+      )
+
+      val result = service.toDto(deliusAppointment, null, ProjectTypeEntity.valid(), adjustments)
+
+      assertThat(result.adjustments).hasSize(1)
+      assertThat(result.adjustments[0].id).isEqualTo(adjustmentId)
     }
   }
 
@@ -729,7 +744,9 @@ class AppointmentMappersTest {
             NDCodeDescription(description = "PROJECTYPE1", code = "PT1"),
           ),
           notes = "The notes",
+          eventNumber = 1,
         ),
+        adjustments = emptyList(),
       )
 
       assertThat(result.id).isEqualTo(1L)
@@ -757,11 +774,25 @@ class AppointmentMappersTest {
 
       every { contactOutcomeEntityRepository.findByCode("UNKNOWN") } returns null
 
-      val result = service.toSummaryDto(projectAppointment)
+      val result = service.toSummaryDto(projectAppointment, emptyList())
 
       assertThat(result.contactOutcome).isNotNull
       assertThat(result.contactOutcome!!.id).isEqualTo(UUID(0L, 0L))
       assertThat(result.contactOutcome.code).isEqualTo("UNKNOWN")
+    }
+
+    @Test
+    fun `Maps adjustments when provided`() {
+      val deliusAppointment = NDAppointmentSummary.valid()
+      val adjustmentId = UUID.randomUUID()
+      val adjustments = listOf(
+        NDAdjustment.valid().copy(reference = adjustmentId),
+      )
+
+      val result = service.toSummaryDto(deliusAppointment, adjustments)
+
+      assertThat(result.adjustments).hasSize(1)
+      assertThat(result.adjustments[0].id).isEqualTo(adjustmentId)
     }
   }
 

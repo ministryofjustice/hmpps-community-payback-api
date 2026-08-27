@@ -41,6 +41,7 @@ data class AppointmentDto(
   val notes: String?,
   val sensitive: Boolean?,
   val alertActive: Boolean?,
+  val adjustments: List<AdjustmentDto>,
 ) {
   companion object
 }

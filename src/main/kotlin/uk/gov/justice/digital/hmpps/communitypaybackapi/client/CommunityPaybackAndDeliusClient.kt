@@ -186,6 +186,7 @@ data class NDAppointmentSummary(
   val minutesCredited: Long?,
   val daysOverdue: Int?,
   val notes: String?,
+  val eventNumber: Int?,
 ) {
   fun hasOutcome() = outcome != null
 

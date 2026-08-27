@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointmentSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSessionSummary
@@ -78,6 +79,11 @@ class SupervisorSessionsIT : IntegrationTestBase() {
         ),
       )
 
+      val crn1 = "CRN001"
+      val eventNumber1 = 1
+      val crn2 = "CRN002"
+      val eventNumber2 = 2
+
       CommunityPaybackAndDeliusMockServer.setupGetAppointmentsResponse(
         username = "USER1",
         pageSize = Int.MAX_VALUE,
@@ -85,10 +91,13 @@ class SupervisorSessionsIT : IntegrationTestBase() {
         toDate = LocalDate.of(2025, 1, 9),
         projectCodes = listOf("N123456789"),
         appointments = listOf(
-          NDAppointmentSummary.valid().copy(outcome = null),
-          NDAppointmentSummary.valid().copy(outcome = null),
+          NDAppointmentSummary.valid().copy(outcome = null, case = NDCaseSummary.valid().copy(crn = crn1), eventNumber = eventNumber1),
+          NDAppointmentSummary.valid().copy(outcome = null, case = NDCaseSummary.valid().copy(crn = crn2), eventNumber = eventNumber2),
         ),
       )
+
+      CommunityPaybackAndDeliusMockServer.setupGetAdjustmentsResponse(crn1, eventNumber1, emptyList())
+      CommunityPaybackAndDeliusMockServer.setupGetAdjustmentsResponse(crn2, eventNumber2, emptyList())
 
       val sessionSearchResults = webTestClient.get()
         .uri("/supervisor/projects/N123456789/sessions/2025-01-09")
@@ -169,6 +178,11 @@ class SupervisorSessionsIT : IntegrationTestBase() {
 
       CommunityPaybackAndDeliusMockServer.setupGetProjectResponse(NDProject.valid(ctx).copy(code = "PROJ1"))
 
+      val crn1 = "CRN001"
+      val eventNumber1 = 1
+      val crn2 = "CRN002"
+      val eventNumber2 = 2
+
       CommunityPaybackAndDeliusMockServer.setupGetAppointmentsResponse(
         username = "USER1",
         pageSize = Int.MAX_VALUE,
@@ -176,10 +190,13 @@ class SupervisorSessionsIT : IntegrationTestBase() {
         toDate = today,
         projectCodes = listOf("PROJ1"),
         appointments = listOf(
-          NDAppointmentSummary.valid(ctx).copy(),
-          NDAppointmentSummary.valid(ctx).copy(),
+          NDAppointmentSummary.valid().copy(outcome = null, case = NDCaseSummary.valid().copy(crn = crn1), eventNumber = eventNumber1),
+          NDAppointmentSummary.valid().copy(outcome = null, case = NDCaseSummary.valid().copy(crn = crn2), eventNumber = eventNumber2),
         ),
       )
+
+      CommunityPaybackAndDeliusMockServer.setupGetAdjustmentsResponse(crn1, eventNumber1, emptyList())
+      CommunityPaybackAndDeliusMockServer.setupGetAdjustmentsResponse(crn2, eventNumber2, emptyList())
 
       val result = webTestClient.get()
         .uri("/supervisor/supervisors/SUPERVISOR001/sessions/next")

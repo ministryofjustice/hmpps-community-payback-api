@@ -38,4 +38,5 @@ fun AppointmentDto.Companion.valid() = AppointmentDto(
   notes = null,
   sensitive = null,
   alertActive = null,
+  adjustments = emptyList(),
 )

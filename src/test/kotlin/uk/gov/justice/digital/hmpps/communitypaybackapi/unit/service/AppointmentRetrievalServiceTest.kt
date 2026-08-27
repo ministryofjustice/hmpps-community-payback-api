@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.unit.service
 
 import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
+import io.mockk.impl.annotations.MockK
 import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.verify
@@ -12,8 +13,11 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.data.domain.PageRequest
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAdjustment
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAdjustmentResponse
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointmentSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.PageResponse
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
@@ -23,6 +27,8 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.OffenderNameDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeGroupDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
@@ -65,6 +71,9 @@ class AppointmentRetrievalServiceTest {
 
   @RelaxedMockK
   private lateinit var contactOutcomeEntityRepository: ContactOutcomeEntityRepository
+
+  @MockK
+  private lateinit var adjustmentEventEntityRepository: AdjustmentEventEntityRepository
 
   @InjectMockKs
   private lateinit var service: AppointmentRetrievalService
@@ -109,8 +118,10 @@ class AppointmentRetrievalServiceTest {
       val appointmentEntity = AppointmentEntity.valid()
       every { appointmentEntityRepository.findByDeliusId(deliusAppointment.id) } returns appointmentEntity
 
+      every { adjustmentEventEntityRepository.findByAppointmentOrderByCreatedAtAsc(appointmentEntity) } returns emptyList()
+
       val appointmentDto = AppointmentDto.valid()
-      every { appointmentMappers.toDto(deliusAppointment, appointmentEntity, projectType) } returns appointmentDto
+      every { appointmentMappers.toDto(deliusAppointment, appointmentEntity, projectType, emptyList()) } returns appointmentDto
 
       val result = service.getAppointment(DeliusAppointmentIdDto(PROJECT_CODE, 101L))
 
@@ -148,7 +159,7 @@ class AppointmentRetrievalServiceTest {
       } returns pageResponse
 
       val appointmentSummaryDto = AppointmentSummaryDto.valid()
-      every { appointmentMappers.toSummaryDto(ndAppointmentSummary) } returns appointmentSummaryDto
+      every { appointmentMappers.toSummaryDto(ndAppointmentSummary, emptyList()) } returns appointmentSummaryDto
 
       val result = service.getAppointments(
         crn = crn,
@@ -200,7 +211,7 @@ class AppointmentRetrievalServiceTest {
       } returns pageResponse
 
       val appointmentSummaryDto = AppointmentSummaryDto.valid()
-      every { appointmentMappers.toSummaryDto(ndAppointmentSummary) } returns appointmentSummaryDto
+      every { appointmentMappers.toSummaryDto(ndAppointmentSummary, emptyList()) } returns appointmentSummaryDto
 
       val result = service.getAppointments(
         crn = null,
@@ -256,6 +267,64 @@ class AppointmentRetrievalServiceTest {
           appointmentIds = null,
           params = pageable.toMultiValueHttpParams(),
         )
+      }
+    }
+
+    @Test
+    fun `should correctly match appointments with adjustments`() {
+      val pageable = PageRequest.of(0, 10)
+      val outcomes = listOf(
+        ContactOutcomeEntity.valid().copy(code = "OUT1"),
+        ContactOutcomeEntity.valid().copy(code = "OUT2"),
+      )
+      every { contactOutcomeEntityRepository.findAll() } returns outcomes
+
+      val appointmentSummaries = listOf(
+        NDAppointmentSummary.valid().copy(case = NDCaseSummary.valid().copy(crn = "CRN1"), eventNumber = 1),
+        NDAppointmentSummary.valid().copy(case = NDCaseSummary.valid().copy(crn = "CRN2"), eventNumber = 2),
+      )
+      every {
+        communityPaybackAndDeliusClient.getAppointments(
+          username = USERNAME,
+          crn = null,
+          fromDate = null,
+          toDate = null,
+          outcomeCodes = listOf("OUT1", "OUT2", "NO_OUTCOME"),
+          projectCodes = null,
+          projectTypeCodes = null,
+          eventNumber = null,
+          appointmentIds = null,
+          params = pageable.toMultiValueHttpParams(),
+        )
+      } returns PageResponse(appointmentSummaries, PageResponse.PageMeta(10, 0, 2, 1))
+
+      val adjustments1 = listOf(
+        NDAdjustment.valid(),
+        NDAdjustment.valid(),
+      )
+      val adjustments2 = listOf(
+        NDAdjustment.valid(),
+      )
+      every { communityPaybackAndDeliusClient.getAdjustments("CRN1", 1) } returns NDAdjustmentResponse(adjustments1)
+      every { communityPaybackAndDeliusClient.getAdjustments("CRN2", 2) } returns NDAdjustmentResponse(adjustments2)
+
+      val appointmentEntities = appointmentSummaries.map { AppointmentEntity.valid().copy(crn = it.case.crn, deliusId = it.id, deliusEventNumber = it.eventNumber!!) }
+      every { appointmentEntityRepository.findAllByDeliusId(appointmentSummaries.map { it.id }) } returns appointmentEntities
+      every { adjustmentEventEntityRepository.findByAppointmentOrderByCreatedAtAsc(appointmentEntities[0]) } returns adjustments1.map {
+        AdjustmentEventEntity.valid().copy(id = it.reference!!, deliusAdjustmentId = it.id)
+      }
+      every { adjustmentEventEntityRepository.findByAppointmentOrderByCreatedAtAsc(appointmentEntities[1]) } returns adjustments2.map {
+        AdjustmentEventEntity.valid().copy(id = it.reference!!, deliusAdjustmentId = it.id)
+      }
+
+      service.getAppointments(
+        outcomeCodes = listOf("WITH_OUTCOME", "NO_OUTCOME"),
+        pageable = pageable,
+      )
+
+      verify {
+        appointmentMappers.toSummaryDto(appointmentSummaries[0], adjustments1)
+        appointmentMappers.toSummaryDto(appointmentSummaries[1], adjustments2)
       }
     }
   }
