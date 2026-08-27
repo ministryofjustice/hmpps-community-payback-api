@@ -38,7 +38,9 @@ class AppointmentRetrievalService(
       val projectTypeCode = appointment.projectType.code
       val projectType = projectService.getProjectTypeForCode(projectTypeCode) ?: error("Can't resolve project type for code $projectTypeCode")
 
-      appointmentMappers.toDto(appointment, projectType)
+      val appointmentEntity = appointmentEntityRepository.findByDeliusId(appointment.id)
+
+      appointmentMappers.toDto(appointment, appointmentEntity, projectType)
     }
   } catch (_: WebClientResponseException.NotFound) {
     null

@@ -100,14 +100,17 @@ class AppointmentRetrievalServiceTest {
 
     @Test
     fun `appointment found`() {
-      val appointment = NDAppointment.valid().copy(projectType = NDProjectType.valid().copy(code = PROJECT_TYPE_CODE))
-      every { communityPaybackAndDeliusClient.getAppointment(PROJECT_CODE, 101L, USERNAME) } returns appointment
+      val deliusAppointment = NDAppointment.valid().copy(projectType = NDProjectType.valid().copy(code = PROJECT_TYPE_CODE))
+      every { communityPaybackAndDeliusClient.getAppointment(PROJECT_CODE, 101L, USERNAME) } returns deliusAppointment
 
       val projectType = ProjectTypeEntity.valid()
       every { projectService.getProjectTypeForCode(PROJECT_TYPE_CODE) } returns projectType
 
+      val appointmentEntity = AppointmentEntity.valid()
+      every { appointmentEntityRepository.findByDeliusId(deliusAppointment.id) } returns appointmentEntity
+
       val appointmentDto = AppointmentDto.valid()
-      every { appointmentMappers.toDto(appointment, projectType) } returns appointmentDto
+      every { appointmentMappers.toDto(deliusAppointment, appointmentEntity, projectType) } returns appointmentDto
 
       val result = service.getAppointment(DeliusAppointmentIdDto(PROJECT_CODE, 101L))
 
