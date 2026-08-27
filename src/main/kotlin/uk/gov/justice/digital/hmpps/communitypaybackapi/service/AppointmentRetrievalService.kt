@@ -5,6 +5,9 @@ import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAdjustment
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointmentSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.PageResponse
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.asPage
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentSummaryDto
@@ -78,7 +81,28 @@ class AppointmentRetrievalService(
       appointmentIds = deliusAppointmentIds,
       params = pageable.toMultiValueHttpParams(),
     )
-    return pageResponse.asPage(pageable) { appointmentMappers.toSummaryDto(it) }
+    val adjustmentsByAppointmentDeliusId = getAdjustmentsByAppointmentDeliusIdForPage(pageResponse)
+
+    return pageResponse.asPage(pageable) { appointmentMappers.toSummaryDto(it, adjustmentsByAppointmentDeliusId[it.id] ?: emptyList()) }
+  }
+
+  private fun getAdjustmentsByAppointmentDeliusIdForPage(pageResponse: PageResponse<NDAppointmentSummary>): Map<Long, List<NDAdjustment>> {
+    data class AdjustmentKey(val crn: String, val eventNumber: Int)
+    fun NDAppointmentSummary.toAdjustmentKey() = AdjustmentKey(this.case.crn, this.eventNumber ?: 1)
+    fun AppointmentEntity.toAdjustmentKey() = AdjustmentKey(this.crn, this.deliusEventNumber)
+
+    val uniqueAdjustmentKeys = pageResponse.content.map { it.toAdjustmentKey() }.distinct()
+    val adjustmentsByUniqueKey = uniqueAdjustmentKeys.associateWith { communityPaybackAndDeliusClient.getAdjustments(it.crn, it.eventNumber).adjustments }
+
+    val appointmentEntities = appointmentEntityRepository.findAllByDeliusId(pageResponse.content.map { it.id })
+    val adjustmentIdsByAppointment = appointmentEntities.associateWith { appointment ->
+      adjustmentEventEntityRepository.findByAppointmentOrderByCreatedAtAsc(appointment).map { it.id }
+    }
+    val adjustmentsByAppointment = adjustmentIdsByAppointment.mapValues { (appointment, adjustmentIds) ->
+      adjustmentsByUniqueKey[appointment.toAdjustmentKey()]?.filter { adjustmentIds.contains(it.reference) } ?: emptyList()
+    }
+
+    return adjustmentsByAppointment.mapKeys { it.key.deliusId }
   }
 
   private fun expandOutcomeCodes(outcomeCodes: List<String>?): List<String>? = outcomeCodes?.flatMap { outcomeCode ->

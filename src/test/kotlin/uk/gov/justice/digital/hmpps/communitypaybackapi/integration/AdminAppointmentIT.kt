@@ -394,6 +394,9 @@ class AdminAppointmentIT : IntegrationTestBase() {
         appointments = listOf(appointment1, appointment2),
       )
 
+      CommunityPaybackAndDeliusMockServer.setupGetAdjustmentsResponse(appointment1.case.crn, appointment1.eventNumber!!, emptyList())
+      CommunityPaybackAndDeliusMockServer.setupGetAdjustmentsResponse(appointment2.case.crn, appointment2.eventNumber!!, emptyList())
+
       val pageResponse = webTestClient.get()
         .uri("/admin/appointments?crn=CRN000&eventNumber=1")
         .addAdminUiAuthHeader("theusername")
@@ -424,6 +427,9 @@ class AdminAppointmentIT : IntegrationTestBase() {
         sortStrings = arrayOf("$sort,asc"),
       )
 
+      CommunityPaybackAndDeliusMockServer.setupGetAdjustmentsResponse(appointment1.case.crn, appointment1.eventNumber!!, emptyList())
+      CommunityPaybackAndDeliusMockServer.setupGetAdjustmentsResponse(appointment2.case.crn, appointment2.eventNumber!!, emptyList())
+
       val pageResponse = webTestClient.get()
         .uri("/admin/appointments?crn=CRN000&sort=$sort,asc")
         .addAdminUiAuthHeader("theusername")
@@ -452,6 +458,9 @@ class AdminAppointmentIT : IntegrationTestBase() {
         appointments = listOf(appointment1, appointment2),
         sortStrings = arrayOf("date,asc", "name,asc"),
       )
+
+      CommunityPaybackAndDeliusMockServer.setupGetAdjustmentsResponse(appointment1.case.crn, appointment1.eventNumber!!, emptyList())
+      CommunityPaybackAndDeliusMockServer.setupGetAdjustmentsResponse(appointment2.case.crn, appointment2.eventNumber!!, emptyList())
 
       val pageResponse = webTestClient.get()
         .uri("/admin/appointments?crn=CRN000&sort=date,asc")

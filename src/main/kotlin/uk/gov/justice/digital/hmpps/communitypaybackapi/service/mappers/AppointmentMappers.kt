@@ -115,6 +115,7 @@ class AppointmentMappers(
 
   fun toSummaryDto(
     appointmentSummary: NDAppointmentSummary,
+    adjustments: List<NDAdjustment>,
   ) = AppointmentSummaryDto(
     id = appointmentSummary.id,
     contactOutcome = appointmentSummary.outcome?.code?.let {
@@ -140,6 +141,7 @@ class AppointmentMappers(
     projectName = appointmentSummary.project.name,
     projectTypeCode = appointmentSummary.project.projectType.code,
     projectTypeName = appointmentSummary.project.projectType.description,
+    adjustments = adjustments.map { it.toDto() },
   )
 }
 

@@ -25,4 +25,5 @@ fun AppointmentSummaryDto.Companion.valid() = AppointmentSummaryDto(
   projectTypeName = String.random(),
   projectTypeCode = String.random(),
   notes = String.random(),
+  adjustments = emptyList(),
 )

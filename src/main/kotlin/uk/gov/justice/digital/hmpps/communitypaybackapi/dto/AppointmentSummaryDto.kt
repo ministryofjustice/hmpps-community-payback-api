@@ -29,6 +29,7 @@ data class AppointmentSummaryDto(
   val projectTypeName: String,
   val projectTypeCode: String,
   val notes: String?,
+  val adjustments: List<AdjustmentDto>,
 ) {
   fun hasOutcome() = contactOutcome != null
 

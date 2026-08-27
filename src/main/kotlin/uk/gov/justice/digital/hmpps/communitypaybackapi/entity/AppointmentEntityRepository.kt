@@ -10,6 +10,9 @@ import java.util.UUID
 interface AppointmentEntityRepository : JpaRepository<AppointmentEntity, UUID> {
   fun findByDeliusId(deliusId: Long): AppointmentEntity?
 
+  @Query("SELECT a FROM AppointmentEntity a WHERE a.deliusId IN :deliusIds")
+  fun findAllByDeliusId(deliusIds: List<Long>): List<AppointmentEntity>
+
   @Query("select a from AppointmentEntity a where a.id in :ids ORDER BY a.date ASC")
   fun findAllByIdOrderByDateAsc(ids: Iterable<UUID>): List<AppointmentEntity>
 
