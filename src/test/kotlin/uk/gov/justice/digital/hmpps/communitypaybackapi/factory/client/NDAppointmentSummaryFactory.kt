@@ -22,6 +22,7 @@ fun NDAppointmentSummary.Companion.valid() = NDAppointmentSummary(
   minutesCredited = Long.random(0, 2000),
   daysOverdue = Int.random(0, 365),
   notes = String.random(200),
+  eventNumber = Int.random(),
 )
 
 fun NDAppointmentSummary.Companion.valid(ctx: ApplicationContext) = NDAppointmentSummary.valid().copy(
