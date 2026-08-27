@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers
 
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAdjustment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointmentBehaviour
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointmentPickUp
@@ -50,6 +51,7 @@ class AppointmentMappers(
     deliusAppointment: NDAppointment,
     appointmentEntity: AppointmentEntity?,
     projectType: ProjectTypeEntity,
+    adjustments: List<NDAdjustment>,
   ): AppointmentDto {
     val contactOutcomeEntity = deliusAppointment.outcome?.code?.let {
       val result = contactOutcomeEntityRepository.findByCode(it)
@@ -107,6 +109,7 @@ class AppointmentMappers(
       notes = deliusAppointment.notes,
       sensitive = deliusAppointment.sensitive,
       alertActive = deliusAppointment.alertActive,
+      adjustments = adjustments.map { it.toDto() },
     )
   }
 

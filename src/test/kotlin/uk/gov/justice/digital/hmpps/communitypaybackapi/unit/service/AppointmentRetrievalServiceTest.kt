@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.unit.service
 
 import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
+import io.mockk.impl.annotations.MockK
 import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.verify
@@ -23,6 +24,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.OffenderNameDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeGroupDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
@@ -65,6 +67,9 @@ class AppointmentRetrievalServiceTest {
 
   @RelaxedMockK
   private lateinit var contactOutcomeEntityRepository: ContactOutcomeEntityRepository
+
+  @MockK
+  private lateinit var adjustmentEventEntityRepository: AdjustmentEventEntityRepository
 
   @InjectMockKs
   private lateinit var service: AppointmentRetrievalService
@@ -109,8 +114,10 @@ class AppointmentRetrievalServiceTest {
       val appointmentEntity = AppointmentEntity.valid()
       every { appointmentEntityRepository.findByDeliusId(deliusAppointment.id) } returns appointmentEntity
 
+      every { adjustmentEventEntityRepository.findByAppointmentOrderByCreatedAtAsc(appointmentEntity) } returns emptyList()
+
       val appointmentDto = AppointmentDto.valid()
-      every { appointmentMappers.toDto(deliusAppointment, appointmentEntity, projectType) } returns appointmentDto
+      every { appointmentMappers.toDto(deliusAppointment, appointmentEntity, projectType, emptyList()) } returns appointmentDto
 
       val result = service.getAppointment(DeliusAppointmentIdDto(PROJECT_CODE, 101L))
 
