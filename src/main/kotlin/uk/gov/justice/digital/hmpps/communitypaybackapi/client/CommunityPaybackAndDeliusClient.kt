@@ -131,6 +131,9 @@ interface CommunityPaybackAndDeliusClient {
   @GetExchange("/case/{crn}/personal-circumstances")
   fun getPersonalCircumstances(@PathVariable crn: String): List<NDPersonalCircumstances>
 
+  @GetExchange("/adjustments/{reference}")
+  fun getAdjustment(@PathVariable reference: UUID): NDAdjustment
+
   @GetExchange("/adjustments")
   fun getAdjustments(@RequestParam crn: String, @RequestParam eventNumber: Int): NDAdjustmentResponse
 

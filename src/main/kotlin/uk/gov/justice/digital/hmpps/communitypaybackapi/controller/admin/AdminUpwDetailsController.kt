@@ -5,7 +5,9 @@ import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import jakarta.validation.Valid
+import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import uk.gov.justice.digital.hmpps.communitypaybackapi.controller.internal.SupportsIdempotencyKey
 import uk.gov.justice.digital.hmpps.communitypaybackapi.controller.internal.notFound
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AdjustmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAdjustmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsIdDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentService
@@ -83,12 +86,18 @@ class AdminUpwDetailsController(
     @PathVariable crn: String,
     @PathVariable deliusEventNumber: Int,
     @Valid @RequestBody createAdjustment: CreateAdjustmentDto,
-  ) = adjustmentsService.createAdjustment(
-    upwDetailsId = UnpaidWorkDetailsIdDto(
-      crn = crn,
-      deliusEventNumber = deliusEventNumber,
-    ),
-    createAdjustment = createAdjustment,
-    username = contextService.getUserName(),
-  )
+  ): ResponseEntity<AdjustmentDto> {
+    val adjustment = adjustmentsService.createAdjustment(
+      upwDetailsId = UnpaidWorkDetailsIdDto(
+        crn = crn,
+        deliusEventNumber = deliusEventNumber,
+      ),
+      createAdjustment = createAdjustment,
+      username = contextService.getUserName(),
+    )
+
+    return ResponseEntity
+      .status(HttpStatus.CREATED)
+      .body(adjustment)
+  }
 }

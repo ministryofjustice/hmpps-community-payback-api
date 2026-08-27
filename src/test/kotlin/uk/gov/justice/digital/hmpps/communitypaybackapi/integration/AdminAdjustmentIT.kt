@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.http.MediaType
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAdjustment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDUpwDetails
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAdjustmentDto
@@ -90,13 +91,15 @@ class AdminAdjustmentIT : IntegrationTestBase() {
     fun `Should create an adjustment upstream, raise a domain event and close related task`() {
       val appointment = AppointmentEntity.valid().copy(crn = CRN, deliusEventNumber = DELIUS_EVENT_NUMBER).persist(ctx)
       val task = AppointmentTaskEntity.valid().copy(appointment = appointment).persist(ctx)
+      doReturn(task.id).whenever(adjustmentIdGenerator).generateId(any())
 
       setupGetUpwDetailsResponse()
       CommunityPaybackAndDeliusMockServer.setupPostAdjustmentResponse(username = "theusername")
+      CommunityPaybackAndDeliusMockServer.setupGetAdjustmentResponse(task.id, NDAdjustment.valid())
 
       callCreateAdjustment(
         request = CreateAdjustmentDto.valid(ctx).copy(taskId = task.id, appointmentId = appointment.id),
-        expectedStatus = 200,
+        expectedStatus = 201,
       )
 
       CommunityPaybackAndDeliusMockServer.verifyPostAdjustment(username = "theusername")
@@ -113,11 +116,12 @@ class AdminAdjustmentIT : IntegrationTestBase() {
 
       setupGetUpwDetailsResponse()
       CommunityPaybackAndDeliusMockServer.setupPostAdjustmentResponse(username = "theusername", adjustmentId = 25L)
+      CommunityPaybackAndDeliusMockServer.setupGetAdjustmentResponse(task.id, NDAdjustment.valid())
 
       // successful request
       callCreateAdjustment(
         request = CreateAdjustmentDto.valid(ctx).copy(taskId = task.id, appointmentId = appointment.id),
-        expectedStatus = 200,
+        expectedStatus = 201,
       )
       CommunityPaybackAndDeliusMockServer.verifyPostAdjustment(username = "theusername", count = 1)
       // preemptive attempt to delete orphaned adjustment with the same reference
