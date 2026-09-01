@@ -36,7 +36,9 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionReso
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAdjustmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventTriggerType
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentTaskEntity
@@ -273,6 +275,44 @@ class DeliusEventTelemetryIT : IntegrationTestBase() {
     assertThat(properties["triggeredBy"]).isEqualTo(appointment.id.toString())
     assertThat(properties["triggerType"]).isEqualTo(AdjustmentEventTriggerType.APPOINTMENT_TASK.name)
     assertThat(properties["eventType"]).isEqualTo("CREATED")
+  }
+
+  @Test
+  fun `should track telemetry when an adjustment is deleted`() {
+    val appointment = AppointmentEntity.valid().copy(
+      crn = CRN,
+      deliusId = 1234L,
+      providerCode = PROVIDER_CODE,
+    ).persist(ctx)
+
+    val adjustmentId = UUID.randomUUID()
+    AdjustmentEventEntity.valid(ctx).copy(
+      id = adjustmentId,
+      deliusAdjustmentId = 1L,
+      eventType = AdjustmentEventType.CREATE,
+      appointment = appointment,
+    ).persist(ctx)
+
+    CommunityPaybackAndDeliusMockServer.setupDeleteAdjustmentResponse(adjustmentId)
+
+    webTestClient.delete()
+      .uri("/admin/adjustments/$adjustmentId")
+      .addAdminUiAuthHeader("theusername")
+      .exchange()
+      .expectStatus()
+      .isNoContent
+
+    val events = mockTelemetryService.getEventsWithName("AdjustmentEvent")
+    assertThat(events).hasSize(1)
+    val properties = events[0].properties
+    assertThat(properties["crn"]).isEqualTo(CRN)
+    assertThat(properties["deliusAppointmentId"]).isEqualTo("1234")
+    assertThat(properties["deliusAdjustmentId"]).isEqualTo("1")
+    assertThat(properties["providerCode"]).isEqualTo(PROVIDER_CODE)
+    assertThat(properties["triggeredAt"]).isNotNull()
+    assertThat(properties["triggeredBy"]).isEqualTo("theusername")
+    assertThat(properties["triggerType"]).isEqualTo(AdjustmentEventTriggerType.APPOINTMENT_TASK.name)
+    assertThat(properties["eventType"]).isEqualTo("DELETED")
   }
 
   @Test

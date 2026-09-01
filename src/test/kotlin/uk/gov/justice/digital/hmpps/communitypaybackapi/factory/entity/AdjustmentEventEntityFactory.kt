@@ -4,6 +4,7 @@ import org.springframework.beans.factory.getBean
 import org.springframework.context.ApplicationContext
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventAdjustmentType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentReasonEntity
@@ -34,3 +35,5 @@ fun AdjustmentEventEntity.Companion.valid(ctx: ApplicationContext) = AdjustmentE
   adjustmentReason = ctx.getBean<AdjustmentReasonEntityRepository>().findAll().minByOrNull { it.name }!!,
   appointment = ctx.getBean<AppointmentEntityRepository>().save(AppointmentEntity.valid()),
 )
+
+fun AdjustmentEventEntity.persist(ctx: ApplicationContext) = ctx.getBean<AdjustmentEventEntityRepository>().save(this)
