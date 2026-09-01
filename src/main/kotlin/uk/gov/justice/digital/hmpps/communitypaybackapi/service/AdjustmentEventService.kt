@@ -31,6 +31,7 @@ class AdjustmentEventService(
       id = persistedEvent.id,
       type = when (persistedEvent.eventType) {
         AdjustmentEventType.CREATE -> DomainEventType.ADJUSTMENT_CREATED
+        else -> error("Unknown event type ${persistedEvent.eventType}")
       },
       headers = persistedEvent.appointment?.toDomainEventHeaders() ?: DomainEventService.EventHeaders(),
     )

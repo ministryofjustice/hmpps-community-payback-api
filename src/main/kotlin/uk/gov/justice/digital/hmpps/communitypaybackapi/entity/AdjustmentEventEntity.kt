@@ -73,6 +73,7 @@ data class AdjustmentEventEntity(
 
 enum class AdjustmentEventType {
   CREATE,
+  DELETE,
 }
 
 enum class AdjustmentEventTriggerType {
