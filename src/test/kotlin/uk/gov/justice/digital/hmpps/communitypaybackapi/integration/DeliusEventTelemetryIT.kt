@@ -231,7 +231,7 @@ class DeliusEventTelemetryIT : IntegrationTestBase() {
     ).persist(ctx)
 
     val adjustmentId = UUID.randomUUID()
-    doReturn(adjustmentId).whenever(adjustmentIdGenerator).generateId(any())
+    doReturn(adjustmentId).whenever(adjustmentIdGenerator).generateId(any<CreateAdjustmentDto>())
 
     CommunityPaybackAndDeliusMockServer.setupGetUpwDetailsSummaryResponse(
       crn = CRN,

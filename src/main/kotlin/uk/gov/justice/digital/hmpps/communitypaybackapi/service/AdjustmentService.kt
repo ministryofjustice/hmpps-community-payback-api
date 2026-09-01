@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.service
 
 import jakarta.transaction.Transactional
 import org.springframework.context.event.EventListener
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClientResponseException
@@ -10,9 +11,12 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.common.IdGenerator
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AdjustmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAdjustmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsIdDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventTriggerType
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentIdGenerator.DeleteAdjustmentProperties
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AdjustmentCreatedEvent
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AdjustmentDeletedEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.SpringEventPublisher
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toNDAdjustmentRequest
@@ -28,6 +32,7 @@ class AdjustmentService(
   private val clock: Clock,
   private val springEventPublisher: SpringEventPublisher,
   private val adjustmentIdGenerator: AdjustmentIdGenerator,
+  private val adjustmentEventEntityRepository: AdjustmentEventEntityRepository,
 ) {
   fun getAdjustments(crn: String, eventNumber: Int) = communityPaybackAndDeliusClient.getAdjustments(crn, eventNumber).adjustments.map { it.toDto() }
 
@@ -77,6 +82,34 @@ class AdjustmentService(
     return communityPaybackAndDeliusClient.getAdjustment(adjustmentId).toDto()
   }
 
+  @Transactional
+  fun deleteAdjustment(adjustmentId: UUID, username: String): DeleteAdjustmentResult {
+    val eventId = adjustmentIdGenerator.generateId(DeleteAdjustmentProperties(adjustmentId))
+
+    val eventToDelete = adjustmentEventEntityRepository.findByIdOrNull(adjustmentId) ?: return DeleteAdjustmentResult.NotFound
+    try {
+      communityPaybackAndDeliusClient.deleteAdjustment(adjustmentId)
+    } catch (_: WebClientResponseException.NotFound) {
+      return DeleteAdjustmentResult.NotFound
+    } catch (e: WebClientResponseException) {
+      return DeleteAdjustmentResult.Failed(e)
+    }
+
+    springEventPublisher.publishEvent(
+      AdjustmentDeletedEvent(
+        id = eventId,
+        eventToDelete = eventToDelete,
+        trigger = AdjustmentEventTrigger(
+          triggeredAt = OffsetDateTime.now(clock),
+          triggerType = AdjustmentEventTriggerType.APPOINTMENT_TASK,
+          triggeredBy = username,
+        ),
+      ),
+    )
+
+    return DeleteAdjustmentResult.Success
+  }
+
   @EventListener
   fun rollbackAdjustment(
     rollbackEvent: CommunityPaybackSpringEvent.NDeliusRollbackRequired,
@@ -98,11 +131,20 @@ class AdjustmentService(
   }
 }
 
+sealed interface DeleteAdjustmentResult {
+  object NotFound : DeleteAdjustmentResult
+  data class Failed(val exception: WebClientResponseException) : DeleteAdjustmentResult
+  object Success : DeleteAdjustmentResult
+}
+
 interface AdjustmentIdGenerator {
   fun generateId(createAdjustment: CreateAdjustmentDto): UUID
+  fun generateId(deleteAdjustment: DeleteAdjustmentProperties): UUID
+  data class DeleteAdjustmentProperties(val id: UUID)
 }
 
 @Service
 class DefaultAdjustmentIdGenerator : AdjustmentIdGenerator {
   override fun generateId(createAdjustment: CreateAdjustmentDto) = IdGenerator(CreateAdjustmentDto::class).generateId(createAdjustment)
+  override fun generateId(deleteAdjustment: AdjustmentIdGenerator.DeleteAdjustmentProperties) = IdGenerator(AdjustmentIdGenerator.DeleteAdjustmentProperties::class).generateId(deleteAdjustment)
 }

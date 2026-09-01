@@ -91,7 +91,7 @@ class AdminAdjustmentIT : IntegrationTestBase() {
     fun `Should create an adjustment upstream, raise a domain event and close related task`() {
       val appointment = AppointmentEntity.valid().copy(crn = CRN, deliusEventNumber = DELIUS_EVENT_NUMBER).persist(ctx)
       val task = AppointmentTaskEntity.valid().copy(appointment = appointment).persist(ctx)
-      doReturn(task.id).whenever(adjustmentIdGenerator).generateId(any())
+      doReturn(task.id).whenever(adjustmentIdGenerator).generateId(any<CreateAdjustmentDto>())
 
       setupGetUpwDetailsResponse()
       CommunityPaybackAndDeliusMockServer.setupPostAdjustmentResponse(username = "theusername")
@@ -112,7 +112,7 @@ class AdminAdjustmentIT : IntegrationTestBase() {
     fun `Rollback on unexpected request failure, ensuring previously created adjustments aren't rolled back too`() {
       val appointment = AppointmentEntity.valid().copy(crn = CRN, deliusEventNumber = DELIUS_EVENT_NUMBER).persist(ctx)
       val task = AppointmentTaskEntity.valid().copy(appointment = appointment).persist(ctx)
-      doReturn(task.id).whenever(adjustmentIdGenerator).generateId(any())
+      doReturn(task.id).whenever(adjustmentIdGenerator).generateId(any<CreateAdjustmentDto>())
 
       setupGetUpwDetailsResponse()
       CommunityPaybackAndDeliusMockServer.setupPostAdjustmentResponse(username = "theusername", adjustmentId = 25L)
