@@ -9,6 +9,7 @@
     "deliusAdjustmentId": "long",
     "eventType": "AdjustmentEventType",
     "id": "UUID",
+    "referencedEvent": "AdjustmentEventEntity",
     "triggerType": "AdjustmentEventTriggerType",
     "triggeredAt": "OffsetDateTime",
     "triggeredBy": "String",
