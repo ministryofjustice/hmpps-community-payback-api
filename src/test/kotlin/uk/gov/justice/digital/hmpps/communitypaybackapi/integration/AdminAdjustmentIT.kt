@@ -16,6 +16,9 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAdjustment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDUpwDetails
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAdjustmentDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventEntityRepository
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentTaskEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentTaskEntityRepository
@@ -28,6 +31,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.DomainE
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.CommunityPaybackAndDeliusMockServer
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentIdGenerator
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentService
+import java.util.UUID
 
 class AdminAdjustmentIT : IntegrationTestBase() {
 
@@ -42,6 +46,9 @@ class AdminAdjustmentIT : IntegrationTestBase() {
 
   @MockitoSpyBean
   lateinit var adjustmentIdGenerator: AdjustmentIdGenerator
+
+  @Autowired
+  lateinit var adjustmentEventEntityRepository: AdjustmentEventEntityRepository
 
   companion object {
     const val CRN = "X123456"
@@ -177,6 +184,78 @@ class AdminAdjustmentIT : IntegrationTestBase() {
         .bodyValue(request)
         .exchange()
         .expectStatus().isEqualTo(expectedStatus)
+    }
+  }
+
+  @Nested
+  @DisplayName("DELETE /admin/adjustments/{communityPaybackId}")
+  inner class DeleteAdjustment {
+
+    val adjustmentId: UUID = UUID.randomUUID()
+
+    @Test
+    fun `should return unauthorized if no token`() {
+      webTestClient.delete()
+        .uri("/admin/adjustments/$adjustmentId")
+        .exchange()
+        .expectStatus()
+        .isUnauthorized
+    }
+
+    @Test
+    fun `should return forbidden if no role`() {
+      webTestClient.delete()
+        .uri("/admin/adjustments/$adjustmentId")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .isForbidden
+    }
+
+    @Test
+    fun `should return forbidden if wrong role`() {
+      webTestClient.delete()
+        .uri("/admin/adjustments/$adjustmentId")
+        .headers(setAuthorisation(roles = listOf("ROLE_WRONG")))
+        .exchange()
+        .expectStatus()
+        .isForbidden
+    }
+
+    @Test
+    fun `Should delete the adjustment upstream and raise a domain event`() {
+      adjustmentEventEntityRepository.save(
+        AdjustmentEventEntity.valid(ctx).copy(id = adjustmentId, eventType = AdjustmentEventType.CREATE),
+      )
+
+      CommunityPaybackAndDeliusMockServer.setupDeleteAdjustmentResponse(reference = adjustmentId)
+
+      webTestClient.delete()
+        .uri("/admin/adjustments/$adjustmentId")
+        .addAdminUiAuthHeader("theusername")
+        .exchange()
+        .expectStatus()
+        .isNoContent
+
+      CommunityPaybackAndDeliusMockServer.verifyDeleteAdjustment(reference = adjustmentId, count = 1)
+
+      domainEventAsserter.assertEventCount("community-payback.adjustment.deleted", 1)
+    }
+
+    @Test
+    fun `Should return a 404 Not Found response when adjustment not found`() {
+      CommunityPaybackAndDeliusMockServer.setupDeleteAdjustmentResponse(reference = adjustmentId)
+
+      webTestClient.delete()
+        .uri("/admin/adjustments/$adjustmentId")
+        .addAdminUiAuthHeader("theusername")
+        .exchange()
+        .expectStatus()
+        .isNotFound
+
+      CommunityPaybackAndDeliusMockServer.verifyDeleteAdjustment(reference = adjustmentId, count = 0)
+
+      domainEventAsserter.assertEventCount("community-payback.adjustment.deleted", 0)
     }
   }
 }
