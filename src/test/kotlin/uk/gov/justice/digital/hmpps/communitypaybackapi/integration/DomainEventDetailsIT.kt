@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.config.SecurityConfiguration
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.domainevent.AdjustmentDeletedDomainEventDetailsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.domainevent.AppointmentCreatedDomainEventDetailDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.domainevent.AppointmentUpdatedDomainEventDetailDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventEntity
@@ -96,6 +97,83 @@ class DomainEventDetailsIT : IntegrationTestBase() {
         .exchange()
         .expectStatus()
         .isOk
+    }
+  }
+
+  @Nested
+  @DisplayName("GET /domain-event-details/adjustment-deleted/{eventId}")
+  inner class GetAdjustmentDeletedDetails {
+
+    val id: UUID = UUID.randomUUID()
+
+    @BeforeEach
+    fun setUp() {
+      adjustmentEventEntityRepository.deleteAll()
+    }
+
+    @Test
+    fun `should return unauthorized if no token`() {
+      webTestClient.get()
+        .uri("/domain-event-details/adjustment-deleted/$id")
+        .exchange()
+        .expectStatus()
+        .isUnauthorized
+    }
+
+    @Test
+    fun `should return forbidden if no role`() {
+      webTestClient.get()
+        .uri("/domain-event-details/adjustment-deleted/$id")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .isForbidden
+    }
+
+    @Test
+    fun `should return forbidden if wrong role`() {
+      webTestClient.get()
+        .uri("/domain-event-details/adjustment-deleted/$id")
+        .addAdminUiAuthHeader()
+        .exchange()
+        .expectStatus()
+        .isForbidden
+    }
+
+    @Test
+    fun `should return 404 if no entry exists for the ID`() {
+      webTestClient.get()
+        .uri("/domain-event-details/adjustment-deleted/${UUID.randomUUID()}")
+        .addDomainEventAuthHeader()
+        .exchange()
+        .expectStatus()
+        .isNotFound
+    }
+
+    @Test
+    fun `return domain event detail if entry exists`() {
+      val referencedEntity = adjustmentEventEntityRepository.save(
+        AdjustmentEventEntity.valid(ctx).copy(
+          eventType = AdjustmentEventType.CREATE,
+        ),
+      )
+      val entity = adjustmentEventEntityRepository.save(
+        AdjustmentEventEntity.valid(ctx).copy(
+          eventType = AdjustmentEventType.DELETE,
+          referencedEvent = referencedEntity,
+        ),
+      )
+
+      val result = webTestClient.get()
+        .uri("/domain-event-details/adjustment-deleted/${entity.id}")
+        .addDomainEventAuthHeader()
+        .exchange()
+        .expectStatus()
+        .isOk
+        .bodyAsObject<AdjustmentDeletedDomainEventDetailsDto>()
+
+      assertThat(result.id).isEqualTo(entity.id)
+      assertThat(result.adjustmentCreatedEventId).isEqualTo(referencedEntity.id)
     }
   }
 

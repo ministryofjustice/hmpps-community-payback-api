@@ -10,6 +10,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventTy
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AdjustmentCreatedEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AdjustmentDeletedEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toAdjustmentCreatedDomainEvent
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toAdjustmentDeletedDomainEvent
 import java.time.OffsetDateTime
 import java.util.UUID
 
@@ -20,6 +21,7 @@ class AdjustmentEventService(
   private val domainEventService: DomainEventService,
 ) {
   fun getCreatedDomainEventDetails(id: UUID) = adjustmentEventEntityRepository.findByIdOrNullForDomainEventDetails(id, AdjustmentEventType.CREATE)?.toAdjustmentCreatedDomainEvent()
+  fun getDeletedDomainEventDetails(id: UUID) = adjustmentEventEntityRepository.findByIdOrNullForDomainEventDetails(id, AdjustmentEventType.DELETE)?.toAdjustmentDeletedDomainEvent()
 
   fun getEvent(eventId: UUID) = adjustmentEventEntityRepository.findByIdOrNull(eventId)
 

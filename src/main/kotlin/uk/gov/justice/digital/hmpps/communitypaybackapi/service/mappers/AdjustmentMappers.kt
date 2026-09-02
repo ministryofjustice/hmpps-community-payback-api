@@ -7,6 +7,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AdjustmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAdjustmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAdjustmentTypeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.domainevent.AdjustmentCreatedDomainEventDetailsDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.domainevent.AdjustmentDeletedDomainEventDetailsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentReasonEntity
 import java.time.Duration
@@ -44,6 +45,9 @@ fun CreateAdjustmentDto.toNDAdjustmentRequest(
   reference = reference,
 )
 
-fun AdjustmentEventEntity.toAdjustmentCreatedDomainEvent() = this.toAdjustmentDomainEvent()
+fun AdjustmentEventEntity.toAdjustmentCreatedDomainEvent() = AdjustmentCreatedDomainEventDetailsDto()
 
-private fun AdjustmentEventEntity.toAdjustmentDomainEvent() = AdjustmentCreatedDomainEventDetailsDto()
+fun AdjustmentEventEntity.toAdjustmentDeletedDomainEvent() = AdjustmentDeletedDomainEventDetailsDto(
+  id = this.id,
+  adjustmentCreatedEventId = this.referencedEvent!!.id,
+)

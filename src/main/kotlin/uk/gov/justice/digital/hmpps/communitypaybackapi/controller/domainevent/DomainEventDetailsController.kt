@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.communitypaybackapi.config.OpenApiConfiguration
 import uk.gov.justice.digital.hmpps.communitypaybackapi.config.SecurityConfiguration
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.domainevent.AdjustmentCreatedDomainEventDetailsDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.domainevent.AdjustmentDeletedDomainEventDetailsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.domainevent.AppointmentCreatedDomainEventDetailDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.domainevent.AppointmentUpdatedDomainEventDetailDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentEventService
@@ -57,6 +58,31 @@ class DomainEventDetailsController(
     ],
   )
   fun adjustmentCreated(@PathVariable eventId: UUID): ResponseEntity<AdjustmentCreatedDomainEventDetailsDto> = adjustmentEventService.getCreatedDomainEventDetails(eventId)?.let {
+    ResponseEntity.ok(it)
+  } ?: ResponseEntity.notFound().build()
+
+  @GetMapping(
+    path = ["/adjustment-deleted/{eventId}"],
+    produces = [MediaType.APPLICATION_JSON_VALUE],
+  )
+  @Operation(
+    responses = [
+      ApiResponse(
+        responseCode = "200",
+        description = "domain event details",
+      ),
+      ApiResponse(
+        responseCode = "404",
+        description = "A Domain Event does not exist for the given ID",
+        content = [
+          Content(
+            schema = Schema(implementation = ErrorResponse::class),
+          ),
+        ],
+      ),
+    ],
+  )
+  fun adjustmentDeleted(@PathVariable eventId: UUID): ResponseEntity<AdjustmentDeletedDomainEventDetailsDto> = adjustmentEventService.getDeletedDomainEventDetails(eventId)?.let {
     ResponseEntity.ok(it)
   } ?: ResponseEntity.notFound().build()
 
