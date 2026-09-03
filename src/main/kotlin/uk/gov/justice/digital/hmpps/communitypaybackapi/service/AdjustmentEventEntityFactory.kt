@@ -7,6 +7,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventEn
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AdjustmentCreatedEvent
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AdjustmentDeletedEvent
 import java.time.OffsetDateTime
 
 @Service
@@ -29,6 +30,23 @@ class AdjustmentEventEntityFactory {
     adjustmentMinutes = details.createDto.minutes,
     adjustmentDate = details.adjustmentDate,
     adjustmentReason = details.reason,
+  )
+
+  fun buildAdjustmentDeleted(
+    deleteDetails: AdjustmentDeletedEvent,
+  ) = AdjustmentEventEntity(
+    id = deleteDetails.id,
+    eventType = AdjustmentEventType.DELETE,
+    triggeredAt = deleteDetails.trigger.triggeredAt,
+    triggerType = deleteDetails.trigger.triggerType,
+    triggeredBy = deleteDetails.trigger.triggeredBy,
+    deliusAdjustmentId = deleteDetails.eventToDelete.deliusAdjustmentId,
+    appointment = deleteDetails.eventToDelete.appointment,
+    adjustmentType = deleteDetails.eventToDelete.adjustmentType,
+    adjustmentMinutes = deleteDetails.eventToDelete.adjustmentMinutes,
+    adjustmentDate = deleteDetails.eventToDelete.adjustmentDate,
+    adjustmentReason = deleteDetails.eventToDelete.adjustmentReason,
+    referencedEvent = deleteDetails.eventToDelete,
   )
 }
 

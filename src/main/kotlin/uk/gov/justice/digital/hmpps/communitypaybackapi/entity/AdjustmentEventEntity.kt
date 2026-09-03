@@ -43,6 +43,9 @@ data class AdjustmentEventEntity(
   @JoinColumn("adjustment_reason_id")
   val adjustmentReason: AdjustmentReasonEntity,
 
+  @ManyToOne(fetch = FetchType.EAGER)
+  @JoinColumn("referenced_event_id")
+  val referencedEvent: AdjustmentEventEntity? = null,
 ) {
   @Suppress("USELESS_IS_CHECK")
   override fun equals(other: Any?): Boolean {
@@ -70,6 +73,7 @@ data class AdjustmentEventEntity(
 
 enum class AdjustmentEventType {
   CREATE,
+  DELETE,
 }
 
 enum class AdjustmentEventTriggerType {

@@ -4,10 +4,13 @@ import jakarta.transaction.Transactional
 import org.springframework.context.event.EventListener
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AdjustmentCreatedEvent
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AdjustmentDeletedEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toAdjustmentCreatedDomainEvent
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toAdjustmentDeletedDomainEvent
 import java.time.OffsetDateTime
 import java.util.UUID
 
@@ -18,6 +21,7 @@ class AdjustmentEventService(
   private val domainEventService: DomainEventService,
 ) {
   fun getCreatedDomainEventDetails(id: UUID) = adjustmentEventEntityRepository.findByIdOrNullForDomainEventDetails(id, AdjustmentEventType.CREATE)?.toAdjustmentCreatedDomainEvent()
+  fun getDeletedDomainEventDetails(id: UUID) = adjustmentEventEntityRepository.findByIdOrNullForDomainEventDetails(id, AdjustmentEventType.DELETE)?.toAdjustmentDeletedDomainEvent()
 
   fun getEvent(eventId: UUID) = adjustmentEventEntityRepository.findByIdOrNull(eventId)
 
@@ -27,10 +31,25 @@ class AdjustmentEventService(
       adjustmentEventEntityFactory.buildAdjustmentCreated(event),
     )
 
+    publishPersistedEvent(persistedEvent)
+  }
+
+  @EventListener
+  fun persistAndPublishDeleteAdjustmentEvent(event: AdjustmentDeletedEvent) {
+    val persistedEvent = adjustmentEventEntityRepository.save(
+      adjustmentEventEntityFactory.buildAdjustmentDeleted(event),
+    )
+
+    publishPersistedEvent(persistedEvent)
+  }
+
+  private fun publishPersistedEvent(persistedEvent: AdjustmentEventEntity) {
     domainEventService.publishOnTransactionCommit(
       id = persistedEvent.id,
       type = when (persistedEvent.eventType) {
         AdjustmentEventType.CREATE -> DomainEventType.ADJUSTMENT_CREATED
+        AdjustmentEventType.DELETE -> DomainEventType.ADJUSTMENT_DELETED
+        else -> error("Unknown event type ${persistedEvent.eventType}")
       },
       headers = persistedEvent.appointment?.toDomainEventHeaders() ?: DomainEventService.EventHeaders(),
     )

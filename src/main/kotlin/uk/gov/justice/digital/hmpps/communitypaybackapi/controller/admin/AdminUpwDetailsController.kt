@@ -8,6 +8,7 @@ import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -20,8 +21,10 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAdjustmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsIdDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ContextService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.DeleteAdjustmentResult
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.OffenderService
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
+import java.util.UUID
 
 @AdminUiController
 @RequestMapping(
@@ -99,5 +102,35 @@ class AdminUpwDetailsController(
     return ResponseEntity
       .status(HttpStatus.CREATED)
       .body(adjustment)
+  }
+
+  @DeleteMapping(
+    path = ["/adjustments/{communityPaybackId}"],
+    produces = [MediaType.APPLICATION_JSON_VALUE],
+  )
+  @Operation(
+    responses = [
+      ApiResponse(
+        responseCode = "204",
+        description = "Adjustment has been deleted",
+      ),
+      ApiResponse(
+        responseCode = "404",
+        description = "Offender and/or Unpaid Work Details not found for the given CRN and Event Number",
+        content = [
+          Content(
+            schema = Schema(implementation = ErrorResponse::class),
+          ),
+        ],
+      ),
+    ],
+  )
+  @SupportsIdempotencyKey
+  fun deleteAdjustment(
+    @PathVariable communityPaybackId: UUID,
+  ): ResponseEntity<Unit> = when (val result = adjustmentsService.deleteAdjustment(communityPaybackId, contextService.getUserName())) {
+    is DeleteAdjustmentResult.Success -> ResponseEntity.noContent().build()
+    is DeleteAdjustmentResult.NotFound -> notFound("Adjustment event", communityPaybackId)
+    is DeleteAdjustmentResult.Failed -> throw result.exception
   }
 }

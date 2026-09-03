@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AdjustmentCreatedEvent
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AdjustmentDeletedEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AppointmentCreatedEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AppointmentTaskCreatedEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AppointmentTaskUpdatedEvent
@@ -81,6 +82,23 @@ class DeliusEventTelemetryPublisher(
         "triggeredBy" to event.trigger.triggeredBy,
         "triggerType" to event.trigger.triggerType.name,
         "eventType" to "CREATED",
+      ),
+    )
+  }
+
+  @EventListener
+  fun onAdjustmentDeleted(event: AdjustmentDeletedEvent) {
+    telemetryService.trackEvent(
+      "AdjustmentEvent",
+      properties = mapOf(
+        "crn" to event.eventToDelete.appointment?.crn,
+        "deliusAppointmentId" to event.eventToDelete.appointment?.deliusId.toString(),
+        "deliusAdjustmentId" to event.eventToDelete.deliusAdjustmentId.toString(),
+        "providerCode" to event.eventToDelete.appointment?.providerCode,
+        "triggeredAt" to event.trigger.triggeredAt.toString(),
+        "triggeredBy" to event.trigger.triggeredBy,
+        "triggerType" to event.trigger.triggerType.name,
+        "eventType" to "DELETED",
       ),
     )
   }

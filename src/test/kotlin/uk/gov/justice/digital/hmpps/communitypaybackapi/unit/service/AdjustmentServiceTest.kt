@@ -10,13 +10,17 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import org.springframework.data.repository.findByIdOrNull
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAdjustment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAdjustmentPostResponse
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAdjustmentResponse
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAdjustmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsIdDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventTriggerType
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentReasonEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
@@ -25,12 +29,16 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.config.ClockConfiguration
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentEventTrigger
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentIdGenerator
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentIdGenerator.DeleteAdjustmentProperties
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentValidationService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.DeleteAdjustmentResult
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AdjustmentCreatedEvent
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AdjustmentDeletedEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.SpringEventPublisher
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toNDAdjustmentRequest
+import uk.gov.justice.digital.hmpps.communitypaybackapi.unit.util.WebClientResponseExceptionFactory
 import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
@@ -51,6 +59,9 @@ class AdjustmentServiceTest {
 
   @RelaxedMockK
   lateinit var adjustmentIdGenerator: AdjustmentIdGenerator
+
+  @RelaxedMockK
+  lateinit var adjustmentEventEntityRepository: AdjustmentEventEntityRepository
 
   val clock: Clock = ClockConfiguration.MutableClock(Instant.now())
 
@@ -152,6 +163,117 @@ class AdjustmentServiceTest {
             adjustmentDate = dateOfAdjustment,
           ),
         )
+      }
+    }
+  }
+
+  @Nested
+  inner class DeleteAdjustment {
+
+    @Test
+    fun success() {
+      val adjustmentId = UUID.randomUUID()
+      val expectedEvent = AdjustmentEventEntity.valid().copy(id = adjustmentId, eventType = AdjustmentEventType.CREATE)
+      every { adjustmentEventEntityRepository.findByIdOrNull(adjustmentId) } returns expectedEvent
+
+      val expectedId = UUID.randomUUID()
+      every { adjustmentIdGenerator.generateId(DeleteAdjustmentProperties(adjustmentId)) } returns expectedId
+
+      val result = service.deleteAdjustment(adjustmentId, USERNAME)
+
+      assertThat(result).isEqualTo(DeleteAdjustmentResult.Success)
+
+      verifyOrder {
+        adjustmentEventEntityRepository.findByIdOrNull(adjustmentId)
+
+        communityPaybackAndDeliusClient.deleteAdjustment(adjustmentId)
+      }
+
+      verify {
+        springEventPublisher.publishEvent(
+          AdjustmentDeletedEvent(
+            id = expectedId,
+            eventToDelete = expectedEvent,
+            trigger = AdjustmentEventTrigger(
+              triggeredAt = OffsetDateTime.now(clock),
+              triggerType = AdjustmentEventTriggerType.APPOINTMENT_TASK,
+              triggeredBy = USERNAME,
+            ),
+          ),
+        )
+      }
+    }
+
+    @Test
+    fun `returns not found if no entity with correct ID is in repository`() {
+      val adjustmentId = UUID.randomUUID()
+      every { adjustmentEventEntityRepository.findByIdOrNull(adjustmentId) } returns null
+
+      val expectedId = UUID.randomUUID()
+      every { adjustmentIdGenerator.generateId(DeleteAdjustmentProperties(adjustmentId)) } returns expectedId
+
+      val result = service.deleteAdjustment(adjustmentId, USERNAME)
+
+      assertThat(result).isEqualTo(DeleteAdjustmentResult.NotFound)
+
+      verify(exactly = 0) {
+        communityPaybackAndDeliusClient.deleteAdjustment(any())
+
+        springEventPublisher.publishEvent(any())
+      }
+    }
+
+    @Test
+    fun `returns not found if upstream client returns 404`() {
+      val adjustmentId = UUID.randomUUID()
+      val expectedEvent = AdjustmentEventEntity.valid().copy(id = adjustmentId, eventType = AdjustmentEventType.CREATE)
+      every { adjustmentEventEntityRepository.findByIdOrNull(adjustmentId) } returns expectedEvent
+
+      val expectedId = UUID.randomUUID()
+      every { adjustmentIdGenerator.generateId(DeleteAdjustmentProperties(adjustmentId)) } returns expectedId
+
+      every { communityPaybackAndDeliusClient.deleteAdjustment(adjustmentId) } throws WebClientResponseExceptionFactory.notFound()
+
+      val result = service.deleteAdjustment(adjustmentId, USERNAME)
+
+      assertThat(result).isEqualTo(DeleteAdjustmentResult.NotFound)
+
+      verifyOrder {
+        adjustmentEventEntityRepository.findByIdOrNull(adjustmentId)
+
+        communityPaybackAndDeliusClient.deleteAdjustment(adjustmentId)
+      }
+
+      verify(exactly = 0) {
+        springEventPublisher.publishEvent(any())
+      }
+    }
+
+    @Test
+    fun `returns failure if upstream client returns error response`() {
+      val adjustmentId = UUID.randomUUID()
+      val expectedEvent = AdjustmentEventEntity.valid().copy(id = adjustmentId, eventType = AdjustmentEventType.CREATE)
+      every { adjustmentEventEntityRepository.findByIdOrNull(adjustmentId) } returns expectedEvent
+
+      val expectedId = UUID.randomUUID()
+      every { adjustmentIdGenerator.generateId(DeleteAdjustmentProperties(adjustmentId)) } returns expectedId
+
+      every { communityPaybackAndDeliusClient.deleteAdjustment(adjustmentId) } throws WebClientResponseExceptionFactory.badRequest("Some error")
+
+      val result = service.deleteAdjustment(adjustmentId, USERNAME)
+
+      assertThat(result).isInstanceOf(DeleteAdjustmentResult.Failed::class.java)
+      assertThat((result as DeleteAdjustmentResult.Failed).exception.statusCode.value()).isEqualTo(400)
+      assertThat(result.exception.responseBodyAsString).isEqualTo("Some error")
+
+      verifyOrder {
+        adjustmentEventEntityRepository.findByIdOrNull(adjustmentId)
+
+        communityPaybackAndDeliusClient.deleteAdjustment(adjustmentId)
+      }
+
+      verify(exactly = 0) {
+        springEventPublisher.publishEvent(any())
       }
     }
   }

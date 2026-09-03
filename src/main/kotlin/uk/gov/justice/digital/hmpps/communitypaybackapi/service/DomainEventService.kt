@@ -88,6 +88,11 @@ enum class DomainEventType(
     urlType = "adjustment-created",
     description = "A community payback adjustment has been created",
   ),
+  ADJUSTMENT_DELETED(
+    eventType = "community-payback.adjustment.deleted",
+    urlType = "adjustment-deleted",
+    description = "A community payback adjustment has been deleted",
+  ),
   APPOINTMENT_CREATED(
     eventType = "community-payback.appointment.created",
     urlType = "appointment-created",

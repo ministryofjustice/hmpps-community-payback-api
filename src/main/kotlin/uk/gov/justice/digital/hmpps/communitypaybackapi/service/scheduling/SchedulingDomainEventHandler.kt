@@ -85,6 +85,7 @@ class SchedulingDomainEventHandler(
         maxProcessingTime = maxProcessingTime,
         triggerType = when (adjustmentEvent.eventType) {
           AdjustmentEventType.CREATE -> SchedulingTriggerType.AdjustmentCreated
+          else -> error("Unknown event type ${adjustmentEvent.eventType}")
         },
       )
 
