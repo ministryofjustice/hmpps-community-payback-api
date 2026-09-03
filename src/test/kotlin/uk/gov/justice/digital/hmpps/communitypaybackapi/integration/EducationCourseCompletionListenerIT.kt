@@ -127,6 +127,7 @@ class EducationCourseCompletionListenerIT : IntegrationTestBase() {
       CommunityPaybackAndDeliusMockServer.setupGetProjectsResponse(
         providerCode = pdu.providerCode,
         teamCode = "N56ST",
+        activeOnly = true,
         projectTypeCodes = listOf("ET1", "ET3", "ET5", "UP06"),
         response = listOf(
           NDProjectOutcomeStats.valid().copy(

@@ -230,6 +230,7 @@ object CommunityPaybackAndDeliusMockServer {
   fun setupGetProjectsResponse(
     providerCode: String,
     teamCode: String,
+    activeOnly: Boolean,
     projectTypeCodes: List<String> = emptyList(),
     response: List<NDProjectOutcomeStats>,
     pageNumber: Int = 0,
@@ -241,7 +242,7 @@ object CommunityPaybackAndDeliusMockServer {
       projectTypeCodes.forEach {
         append("typeCode=$it&")
       }
-      append("page=$pageNumber&size=$pageSize&sort=${URLEncoder.encode(sortString, "UTF-8")}")
+      append("activeOnly=$activeOnly&page=$pageNumber&size=$pageSize&sort=${URLEncoder.encode(sortString, "UTF-8")}")
     }
 
     val pageResponse = PageResponse(response, PageMeta(pageSize, pageNumber, response.size.toLong(), 1))
