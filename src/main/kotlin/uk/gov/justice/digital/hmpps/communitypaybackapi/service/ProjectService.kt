@@ -26,12 +26,14 @@ class ProjectService(
     providerCode: String,
     teamCode: String,
     projectTypeGroup: ProjectTypeGroupDto?,
+    activeOnly: Boolean,
     pageable: Pageable,
   ): Page<ProjectOutcomeSummaryDto> {
     val pageResponse = communityPaybackAndDeliusClient.getProjects(
       providerCode = providerCode,
       teamCode = teamCode,
       typeCode = projectTypeGroup?.let { projectTypeGroup -> projectTypesForGroup(projectTypeGroup).map { it.code } },
+      activeOnly = activeOnly,
       params = pageable.toHttpParams(),
     )
     return pageResponse.asPage(pageable) { it.toDto() }

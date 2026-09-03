@@ -504,6 +504,7 @@ class AdminProvidersIT : IntegrationTestBase() {
         providerCode = "PC01",
         teamCode = "999",
         projectTypeCodes = listOf("ES", "ICP", "PIP2", "PSP"),
+        activeOnly = true,
         response = listOf(project1, project2),
       )
 
@@ -531,6 +532,7 @@ class AdminProvidersIT : IntegrationTestBase() {
       CommunityPaybackAndDeliusMockServer.setupGetProjectsResponse(
         providerCode = "PC01",
         teamCode = "999",
+        activeOnly = true,
         projectTypeCodes = listOf("ES", "ICP", "PIP2", "PSP"),
         response = listOf(project1, project2),
         pageNumber = 0,

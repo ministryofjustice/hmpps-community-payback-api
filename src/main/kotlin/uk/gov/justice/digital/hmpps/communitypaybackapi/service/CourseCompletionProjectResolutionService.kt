@@ -84,6 +84,7 @@ class CourseCompletionProjectResolutionService(
       providerCode = providerCode,
       teamCode = teamCode,
       typeCode = eteProjectTypeCodes,
+      activeOnly = true,
       params = mapOf("page" to "0", "size" to "500", "sort" to "name,asc"),
     ).content.map { it.project }
   }
