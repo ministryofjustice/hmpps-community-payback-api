@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.service
 
 import jakarta.transaction.Transactional
+import org.slf4j.LoggerFactory
 import org.springframework.context.event.EventListener
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.http.HttpStatus
@@ -34,6 +35,8 @@ class AdjustmentService(
   private val adjustmentIdGenerator: AdjustmentIdGenerator,
   private val adjustmentEventEntityRepository: AdjustmentEventEntityRepository,
 ) {
+  private val logger = LoggerFactory.getLogger(AdjustmentService::class.java)
+
   fun getAdjustments(crn: String, eventNumber: Int) = communityPaybackAndDeliusClient.getAdjustments(crn, eventNumber).adjustments.map { it.toDto() }
 
   @Transactional
@@ -86,10 +89,16 @@ class AdjustmentService(
   fun deleteAdjustment(adjustmentId: UUID, username: String): DeleteAdjustmentResult {
     val eventId = adjustmentIdGenerator.generateId(DeleteAdjustmentProperties(adjustmentId))
 
-    val eventToDelete = adjustmentEventEntityRepository.findByIdOrNull(adjustmentId) ?: return DeleteAdjustmentResult.NotFound
+    val eventToDelete = adjustmentEventEntityRepository.findByIdOrNull(adjustmentId)
+    if (eventToDelete == null) {
+      logger.warn("Could not find adjustment event with ID {} in adjustment_events table", adjustmentId)
+      return DeleteAdjustmentResult.NotFound
+    }
+
     try {
       communityPaybackAndDeliusClient.deleteAdjustment(adjustmentId)
     } catch (_: WebClientResponseException.NotFound) {
+      logger.warn("Could not delete adjustment with reference {} from NDelius", adjustmentId)
       return DeleteAdjustmentResult.NotFound
     } catch (e: WebClientResponseException) {
       return DeleteAdjustmentResult.Failed(e)
