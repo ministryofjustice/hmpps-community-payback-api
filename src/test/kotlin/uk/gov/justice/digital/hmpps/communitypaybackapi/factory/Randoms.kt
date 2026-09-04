@@ -16,10 +16,13 @@ fun Long.Companion.random(from: Long = 0, to: Long = Long.MAX_VALUE) = Random.ne
 fun String.Companion.random(length: Int = 50) = String(CharArray(length) { (('A'..'Z') + ('a'..'z') + ('0'..'9')).random() })
 
 fun randomLocalDate(): LocalDate = LocalDate.now().plusDays(Long.random(0, 2000))
-fun randomPastLocalDate(): LocalDate = LocalDate.now().minusDays(Long.random(0, 2000))
+fun randomPastLocalDate(): LocalDate = LocalDate.now().minusDays(Long.random(1, 2000))
+fun randomFutureLocalDate(): LocalDate = LocalDate.now().plusDays(Long.random(1, 2000))
 fun randomLocalTime(): LocalTime = LocalTime.ofSecondOfDay(Long.random(0, 60 * 60 * 12))
 fun randomLocalDateTime(): java.time.LocalDateTime = java.time.LocalDateTime.of(randomLocalDate(), randomLocalTime())
 fun randomOffsetDateTime(): OffsetDateTime = OffsetDateTime.of(randomLocalDate(), randomLocalTime(), ZoneOffset.UTC)
+fun randomPastOffsetDateTime(): OffsetDateTime = OffsetDateTime.of(randomPastLocalDate(), randomLocalTime(), ZoneOffset.UTC)
+fun randomFutureOffsetDateTime(): OffsetDateTime = OffsetDateTime.of(randomFutureLocalDate(), randomLocalTime(), ZoneOffset.UTC)
 fun randomDuration(): Duration = Duration.ofHours(Long.random(0, 12)).plusMinutes(Long.random(0, 60))
 fun randomHourMinuteDuration(): HourMinuteDuration = HourMinuteDuration(randomDuration())
 
