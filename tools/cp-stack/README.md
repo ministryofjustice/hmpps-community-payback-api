@@ -11,7 +11,7 @@ The tool manages local instances of the following:
 * Community Payback Supervisor UI - Either via docker or node (to run local code)
 * Postgres
 * Redis
-* Localstack
+* Floci
 * Wiremock - Proxies all requests to upstream services, allowing us to selectively intercept and mock responses
 
 All upstream services are provided by the [Cloud Platform's](https://user-guide.cloud-platform.service.justice.gov.uk/) 'Dev' environment, proxied via Wiremock (excluding hmpps-auth, which is not proxied)
@@ -98,9 +98,9 @@ Combine with jq to make it more usable:
 
 Note that newest requests are shown at the top of the list
 
-## Localstack
+## Floci
 
-We start localstack to provide us with an SNS topic to send domain events to
+We start [Floci](https://floci.io) to provide us with an SNS topic to send domain events to
 
 ### Publishing Community Campus Messages
 
@@ -109,7 +109,7 @@ brew install awscli-local
 AWS_DEFAULT_REGION=eu-west-2
 # list queues (if running integration tests there may be many)
 awslocal sqs list-queues 
-awslocal sqs send-message --queue-url http://sqs.eu-west-2.localhost.localstack.cloud:4566/000000000000/cp_stack_course_completion_events --message-body '{"communityCampusId":"123","person":{"crn":"CRN01","firstName":"first","lastName":"last","dateOfBirth":"2018-04-21","region":"midlands","email":"someone@test.com"},"course":{"courseName":"the course","source":"F6I0f","enrollmentDateTime":"2025-11-10T14:19:37.401581","completionDateTime":"2025-11-15T14:19:37.401604","status":"Completed","totalTime":"07:06","attempts":1,"expectedMinutes":0,"expectedMinutesAdditional":3}}'
+awslocal sqs send-message --queue-url http://localhost:4566/000000000000/cp_stack_course_completion_events --message-body '{"communityCampusId":"123","person":{"crn":"CRN01","firstName":"first","lastName":"last","dateOfBirth":"2018-04-21","region":"midlands","email":"someone@test.com"},"course":{"courseName":"the course","source":"F6I0f","enrollmentDateTime":"2025-11-10T14:19:37.401581","completionDateTime":"2025-11-15T14:19:37.401604","status":"Completed","totalTime":"07:06","attempts":1,"expectedMinutes":0,"expectedMinutesAdditional":3}}'
 
 ```
 
@@ -127,7 +127,7 @@ awslocal sns list-topics
 # list topic subscriber (if running integration tests there may be many)
 awslocal sqs list-queues 
 # show domain events sent to the cp-stack API instance. Note! this will typically be empty because the API domain event listener will have consumed the messages
-awslocal sqs receive-message --max-number-of-messages 10 --visibility-timeout 0 --queue-url http://sqs.eu-west-2.localhost.localstack.cloud:4566/000000000000/cp_stack_domain_event_subscriber
+awslocal sqs receive-message --max-number-of-messages 10 --visibility-timeout 0 --queue-url http://localhost:4566/000000000000/cp_stack_domain_event_subscriber
 ```
 
 ## Debugging the API

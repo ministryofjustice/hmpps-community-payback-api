@@ -18,7 +18,7 @@ services:
       - path: .env.api
         format: raw
     environment:
-      - HMPPS_SQS_LOCALSTACKURL=http://localstack:4566
+      - HMPPS_SQS_LOCALSTACKURL=http://floci:4566
       - CLIENT_COMMUNITY_PAYBACK_AND_DELIUS_URL=http://wiremock:8080
       # Override connection settings when running the API in a container to use docker container name
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/community_payback
@@ -52,19 +52,14 @@ services:
       - "3001:3001"
     entrypoint: "node dist/server.js | bunyan"
 
-  localstack:
-    image: localstack/localstack:community-archive
-    container_name: cp-stack-localstack
+  floci:
+    image: floci/floci:latest
+    container_name: cp-stack-floci
     ports:
       - "4566:4566"
-      - "4571:4571"
     environment:
-      - JAVA_TOOL_OPTIONS=-XX:UseSVE=0
-      - SERVICES=sns,sqs
-      - DEBUG=${DEBUG:-0}
-      - DOCKER_HOST=unix:///var/run/docker.sock
+      - FLOCI_DEFAULT_REGION=eu-west-2
     volumes:
-      - "${TMPDIR:-/tmp/localstack}:/var/lib/localstack"
       - "/var/run/docker.sock:/var/run/docker.sock"
 
   wiremock:
