@@ -302,7 +302,7 @@ class AppointmentTaskServiceTest {
       val task = AppointmentTaskEntity.validPending()
       val triggeredAt = OffsetDateTime.now()
 
-      every { appointmentTaskEntityRepository.findByIdOrNull(task.id) } returns task
+      every { appointmentTaskEntityRepository.findByAppointmentId(task.appointment.id) } returns listOf(task)
       every { contextService.getUserName() } returns "currentUsername"
       every { appointmentTaskEntityRepository.save(any()) } returnsArgument 0
 
@@ -310,7 +310,7 @@ class AppointmentTaskServiceTest {
         AdjustmentCreatedEvent.valid().copy(
           trigger = AdjustmentEventTrigger.valid().copy(
             triggeredAt = triggeredAt,
-            triggeredBy = task.id.toString(),
+            triggeredBy = task.appointment.id.toString(),
           ),
         ),
       )

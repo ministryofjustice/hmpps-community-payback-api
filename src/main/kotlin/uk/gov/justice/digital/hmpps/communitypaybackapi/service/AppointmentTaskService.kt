@@ -87,9 +87,9 @@ class AppointmentTaskService(
 
     val trigger = event.trigger
     if (trigger.triggerType == AdjustmentEventTriggerType.APPOINTMENT_TASK) {
-      val taskId = UUID.fromString(trigger.triggeredBy)
-      val task = appointmentTaskEntityRepository.findByIdOrNull(taskId)
-      if (task != null) {
+      val appointmentId = UUID.fromString(trigger.triggeredBy)
+      val tasks = appointmentTaskEntityRepository.findByAppointmentId(appointmentId)
+      for (task in tasks) {
         task.taskStatus = AppointmentTaskStatus.COMPLETE
         task.decisionMadeAt = trigger.triggeredAt
         task.decisionMadeByUsername = contextService.getUserName()
