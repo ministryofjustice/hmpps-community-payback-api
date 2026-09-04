@@ -18,6 +18,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.common.HourMinuteDuratio
 import uk.gov.justice.digital.hmpps.communitypaybackapi.config.CacheConfig.Companion.CacheKey
 import java.time.LocalDate
 import java.time.LocalTime
+import java.time.OffsetDateTime
 import java.util.UUID
 
 /**
@@ -673,6 +674,10 @@ data class NDPickUpLocationsResponse(
 data class NDPersonalCircumstances(
   val type: NDCodeDescription,
   val subType: NDCodeDescription?,
+  val startDate: OffsetDateTime,
+  val endDate: OffsetDateTime?,
+  val verified: Boolean?,
+  val notes: String?,
 ) {
   companion object
 }
