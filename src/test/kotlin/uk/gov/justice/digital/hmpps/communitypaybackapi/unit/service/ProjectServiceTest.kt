@@ -64,6 +64,7 @@ class ProjectServiceTest {
           providerCode = providerCode,
           teamCode = teamCode,
           typeCode = listOf("PJ01"),
+          activeOnly = true,
           params = mapOf("page" to pageNumber.toString(), "size" to pageSize.toString(), "sort" to "projectName,desc"),
         )
       } returns PageResponse(
@@ -75,7 +76,7 @@ class ProjectServiceTest {
         projectTypeEntityRepository.findByProjectTypeGroupOrderByCodeAsc(ProjectTypeGroup.INDIVIDUAL)
       } returns listOf(ProjectTypeEntity.valid().copy(code = "PJ01"))
 
-      val projectsPageResponse: Page<ProjectOutcomeSummaryDto> = service.getProjects(providerCode, teamCode, INDIVIDUAL, pageable)
+      val projectsPageResponse: Page<ProjectOutcomeSummaryDto> = service.getProjects(providerCode, teamCode, INDIVIDUAL, true, pageable)
       assertThat(projectsPageResponse.content).hasSize(1)
       assertThat(projectsPageResponse.totalElements).isEqualTo(1)
       assertThat(projectsPageResponse.totalPages).isEqualTo(1)

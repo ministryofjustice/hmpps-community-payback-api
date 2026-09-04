@@ -65,6 +65,7 @@ class CourseCompletionProjectResolutionServiceTest {
           providerCode = event.pdu.providerCode,
           teamCode = "TEAM1",
           typeCode = listOf("ET5", "UP06"),
+          activeOnly = true,
           params = mapOf("page" to "0", "size" to "500", "sort" to "name,asc"),
         )
       }
@@ -259,6 +260,7 @@ class CourseCompletionProjectResolutionServiceTest {
           providerCode = event.pdu.providerCode,
           teamCode = teamCode,
           typeCode = listOf("ET5", "UP06"),
+          activeOnly = true,
           params = mapOf("page" to "0", "size" to "500", "sort" to "name,asc"),
         )
       }
@@ -340,7 +342,7 @@ class CourseCompletionProjectResolutionServiceTest {
 
   private fun stubProjects(vararg projects: NDProject) {
     every {
-      communityPaybackAndDeliusClient.getProjects(any(), any(), any(), any())
+      communityPaybackAndDeliusClient.getProjects(any(), any(), any(), any(), any())
     } returns PageResponse(
       content = projects.map { NDProjectOutcomeStats.valid().copy(project = it) },
       page = PageResponse.PageMeta(size = projects.size, number = 0, totalElements = projects.size.toLong(), totalPages = 1),

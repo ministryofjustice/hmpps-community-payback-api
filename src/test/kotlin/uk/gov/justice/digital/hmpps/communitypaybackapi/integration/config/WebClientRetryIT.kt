@@ -43,6 +43,7 @@ class WebClientRetryIT : IntegrationTestBase() {
     CommunityPaybackAndDeliusMockServer.setupGetProjectsResponse(
       providerCode = "N56",
       teamCode = "N56CPB",
+      activeOnly = true,
       response = projects,
     )
 
@@ -50,6 +51,7 @@ class WebClientRetryIT : IntegrationTestBase() {
       providerCode = "N56",
       teamCode = "N56CPB",
       typeCode = null,
+      activeOnly = true,
       params = mapOf("page" to "0", "size" to "100", "sort" to "name,asc"),
     )
 

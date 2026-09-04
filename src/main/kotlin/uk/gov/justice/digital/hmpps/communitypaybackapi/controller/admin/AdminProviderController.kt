@@ -206,6 +206,7 @@ class AdminProviderController(
     @PageableDefault(size = 100, sort = ["name"], direction = Sort.Direction.ASC) pageable: Pageable,
     @PathVariable providerCode: String,
     @PathVariable teamCode: String,
+    @RequestParam activeOnly: Boolean = true,
     @RequestParam projectTypeGroup: ProjectTypeGroupDto,
-  ): Page<ProjectOutcomeSummaryDto> = projectService.getProjects(providerCode, teamCode, projectTypeGroup, pageable)
+  ): Page<ProjectOutcomeSummaryDto> = projectService.getProjects(providerCode, teamCode, projectTypeGroup, activeOnly, pageable)
 }
