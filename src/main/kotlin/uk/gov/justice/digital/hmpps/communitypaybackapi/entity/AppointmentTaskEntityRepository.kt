@@ -28,4 +28,12 @@ interface AppointmentTaskEntityRepository : JpaRepository<AppointmentTaskEntity,
     taskTypes: List<AppointmentTaskType>,
     pageable: Pageable,
   ): Page<AppointmentTaskEntity>
+
+  @Query(
+    """
+      SELECT task FROM AppointmentTaskEntity task
+      WHERE task.appointment.id = :appointmentId
+      """,
+  )
+  fun findByAppointmentId(appointmentId: UUID): List<AppointmentTaskEntity>
 }
