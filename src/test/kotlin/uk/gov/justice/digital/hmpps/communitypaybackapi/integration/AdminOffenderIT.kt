@@ -4,6 +4,8 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.ValueSource
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDPersonalCircumstances
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDUpwDetails
@@ -13,6 +15,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.bodyAsObject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.CommunityPaybackAndDeliusMockServer
+import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 
 class AdminOffenderIT : IntegrationTestBase() {
 
@@ -231,39 +234,37 @@ class AdminOffenderIT : IntegrationTestBase() {
         personalCircumstances = listOf(NDPersonalCircumstances.valid("A", null)),
       )
 
-      webTestClient.get()
+      val result = webTestClient.get()
         .uri("/admin/offenders/$CRN/personal-circumstances?type=TRAVEL_TIME")
         .addAdminUiAuthHeader()
         .exchange()
         .expectStatus().isOk
-        .expectBody().json("[]")
+        .bodyAsObject<List<PersonalCircumstancesDto>>()
+
+      assertThat(result).isEmpty()
     }
 
     @Test
     fun `should return bad request when personal circumstances type is not TRAVEL_TIME`() {
-      webTestClient.get()
+      val response = webTestClient.get()
         .uri("/admin/offenders/$CRN/personal-circumstances?type=OTHER")
         .addAdminUiAuthHeader()
         .exchange()
         .expectStatus().isBadRequest
-        .expectBody()
-        .jsonPath("$.status").isEqualTo(400)
-        .jsonPath("$.userMessage")
-        .isEqualTo("Validation failure: Unsupported personal circumstances type 'OTHER'. Supported type: TRAVEL_TIME")
+        .bodyAsObject<ErrorResponse>()
+      assertThat(response.userMessage).isEqualTo("Validation failure: Unsupported personal circumstances type 'OTHER'. Supported type: TRAVEL_TIME")
     }
 
-    @Test
-    fun `should reject unsupported and blank types`() {
-      listOf("K", "travel_time", "").forEach { type ->
-        webTestClient.get()
-          .uri("/admin/offenders/$CRN/personal-circumstances?type=$type")
-          .addAdminUiAuthHeader()
-          .exchange()
-          .expectStatus().isBadRequest
-          .expectBody().jsonPath("$.userMessage").value<String> {
-            assertThat(it).contains("Supported type: TRAVEL_TIME")
-          }
-      }
+    @ParameterizedTest
+    @ValueSource(strings = ["K", "travel_time", ""])
+    fun `should reject unsupported and blank types`(type: String) {
+      val response = webTestClient.get()
+        .uri("/admin/offenders/$CRN/personal-circumstances?type=$type")
+        .addAdminUiAuthHeader()
+        .exchange()
+        .expectStatus().isBadRequest
+        .bodyAsObject<ErrorResponse>()
+      assertThat(response.userMessage).contains("Supported type: TRAVEL_TIME")
     }
   }
 }
