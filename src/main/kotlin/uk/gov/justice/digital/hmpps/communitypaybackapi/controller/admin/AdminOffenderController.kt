@@ -16,7 +16,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.PersonalCircumstance
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.BadRequestException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ContextService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.OffenderService
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDomain
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 
 @AdminUiController
@@ -85,6 +84,6 @@ class AdminOffenderController(private val offenderService: OffenderService, priv
       PersonalCircumstancesTypeDto.entries.firstOrNull { it.name == value }
         ?: throw BadRequestException("Unsupported personal circumstances type '$value'. Supported type: ${PersonalCircumstancesTypeDto.entries.joinToString()}")
     }
-    return offenderService.getPersonalCircumstances(crn, filter?.toDomain()) ?: notFound("Personal Circumstances", crn)
+    return offenderService.getPersonalCircumstances(crn, filter) ?: notFound("Personal Circumstances", crn)
   }
 }

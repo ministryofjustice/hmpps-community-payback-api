@@ -17,10 +17,10 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDPersonalCircums
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDUpwDetails
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.OverallRiskLevel
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.RiskRoshSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.PersonalCircumstancesTypeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsIdDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.OffenderService
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.PersonalCircumstancesType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.unit.util.WebClientResponseExceptionFactory
 
 @ExtendWith(MockKExtension::class)
@@ -252,7 +252,7 @@ class OffenderServiceTest {
         NDPersonalCircumstances.valid("K", "K09"),
       )
 
-      val result = service.getPersonalCircumstances(CRN, type = PersonalCircumstancesType.TRAVEL_TIME)
+      val result = service.getPersonalCircumstances(CRN, type = PersonalCircumstancesTypeDto.TRAVEL_TIME)
 
       assertThat(result).hasSize(2)
       assertThat(result!!.map { it.subType?.code }).containsOnly("K09")

@@ -240,8 +240,21 @@ class AdminOffenderIT : IntegrationTestBase() {
     }
 
     @Test
+    fun `should return bad request when personal circumstances type is not TRAVEL_TIME`() {
+      webTestClient.get()
+        .uri("/admin/offenders/$CRN/personal-circumstances?type=OTHER")
+        .addAdminUiAuthHeader()
+        .exchange()
+        .expectStatus().isBadRequest
+        .expectBody()
+        .jsonPath("$.status").isEqualTo(400)
+        .jsonPath("$.userMessage")
+        .isEqualTo("Validation failure: Unsupported personal circumstances type 'OTHER'. Supported type: TRAVEL_TIME")
+    }
+
+    @Test
     fun `should reject unsupported and blank types`() {
-      listOf("OTHER", "K", "travel_time", "").forEach { type ->
+      listOf("K", "travel_time", "").forEach { type ->
         webTestClient.get()
           .uri("/admin/offenders/$CRN/personal-circumstances?type=$type")
           .addAdminUiAuthHeader()
