@@ -11,8 +11,8 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCreateAppointments
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCreatedAppointment
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.validation.ValidationResult
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreatedAppointmentDto
@@ -21,25 +21,23 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ProjectTypeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.valid
-import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.validCreateAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentCreationService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventTrigger
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentIdGenerator
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService.ValidatedAppointment
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService2
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.CreateAppointmentValidationService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.OffenderService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ProjectService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AppointmentCreatedEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.SpringEventPublisher
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.ToAppointmentEntity.toAppointmentEntity
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toNDCreateAppointment
 import java.util.UUID
 
 @ExtendWith(MockKExtension::class)
 class AppointmentCreationServiceTest {
   @RelaxedMockK
-  lateinit var appointmentValidationService: AppointmentValidationService
+  lateinit var createAppointmentValidationService: CreateAppointmentValidationService
 
   @RelaxedMockK
   lateinit var offenderService: OffenderService
@@ -114,18 +112,24 @@ class AppointmentCreationServiceTest {
       val createAppointment1Dto = CreateAppointmentDto.valid().copy(crn = CRN, deliusEventNumber = DELIUS_EVENT_NUMBER, projectCode = PROJECT_CODE)
       val createAppointment2Dto = CreateAppointmentDto.valid().copy(crn = CRN, deliusEventNumber = DELIUS_EVENT_NUMBER, projectCode = PROJECT_CODE)
 
-      val validatedCreateAppointment1 = ValidatedAppointment.validCreateAppointment().copy(dto = createAppointment1Dto, project = PROJECT)
-      every { appointmentValidationService.validateCreate(createAppointment1Dto) } returns validatedCreateAppointment1
-      val validatedCreateAppointment2 = ValidatedAppointment.validCreateAppointment().copy(dto = createAppointment2Dto, project = PROJECT)
-      every { appointmentValidationService.validateCreate(createAppointment2Dto) } returns validatedCreateAppointment2
+      every { createAppointmentValidationService.validate(createAppointment1Dto, any()) } answers {
+        val ctx = it.invocation.args[1] as AppointmentValidationService2.AppointmentValidationContext.Create
+        ctx.project = PROJECT
+        ValidationResult.success()
+      }
+      every { createAppointmentValidationService.validate(createAppointment2Dto, any()) } answers {
+        val ctx = it.invocation.args[1] as AppointmentValidationService2.AppointmentValidationContext.Create
+        ctx.project = PROJECT
+        ValidationResult.success()
+      }
 
       val projectType = ProjectTypeEntity.valid()
       every { projectService.getProjectTypeForCode(PROJECT_CODE) } returns projectType
 
       val name1 = OffenderNameDto.valid()
       val name2 = OffenderNameDto.valid()
-      every { offenderService.getNameIgnoringLimitedStatus(validatedCreateAppointment1.dto.crn) } returns name1
-      every { offenderService.getNameIgnoringLimitedStatus(validatedCreateAppointment2.dto.crn) } returns name2
+      every { offenderService.getNameIgnoringLimitedStatus(createAppointment1Dto.crn) } returns name1
+      every { offenderService.getNameIgnoringLimitedStatus(createAppointment2Dto.crn) } returns name2
 
       val appointmentEntity1 = createAppointment1Dto.toAppointmentEntity(appointment1Id, ND_APPT1_ID, PROVIDER_CODE, firstName = name1.forename, lastName = name1.surname, projectType = projectType)
       val appointmentEntity2 = createAppointment2Dto.toAppointmentEntity(appointment2Id, ND_APPT2_ID, PROVIDER_CODE, firstName = name2.forename, lastName = name2.surname, projectType = projectType)
@@ -134,12 +138,7 @@ class AppointmentCreationServiceTest {
       every {
         communityPaybackAndDeliusClient.createAppointments(
           projectCode = PROJECT_CODE,
-          NDCreateAppointments(
-            listOf(
-              validatedCreateAppointment1.toNDCreateAppointment(appointment1Id),
-              validatedCreateAppointment2.toNDCreateAppointment(appointment2Id),
-            ),
-          ),
+          match { it.appointments.size == 2 && it.appointments[0].reference == appointment1Id && it.appointments[1].reference == appointment2Id },
         )
       } returns listOf(
         NDCreatedAppointment(id = ND_APPT1_ID, reference = appointment1Id),
@@ -168,19 +167,11 @@ class AppointmentCreationServiceTest {
         )
 
         springEventPublisher.publishEvent(
-          AppointmentCreatedEvent(
-            appointmentEntity = appointmentEntity1,
-            trigger = TRIGGER,
-            createDto = validatedCreateAppointment1,
-          ),
+          match { it is AppointmentCreatedEvent && it.appointmentEntity == appointmentEntity1 && it.trigger == TRIGGER },
         )
 
         springEventPublisher.publishEvent(
-          AppointmentCreatedEvent(
-            appointmentEntity = appointmentEntity2,
-            trigger = TRIGGER,
-            createDto = validatedCreateAppointment2,
-          ),
+          match { it is AppointmentCreatedEvent && it.appointmentEntity == appointmentEntity2 && it.trigger == TRIGGER },
         )
       }
     }

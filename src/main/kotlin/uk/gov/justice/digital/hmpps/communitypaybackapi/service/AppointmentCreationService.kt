@@ -20,7 +20,7 @@ import java.util.UUID
 
 @Service
 class AppointmentCreationService(
-  private val appointmentValidationService: AppointmentValidationService,
+  private val createAppointmentValidationService: CreateAppointmentValidationService,
   private val offenderService: OffenderService,
   private val projectService: ProjectService,
   private val communityPaybackAndDeliusClient: CommunityPaybackAndDeliusClient,
@@ -55,7 +55,7 @@ class AppointmentCreationService(
     val appointmentsToCreate = appointments.map {
       AppointmentToCreate(
         id = appointmentIdGenerator.generateId(),
-        validatedAppointment = appointmentValidationService.validateCreate(it),
+        validatedAppointment = getValidatedCreate(it),
       )
     }
 
@@ -95,6 +95,24 @@ class AppointmentCreationService(
     }
 
     return creationResponse.map { it.toDto() }
+  }
+
+  fun getValidatedCreate(createAppointment: CreateAppointmentDto): ValidatedAppointment<CreateAppointmentDto> {
+    val ctx = AppointmentValidationService2.AppointmentValidationContext.Create()
+
+    val validationResult = createAppointmentValidationService.validate(createAppointment, ctx)
+
+    if (validationResult.hasErrors) {
+      throwValidationErrorForAppointmentUpdateCreate(validationResult.errors[0])
+    }
+
+    return ValidatedAppointment(
+      dto = createAppointment,
+      minutesToCredit = ctx.timeToCredit,
+      contactOutcome = ctx.contactOutcome.value,
+      pickUpLocation = ctx.pickUpLocation.value,
+      project = ctx.project!!,
+    )
   }
 
   data class AppointmentToCreate(
