@@ -185,6 +185,7 @@ class AdminOffenderIT : IntegrationTestBase() {
         crn = CRN,
         personalCircumstances = listOf(
           NDPersonalCircumstances.valid("K", "K09"),
+          NDPersonalCircumstances.valid("A", null),
         ),
       )
 
@@ -194,9 +195,62 @@ class AdminOffenderIT : IntegrationTestBase() {
         .exchange()
         .expectStatus()
         .isOk
-        .bodyAsObject<PersonalCircumstancesDto>()
+        .bodyAsObject<List<PersonalCircumstancesDto>>()
 
-      assertThat(result.isAllowedTravelTime).isTrue
+      assertThat(result.map { it.type.code }).containsExactly("K", "A")
+    }
+
+    @Test
+    fun `should return all travel time circumstances only`() {
+      CommunityPaybackAndDeliusMockServer.setupGetPersonalCircumstancesResponse(
+        crn = CRN,
+        personalCircumstances = listOf(
+          NDPersonalCircumstances.valid("K", "K09"),
+          NDPersonalCircumstances.valid("K", "K08"),
+          NDPersonalCircumstances.valid("A", "K09"),
+          NDPersonalCircumstances.valid("K", null),
+          NDPersonalCircumstances.valid("K", "K09"),
+        ),
+      )
+
+      val result = webTestClient.get()
+        .uri("/admin/offenders/$CRN/personal-circumstances?type=TRAVEL_TIME")
+        .addAdminUiAuthHeader()
+        .exchange()
+        .expectStatus().isOk
+        .bodyAsObject<List<PersonalCircumstancesDto>>()
+
+      assertThat(result).hasSize(2)
+      assertThat(result.map { it.subType?.code }).containsOnly("K09")
+    }
+
+    @Test
+    fun `should return empty list when no circumstances match`() {
+      CommunityPaybackAndDeliusMockServer.setupGetPersonalCircumstancesResponse(
+        crn = CRN,
+        personalCircumstances = listOf(NDPersonalCircumstances.valid("A", null)),
+      )
+
+      webTestClient.get()
+        .uri("/admin/offenders/$CRN/personal-circumstances?type=TRAVEL_TIME")
+        .addAdminUiAuthHeader()
+        .exchange()
+        .expectStatus().isOk
+        .expectBody().json("[]")
+    }
+
+    @Test
+    fun `should reject unsupported and blank types`() {
+      listOf("OTHER", "K", "travel_time", "").forEach { type ->
+        webTestClient.get()
+          .uri("/admin/offenders/$CRN/personal-circumstances?type=$type")
+          .addAdminUiAuthHeader()
+          .exchange()
+          .expectStatus().isBadRequest
+          .expectBody().jsonPath("$.userMessage").value<String> {
+            assertThat(it).contains("Supported type: TRAVEL_TIME")
+          }
+      }
     }
   }
 }

@@ -42,8 +42,10 @@ class OffenderService(
     null
   }
 
-  fun getPersonalCircumstances(crn: String): PersonalCircumstancesDto? = try {
-    communityPaybackAndDeliusClient.getPersonalCircumstances(crn).toDto()
+  fun getPersonalCircumstances(crn: String, type: PersonalCircumstancesType? = null): List<PersonalCircumstancesDto>? = try {
+    communityPaybackAndDeliusClient.getPersonalCircumstances(crn)
+      .filter { type == null || (it.type.code == type.typeCode && it.subType?.code == type.subTypeCode) }
+      .toDto()
   } catch (_: WebClientResponseException.NotFound) {
     null
   }

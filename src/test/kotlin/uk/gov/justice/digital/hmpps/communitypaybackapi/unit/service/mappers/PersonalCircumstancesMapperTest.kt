@@ -8,23 +8,29 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
 
 class PersonalCircumstancesMapperTest {
   @Test
-  fun `returns when travel time is allowed`() {
-    val travelTime = NDPersonalCircumstances.valid("K", "K09")
-    val personalCircumstances = listOf(travelTime).toDto()
+  fun `maps every circumstance including nullable fields`() {
+    val circumstances = listOf(
+      NDPersonalCircumstances.valid("K", "K09"),
+      NDPersonalCircumstances.valid("A", null).copy(verified = null, notes = null, endDate = null),
+    )
 
-    assertThat(personalCircumstances.isAllowedTravelTime).isTrue
-    assertThat(personalCircumstances.travelTimeDetails).isNotNull
-    assertThat(personalCircumstances.travelTimeDetails!!.startDate).isEqualTo(travelTime.startDate)
-    assertThat(personalCircumstances.travelTimeDetails.endDate).isEqualTo(travelTime.endDate)
-    assertThat(personalCircumstances.travelTimeDetails.verified).isEqualTo(travelTime.verified)
-    assertThat(personalCircumstances.travelTimeDetails.notes).isEqualTo(travelTime.notes)
+    val result = circumstances.toDto()
+
+    assertThat(result).hasSize(2)
+    result.zip(circumstances).forEach { (actual, expected) ->
+      assertThat(actual.type.code).isEqualTo(expected.type.code)
+      assertThat(actual.type.description).isEqualTo(expected.type.description)
+      assertThat(actual.subType?.code).isEqualTo(expected.subType?.code)
+      assertThat(actual.subType?.description).isEqualTo(expected.subType?.description)
+      assertThat(actual.startDate).isEqualTo(expected.startDate)
+      assertThat(actual.endDate).isEqualTo(expected.endDate)
+      assertThat(actual.verified).isEqualTo(expected.verified ?: false)
+      assertThat(actual.notes).isEqualTo(expected.notes)
+    }
   }
 
   @Test
-  fun `returns default with travel time not allowed`() {
-    val personalCircumstances = listOf(NDPersonalCircumstances.valid()).toDto()
-
-    assertThat(personalCircumstances.isAllowedTravelTime).isFalse
-    assertThat(personalCircumstances.travelTimeDetails).isNull()
+  fun `maps an empty list`() {
+    assertThat(emptyList<NDPersonalCircumstances>().toDto()).isEmpty()
   }
 }

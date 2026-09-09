@@ -1,24 +1,22 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers
 
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDPersonalCircumstances
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.PersonalCircumstancesDetailsDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.PersonalCircumstancesCodeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.PersonalCircumstancesDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.PersonalCircumstancesTypeDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.PersonalCircumstancesType
 
-fun List<NDPersonalCircumstances>.toDto(): PersonalCircumstancesDto = PersonalCircumstancesDto(
-  travelTimeDetails = this.get(PersonalCircumstances.ALLOWED_TRAVEL_TIME)?.toDto(),
+fun List<NDPersonalCircumstances>.toDto(): List<PersonalCircumstancesDto> = map { it.toDto() }
+
+private fun NDPersonalCircumstances.toDto(): PersonalCircumstancesDto = PersonalCircumstancesDto(
+  type = PersonalCircumstancesCodeDto(type.code, type.description),
+  subType = subType?.let { PersonalCircumstancesCodeDto(it.code, it.description) },
+  startDate = startDate,
+  endDate = endDate,
+  verified = verified ?: false,
+  notes = notes,
 )
 
-private fun NDPersonalCircumstances.toDto(): PersonalCircumstancesDetailsDto = PersonalCircumstancesDetailsDto(
-  startDate = this.startDate,
-  endDate = this.endDate,
-  verified = this.verified ?: false,
-  notes = this.notes,
-)
-
-private fun List<NDPersonalCircumstances>.get(personalCircumstances: PersonalCircumstances): NDPersonalCircumstances? = this.firstOrNull {
-  it.type.code == personalCircumstances.typeCode && it.subType?.code == personalCircumstances.subTypeCode
-}
-
-private enum class PersonalCircumstances(val typeCode: String, val subTypeCode: String?) {
-  ALLOWED_TRAVEL_TIME("K", "K09"),
+fun PersonalCircumstancesTypeDto.toDomain(): PersonalCircumstancesType = when (this) {
+  PersonalCircumstancesTypeDto.TRAVEL_TIME -> PersonalCircumstancesType.TRAVEL_TIME
 }
