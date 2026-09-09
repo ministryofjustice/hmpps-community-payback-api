@@ -19,7 +19,7 @@ class AppointmentUpdateService(
   private val appointmentRetrievalService: AppointmentRetrievalService,
   private val appointmentEventService: AppointmentEventService,
   private val communityPaybackAndDeliusClient: CommunityPaybackAndDeliusClient,
-  private val appointmentUpdateValidationService: AppointmentValidationService,
+  private val updateAppointmentValidationService: UpdateAppointmentValidationService,
   private val springEventPublisher: SpringEventPublisher,
 ) {
   private companion object {
@@ -31,18 +31,9 @@ class AppointmentUpdateService(
     existingAppointment: AppointmentDto,
     update: UpdateAppointmentDto,
     trigger: AppointmentEventTrigger,
-  ) = updateAppointment(
-    existingAppointment = existingAppointment,
-    validatedUpdate = appointmentUpdateValidationService.validateUpdate(existingAppointment, update),
-    trigger = trigger,
-  )
-
-  @Transactional
-  fun updateAppointment(
-    existingAppointment: AppointmentDto,
-    validatedUpdate: ValidatedAppointment<UpdateAppointmentDto>,
-    trigger: AppointmentEventTrigger,
   ) {
+    val validatedUpdate = getValidatedUpdate(existingAppointment, update)
+
     val appointmentEntity = appointmentRetrievalService.getOrCreateAppointmentEntity(existingAppointment)
 
     val updateEventDetails = AppointmentUpdatedEvent(
@@ -60,6 +51,27 @@ class AppointmentUpdateService(
     updateDelius(existingAppointment, validatedUpdate)
 
     springEventPublisher.publishEvent(updateEventDetails)
+  }
+
+  private fun getValidatedUpdate(
+    existingAppointment: AppointmentDto,
+    update: UpdateAppointmentDto,
+  ): ValidatedAppointment<UpdateAppointmentDto> {
+    val ctx = AppointmentValidationService2.AppointmentValidationContext.Update(existingAppointment)
+
+    val validationResult = updateAppointmentValidationService.validate(update, ctx)
+
+    if (validationResult.hasErrors) {
+      throwValidationErrorForAppointmentUpdateCreate(validationResult.errors[0])
+    }
+
+    return ValidatedAppointment(
+      dto = update,
+      minutesToCredit = ctx.timeToCredit,
+      contactOutcome = ctx.contactOutcome.value,
+      pickUpLocation = ctx.pickUpLocation.value,
+      project = ctx.project!!,
+    )
   }
 
   @SuppressWarnings("SwallowedException", "ThrowsCount")

@@ -10,19 +10,20 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.validation.ValidationResult
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.ConflictException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.InternalServerErrorException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.valid
-import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.validUpdateAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventTrigger
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentRetrievalService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentUpdateService
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService.ValidatedAppointment
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService2
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.UpdateAppointmentValidationService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.SpringEventPublisher
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.ToAppointmentEntity.toAppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.unit.util.WebClientResponseExceptionFactory
@@ -40,7 +41,7 @@ class AppointmentUpdateServiceTest {
   lateinit var communityPaybackAndDeliusClient: CommunityPaybackAndDeliusClient
 
   @RelaxedMockK
-  lateinit var appointmentOutcomeValidationService: AppointmentValidationService
+  lateinit var updateAppointmentValidationService: UpdateAppointmentValidationService
 
   @RelaxedMockK
   lateinit var springEventPublisher: SpringEventPublisher
@@ -64,8 +65,11 @@ class AppointmentUpdateServiceTest {
     fun `if there's no existing entries for the delius appointment ids, persist new entry, raise domain event and invoke update endpoint`() {
       val appointmentEntity = existingAppointment.toAppointmentEntity(null, null, null)
       every { appointmentRetrievalService.getOrCreateAppointmentEntity(existingAppointment) } returns appointmentEntity
-      val validatedUpdateAppointment = ValidatedAppointment.validUpdateAppointment().copy(dto = updateRequest)
-      every { appointmentOutcomeValidationService.validateUpdate(any(), any()) } returns validatedUpdateAppointment
+      every { updateAppointmentValidationService.validate(any(), any()) } answers {
+        val ctx = it.invocation.args[1] as AppointmentValidationService2.AppointmentValidationContext.Update
+        ctx.project = ProjectDto.valid()
+        ValidationResult.success()
+      }
 
       service.updateAppointment(
         existingAppointment = existingAppointment,
@@ -85,8 +89,11 @@ class AppointmentUpdateServiceTest {
 
     @Test
     fun `if there's an existing entry for the delius appointment id and it's logically identical, do not send an update`() {
-      val validatedUpdateAppointment = ValidatedAppointment.validUpdateAppointment().copy(dto = updateRequest)
-      every { appointmentOutcomeValidationService.validateUpdate(any(), any()) } returns validatedUpdateAppointment
+      every { updateAppointmentValidationService.validate(any(), any()) } answers {
+        val ctx = it.invocation.args[1] as AppointmentValidationService2.AppointmentValidationContext.Update
+        ctx.project = ProjectDto.valid()
+        ValidationResult.success()
+      }
       every { appointmentEventService.hasUpdateAlreadyBeenSent(any()) } returns true
 
       service.updateAppointment(
@@ -103,7 +110,11 @@ class AppointmentUpdateServiceTest {
 
     @Test
     fun `if appointment has newer version on update, throw conflict exception`() {
-      every { appointmentOutcomeValidationService.validateUpdate(any(), any()) } returns ValidatedAppointment.validUpdateAppointment().copy(dto = updateRequest)
+      every { updateAppointmentValidationService.validate(any(), any()) } answers {
+        val ctx = it.invocation.args[1] as AppointmentValidationService2.AppointmentValidationContext.Update
+        ctx.project = ProjectDto.valid()
+        ValidationResult.success()
+      }
 
       every { appointmentEventService.hasUpdateAlreadyBeenSent(any()) } returns false
 
@@ -122,7 +133,11 @@ class AppointmentUpdateServiceTest {
 
     @Test
     fun `if bad request returned throw internal server error`() {
-      every { appointmentOutcomeValidationService.validateUpdate(any(), any()) } returns ValidatedAppointment.validUpdateAppointment().copy(dto = updateRequest)
+      every { updateAppointmentValidationService.validate(any(), any()) } answers {
+        val ctx = it.invocation.args[1] as AppointmentValidationService2.AppointmentValidationContext.Update
+        ctx.project = ProjectDto.valid()
+        ValidationResult.success()
+      }
       every { appointmentEventService.hasUpdateAlreadyBeenSent(any()) } returns false
 
       every {
