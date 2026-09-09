@@ -7,8 +7,10 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackA
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CaseDetailsSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.OffenderNameDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.PersonalCircumstancesDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.PersonalCircumstancesTypeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsIdDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDomain
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toOffenderNameDto
 
@@ -42,8 +44,11 @@ class OffenderService(
     null
   }
 
-  fun getPersonalCircumstances(crn: String): PersonalCircumstancesDto? = try {
-    communityPaybackAndDeliusClient.getPersonalCircumstances(crn).toDto()
+  fun getPersonalCircumstances(crn: String, type: PersonalCircumstancesTypeDto? = null): List<PersonalCircumstancesDto>? = try {
+    val filter = type?.toDomain()
+    communityPaybackAndDeliusClient.getPersonalCircumstances(crn)
+      .filter { filter == null || (it.type.code == filter.typeCode && it.subType?.code == filter.subTypeCode) }
+      .toDto()
   } catch (_: WebClientResponseException.NotFound) {
     null
   }

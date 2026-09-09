@@ -4,6 +4,8 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.ValueSource
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDPersonalCircumstances
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDUpwDetails
@@ -13,6 +15,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.bodyAsObject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.CommunityPaybackAndDeliusMockServer
+import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 
 class AdminOffenderIT : IntegrationTestBase() {
 
@@ -185,6 +188,7 @@ class AdminOffenderIT : IntegrationTestBase() {
         crn = CRN,
         personalCircumstances = listOf(
           NDPersonalCircumstances.valid("K", "K09"),
+          NDPersonalCircumstances.valid("A", null),
         ),
       )
 
@@ -194,9 +198,73 @@ class AdminOffenderIT : IntegrationTestBase() {
         .exchange()
         .expectStatus()
         .isOk
-        .bodyAsObject<PersonalCircumstancesDto>()
+        .bodyAsObject<List<PersonalCircumstancesDto>>()
 
-      assertThat(result.isAllowedTravelTime).isTrue
+      assertThat(result.map { it.type.code }).containsExactly("K", "A")
+    }
+
+    @Test
+    fun `should return all travel time circumstances only`() {
+      CommunityPaybackAndDeliusMockServer.setupGetPersonalCircumstancesResponse(
+        crn = CRN,
+        personalCircumstances = listOf(
+          NDPersonalCircumstances.valid("K", "K09"),
+          NDPersonalCircumstances.valid("K", "K08"),
+          NDPersonalCircumstances.valid("A", "K09"),
+          NDPersonalCircumstances.valid("K", null),
+          NDPersonalCircumstances.valid("K", "K09"),
+        ),
+      )
+
+      val result = webTestClient.get()
+        .uri("/admin/offenders/$CRN/personal-circumstances?type=TRAVEL_TIME")
+        .addAdminUiAuthHeader()
+        .exchange()
+        .expectStatus().isOk
+        .bodyAsObject<List<PersonalCircumstancesDto>>()
+
+      assertThat(result).hasSize(2)
+      assertThat(result.map { it.subType?.code }).containsOnly("K09")
+    }
+
+    @Test
+    fun `should return empty list when no circumstances match`() {
+      CommunityPaybackAndDeliusMockServer.setupGetPersonalCircumstancesResponse(
+        crn = CRN,
+        personalCircumstances = listOf(NDPersonalCircumstances.valid("A", null)),
+      )
+
+      val result = webTestClient.get()
+        .uri("/admin/offenders/$CRN/personal-circumstances?type=TRAVEL_TIME")
+        .addAdminUiAuthHeader()
+        .exchange()
+        .expectStatus().isOk
+        .bodyAsObject<List<PersonalCircumstancesDto>>()
+
+      assertThat(result).isEmpty()
+    }
+
+    @Test
+    fun `should return bad request when personal circumstances type is not TRAVEL_TIME`() {
+      val response = webTestClient.get()
+        .uri("/admin/offenders/$CRN/personal-circumstances?type=OTHER")
+        .addAdminUiAuthHeader()
+        .exchange()
+        .expectStatus().isBadRequest
+        .bodyAsObject<ErrorResponse>()
+      assertThat(response.userMessage).isEqualTo("Validation failure: Unsupported personal circumstances type 'OTHER'. Supported type: TRAVEL_TIME")
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = ["K", "travel_time", ""])
+    fun `should reject unsupported and blank types`(type: String) {
+      val response = webTestClient.get()
+        .uri("/admin/offenders/$CRN/personal-circumstances?type=$type")
+        .addAdminUiAuthHeader()
+        .exchange()
+        .expectStatus().isBadRequest
+        .bodyAsObject<ErrorResponse>()
+      assertThat(response.userMessage).contains("Supported type: TRAVEL_TIME")
     }
   }
 }

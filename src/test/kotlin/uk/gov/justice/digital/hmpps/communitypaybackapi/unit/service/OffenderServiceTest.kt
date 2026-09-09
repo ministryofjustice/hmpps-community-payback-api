@@ -17,6 +17,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDPersonalCircums
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDUpwDetails
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.OverallRiskLevel
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.RiskRoshSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.PersonalCircumstancesTypeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsIdDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.OffenderService
@@ -238,7 +239,23 @@ class OffenderServiceTest {
       val result = service.getPersonalCircumstances(CRN)
 
       assertThat(result).isNotNull
-      assertThat(result!!.isAllowedTravelTime).isTrue
+      assertThat(result).hasSize(1)
+    }
+
+    @Test
+    fun `returns every travel time circumstance and excludes other types and subtypes`() {
+      every { communityPaybackAndDeliusClient.getPersonalCircumstances(CRN) } returns listOf(
+        NDPersonalCircumstances.valid("K", "K09"),
+        NDPersonalCircumstances.valid("K", "K08"),
+        NDPersonalCircumstances.valid("A", "K09"),
+        NDPersonalCircumstances.valid("K", null),
+        NDPersonalCircumstances.valid("K", "K09"),
+      )
+
+      val result = service.getPersonalCircumstances(CRN, type = PersonalCircumstancesTypeDto.TRAVEL_TIME)
+
+      assertThat(result).hasSize(2)
+      assertThat(result!!.map { it.subType?.code }).containsOnly("K09")
     }
   }
 }
