@@ -10,13 +10,14 @@ class PersonalCircumstancesMapperTest {
   @Test
   fun `maps every circumstance including nullable fields`() {
     val circumstances = listOf(
-      NDPersonalCircumstances.valid("K", "K09"),
+      NDPersonalCircumstances.valid("K", "K09").copy(verified = true),
+      NDPersonalCircumstances.valid("K", "K09").copy(verified = false),
       NDPersonalCircumstances.valid("A", null).copy(verified = null, notes = null, endDate = null),
     )
 
     val result = circumstances.toDto()
 
-    assertThat(result).hasSize(2)
+    assertThat(result).hasSize(3)
     result.zip(circumstances).forEach { (actual, expected) ->
       assertThat(actual.type.code).isEqualTo(expected.type.code)
       assertThat(actual.type.description).isEqualTo(expected.type.description)
@@ -24,7 +25,7 @@ class PersonalCircumstancesMapperTest {
       assertThat(actual.subType?.description).isEqualTo(expected.subType?.description)
       assertThat(actual.startDate).isEqualTo(expected.startDate)
       assertThat(actual.endDate).isEqualTo(expected.endDate)
-      assertThat(actual.verified).isEqualTo(expected.verified ?: false)
+      assertThat(actual.verified).isEqualTo(expected.verified)
       assertThat(actual.notes).isEqualTo(expected.notes)
     }
   }

@@ -13,7 +13,7 @@ private fun NDPersonalCircumstances.toDto(): PersonalCircumstancesDto = Personal
   subType = subType?.let { PersonalCircumstancesCodeDto(it.code, it.description) },
   startDate = startDate,
   endDate = endDate,
-  verified = verified ?: false,
+  verified = verified,
   notes = notes,
 )
 

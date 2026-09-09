@@ -7,7 +7,7 @@ data class PersonalCircumstancesDto(
   val subType: PersonalCircumstancesCodeDto?,
   val startDate: OffsetDateTime,
   val endDate: OffsetDateTime?,
-  val verified: Boolean,
+  val verified: Boolean?,
   val notes: String?,
 )
 
