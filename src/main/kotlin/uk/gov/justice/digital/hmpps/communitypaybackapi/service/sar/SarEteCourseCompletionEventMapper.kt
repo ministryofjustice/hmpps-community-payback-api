@@ -4,9 +4,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompleti
 
 fun EteCourseCompletionEventEntity.toSarEntry() = mapOf(
   "receivedAt" to receivedAt,
-  "firstName" to firstName,
-  "lastName" to lastName,
-  "dateOfBirth" to dateOfBirth,
   "region" to region,
   "pdu" to pdu.name,
   "office" to office,

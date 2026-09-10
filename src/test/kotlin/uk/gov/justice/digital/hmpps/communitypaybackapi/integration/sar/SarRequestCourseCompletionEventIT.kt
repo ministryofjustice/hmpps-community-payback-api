@@ -47,14 +47,14 @@ class SarRequestCourseCompletionEventIT : IntegrationTestBase() {
       .expectStatus()
       .isOk
       .expectBody()
-      .jsonPath("$.content.eteCourseCompletionEvents[0].firstName").isEqualTo("resolution recorded just outside end of requested range")
-      .jsonPath("$.content.eteCourseCompletionEvents[1].firstName").isEqualTo("received at just outside end of requested range")
-      .jsonPath("$.content.eteCourseCompletionEvents[2].firstName").isEqualTo("resolution recorded just inside end of requested range")
-      .jsonPath("$.content.eteCourseCompletionEvents[3].firstName").isEqualTo("received at just inside end of requested range")
-      .jsonPath("$.content.eteCourseCompletionEvents[4].firstName").isEqualTo("resolution recorded just inside start of requested range")
-      .jsonPath("$.content.eteCourseCompletionEvents[5].firstName").isEqualTo("received at just inside start of requested range")
-      .jsonPath("$.content.eteCourseCompletionEvents[6].firstName").isEqualTo("resolution recorded just before requested range")
-      .jsonPath("$.content.eteCourseCompletionEvents[7].firstName").isEqualTo("received at just before requested range")
+      .jsonPath("$.content.eteCourseCompletionEvents[0].courseName").isEqualTo("resolution recorded just outside end of requested range")
+      .jsonPath("$.content.eteCourseCompletionEvents[1].courseName").isEqualTo("received at just outside end of requested range")
+      .jsonPath("$.content.eteCourseCompletionEvents[2].courseName").isEqualTo("resolution recorded just inside end of requested range")
+      .jsonPath("$.content.eteCourseCompletionEvents[3].courseName").isEqualTo("received at just inside end of requested range")
+      .jsonPath("$.content.eteCourseCompletionEvents[4].courseName").isEqualTo("resolution recorded just inside start of requested range")
+      .jsonPath("$.content.eteCourseCompletionEvents[5].courseName").isEqualTo("received at just inside start of requested range")
+      .jsonPath("$.content.eteCourseCompletionEvents[6].courseName").isEqualTo("resolution recorded just before requested range")
+      .jsonPath("$.content.eteCourseCompletionEvents[7].courseName").isEqualTo("received at just before requested range")
   }
 
   @Test
@@ -68,10 +68,10 @@ class SarRequestCourseCompletionEventIT : IntegrationTestBase() {
       .expectStatus()
       .isOk
       .expectBody()
-      .jsonPath("$.content.eteCourseCompletionEvents[0].firstName").isEqualTo("resolution recorded just inside end of requested range")
-      .jsonPath("$.content.eteCourseCompletionEvents[1].firstName").isEqualTo("received at just inside end of requested range")
-      .jsonPath("$.content.eteCourseCompletionEvents[2].firstName").isEqualTo("resolution recorded just inside start of requested range")
-      .jsonPath("$.content.eteCourseCompletionEvents[3].firstName").isEqualTo("received at just inside start of requested range")
+      .jsonPath("$.content.eteCourseCompletionEvents[0].courseName").isEqualTo("resolution recorded just inside end of requested range")
+      .jsonPath("$.content.eteCourseCompletionEvents[1].courseName").isEqualTo("received at just inside end of requested range")
+      .jsonPath("$.content.eteCourseCompletionEvents[2].courseName").isEqualTo("resolution recorded just inside start of requested range")
+      .jsonPath("$.content.eteCourseCompletionEvents[3].courseName").isEqualTo("received at just inside start of requested range")
   }
 
   @Test
@@ -84,12 +84,12 @@ class SarRequestCourseCompletionEventIT : IntegrationTestBase() {
       .expectStatus()
       .isOk
       .expectBody()
-      .jsonPath("$.content.eteCourseCompletionEvents[0].firstName").isEqualTo("resolution recorded just outside end of requested range")
-      .jsonPath("$.content.eteCourseCompletionEvents[1].firstName").isEqualTo("received at just outside end of requested range")
-      .jsonPath("$.content.eteCourseCompletionEvents[2].firstName").isEqualTo("resolution recorded just inside end of requested range")
-      .jsonPath("$.content.eteCourseCompletionEvents[3].firstName").isEqualTo("received at just inside end of requested range")
-      .jsonPath("$.content.eteCourseCompletionEvents[4].firstName").isEqualTo("resolution recorded just inside start of requested range")
-      .jsonPath("$.content.eteCourseCompletionEvents[5].firstName").isEqualTo("received at just inside start of requested range")
+      .jsonPath("$.content.eteCourseCompletionEvents[0].courseName").isEqualTo("resolution recorded just outside end of requested range")
+      .jsonPath("$.content.eteCourseCompletionEvents[1].courseName").isEqualTo("received at just outside end of requested range")
+      .jsonPath("$.content.eteCourseCompletionEvents[2].courseName").isEqualTo("resolution recorded just inside end of requested range")
+      .jsonPath("$.content.eteCourseCompletionEvents[3].courseName").isEqualTo("received at just inside end of requested range")
+      .jsonPath("$.content.eteCourseCompletionEvents[4].courseName").isEqualTo("resolution recorded just inside start of requested range")
+      .jsonPath("$.content.eteCourseCompletionEvents[5].courseName").isEqualTo("received at just inside start of requested range")
   }
 
   @Test
@@ -102,12 +102,12 @@ class SarRequestCourseCompletionEventIT : IntegrationTestBase() {
       .expectStatus()
       .isOk
       .expectBody()
-      .jsonPath("$.content.eteCourseCompletionEvents[0].firstName").isEqualTo("resolution recorded just inside end of requested range")
-      .jsonPath("$.content.eteCourseCompletionEvents[1].firstName").isEqualTo("received at just inside end of requested range")
-      .jsonPath("$.content.eteCourseCompletionEvents[2].firstName").isEqualTo("resolution recorded just inside start of requested range")
-      .jsonPath("$.content.eteCourseCompletionEvents[3].firstName").isEqualTo("received at just inside start of requested range")
-      .jsonPath("$.content.eteCourseCompletionEvents[4].firstName").isEqualTo("resolution recorded just before requested range")
-      .jsonPath("$.content.eteCourseCompletionEvents[5].firstName").isEqualTo("received at just before requested range")
+      .jsonPath("$.content.eteCourseCompletionEvents[0].courseName").isEqualTo("resolution recorded just inside end of requested range")
+      .jsonPath("$.content.eteCourseCompletionEvents[1].courseName").isEqualTo("received at just inside end of requested range")
+      .jsonPath("$.content.eteCourseCompletionEvents[2].courseName").isEqualTo("resolution recorded just inside start of requested range")
+      .jsonPath("$.content.eteCourseCompletionEvents[3].courseName").isEqualTo("received at just inside start of requested range")
+      .jsonPath("$.content.eteCourseCompletionEvents[4].courseName").isEqualTo("resolution recorded just before requested range")
+      .jsonPath("$.content.eteCourseCompletionEvents[5].courseName").isEqualTo("received at just before requested range")
   }
 
   class FixtureFactory(
@@ -130,7 +130,7 @@ class SarRequestCourseCompletionEventIT : IntegrationTestBase() {
           baselineCourseCompletion().run {
             copy(
               receivedAt = RANGE_TEST_FROM_DATE.minusDays(1).atLastSecondOfDay().minusSeconds(1),
-              firstName = "received at just before requested range",
+              courseName = "received at just before requested range",
               resolution = resolution!!.copy(
                 createdAt = dateFarOutsideOfRange,
               ),
@@ -139,7 +139,7 @@ class SarRequestCourseCompletionEventIT : IntegrationTestBase() {
           baselineCourseCompletion().run {
             copy(
               receivedAt = dateFarOutsideOfRange,
-              firstName = "resolution recorded just before requested range",
+              courseName = "resolution recorded just before requested range",
               resolution = resolution!!.copy(
                 createdAt = RANGE_TEST_FROM_DATE.minusDays(1).atLastSecondOfDay(),
               ),
@@ -148,7 +148,7 @@ class SarRequestCourseCompletionEventIT : IntegrationTestBase() {
           baselineCourseCompletion().run {
             copy(
               receivedAt = RANGE_TEST_FROM_DATE.atFirstSecondOfDay(),
-              firstName = "received at just inside start of requested range",
+              courseName = "received at just inside start of requested range",
               resolution = resolution!!.copy(
                 createdAt = dateFarOutsideOfRange,
               ),
@@ -157,7 +157,7 @@ class SarRequestCourseCompletionEventIT : IntegrationTestBase() {
           baselineCourseCompletion().run {
             copy(
               receivedAt = dateFarOutsideOfRange,
-              firstName = "resolution recorded just inside start of requested range",
+              courseName = "resolution recorded just inside start of requested range",
               resolution = resolution!!.copy(
                 createdAt = RANGE_TEST_FROM_DATE.minusDays(1).atFirstSecondOfDay().plusSeconds(1),
               ),
@@ -166,7 +166,7 @@ class SarRequestCourseCompletionEventIT : IntegrationTestBase() {
           baselineCourseCompletion().run {
             copy(
               receivedAt = RANGE_TEST_TO_DATE.atLastSecondOfDay().minusSeconds(1),
-              firstName = "received at just inside end of requested range",
+              courseName = "received at just inside end of requested range",
               resolution = resolution!!.copy(
                 createdAt = dateFarOutsideOfRange,
               ),
@@ -175,7 +175,7 @@ class SarRequestCourseCompletionEventIT : IntegrationTestBase() {
           baselineCourseCompletion().run {
             copy(
               receivedAt = dateFarOutsideOfRange,
-              firstName = "resolution recorded just inside end of requested range",
+              courseName = "resolution recorded just inside end of requested range",
               resolution = resolution!!.copy(
                 createdAt = RANGE_TEST_TO_DATE.atLastSecondOfDay(),
               ),
@@ -184,7 +184,7 @@ class SarRequestCourseCompletionEventIT : IntegrationTestBase() {
           baselineCourseCompletion().run {
             copy(
               receivedAt = RANGE_TEST_TO_DATE.plusDays(1).atFirstSecondOfDay(),
-              firstName = "received at just outside end of requested range",
+              courseName = "received at just outside end of requested range",
               resolution = resolution!!.copy(
                 createdAt = dateFarOutsideOfRange,
               ),
@@ -193,7 +193,7 @@ class SarRequestCourseCompletionEventIT : IntegrationTestBase() {
           baselineCourseCompletion().run {
             copy(
               receivedAt = dateFarOutsideOfRange,
-              firstName = "resolution recorded just outside end of requested range",
+              courseName = "resolution recorded just outside end of requested range",
               resolution = resolution!!.copy(
                 createdAt = RANGE_TEST_TO_DATE.plusDays(1).atFirstSecondOfDay().plusSeconds(1),
               ),
