@@ -16,14 +16,14 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.derivePenaltyMinutesDuration
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService2.AppointmentValidationContext
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService2.AppointmentValidationContext.Create
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService2.AppointmentValidationContext.Update
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService.AppointmentValidationContext
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService.AppointmentValidationContext.Create
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService.AppointmentValidationContext.Update
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDayOfWeek
 import java.time.Duration
 import java.time.LocalDateTime
 
-abstract class AppointmentValidationService2<T : AppointmentCommandDto, TContext : AppointmentValidationContext>(
+abstract class AppointmentValidationService<T : AppointmentCommandDto, TContext : AppointmentValidationContext>(
   protected val contactOutcomeEntityRepository: ContactOutcomeEntityRepository,
   protected val offenderService: OffenderService,
   protected val projectService: ProjectService,
@@ -315,7 +315,7 @@ class CreateAppointmentValidationService(
   projectService: ProjectService,
   providerService: ProviderService,
   appointmentCalculationService: AppointmentCalculationService,
-) : AppointmentValidationService2<CreateAppointmentDto, AppointmentValidationContext.Create>(contactOutcomeEntityRepository, offenderService, projectService, providerService, appointmentCalculationService) {
+) : AppointmentValidationService<CreateAppointmentDto, AppointmentValidationContext.Create>(contactOutcomeEntityRepository, offenderService, projectService, providerService, appointmentCalculationService) {
   override fun getUpwDetailsId(value: CreateAppointmentDto, ctx: Create): UnpaidWorkDetailsIdDto = UnpaidWorkDetailsIdDto(value.crn, value.deliusEventNumber)
   override fun getProject(value: CreateAppointmentDto, ctx: Create): ProjectDto? = projectService.getProject(value.projectCode)
   override fun getPickUpLocationCode(value: CreateAppointmentDto, ctx: Create): String? = value.pickUpLocationCode
@@ -332,7 +332,7 @@ class UpdateAppointmentValidationService(
   projectService: ProjectService,
   providerService: ProviderService,
   appointmentCalculationService: AppointmentCalculationService,
-) : AppointmentValidationService2<UpdateAppointmentDto, AppointmentValidationContext.Update>(contactOutcomeEntityRepository, offenderService, projectService, providerService, appointmentCalculationService) {
+) : AppointmentValidationService<UpdateAppointmentDto, AppointmentValidationContext.Update>(contactOutcomeEntityRepository, offenderService, projectService, providerService, appointmentCalculationService) {
   override fun configureRules() {
     super.configureRules()
 
