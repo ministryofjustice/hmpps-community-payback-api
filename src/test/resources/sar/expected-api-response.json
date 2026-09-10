@@ -2,9 +2,6 @@
   "eteCourseCompletionEvents": [
     {
       "receivedAt": "2025-06-04T00:00:00Z",
-      "firstName": "Rosemary",
-      "lastName": "Thompson",
-      "dateOfBirth": "1976-06-01",
       "region": "East of England",
       "pdu": "North Essex",
       "office": "Chelmsford",
@@ -29,9 +26,6 @@
     },
     {
       "receivedAt": "2025-06-03T00:00:00Z",
-      "firstName": "Rosemary",
-      "lastName": "Thompson",
-      "dateOfBirth": "1976-06-01",
       "region": "East of England",
       "pdu": "North Essex",
       "office": "Chelmsford",
@@ -56,9 +50,6 @@
     },
     {
       "receivedAt": "2025-06-01T00:00:00Z",
-      "firstName": "Rosemary",
-      "lastName": "Thompson",
-      "dateOfBirth": "1976-06-01",
       "region": "East of England",
       "pdu": "North Essex",
       "office": "Chelmsford",
