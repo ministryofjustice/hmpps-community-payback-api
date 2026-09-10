@@ -15,6 +15,8 @@ import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAdjustment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDUpwDetails
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.PageResponse
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AdjustmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAdjustmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventEntityRepository
@@ -28,9 +30,11 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.persist
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.DomainEventAsserter
+import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.bodyAsObject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.CommunityPaybackAndDeliusMockServer
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentIdGenerator
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentService
+import java.time.LocalDate
 import java.util.UUID
 
 class AdminAdjustmentIT : IntegrationTestBase() {
@@ -53,6 +57,107 @@ class AdminAdjustmentIT : IntegrationTestBase() {
   companion object {
     const val CRN = "X123456"
     const val DELIUS_EVENT_NUMBER = 92
+  }
+
+  @Nested
+  @DisplayName("GET /admin/offenders/{crn}/unpaid-work-details/{deliusEventNumber}/adjustments")
+  inner class GetAdjustments {
+
+    @Test
+    fun `should return unauthorized if no token`() {
+      webTestClient.get()
+        .uri("/admin/offenders/$CRN/unpaid-work-details/$DELIUS_EVENT_NUMBER/adjustments")
+        .exchange()
+        .expectStatus()
+        .isUnauthorized
+    }
+
+    @Test
+    fun `should return forbidden if no role`() {
+      webTestClient.get()
+        .uri("/admin/offenders/$CRN/unpaid-work-details/$DELIUS_EVENT_NUMBER/adjustments")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .isForbidden
+    }
+
+    @Test
+    fun `should return forbidden if wrong role`() {
+      webTestClient.get()
+        .uri("/admin/offenders/$CRN/unpaid-work-details/$DELIUS_EVENT_NUMBER/adjustments")
+        .headers(setAuthorisation(roles = listOf("ROLE_WRONG")))
+        .exchange()
+        .expectStatus()
+        .isForbidden
+    }
+
+    @Test
+    fun `should return OK with list of adjustments`() {
+      val adjustments = listOf(
+        NDAdjustment.valid().copy(date = LocalDate.of(2026, 8, 8)),
+        NDAdjustment.valid().copy(date = LocalDate.of(2026, 7, 7)),
+        NDAdjustment.valid().copy(date = LocalDate.of(2026, 6, 6)),
+      )
+
+      CommunityPaybackAndDeliusMockServer.setupGetAdjustmentsResponse(
+        CRN,
+        DELIUS_EVENT_NUMBER,
+        adjustments,
+      )
+
+      val result = webTestClient.get()
+        .uri("/admin/offenders/$CRN/unpaid-work-details/$DELIUS_EVENT_NUMBER/adjustments")
+        .addAdminUiAuthHeader()
+        .exchange()
+        .expectStatus()
+        .isOk
+        .bodyAsObject<PageResponse<AdjustmentDto>>()
+
+      assertThat(result.page.number).isEqualTo(0)
+      assertThat(result.page.size).isEqualTo(10)
+      assertThat(result.page.totalPages).isEqualTo(1)
+      assertThat(result.page.totalElements).isEqualTo(3)
+      assertThat(result.content[0].id).isEqualTo(adjustments[0].reference)
+      assertThat(result.content[1].id).isEqualTo(adjustments[1].reference)
+      assertThat(result.content[2].id).isEqualTo(adjustments[2].reference)
+    }
+
+    @Test
+    fun `should perform pagination and sorting`() {
+      val adjustments = listOf(
+        NDAdjustment.valid().copy(date = LocalDate.of(2026, 8, 8)),
+        NDAdjustment.valid().copy(date = LocalDate.of(2026, 7, 7)),
+        NDAdjustment.valid().copy(date = LocalDate.of(2026, 6, 6)),
+        NDAdjustment.valid().copy(date = LocalDate.of(2026, 5, 5)),
+        NDAdjustment.valid().copy(date = LocalDate.of(2026, 4, 4)),
+        NDAdjustment.valid().copy(date = LocalDate.of(2026, 3, 3)),
+        NDAdjustment.valid().copy(date = LocalDate.of(2026, 2, 2)),
+        NDAdjustment.valid().copy(date = LocalDate.of(2026, 1, 1)),
+      )
+
+      CommunityPaybackAndDeliusMockServer.setupGetAdjustmentsResponse(
+        CRN,
+        DELIUS_EVENT_NUMBER,
+        adjustments,
+      )
+
+      val result = webTestClient.get()
+        .uri("/admin/offenders/$CRN/unpaid-work-details/$DELIUS_EVENT_NUMBER/adjustments?page=1&size=3&sort=date,asc")
+        .addAdminUiAuthHeader()
+        .exchange()
+        .expectStatus()
+        .isOk
+        .bodyAsObject<PageResponse<AdjustmentDto>>()
+
+      assertThat(result.page.number).isEqualTo(1)
+      assertThat(result.page.size).isEqualTo(3)
+      assertThat(result.page.totalPages).isEqualTo(3)
+      assertThat(result.page.totalElements).isEqualTo(8)
+      assertThat(result.content[0].id).isEqualTo(adjustments[4].reference)
+      assertThat(result.content[1].id).isEqualTo(adjustments[3].reference)
+      assertThat(result.content[2].id).isEqualTo(adjustments[2].reference)
+    }
   }
 
   @Nested
