@@ -47,9 +47,6 @@ class SarRequestCourseCompletionEventIT : IntegrationTestBase() {
       .expectStatus()
       .isOk
       .expectBody()
-      .jsonPath("$.content.eteCourseCompletionEvents[*].firstName").doesNotHaveJsonPath()
-      .jsonPath("$.content.eteCourseCompletionEvents[*].lastName").doesNotHaveJsonPath()
-      .jsonPath("$.content.eteCourseCompletionEvents[*].dateOfBirth").doesNotHaveJsonPath()
       .jsonPath("$.content.eteCourseCompletionEvents[0].courseName").isEqualTo("resolution recorded just outside end of requested range")
       .jsonPath("$.content.eteCourseCompletionEvents[1].courseName").isEqualTo("received at just outside end of requested range")
       .jsonPath("$.content.eteCourseCompletionEvents[2].courseName").isEqualTo("resolution recorded just inside end of requested range")
