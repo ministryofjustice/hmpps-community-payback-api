@@ -30,9 +30,9 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.validFull
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentCalculationService
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService2
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService2.AppointmentValidationContext
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService2.FindResult
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService.AppointmentValidationContext
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService.FindResult
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.OffenderService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ProjectService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ProviderService
@@ -158,7 +158,7 @@ class UpdateAppointmentValidationServiceTest {
         attendanceData = AttendanceDataDto.valid().copy(penaltyMinutes = 55L),
       )
 
-      val ctx = AppointmentValidationService2.AppointmentValidationContext.Update(baselineExistingAppointment)
+      val ctx = AppointmentValidationService.AppointmentValidationContext.Update(baselineExistingAppointment)
       val result = service.validate(
         value = update,
         ctx = ctx,
@@ -187,7 +187,7 @@ class UpdateAppointmentValidationServiceTest {
         value = baselineUpdate.copy(
           date = LocalDate.of(2030, 5, 3),
         ),
-        ctx = AppointmentValidationService2.AppointmentValidationContext.Update(baselineExistingAppointment),
+        ctx = AppointmentValidationService.AppointmentValidationContext.Update(baselineExistingAppointment),
       )
 
       assertThat(result).hasNoErrors()
@@ -215,7 +215,7 @@ class UpdateAppointmentValidationServiceTest {
         value = baselineUpdate.copy(
           date = LocalDate.of(2030, 5, 4),
         ),
-        ctx = AppointmentValidationService2.AppointmentValidationContext.Update(
+        ctx = AppointmentValidationService.AppointmentValidationContext.Update(
           baselineExistingAppointment.copy(
             date = LocalDate.of(2030, 5, 4),
           ),
@@ -247,7 +247,7 @@ class UpdateAppointmentValidationServiceTest {
         value = baselineUpdate.copy(
           date = LocalDate.of(2030, 5, 4),
         ),
-        ctx = AppointmentValidationService2.AppointmentValidationContext.Update(baselineExistingAppointment),
+        ctx = AppointmentValidationService.AppointmentValidationContext.Update(baselineExistingAppointment),
       )
 
       assertThat(result).hasErrors(expectedErrors)
@@ -275,7 +275,7 @@ class UpdateAppointmentValidationServiceTest {
         value = baselineUpdate.copy(
           date = LocalDate.of(2030, 5, 5),
         ),
-        ctx = AppointmentValidationService2.AppointmentValidationContext.Update(
+        ctx = AppointmentValidationService.AppointmentValidationContext.Update(
           baselineExistingAppointment.copy(
             date = LocalDate.of(2030, 5, 5),
           ),
@@ -307,7 +307,7 @@ class UpdateAppointmentValidationServiceTest {
         value = baselineUpdate.copy(
           date = LocalDate.of(2030, 5, 5),
         ),
-        ctx = AppointmentValidationService2.AppointmentValidationContext.Update(baselineExistingAppointment),
+        ctx = AppointmentValidationService.AppointmentValidationContext.Update(baselineExistingAppointment),
       )
 
       assertThat(result).hasErrors(expectedErrors)
@@ -336,7 +336,7 @@ class UpdateAppointmentValidationServiceTest {
         value = baselineUpdate.copy(
           date = LocalDate.of(2025, 1, 1),
         ),
-        ctx = AppointmentValidationService2.AppointmentValidationContext.Update(
+        ctx = AppointmentValidationService.AppointmentValidationContext.Update(
           baselineExistingAppointment.copy(
             date = LocalDate.of(2025, 1, 1),
           ),
@@ -369,7 +369,7 @@ class UpdateAppointmentValidationServiceTest {
         value = baselineUpdate.copy(
           date = LocalDate.of(2025, 1, 1),
         ),
-        ctx = AppointmentValidationService2.AppointmentValidationContext.Update(baselineExistingAppointment),
+        ctx = AppointmentValidationService.AppointmentValidationContext.Update(baselineExistingAppointment),
       )
 
       assertThat(result).hasErrors(expectedErrors)
@@ -403,7 +403,7 @@ class UpdateAppointmentValidationServiceTest {
         value = baselineUpdate.copy(
           date = LocalDate.of(2026, 2, 25),
         ),
-        ctx = AppointmentValidationService2.AppointmentValidationContext.Update(
+        ctx = AppointmentValidationService.AppointmentValidationContext.Update(
           baselineExistingAppointment.copy(
             // Wednesday
             date = LocalDate.of(2026, 2, 25),
@@ -439,7 +439,7 @@ class UpdateAppointmentValidationServiceTest {
           // Wednesday
           date = LocalDate.of(2026, 2, 25),
         ),
-        ctx = AppointmentValidationService2.AppointmentValidationContext.Update(baselineExistingAppointment),
+        ctx = AppointmentValidationService.AppointmentValidationContext.Update(baselineExistingAppointment),
       )
 
       assertThat(result).hasErrors(expectedErrors)
@@ -466,7 +466,7 @@ class UpdateAppointmentValidationServiceTest {
 
       val result = service.validate(
         value = baselineUpdate,
-        ctx = AppointmentValidationService2.AppointmentValidationContext.Update(baselineExistingAppointment),
+        ctx = AppointmentValidationService.AppointmentValidationContext.Update(baselineExistingAppointment),
       )
 
       assertThat(result).hasErrors(expectedErrors)
@@ -482,7 +482,7 @@ class UpdateAppointmentValidationServiceTest {
         value = baselineUpdate.copy(
           startTime = LocalTime.now().minusMinutes(1),
         ),
-        ctx = AppointmentValidationService2.AppointmentValidationContext.Update(baselineExistingAppointment.copy(date = LocalDate.now())),
+        ctx = AppointmentValidationService.AppointmentValidationContext.Update(baselineExistingAppointment.copy(date = LocalDate.now())),
       )
 
       assertThat(result).hasNoErrors()
@@ -497,7 +497,7 @@ class UpdateAppointmentValidationServiceTest {
         value = baselineUpdate.copy(
           startTime = LocalTime.now().minusMinutes(1),
         ),
-        ctx = AppointmentValidationService2.AppointmentValidationContext.Update(baselineExistingAppointment.copy(date = LocalDate.now())),
+        ctx = AppointmentValidationService.AppointmentValidationContext.Update(baselineExistingAppointment.copy(date = LocalDate.now())),
       )
 
       assertThat(result).hasNoErrors()
@@ -513,7 +513,7 @@ class UpdateAppointmentValidationServiceTest {
         value = baselineUpdate.copy(
           startTime = LocalTime.now().minusMinutes(1),
         ),
-        ctx = AppointmentValidationService2.AppointmentValidationContext.Update(baselineExistingAppointment.copy(date = LocalDate.now())),
+        ctx = AppointmentValidationService.AppointmentValidationContext.Update(baselineExistingAppointment.copy(date = LocalDate.now())),
       )
 
       assertThat(result).hasNoErrors()
@@ -529,7 +529,7 @@ class UpdateAppointmentValidationServiceTest {
         value = baselineUpdate.copy(
           startTime = LocalTime.now().minusMinutes(1),
         ),
-        ctx = AppointmentValidationService2.AppointmentValidationContext.Update(baselineExistingAppointment.copy(date = LocalDate.now())),
+        ctx = AppointmentValidationService.AppointmentValidationContext.Update(baselineExistingAppointment.copy(date = LocalDate.now())),
       )
 
       assertThat(result).hasNoErrors()
@@ -554,7 +554,7 @@ class UpdateAppointmentValidationServiceTest {
           date = LocalDate.now().plusDays(1),
           startTime = LocalTime.NOON,
         ),
-        ctx = AppointmentValidationService2.AppointmentValidationContext.Update(baselineExistingAppointment),
+        ctx = AppointmentValidationService.AppointmentValidationContext.Update(baselineExistingAppointment),
       )
 
       assertThat(result).hasErrors(expectedErrors)
@@ -579,7 +579,7 @@ class UpdateAppointmentValidationServiceTest {
           date = LocalDate.now().plusDays(1),
           startTime = LocalTime.NOON,
         ),
-        ctx = AppointmentValidationService2.AppointmentValidationContext.Update(baselineExistingAppointment),
+        ctx = AppointmentValidationService.AppointmentValidationContext.Update(baselineExistingAppointment),
       )
 
       assertThat(result).hasErrors(expectedErrors)
@@ -596,7 +596,7 @@ class UpdateAppointmentValidationServiceTest {
           date = LocalDate.now().plusDays(1),
           startTime = LocalTime.NOON,
         ),
-        ctx = AppointmentValidationService2.AppointmentValidationContext.Update(baselineExistingAppointment),
+        ctx = AppointmentValidationService.AppointmentValidationContext.Update(baselineExistingAppointment),
       )
 
       assertThat(result).hasNoErrors()
@@ -610,7 +610,7 @@ class UpdateAppointmentValidationServiceTest {
 
       val result = service.validate(
         value = baselineUpdate,
-        ctx = AppointmentValidationService2.AppointmentValidationContext.Update(baselineExistingAppointment.copy(date = LocalDate.now())),
+        ctx = AppointmentValidationService.AppointmentValidationContext.Update(baselineExistingAppointment.copy(date = LocalDate.now())),
       )
 
       assertThat(result).hasNoErrors()
@@ -634,7 +634,7 @@ class UpdateAppointmentValidationServiceTest {
         value = baselineUpdate.copy(
           attendanceData = null,
         ),
-        ctx = AppointmentValidationService2.AppointmentValidationContext.Update(baselineExistingAppointment.copy(date = LocalDate.now())),
+        ctx = AppointmentValidationService.AppointmentValidationContext.Update(baselineExistingAppointment.copy(date = LocalDate.now())),
       )
 
       assertThat(result).hasErrors(expectedErrors)
@@ -650,7 +650,7 @@ class UpdateAppointmentValidationServiceTest {
         value = baselineUpdate.copy(
           attendanceData = AttendanceDataDto.valid(),
         ),
-        ctx = AppointmentValidationService2.AppointmentValidationContext.Update(baselineExistingAppointment.copy(date = LocalDate.now())),
+        ctx = AppointmentValidationService.AppointmentValidationContext.Update(baselineExistingAppointment.copy(date = LocalDate.now())),
       )
 
       assertThat(result).hasNoErrors()
@@ -673,7 +673,7 @@ class UpdateAppointmentValidationServiceTest {
           startTime = existingAppointment.startTime,
           endTime = existingAppointment.endTime,
         ),
-        ctx = AppointmentValidationService2.AppointmentValidationContext.Update(existingAppointment),
+        ctx = AppointmentValidationService.AppointmentValidationContext.Update(existingAppointment),
       )
 
       assertThat(result).hasNoErrors()
@@ -707,7 +707,7 @@ class UpdateAppointmentValidationServiceTest {
           startTime = LocalTime.of(10, 0),
           endTime = LocalTime.of(10, 0),
         ),
-        ctx = AppointmentValidationService2.AppointmentValidationContext.Update(baselineExistingAppointment),
+        ctx = AppointmentValidationService.AppointmentValidationContext.Update(baselineExistingAppointment),
       )
 
       assertThat(result).hasErrors(expectedErrors)
@@ -721,7 +721,7 @@ class UpdateAppointmentValidationServiceTest {
           startTime = LocalTime.of(10, 0),
           endTime = LocalTime.of(10, 1),
         ),
-        ctx = AppointmentValidationService2.AppointmentValidationContext.Update(baselineExistingAppointment),
+        ctx = AppointmentValidationService.AppointmentValidationContext.Update(baselineExistingAppointment),
       )
 
       assertThat(result).hasNoErrors()
@@ -746,7 +746,7 @@ class UpdateAppointmentValidationServiceTest {
           startTime = LocalTime.of(10, 1),
           endTime = LocalTime.of(10, 0),
         ),
-        ctx = AppointmentValidationService2.AppointmentValidationContext.Update(baselineExistingAppointment),
+        ctx = AppointmentValidationService.AppointmentValidationContext.Update(baselineExistingAppointment),
       )
 
       assertThat(result).hasErrors(expectedErrors)
@@ -761,7 +761,7 @@ class UpdateAppointmentValidationServiceTest {
           startTime = LocalTime.of(10, 0),
           endTime = LocalTime.of(10, 1),
         ),
-        ctx = AppointmentValidationService2.AppointmentValidationContext.Update(
+        ctx = AppointmentValidationService.AppointmentValidationContext.Update(
           baselineExistingAppointment.copy(
             contactOutcomeCode = OUTCOME_CODE,
             startTime = LocalTime.of(10, 0),
@@ -792,7 +792,7 @@ class UpdateAppointmentValidationServiceTest {
             penaltyTime = null,
           ),
         ),
-        ctx = AppointmentValidationService2.AppointmentValidationContext.Update(baselineExistingAppointment),
+        ctx = AppointmentValidationService.AppointmentValidationContext.Update(baselineExistingAppointment),
       )
 
       assertThat(result).hasNoErrors()
@@ -810,7 +810,7 @@ class UpdateAppointmentValidationServiceTest {
             penaltyTime = HourMinuteDuration(Duration.ofHours(6).plusMinutes(30)),
           ),
         ),
-        ctx = AppointmentValidationService2.AppointmentValidationContext.Update(baselineExistingAppointment),
+        ctx = AppointmentValidationService.AppointmentValidationContext.Update(baselineExistingAppointment),
       )
 
       assertThat(result).hasNoErrors()
@@ -828,7 +828,7 @@ class UpdateAppointmentValidationServiceTest {
             penaltyTime = null,
           ),
         ),
-        ctx = AppointmentValidationService2.AppointmentValidationContext.Update(baselineExistingAppointment),
+        ctx = AppointmentValidationService.AppointmentValidationContext.Update(baselineExistingAppointment),
       )
 
       assertThat(result).hasNoErrors()
@@ -846,7 +846,7 @@ class UpdateAppointmentValidationServiceTest {
             penaltyTime = HourMinuteDuration(Duration.ofHours(6).plusMinutes(35)),
           ),
         ),
-        ctx = AppointmentValidationService2.AppointmentValidationContext.Update(baselineExistingAppointment),
+        ctx = AppointmentValidationService.AppointmentValidationContext.Update(baselineExistingAppointment),
       )
 
       assertThat(result).hasNoErrors()
@@ -864,7 +864,7 @@ class UpdateAppointmentValidationServiceTest {
             penaltyTime = HourMinuteDuration(Duration.ofHours(6).plusMinutes(35)),
           ),
         ),
-        ctx = AppointmentValidationService2.AppointmentValidationContext.Update(baselineExistingAppointment),
+        ctx = AppointmentValidationService.AppointmentValidationContext.Update(baselineExistingAppointment),
       )
 
       assertThat(result).hasNoErrors()
@@ -893,7 +893,7 @@ class UpdateAppointmentValidationServiceTest {
             penaltyTime = HourMinuteDuration(Duration.ofHours(6).plusMinutes(36)),
           ),
         ),
-        ctx = AppointmentValidationService2.AppointmentValidationContext.Update(baselineExistingAppointment),
+        ctx = AppointmentValidationService.AppointmentValidationContext.Update(baselineExistingAppointment),
       )
 
       assertThat(result).hasErrors(expectedErrors)
@@ -922,7 +922,7 @@ class UpdateAppointmentValidationServiceTest {
             penaltyTime = HourMinuteDuration(Duration.ofMinutes(5)),
           ),
         ),
-        ctx = AppointmentValidationService2.AppointmentValidationContext.Update(baselineExistingAppointment),
+        ctx = AppointmentValidationService.AppointmentValidationContext.Update(baselineExistingAppointment),
       )
 
       assertThat(result).hasErrors(expectedErrors)
@@ -942,7 +942,7 @@ class UpdateAppointmentValidationServiceTest {
     fun `null notes is accepted`() {
       val result = service.validate(
         value = baselineUpdate.copy(notes = null),
-        ctx = AppointmentValidationService2.AppointmentValidationContext.Update(baselineExistingAppointment),
+        ctx = AppointmentValidationService.AppointmentValidationContext.Update(baselineExistingAppointment),
       )
 
       assertThat(result).hasNoErrors()
@@ -953,7 +953,7 @@ class UpdateAppointmentValidationServiceTest {
     fun `empty notes is accepted`() {
       val result = service.validate(
         value = baselineUpdate.copy(notes = ""),
-        ctx = AppointmentValidationService2.AppointmentValidationContext.Update(baselineExistingAppointment),
+        ctx = AppointmentValidationService.AppointmentValidationContext.Update(baselineExistingAppointment),
       )
 
       assertThat(result).hasNoErrors()
@@ -965,7 +965,7 @@ class UpdateAppointmentValidationServiceTest {
       val notes = "a".repeat(4000)
       val result = service.validate(
         value = baselineUpdate.copy(notes = notes),
-        ctx = AppointmentValidationService2.AppointmentValidationContext.Update(baselineExistingAppointment),
+        ctx = AppointmentValidationService.AppointmentValidationContext.Update(baselineExistingAppointment),
       )
 
       assertThat(result).hasNoErrors()
@@ -988,7 +988,7 @@ class UpdateAppointmentValidationServiceTest {
       val notes = "a".repeat(4001)
       val result = service.validate(
         value = baselineUpdate.copy(notes = notes),
-        ctx = AppointmentValidationService2.AppointmentValidationContext.Update(baselineExistingAppointment),
+        ctx = AppointmentValidationService.AppointmentValidationContext.Update(baselineExistingAppointment),
       )
 
       assertThat(result).hasErrors(expectedErrors)
@@ -1018,7 +1018,7 @@ class UpdateAppointmentValidationServiceTest {
 
       val result = service.validate(
         value = baselineUpdate,
-        ctx = AppointmentValidationService2.AppointmentValidationContext.Update(baselineExistingAppointment),
+        ctx = AppointmentValidationService.AppointmentValidationContext.Update(baselineExistingAppointment),
       )
 
       assertThat(result).hasNoErrors()
@@ -1035,7 +1035,7 @@ class UpdateAppointmentValidationServiceTest {
 
       val result = service.validate(
         value = baselineUpdate,
-        ctx = AppointmentValidationService2.AppointmentValidationContext.Update(
+        ctx = AppointmentValidationService.AppointmentValidationContext.Update(
           baselineExistingAppointment.copy(
             minutesCredited = null,
           ),
@@ -1067,7 +1067,7 @@ class UpdateAppointmentValidationServiceTest {
 
       val result = service.validate(
         value = baselineUpdate,
-        ctx = AppointmentValidationService2.AppointmentValidationContext.Update(
+        ctx = AppointmentValidationService.AppointmentValidationContext.Update(
           baselineExistingAppointment.copy(
             minutesCredited = null,
           ),
@@ -1088,7 +1088,7 @@ class UpdateAppointmentValidationServiceTest {
 
       val result = service.validate(
         value = baselineUpdate,
-        ctx = AppointmentValidationService2.AppointmentValidationContext.Update(
+        ctx = AppointmentValidationService.AppointmentValidationContext.Update(
           baselineExistingAppointment.copy(
             minutesCredited = 100,
           ),
@@ -1118,7 +1118,7 @@ class UpdateAppointmentValidationServiceTest {
 
         val result = service.validate(
           value = baselineUpdate,
-          ctx = AppointmentValidationService2.AppointmentValidationContext.Update(baselineExistingAppointment),
+          ctx = AppointmentValidationService.AppointmentValidationContext.Update(baselineExistingAppointment),
         )
 
         assertThat(result).hasErrors(expectedErrors)
@@ -1144,7 +1144,7 @@ class UpdateAppointmentValidationServiceTest {
 
       val result = service.validate(
         value = update,
-        ctx = AppointmentValidationService2.AppointmentValidationContext.Update(existingAppointment),
+        ctx = AppointmentValidationService.AppointmentValidationContext.Update(existingAppointment),
       )
 
       assertThat(result).hasErrors(expectedErrors)
@@ -1177,7 +1177,7 @@ class UpdateAppointmentValidationServiceTest {
 
       val result = service.validate(
         value = baselineUpdate,
-        ctx = AppointmentValidationService2.AppointmentValidationContext.Update(baselineExistingAppointment),
+        ctx = AppointmentValidationService.AppointmentValidationContext.Update(baselineExistingAppointment),
       )
 
       assertThat(result).hasErrors(expectedErrors)
@@ -1207,7 +1207,7 @@ class UpdateAppointmentValidationServiceTest {
 
       val result = service.validate(
         value = baselineUpdate,
-        ctx = AppointmentValidationService2.AppointmentValidationContext.Update(baselineExistingAppointment),
+        ctx = AppointmentValidationService.AppointmentValidationContext.Update(baselineExistingAppointment),
       )
 
       assertThat(result).hasErrors(expectedErrors)
@@ -1237,7 +1237,7 @@ class UpdateAppointmentValidationServiceTest {
 
       val result = service.validate(
         value = baselineUpdate,
-        ctx = AppointmentValidationService2.AppointmentValidationContext.Update(baselineExistingAppointment),
+        ctx = AppointmentValidationService.AppointmentValidationContext.Update(baselineExistingAppointment),
       )
 
       assertThat(result).hasErrors(expectedErrors)
@@ -1256,7 +1256,7 @@ class UpdateAppointmentValidationServiceTest {
 
       val result = service.validate(
         value = baselineUpdate,
-        ctx = AppointmentValidationService2.AppointmentValidationContext.Update(baselineExistingAppointment.copy(minutesCredited = 20)),
+        ctx = AppointmentValidationService.AppointmentValidationContext.Update(baselineExistingAppointment.copy(minutesCredited = 20)),
       )
 
       assertThat(result).hasNoErrors()

@@ -22,7 +22,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventTrigger
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentRetrievalService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentUpdateService
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService2
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.UpdateAppointmentValidationService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.SpringEventPublisher
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.ToAppointmentEntity.toAppointmentEntity
@@ -66,7 +66,7 @@ class AppointmentUpdateServiceTest {
       val appointmentEntity = existingAppointment.toAppointmentEntity(null, null, null)
       every { appointmentRetrievalService.getOrCreateAppointmentEntity(existingAppointment) } returns appointmentEntity
       every { updateAppointmentValidationService.validate(any(), any()) } answers {
-        val ctx = it.invocation.args[1] as AppointmentValidationService2.AppointmentValidationContext.Update
+        val ctx = it.invocation.args[1] as AppointmentValidationService.AppointmentValidationContext.Update
         ctx.project = ProjectDto.valid()
         ValidationResult.success()
       }
@@ -90,7 +90,7 @@ class AppointmentUpdateServiceTest {
     @Test
     fun `if there's an existing entry for the delius appointment id and it's logically identical, do not send an update`() {
       every { updateAppointmentValidationService.validate(any(), any()) } answers {
-        val ctx = it.invocation.args[1] as AppointmentValidationService2.AppointmentValidationContext.Update
+        val ctx = it.invocation.args[1] as AppointmentValidationService.AppointmentValidationContext.Update
         ctx.project = ProjectDto.valid()
         ValidationResult.success()
       }
@@ -111,7 +111,7 @@ class AppointmentUpdateServiceTest {
     @Test
     fun `if appointment has newer version on update, throw conflict exception`() {
       every { updateAppointmentValidationService.validate(any(), any()) } answers {
-        val ctx = it.invocation.args[1] as AppointmentValidationService2.AppointmentValidationContext.Update
+        val ctx = it.invocation.args[1] as AppointmentValidationService.AppointmentValidationContext.Update
         ctx.project = ProjectDto.valid()
         ValidationResult.success()
       }
@@ -134,7 +134,7 @@ class AppointmentUpdateServiceTest {
     @Test
     fun `if bad request returned throw internal server error`() {
       every { updateAppointmentValidationService.validate(any(), any()) } answers {
-        val ctx = it.invocation.args[1] as AppointmentValidationService2.AppointmentValidationContext.Update
+        val ctx = it.invocation.args[1] as AppointmentValidationService.AppointmentValidationContext.Update
         ctx.project = ProjectDto.valid()
         ValidationResult.success()
       }
