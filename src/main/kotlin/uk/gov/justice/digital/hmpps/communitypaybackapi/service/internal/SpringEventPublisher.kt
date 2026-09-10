@@ -14,7 +14,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentTaskSt
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentTaskType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentEventTrigger
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventTrigger
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ValidatedAppointment
 import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.UUID
@@ -36,7 +36,7 @@ sealed interface CommunityPaybackSpringEvent {
   sealed interface DoesNotSupportRollbackEvent : CommunityPaybackSpringEvent
 
   data class AppointmentCreatedEvent(
-    val createDto: AppointmentValidationService.ValidatedAppointment<CreateAppointmentDto>,
+    val createDto: ValidatedAppointment<CreateAppointmentDto>,
     val appointmentEntity: AppointmentEntity,
     val trigger: AppointmentEventTrigger,
   ) : CommunityPaybackSpringEvent {
@@ -64,7 +64,7 @@ sealed interface CommunityPaybackSpringEvent {
   }
 
   data class AppointmentUpdatedEvent(
-    val updateDto: AppointmentValidationService.ValidatedAppointment<UpdateAppointmentDto>,
+    val updateDto: ValidatedAppointment<UpdateAppointmentDto>,
     val appointmentEntity: AppointmentEntity,
     val existingAppointment: AppointmentDto,
     val trigger: AppointmentEventTrigger,
