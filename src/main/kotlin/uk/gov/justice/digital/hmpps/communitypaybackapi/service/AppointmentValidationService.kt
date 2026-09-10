@@ -211,14 +211,4 @@ class AppointmentValidationService(
     val unpaidWorkDetails: UnpaidWorkDetailsDto,
     val appointmentMinutesAlreadyCredited: Duration = Duration.ZERO,
   )
-
-  data class ValidatedAppointment<T>(
-    val dto: T,
-    val minutesToCredit: Duration? = null,
-    val contactOutcome: ContactOutcomeEntity? = null,
-    val pickUpLocation: PickUpLocationDto?,
-    val project: ProjectDto,
-  ) {
-    companion object
-  }
 }
