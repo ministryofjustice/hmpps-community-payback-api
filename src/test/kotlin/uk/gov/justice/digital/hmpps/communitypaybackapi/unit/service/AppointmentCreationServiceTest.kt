@@ -25,7 +25,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentCreationService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventTrigger
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentIdGenerator
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService2
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.CreateAppointmentValidationService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.OffenderService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ProjectService
@@ -113,12 +113,12 @@ class AppointmentCreationServiceTest {
       val createAppointment2Dto = CreateAppointmentDto.valid().copy(crn = CRN, deliusEventNumber = DELIUS_EVENT_NUMBER, projectCode = PROJECT_CODE)
 
       every { createAppointmentValidationService.validate(createAppointment1Dto, any()) } answers {
-        val ctx = it.invocation.args[1] as AppointmentValidationService2.AppointmentValidationContext.Create
+        val ctx = it.invocation.args[1] as AppointmentValidationService.AppointmentValidationContext.Create
         ctx.project = PROJECT
         ValidationResult.success()
       }
       every { createAppointmentValidationService.validate(createAppointment2Dto, any()) } answers {
-        val ctx = it.invocation.args[1] as AppointmentValidationService2.AppointmentValidationContext.Create
+        val ctx = it.invocation.args[1] as AppointmentValidationService.AppointmentValidationContext.Create
         ctx.project = PROJECT
         ValidationResult.success()
       }

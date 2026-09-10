@@ -56,7 +56,7 @@ class AppointmentUpdateService(
     existingAppointment: AppointmentDto,
     update: UpdateAppointmentDto,
   ): ValidatedAppointment<UpdateAppointmentDto> {
-    val ctx = AppointmentValidationService2.AppointmentValidationContext.Update(existingAppointment)
+    val ctx = AppointmentValidationService.AppointmentValidationContext.Update(existingAppointment)
 
     val validationResult = updateAppointmentValidationService.validate(update, ctx)
 

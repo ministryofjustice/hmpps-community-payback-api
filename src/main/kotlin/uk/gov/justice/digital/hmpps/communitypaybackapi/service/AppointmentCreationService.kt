@@ -97,7 +97,7 @@ class AppointmentCreationService(
   }
 
   fun getValidatedCreate(createAppointment: CreateAppointmentDto): ValidatedAppointment<CreateAppointmentDto> {
-    val ctx = AppointmentValidationService2.AppointmentValidationContext.Create()
+    val ctx = AppointmentValidationService.AppointmentValidationContext.Create()
 
     val validationResult = createAppointmentValidationService.validate(createAppointment, ctx)
 
