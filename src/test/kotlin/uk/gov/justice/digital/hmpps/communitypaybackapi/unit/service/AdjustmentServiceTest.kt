@@ -10,11 +10,21 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import org.junit.jupiter.api.extension.ExtensionContext
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.Arguments
+import org.junit.jupiter.params.provider.ArgumentsProvider
+import org.junit.jupiter.params.provider.ArgumentsSource
+import org.junit.jupiter.params.support.ParameterDeclarations
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Sort
 import org.springframework.data.repository.findByIdOrNull
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAdjustment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAdjustmentPostResponse
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAdjustmentResponse
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAdjustmentType
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDNameCode
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAdjustmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsIdDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventEntity
@@ -44,6 +54,7 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.UUID
+import java.util.stream.Stream
 
 @ExtendWith(MockKExtension::class)
 class AdjustmentServiceTest {
@@ -91,6 +102,88 @@ class AdjustmentServiceTest {
       val results = service.getAdjustments("X123456", 1)
 
       assertThat(results).hasSameElementsAs(adjustments.map { it.toDto() })
+    }
+
+    @ParameterizedTest
+    @ArgumentsSource(PageableArgumentsProvider::class)
+    fun `when pageable is provided, then apply paging and sorting`(sortField: String, direction: Sort.Direction, page: Int, expectedIds: List<UUID>) {
+      val adjustments = listOf(
+        NDAdjustment(
+          id = 1L,
+          reference = UUID(1L, 1L),
+          type = NDAdjustmentType.NEGATIVE,
+          date = LocalDate.of(2026, 1, 1),
+          reason = NDNameCode("Reason 06", "R06"),
+          minutes = 30,
+        ),
+        NDAdjustment(
+          id = 2L,
+          reference = UUID(2L, 2L),
+          type = NDAdjustmentType.POSITIVE,
+          date = LocalDate.of(2026, 2, 2),
+          reason = NDNameCode("Reason 03", "R03"),
+          minutes = 40,
+        ),
+        NDAdjustment(
+          id = 3L,
+          reference = UUID(3L, 3L),
+          type = NDAdjustmentType.NEGATIVE,
+          date = LocalDate.of(2026, 3, 3),
+          reason = NDNameCode("Reason 08", "R08"),
+          minutes = 20,
+        ),
+        NDAdjustment(
+          id = 4L,
+          reference = UUID(4L, 4L),
+          type = NDAdjustmentType.POSITIVE,
+          date = LocalDate.of(2026, 4, 4),
+          reason = NDNameCode("Reason 02", "R02"),
+          minutes = 60,
+        ),
+        NDAdjustment(
+          id = 5L,
+          reference = UUID(5L, 5L),
+          type = NDAdjustmentType.NEGATIVE,
+          date = LocalDate.of(2026, 5, 5),
+          reason = NDNameCode("Reason 07", "R07"),
+          minutes = 80,
+        ),
+        NDAdjustment(
+          id = 6L,
+          reference = UUID(6L, 6L),
+          type = NDAdjustmentType.POSITIVE,
+          date = LocalDate.of(2026, 6, 6),
+          reason = NDNameCode("Reason 01", "R01"),
+          minutes = 70,
+        ),
+        NDAdjustment(
+          id = 7L,
+          reference = UUID(7L, 7L),
+          type = NDAdjustmentType.NEGATIVE,
+          date = LocalDate.of(2026, 7, 7),
+          reason = NDNameCode("Reason 05", "R05"),
+          minutes = 50,
+        ),
+        NDAdjustment(
+          id = 8L,
+          reference = UUID(8L, 8L),
+          type = NDAdjustmentType.POSITIVE,
+          date = LocalDate.of(2026, 8, 8),
+          reason = NDNameCode("Reason 04", "R04"),
+          minutes = 10,
+        ),
+      )
+
+      every { communityPaybackAndDeliusClient.getAdjustments(any(), any()) } returns NDAdjustmentResponse(
+        adjustments = adjustments,
+      )
+
+      val pageable = PageRequest.of(page, 2, direction, sortField)
+      val page = service.getAdjustments("123456", 1, pageable)
+
+      assertThat(page.totalPages).isEqualTo(4)
+      assertThat(page.totalElements).isEqualTo(8)
+      assertThat(page.content.map { it.id }).isEqualTo(expectedIds)
     }
   }
 
@@ -277,4 +370,16 @@ class AdjustmentServiceTest {
       }
     }
   }
+}
+
+class PageableArgumentsProvider : ArgumentsProvider {
+  override fun provideArguments(
+    parameters: ParameterDeclarations,
+    context: ExtensionContext,
+  ): Stream<Arguments> = Stream.of(
+    Arguments.arguments("type", Sort.Direction.ASC, 0, listOf(UUID(2L, 2L), UUID(4L, 4L))),
+    Arguments.arguments("date", Sort.Direction.DESC, 1, listOf(UUID(6L, 6L), UUID(5L, 5L))),
+    Arguments.arguments("reason", Sort.Direction.ASC, 2, listOf(UUID(7L, 7L), UUID(1L, 1L))),
+    Arguments.arguments("minutes", Sort.Direction.DESC, 3, listOf(UUID(3L, 3L), UUID(8L, 8L))),
+  )
 }

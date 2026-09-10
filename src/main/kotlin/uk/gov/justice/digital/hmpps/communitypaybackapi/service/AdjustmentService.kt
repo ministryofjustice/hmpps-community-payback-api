@@ -3,11 +3,18 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.service
 import jakarta.transaction.Transactional
 import org.slf4j.LoggerFactory
 import org.springframework.context.event.EventListener
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageImpl
+import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Sort
+import org.springframework.data.jpa.support.PageableUtils
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAdjustment
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAdjustmentType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.IdGenerator
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AdjustmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAdjustmentDto
@@ -38,6 +45,31 @@ class AdjustmentService(
   private val logger = LoggerFactory.getLogger(AdjustmentService::class.java)
 
   fun getAdjustments(crn: String, eventNumber: Int) = communityPaybackAndDeliusClient.getAdjustments(crn, eventNumber).adjustments.map { it.toDto() }
+
+  fun getAdjustments(crn: String, eventNumber: Int, pageable: Pageable): Page<AdjustmentDto> {
+    val allAdjustments = communityPaybackAndDeliusClient.getAdjustments(crn, eventNumber).adjustments
+
+    val offset = PageableUtils.getOffsetAsInteger(pageable)
+
+    val comparator = pageable.sort.mapNotNull { order ->
+      when (order.property) {
+        "type" -> Comparator.comparing<NDAdjustment, NDAdjustmentType> { it.type }
+        "date" -> Comparator.comparing<NDAdjustment, LocalDate> { it.date }
+        "reason" -> Comparator.comparing<NDAdjustment, String> { it.reason.name }
+        "minutes" -> Comparator.comparing<NDAdjustment, Int> { it.minutes }
+        else -> null
+      }?.let {
+        when (order.direction) {
+          Sort.Direction.ASC -> it
+          Sort.Direction.DESC -> it.reversed()
+        }
+      }
+    }.reduce { acc, comparator -> acc.then(comparator) }
+
+    val adjustments = allAdjustments.sortedWith(comparator).drop(offset).take(pageable.pageSize).map { it.toDto() }
+
+    return PageImpl(adjustments, pageable, allAdjustments.size.toLong())
+  }
 
   @Transactional
   fun createAdjustment(
