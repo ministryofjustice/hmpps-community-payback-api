@@ -25,7 +25,9 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAdjustmentPostR
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAdjustmentResponse
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAdjustmentType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDNameCode
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.validation.ValidationResult
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAdjustmentDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsIdDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventEntityRepository
@@ -42,6 +44,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentIdGene
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentIdGenerator.DeleteAdjustmentProperties
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentValidationService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentValidationService.AdjustmentValidationContext
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.DeleteAdjustmentResult
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AdjustmentCreatedEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AdjustmentDeletedEvent
@@ -50,6 +53,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toNDAdjustmentRequest
 import uk.gov.justice.digital.hmpps.communitypaybackapi.unit.util.WebClientResponseExceptionFactory
 import java.time.Clock
+import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
 import java.time.OffsetDateTime
@@ -203,12 +207,20 @@ class AdjustmentServiceTest {
         adjustmentDate = dateOfAdjustment,
       )
 
-      val validatedAdjustment = AdjustmentValidationService.ValidatedCreateAdjustment(request, reason, appointment)
       every { adjustmentIdGenerator.generateId(request) } returns id
 
       every {
-        adjustmentValidationService.validateCreate(request, UNPAID_WORK_DETAILS, USERNAME)
-      } returns validatedAdjustment
+        adjustmentValidationService.validate(request, any())
+      } answers {
+        val ctx = it.invocation.args[1] as AdjustmentValidationContext
+
+        ctx.reason = reason
+        ctx.appointment = appointment
+        ctx.unpaidWorkDetails = UnpaidWorkDetailsDto.valid()
+        ctx.remainingMinutesAllowance = Duration.ofMinutes(100)
+
+        ValidationResult.success()
+      }
 
       every {
         communityPaybackAndDeliusClient.postAdjustments(
@@ -246,7 +258,7 @@ class AdjustmentServiceTest {
             id = id,
             createDto = request,
             appointmentEntity = appointment,
-            reason = validatedAdjustment.reason,
+            reason = reason,
             deliusAdjustmentId = 5L,
             trigger = AdjustmentEventTrigger(
               triggeredAt = OffsetDateTime.now(clock),
