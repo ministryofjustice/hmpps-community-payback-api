@@ -15,8 +15,10 @@ import java.time.temporal.TemporalAdjusters
 import java.util.Locale
 
 fun LocalDate.onOrAfter(other: LocalDate): Boolean = !this.isBefore(other)
+fun LocalDateTime.onOrAfter(other: LocalDateTime): Boolean = !this.isBefore(other)
 
 fun LocalDate.onOrBefore(other: LocalDate): Boolean = !this.isAfter(other)
+fun LocalDateTime.onOrBefore(other: LocalDateTime): Boolean = !this.isBefore(other)
 
 fun shortestOf(duration1: Duration, duration2: Duration) = if (duration1 < duration2) duration1 else duration2
 
