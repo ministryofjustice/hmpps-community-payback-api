@@ -4,16 +4,15 @@ import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.junit5.MockKExtension
-import org.assertj.core.api.Assertions.assertThatThrownBy
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.data.repository.findByIdOrNull
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.validation.ValidationResultItem
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAdjustmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsIdDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.BadRequestException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentReasonEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentReasonEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
@@ -22,6 +21,9 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentValidationService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.OffenderService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.unit.common.validation.hasError
+import uk.gov.justice.digital.hmpps.communitypaybackapi.unit.common.validation.hasNoErrors
+import uk.gov.justice.digital.hmpps.communitypaybackapi.unit.common.validation.hasNoWarnings
 import java.time.LocalDate
 import java.util.UUID
 
@@ -45,177 +47,265 @@ class AdjustmentValidationServiceTest {
     const val EVENT_NUMBER: Int = 68
     val UNPAID_WORK_DETAILS: UnpaidWorkDetailsIdDto = UnpaidWorkDetailsIdDto(CRN, EVENT_NUMBER)
     const val USERNAME = "username"
-    val REASON_ID: UUID = UUID.fromString("74f0f62b-bbd4-49a4-9af8-1ce6cd94e3e1")
-    val APPOINTMENT_ID: UUID = UUID.fromString("84f0f62b-bbd4-49a4-9af8-1ce6cd94e3e1")
+    val REASON_ID: UUID = UUID.randomUUID()
+    val APPOINTMENT_ID: UUID = UUID.randomUUID()
   }
 
-  @Nested
-  inner class CreateAdjustment {
+  private val reason = AdjustmentReasonEntity.valid().copy(id = REASON_ID, maxMinutesAllowed = 180, needsLinkToAppointment = true)
+  private val baselineRequest = CreateAdjustmentDto.valid().copy(
+    adjustmentReasonId = reason.id,
+    minutes = 50,
+    appointmentId = APPOINTMENT_ID,
+  )
 
-    private val reason = AdjustmentReasonEntity.valid().copy(id = REASON_ID, maxMinutesAllowed = 180, needsLinkToAppointment = true)
-    val baselineRequest = CreateAdjustmentDto.valid().copy(
-      adjustmentReasonId = reason.id,
-      minutes = 50,
-      appointmentId = APPOINTMENT_ID,
+  @BeforeEach
+  fun setupBaselineMocks() {
+    every {
+      adjustmentReasonEntityRepository.findByIdOrNull(REASON_ID)
+    } returns reason
+
+    every { appointmentEntityRepository.findByIdOrNull(APPOINTMENT_ID) } returns AppointmentEntity.valid()
+  }
+
+  @Test
+  fun `If adjustment reason not found return error`() {
+    every { adjustmentReasonEntityRepository.findByIdOrNull(REASON_ID) } returns null
+    val expectedError = ValidationResultItem(
+      "$.adjustmentReasonId",
+      "UNKNOWN_ADJUSTMENT_REASON",
+      mapOf("id" to REASON_ID),
     )
 
-    @BeforeEach
-    fun setupBaselineMocks() {
-      every {
-        adjustmentReasonEntityRepository.findByIdOrNull(REASON_ID)
-      } returns reason
+    val result = service.validate(
+      baselineRequest,
+      AdjustmentValidationService.AdjustmentValidationContext(
+        UNPAID_WORK_DETAILS,
+        USERNAME,
+      ),
+    )
 
-      every { appointmentEntityRepository.findByIdOrNull(APPOINTMENT_ID) } returns AppointmentEntity.valid()
-    }
+    assertThat(result).hasError(expectedError)
+    assertThat(result).hasNoWarnings()
+  }
 
-    @Test
-    fun `If adjustment reason not found return bad request exception`() {
-      every { adjustmentReasonEntityRepository.findByIdOrNull(REASON_ID) } returns null
+  @Test
+  fun `If adjustment reason needs an appointment and appointment not found return error`() {
+    every { appointmentEntityRepository.findByIdOrNull(APPOINTMENT_ID) } returns null
 
-      assertThatThrownBy {
-        service.validateCreate(
-          createAdjustment = baselineRequest,
-          upwDetailsId = UNPAID_WORK_DETAILS,
-          username = USERNAME,
-        )
-      }.isInstanceOf(BadRequestException::class.java).hasMessage("Adjustment Reason not found for ID '74f0f62b-bbd4-49a4-9af8-1ce6cd94e3e1'")
-    }
+    val expectedError = ValidationResultItem(
+      "$.appointmentId",
+      "UNKNOWN_APPOINTMENT",
+      mapOf("id" to APPOINTMENT_ID),
+    )
 
-    @Test
-    fun `If adjustment reason needs an appointment and appointment not found return bad request exception`() {
-      every { adjustmentReasonEntityRepository.findByIdOrNull(REASON_ID) } returns reason.copy(needsLinkToAppointment = true)
+    val result = service.validate(
+      baselineRequest,
+      AdjustmentValidationService.AdjustmentValidationContext(
+        UNPAID_WORK_DETAILS,
+        USERNAME,
+      ),
+    )
 
-      every { appointmentEntityRepository.findByIdOrNull(APPOINTMENT_ID) } returns null
+    assertThat(result).hasError(expectedError)
+    assertThat(result).hasNoWarnings()
+  }
 
-      assertThatThrownBy {
-        service.validateCreate(
-          createAdjustment = baselineRequest,
-          upwDetailsId = UNPAID_WORK_DETAILS,
-          username = USERNAME,
-        )
-      }.isInstanceOf(BadRequestException::class.java).hasMessage("Appointment not found for ID '84f0f62b-bbd4-49a4-9af8-1ce6cd94e3e1'")
-    }
+  @Test
+  fun `If adjustment reason needs an appointment and appointment ID is null return error`() {
+    val expectedError = ValidationResultItem(
+      "$.appointmentId",
+      "ADJUSTMENT_REASON_NEEDS_APPOINTMENT_ID",
+      mapOf("reasonName" to reason.name),
+    )
 
-    @Test
-    fun `If adjustment reason needs an appointment and appointment ID is null return bad request exception`() {
-      every { adjustmentReasonEntityRepository.findByIdOrNull(REASON_ID) } returns reason.copy(name = "The reason name", needsLinkToAppointment = true)
+    val result = service.validate(
+      baselineRequest.copy(appointmentId = null),
+      AdjustmentValidationService.AdjustmentValidationContext(
+        UNPAID_WORK_DETAILS,
+        USERNAME,
+      ),
+    )
 
-      assertThatThrownBy {
-        service.validateCreate(
-          createAdjustment = baselineRequest.copy(appointmentId = null),
-          upwDetailsId = UNPAID_WORK_DETAILS,
-          username = USERNAME,
-        )
-      }.isInstanceOf(BadRequestException::class.java).hasMessage("Adjustment reason 'The reason name' needs an appointment ID")
-    }
+    assertThat(result).hasError(expectedError)
+    assertThat(result).hasNoWarnings()
+  }
 
-    @Test
-    fun `If adjustment reason does not need an appointment and appointment ID is not null return bad request exception`() {
-      every { adjustmentReasonEntityRepository.findByIdOrNull(REASON_ID) } returns reason.copy(name = "The reason name", needsLinkToAppointment = false)
+  @Test
+  fun `If adjustment reason does not need an appointment and appointment ID is not null return error`() {
+    every { adjustmentReasonEntityRepository.findByIdOrNull(REASON_ID) } returns reason.copy(needsLinkToAppointment = false)
 
-      assertThatThrownBy {
-        service.validateCreate(
-          createAdjustment = baselineRequest,
-          upwDetailsId = UNPAID_WORK_DETAILS,
-          username = USERNAME,
-        )
-      }.isInstanceOf(BadRequestException::class.java).hasMessage("Adjustment reason 'The reason name' does not support linking to appointments")
-    }
+    val expectedError = ValidationResultItem(
+      "$.appointmentId",
+      "ADJUSTMENT_REASON_DOES_NOT_SUPPORT_APPOINTMENTS",
+      mapOf("reasonName" to reason.name),
+    )
 
-    @Test
-    fun `If minutes more than allowed for adjustment reason return bad request exception`() {
-      every {
-        adjustmentReasonEntityRepository.findByIdOrNull(REASON_ID)
-      } returns reason.copy(
-        name = "The reason name",
-        maxMinutesAllowed = 50,
-      )
+    val result = service.validate(
+      baselineRequest,
+      AdjustmentValidationService.AdjustmentValidationContext(
+        UNPAID_WORK_DETAILS,
+        USERNAME,
+      ),
+    )
 
-      assertThatThrownBy {
-        service.validateCreate(
-          createAdjustment = baselineRequest.copy(
-            minutes = 51,
-          ),
-          upwDetailsId = UNPAID_WORK_DETAILS,
-          username = USERNAME,
-        )
-      }.isInstanceOf(BadRequestException::class.java)
-        .hasMessage("Requested adjustment of '0 hours 51 minutes' exceeds the maximum allowed time '0 hours 50 minutes' for adjustment reason 'The reason name'")
-    }
+    assertThat(result).hasError(expectedError)
+    assertThat(result).hasNoWarnings()
+  }
 
-    @Test
-    fun `If minutes more than remaining time required return bad request exception`() {
-      val details = UnpaidWorkDetailsDto.valid().copy(
-        requiredMinutes = 240,
-        completedMinutes = 120,
-        adjustments = 0,
-      )
-      every { offenderService.ensureUnpaidWorkDetailsExist(any(), any()) } returns details
+  @Test
+  fun `If minutes more than allowed for adjustment reason return error`() {
+    every {
+      adjustmentReasonEntityRepository.findByIdOrNull(REASON_ID)
+    } returns reason.copy(maxMinutesAllowed = 50)
+    val expectedError = ValidationResultItem(
+      "$.minutes",
+      "EXCEEDS_MAXIMUM_ALLOWED_TIME",
+      mapOf(
+        "requestedMinutes" to 51,
+        "maxMinutesAllowed" to 50,
+        "adjustmentReason" to reason.name,
+      ),
+    )
 
-      assertThatThrownBy {
-        service.validateCreate(
-          createAdjustment = baselineRequest.copy(
-            minutes = 180,
-          ),
-          upwDetailsId = UNPAID_WORK_DETAILS,
-          username = USERNAME,
-        )
-      }.isInstanceOf(BadRequestException::class.java)
-        .hasMessage("Credited minutes of '3 hours 0 minutes' exceeds the remaining time required of '2 hours 0 minutes'")
-    }
-
-    @Test
-    fun `If adjustment date is in the future then return bad request exception`() {
-      every { offenderService.ensureUnpaidWorkDetailsExist(any(), any()) } returns UnpaidWorkDetailsDto.valid().copy(
-        requiredMinutes = 100,
-        completedMinutes = 0,
-        adjustments = 0,
-      )
-
-      assertThatThrownBy {
-        service.validateCreate(
-          createAdjustment = baselineRequest.copy(
-            adjustmentDate = LocalDate.now().plusDays(1),
-          ),
-          upwDetailsId = UNPAID_WORK_DETAILS,
-          username = USERNAME,
-        )
-      }.isInstanceOf(BadRequestException::class.java)
-        .hasMessage("Adjustment date must not be in the future")
-    }
-
-    @Test
-    fun `If adjustment date is before the sentence date then return bad request exception`() {
-      every { offenderService.ensureUnpaidWorkDetailsExist(any(), any()) } returns UnpaidWorkDetailsDto.valid().copy(
-        requiredMinutes = 100,
-        completedMinutes = 0,
-        adjustments = 0,
-        sentenceDate = LocalDate.now().minusMonths(1),
-      )
-
-      assertThatThrownBy {
-        service.validateCreate(
-          createAdjustment = baselineRequest.copy(adjustmentDate = LocalDate.now().minusMonths(1).minusDays(1)),
-          upwDetailsId = UNPAID_WORK_DETAILS,
-          username = USERNAME,
-        )
-      }.isInstanceOf(BadRequestException::class.java)
-        .hasMessage("Adjustment date must not be before the sentence date")
-    }
-
-    @Test
-    fun success() {
-      every { offenderService.ensureUnpaidWorkDetailsExist(any(), any()) } returns UnpaidWorkDetailsDto.valid().copy(
-        requiredMinutes = 100,
-        completedMinutes = 0,
-        adjustments = 0,
-      )
-
-      service.validateCreate(
-        createAdjustment = baselineRequest,
+    val result = service.validate(
+      baselineRequest.copy(
+        minutes = 51,
+      ),
+      AdjustmentValidationService.AdjustmentValidationContext(
         upwDetailsId = UNPAID_WORK_DETAILS,
         username = USERNAME,
-      )
-    }
+      ),
+    )
+
+    assertThat(result).hasError(expectedError)
+    assertThat(result).hasNoWarnings()
+  }
+
+  @Test
+  fun `If minutes more than remaining time required return error`() {
+    val details = UnpaidWorkDetailsDto.valid().copy(
+      requiredMinutes = 240,
+      completedMinutes = 120,
+      adjustments = 0,
+    )
+    every { offenderService.ensureUnpaidWorkDetailsExist(any(), any()) } returns details
+    val expectedError = ValidationResultItem(
+      "$.minutes",
+      "EXCEEDS_REMAINING_REQUIREMENT_TIME",
+      mapOf(
+        "requestedMinutes" to 180.toInt(),
+        "remainingMinutes" to 120L,
+      ),
+    )
+
+    val result = service.validate(
+      baselineRequest.copy(
+        minutes = 180,
+      ),
+      AdjustmentValidationService.AdjustmentValidationContext(
+        upwDetailsId = UNPAID_WORK_DETAILS,
+        username = USERNAME,
+      ),
+    )
+
+    assertThat(result).hasError(expectedError)
+    assertThat(result).hasNoWarnings()
+  }
+
+  @Test
+  fun `If adjustment date is in the future then return error`() {
+    every { offenderService.ensureUnpaidWorkDetailsExist(any(), any()) } returns UnpaidWorkDetailsDto.valid().copy(
+      requiredMinutes = 100,
+      completedMinutes = 0,
+      adjustments = 0,
+    )
+    val expectedError = ValidationResultItem(
+      "$.adjustmentDate",
+      "ADJUSTMENT_DATE_IS_IN_FUTURE",
+      emptyMap(),
+    )
+
+    val result = service.validate(
+      baselineRequest.copy(
+        adjustmentDate = LocalDate.now().plusDays(1),
+      ),
+      AdjustmentValidationService.AdjustmentValidationContext(
+        upwDetailsId = UNPAID_WORK_DETAILS,
+        username = USERNAME,
+      ),
+    )
+
+    assertThat(result).hasError(expectedError)
+    assertThat(result).hasNoWarnings()
+  }
+
+  @Test
+  fun `If adjustment date is before the sentence date then return error`() {
+    every { offenderService.ensureUnpaidWorkDetailsExist(any(), any()) } returns UnpaidWorkDetailsDto.valid().copy(
+      requiredMinutes = 100,
+      completedMinutes = 0,
+      adjustments = 0,
+      sentenceDate = LocalDate.now().minusMonths(1),
+    )
+    val expectedError = ValidationResultItem(
+      "$.adjustmentDate",
+      "ADJUSTMENT_DATE_IS_BEFORE_SENTENCE_DATE",
+      emptyMap(),
+    )
+
+    val result = service.validate(
+      baselineRequest.copy(adjustmentDate = LocalDate.now().minusMonths(1).minusDays(1)),
+      AdjustmentValidationService.AdjustmentValidationContext(
+        upwDetailsId = UNPAID_WORK_DETAILS,
+        username = USERNAME,
+      ),
+    )
+
+    assertThat(result).hasError(expectedError)
+    assertThat(result).hasNoWarnings()
+  }
+
+  @Test
+  fun `If unpaid work details not found then return error`() {
+    every { offenderService.ensureUnpaidWorkDetailsExist(any(), any()) } returns null
+    val expectedError = ValidationResultItem(
+      "$",
+      "COULD_NOT_FIND_UNPAID_WORK_DETAILS",
+      mapOf(
+        "crn" to UNPAID_WORK_DETAILS.crn,
+        "deliusEventNumber" to UNPAID_WORK_DETAILS.deliusEventNumber,
+      ),
+    )
+
+    val result = service.validate(
+      baselineRequest,
+      AdjustmentValidationService.AdjustmentValidationContext(
+        upwDetailsId = UNPAID_WORK_DETAILS,
+        username = USERNAME,
+      ),
+    )
+
+    assertThat(result).hasError(expectedError)
+    assertThat(result).hasNoWarnings()
+  }
+
+  @Test
+  fun success() {
+    every { offenderService.ensureUnpaidWorkDetailsExist(any(), any()) } returns UnpaidWorkDetailsDto.valid().copy(
+      requiredMinutes = 100,
+      completedMinutes = 0,
+      adjustments = 0,
+    )
+
+    val result = service.validate(
+      baselineRequest,
+      AdjustmentValidationService.AdjustmentValidationContext(
+        upwDetailsId = UNPAID_WORK_DETAILS,
+        username = USERNAME,
+      ),
+    )
+
+    assertThat(result).hasNoErrors()
+    assertThat(result).hasNoWarnings()
   }
 }

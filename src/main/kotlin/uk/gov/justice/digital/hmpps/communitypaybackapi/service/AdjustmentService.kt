@@ -16,12 +16,16 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackA
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAdjustment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAdjustmentType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.IdGenerator
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.formatForUser
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.validation.ValidationResultItem
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AdjustmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAdjustmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsIdDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.BadRequestException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentIdGenerator.DeleteAdjustmentProperties
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentValidationService.AdjustmentValidationContext
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AdjustmentCreatedEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AdjustmentDeletedEvent
@@ -29,6 +33,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.SpringE
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toNDAdjustmentRequest
 import java.time.Clock
+import java.time.Duration
 import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.UUID
@@ -77,13 +82,18 @@ class AdjustmentService(
     createAdjustment: CreateAdjustmentDto,
     username: String,
   ): AdjustmentDto {
-    val validatedAdjustment = adjustmentValidationService.validateCreate(createAdjustment, upwDetailsId, username)
+    val validationContext = AdjustmentValidationContext(upwDetailsId, username)
+    val validationResult = adjustmentValidationService.validate(createAdjustment, validationContext)
+    if (validationResult.hasErrors) {
+      throwValidationError(validationResult.errors[0])
+    }
+
     val adjustmentId = adjustmentIdGenerator.generateId(createAdjustment)
 
     deleteOrphanedAdjustmentIfExists(adjustmentId)
 
     val (crn, deliusEventNumber) = upwDetailsId
-    val adjustmentDate = validatedAdjustment.createAdjustment.adjustmentDate ?: LocalDate.now(clock)
+    val adjustmentDate = createAdjustment.adjustmentDate ?: LocalDate.now(clock)
 
     val deliusAdjustmentId = communityPaybackAndDeliusClient.postAdjustments(
       username,
@@ -91,7 +101,7 @@ class AdjustmentService(
         createAdjustment.toNDAdjustmentRequest(
           crn = crn,
           deliusEventNumber = deliusEventNumber,
-          reason = validatedAdjustment.reason,
+          reason = validationContext.reason!!,
           reference = adjustmentId,
           dateOfAdjustment = adjustmentDate,
         ),
@@ -102,19 +112,42 @@ class AdjustmentService(
       AdjustmentCreatedEvent(
         id = adjustmentId,
         createDto = createAdjustment,
-        appointmentEntity = validatedAdjustment.appointment,
-        reason = validatedAdjustment.reason,
+        appointmentEntity = validationContext.appointment,
+        reason = validationContext.reason!!,
         deliusAdjustmentId = deliusAdjustmentId,
         trigger = AdjustmentEventTrigger(
           triggeredAt = OffsetDateTime.now(clock),
           triggerType = AdjustmentEventTriggerType.APPOINTMENT_TASK,
-          triggeredBy = validatedAdjustment.appointment?.id.toString(),
+          triggeredBy = validationContext.appointment?.id.toString(),
         ),
         adjustmentDate = adjustmentDate,
       ),
     )
 
     return communityPaybackAndDeliusClient.getAdjustment(adjustmentId).toDto()
+  }
+
+  @Suppress("detekt:ThrowsCount")
+  private fun throwValidationError(error: ValidationResultItem) {
+    when (error.code) {
+      "UNKNOWN_ADJUSTMENT_REASON" -> throw BadRequestException("Adjustment Reason not found for ID '${error.data["id"]}'")
+      "ADJUSTMENT_REASON_NEEDS_APPOINTMENT_ID" -> throw BadRequestException("Adjustment reason '${error.data["reasonName"]}' needs an appointment ID")
+      "UNKNOWN_APPOINTMENT" -> throw BadRequestException("Appointment not found for ID '${error.data["id"]}'")
+      "ADJUSTMENT_REASON_DOES_NOT_SUPPORT_APPOINTMENTS" -> throw BadRequestException("Adjustment reason '${error.data["reasonName"]}' does not support linking to appointments")
+      "COULD_NOT_FIND_UNPAID_WORK_DETAILS" -> throw BadRequestException("Unpaid Work Details not found for CRN ${error.data["crn"]} and event number ${error.data["deliusEventNumber"]}")
+      "EXCEEDS_MAXIMUM_ALLOWED_TIME" -> {
+        val requestedDuration = Duration.ofMinutes((error.data["requestedMinutes"] as Int).toLong())
+        val maximumDuration = Duration.ofMinutes((error.data["maxMinutesAllowed"] as Int).toLong())
+        throw BadRequestException("Requested adjustment of '${requestedDuration.formatForUser()}' exceeds the maximum allowed time '${maximumDuration.formatForUser()}' for adjustment reason '${error.data["reason"]}'")
+      }
+      "ADJUSTMENT_DATE_IS_IN_FUTURE" -> throw BadRequestException("Adjustment date must not be in the future")
+      "ADJUSTMENT_DATE_IS_BEFORE_SENTENCE_DATE" -> throw BadRequestException("Adjustment date must not be before the sentence date")
+      "EXCEEDS_REMAINING_REQUIREMENT_TIME" -> {
+        val requestedDuration = Duration.ofMinutes((error.data["requestedMinutes"] as Int).toLong())
+        val remainingDuration = Duration.ofMinutes(error.data["remainingMinutes"] as Long)
+        throw BadRequestException("Credited minutes of '${requestedDuration.formatForUser()}' exceeds the remaining time required of '${remainingDuration.formatForUser()}'")
+      }
+    }
   }
 
   @Transactional
