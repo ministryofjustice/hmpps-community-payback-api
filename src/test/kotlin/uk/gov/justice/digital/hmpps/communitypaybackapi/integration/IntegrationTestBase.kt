@@ -20,8 +20,8 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentTaskEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.config.ClockConfiguration
-import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.container.LocalStackContainer
-import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.container.LocalStackContainer.setLocalStackProperties
+import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.container.FlociContainer
+import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.container.FlociContainer.setFlociProperties
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.container.PostgresContainer
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.container.PostgresContainer.setPostgresProperties
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.container.RedisContainer
@@ -67,7 +67,7 @@ abstract class IntegrationTestBase {
   }
 
   companion object {
-    private val localStackContainer = LocalStackContainer.instance
+    private val flociContainer = FlociContainer.instance
     private val postgresContainer = PostgresContainer.instance
     private val redisContainer = RedisContainer.instance
 
@@ -76,7 +76,7 @@ abstract class IntegrationTestBase {
     fun properties(registry: DynamicPropertyRegistry) {
       System.setProperty("aws.region", "eu-west-2")
 
-      localStackContainer?.also { setLocalStackProperties(it, registry) }
+      flociContainer?.also { setFlociProperties(it, registry) }
       postgresContainer?.also { setPostgresProperties(it, registry) }
       redisContainer?.also { setRedisProperties(it, registry) }
     }

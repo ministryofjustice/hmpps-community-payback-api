@@ -2,7 +2,7 @@
 
 print_help () {
   echo "send-course-completion-event [f:l:c:PFn:x:h]"
-  echo "  Posts a course completion event to the LocalStack SQS queue."
+  echo "  Posts a course completion event to the Floci SQS queue."
   echo
   echo "Usage:"
   echo "  -f <first name>   If not provided a random first name is picked"
@@ -145,7 +145,7 @@ message=$(cat <<EOF
 EOF
 )
 
-echo -e "Posting event to LocalStack SQS:\n\n$message\n"
+echo -e "Posting event to Floci SQS:\n\n$message\n"
 
 # Stringify the message JSON
 message=${message//\\/\\\\}
@@ -154,13 +154,13 @@ message=${message//$'\n'/\\n}
 
 payload=$(cat <<EOF
 {
-  "QueueUrl": "http://sqs.eu-west-2.localhost.localstack.cloud:4566/000000000000/cp_stack_course_completion_events/",
+  "QueueUrl": "http://localhost:4566/000000000000/cp_stack_course_completion_events",
   "MessageBody": "$message"
 }
 EOF
 )
 
-response=$(curl -s -H 'X-Amz-Target: AmazonSQS.SendMessage' --json "$payload" 'localhost:4566')
+response=$(curl -s -H 'X-Amz-Target: AmazonSQS.SendMessage' -H 'Content-Type: application/x-amz-json-1.0' --json "$payload" 'localhost:4566')
 
 if [ $? ]; then
   echo -e "Event successfully sent! Response was:\n\n$response"

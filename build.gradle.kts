@@ -48,7 +48,7 @@ dependencies {
   testImplementation("io.swagger.parser.v3:swagger-parser:2.1.45") {
     exclude(group = "io.swagger.core.v3")
   }
-  testImplementation("org.testcontainers:testcontainers-localstack:2.0.5")
+  testImplementation("io.floci:testcontainers-floci:2.0.0")
   testImplementation("org.testcontainers:testcontainers-postgresql:2.0.5")
   testImplementation("com.redis:testcontainers-redis:2.2.4")
   testImplementation("org.awaitility:awaitility-kotlin:4.3.0")
