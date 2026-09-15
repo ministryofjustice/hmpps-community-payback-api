@@ -12,9 +12,8 @@ The tool manages local instances of the following:
 * Postgres
 * Redis
 * Localstack
-* Wiremock - Proxies all requests to upstream services, allowing us to selectively intercept and mock responses
 
-All upstream services are provided by the [Cloud Platform's](https://user-guide.cloud-platform.service.justice.gov.uk/) 'Dev' environment, proxied via Wiremock (excluding hmpps-auth, which is not proxied)
+All upstream services are provided by the [Cloud Platform's](https://user-guide.cloud-platform.service.justice.gov.uk/) 'Dev' environment. Both the Docker and local Gradle API connect directly to the PI service at `https://community-payback-and-delius-dev.hmpps.service.justice.gov.uk`, without a WireMock proxy.
 
 ## Pre-reqs
 
@@ -64,7 +63,6 @@ The API database will be retained over stop/starts of the stack, unless `--clear
 | Community Payback API            | 8080 |
 | Community Payback UI             | 3000 |
 | Community Payback Supervisors UI | 3001 |
-| Wiremock                         | 9004 |
 
 ## Configuration
 
@@ -82,9 +80,11 @@ Then update compose.yml to refer to this image instead
 
 ## Wiremock
 
-All upstream requests (excluding auth) are proxied via wiremock.
+WireMock is not started or used by the default local stack. Its Compose service and [existing mappings and assets](../../helm_deploy/hmpps-community-payback-api/files/stubs) are retained for future integration or testing needs.
 
-We can selectively mock a request by adding a mapping to the `mappings/overrides` folder with a priority < 100
+To start it separately from `tools/cp-stack`, run `docker compose --profile wiremock up -d wiremock`. It listens on port 9004. To route API requests through it for testing, set `CLIENT_COMMUNITY_PAYBACK_AND_DELIUS_URL` to `http://localhost:9004` for a local Gradle API or `http://wiremock:8080` for the Docker API. Apply this override in `.env.api.template` before starting cp-stack, as `.env.api` is regenerated on startup. Restore the direct PI URL afterwards.
+
+When using WireMock, we can selectively mock a request by adding a mapping to the `mappings/overrides` folder with a priority < 100
 
 ### Viewing Requests & Responses
 

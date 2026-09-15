@@ -8,7 +8,6 @@ services:
     # if you want to run a locally built docker image, comment out the line below
     pull_policy: always
     depends_on:
-      - wiremock
       - postgres
       - redis
     # using raw format disables interpolation, which causes errors when values include '$'
@@ -19,7 +18,6 @@ services:
         format: raw
     environment:
       - HMPPS_SQS_LOCALSTACKURL=http://localstack:4566
-      - CLIENT_COMMUNITY_PAYBACK_AND_DELIUS_URL=http://wiremock:8080
       # Override connection settings when running the API in a container to use docker container name
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/community_payback
       - SPRING_DATA_REDIS_HOST=redis
@@ -68,6 +66,8 @@ services:
       - "/var/run/docker.sock:/var/run/docker.sock"
 
   wiremock:
+    # Retained for optional testing; local development connects directly to PI.
+    profiles: ["wiremock"]
     image: wiremock/wiremock
     container_name: cp-stack-wiremock
     ports:
