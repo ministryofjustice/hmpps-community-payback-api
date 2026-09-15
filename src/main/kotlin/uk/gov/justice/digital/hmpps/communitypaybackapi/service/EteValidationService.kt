@@ -1,80 +1,113 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.service
 
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.validation.ValidationContext
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.validation.ValidatorWithContext
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionResolutionDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionResolutionTypeDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.BadRequestException
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventResolutionEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.EteMappers
 import java.util.UUID
 
-@SuppressWarnings("ThrowsCount")
 @Service
 class EteValidationService(
   private val contactOutcomeEntityRepository: ContactOutcomeEntityRepository,
   private val eteMapper: EteMappers,
-) {
-  fun validateCourseCompletionResolution(
-    resolution: CourseCompletionResolutionDto,
-    courseCompletionEvent: EteCourseCompletionEventEntity,
-  ): ValidationResult {
-    when (resolution.type) {
-      CourseCompletionResolutionTypeDto.CREDIT_TIME -> validateCreditTime(resolution)
-      CourseCompletionResolutionTypeDto.DONT_CREDIT_TIME -> validateDontCreditTime(resolution)
-    }
+) : ValidatorWithContext<CourseCompletionResolutionDto, EteValidationService.CourseCompletionValidationContext>() {
 
-    return validateExistingResolution(resolution, courseCompletionEvent)
+  class CourseCompletionValidationContext(
+    val courseCompletionEvent: EteCourseCompletionEventEntity,
+  ) : ValidationContext<CourseCompletionResolutionDto> {
+    val existingResolutionEntity: EteCourseCompletionEventResolutionEntity?
+      get() = courseCompletionEvent.resolution
+
+    var proposedResolutionEntity: EteCourseCompletionEventResolutionEntity? = null
+
+    var contactOutcomeEntity: ContactOutcomeEntity? = null
   }
 
-  private fun validateCreditTime(resolution: CourseCompletionResolutionDto) {
-    if (resolution.crn == null) {
-      throw BadRequestException("CRN is required for type ${CourseCompletionResolutionTypeDto.CREDIT_TIME}")
-    }
+  override fun configureContext(value: CourseCompletionResolutionDto, ctx: CourseCompletionValidationContext): CourseCompletionValidationContext {
+    ctx.contactOutcomeEntity = value.creditTimeDetails?.contactOutcomeCode?.let { contactOutcomeEntityRepository.findByCode(it) }
 
-    if (resolution.creditTimeDetails == null) {
-      throw BadRequestException("Credit Time Details are required for type ${CourseCompletionResolutionTypeDto.CREDIT_TIME}")
-    }
-
-    val contactOutcomeCode = resolution.creditTimeDetails.contactOutcomeCode
-    if (contactOutcomeEntityRepository.findByCode(resolution.creditTimeDetails.contactOutcomeCode) == null) {
-      throw BadRequestException("Cannot find contact outcome with code $contactOutcomeCode")
-    }
-  }
-
-  private fun validateDontCreditTime(resolution: CourseCompletionResolutionDto) {
-    if (resolution.dontCreditTimeDetails == null) {
-      throw BadRequestException("Don't Credit Time Details are required for type ${CourseCompletionResolutionTypeDto.DONT_CREDIT_TIME}")
-    }
-  }
-
-  private fun validateExistingResolution(
-    resolution: CourseCompletionResolutionDto,
-    courseCompletionEvent: EteCourseCompletionEventEntity,
-  ): ValidationResult {
-    val existingResolution = courseCompletionEvent.resolution
-    if (existingResolution == null) {
-      return ValidationResult.VALID
-    } else {
-      val proposedResolutionEntity = eteMapper.toResolutionEntityForCreditTime(
+    if (value.type == CourseCompletionResolutionTypeDto.CREDIT_TIME) {
+      ctx.proposedResolutionEntity = eteMapper.toResolutionEntityForCreditTime(
         id = UUID.randomUUID(),
-        courseCompletionEvent = courseCompletionEvent,
-        courseCompletionResolution = resolution,
+        courseCompletionEvent = ctx.courseCompletionEvent,
+        courseCompletionResolution = value,
         // setting to 0L is fine here because isLogicallyIdentical() only checks this value when
         // the resolution indicates that an existing appointment is being updated
-        deliusAppointmentId = resolution.creditTimeDetails?.appointmentIdToUpdate ?: 0L,
+        deliusAppointmentId = value.creditTimeDetails?.appointmentIdToUpdate ?: 0L,
       )
-
-      if (existingResolution.isLogicallyIdentical(proposedResolutionEntity)) {
-        return ValidationResult.EXISTING_IDENTICAL_RESOLUTION
-      } else {
-        throw BadRequestException("A resolution has already been defined for this course completion record")
-      }
     }
+
+    return ctx
   }
 
-  enum class ValidationResult {
-    VALID,
-    EXISTING_IDENTICAL_RESOLUTION,
+  override fun configureRules() {
+    rule {
+      assume { value -> value.type == CourseCompletionResolutionTypeDto.CREDIT_TIME }
+      expect { value -> value.crn != null }
+      otherwise {
+        this isError "CREDIT_TIME_NEEDS_CRN"
+        field = "$.crn"
+      }
+    }
+
+    rule {
+      assume { value -> value.type == CourseCompletionResolutionTypeDto.CREDIT_TIME }
+      expect { value -> value.creditTimeDetails != null }
+      otherwise {
+        this isError "CREDIT_TIME_NEEDS_DETAILS"
+        field = "$.creditTimeDetails"
+      }
+    }
+
+    rule {
+      assume { value -> value.type == CourseCompletionResolutionTypeDto.CREDIT_TIME }
+      assume { value -> value.creditTimeDetails != null }
+      expect { _, ctx -> ctx.contactOutcomeEntity != null }
+      otherwise {
+        this isError "UNKNOWN_CONTACT_OUTCOME"
+        field = "$.creditTimeDetails.contactOutcomeCode"
+        data {
+          "code" to { value -> value.creditTimeDetails!!.contactOutcomeCode }
+        }
+      }
+    }
+
+    rule {
+      assume { value -> value.type == CourseCompletionResolutionTypeDto.DONT_CREDIT_TIME }
+      expect { value -> value.dontCreditTimeDetails != null }
+      otherwise {
+        this isError "DONT_CREDIT_TIME_NEEDS_DETAILS"
+        field = "$.dontCreditTimeDetails"
+      }
+    }
+
+    rule {
+      assume { _, ctx -> ctx.existingResolutionEntity != null }
+      assume { _, ctx -> ctx.proposedResolutionEntity != null }
+      expect { _, ctx -> ctx.existingResolutionEntity!!.isLogicallyIdentical(ctx.proposedResolutionEntity!!) }
+      otherwise {
+        this isError "RESOLUTION_ALREADY_EXISTS"
+        field = "$.creditTimeDetails"
+        data {
+          "id" to { _, ctx -> ctx.existingResolutionEntity!!.id }
+        }
+      }
+    }
+
+    rule {
+      assume { _, ctx -> ctx.existingResolutionEntity != null }
+      assume { _, ctx -> ctx.proposedResolutionEntity != null }
+      expect { _, ctx -> !ctx.existingResolutionEntity!!.isLogicallyIdentical(ctx.proposedResolutionEntity!!) }
+      otherwise {
+        this isWarning "EXISTING_IDENTICAL_RESOLUTION"
+        field = "$.creditTimeDetails"
+      }
+    }
   }
 }
