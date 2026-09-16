@@ -675,7 +675,7 @@ data class NDPickUpLocationsResponse(
 data class NDPersonalCircumstances(
   val type: NDCodeDescription,
   val subType: NDCodeDescription?,
-  val startDate: OffsetDateTime,
+  val startDate: OffsetDateTime?,
   val endDate: OffsetDateTime?,
   val verified: Boolean?,
   val notes: String?,
