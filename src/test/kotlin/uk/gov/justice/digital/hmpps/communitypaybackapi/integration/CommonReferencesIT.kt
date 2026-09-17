@@ -146,6 +146,20 @@ class CommonReferencesIT : IntegrationTestBase() {
     }
 
     @Test
+    fun `should return contracted provider and CFO project types for OTHER_ETE group`() {
+      val projectTypes = webTestClient.get()
+        .uri("/common/references/project-types?group=OTHER_ETE")
+        .addAdminUiAuthHeader()
+        .exchange()
+        .expectStatus()
+        .isOk
+        .bodyAsObject<ProjectTypesDto>()
+
+      assertThat(projectTypes.projectTypes.map { it.code }).containsExactlyInAnyOrder("UP06", "ET3")
+      assertThat(projectTypes.projectTypes).allMatch { it.group?.name == "OTHER_ETE" }
+    }
+
+    @Test
     fun `should return OK with project types filtered by multiple type groups`() {
       val seededProjectTypes = projectTypeEntityRepository.findAll().filter { it.projectTypeGroup == ProjectTypeGroup.INDIVIDUAL || it.projectTypeGroup == ProjectTypeGroup.ETE }
 

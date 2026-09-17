@@ -50,6 +50,7 @@ fun EnforcementActionEntity.toDto() = EnforcementActionDto(this.id, this.name, t
 
 fun ProjectTypeGroup.toDto() = when (this) {
   ProjectTypeGroup.ETE -> ProjectTypeGroupDto.ETE
+  ProjectTypeGroup.OTHER_ETE -> ProjectTypeGroupDto.OTHER_ETE
   ProjectTypeGroup.GROUP -> ProjectTypeGroupDto.GROUP
   ProjectTypeGroup.INDIVIDUAL -> ProjectTypeGroupDto.INDIVIDUAL
   ProjectTypeGroup.INDUCTION -> ProjectTypeGroupDto.INDUCTION

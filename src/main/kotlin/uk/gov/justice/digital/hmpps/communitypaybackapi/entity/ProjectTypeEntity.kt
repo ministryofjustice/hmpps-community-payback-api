@@ -54,6 +54,7 @@ data class ProjectTypeEntity(
 
 enum class ProjectTypeGroup(val travelTimeSupported: Boolean) {
   ETE(travelTimeSupported = false),
+  OTHER_ETE(travelTimeSupported = false),
   GROUP(travelTimeSupported = true),
   INDIVIDUAL(travelTimeSupported = true),
   INDUCTION(travelTimeSupported = false),
@@ -62,6 +63,7 @@ enum class ProjectTypeGroup(val travelTimeSupported: Boolean) {
   companion object {
     fun fromDto(projectTypeGroupDto: ProjectTypeGroupDto) = when (projectTypeGroupDto) {
       ProjectTypeGroupDto.ETE -> ETE
+      ProjectTypeGroupDto.OTHER_ETE -> OTHER_ETE
       ProjectTypeGroupDto.GROUP -> GROUP
       ProjectTypeGroupDto.INDIVIDUAL -> INDIVIDUAL
       ProjectTypeGroupDto.INDUCTION -> INDUCTION
