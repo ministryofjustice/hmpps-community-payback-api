@@ -11,11 +11,15 @@ annotation class ValidationRulesDsl
 class ValidationRuleBuilder<T, TContext : ValidationContext<T>> {
   private var assume: MutableList<((value: T, ctx: TContext) -> Boolean?)> = mutableListOf()
   private var expect: ((value: T, ctx: TContext) -> Boolean?)? = null
-  private var otherwiseConfigured: Boolean = false
   private var type: Type? = null
   private var field: String? = null
   private var code: String? = null
   private var data: MutableMap<String, (value: T, ctx: TContext) -> Any> = mutableMapOf()
+
+  private var expectConfigurationCount: Int = 0
+  private var otherwiseConfigurationCount: Int = 0
+  private var typeAndCodeConfigurationCount: Int = 0
+  private var fieldConfigurationCount: Int = 0
 
   fun assume(assume: @ValidationRulesDsl (value: T, ctx: TContext) -> Boolean?) {
     this.assume.add(assume)
@@ -26,24 +30,30 @@ class ValidationRuleBuilder<T, TContext : ValidationContext<T>> {
   }
 
   fun expect(expect: @ValidationRulesDsl (value: T, ctx: TContext) -> Boolean?) {
+    this.expectConfigurationCount++
     this.expect = expect
   }
 
   fun expect(expect: @ValidationRulesDsl (value: T) -> Boolean?) {
+    this.expectConfigurationCount++
     this.expect = { value, _ -> expect(value) }
   }
 
   fun otherwise(init: @ValidationRulesDsl ValidationOtherwiseBuilder.() -> Unit) {
-    otherwiseConfigured = true
+    this.otherwiseConfigurationCount++
     ValidationOtherwiseBuilder().apply(init)
   }
 
   fun build(): ValidationRule<T, TContext> {
     checkNotNull(expect) { "The validation rule needs an `expect` block" }
-    check(otherwiseConfigured) { "The validation rule needs an `otherwise` block" }
+    check(expectConfigurationCount == 1) { "The validation rule only allows exactly one `expect` block" }
+    check(otherwiseConfigurationCount > 0) { "The validation rule needs an `otherwise` block" }
+    check(otherwiseConfigurationCount == 1) { "The validation rule only allows exactly one `otherwise` block" }
     checkNotNull(field) { "The validation rule needs to set the field in the `otherwise` block" }
+    check(fieldConfigurationCount == 1) { "The validation rule only allows setting the field once" }
     checkNotNull(type) { "The validation rule needs to set the rule type and code using `isError` or `isWarning` in the `otherwise` block" }
     checkNotNull(code) { "The validation rule needs to set the rule type and code using `isError` or `isWarning` in the `otherwise` block" }
+    check(typeAndCodeConfigurationCount == 1) { "The validation rule only allows setting the rule type and code once" }
 
     return ValidationRule(
       assume = assume,
@@ -58,16 +68,25 @@ class ValidationRuleBuilder<T, TContext : ValidationContext<T>> {
   @ValidationRulesDsl
   inner class ValidationOtherwiseBuilder {
     infix fun isError(code: String) {
+      this@ValidationRuleBuilder.typeAndCodeConfigurationCount++
       this@ValidationRuleBuilder.type = Type.ERROR
       this@ValidationRuleBuilder.code = code
     }
 
     infix fun isWarning(code: String) {
+      this@ValidationRuleBuilder.typeAndCodeConfigurationCount++
       this@ValidationRuleBuilder.type = Type.WARNING
       this@ValidationRuleBuilder.code = code
     }
 
-    var field: String? by this@ValidationRuleBuilder::field
+    var field: String?
+      get() {
+        return this@ValidationRuleBuilder.field
+      }
+      set(value) {
+        this@ValidationRuleBuilder.fieldConfigurationCount++
+        this@ValidationRuleBuilder.field = value
+      }
 
     fun data(init: @ValidationRulesDsl ValidationExtraDataBuilder.() -> Unit) {
       this@ValidationRuleBuilder.ValidationExtraDataBuilder().apply(init)

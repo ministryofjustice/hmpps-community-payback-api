@@ -143,6 +143,26 @@ class ValidatorTest {
     }
 
     @Test
+    fun `throws an IllegalStateException if a rule has too many expect blocks`() {
+      val exception = assertThrows<IllegalStateException> {
+        object : Validator<TestData>() {
+          override fun configureRules() {
+            rule {
+              expect { value -> value.notes != null }
+              expect { value -> value.notes!!.length < 4000 }
+              otherwise {
+                this isError "TOO_MANY_EXPECTS"
+                field = String.random()
+              }
+            }
+          }
+        }
+      }
+
+      assertThat(exception).hasMessage("The validation rule only allows exactly one `expect` block")
+    }
+
+    @Test
     fun `throws an IllegalStateException if a rule is missing an otherwise block`() {
       val exception = assertThrows<IllegalStateException> {
         object : Validator<TestData>() {
@@ -155,6 +175,29 @@ class ValidatorTest {
       }
 
       assertThat(exception).hasMessage("The validation rule needs an `otherwise` block")
+    }
+
+    @Test
+    fun `throws an IllegalStateException if a rule has too many otherwise blocks`() {
+      val exception = assertThrows<IllegalStateException> {
+        object : Validator<TestData>() {
+          override fun configureRules() {
+            rule {
+              expect { value -> value.notes != null }
+              otherwise {
+                this isError "TOO_MANY_OTHERWISES_1"
+                field = String.random()
+              }
+              otherwise {
+                this isError "TOO_MANY_OTHERWISES_2"
+                field = String.random()
+              }
+            }
+          }
+        }
+      }
+
+      assertThat(exception).hasMessage("The validation rule only allows exactly one `otherwise` block")
     }
 
     @Test
@@ -179,6 +222,29 @@ class ValidatorTest {
     }
 
     @Test
+    fun `throws an IllegalStateException if an otherwise block sets the field more than once`() {
+      val exception = assertThrows<IllegalStateException> {
+        object : Validator<TestData>() {
+          override fun configureRules() {
+            rule {
+              expect { value -> value.notes != null }
+              otherwise {
+                this isError "TOO_MANY_FIELDS"
+                field = String.random()
+                field = String.random()
+                data {
+                  "foo" to "bar"
+                }
+              }
+            }
+          }
+        }
+      }
+
+      assertThat(exception).hasMessage("The validation rule only allows setting the field once")
+    }
+
+    @Test
     fun `throws an IllegalStateException if an otherwise block is missing the type and code`() {
       val exception = assertThrows<IllegalStateException> {
         object : Validator<TestData>() {
@@ -197,6 +263,29 @@ class ValidatorTest {
       }
 
       assertThat(exception).hasMessage("The validation rule needs to set the rule type and code using `isError` or `isWarning` in the `otherwise` block")
+    }
+
+    @Test
+    fun `throws an IllegalStateException if an otherwise block sets the type and code more than once`() {
+      val exception = assertThrows<IllegalStateException> {
+        object : Validator<TestData>() {
+          override fun configureRules() {
+            rule {
+              expect { value -> value.notes != null }
+              otherwise {
+                this isError "TOO_MANY_CODES_1"
+                this isWarning "TOO_MANY_CODES_2"
+                field = "notes"
+                data {
+                  "foo" to "bar"
+                }
+              }
+            }
+          }
+        }
+      }
+
+      assertThat(exception).hasMessage("The validation rule only allows setting the rule type and code once")
     }
 
     @Test
