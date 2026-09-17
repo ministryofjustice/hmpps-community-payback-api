@@ -128,7 +128,7 @@ class EducationCourseCompletionListenerIT : IntegrationTestBase() {
         providerCode = pdu.providerCode,
         teamCode = "N56ST",
         activeOnly = true,
-        projectTypeCodes = listOf("ET1", "ET3", "ET5", "UP06"),
+        projectTypeCodes = listOf("ET1", "ET5"),
         response = listOf(
           NDProjectOutcomeStats.valid().copy(
             project = NDProject.valid(ctx).copy(
