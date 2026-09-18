@@ -19,5 +19,5 @@ fun CreateAdjustmentDto.Companion.valid() = CreateAdjustmentDto(
 )
 
 fun CreateAdjustmentDto.Companion.valid(ctx: ApplicationContext) = CreateAdjustmentDto.valid().copy(
-  adjustmentReasonId = ctx.getBean<AdjustmentReasonEntityRepository>().findAll().minByOrNull { it.name }!!.id,
+  adjustmentReasonId = ctx.getBean<AdjustmentReasonEntityRepository>().findAll().single { it.deliusCode == "TTX" }.id,
 )
