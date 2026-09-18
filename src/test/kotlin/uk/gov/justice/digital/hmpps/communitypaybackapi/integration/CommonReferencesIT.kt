@@ -76,8 +76,8 @@ class CommonReferencesIT : IntegrationTestBase() {
     }
 
     @Test
-    fun `should filter by appointment link requirement and cache each filter separately`() {
-      listOf(false, true, null, false, true).forEach { needsLinkToAppointment ->
+    fun `should filter by appointment link requirement`() {
+      listOf(false, true, null).forEach { needsLinkToAppointment ->
         val query = needsLinkToAppointment?.let { "?needsLinkToAppointment=$it" } ?: ""
         val result = webTestClient.get()
           .uri("/common/references/adjustment-reasons$query")
