@@ -10,7 +10,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentsDt
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreatedAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntityRepository
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService.ValidatedAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.SpringEventPublisher
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.ToAppointmentEntity.toAppointmentEntity
@@ -20,7 +19,7 @@ import java.util.UUID
 
 @Service
 class AppointmentCreationService(
-  private val appointmentValidationService: AppointmentValidationService,
+  private val createAppointmentValidationService: CreateAppointmentValidationService,
   private val offenderService: OffenderService,
   private val projectService: ProjectService,
   private val communityPaybackAndDeliusClient: CommunityPaybackAndDeliusClient,
@@ -55,7 +54,7 @@ class AppointmentCreationService(
     val appointmentsToCreate = appointments.map {
       AppointmentToCreate(
         id = appointmentIdGenerator.generateId(),
-        validatedAppointment = appointmentValidationService.validateCreate(it),
+        validatedAppointment = getValidatedCreate(it),
       )
     }
 
@@ -95,6 +94,24 @@ class AppointmentCreationService(
     }
 
     return creationResponse.map { it.toDto() }
+  }
+
+  fun getValidatedCreate(createAppointment: CreateAppointmentDto): ValidatedAppointment<CreateAppointmentDto> {
+    val ctx = AppointmentValidationService.AppointmentValidationContext.Create()
+
+    val validationResult = createAppointmentValidationService.validate(createAppointment, ctx)
+
+    if (validationResult.hasErrors) {
+      throwValidationErrorForAppointmentUpdateCreate(validationResult.errors[0])
+    }
+
+    return ValidatedAppointment(
+      dto = createAppointment,
+      minutesToCredit = ctx.timeToCredit,
+      contactOutcome = ctx.contactOutcome.value,
+      pickUpLocation = ctx.pickUpLocation.value,
+      project = ctx.project!!,
+    )
   }
 
   data class AppointmentToCreate(
