@@ -20,7 +20,11 @@ class ReferenceService(
   val communityCampusPduEntityRepository: CommunityCampusPduEntityRepository,
   val enforcementActionEntityRepository: EnforcementActionEntityRepository,
 ) {
-  fun getAdjustmentReasons() = adjustmentReasonEntity.findAllByOrderByNameAsc().toDto()
+  fun getAdjustmentReasons(needsLinkToAppointment: Boolean?) = if (needsLinkToAppointment != null) {
+    adjustmentReasonEntity.findByNeedsLinkToAppointmentOrderByNameAsc(needsLinkToAppointment)
+  } else {
+    adjustmentReasonEntity.findAllByOrderByNameAsc()
+  }.toDto()
 
   fun getProjectTypes(groups: List<ProjectTypeGroupDto>) = if (groups.isEmpty()) {
     projectTypeEntityRepository.findAllByOrderByNameAsc().toDto()

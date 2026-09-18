@@ -53,7 +53,7 @@ class CommonReferencesIT : IntegrationTestBase() {
     }
 
     @Test
-    fun `should return OK with project types`() {
+    fun `should return OK with adjustment reasons`() {
       val result = webTestClient.get()
         .uri("/common/references/adjustment-reasons")
         .addAdminUiAuthHeader()
@@ -62,8 +62,49 @@ class CommonReferencesIT : IntegrationTestBase() {
         .isOk
         .bodyAsObject<AdjustmentReasonsDto>()
 
-      assertThat(result.adjustmentReasons).hasSize(1)
-      assertThat(result.adjustmentReasons[0].name).isEqualTo("Travel Time")
+      assertThat(result.adjustmentReasons.map { it.deliusCode to it.name }).containsExactlyInAnyOrder(
+        "TTX" to "Travel Time",
+        "A" to "Enforcement Action",
+        "H" to "Engagement completed, hours credited",
+        "S" to "LPT CP Induction Hours",
+        "E" to "Miscellaneous Correction",
+        "B" to "Transfer from Another Order",
+        "D" to "Transfer from Another Provider",
+        "C" to "Transfer to Another Order",
+      )
+      assertThat(result.adjustmentReasons).allMatch { it.maxMinutesAllowed == 180 }
+    }
+
+    @Test
+    fun `should filter by appointment link requirement`() {
+      listOf(false, true, null).forEach { needsLinkToAppointment ->
+        val query = needsLinkToAppointment?.let { "?needsLinkToAppointment=$it" } ?: ""
+        val result = webTestClient.get()
+          .uri("/common/references/adjustment-reasons$query")
+          .addAdminUiAuthHeader()
+          .exchange()
+          .expectStatus()
+          .isOk
+          .bodyAsObject<AdjustmentReasonsDto>()
+
+        val expectedCodes = when (needsLinkToAppointment) {
+          true -> listOf("TTX")
+          false -> listOf("A", "H", "S", "E", "B", "D", "C")
+          null -> listOf("TTX", "A", "H", "S", "E", "B", "D", "C")
+        }
+        assertThat(result.adjustmentReasons.map { it.deliusCode }).containsExactlyInAnyOrderElementsOf(expectedCodes)
+        assertThat(result.adjustmentReasons.map { it.name }).isSorted()
+      }
+    }
+
+    @Test
+    fun `should return bad request for invalid appointment link filter`() {
+      webTestClient.get()
+        .uri("/common/references/adjustment-reasons?needsLinkToAppointment=invalid")
+        .addAdminUiAuthHeader()
+        .exchange()
+        .expectStatus()
+        .isBadRequest
     }
   }
 
