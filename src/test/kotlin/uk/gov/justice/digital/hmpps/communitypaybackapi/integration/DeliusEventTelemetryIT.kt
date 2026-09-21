@@ -275,6 +275,8 @@ class DeliusEventTelemetryIT : IntegrationTestBase() {
     assertThat(properties["triggeredBy"]).isEqualTo(appointment.id.toString())
     assertThat(properties["triggerType"]).isEqualTo(AdjustmentEventTriggerType.APPOINTMENT_TASK.name)
     assertThat(properties["eventType"]).isEqualTo("CREATED")
+    assertThat(properties["adjustmentReasonCode"]).isEqualTo("TTX")
+    assertThat(properties["adjustmentReasonName"]).isEqualTo("Travel Time")
   }
 
   @Test
@@ -286,7 +288,7 @@ class DeliusEventTelemetryIT : IntegrationTestBase() {
     ).persist(ctx)
 
     val adjustmentId = UUID.randomUUID()
-    AdjustmentEventEntity.valid(ctx).copy(
+    val adjustment = AdjustmentEventEntity.valid(ctx).copy(
       id = adjustmentId,
       deliusAdjustmentId = 1L,
       eventType = AdjustmentEventType.CREATE,
@@ -313,6 +315,8 @@ class DeliusEventTelemetryIT : IntegrationTestBase() {
     assertThat(properties["triggeredBy"]).isEqualTo("theusername")
     assertThat(properties["triggerType"]).isEqualTo(AdjustmentEventTriggerType.APPOINTMENT_TASK.name)
     assertThat(properties["eventType"]).isEqualTo("DELETED")
+    assertThat(properties["adjustmentReasonCode"]).isEqualTo(adjustment.adjustmentReason.deliusCode)
+    assertThat(properties["adjustmentReasonName"]).isEqualTo(adjustment.adjustmentReason.name)
   }
 
   @Test
