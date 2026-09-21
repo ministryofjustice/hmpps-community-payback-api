@@ -5,11 +5,11 @@ import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.junit5.MockKExtension
 import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.validation.ValidationResultItem
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionCreditTimeDetailsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionDontCreditTimeDetailsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionResolutionDto
@@ -21,8 +21,12 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompleti
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.EteValidationService
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.EteValidationService.ValidationResult
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.EteValidationService.CourseCompletionValidationContext
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.EteMappers
+import uk.gov.justice.digital.hmpps.communitypaybackapi.unit.common.validation.hasErrors
+import uk.gov.justice.digital.hmpps.communitypaybackapi.unit.common.validation.hasNoErrors
+import uk.gov.justice.digital.hmpps.communitypaybackapi.unit.common.validation.hasNoWarnings
+import uk.gov.justice.digital.hmpps.communitypaybackapi.unit.common.validation.hasWarnings
 
 @ExtendWith(MockKExtension::class)
 class EteValidationServiceTest {
@@ -41,7 +45,7 @@ class EteValidationServiceTest {
   }
 
   @Nested
-  inner class ValidateCourseCompletionResolution {
+  inner class Validate {
 
     @Nested
     inner class CreditTime {
@@ -66,34 +70,47 @@ class EteValidationServiceTest {
 
       @Test
       fun success() {
-        eteValidationService.validateCourseCompletionResolution(
+        val result = eteValidationService.validate(
           baselineCourseCompletionResolution,
-          baselineCourseCompletionEvent,
+          CourseCompletionValidationContext(baselineCourseCompletionEvent),
         )
+
+        assertThat(result).hasNoErrors()
+        assertThat(result).hasNoWarnings()
       }
 
       @Test
       fun `error if crn not provided`() {
-        assertThatThrownBy {
-          eteValidationService.validateCourseCompletionResolution(
-            baselineCourseCompletionResolution.copy(
-              crn = null,
-            ),
-            baselineCourseCompletionEvent,
-          )
-        }.hasMessage("CRN is required for type CREDIT_TIME")
+        val expectedErrors = listOf(
+          ValidationResultItem("$.crn", "CREDIT_TIME_NEEDS_CRN", emptyMap()),
+        )
+
+        val result = eteValidationService.validate(
+          baselineCourseCompletionResolution.copy(
+            crn = null,
+          ),
+          CourseCompletionValidationContext(baselineCourseCompletionEvent),
+        )
+
+        assertThat(result).hasErrors(expectedErrors)
+        assertThat(result).hasNoWarnings()
       }
 
       @Test
       fun `error if credit time details not provided`() {
-        assertThatThrownBy {
-          eteValidationService.validateCourseCompletionResolution(
-            baselineCourseCompletionResolution.copy(
-              creditTimeDetails = null,
-            ),
-            baselineCourseCompletionEvent,
-          )
-        }.hasMessage("Credit Time Details are required for type CREDIT_TIME")
+        val expectedErrors = listOf(
+          ValidationResultItem("$.creditTimeDetails", "CREDIT_TIME_NEEDS_DETAILS", emptyMap()),
+        )
+
+        val result = eteValidationService.validate(
+          baselineCourseCompletionResolution.copy(
+            creditTimeDetails = null,
+          ),
+          CourseCompletionValidationContext(baselineCourseCompletionEvent),
+        )
+
+        assertThat(result).hasErrors(expectedErrors)
+        assertThat(result).hasNoWarnings()
       }
 
       @Test
@@ -101,13 +118,21 @@ class EteValidationServiceTest {
         every {
           contactOutcomeEntityRepository.findByCode(CONTACT_OUTCOME_CODE)
         } returns null
+        val expectedErrors = listOf(
+          ValidationResultItem(
+            "$.creditTimeDetails.contactOutcomeCode",
+            "UNKNOWN_CONTACT_OUTCOME",
+            mapOf("code" to "CTC01"),
+          ),
+        )
 
-        assertThatThrownBy {
-          eteValidationService.validateCourseCompletionResolution(
-            baselineCourseCompletionResolution,
-            baselineCourseCompletionEvent,
-          )
-        }.hasMessage("Cannot find contact outcome with code CTC01")
+        val result = eteValidationService.validate(
+          baselineCourseCompletionResolution,
+          CourseCompletionValidationContext(baselineCourseCompletionEvent),
+        )
+
+        assertThat(result).hasErrors(expectedErrors)
+        assertThat(result).hasNoWarnings()
       }
     }
 
@@ -126,22 +151,30 @@ class EteValidationServiceTest {
 
       @Test
       fun success() {
-        eteValidationService.validateCourseCompletionResolution(
+        val result = eteValidationService.validate(
           baselineCourseCompletionResolution,
-          baselineCourseCompletionEvent,
+          CourseCompletionValidationContext(baselineCourseCompletionEvent),
         )
+
+        assertThat(result).hasNoErrors()
+        assertThat(result).hasNoWarnings()
       }
 
       @Test
       fun `error if don't credit time details are not provided`() {
-        assertThatThrownBy {
-          eteValidationService.validateCourseCompletionResolution(
-            baselineCourseCompletionResolution.copy(
-              dontCreditTimeDetails = null,
-            ),
-            baselineCourseCompletionEvent,
-          )
-        }.hasMessage("Don't Credit Time Details are required for type DONT_CREDIT_TIME")
+        val expectedErrors = listOf(
+          ValidationResultItem("$.dontCreditTimeDetails", "DONT_CREDIT_TIME_NEEDS_DETAILS", emptyMap()),
+        )
+
+        val result = eteValidationService.validate(
+          baselineCourseCompletionResolution.copy(
+            dontCreditTimeDetails = null,
+          ),
+          CourseCompletionValidationContext(baselineCourseCompletionEvent),
+        )
+
+        assertThat(result).hasErrors(expectedErrors)
+        assertThat(result).hasNoWarnings()
       }
     }
 
@@ -168,16 +201,25 @@ class EteValidationServiceTest {
 
       @Test
       fun `if no existing resolution, is valid`() {
-        eteValidationService.validateCourseCompletionResolution(
+        val result = eteValidationService.validate(
           baselineCourseCompletionOutcome,
-          baselineCourseCompletionEvent.copy(
-            resolution = null,
+          CourseCompletionValidationContext(
+            baselineCourseCompletionEvent.copy(
+              resolution = null,
+            ),
           ),
         )
+
+        assertThat(result).hasNoErrors()
+        assertThat(result).hasNoWarnings()
       }
 
       @Test
       fun `if existing resolution is logically identical, return EXISTING_IDENTICAL_RESOLUTION`() {
+        val expectedWarnings = listOf(
+          ValidationResultItem("$.creditTimeDetails", "EXISTING_IDENTICAL_RESOLUTION", emptyMap()),
+        )
+
         val courseCompletionEvent = baselineCourseCompletionEvent.copy(
           resolution = EteCourseCompletionEventResolutionEntity.valid(),
         )
@@ -191,18 +233,27 @@ class EteValidationServiceTest {
           )
         } returns courseCompletionEvent.resolution!!.copy()
 
-        val result = eteValidationService.validateCourseCompletionResolution(
-          resolution = baselineCourseCompletionOutcome,
-          courseCompletionEvent = courseCompletionEvent,
+        val result = eteValidationService.validate(
+          baselineCourseCompletionOutcome,
+          CourseCompletionValidationContext(courseCompletionEvent),
         )
 
-        assertThat(result).isEqualTo(ValidationResult.EXISTING_IDENTICAL_RESOLUTION)
+        assertThat(result).hasNoErrors()
+        assertThat(result).hasWarnings(expectedWarnings)
       }
 
       @Test
       fun `if existing resolution is not logically identical, error`() {
         val courseCompletionEvent = baselineCourseCompletionEvent.copy(
           resolution = EteCourseCompletionEventResolutionEntity.valid(),
+        )
+
+        val expectedErrors = listOf(
+          ValidationResultItem(
+            "$.creditTimeDetails",
+            "RESOLUTION_ALREADY_EXISTS",
+            mapOf("id" to courseCompletionEvent.resolution!!.id),
+          ),
         )
 
         every {
@@ -216,12 +267,13 @@ class EteValidationServiceTest {
           projectCode = "some other project code",
         )
 
-        assertThatThrownBy {
-          eteValidationService.validateCourseCompletionResolution(
-            resolution = baselineCourseCompletionOutcome,
-            courseCompletionEvent = courseCompletionEvent,
-          )
-        }.hasMessage("A resolution has already been defined for this course completion record")
+        val result = eteValidationService.validate(
+          baselineCourseCompletionOutcome,
+          CourseCompletionValidationContext(courseCompletionEvent),
+        )
+
+        assertThat(result).hasErrors(expectedErrors)
+        assertThat(result).hasNoWarnings()
       }
     }
   }
