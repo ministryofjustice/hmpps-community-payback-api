@@ -14,7 +14,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.SentryS
 
 @Service
 class AppointmentBulkUpdateService(
-  private val appointmentUpdateValidationService: AppointmentValidationService,
   private val appointmentRetrievalService: AppointmentRetrievalService,
   private val appointmentUpdateService: AppointmentUpdateService,
   private val sentryService: SentryService,
@@ -41,10 +40,9 @@ class AppointmentBulkUpdateService(
       ?: return result(id, UpdateAppointmentOutcomeResultType.NOT_FOUND)
 
     return try {
-      val validatedUpdate = appointmentUpdateValidationService.validateUpdate(existingAppointment, update)
       appointmentUpdateService.updateAppointment(
         existingAppointment = existingAppointment,
-        validatedUpdate = validatedUpdate,
+        update = update,
         trigger = trigger,
       )
       result(id, UpdateAppointmentOutcomeResultType.SUCCESS)

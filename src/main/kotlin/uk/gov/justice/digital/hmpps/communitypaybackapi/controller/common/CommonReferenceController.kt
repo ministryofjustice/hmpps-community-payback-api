@@ -26,7 +26,7 @@ class CommonReferenceController(val referenceService: ReferenceService) {
 
   @GetMapping("/adjustment-reasons")
   @Operation(
-    description = "Get all adjustment reasons",
+    description = "Get adjustment reasons, optionally filtered by whether an appointment link is required",
     responses = [
       ApiResponse(
         responseCode = "200",
@@ -35,7 +35,10 @@ class CommonReferenceController(val referenceService: ReferenceService) {
     ],
   )
   @Cacheable(CacheKey.Api.GET_ADJUSTMENT_REASONS)
-  fun getAdjustmentReasons(): AdjustmentReasonsDto = referenceService.getAdjustmentReasons()
+  fun getAdjustmentReasons(
+    @RequestParam(required = false)
+    needsLinkToAppointment: Boolean?,
+  ): AdjustmentReasonsDto = referenceService.getAdjustmentReasons(needsLinkToAppointment)
 
   @GetMapping("/project-types")
   @Operation(

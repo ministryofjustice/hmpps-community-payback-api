@@ -9,7 +9,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.ConflictException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.InternalServerErrorException
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentValidationService.ValidatedAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AppointmentUpdatedEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.SpringEventPublisher
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toNDUpdateAppointment
@@ -19,7 +18,7 @@ class AppointmentUpdateService(
   private val appointmentRetrievalService: AppointmentRetrievalService,
   private val appointmentEventService: AppointmentEventService,
   private val communityPaybackAndDeliusClient: CommunityPaybackAndDeliusClient,
-  private val appointmentUpdateValidationService: AppointmentValidationService,
+  private val updateAppointmentValidationService: UpdateAppointmentValidationService,
   private val springEventPublisher: SpringEventPublisher,
 ) {
   private companion object {
@@ -31,18 +30,9 @@ class AppointmentUpdateService(
     existingAppointment: AppointmentDto,
     update: UpdateAppointmentDto,
     trigger: AppointmentEventTrigger,
-  ) = updateAppointment(
-    existingAppointment = existingAppointment,
-    validatedUpdate = appointmentUpdateValidationService.validateUpdate(existingAppointment, update),
-    trigger = trigger,
-  )
-
-  @Transactional
-  fun updateAppointment(
-    existingAppointment: AppointmentDto,
-    validatedUpdate: ValidatedAppointment<UpdateAppointmentDto>,
-    trigger: AppointmentEventTrigger,
   ) {
+    val validatedUpdate = getValidatedUpdate(existingAppointment, update)
+
     val appointmentEntity = appointmentRetrievalService.getOrCreateAppointmentEntity(existingAppointment)
 
     val updateEventDetails = AppointmentUpdatedEvent(
@@ -60,6 +50,27 @@ class AppointmentUpdateService(
     updateDelius(existingAppointment, validatedUpdate)
 
     springEventPublisher.publishEvent(updateEventDetails)
+  }
+
+  private fun getValidatedUpdate(
+    existingAppointment: AppointmentDto,
+    update: UpdateAppointmentDto,
+  ): ValidatedAppointment<UpdateAppointmentDto> {
+    val ctx = AppointmentValidationService.AppointmentValidationContext.Update(existingAppointment)
+
+    val validationResult = updateAppointmentValidationService.validate(update, ctx)
+
+    if (validationResult.hasErrors) {
+      throwValidationErrorForAppointmentUpdateCreate(validationResult.errors[0])
+    }
+
+    return ValidatedAppointment(
+      dto = update,
+      minutesToCredit = ctx.timeToCredit,
+      contactOutcome = ctx.contactOutcome.value,
+      pickUpLocation = ctx.pickUpLocation.value,
+      project = ctx.project!!,
+    )
   }
 
   @SuppressWarnings("SwallowedException", "ThrowsCount")

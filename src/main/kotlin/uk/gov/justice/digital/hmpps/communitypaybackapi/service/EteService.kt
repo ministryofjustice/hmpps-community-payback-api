@@ -8,6 +8,7 @@ import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.badRequest
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.validation.ValidationResultItem
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionDraftResolutionDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionRecommendationDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionResolutionDto
@@ -16,6 +17,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.DeliusAppointmentIdD
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EteCourseCompletionEventDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EteCourseCompletionResolutionStatusDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.EteCourseCompletionShowCourseFailuresDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.BadRequestException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntityRepository
@@ -23,6 +25,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompleti
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventEntityRepository.ResolutionStatus
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.EteCourseCompletionEventResolutionRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourseCompletionMessage
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.EteValidationService.CourseCompletionValidationContext
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.CourseCompletionProcessedEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.CourseCompletionReceivedEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.SpringEventPublisher
@@ -152,9 +155,12 @@ class EteService(
   ) {
     val courseCompletionEvent = getEventOrError(eteCourseCompletionEventId)
 
-    when (eteValidationService.validateCourseCompletionResolution(courseCompletionResolution, courseCompletionEvent)) {
-      EteValidationService.ValidationResult.EXISTING_IDENTICAL_RESOLUTION -> return
-      EteValidationService.ValidationResult.VALID -> Unit
+    val validationContext = CourseCompletionValidationContext(courseCompletionEvent)
+    val validationResult = eteValidationService.validate(courseCompletionResolution, validationContext)
+    if (validationResult.hasErrors) {
+      throwValidationError(validationResult.errors[0])
+    } else if (validationResult.hasWarnings) {
+      return
     }
 
     when (courseCompletionResolution.type) {
@@ -171,6 +177,17 @@ class EteService(
         triggeredBy = contextService.getUserName(),
       ),
     )
+  }
+
+  @Suppress("detekt:ThrowsCount")
+  private fun throwValidationError(error: ValidationResultItem) {
+    when (error.code) {
+      "CREDIT_TIME_NEEDS_CRN" -> throw BadRequestException("CRN is required for type ${CourseCompletionResolutionTypeDto.CREDIT_TIME}")
+      "CREDIT_TIME_NEEDS_DETAILS" -> throw BadRequestException("Credit Time Details are required for type ${CourseCompletionResolutionTypeDto.CREDIT_TIME}")
+      "UNKNOWN_CONTACT_OUTCOME" -> throw BadRequestException("Cannot find contact outcome with code ${error.data["code"]}")
+      "DONT_CREDIT_TIME_NEEDS_DETAILS" -> throw BadRequestException("Don't Credit Time Details are required for type ${CourseCompletionResolutionTypeDto.DONT_CREDIT_TIME}")
+      "RESOLUTION_ALREADY_EXISTS" -> throw BadRequestException("A resolution has already been defined for this course completion record")
+    }
   }
 
   private fun creditTime(
