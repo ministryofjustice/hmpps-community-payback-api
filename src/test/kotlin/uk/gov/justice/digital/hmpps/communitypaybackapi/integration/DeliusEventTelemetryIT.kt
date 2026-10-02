@@ -258,6 +258,7 @@ class DeliusEventTelemetryIT : IntegrationTestBase() {
       .bodyValue(
         CreateAdjustmentDto.valid(ctx).copy(
           appointmentId = appointment.id,
+          minutes = 45,
         ),
       )
       .exchange()
@@ -277,6 +278,7 @@ class DeliusEventTelemetryIT : IntegrationTestBase() {
     assertThat(properties["eventType"]).isEqualTo("CREATED")
     assertThat(properties["adjustmentReasonCode"]).isEqualTo("TTX")
     assertThat(properties["adjustmentReasonName"]).isEqualTo("Travel Time")
+    assertThat(properties["adjustmentMinutes"]).isEqualTo("45")
   }
 
   @Test

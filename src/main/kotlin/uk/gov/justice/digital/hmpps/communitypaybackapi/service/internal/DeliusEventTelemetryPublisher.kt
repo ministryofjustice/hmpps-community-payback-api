@@ -77,6 +77,7 @@ class DeliusEventTelemetryPublisher(
         "crn" to event.appointmentEntity?.crn,
         "deliusAppointmentId" to event.appointmentEntity?.deliusId.toString(),
         "deliusAdjustmentId" to event.deliusAdjustmentId.toString(),
+        "adjustmentMinutes" to event.createDto.minutes.toString(),
         "adjustmentReasonCode" to event.reason.deliusCode,
         "adjustmentReasonName" to event.reason.name,
         "providerCode" to event.appointmentEntity?.providerCode,
