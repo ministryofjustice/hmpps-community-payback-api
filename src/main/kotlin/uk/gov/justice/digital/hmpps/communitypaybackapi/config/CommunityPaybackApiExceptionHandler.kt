@@ -15,6 +15,7 @@ import org.springframework.web.bind.MissingServletRequestParameterException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException
+import org.springframework.web.multipart.support.MissingServletRequestPartException
 import org.springframework.web.servlet.resource.NoResourceFoundException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.controller.internal.NotFoundException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.BadRequestException
@@ -32,6 +33,7 @@ class CommunityPaybackApiExceptionHandler(
   @ExceptionHandler(
     ValidationException::class,
     MissingServletRequestParameterException::class,
+    MissingServletRequestPartException::class,
     BadRequestException::class,
     MethodArgumentNotValidException::class,
     MethodArgumentTypeMismatchException::class,
