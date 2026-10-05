@@ -5,11 +5,15 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.client
 import com.fasterxml.jackson.annotation.JsonProperty
 import io.swagger.v3.oas.annotations.media.Schema
 import org.springframework.cache.annotation.Cacheable
+import org.springframework.core.io.Resource
 import org.springframework.format.annotation.DateTimeFormat
+import org.springframework.http.HttpEntity
+import org.springframework.http.MediaType
 import org.springframework.util.MultiValueMap
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.service.annotation.DeleteExchange
 import org.springframework.web.service.annotation.GetExchange
 import org.springframework.web.service.annotation.PostExchange
@@ -29,7 +33,7 @@ import java.util.UUID
  * only work when using proxy mode (the default). If we ever switch to aspectj weaving, we'd need
  * to move these annotations elsewhere.
  */
-@Suppress("SpringCacheAnnotationsOnInterfaceInspection")
+@Suppress("SpringCacheAnnotationsOnInterfaceInspection", "detekt:TooManyFunctions")
 interface CommunityPaybackAndDeliusClient {
 
   @Cacheable(CacheKey.Delius.GET_PROVIDERS)
@@ -69,6 +73,12 @@ interface CommunityPaybackAndDeliusClient {
     @PathVariable appointmentId: Long,
     @RequestParam username: String,
   ): NDAppointment
+
+  @PostExchange("/appointments/{appointmentId}/documents", contentType = MediaType.MULTIPART_FORM_DATA_VALUE)
+  fun uploadAppointmentDocument(
+    @PathVariable appointmentId: Long,
+    @RequestPart("file") file: HttpEntity<Resource>,
+  ): NDDocumentUploadResponse
 
   @PutExchange("/projects/{projectCode}/appointments/{appointmentId}")
   fun updateAppointment(
@@ -682,3 +692,9 @@ data class NDPersonalCircumstances(
 ) {
   companion object
 }
+
+data class NDDocumentUploadResponse(
+  val documentId: Long,
+  val filename: String,
+  val alfrescoId: String,
+)
