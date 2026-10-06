@@ -41,6 +41,13 @@ class AppointmentDocumentService(
       null
     }
   }
+  fun deleteDocument(deliusAppointmentId: Long, documentId: Long): Boolean = try {
+    communityPaybackAndDeliusClient.deleteAppointmentDocument(deliusAppointmentId, documentId)
+    true
+  } catch (_: WebClientResponseException.NotFound) {
+    false
+  }
+
   private companion object {
     val ALLOWED_EXTENSIONS = setOf(
       "doc", "docx", "rtf", "txt", "dot", "dotm", "docm", "odt", "xml", "wpd", "wri", "wps",
