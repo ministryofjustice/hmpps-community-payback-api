@@ -275,6 +275,20 @@ class AppointmentTaskServiceTest {
   @Nested
   inner class CompleteTravelTimeTaskOnAdjustmentCreation {
     @Test
+    fun `adjustment without an appointment does not complete tasks`() {
+      service.closeTravelTimeTaskOnAdjustmentCreation(
+        AdjustmentCreatedEvent.valid().copy(
+          appointmentEntity = null,
+          trigger = AdjustmentEventTrigger.valid().copy(triggeredBy = "null"),
+        ),
+      )
+
+      verify(exactly = 0) { appointmentTaskEntityRepository.findByAppointmentId(any()) }
+      verify(exactly = 0) { appointmentTaskEntityRepository.save(any()) }
+      verify(exactly = 0) { springEventPublisher.publishEvent(any()) }
+    }
+
+    @Test
     fun `travel time tasks are disabled in the config, do nothing`() {
       setupService(enableTravelTimeTasks = false)
 
@@ -308,9 +322,10 @@ class AppointmentTaskServiceTest {
 
       service.closeTravelTimeTaskOnAdjustmentCreation(
         AdjustmentCreatedEvent.valid().copy(
+          appointmentEntity = task.appointment,
           trigger = AdjustmentEventTrigger.valid().copy(
             triggeredAt = triggeredAt,
-            triggeredBy = task.appointment.id.toString(),
+            triggeredBy = "currentUsername",
           ),
         ),
       )
