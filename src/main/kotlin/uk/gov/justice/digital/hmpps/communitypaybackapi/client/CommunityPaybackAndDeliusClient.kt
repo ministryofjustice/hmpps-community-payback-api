@@ -80,6 +80,12 @@ interface CommunityPaybackAndDeliusClient {
     @RequestPart("file") file: HttpEntity<Resource>,
   ): NDDocumentUploadResponse
 
+  @DeleteExchange("/appointments/{appointmentId}/documents/{documentId}")
+  fun deleteAppointmentDocument(
+    @PathVariable appointmentId: Long,
+    @PathVariable documentId: Long,
+  )
+
   @PutExchange("/projects/{projectCode}/appointments/{appointmentId}")
   fun updateAppointment(
     @PathVariable projectCode: String,

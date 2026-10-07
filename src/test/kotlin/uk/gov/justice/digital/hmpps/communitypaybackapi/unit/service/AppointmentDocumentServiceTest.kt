@@ -105,4 +105,25 @@ class AppointmentDocumentServiceTest {
     assertThatThrownBy { service.uploadDocument(101, MockMultipartFile("file", "test.pdf", null, bytes)) }.isSameAs(failure)
     verify(exactly = 1) { client.uploadAppointmentDocument(101, any()) }
   }
+
+  @Test
+  fun `deletes document`() {
+    every { client.deleteAppointmentDocument(101, 42) } returns Unit
+    assertThat(service.deleteDocument(101, 42)).isTrue()
+    verify(exactly = 1) { client.deleteAppointmentDocument(101, 42) }
+  }
+
+  @Test
+  fun `returns false when appointment or document not found`() {
+    every { client.deleteAppointmentDocument(101, 42) } throws WebClientResponseException.create(404, "Not found", HttpHeaders(), byteArrayOf(), null)
+    assertThat(service.deleteDocument(101, 42)).isFalse()
+  }
+
+  @Test
+  fun `propagates unexpected upstream deletion failures`() {
+    val failure = WebClientResponseException.create(500, "Failure", HttpHeaders(), byteArrayOf(), null)
+    every { client.deleteAppointmentDocument(101, 42) } throws failure
+    assertThatThrownBy { service.deleteDocument(101, 42) }.isSameAs(failure)
+    verify(exactly = 1) { client.deleteAppointmentDocument(101, 42) }
+  }
 }

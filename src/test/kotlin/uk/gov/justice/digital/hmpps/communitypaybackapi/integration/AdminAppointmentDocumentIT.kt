@@ -3,14 +3,18 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.integration
 import com.github.tomakehurst.wiremock.client.WireMock.aMultipart
 import com.github.tomakehurst.wiremock.client.WireMock.binaryEqualTo
 import com.github.tomakehurst.wiremock.client.WireMock.containing
+import com.github.tomakehurst.wiremock.client.WireMock.delete
+import com.github.tomakehurst.wiremock.client.WireMock.deleteRequestedFor
 import com.github.tomakehurst.wiremock.client.WireMock.equalTo
 import com.github.tomakehurst.wiremock.client.WireMock.notFound
+import com.github.tomakehurst.wiremock.client.WireMock.ok
 import com.github.tomakehurst.wiremock.client.WireMock.okJson
 import com.github.tomakehurst.wiremock.client.WireMock.post
 import com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor
 import com.github.tomakehurst.wiremock.client.WireMock.serverError
 import com.github.tomakehurst.wiremock.client.WireMock.stubFor
 import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
+import com.github.tomakehurst.wiremock.client.WireMock.urlMatching
 import com.github.tomakehurst.wiremock.client.WireMock.verify
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
@@ -115,6 +119,51 @@ class AdminAppointmentDocumentIT : IntegrationTestBase() {
       .jsonPath("$operation.requestBody.content['multipart/form-data'].schema.properties.file.format").isEqualTo("binary")
       .jsonPath("$operation.responses['200'].content['application/json'].schema['${'$'}ref']")
       .isEqualTo("#/components/schemas/DocumentUploadResponseDto")
+  }
+
+  @Test
+  fun `deletes document and returns empty success response`() {
+    stubFor(delete(urlEqualTo("$upstreamPath/42")).willReturn(ok()))
+    webTestClient.delete().uri("$endpoint/42").addAdminUiAuthHeader()
+      .exchange().expectStatus().isOk.expectBody().isEmpty
+    verify(1, deleteRequestedFor(urlEqualTo("$upstreamPath/42")))
+  }
+
+  @Test
+  fun `deletion requires authentication`() {
+    webTestClient.delete().uri("$endpoint/42").exchange().expectStatus().isUnauthorized
+    verify(0, deleteRequestedFor(urlEqualTo("$upstreamPath/42")))
+  }
+
+  @Test
+  fun `deletion rejects supervisor role`() {
+    webTestClient.delete().uri("$endpoint/42").addSupervisorUiAuthHeader()
+      .exchange().expectStatus().isForbidden
+    verify(0, deleteRequestedFor(urlEqualTo("$upstreamPath/42")))
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = ["invalid/documents/42", "101/documents/invalid"])
+  fun `deletion rejects invalid IDs`(path: String) {
+    webTestClient.delete().uri("/admin/appointments/$path").addAdminUiAuthHeader()
+      .exchange().expectStatus().isBadRequest
+    verify(0, deleteRequestedFor(urlMatching(".*documents.*")))
+  }
+
+  @Test
+  fun `deletion returns not found for unknown appointment or document`() {
+    stubFor(delete(urlEqualTo("$upstreamPath/42")).willReturn(notFound()))
+    webTestClient.delete().uri("$endpoint/42").addAdminUiAuthHeader()
+      .exchange().expectStatus().isNotFound
+    verify(1, deleteRequestedFor(urlEqualTo("$upstreamPath/42")))
+  }
+
+  @Test
+  fun `reports upstream deletion failure without retrying`() {
+    stubFor(delete(urlEqualTo("$upstreamPath/42")).willReturn(serverError()))
+    webTestClient.delete().uri("$endpoint/42").addAdminUiAuthHeader()
+      .exchange().expectStatus().is5xxServerError
+    verify(1, deleteRequestedFor(urlEqualTo("$upstreamPath/42")))
   }
 
   private fun upload(bytes: ByteArray = fileBytes, filename: String = "evidence.pdf") = BodyInserters.fromMultipartData(
