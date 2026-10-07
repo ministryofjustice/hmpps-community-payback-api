@@ -58,7 +58,7 @@ fun throwValidationErrorForAppointmentUpdateCreate(error: ValidationResultItem) 
 
     "CREDITED_ETE_TIME_EXCEEDS_REMAINING_ETE_TIME" -> {
       val timeToCredit = (error.data["timeToCredit"] as Duration).formatForUser()
-      val remainingEteTime = (error.data["remainingEteTime"] as LocalTime).formatForUser()
+      val remainingEteTime = (error.data["remainingEteTime"] as Duration).formatForUser()
       badRequest("Credited minutes of '$timeToCredit' exceeds remaining allowed ETE time of '$remainingEteTime'")
     }
 
