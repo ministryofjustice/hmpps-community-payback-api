@@ -34,6 +34,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.bodyAsO
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.CommunityPaybackAndDeliusMockServer
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentIdGenerator
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
 import java.time.LocalDate
 import java.util.UUID
 
@@ -289,6 +290,76 @@ class AdminAdjustmentIT : IntegrationTestBase() {
         .bodyValue(request)
         .exchange()
         .expectStatus().isEqualTo(expectedStatus)
+    }
+  }
+
+  @Nested
+  @DisplayName("GET /admin/adjustments/{communityPaybackId}")
+  inner class GetAdjustment {
+    val adjustmentId: UUID = UUID.randomUUID()
+
+    @Test
+    fun `should return unauthorized if no token`() {
+      webTestClient.get()
+        .uri("/admin/adjustments/$adjustmentId")
+        .exchange()
+        .expectStatus()
+        .isUnauthorized
+    }
+
+    @Test
+    fun `should return forbidden if no role`() {
+      webTestClient.get()
+        .uri("/admin/adjustments/$adjustmentId")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .isForbidden
+    }
+
+    @Test
+    fun `should return forbidden if wrong role`() {
+      webTestClient.get()
+        .uri("/admin/adjustments/$adjustmentId")
+        .headers(setAuthorisation(roles = listOf("ROLE_WRONG")))
+        .exchange()
+        .expectStatus()
+        .isForbidden
+    }
+
+    @Test
+    fun `should return adjustment details`() {
+      val adjustment = NDAdjustment.valid().copy(reference = adjustmentId)
+      CommunityPaybackAndDeliusMockServer.setupGetAdjustmentResponse(adjustmentId, adjustment)
+
+      val result = webTestClient.get()
+        .uri("/admin/adjustments/$adjustmentId")
+        .addAdminUiAuthHeader()
+        .exchange()
+        .expectStatus().isOk
+        .bodyAsObject<AdjustmentDto>()
+
+      assertThat(result).isEqualTo(adjustment.toDto())
+    }
+
+    @Test
+    fun `should return not found when adjustment does not exist`() {
+      CommunityPaybackAndDeliusMockServer.setupGetAdjustment404Response(adjustmentId)
+
+      webTestClient.get()
+        .uri("/admin/adjustments/$adjustmentId")
+        .addAdminUiAuthHeader()
+        .exchange()
+        .expectStatus().isNotFound
+    }
+
+    @Test
+    fun `should return bad request for invalid adjustment ID`() {
+      webTestClient.get()
+        .uri("/admin/adjustments/invalid")
+        .addAdminUiAuthHeader()
+        .exchange()
+        .expectStatus().isBadRequest
     }
   }
 

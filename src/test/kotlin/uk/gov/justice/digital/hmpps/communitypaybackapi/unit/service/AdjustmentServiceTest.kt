@@ -7,6 +7,7 @@ import io.mockk.junit5.MockKExtension
 import io.mockk.verify
 import io.mockk.verifyOrder
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -88,6 +89,37 @@ class AdjustmentServiceTest {
     const val EVENT_NUMBER: Int = 68
     val UNPAID_WORK_DETAILS: UnpaidWorkDetailsIdDto = UnpaidWorkDetailsIdDto(CRN, EVENT_NUMBER)
     const val USERNAME = "username"
+  }
+
+  @Nested
+  inner class GetAdjustment {
+    @Test
+    fun success() {
+      val adjustment = NDAdjustment.valid()
+      val id = adjustment.reference!!
+      every { communityPaybackAndDeliusClient.getAdjustment(id) } returns adjustment
+
+      assertThat(service.getAdjustment(id)).isEqualTo(adjustment.toDto())
+      verify(exactly = 1) { communityPaybackAndDeliusClient.getAdjustment(id) }
+    }
+
+    @Test
+    fun `propagates upstream not found`() {
+      val id = UUID.randomUUID()
+      val error = WebClientResponseExceptionFactory.notFound()
+      every { communityPaybackAndDeliusClient.getAdjustment(id) } throws error
+
+      assertThatThrownBy { service.getAdjustment(id) }.isSameAs(error)
+    }
+
+    @Test
+    fun `propagates other upstream errors`() {
+      val id = UUID.randomUUID()
+      val error = WebClientResponseExceptionFactory.badRequest("Some error")
+      every { communityPaybackAndDeliusClient.getAdjustment(id) } throws error
+
+      assertThatThrownBy { service.getAdjustment(id) }.isSameAs(error)
+    }
   }
 
   @Nested

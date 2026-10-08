@@ -49,6 +49,8 @@ class AdjustmentService(
 ) {
   private val logger = LoggerFactory.getLogger(AdjustmentService::class.java)
 
+  fun getAdjustment(adjustmentId: UUID): AdjustmentDto = communityPaybackAndDeliusClient.getAdjustment(adjustmentId).toDto()
+
   fun getAdjustments(crn: String, eventNumber: Int) = communityPaybackAndDeliusClient.getAdjustments(crn, eventNumber).adjustments.map { it.toDto() }
 
   fun getAdjustments(crn: String, eventNumber: Int, pageable: Pageable): Page<AdjustmentDto> {

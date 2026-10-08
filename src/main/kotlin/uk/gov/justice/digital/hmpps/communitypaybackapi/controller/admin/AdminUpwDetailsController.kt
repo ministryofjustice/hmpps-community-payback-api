@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.reactive.function.client.WebClientResponseException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.controller.internal.SupportsIdempotencyKey
 import uk.gov.justice.digital.hmpps.communitypaybackapi.controller.internal.notFound
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AdjustmentDto
@@ -136,6 +137,33 @@ class AdminUpwDetailsController(
     return ResponseEntity
       .status(HttpStatus.CREATED)
       .body(adjustment)
+  }
+
+  @GetMapping(
+    path = ["/adjustments/{communityPaybackId}"],
+    produces = [MediaType.APPLICATION_JSON_VALUE],
+  )
+  @Operation(
+    responses = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Successful response with adjustment details",
+      ),
+      ApiResponse(
+        responseCode = "404",
+        description = "Adjustment not found for the given community payback ID",
+        content = [Content(schema = Schema(implementation = ErrorResponse::class))],
+      ),
+    ],
+  )
+  fun getAdjustment(@PathVariable communityPaybackId: UUID): AdjustmentDto = try {
+    adjustmentsService.getAdjustment(communityPaybackId)
+  } catch (e: WebClientResponseException) {
+    if (e.statusCode == HttpStatus.NOT_FOUND) {
+      notFound("Adjustment", communityPaybackId)
+    } else {
+      throw e
+    }
   }
 
   @DeleteMapping(
