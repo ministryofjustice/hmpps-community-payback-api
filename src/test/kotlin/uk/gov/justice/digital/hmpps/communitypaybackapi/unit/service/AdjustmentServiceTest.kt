@@ -8,6 +8,7 @@ import io.mockk.verify
 import io.mockk.verifyOrder
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -31,11 +32,13 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AdjustmentFilterType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAdjustmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsIdDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentReasonEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentReasonEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.valid
@@ -80,10 +83,23 @@ class AdjustmentServiceTest {
   @RelaxedMockK
   lateinit var adjustmentEventEntityRepository: AdjustmentEventEntityRepository
 
+  @RelaxedMockK
+  lateinit var adjustmentEntityRepository: AdjustmentEntityRepository
+
+  @RelaxedMockK
+  lateinit var adjustmentReasonEntityRepository: AdjustmentReasonEntityRepository
+
   val clock: Clock = ClockConfiguration.MutableClock(Instant.now())
 
   @InjectMockKs
   private lateinit var service: AdjustmentService
+
+  @BeforeEach
+  fun setupAdjustmentRepository() {
+    every { adjustmentReasonEntityRepository.findByDeliusCodeIn(any()) } returns emptyList()
+    every { adjustmentEntityRepository.findAllById(any()) } returns emptyList()
+    every { adjustmentEntityRepository.save(any()) } answers { firstArg() }
+  }
 
   companion object {
     const val CRN: String = "CRN123"
@@ -125,6 +141,18 @@ class AdjustmentServiceTest {
 
   @Nested
   inner class GetAdjustments {
+    @Test
+    fun `links adjustments to their matching local reason`() {
+      val adjustment = NDAdjustment.valid()
+      val reason = AdjustmentReasonEntity.valid().copy(deliusCode = adjustment.reason.code)
+      every { adjustmentReasonEntityRepository.findByDeliusCodeIn(listOf(adjustment.reason.code)) } returns listOf(reason)
+      every { communityPaybackAndDeliusClient.getAdjustments(CRN, EVENT_NUMBER) } returns NDAdjustmentResponse(listOf(adjustment))
+
+      service.getAdjustments(CRN, EVENT_NUMBER)
+
+      verify { adjustmentEntityRepository.save(match { it.adjustmentReason == reason }) }
+    }
+
     @Test
     fun `filters other adjustments before pagination and counts only matches`() {
       val adjustments = listOf(
@@ -174,6 +202,10 @@ class AdjustmentServiceTest {
       val results = service.getAdjustments("X123456", 1)
 
       assertThat(results).hasSameElementsAs(adjustments.map { it.toDto() })
+      verify(exactly = 1) { adjustmentEntityRepository.findAllById(adjustments.mapNotNull { it.reference }) }
+      adjustments.forEach { adjustment ->
+        verify { adjustmentEntityRepository.save(match { it.id == adjustment.reference && it.deliusAdjustmentId == adjustment.id && it.crn == "X123456" && it.deliusEventNumber == 1 }) }
+      }
     }
 
     @ParameterizedTest
@@ -252,6 +284,11 @@ class AdjustmentServiceTest {
 
       val pageable = PageRequest.of(page, 2, direction, sortField)
       val page = service.getAdjustments("123456", 1, pageable)
+
+      verify(exactly = 1) { adjustmentEntityRepository.findAllById(adjustments.mapNotNull { it.reference }) }
+      adjustments.forEach { adjustment ->
+        verify { adjustmentEntityRepository.save(match { it.id == adjustment.reference && it.deliusAdjustmentId == adjustment.id }) }
+      }
 
       assertThat(page.totalPages).isEqualTo(4)
       assertThat(page.totalElements).isEqualTo(8)
