@@ -6,6 +6,8 @@ import java.util.UUID
 
 @Repository
 interface AdjustmentReasonEntityRepository : JpaRepository<AdjustmentReasonEntity, UUID> {
+  fun findByDeliusCodeIn(deliusCodes: Collection<String>): List<AdjustmentReasonEntity>
+
   fun findAllByOrderByNameAsc(): List<AdjustmentReasonEntity>
 
   fun findByNeedsLinkToAppointmentOrderByNameAsc(needsLinkToAppointment: Boolean): List<AdjustmentReasonEntity>
