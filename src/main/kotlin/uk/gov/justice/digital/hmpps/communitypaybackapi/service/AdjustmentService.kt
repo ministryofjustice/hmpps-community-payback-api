@@ -23,8 +23,10 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AdjustmentFilterType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAdjustmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsIdDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.BadRequestException
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventTriggerType
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentReasonEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentIdGenerator.DeleteAdjustmentProperties
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentValidationService.AdjustmentValidationContext
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent
@@ -32,7 +34,9 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.Communi
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AdjustmentDeletedEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.SpringEventPublisher
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toNDAdjustmentRequest
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.updateFrom
 import java.time.Clock
 import java.time.Duration
 import java.time.LocalDate
@@ -47,6 +51,8 @@ class AdjustmentService(
   private val springEventPublisher: SpringEventPublisher,
   private val adjustmentIdGenerator: AdjustmentIdGenerator,
   private val adjustmentEventEntityRepository: AdjustmentEventEntityRepository,
+  private val adjustmentEntityRepository: AdjustmentEntityRepository,
+  private val adjustmentReasonEntityRepository: AdjustmentReasonEntityRepository,
 ) {
   private val logger = LoggerFactory.getLogger(AdjustmentService::class.java)
 
@@ -56,10 +62,12 @@ class AdjustmentService(
     null
   }
 
-  fun getAdjustments(crn: String, eventNumber: Int) = communityPaybackAndDeliusClient.getAdjustments(crn, eventNumber).adjustments.map { it.toDto() }
+  @Transactional
+  fun getAdjustments(crn: String, eventNumber: Int) = retrieveAndSaveAdjustments(crn, eventNumber).map { it.toDto() }
 
+  @Transactional
   fun getAdjustments(crn: String, eventNumber: Int, pageable: Pageable, type: AdjustmentFilterTypeDto? = null): Page<AdjustmentDto> {
-    val allAdjustments = communityPaybackAndDeliusClient.getAdjustments(crn, eventNumber).adjustments.filter {
+    val allAdjustments = retrieveAndSaveAdjustments(crn, eventNumber).filter {
       when (type) {
         AdjustmentFilterTypeDto.TRAVEL_TIME -> it.reason.code == "TTX"
         AdjustmentFilterTypeDto.OTHER -> it.reason.code != "TTX"
@@ -87,6 +95,40 @@ class AdjustmentService(
     val adjustments = allAdjustments.sortedWith(comparator).drop(offset).take(pageable.pageSize).map { it.toDto() }
 
     return PageImpl(adjustments, pageable, allAdjustments.size.toLong())
+  }
+
+  private fun retrieveAndSaveAdjustments(crn: String, eventNumber: Int): List<NDAdjustment> {
+    val adjustments = communityPaybackAndDeliusClient.getAdjustments(crn, eventNumber).adjustments
+    return saveAdjustments(crn, eventNumber, adjustments)
+  }
+
+  private fun saveAdjustments(
+    crn: String,
+    eventNumber: Int,
+    adjustments: List<NDAdjustment>,
+  ): List<NDAdjustment> {
+    if (adjustments.isEmpty()) return emptyList()
+
+    val existingByReference = adjustmentEntityRepository
+      .findAllById(adjustments.mapNotNull { it.reference })
+      .associateBy { it.id }
+    val existingByDeliusId = adjustmentEntityRepository
+      .findByDeliusAdjustmentIdIn(adjustments.map { it.id })
+      .associateBy { it.deliusAdjustmentId }
+      .toMutableMap()
+    val reasons = adjustmentReasonEntityRepository
+      .findByDeliusCodeIn(adjustments.map { it.reason.code }.distinct())
+      .associateBy { it.deliusCode }
+
+    return adjustments.map { adjustment ->
+      val reason = reasons[adjustment.reason.code]
+      val existing = existingByDeliusId[adjustment.id] ?: existingByReference[adjustment.reference]
+      val entity = existing?.updateFrom(adjustment, crn, eventNumber, reason)
+        ?: adjustmentEntityRepository.save(adjustment.toEntity(crn, eventNumber, reason))
+
+      existingByDeliusId[adjustment.id] = entity
+      adjustment.copy(reference = entity.id)
+    }
   }
 
   @Transactional
@@ -138,7 +180,8 @@ class AdjustmentService(
       ),
     )
 
-    return communityPaybackAndDeliusClient.getAdjustment(adjustmentId).toDto()
+    val adjustment = communityPaybackAndDeliusClient.getAdjustment(adjustmentId)
+    return saveAdjustments(crn, deliusEventNumber, listOf(adjustment)).single().toDto()
   }
 
   @Suppress("detekt:ThrowsCount")

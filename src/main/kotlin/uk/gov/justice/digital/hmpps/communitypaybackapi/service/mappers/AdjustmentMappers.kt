@@ -8,8 +8,10 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAdjustmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAdjustmentTypeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.domainevent.AdjustmentCreatedDomainEventDetailsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.domainevent.AdjustmentDeletedDomainEventDetailsDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentReasonEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentType
 import java.time.Duration
 import java.time.LocalDate
 import java.util.UUID
@@ -51,3 +53,38 @@ fun AdjustmentEventEntity.toAdjustmentDeletedDomainEvent() = AdjustmentDeletedDo
   id = this.id,
   adjustmentCreatedEventId = this.referencedEvent!!.id,
 )
+
+fun NDAdjustmentType.toAdjustmentType(): AdjustmentType = when (this) {
+  NDAdjustmentType.NEGATIVE -> AdjustmentType.NEGATIVE
+  NDAdjustmentType.POSITIVE -> AdjustmentType.POSITIVE
+}
+
+fun NDAdjustment.toEntity(
+  crn: String,
+  eventNumber: Int,
+  reason: AdjustmentReasonEntity?,
+) = AdjustmentEntity(
+  id = reference ?: UUID.randomUUID(),
+  deliusAdjustmentId = id,
+  crn = crn,
+  deliusEventNumber = eventNumber,
+  adjustmentType = type.toAdjustmentType(),
+  adjustmentDate = date,
+  minutes = minutes,
+  adjustmentReason = reason,
+)
+
+fun AdjustmentEntity.updateFrom(
+  adjustment: NDAdjustment,
+  crn: String,
+  eventNumber: Int,
+  reason: AdjustmentReasonEntity?,
+) = apply {
+  this.crn = crn
+  deliusEventNumber = eventNumber
+  deliusAdjustmentId = adjustment.id
+  adjustmentType = adjustment.type.toAdjustmentType()
+  adjustmentDate = adjustment.date
+  minutes = adjustment.minutes
+  adjustmentReason = reason
+}

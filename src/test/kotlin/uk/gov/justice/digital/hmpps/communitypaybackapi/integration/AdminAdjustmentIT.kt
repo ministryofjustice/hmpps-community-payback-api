@@ -13,15 +13,19 @@ import org.springframework.data.repository.findByIdOrNull
 import org.springframework.http.MediaType
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAdjustment
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAdjustmentType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDNameCode
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDUpwDetails
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.PageResponse
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AdjustmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAdjustmentDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventType
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentReasonEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentTaskEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentTaskEntityRepository
@@ -56,6 +60,26 @@ class AdminAdjustmentIT : IntegrationTestBase() {
   @Autowired
   lateinit var adjustmentEventEntityRepository: AdjustmentEventEntityRepository
 
+  @Autowired
+  lateinit var adjustmentEntityRepository: AdjustmentEntityRepository
+
+  @Autowired
+  lateinit var adjustmentReasonEntityRepository: AdjustmentReasonEntityRepository
+
+  private fun getAdjustments(crn: String, eventNumber: Int): PageResponse<AdjustmentDto> = webTestClient.get()
+    .uri("/admin/offenders/$crn/unpaid-work-details/$eventNumber/adjustments")
+    .addAdminUiAuthHeader()
+    .exchange()
+    .expectStatus().isOk
+    .bodyAsObject<PageResponse<AdjustmentDto>>()
+
+  private fun retrieveAdjustments(crn: String, eventNumber: Int, adjustments: List<NDAdjustment>): PageResponse<AdjustmentDto> {
+    CommunityPaybackAndDeliusMockServer.setupGetAdjustmentsResponse(crn, eventNumber, adjustments)
+    return getAdjustments(crn, eventNumber)
+  }
+
+  private fun findAdjustment(id: UUID): AdjustmentEntity = requireNotNull(adjustmentEntityRepository.findByIdOrNull(id))
+
   companion object {
     const val CRN = "X123456"
     const val DELIUS_EVENT_NUMBER = 92
@@ -64,6 +88,95 @@ class AdminAdjustmentIT : IntegrationTestBase() {
   @Nested
   @DisplayName("GET /admin/offenders/{crn}/unpaid-work-details/{deliusEventNumber}/adjustments")
   inner class GetAdjustments {
+
+    @Test
+    fun `should insert and update adjustments in the same response`() {
+      val existing = NDAdjustment.valid()
+      retrieveAdjustments(CRN, DELIUS_EVENT_NUMBER, listOf(existing))
+      val updated = existing.copy(minutes = existing.minutes + 5)
+      val added = NDAdjustment.valid().copy(reference = null)
+
+      val response = retrieveAdjustments(CRN, DELIUS_EVENT_NUMBER, listOf(updated, added))
+
+      assertThat(response.content).hasSize(2)
+      assertThat(findAdjustment(requireNotNull(existing.reference)).minutes).isEqualTo(updated.minutes)
+      val generatedId = response.content.single { it.deliusId == added.id }.id
+      assertThat(findAdjustment(generatedId).deliusAdjustmentId).isEqualTo(added.id)
+      assertThat(adjustmentEntityRepository.count()).isEqualTo(2L)
+    }
+
+    @Test
+    fun `uses the reference as the UUID identity and updates changed values`() {
+      val adjustment = NDAdjustment.valid().copy(id = 900001L)
+      retrieveAdjustments("X123456", 1, listOf(adjustment))
+      val original = findAdjustment(adjustment.reference!!)
+      assertThat(original.id).isEqualTo(adjustment.reference)
+      assertThat(original.minutes).isEqualTo(adjustment.minutes)
+
+      val updated = adjustment.copy(
+        id = 900004L,
+        type = NDAdjustmentType.NEGATIVE,
+        date = LocalDate.of(2026, 1, 1),
+        reason = NDNameCode("Updated reason", "UPDATED"),
+        minutes = adjustment.minutes + 1,
+      )
+      retrieveAdjustments("X654321", 2, listOf(updated))
+      val stored = findAdjustment(adjustment.reference)
+      assertThat(stored.crn).isEqualTo("X654321")
+      assertThat(stored.deliusEventNumber).isEqualTo(2)
+      assertThat(stored.id).isEqualTo(updated.reference)
+      assertThat(stored.deliusAdjustmentId).isEqualTo(updated.id)
+      assertThat(stored.adjustmentType.name).isEqualTo(updated.type.name)
+      assertThat(stored.adjustmentDate).isEqualTo(updated.date)
+      assertThat(stored.minutes).isEqualTo(updated.minutes)
+      assertThat(stored.createdAt).isEqualTo(original.createdAt)
+      assertThat(stored.updatedAt).isAfter(original.updatedAt)
+    }
+
+    @Test
+    fun `links known reasons and refreshes the link when the Delius reason changes`() {
+      val adjustment = NDAdjustment.valid().copy(id = 900003L, reason = NDNameCode("Travel Time", "TTX"))
+      retrieveAdjustments("X123456", 1, listOf(adjustment))
+      val travelTimeId = adjustmentReasonEntityRepository.findByDeliusCodeIn(listOf("TTX")).single().id
+      assertThat(findAdjustment(adjustment.reference!!).adjustmentReason?.id).isEqualTo(travelTimeId)
+
+      retrieveAdjustments("X123456", 1, listOf(adjustment.copy(reason = NDNameCode("Correction", "E"))))
+      val correctionId = adjustmentReasonEntityRepository.findByDeliusCodeIn(listOf("E")).single().id
+      assertThat(findAdjustment(adjustment.reference).adjustmentReason?.id).isEqualTo(correctionId)
+
+      retrieveAdjustments("X123456", 1, listOf(adjustment.copy(reason = NDNameCode("Unknown", "UNKNOWN"))))
+      assertThat(findAdjustment(adjustment.reference).adjustmentReason?.id).isNull()
+    }
+
+    @Test
+    fun `repeated retrieval leaves unchanged adjustments untouched and retains missing adjustments`() {
+      val adjustment = NDAdjustment.valid().copy(id = 900002L)
+      retrieveAdjustments("X123456", 1, listOf(adjustment))
+      val original = findAdjustment(adjustment.reference!!)
+
+      retrieveAdjustments("X123456", 1, listOf(adjustment))
+      assertThat(retrieveAdjustments("X123456", 1, emptyList()).content).isEmpty()
+
+      assertThat(findAdjustment(adjustment.reference)).usingRecursiveComparison().isEqualTo(original)
+    }
+
+    @Test
+    fun `generates a UUID and updates adjustments with no Delius reference`() {
+      val adjustment = NDAdjustment.valid().copy(reference = null)
+      CommunityPaybackAndDeliusMockServer.setupGetAdjustmentsResponse("X123456", 1, listOf(adjustment))
+      val first = getAdjustments("X123456", 1).content.single()
+      assertThat(findAdjustment(first.id).deliusAdjustmentId).isEqualTo(adjustment.id)
+
+      val updated = adjustment.copy(minutes = adjustment.minutes + 10)
+      CommunityPaybackAndDeliusMockServer.setupGetAdjustmentsResponse("X123456", 1, listOf(updated))
+      val second = getAdjustments("X123456", 1).content.single()
+      assertThat(second.id).isEqualTo(first.id)
+      assertThat(findAdjustment(first.id).minutes).isEqualTo(updated.minutes)
+
+      CommunityPaybackAndDeliusMockServer.setupGetAdjustmentsResponse("X123456", 1, listOf(updated.copy(reference = UUID.randomUUID())))
+      assertThat(getAdjustments("X123456", 1).content.single().id).isEqualTo(first.id)
+      assertThat(adjustmentEntityRepository.count()).isEqualTo(1L)
+    }
 
     @Test
     fun `should return unauthorized if no token`() {
@@ -113,6 +226,8 @@ class AdminAdjustmentIT : IntegrationTestBase() {
       assertThat(result.page.totalElements).isEqualTo(2)
       assertThat(result.page.totalPages).isEqualTo(2)
       assertThat(result.content.map { it.id }).containsExactly(adjustments[2].reference)
+      assertThat(adjustmentEntityRepository.findAll().map { it.id })
+        .containsExactlyInAnyOrderElementsOf(adjustments.map { it.reference })
     }
 
     @Test
