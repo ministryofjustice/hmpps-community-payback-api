@@ -41,6 +41,14 @@ spring:
       repositories:
         enabled: false
 
+  batch:
+    job:
+      # Prevent the built-in job runner from executing at startup
+      enabled: false
+    jdbc:
+      # Allow the Spring Batch database tables to be created if they don't exist
+      initialize-schema: always
+
 # swagger is selectively enabled via environment-specific config
 springdoc:
   api-docs:
@@ -102,3 +110,7 @@ course:
   completions:
     auto-resolution:
       enabled: true
+
+community-payback:
+  one-off-jobs:
+    enabled: false
