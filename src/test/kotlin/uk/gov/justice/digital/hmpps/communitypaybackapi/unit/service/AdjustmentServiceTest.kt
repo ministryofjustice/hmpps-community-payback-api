@@ -104,12 +104,12 @@ class AdjustmentServiceTest {
     }
 
     @Test
-    fun `propagates upstream not found`() {
+    fun `returns null when adjustment not found`() {
       val id = UUID.randomUUID()
       val error = WebClientResponseExceptionFactory.notFound()
       every { communityPaybackAndDeliusClient.getAdjustment(id) } throws error
 
-      assertThatThrownBy { service.getAdjustment(id) }.isSameAs(error)
+      assertThat(service.getAdjustment(id)).isNull()
     }
 
     @Test

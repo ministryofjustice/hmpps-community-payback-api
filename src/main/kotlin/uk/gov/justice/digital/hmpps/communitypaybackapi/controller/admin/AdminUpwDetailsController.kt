@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.reactive.function.client.WebClientResponseException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.controller.internal.SupportsIdempotencyKey
 import uk.gov.justice.digital.hmpps.communitypaybackapi.controller.internal.notFound
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AdjustmentDto
@@ -156,15 +155,7 @@ class AdminUpwDetailsController(
       ),
     ],
   )
-  fun getAdjustment(@PathVariable communityPaybackId: UUID): AdjustmentDto = try {
-    adjustmentsService.getAdjustment(communityPaybackId)
-  } catch (e: WebClientResponseException) {
-    if (e.statusCode == HttpStatus.NOT_FOUND) {
-      notFound("Adjustment", communityPaybackId)
-    } else {
-      throw e
-    }
-  }
+  fun getAdjustment(@PathVariable communityPaybackId: UUID): AdjustmentDto = adjustmentsService.getAdjustment(communityPaybackId) ?: notFound("Adjustment", communityPaybackId)
 
   @DeleteMapping(
     path = ["/adjustments/{communityPaybackId}"],
