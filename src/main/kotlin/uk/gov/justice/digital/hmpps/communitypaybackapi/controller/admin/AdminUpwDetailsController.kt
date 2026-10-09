@@ -19,9 +19,11 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import uk.gov.justice.digital.hmpps.communitypaybackapi.controller.internal.SupportsIdempotencyKey
 import uk.gov.justice.digital.hmpps.communitypaybackapi.controller.internal.notFound
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AdjustmentDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AdjustmentFilterTypeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAdjustmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsIdDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentService
@@ -73,7 +75,7 @@ class AdminUpwDetailsController(
     produces = [MediaType.APPLICATION_JSON_VALUE],
   )
   @Operation(
-    description = "Returns details about all adjustments for a given CRN and event number",
+    description = "Returns adjustments for a given CRN and event number. Omit type for all adjustments, use OTHER to exclude travel time (TTX), or TRAVEL_TIME for travel time only.",
     responses = [
       ApiResponse(
         responseCode = "200",
@@ -95,7 +97,8 @@ class AdminUpwDetailsController(
     @PathVariable crn: String,
     @PathVariable deliusEventNumber: Int,
     @PageableDefault(size = 10, sort = ["date"], direction = Direction.DESC) pageable: Pageable,
-  ): Page<AdjustmentDto> = adjustmentsService.getAdjustments(crn, deliusEventNumber, pageable)
+    @RequestParam(required = false) type: AdjustmentFilterTypeDto? = null,
+  ): Page<AdjustmentDto> = adjustmentsService.getAdjustments(crn, deliusEventNumber, pageable, type)
 
   @PostMapping(
     path = ["/offenders/{crn}/unpaid-work-details/{deliusEventNumber}/adjustments"],
