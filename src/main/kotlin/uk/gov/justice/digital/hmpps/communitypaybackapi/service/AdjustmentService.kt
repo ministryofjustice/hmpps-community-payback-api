@@ -19,6 +19,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.common.IdGenerator
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.formatForUser
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.validation.ValidationResultItem
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AdjustmentDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AdjustmentFilterTypeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAdjustmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsIdDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.BadRequestException
@@ -57,8 +58,14 @@ class AdjustmentService(
 
   fun getAdjustments(crn: String, eventNumber: Int) = communityPaybackAndDeliusClient.getAdjustments(crn, eventNumber).adjustments.map { it.toDto() }
 
-  fun getAdjustments(crn: String, eventNumber: Int, pageable: Pageable): Page<AdjustmentDto> {
-    val allAdjustments = communityPaybackAndDeliusClient.getAdjustments(crn, eventNumber).adjustments
+  fun getAdjustments(crn: String, eventNumber: Int, pageable: Pageable, type: AdjustmentFilterTypeDto? = null): Page<AdjustmentDto> {
+    val allAdjustments = communityPaybackAndDeliusClient.getAdjustments(crn, eventNumber).adjustments.filter {
+      when (type) {
+        AdjustmentFilterTypeDto.TRAVEL_TIME -> it.reason.code == "TTX"
+        AdjustmentFilterTypeDto.OTHER -> it.reason.code != "TTX"
+        null -> true
+      }
+    }
 
     val offset = PageableUtils.getOffsetAsInteger(pageable)
 

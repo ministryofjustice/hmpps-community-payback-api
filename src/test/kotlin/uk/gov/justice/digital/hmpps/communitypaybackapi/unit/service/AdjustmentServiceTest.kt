@@ -27,6 +27,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAdjustmentRespo
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAdjustmentType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDNameCode
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.validation.ValidationResult
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AdjustmentFilterTypeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAdjustmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsIdDto
@@ -124,6 +125,41 @@ class AdjustmentServiceTest {
 
   @Nested
   inner class GetAdjustments {
+    @Test
+    fun `filters other adjustments before pagination and counts only matches`() {
+      val adjustments = listOf(
+        NDAdjustment.valid().copy(date = LocalDate.of(2026, 8, 8), reason = NDNameCode("Travel Time", "TTX")),
+        NDAdjustment.valid().copy(date = LocalDate.of(2026, 7, 7), reason = NDNameCode("Other", "OTH")),
+        NDAdjustment.valid().copy(date = LocalDate.of(2026, 6, 6), reason = NDNameCode("Other", "OTH")),
+      )
+      every { communityPaybackAndDeliusClient.getAdjustments("X123456", 1) } returns NDAdjustmentResponse(adjustments)
+
+      val result = service.getAdjustments("X123456", 1, PageRequest.of(1, 1, Sort.by("date").descending()), AdjustmentFilterTypeDto.OTHER)
+
+      assertThat(result.content).containsExactly(adjustments[2].toDto())
+      assertThat(result.totalElements).isEqualTo(2)
+      assertThat(result.totalPages).isEqualTo(2)
+    }
+
+    @Test
+    fun `filters travel time and returns an empty page when no adjustments match`() {
+      val travelTime = NDAdjustment.valid().copy(reason = NDNameCode("Travel Time", "TTX"))
+      val other = NDAdjustment.valid().copy(reason = NDNameCode("Other", "OTH"))
+      every { communityPaybackAndDeliusClient.getAdjustments("X123456", 1) } returns NDAdjustmentResponse(listOf(travelTime, other))
+      val pageable = PageRequest.of(0, 10, Sort.by("date"))
+
+      val result = service.getAdjustments("X123456", 1, pageable, AdjustmentFilterTypeDto.TRAVEL_TIME)
+
+      assertThat(result.content).containsExactly(travelTime.toDto())
+      assertThat(result.totalElements).isEqualTo(1)
+
+      every { communityPaybackAndDeliusClient.getAdjustments("X123456", 1) } returns NDAdjustmentResponse(listOf(travelTime))
+      val emptyResult = service.getAdjustments("X123456", 1, pageable, AdjustmentFilterTypeDto.OTHER)
+
+      assertThat(emptyResult.content).isEmpty()
+      assertThat(emptyResult.totalElements).isZero()
+    }
+
     @Test
     fun success() {
       val adjustments = listOf(

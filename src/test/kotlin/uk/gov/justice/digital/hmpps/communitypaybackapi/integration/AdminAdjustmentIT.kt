@@ -14,6 +14,7 @@ import org.springframework.http.MediaType
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAdjustment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseSummary
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDNameCode
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDUpwDetails
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.PageResponse
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AdjustmentDto
@@ -91,6 +92,53 @@ class AdminAdjustmentIT : IntegrationTestBase() {
         .exchange()
         .expectStatus()
         .isForbidden
+    }
+
+    @Test
+    fun `should exclude travel time before pagination`() {
+      val adjustments = listOf(
+        NDAdjustment.valid().copy(date = LocalDate.of(2026, 8, 8), reason = NDNameCode("Travel Time", "TTX")),
+        NDAdjustment.valid().copy(date = LocalDate.of(2026, 7, 7), reason = NDNameCode("Other", "OTH")),
+        NDAdjustment.valid().copy(date = LocalDate.of(2026, 6, 6), reason = NDNameCode("Other", "OTH")),
+      )
+      CommunityPaybackAndDeliusMockServer.setupGetAdjustmentsResponse(CRN, DELIUS_EVENT_NUMBER, adjustments)
+
+      val result = webTestClient.get()
+        .uri("/admin/offenders/$CRN/unpaid-work-details/$DELIUS_EVENT_NUMBER/adjustments?type=OTHER&size=1&page=1")
+        .addAdminUiAuthHeader()
+        .exchange()
+        .expectStatus().isOk
+        .bodyAsObject<PageResponse<AdjustmentDto>>()
+
+      assertThat(result.page.totalElements).isEqualTo(2)
+      assertThat(result.page.totalPages).isEqualTo(2)
+      assertThat(result.content.map { it.id }).containsExactly(adjustments[2].reference)
+    }
+
+    @Test
+    fun `should return travel time only`() {
+      val travelTime = NDAdjustment.valid().copy(reason = NDNameCode("Travel Time", "TTX"))
+      val other = NDAdjustment.valid().copy(reason = NDNameCode("Other", "OTH"))
+      CommunityPaybackAndDeliusMockServer.setupGetAdjustmentsResponse(CRN, DELIUS_EVENT_NUMBER, listOf(travelTime, other))
+
+      val result = webTestClient.get()
+        .uri("/admin/offenders/$CRN/unpaid-work-details/$DELIUS_EVENT_NUMBER/adjustments?type=TRAVEL_TIME")
+        .addAdminUiAuthHeader()
+        .exchange()
+        .expectStatus().isOk
+        .bodyAsObject<PageResponse<AdjustmentDto>>()
+
+      assertThat(result.page.totalElements).isEqualTo(1)
+      assertThat(result.content.map { it.id }).containsExactly(travelTime.reference)
+    }
+
+    @Test
+    fun `should reject invalid adjustment filter type`() {
+      webTestClient.get()
+        .uri("/admin/offenders/$CRN/unpaid-work-details/$DELIUS_EVENT_NUMBER/adjustments?type=Invalid")
+        .addAdminUiAuthHeader()
+        .exchange()
+        .expectStatus().isBadRequest
     }
 
     @Test
