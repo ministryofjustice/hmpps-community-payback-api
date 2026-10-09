@@ -465,6 +465,13 @@ object CommunityPaybackAndDeliusMockServer {
     )
   }
 
+  fun setupGetAdjustment404Response(reference: UUID) {
+    WireMock.stubFor(
+      get("/community-payback-and-delius/adjustments/$reference")
+        .willReturn(aResponse().withStatus(404)),
+    )
+  }
+
   fun setupGetAdjustmentResponse(
     reference: UUID,
     adjustment: NDAdjustment,

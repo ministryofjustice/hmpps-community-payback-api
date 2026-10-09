@@ -138,6 +138,25 @@ class AdminUpwDetailsController(
       .body(adjustment)
   }
 
+  @GetMapping(
+    path = ["/adjustments/{communityPaybackId}"],
+    produces = [MediaType.APPLICATION_JSON_VALUE],
+  )
+  @Operation(
+    responses = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Successful response with adjustment details",
+      ),
+      ApiResponse(
+        responseCode = "404",
+        description = "Adjustment not found for the given community payback ID",
+        content = [Content(schema = Schema(implementation = ErrorResponse::class))],
+      ),
+    ],
+  )
+  fun getAdjustment(@PathVariable communityPaybackId: UUID): AdjustmentDto = adjustmentsService.getAdjustment(communityPaybackId) ?: notFound("Adjustment", communityPaybackId)
+
   @DeleteMapping(
     path = ["/adjustments/{communityPaybackId}"],
     produces = [MediaType.APPLICATION_JSON_VALUE],
