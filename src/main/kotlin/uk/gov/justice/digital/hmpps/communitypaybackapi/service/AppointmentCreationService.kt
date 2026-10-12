@@ -5,10 +5,10 @@ import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCreateAppointments
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCreatedAppointment
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.IdGenerator
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreatedAppointmentDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.SpringEventPublisher
@@ -53,7 +53,7 @@ class AppointmentCreationService(
 
     val appointmentsToCreate = appointments.map {
       AppointmentToCreate(
-        id = appointmentIdGenerator.generateId(),
+        id = appointmentIdGenerator.generateId(it),
         validatedAppointment = getValidatedCreate(it),
       )
     }
@@ -123,10 +123,10 @@ class AppointmentCreationService(
 }
 
 interface AppointmentIdGenerator {
-  fun generateId(): UUID
+  fun generateId(dto: CreateAppointmentDto): UUID
 }
 
 @Service
 class DefaultAppointmentIdGenerator : AppointmentIdGenerator {
-  override fun generateId() = AppointmentEntity.generateId()
+  override fun generateId(dto: CreateAppointmentDto) = IdGenerator(CreateAppointmentDto::class).generateId(dto)
 }

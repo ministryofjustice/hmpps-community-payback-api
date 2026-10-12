@@ -107,7 +107,7 @@ class AppointmentCreationServiceTest {
     fun `create appointments persists data, sends to ND and raises a domain events`() {
       val appointment1Id = UUID.randomUUID()
       val appointment2Id = UUID.randomUUID()
-      every { appointmentIdGenerator.generateId() } returnsMany listOf(appointment1Id, appointment2Id)
+      every { appointmentIdGenerator.generateId(any()) } returnsMany listOf(appointment1Id, appointment2Id)
 
       val createAppointment1Dto = CreateAppointmentDto.valid().copy(crn = CRN, deliusEventNumber = DELIUS_EVENT_NUMBER, projectCode = PROJECT_CODE)
       val createAppointment2Dto = CreateAppointmentDto.valid().copy(crn = CRN, deliusEventNumber = DELIUS_EVENT_NUMBER, projectCode = PROJECT_CODE)
