@@ -143,6 +143,11 @@ interface CommunityPaybackAndDeliusClient {
     @RequestParam params: MultiValueMap<String, String>,
   ): PageResponse<NDAppointmentSummary>
 
+  @DeleteExchange("/appointments/{reference}")
+  fun deleteAppointment(
+    @PathVariable reference: UUID,
+  )
+
   @GetExchange("/case/{crn}/summary")
   fun getUpwDetailsSummary(@PathVariable crn: String, @RequestParam username: String?): NDCaseDetailsSummary
 
