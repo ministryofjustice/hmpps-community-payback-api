@@ -1,7 +1,9 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.service
 
 import jakarta.transaction.Transactional
+import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
+import org.springframework.web.reactive.function.client.WebClientResponseException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCreateAppointments
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCreatedAppointment
@@ -51,10 +53,11 @@ class AppointmentCreationService(
     require(createAppointmentsDto.appointments.isNotEmpty()) { "At least one appointment must be provided" }
     require(createAppointmentsDto.appointments.count { it.projectCode != createAppointmentsDto.projectCode } == 0) { "All appointments must be for the same project code" }
 
-    val appointmentsToCreate = appointments.map {
+    val appointmentIds = appointments.map { appointmentIdGenerator.generateId(it) }
+    val appointmentsToCreate = appointments.zip(appointmentIds).map { (appointment, id) ->
       AppointmentToCreate(
-        id = appointmentIdGenerator.generateId(it),
-        validatedAppointment = getValidatedCreate(it),
+        id = id,
+        validatedAppointment = getValidatedCreate(appointment),
       )
     }
 
@@ -62,6 +65,8 @@ class AppointmentCreationService(
     require(project != null) { "A valid project must be used" }
     val projectType = projectService.getProjectTypeForCode(project.projectType.code)
     require(projectType != null) { "A valid project type must be used" }
+
+    appointmentIds.forEach { deleteOrphanedAppointmentIfExists(it) }
 
     val creationResponse = communityPaybackAndDeliusClient.createAppointments(
       projectCode = projectCode,
@@ -94,6 +99,16 @@ class AppointmentCreationService(
     }
 
     return creationResponse.map { it.toDto() }
+  }
+
+  private fun deleteOrphanedAppointmentIfExists(reference: UUID) {
+    try {
+      communityPaybackAndDeliusClient.deleteAppointment(reference)
+    } catch (e: WebClientResponseException) {
+      if (e.statusCode != HttpStatus.NOT_FOUND) {
+        throw e
+      }
+    }
   }
 
   fun getValidatedCreate(createAppointment: CreateAppointmentDto): ValidatedAppointment<CreateAppointmentDto> {

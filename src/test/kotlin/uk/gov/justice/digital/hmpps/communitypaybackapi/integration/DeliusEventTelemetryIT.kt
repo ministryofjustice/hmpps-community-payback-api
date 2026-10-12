@@ -65,6 +65,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourse
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentIdGenerator
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentCreationService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventTrigger
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentIdGenerator
 import uk.gov.justice.hmpps.sqs.HmppsQueueService
 import uk.gov.justice.hmpps.sqs.MissingQueueException
 import java.time.LocalDate
@@ -96,6 +97,9 @@ class DeliusEventTelemetryIT : IntegrationTestBase() {
   @MockitoSpyBean
   lateinit var adjustmentIdGenerator: AdjustmentIdGenerator
 
+  @MockitoSpyBean
+  lateinit var appointmentIdGenerator: AppointmentIdGenerator
+
   companion object {
     const val QUEUE_NAME = "educationcoursecompletionevents"
 
@@ -122,6 +126,10 @@ class DeliusEventTelemetryIT : IntegrationTestBase() {
 
   @Test
   fun `should track telemetry when an appointment is created`() {
+    val appointmentId = UUID.randomUUID()
+    doReturn(appointmentId).whenever(appointmentIdGenerator).generateId(any())
+    CommunityPaybackAndDeliusMockServer.setupDeleteAppointmentResponse(appointmentId)
+
     CommunityPaybackAndDeliusMockServer.Aggregates.setupGetDataMocksForCreateAppointment(
       crn = CRN,
       eventNumber = EVENT_NUMBER,
@@ -378,6 +386,10 @@ class DeliusEventTelemetryIT : IntegrationTestBase() {
         notes = "Some notes",
       ),
     )
+
+    val appointmentId = UUID.randomUUID()
+    doReturn(appointmentId).whenever(appointmentIdGenerator).generateId(any())
+    CommunityPaybackAndDeliusMockServer.setupDeleteAppointmentResponse(appointmentId)
 
     CommunityPaybackAndDeliusMockServer.Aggregates.setupGetDataMocksForCreateAppointment(
       crn = CRN,
