@@ -5,11 +5,13 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ArnsClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CaseDetailsSummaryDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CommonCaseDetailsSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.OffenderNameDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.PersonalCircumstancesDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.PersonalCircumstancesTypeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsIdDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toCommonDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDomain
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toOffenderNameDto
@@ -31,6 +33,8 @@ class OffenderService(
     val (crn, deliusEventNumber) = upwDetailsId
     return getOffenderSummaryByCrn(crn, userName)?.unpaidWorkDetails?.firstOrNull { it.eventNumber == deliusEventNumber }
   }
+
+  fun getCommonOffenderSummaryByCrn(crn: String, userName: String?): CommonCaseDetailsSummaryDto? = getOffenderSummaryByCrn(crn, userName)?.toCommonDto()
 
   fun getOffenderSummaryByCrn(crn: String, userName: String?): CaseDetailsSummaryDto? = try {
     communityPaybackAndDeliusClient.getUpwDetailsSummary(crn, userName).toDto()
