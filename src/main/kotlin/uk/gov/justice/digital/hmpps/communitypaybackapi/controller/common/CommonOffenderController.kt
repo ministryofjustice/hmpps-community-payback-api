@@ -13,15 +13,15 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toCommon
 
 @CommonController
 @RequestMapping(
-  "/common",
+  "/common/offenders",
   produces = [MediaType.APPLICATION_JSON_VALUE],
 )
 class CommonOffenderController(private val offenderService: OffenderService, private val contextService: ContextService) {
-  @GetMapping("/offenders/{crn}/summary")
+  @GetMapping("/{crn}/summary")
   @Operation(description = "Get offender summary by CRN")
   fun getOffenderSummary(@PathVariable crn: String): CommonCaseDetailsSummaryDto = offenderService.getOffenderSummaryByCrn(crn, contextService.getUserName())?.toCommonDto()
     ?: notFound("Offender Summary", crn)
 
-  @GetMapping("/offenders/{crn}/riskSummary")
+  @GetMapping("/{crn}/riskSummary")
   fun getRisk(@PathVariable crn: String): String = offenderService.getRiskSummary(crn) ?: notFound("Risk Summary", crn)
 }

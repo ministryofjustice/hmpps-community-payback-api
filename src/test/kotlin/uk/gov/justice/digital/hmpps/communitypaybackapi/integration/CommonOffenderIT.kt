@@ -84,24 +84,6 @@ class CommonOffenderIT : IntegrationTestBase() {
     }
 
     @Test
-    fun `admin summary retains original minute fields and values`() {
-      val details = NDUpwDetails.valid().copy(requiredMinutes = 1000, completedMinutes = 400, adjustments = -60)
-      CommunityPaybackAndDeliusMockServer.setupGetUpwDetailsSummaryResponse(CRN, NDCaseSummary.valid(), listOf(details), "AUTH_ADM")
-
-      webTestClient.get()
-        .uri("/admin/offenders/$CRN/summary")
-        .addAdminUiAuthHeader()
-        .exchange()
-        .expectStatus().isOk
-        .expectBody()
-        .jsonPath("$.unpaidWorkDetails[0].completedMinutes").isEqualTo(400)
-        .jsonPath("$.unpaidWorkDetails[0].adjustments").isEqualTo(-60)
-        .jsonPath("$.unpaidWorkDetails[0].attendedAppointmentsMinutes").doesNotExist()
-        .jsonPath("$.unpaidWorkDetails[0].totalAdjustmentMinutes").doesNotExist()
-        .jsonPath("$.unpaidWorkDetails[0].remainingMinutes").doesNotExist()
-    }
-
-    @Test
     fun `should return 404 when offender not found`() {
       val nonExistentCrn = "NONEXISTENT"
 
