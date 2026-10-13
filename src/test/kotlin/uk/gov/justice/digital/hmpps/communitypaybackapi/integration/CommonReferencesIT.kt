@@ -67,10 +67,20 @@ class CommonReferencesIT : IntegrationTestBase() {
         "A" to "Enforcement Action",
         "H" to "Engagement completed, hours credited",
         "S" to "LPT CP Induction Hours",
-        "E" to "Miscellaneous Correction",
+        "E" to "Miscellaneous correction",
         "B" to "Transfer from Another Order",
-        "D" to "Transfer from Another Provider",
+        "D" to "Transfer from another provider",
         "C" to "Transfer to Another Order",
+      )
+      assertThat(result.adjustmentReasons.map { it.deliusCode to it.hintText }).containsExactlyInAnyOrder(
+        "TTX" to null,
+        "A" to null,
+        "H" to "When the person on probation has less than an hour left",
+        "S" to null,
+        "E" to null,
+        "B" to null,
+        "D" to "For example, Scotland, the Channel Islands, Gibraltar or internationally",
+        "C" to null,
       )
       assertThat(result.adjustmentReasons).allMatch { it.maxMinutesAllowed == 180 }
     }
