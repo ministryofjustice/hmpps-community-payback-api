@@ -14,6 +14,7 @@ generic-service:
     host: app-hostname.local # override per environment
     tlsSecretName: hmpps-community-payback-api-cert
     annotations:
+      nginx.ingress.kubernetes.io/proxy-body-size: "101m"
       # See HmppsQueueResource for why this needs securing in the ingress
       nginx.ingress.kubernetes.io/server-snippet: |
         server_tokens off;
