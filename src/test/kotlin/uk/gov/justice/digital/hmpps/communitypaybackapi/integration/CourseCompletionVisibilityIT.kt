@@ -14,7 +14,6 @@ import java.time.OffsetDateTime
 @TestPropertySource(
   properties = [
     "course.completions.visibility.show-all=false",
-    "course.completions.visibility.environments=integrationtest",
     "course.completions.visibility.offices[0].name=Office A",
     "course.completions.visibility.offices[0].from=2026-10-01T00:00:00Z",
     "course.completions.visibility.offices[1].name=Office B",
@@ -61,23 +60,6 @@ class CourseCompletionVisibilityIT : IntegrationTestBase() {
       .jsonPath("$.page.totalPages").isEqualTo(2)
       .jsonPath("$.content.length()").isEqualTo(1)
       .jsonPath("$.content[0].id").isEqualTo(events[1].id.toString())
-  }
-
-  @Test
-  fun `prod-only rules do not restrict a non-production endpoint`() {
-    val originalEnvironments = visibility.environments
-    try {
-      visibility.environments = listOf("prod")
-      webTestClient.get()
-        .uri("/admin/providers/${events.first().pdu.providerCode}/course-completions")
-        .addAdminUiAuthHeader()
-        .exchange()
-        .expectStatus().isOk
-        .expectBody()
-        .jsonPath("$.page.totalElements").isEqualTo(5)
-    } finally {
-      visibility.environments = originalEnvironments
-    }
   }
 
   @Test

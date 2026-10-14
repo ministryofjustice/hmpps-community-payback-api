@@ -48,7 +48,6 @@ class EteService(
 
   @Value("\${course.completions.auto-resolution.enabled:false}")
   private val courseCompletionAutoResolutionEnabled: Boolean,
-  private val environmentService: EnvironmentService,
   private val courseCompletionVisibilityConfig: CourseCompletionVisibilityConfig = CourseCompletionVisibilityConfig(),
 ) {
   companion object {
@@ -113,7 +112,7 @@ class EteService(
       fromDate,
       toDate,
       pageable,
-      visibility = courseCompletionVisibilityConfig.takeIf { it.appliesTo(environmentService.environment.activeProfiles) },
+      visibility = courseCompletionVisibilityConfig.takeUnless { it.showAll },
     )
 
     return page.map { it.toDto() }

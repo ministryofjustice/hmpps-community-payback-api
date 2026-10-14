@@ -13,9 +13,6 @@ import java.time.OffsetDateTime
 @ConfigurationProperties("course.completions.visibility")
 class CourseCompletionVisibilityConfig {
   var showAll: Boolean = true
-  var environments: List<String> = listOf("prod")
-
-  fun appliesTo(activeProfiles: Array<String>): Boolean = !showAll && environments.any { configured -> activeProfiles.any { it.equals(configured, ignoreCase = true) } }
 
   @field:Valid
   var offices: List<Office> = emptyList()

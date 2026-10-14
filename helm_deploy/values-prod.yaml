@@ -29,6 +29,14 @@ generic-service:
     TASKS_TRAVEL_TIME_ENABLED: false
     COURSE_COMPLETIONS_AUTO_RESOLUTION_ENABLED: false
 
+    # Restrict production to configured offices and inclusive completion start timestamps.
+    # No configured offices means no completions appear in the admin list.
+    COURSE_COMPLETIONS_VISIBILITY_SHOW_ALL: "false"
+    # COURSE_COMPLETIONS_VISIBILITY_OFFICES_0_NAME: "Office A"
+    # COURSE_COMPLETIONS_VISIBILITY_OFFICES_0_FROM: "2026-10-01T00:00:00+01:00"
+    # COURSE_COMPLETIONS_VISIBILITY_OFFICES_1_NAME: "Office B"
+    # COURSE_COMPLETIONS_VISIBILITY_OFFICES_1_FROM: "2026-11-01T00:00:00Z"
+
   postgresDatabaseRestore:
     enabled: true
     timeout: 10800
