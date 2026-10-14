@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.badRequest
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.validation.ValidationResultItem
+import uk.gov.justice.digital.hmpps.communitypaybackapi.config.CourseCompletionVisibilityConfig
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionDraftResolutionDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionRecommendationDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionResolutionDto
@@ -47,6 +48,7 @@ class EteService(
 
   @Value("\${course.completions.auto-resolution.enabled:false}")
   private val courseCompletionAutoResolutionEnabled: Boolean,
+  private val courseCompletionVisibilityConfig: CourseCompletionVisibilityConfig = CourseCompletionVisibilityConfig(),
 ) {
   companion object {
     const val ETE_ALLOWANCE_OF_TOTAL_REQUIREMENT = 0.3
@@ -110,6 +112,7 @@ class EteService(
       fromDate,
       toDate,
       pageable,
+      visibility = courseCompletionVisibilityConfig.takeUnless { it.showAll },
     )
 
     return page.map { it.toDto() }

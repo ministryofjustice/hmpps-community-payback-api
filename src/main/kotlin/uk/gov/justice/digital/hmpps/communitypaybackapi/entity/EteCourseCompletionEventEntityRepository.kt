@@ -2,29 +2,20 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.entity
 
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
+import org.springframework.data.jpa.domain.Specification
 import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor
 import org.springframework.data.jpa.repository.Query
 import org.springframework.stereotype.Repository
+import uk.gov.justice.digital.hmpps.communitypaybackapi.config.CourseCompletionVisibilityConfig
 import java.time.OffsetDateTime
 import java.util.UUID
 
 @Repository
-interface EteCourseCompletionEventEntityRepository : JpaRepository<EteCourseCompletionEventEntity, UUID> {
+interface EteCourseCompletionEventEntityRepository :
+  JpaRepository<EteCourseCompletionEventEntity, UUID>,
+  JpaSpecificationExecutor<EteCourseCompletionEventEntity> {
 
-  @Query(
-    """
-    SELECT e FROM EteCourseCompletionEventEntity e
-    LEFT JOIN e.resolution r
-    WHERE e.pdu.providerCode = :providerCode 
-    AND ((CAST(:pduId AS uuid) IS NULL) OR (e.pdu.id = :pduId))
-    AND (:officesCount = 0 OR e.office IN :offices)
-    AND ((:#{#resolutionStatus.name()} = 'ANY') OR (:#{#resolutionStatus.name()} = 'RESOLVED' AND r IS NOT NULL) OR (:#{#resolutionStatus.name()} = 'UNRESOLVED' AND r IS NULL))
-    AND (e.status = 'PASSED' OR (:#{#courseFailures.name()} = 'SHOW_ALL') OR (:#{#courseFailures.name()} = 'SHOW_ONLY_WHEN_MAX_ATTEMPTS_REACHED' AND MOD(e.attempts, 3) = 0))
-    AND (:externalReference IS NULL OR e.externalReference = :externalReference)
-    AND (cast(:fromDate as timestamp) IS NULL OR e.completionDateTime >= :fromDate)
-    AND (cast(:toDate as timestamp) IS NULL OR e.completionDateTime <= :toDate)
-  """,
-  )
   fun findAllWithFilters(
     providerCode: String,
     pduId: UUID?,
@@ -36,7 +27,21 @@ interface EteCourseCompletionEventEntityRepository : JpaRepository<EteCourseComp
     fromDate: OffsetDateTime?,
     toDate: OffsetDateTime?,
     pageable: Pageable,
-  ): Page<EteCourseCompletionEventEntity>
+    visibility: CourseCompletionVisibilityConfig? = null,
+  ): Page<EteCourseCompletionEventEntity> = findAll(
+    Specification.allOf(
+      EteCourseCompletionEventSpecifications.provider(providerCode),
+      EteCourseCompletionEventSpecifications.pdu(pduId),
+      EteCourseCompletionEventSpecifications.offices(offices.takeIf { officesCount > 0 }),
+      EteCourseCompletionEventSpecifications.resolution(resolutionStatus),
+      EteCourseCompletionEventSpecifications.courseFailures(courseFailures),
+      EteCourseCompletionEventSpecifications.externalReference(externalReference),
+      EteCourseCompletionEventSpecifications.completedFrom(fromDate),
+      EteCourseCompletionEventSpecifications.completedTo(toDate),
+      EteCourseCompletionEventSpecifications.visibleOffices(visibility),
+    ),
+    pageable,
+  )
 
   @Query(
     """SELECT e FROM EteCourseCompletionEventEntity e

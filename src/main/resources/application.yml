@@ -105,5 +105,15 @@ tasks:
 
 course:
   completions:
+    visibility:
+      show-all: ${COURSE_COMPLETIONS_VISIBILITY_SHOW_ALL:true}
+      offices: []
+      # Replace offices: [] with the list below to configure offices and their inclusive completion start timestamps.
+      # Office names must exactly match incoming records. Set show-all to false in the deployment Helm values to apply these rules.
+      # offices:
+      #   - name: "Office A"
+      #     from: "2026-10-01T00:00:00+01:00"
+      #   - name: "Office B"
+      #     from: "2026-11-01T00:00:00Z"
     auto-resolution:
       enabled: true
