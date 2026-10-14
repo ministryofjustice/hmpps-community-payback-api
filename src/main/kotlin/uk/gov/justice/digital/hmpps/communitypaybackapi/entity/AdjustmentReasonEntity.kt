@@ -15,8 +15,11 @@ data class AdjustmentReasonEntity(
   val id: UUID,
   val deliusCode: String,
   val name: String,
+  val displayName: String?,
+  val hintText: String?,
   val maxMinutesAllowed: Int,
   val needsLinkToAppointment: Boolean,
+  val rank: Int,
 ) {
   @Suppress("USELESS_IS_CHECK")
   override fun equals(other: Any?): Boolean {
@@ -36,6 +39,8 @@ data class AdjustmentReasonEntity(
   override fun hashCode(): Int = this.asHibernateProxy()?.hibernateLazyInitializer?.persistentClass?.hashCode() ?: javaClass.hashCode()
 
   override fun toString(): String = "AdjustmentReason(id=$id, code='$deliusCode', name='$name'"
+
+  fun toDisplayString() = displayName ?: name
 
   companion object
 }

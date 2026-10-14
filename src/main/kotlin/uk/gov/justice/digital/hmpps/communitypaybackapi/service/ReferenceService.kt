@@ -21,9 +21,9 @@ class ReferenceService(
   val enforcementActionEntityRepository: EnforcementActionEntityRepository,
 ) {
   fun getAdjustmentReasons(needsLinkToAppointment: Boolean?) = if (needsLinkToAppointment != null) {
-    adjustmentReasonEntity.findByNeedsLinkToAppointmentOrderByNameAsc(needsLinkToAppointment)
+    adjustmentReasonEntity.findByNeedsLinkToAppointmentOrderByRankAscNameAsc(needsLinkToAppointment)
   } else {
-    adjustmentReasonEntity.findAllByOrderByNameAsc()
+    adjustmentReasonEntity.findAllByOrderByRankAscNameAsc()
   }.toDto()
 
   fun getProjectTypes(groups: List<ProjectTypeGroupDto>) = if (groups.isEmpty()) {

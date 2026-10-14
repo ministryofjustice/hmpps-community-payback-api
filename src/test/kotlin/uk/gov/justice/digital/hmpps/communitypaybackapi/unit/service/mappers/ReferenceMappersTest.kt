@@ -36,12 +36,14 @@ class ReferenceMappersTest {
         AdjustmentReasonEntity.valid().copy(
           id = UUID.fromString("e68f2cd5-c6f2-4ed8-af66-cd9a46d5fe77"),
           name = "reason 1",
+          displayName = null,
           deliusCode = "ND1",
           maxMinutesAllowed = 25,
         ),
         AdjustmentReasonEntity.valid().copy(
           id = UUID.fromString("ea55e70e-c1ca-45b9-9001-18af7a907b25"),
           name = "reason 2",
+          displayName = "display name for reason 2",
           deliusCode = "ND2",
           maxMinutesAllowed = 50,
         ),
@@ -57,7 +59,7 @@ class ReferenceMappersTest {
       assertThat(result.adjustmentReasons[0].maxMinutesAllowed).isEqualTo(25)
 
       assertThat(result.adjustmentReasons[1].id.toString()).isEqualTo("ea55e70e-c1ca-45b9-9001-18af7a907b25")
-      assertThat(result.adjustmentReasons[1].name).isEqualTo("reason 2")
+      assertThat(result.adjustmentReasons[1].name).isEqualTo("display name for reason 2")
       assertThat(result.adjustmentReasons[1].deliusCode).isEqualTo("ND2")
       assertThat(result.adjustmentReasons[1].maxMinutesAllowed).isEqualTo(50)
     }
