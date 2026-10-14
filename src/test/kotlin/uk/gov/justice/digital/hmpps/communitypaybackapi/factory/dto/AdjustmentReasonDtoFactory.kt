@@ -7,6 +7,8 @@ import java.util.UUID
 fun AdjustmentReasonDto.Companion.valid() = AdjustmentReasonDto(
   id = UUID.randomUUID(),
   name = String.random(20),
+  hintText = String.random(50),
   deliusCode = String.random(5),
   maxMinutesAllowed = Int.random(60, 480),
+  rank = 0,
 )

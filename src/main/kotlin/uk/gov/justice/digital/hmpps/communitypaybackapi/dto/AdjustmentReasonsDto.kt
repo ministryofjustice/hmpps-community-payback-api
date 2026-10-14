@@ -5,8 +5,10 @@ import java.util.UUID
 data class AdjustmentReasonDto(
   val id: UUID,
   val name: String,
+  val hintText: String?,
   val deliusCode: String,
   val maxMinutesAllowed: Int,
+  val rank: Int,
 ) {
   companion object
 }

@@ -7,7 +7,7 @@ import java.util.UUID
 
 data class AdjustmentDto(
   val deliusId: Long,
-  val id: UUID,
+  val id: UUID?,
   val date: LocalDate,
   val amount: Duration,
   val reason: String,

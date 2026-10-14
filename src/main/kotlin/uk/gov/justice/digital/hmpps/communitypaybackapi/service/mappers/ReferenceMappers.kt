@@ -21,9 +21,11 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ProjectTypeGroup
 fun List<AdjustmentReasonEntity>.toDto() = AdjustmentReasonsDto(this.map { it.toDto() })
 fun AdjustmentReasonEntity.toDto() = AdjustmentReasonDto(
   id = this.id,
-  name = this.name,
+  name = this.toDisplayString(),
+  hintText = this.hintText,
   deliusCode = this.deliusCode,
   maxMinutesAllowed = this.maxMinutesAllowed,
+  rank = this.rank,
 )
 
 fun List<ProjectTypeEntity>.toDto() = ProjectTypesDto(this.map { it.toDto() })

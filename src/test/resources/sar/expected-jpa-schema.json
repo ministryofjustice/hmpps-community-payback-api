@@ -18,10 +18,13 @@
   },
   "AdjustmentReasonEntity": {
     "deliusCode": "String",
+    "displayName": "String",
+    "hintText": "String",
     "id": "UUID",
     "maxMinutesAllowed": "int",
     "name": "String",
-    "needsLinkToAppointment": "boolean"
+    "needsLinkToAppointment": "boolean",
+    "rank": "int"
   },
   "AppointmentEntity": {
     "createdByCommunityPayback": "boolean",

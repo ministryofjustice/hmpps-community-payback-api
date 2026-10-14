@@ -6,7 +6,7 @@ import java.util.UUID
 
 @Repository
 interface AdjustmentReasonEntityRepository : JpaRepository<AdjustmentReasonEntity, UUID> {
-  fun findAllByOrderByNameAsc(): List<AdjustmentReasonEntity>
+  fun findAllByOrderByRankAscNameAsc(): List<AdjustmentReasonEntity>
 
-  fun findByNeedsLinkToAppointmentOrderByNameAsc(needsLinkToAppointment: Boolean): List<AdjustmentReasonEntity>
+  fun findByNeedsLinkToAppointmentOrderByRankAscNameAsc(needsLinkToAppointment: Boolean): List<AdjustmentReasonEntity>
 }

@@ -16,7 +16,7 @@ import java.util.UUID
 
 fun NDAdjustment.toDto(): AdjustmentDto = AdjustmentDto(
   deliusId = this.id,
-  id = this.reference!!,
+  id = this.reference,
   date = this.date,
   amount = when (this.type) {
     NDAdjustmentType.POSITIVE -> Duration.ofMinutes(this.minutes.toLong())
