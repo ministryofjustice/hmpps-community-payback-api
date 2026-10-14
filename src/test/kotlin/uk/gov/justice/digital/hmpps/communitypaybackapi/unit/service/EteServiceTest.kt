@@ -27,6 +27,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.listener.EducationCourse
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ContextService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.CourseCompletionAutoResolutionService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.EnvironmentService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.EteService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.EteValidationService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.SpringEventPublisher
@@ -63,6 +64,9 @@ class EteServiceTest {
   @RelaxedMockK
   lateinit var courseCompletionAutoResolutionService: CourseCompletionAutoResolutionService
 
+  @RelaxedMockK
+  lateinit var environmentService: EnvironmentService
+
   private lateinit var eteService: EteService
 
   @BeforeEach
@@ -77,6 +81,7 @@ class EteServiceTest {
       springEventPublisher,
       courseCompletionAutoResolutionService,
       courseCompletionAutoResolutionEnabled = false,
+      environmentService = environmentService,
     )
   }
 
@@ -113,6 +118,7 @@ class EteServiceTest {
         springEventPublisher,
         courseCompletionAutoResolutionService,
         courseCompletionAutoResolutionEnabled = true,
+        environmentService = environmentService,
       )
 
       eteService.recordCourseCompletionEvent(message)
@@ -138,6 +144,7 @@ class EteServiceTest {
         springEventPublisher,
         courseCompletionAutoResolutionService,
         courseCompletionAutoResolutionEnabled = true,
+        environmentService = environmentService,
       )
 
       // Should not throw exception
@@ -172,6 +179,7 @@ class EteServiceTest {
         springEventPublisher,
         courseCompletionAutoResolutionService = io.mockk.mockk(),
         courseCompletionAutoResolutionEnabled = false,
+        environmentService = environmentService,
       )
 
       every {

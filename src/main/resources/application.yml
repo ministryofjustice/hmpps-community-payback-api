@@ -105,5 +105,16 @@ tasks:
 
 course:
   completions:
+    visibility:
+      show-all: ${COURSE_COMPLETIONS_VISIBILITY_SHOW_ALL:false}
+      environments: ${COURSE_COMPLETIONS_VISIBILITY_ENVIRONMENTS:prod}
+      offices: []
+      # Replace offices: [] with the list below to configure offices and their inclusive completion start timestamps.
+      # Office names must exactly match incoming records. These rules apply only in the configured environments.
+      # offices:
+      #   - name: "Office A"
+      #     from: "2026-10-01T00:00:00+01:00"
+      #   - name: "Office B"
+      #     from: "2026-11-01T00:00:00Z"
     auto-resolution:
       enabled: true
