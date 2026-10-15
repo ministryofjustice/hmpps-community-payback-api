@@ -33,6 +33,9 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-flyway")
   implementation("org.postgresql:postgresql")
 
+  implementation("org.springframework.boot:spring-boot-starter-batch")
+  implementation("org.springframework.boot:spring-boot-starter-batch-jdbc")
+
   implementation("org.redisson:redisson-spring-boot-starter:4.6.1")
   implementation("com.github.ben-manes.caffeine:caffeine:3.2.4")
   implementation("net.javacrumbs.shedlock:shedlock-spring:7.7.0")

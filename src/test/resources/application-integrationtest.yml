@@ -41,6 +41,11 @@ community-payback:
     enabled: false
   domain-events:
     details-url-pattern:  http://localhost:8080/domain-event-details/#type/#id
+  one-off-jobs:
+    enabled: true
+    jobs:
+      enabledTestJob.enabled: true
+      disabledTestJob.enabled: false
 
 hmpps-auth:
   url: "http://localhost:${wiremock.server.port}/auth"
