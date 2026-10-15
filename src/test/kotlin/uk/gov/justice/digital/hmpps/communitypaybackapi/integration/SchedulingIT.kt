@@ -4,7 +4,11 @@ import org.awaitility.Awaitility.await
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.any
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDRequirementProgress
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSchedulingAllocation
@@ -32,6 +36,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.MockSen
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.MockTelemetryService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.CommunityPaybackAndDeliusMockServer
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdditionalInformationType
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentIdGenerator
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.DomainEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.DomainEventPublisher
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.HmmpsEventPersonReferences
@@ -67,6 +72,9 @@ class SchedulingIT : IntegrationTestBase() {
 
   @Autowired
   lateinit var mutableDomainEventListenerConfig: MutableDomainEventListenerConfig
+
+  @MockitoSpyBean
+  lateinit var appointmentIdGenerator: AppointmentIdGenerator
 
   companion object {
     const val CRN: String = "CRN01"
@@ -434,6 +442,10 @@ class SchedulingIT : IntegrationTestBase() {
       eventNumber = EVENT_NUMBER,
       project = NDProject.valid(ctx).copy(code = "PROJ2", actualEndDateExclusive = null),
     )
+
+    val appointmentId = UUID.randomUUID()
+    doReturn(appointmentId).whenever(appointmentIdGenerator).generateId(any())
+    CommunityPaybackAndDeliusMockServer.setupDeleteAppointmentResponse(appointmentId)
 
     CommunityPaybackAndDeliusMockServer.setupPostAppointmentsResponse(projectCode = "PROJ1", appointmentCount = 1)
     CommunityPaybackAndDeliusMockServer.setupPostAppointmentsResponse(projectCode = "PROJ2", appointmentCount = 2)

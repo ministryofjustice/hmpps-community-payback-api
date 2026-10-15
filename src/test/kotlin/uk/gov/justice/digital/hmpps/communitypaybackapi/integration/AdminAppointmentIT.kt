@@ -8,7 +8,11 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
+import org.mockito.kotlin.any
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointmentPickUp
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointmentSummary
@@ -42,9 +46,11 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.SchedulingIT
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.DomainEventAsserter
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.bodyAsObject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.CommunityPaybackAndDeliusMockServer
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentIdGenerator
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 import java.time.LocalDate
 import java.time.LocalTime
+import java.util.UUID
 
 class AdminAppointmentIT : IntegrationTestBase() {
 
@@ -62,6 +68,9 @@ class AdminAppointmentIT : IntegrationTestBase() {
 
   @Autowired
   lateinit var domainEventAsserter: DomainEventAsserter
+
+  @MockitoSpyBean
+  lateinit var appointmentIdGenerator: AppointmentIdGenerator
 
   @Nested
   @DisplayName("GET /admin/projects/{projectCode}/appointments/{appointmentId}")
@@ -327,6 +336,10 @@ class AdminAppointmentIT : IntegrationTestBase() {
         pickUpTime = null,
       )
       val project = NDProject.valid(ctx).copy(code = appointment.projectCode)
+
+      val appointmentId = UUID.randomUUID()
+      doReturn(appointmentId).whenever(appointmentIdGenerator).generateId(any())
+      CommunityPaybackAndDeliusMockServer.setupDeleteAppointmentResponse(appointmentId)
 
       CommunityPaybackAndDeliusMockServer.setupGetUpwDetailsSummaryResponse(
         appointment.crn,

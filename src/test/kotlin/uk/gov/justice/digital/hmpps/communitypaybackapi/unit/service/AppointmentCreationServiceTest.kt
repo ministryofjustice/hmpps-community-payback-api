@@ -32,6 +32,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ProjectService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AppointmentCreatedEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.SpringEventPublisher
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.ToAppointmentEntity.toAppointmentEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.unit.util.WebClientResponseExceptionFactory
 import java.util.UUID
 
 @ExtendWith(MockKExtension::class)
@@ -107,7 +108,7 @@ class AppointmentCreationServiceTest {
     fun `create appointments persists data, sends to ND and raises a domain events`() {
       val appointment1Id = UUID.randomUUID()
       val appointment2Id = UUID.randomUUID()
-      every { appointmentIdGenerator.generateId() } returnsMany listOf(appointment1Id, appointment2Id)
+      every { appointmentIdGenerator.generateId(any()) } returnsMany listOf(appointment1Id, appointment2Id)
 
       val createAppointment1Dto = CreateAppointmentDto.valid().copy(crn = CRN, deliusEventNumber = DELIUS_EVENT_NUMBER, projectCode = PROJECT_CODE)
       val createAppointment2Dto = CreateAppointmentDto.valid().copy(crn = CRN, deliusEventNumber = DELIUS_EVENT_NUMBER, projectCode = PROJECT_CODE)
@@ -145,6 +146,8 @@ class AppointmentCreationServiceTest {
         NDCreatedAppointment(id = ND_APPT2_ID, reference = appointment2Id),
       )
 
+      every { communityPaybackAndDeliusClient.deleteAppointment(any()) } throws WebClientResponseExceptionFactory.notFound()
+
       val result = service.createAppointmentsForProject(
         CreateAppointmentsDto(
           projectCode = PROJECT_CODE,
@@ -165,6 +168,9 @@ class AppointmentCreationServiceTest {
             createAppointment2Dto.toAppointmentEntity(appointment2Id, ND_APPT2_ID, PROVIDER_CODE, firstName = name2.forename, lastName = name2.surname, projectType = projectType),
           ),
         )
+
+        communityPaybackAndDeliusClient.deleteAppointment(appointment1Id)
+        communityPaybackAndDeliusClient.deleteAppointment(appointment2Id)
 
         springEventPublisher.publishEvent(
           match { it is AppointmentCreatedEvent && it.appointmentEntity == appointmentEntity1 && it.trigger == TRIGGER },
