@@ -5,18 +5,15 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
-import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.asPage
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.badRequest
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeGroupDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionIdDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.SessionSupervisorEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.SessionSupervisorEntityRepository
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.SessionSupervisorId
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.toHttpParams
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.SessionMappers
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
@@ -86,54 +83,48 @@ class SessionService(
     )
   }
 
-  fun allocateSupervisor(
-    sessionId: SessionIdDto,
+  fun assignSupervisor(
+    projectCode: String,
+    day: LocalDate?,
     supervisorCode: String,
-    allocatedByUsername: String = contextService.getUserName(),
+    assignedByUsername: String = contextService.getUserName(),
   ) {
-    val existingAllocation = sessionSupervisorEntityRepository.findByIdOrNull(sessionId.toJpaId())
-
+    val existing = sessionSupervisorEntityRepository.findByProjectCodeAndDayAndSupervisorCode(projectCode, day, supervisorCode)
     sessionSupervisorEntityRepository.save(
-      existingAllocation?.apply {
-        this.supervisorCode = supervisorCode
-        this.allocatedByUsername = allocatedByUsername
-      }
+      existing?.apply { this.assignedByUsername = assignedByUsername }
         ?: SessionSupervisorEntity(
-          projectCode = sessionId.projectCode,
-          day = sessionId.day,
+          projectCode = projectCode,
+          day = day,
           supervisorCode = supervisorCode,
-          allocatedByUsername = allocatedByUsername,
+          assignedByUsername = assignedByUsername,
         ),
     )
-
-    log.info("Session [$sessionId] allocated to [$supervisorCode]")
+    log.info("Project [{}], date [{}] assigned to [{}]", projectCode, day, supervisorCode)
   }
 
-  fun deallocateSupervisor(sessionId: SessionIdDto) {
-    sessionSupervisorEntityRepository.deleteById(sessionId.toJpaId())
-
-    log.info("Session [$sessionId] deallocated")
+  fun unassignSupervisor(projectCode: String, day: LocalDate?, supervisorCode: String) {
+    sessionSupervisorEntityRepository.findByProjectCodeAndDayAndSupervisorCode(projectCode, day, supervisorCode)?.let {
+      sessionSupervisorEntityRepository.delete(it)
+    }
   }
 
-  private fun SessionIdDto.toJpaId() = SessionSupervisorId(
-    projectCode = projectCode,
-    day = day,
-  )
-
-  fun getNextAllocationForSupervisor(supervisorCode: String): SessionSummaryDto? {
-    val allocations = sessionSupervisorEntityRepository.findBySupervisorCodeAndDayGreaterThanEqualOrderByDayAsc(
-      supervisorCode,
-      LocalDate.now(),
+  fun getNextAssignmentForSupervisor(supervisorCode: String): SessionSummaryDto? {
+    val today = LocalDate.now()
+    val candidates = sessionSupervisorEntityRepository.findAssignments(supervisorCode, today).mapNotNull { assignment ->
+      val date = assignment.day ?: appointmentService.getAppointments(
+        fromDate = today,
+        projectCodes = listOf(assignment.projectCode),
+        pageable = PageRequest.of(0, 1, Sort.by("date")),
+      ).content.firstOrNull()?.date
+      date?.let { assignment.projectCode to it }
+    }
+    val (projectCode, date) = candidates.minByOrNull { it.second } ?: return null
+    return sessionMappers.toSummaryDto(
+      date = date,
+      project = projectService.getProject(projectCode) ?: error("Can't retrieve project $projectCode"),
+      appointments = getSessionAppointments(projectCode, date),
     )
-
-    return allocations.firstOrNull()?.toDto()
   }
-
-  private fun SessionSupervisorEntity.toDto() = sessionMappers.toSummaryDto(
-    date = day,
-    project = projectService.getProject(projectCode) ?: error("Can't retrieve project $projectCode"),
-    appointments = getSessionAppointments(projectCode, day),
-  )
 
   private fun getSessionAppointments(
     projectCode: String,
