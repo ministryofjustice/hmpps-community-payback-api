@@ -36,7 +36,7 @@ class AppointmentDocumentService(
     }
     return try {
       communityPaybackAndDeliusClient.uploadAppointmentDocument(deliusAppointmentId, HttpEntity(file.resource, headers))
-        .let { DocumentUploadResponseDto(it.documentId, it.filename, it.alfrescoId) }
+        .let { DocumentUploadResponseDto(it.documentId, it.filename) }
     } catch (_: WebClientResponseException.NotFound) {
       null
     }
