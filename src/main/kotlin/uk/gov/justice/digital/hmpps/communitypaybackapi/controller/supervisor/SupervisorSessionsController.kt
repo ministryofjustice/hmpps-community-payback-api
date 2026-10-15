@@ -34,7 +34,7 @@ class SupervisorSessionsController(
     produces = [MediaType.APPLICATION_JSON_VALUE],
   )
   @Operation(
-    description = "Get the next session allocated to the supervisor or return 404 if there are no remaining future sessions. This includes sessions running today.",
+    description = "Get the next session assigned to the supervisor or return 404 if there are no remaining future sessions. This includes sessions running today.",
     responses = [
       ApiResponse(
         responseCode = "200",
@@ -51,9 +51,9 @@ class SupervisorSessionsController(
       ),
     ],
   )
-  fun getNextAllocation(
+  fun getNextAssignment(
     @PathVariable supervisorCode: String,
-  ) = sessionService.getNextAllocationForSupervisor(supervisorCode) ?: throw NotFoundException("There are no future sessions for supervisor $supervisorCode")
+  ) = sessionService.getNextAssignmentForSupervisor(supervisorCode) ?: throw NotFoundException("There are no future sessions for supervisor $supervisorCode")
 
   @PageableAsQueryParam
   @GetMapping(
