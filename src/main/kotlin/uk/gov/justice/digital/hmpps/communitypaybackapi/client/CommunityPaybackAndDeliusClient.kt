@@ -702,5 +702,4 @@ data class NDPersonalCircumstances(
 data class NDDocumentUploadResponse(
   val documentId: Long,
   val filename: String,
-  val alfrescoId: String,
 )

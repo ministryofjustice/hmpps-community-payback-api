@@ -38,7 +38,7 @@ class AdminAppointmentDocumentIT : IntegrationTestBase() {
             .withHeader("Content-Type", equalTo("application/pdf"))
             .withBody(binaryEqualTo(fileBytes)),
         )
-        .willReturn(okJson("""{"documentId":42,"filename":"evidence.pdf","alfrescoId":"alfresco-id"}""")),
+        .willReturn(okJson("""{"documentId":42,"filename":"evidence.pdf"}""")),
     )
 
     webTestClient.post().uri(endpoint).addAdminUiAuthHeader()
@@ -46,7 +46,6 @@ class AdminAppointmentDocumentIT : IntegrationTestBase() {
       .expectBody()
       .jsonPath("$.documentId").isEqualTo(42)
       .jsonPath("$.filename").isEqualTo("evidence.pdf")
-      .jsonPath("$.alfrescoId").isEqualTo("alfresco-id")
     verify(1, postRequestedFor(urlEqualTo(upstreamPath)))
   }
 

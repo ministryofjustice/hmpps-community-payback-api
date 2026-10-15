@@ -33,10 +33,10 @@ class AppointmentDocumentServiceTest {
   @ValueSource(strings = ["application/pdf"])
   fun `forwards file and maps response`(contentType: String?) {
     val part = slot<HttpEntity<Resource>>()
-    every { client.uploadAppointmentDocument(101, capture(part)) } returns NDDocumentUploadResponse(42, "evidence.pdf", "alfresco-id")
+    every { client.uploadAppointmentDocument(101, capture(part)) } returns NDDocumentUploadResponse(42, "evidence.pdf")
     val file = MockMultipartFile("file", "evidence.pdf", contentType?.takeIf { it.isNotEmpty() }, bytes)
 
-    assertThat(service.uploadDocument(101, file)).isEqualTo(DocumentUploadResponseDto(42, "evidence.pdf", "alfresco-id"))
+    assertThat(service.uploadDocument(101, file)).isEqualTo(DocumentUploadResponseDto(42, "evidence.pdf"))
     assertThat(part.captured.body!!.filename).isEqualTo("evidence.pdf")
     assertThat(part.captured.body!!.inputStream.readAllBytes()).isEqualTo(bytes)
     assertThat(part.captured.headers.contentType).isEqualTo(if (contentType.isNullOrEmpty()) MediaType.APPLICATION_OCTET_STREAM else MediaType.APPLICATION_PDF)
@@ -60,7 +60,7 @@ class AppointmentDocumentServiceTest {
   )
   fun `accepts supported extensions case insensitively`(extension: String) {
     val filename = "evidence.$extension"
-    every { client.uploadAppointmentDocument(101, any()) } returns NDDocumentUploadResponse(42, filename, "alfresco-id")
+    every { client.uploadAppointmentDocument(101, any()) } returns NDDocumentUploadResponse(42, filename)
     assertThat(service.uploadDocument(101, MockMultipartFile("file", filename, null, bytes))!!.filename).isEqualTo(filename)
     verify(exactly = 1) { client.uploadAppointmentDocument(101, any()) }
   }
