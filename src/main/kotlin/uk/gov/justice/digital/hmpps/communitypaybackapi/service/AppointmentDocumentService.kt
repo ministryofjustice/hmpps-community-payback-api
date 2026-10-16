@@ -8,12 +8,21 @@ import org.springframework.web.multipart.MultipartFile
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.badRequest
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDocumentDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDocumentsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.DocumentUploadResponseDto
 
 @Service
 class AppointmentDocumentService(
   private val communityPaybackAndDeliusClient: CommunityPaybackAndDeliusClient,
 ) {
+  fun getDocuments(deliusAppointmentId: Long): AppointmentDocumentsDto? = try {
+    communityPaybackAndDeliusClient.getAppointmentDocuments(deliusAppointmentId)
+      .let { response -> AppointmentDocumentsDto(response.content.map { AppointmentDocumentDto(it.documentId, it.filename) }) }
+  } catch (_: WebClientResponseException.NotFound) {
+    null
+  }
+
   fun uploadDocument(deliusAppointmentId: Long, file: MultipartFile): DocumentUploadResponseDto? {
     if (file.isEmpty) badRequest("Document must not be empty")
     if (file.originalFilename.isNullOrBlank()) badRequest("Document must have a filename")

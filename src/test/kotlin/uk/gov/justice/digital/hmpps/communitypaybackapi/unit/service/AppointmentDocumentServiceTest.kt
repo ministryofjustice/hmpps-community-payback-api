@@ -18,7 +18,10 @@ import org.springframework.http.MediaType
 import org.springframework.mock.web.MockMultipartFile
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDDocumentListResponse
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDDocumentUploadResponse
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDocumentDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDocumentsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.DocumentUploadResponseDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.BadRequestException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentDocumentService
@@ -104,6 +107,35 @@ class AppointmentDocumentServiceTest {
     every { client.uploadAppointmentDocument(101, any()) } throws failure
     assertThatThrownBy { service.uploadDocument(101, MockMultipartFile("file", "test.pdf", null, bytes)) }.isSameAs(failure)
     verify(exactly = 1) { client.uploadAppointmentDocument(101, any()) }
+  }
+
+  @Test
+  fun `gets documents and maps response`() {
+    every { client.getAppointmentDocuments(101) } returns NDDocumentListResponse(
+      listOf(NDDocumentUploadResponse(42, "evidence.pdf"), NDDocumentUploadResponse(43, "photo.jpg")),
+    )
+    assertThat(service.getDocuments(101)).isEqualTo(
+      AppointmentDocumentsDto(listOf(AppointmentDocumentDto(42, "evidence.pdf"), AppointmentDocumentDto(43, "photo.jpg"))),
+    )
+  }
+
+  @Test
+  fun `gets empty documents list`() {
+    every { client.getAppointmentDocuments(101) } returns NDDocumentListResponse(emptyList())
+    assertThat(service.getDocuments(101)).isEqualTo(AppointmentDocumentsDto(emptyList()))
+  }
+
+  @Test
+  fun `returns null documents when appointment not found`() {
+    every { client.getAppointmentDocuments(101) } throws WebClientResponseException.create(404, "Not found", HttpHeaders(), byteArrayOf(), null)
+    assertThat(service.getDocuments(101)).isNull()
+  }
+
+  @Test
+  fun `propagates unexpected upstream failures when getting documents`() {
+    val failure = WebClientResponseException.create(500, "Failure", HttpHeaders(), byteArrayOf(), null)
+    every { client.getAppointmentDocuments(101) } throws failure
+    assertThatThrownBy { service.getDocuments(101) }.isSameAs(failure)
   }
 
   @Test
