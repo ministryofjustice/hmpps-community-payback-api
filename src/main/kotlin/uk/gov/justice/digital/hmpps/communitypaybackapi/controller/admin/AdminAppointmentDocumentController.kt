@@ -6,12 +6,14 @@ import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.DeleteMapping
+import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.multipart.MultipartFile
 import uk.gov.justice.digital.hmpps.communitypaybackapi.controller.internal.notFound
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDocumentsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.DocumentUploadResponseDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentDocumentService
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
@@ -21,6 +23,20 @@ import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 class AdminAppointmentDocumentController(
   private val appointmentDocumentService: AppointmentDocumentService,
 ) {
+  @GetMapping("/{deliusAppointmentId}/documents")
+  @Operation(
+    description = "List the documents attached to an appointment",
+    responses = [
+      ApiResponse(responseCode = "200", description = "Documents retrieved successfully"),
+      ApiResponse(responseCode = "400", description = "Invalid appointment ID", content = [Content(schema = Schema(implementation = ErrorResponse::class))]),
+      ApiResponse(responseCode = "404", description = "Appointment not found", content = [Content(schema = Schema(implementation = ErrorResponse::class))]),
+    ],
+  )
+  fun getDocuments(
+    @PathVariable deliusAppointmentId: Long,
+  ): AppointmentDocumentsDto = appointmentDocumentService.getDocuments(deliusAppointmentId)
+    ?: notFound("Appointment", deliusAppointmentId)
+
   @PostMapping("/{deliusAppointmentId}/documents", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
   @Operation(
     description = "Upload a document for an appointment. Supported extensions (case-insensitive): " +

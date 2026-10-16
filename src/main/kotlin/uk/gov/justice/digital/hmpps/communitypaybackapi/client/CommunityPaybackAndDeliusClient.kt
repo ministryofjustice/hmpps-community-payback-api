@@ -74,6 +74,11 @@ interface CommunityPaybackAndDeliusClient {
     @RequestParam username: String,
   ): NDAppointment
 
+  @GetExchange("/appointments/{appointmentId}/documents")
+  fun getAppointmentDocuments(
+    @PathVariable appointmentId: Long,
+  ): NDDocumentListResponse
+
   @PostExchange("/appointments/{appointmentId}/documents", contentType = MediaType.MULTIPART_FORM_DATA_VALUE)
   fun uploadAppointmentDocument(
     @PathVariable appointmentId: Long,
@@ -702,4 +707,8 @@ data class NDPersonalCircumstances(
 data class NDDocumentUploadResponse(
   val documentId: Long,
   val filename: String,
+)
+
+data class NDDocumentListResponse(
+  val content: List<NDDocumentUploadResponse>,
 )
