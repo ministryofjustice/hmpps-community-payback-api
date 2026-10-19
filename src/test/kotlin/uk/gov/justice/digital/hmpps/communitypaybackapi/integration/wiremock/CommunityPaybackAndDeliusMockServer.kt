@@ -204,6 +204,18 @@ object CommunityPaybackAndDeliusMockServer {
     )
   }
 
+  fun setupDeleteAppointmentResponse(
+    reference: UUID,
+  ) {
+    WireMock.stubFor(
+      delete("/community-payback-and-delius/appointments/$reference")
+        .willReturn(
+          aResponse()
+            .withStatus(204),
+        ),
+    )
+  }
+
   fun setupGetProject404Response(
     projectCode: String,
   ) {

@@ -5,10 +5,14 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.any
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.hateoas.PagedModel
 import org.springframework.http.MediaType
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDEvent
@@ -50,6 +54,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.bodyAsO
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.CommunityPaybackAndDeliusMockServer
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.CommunityPaybackAndDeliusMockServer.ExpectedAppointmentCreate
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.CommunityPaybackAndDeliusMockServer.ExpectedAppointmentUpdate
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentIdGenerator
 import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.UUID
@@ -73,6 +78,9 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
 
   @Autowired
   lateinit var databasePurgeUtils: DatabasePurgeUtils
+
+  @MockitoSpyBean
+  lateinit var appointmentIdGenerator: AppointmentIdGenerator
 
   companion object {
     const val CRN = "X12345"
@@ -768,6 +776,10 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
         ),
       )
 
+      val appointmentId = UUID.randomUUID()
+      doReturn(appointmentId).whenever(appointmentIdGenerator).generateId(any())
+      CommunityPaybackAndDeliusMockServer.setupDeleteAppointmentResponse(appointmentId)
+
       CommunityPaybackAndDeliusMockServer.Aggregates.setupGetDataMocksForCreateAppointment(
         crn = CRN,
         eventNumber = DELIUS_EVENT_NUMBER,
@@ -881,6 +893,10 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
         ),
       )
 
+      val appointmentId = UUID.randomUUID()
+      doReturn(appointmentId).whenever(appointmentIdGenerator).generateId(any())
+      CommunityPaybackAndDeliusMockServer.setupDeleteAppointmentResponse(appointmentId)
+
       CommunityPaybackAndDeliusMockServer.setupGetUpwDetailsSummaryResponse(
         crn = CRN,
         case = NDCaseSummary.valid(),
@@ -937,6 +953,10 @@ class AdminCourseCompletionIT : IntegrationTestBase() {
           minutesToCredit = 90,
         ),
       )
+
+      val appointmentId = UUID.randomUUID()
+      doReturn(appointmentId).whenever(appointmentIdGenerator).generateId(any())
+      CommunityPaybackAndDeliusMockServer.setupDeleteAppointmentResponse(appointmentId)
 
       CommunityPaybackAndDeliusMockServer.setupGetUpwDetailsSummaryResponse(
         crn = CRN,
