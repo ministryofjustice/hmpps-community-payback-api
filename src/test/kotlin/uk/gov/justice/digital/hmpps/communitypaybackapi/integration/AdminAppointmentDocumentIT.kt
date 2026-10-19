@@ -6,6 +6,8 @@ import com.github.tomakehurst.wiremock.client.WireMock.containing
 import com.github.tomakehurst.wiremock.client.WireMock.delete
 import com.github.tomakehurst.wiremock.client.WireMock.deleteRequestedFor
 import com.github.tomakehurst.wiremock.client.WireMock.equalTo
+import com.github.tomakehurst.wiremock.client.WireMock.get
+import com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor
 import com.github.tomakehurst.wiremock.client.WireMock.notFound
 import com.github.tomakehurst.wiremock.client.WireMock.ok
 import com.github.tomakehurst.wiremock.client.WireMock.okJson
@@ -118,6 +120,59 @@ class AdminAppointmentDocumentIT : IntegrationTestBase() {
       .jsonPath("$operation.requestBody.content['multipart/form-data'].schema.properties.file.format").isEqualTo("binary")
       .jsonPath("$operation.responses['200'].content['application/json'].schema['${'$'}ref']")
       .isEqualTo("#/components/schemas/DocumentUploadResponseDto")
+  }
+
+  @Test
+  fun `lists documents for appointment`() {
+    stubFor(
+      get(urlEqualTo(upstreamPath))
+        .willReturn(okJson("""{"content":[{"documentId":42,"filename":"evidence.pdf"},{"documentId":43,"filename":"photo.jpg"}]}""")),
+    )
+    webTestClient.get().uri(endpoint).addAdminUiAuthHeader()
+      .exchange().expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.documents.length()").isEqualTo(2)
+      .jsonPath("$.documents[0].documentId").isEqualTo(42)
+      .jsonPath("$.documents[0].filename").isEqualTo("evidence.pdf")
+      .jsonPath("$.documents[1].documentId").isEqualTo(43)
+      .jsonPath("$.documents[1].filename").isEqualTo("photo.jpg")
+    verify(1, getRequestedFor(urlEqualTo(upstreamPath)))
+  }
+
+  @Test
+  fun `lists no documents for appointment without documents`() {
+    stubFor(get(urlEqualTo(upstreamPath)).willReturn(okJson("""{"content":[]}""")))
+    webTestClient.get().uri(endpoint).addAdminUiAuthHeader()
+      .exchange().expectStatus().isOk
+      .expectBody().jsonPath("$.documents.length()").isEqualTo(0)
+  }
+
+  @Test
+  fun `listing requires authentication`() {
+    webTestClient.get().uri(endpoint).exchange().expectStatus().isUnauthorized
+    verify(0, getRequestedFor(urlEqualTo(upstreamPath)))
+  }
+
+  @Test
+  fun `listing rejects supervisor role`() {
+    webTestClient.get().uri(endpoint).addSupervisorUiAuthHeader()
+      .exchange().expectStatus().isForbidden
+    verify(0, getRequestedFor(urlEqualTo(upstreamPath)))
+  }
+
+  @Test
+  fun `listing rejects invalid appointment ID`() {
+    webTestClient.get().uri("/admin/appointments/invalid/documents").addAdminUiAuthHeader()
+      .exchange().expectStatus().isBadRequest
+    verify(0, getRequestedFor(urlMatching(".*documents.*")))
+  }
+
+  @Test
+  fun `listing returns not found for unknown appointment`() {
+    stubFor(get(urlEqualTo(upstreamPath)).willReturn(notFound()))
+    webTestClient.get().uri(endpoint).addAdminUiAuthHeader()
+      .exchange().expectStatus().isNotFound
+    verify(1, getRequestedFor(urlEqualTo(upstreamPath)))
   }
 
   @Test
