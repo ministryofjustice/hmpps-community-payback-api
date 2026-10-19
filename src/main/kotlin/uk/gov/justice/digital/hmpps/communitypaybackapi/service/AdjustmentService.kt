@@ -152,7 +152,9 @@ class AdjustmentService(
       "EXCEEDS_MAXIMUM_ALLOWED_TIME" -> {
         val requestedDuration = Duration.ofMinutes((error.data["requestedMinutes"] as Int).toLong())
         val maximumDuration = Duration.ofMinutes((error.data["maxMinutesAllowed"] as Int).toLong())
-        throw BadRequestException("Requested adjustment of '${requestedDuration.formatForUser()}' exceeds the maximum allowed time '${maximumDuration.formatForUser()}' for adjustment reason '${error.data["reason"]}'")
+        throw BadRequestException(
+          "Requested adjustment of '${requestedDuration.formatForUser()}' exceeds the maximum allowed time '${maximumDuration.formatForUser()}' for adjustment reason '${error.data["reasonName"]}'",
+        )
       }
       "ADJUSTMENT_DATE_IS_IN_FUTURE" -> throw BadRequestException("Adjustment date must not be in the future")
       "ADJUSTMENT_DATE_IS_BEFORE_SENTENCE_DATE" -> throw BadRequestException("Adjustment date must not be before the sentence date")

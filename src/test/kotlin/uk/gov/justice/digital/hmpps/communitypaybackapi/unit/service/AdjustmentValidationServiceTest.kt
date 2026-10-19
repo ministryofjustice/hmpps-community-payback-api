@@ -115,7 +115,7 @@ class AdjustmentValidationServiceTest {
     val expectedError = ValidationResultItem(
       "$.appointmentId",
       "ADJUSTMENT_REASON_NEEDS_APPOINTMENT_ID",
-      mapOf("reasonName" to reason.name),
+      mapOf("reasonName" to reason.toDisplayString()),
     )
 
     val result = service.validate(
@@ -137,7 +137,7 @@ class AdjustmentValidationServiceTest {
     val expectedError = ValidationResultItem(
       "$.appointmentId",
       "ADJUSTMENT_REASON_DOES_NOT_SUPPORT_APPOINTMENTS",
-      mapOf("reasonName" to reason.name),
+      mapOf("reasonName" to reason.toDisplayString()),
     )
 
     val result = service.validate(
@@ -163,7 +163,7 @@ class AdjustmentValidationServiceTest {
       mapOf(
         "requestedMinutes" to 51,
         "maxMinutesAllowed" to 50,
-        "adjustmentReason" to reason.name,
+        "reasonName" to reason.toDisplayString(),
       ),
     )
 
