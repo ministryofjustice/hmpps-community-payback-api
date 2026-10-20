@@ -4,6 +4,9 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
+import jakarta.servlet.http.HttpServletResponse
+import org.springframework.core.io.buffer.DataBufferUtils
+import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -12,6 +15,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.multipart.MultipartFile
+import reactor.core.publisher.Flux
 import uk.gov.justice.digital.hmpps.communitypaybackapi.controller.internal.notFound
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDocumentsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.DocumentUploadResponseDto
@@ -69,5 +73,43 @@ class AdminAppointmentDocumentController(
     if (!appointmentDocumentService.deleteDocument(deliusAppointmentId, documentId)) {
       notFound("Appointment document", documentId)
     }
+  }
+
+  @GetMapping("/{deliusAppointmentId}/documents/{documentId}", produces = [MediaType.ALL_VALUE])
+  @Operation(
+    description = "Download the content of a document for an appointment. The content type and filename " +
+      "(via Content-Disposition) are those provided by NDelius",
+    responses = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Document content",
+        content = [Content(mediaType = MediaType.APPLICATION_OCTET_STREAM_VALUE, schema = Schema(type = "string", format = "binary"))],
+      ),
+      ApiResponse(responseCode = "400", description = "Invalid appointment or document ID", content = [Content(schema = Schema(implementation = ErrorResponse::class))]),
+      ApiResponse(responseCode = "404", description = "Appointment or document not found", content = [Content(schema = Schema(implementation = ErrorResponse::class))]),
+    ],
+  )
+  fun downloadDocument(
+    @PathVariable deliusAppointmentId: Long,
+    @PathVariable documentId: Long,
+    response: HttpServletResponse,
+  ) {
+    val document = appointmentDocumentService.downloadDocument(deliusAppointmentId, documentId)
+      ?: notFound("Appointment document", documentId)
+
+    val headers = document.headers
+    response.contentType = (headers.contentType ?: MediaType.APPLICATION_OCTET_STREAM).toString()
+    if (headers.contentLength >= 0) {
+      response.setContentLengthLong(headers.contentLength)
+    }
+    response.setHeader(HttpHeaders.CONTENT_DISPOSITION, headers.getFirst(HttpHeaders.CONTENT_DISPOSITION) ?: "attachment")
+
+    DataBufferUtils.subscriberInputStream(document.body ?: Flux.empty(), DOWNLOAD_PREFETCH_BUFFERS).use {
+      it.transferTo(response.outputStream)
+    }
+  }
+
+  private companion object {
+    const val DOWNLOAD_PREFETCH_BUFFERS = 16
   }
 }

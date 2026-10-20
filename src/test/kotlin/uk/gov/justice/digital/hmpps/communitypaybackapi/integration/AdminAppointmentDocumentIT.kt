@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.integration
 
 import com.github.tomakehurst.wiremock.client.WireMock.aMultipart
+import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.binaryEqualTo
 import com.github.tomakehurst.wiremock.client.WireMock.containing
 import com.github.tomakehurst.wiremock.client.WireMock.delete
@@ -24,6 +25,7 @@ import org.junit.jupiter.params.provider.ValueSource
 import org.springframework.http.MediaType
 import org.springframework.http.client.MultipartBodyBuilder
 import org.springframework.web.reactive.function.BodyInserters
+import kotlin.random.Random
 
 class AdminAppointmentDocumentIT : IntegrationTestBase() {
   private val upstreamPath = "/community-payback-and-delius/appointments/101/documents"
@@ -218,6 +220,103 @@ class AdminAppointmentDocumentIT : IntegrationTestBase() {
     webTestClient.delete().uri("$endpoint/42").addAdminUiAuthHeader()
       .exchange().expectStatus().is5xxServerError
     verify(1, deleteRequestedFor(urlEqualTo("$upstreamPath/42")))
+  }
+
+  @Test
+  fun `downloads document content with type, length and filename from Delius`() {
+    stubFor(
+      get(urlEqualTo("$upstreamPath/42")).willReturn(
+        aResponse().withStatus(200)
+          .withHeader("Content-Type", "application/pdf")
+          .withHeader("Content-Disposition", """attachment; filename="evidence.pdf"""")
+          .withHeader("Content-Length", fileBytes.size.toString())
+          .withBody(fileBytes),
+      ),
+    )
+
+    webTestClient.get().uri("$endpoint/42").addAdminUiAuthHeader()
+      .exchange().expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_PDF)
+      .expectHeader().contentLength(fileBytes.size.toLong())
+      .expectHeader().valueEquals("Content-Disposition", """attachment; filename="evidence.pdf"""")
+      .expectBody(ByteArray::class.java).isEqualTo(fileBytes)
+    verify(1, getRequestedFor(urlEqualTo("$upstreamPath/42")))
+  }
+
+  @Test
+  fun `streams documents larger than the in-memory codec limit`() {
+    val largeFile = Random(1).nextBytes(11 * 1024 * 1024)
+    stubFor(
+      get(urlEqualTo("$upstreamPath/42")).willReturn(
+        aResponse().withStatus(200).withHeader("Content-Type", "application/pdf").withBody(largeFile),
+      ),
+    )
+
+    webTestClient.mutate().codecs { it.defaultCodecs().maxInMemorySize(largeFile.size * 2) }.build()
+      .get().uri("$endpoint/42").addAdminUiAuthHeader()
+      .exchange().expectStatus().isOk
+      .expectBody(ByteArray::class.java).isEqualTo(largeFile)
+  }
+
+  @Test
+  fun `defaults content type and disposition when not provided by Delius`() {
+    stubFor(get(urlEqualTo("$upstreamPath/42")).willReturn(aResponse().withStatus(200).withBody(fileBytes)))
+
+    webTestClient.get().uri("$endpoint/42").addAdminUiAuthHeader()
+      .exchange().expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_OCTET_STREAM)
+      .expectHeader().valueEquals("Content-Disposition", "attachment")
+      .expectBody(ByteArray::class.java).isEqualTo(fileBytes)
+  }
+
+  @Test
+  fun `download accepts requests for the document's content type`() {
+    stubFor(
+      get(urlEqualTo("$upstreamPath/42")).willReturn(
+        aResponse().withStatus(200).withHeader("Content-Type", "application/pdf").withBody(fileBytes),
+      ),
+    )
+
+    webTestClient.get().uri("$endpoint/42").accept(MediaType.APPLICATION_PDF).addAdminUiAuthHeader()
+      .exchange().expectStatus().isOk
+      .expectBody(ByteArray::class.java).isEqualTo(fileBytes)
+  }
+
+  @Test
+  fun `download requires authentication`() {
+    webTestClient.get().uri("$endpoint/42").exchange().expectStatus().isUnauthorized
+    verify(0, getRequestedFor(urlEqualTo("$upstreamPath/42")))
+  }
+
+  @Test
+  fun `download rejects supervisor role`() {
+    webTestClient.get().uri("$endpoint/42").addSupervisorUiAuthHeader()
+      .exchange().expectStatus().isForbidden
+    verify(0, getRequestedFor(urlEqualTo("$upstreamPath/42")))
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = ["invalid/documents/42", "101/documents/invalid"])
+  fun `download rejects invalid IDs`(path: String) {
+    webTestClient.get().uri("/admin/appointments/$path").addAdminUiAuthHeader()
+      .exchange().expectStatus().isBadRequest
+    verify(0, getRequestedFor(urlMatching(".*documents.*")))
+  }
+
+  @Test
+  fun `download returns not found for unknown appointment or document`() {
+    stubFor(get(urlEqualTo("$upstreamPath/42")).willReturn(notFound()))
+    webTestClient.get().uri("$endpoint/42").addAdminUiAuthHeader()
+      .exchange().expectStatus().isNotFound
+      .expectHeader().contentTypeCompatibleWith(MediaType.APPLICATION_JSON)
+    verify(1, getRequestedFor(urlEqualTo("$upstreamPath/42")))
+  }
+
+  @Test
+  fun `reports upstream download failure`() {
+    stubFor(get(urlEqualTo("$upstreamPath/42")).willReturn(serverError()))
+    webTestClient.get().uri("$endpoint/42").addAdminUiAuthHeader()
+      .exchange().expectStatus().is5xxServerError
   }
 
   private fun upload(bytes: ByteArray = fileBytes, filename: String = "evidence.pdf") = BodyInserters.fromMultipartData(
