@@ -12,11 +12,16 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.NullAndEmptySource
 import org.junit.jupiter.params.provider.ValueSource
 import org.springframework.core.io.Resource
+import org.springframework.core.io.buffer.DataBuffer
+import org.springframework.core.io.buffer.DefaultDataBufferFactory
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
+import org.springframework.http.ResponseEntity
 import org.springframework.mock.web.MockMultipartFile
 import org.springframework.web.reactive.function.client.WebClientResponseException
+import reactor.core.publisher.Flux
+import reactor.core.publisher.Mono
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDDocumentListResponse
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDDocumentUploadResponse
@@ -157,5 +162,26 @@ class AppointmentDocumentServiceTest {
     every { client.deleteAppointmentDocument(101, 42) } throws failure
     assertThatThrownBy { service.deleteDocument(101, 42) }.isSameAs(failure)
     verify(exactly = 1) { client.deleteAppointmentDocument(101, 42) }
+  }
+
+  @Test
+  fun `downloads document`() {
+    val document = ResponseEntity.ok().contentType(MediaType.APPLICATION_PDF)
+      .body(Flux.just<DataBuffer>(DefaultDataBufferFactory.sharedInstance.wrap(bytes)))
+    every { client.downloadAppointmentDocument(101, 42) } returns Mono.just(document)
+    assertThat(service.downloadDocument(101, 42)).isSameAs(document)
+  }
+
+  @Test
+  fun `returns null when appointment or document to download not found`() {
+    every { client.downloadAppointmentDocument(101, 42) } returns Mono.error(WebClientResponseException.create(404, "Not found", HttpHeaders(), byteArrayOf(), null))
+    assertThat(service.downloadDocument(101, 42)).isNull()
+  }
+
+  @Test
+  fun `propagates unexpected upstream download failures`() {
+    val failure = WebClientResponseException.create(500, "Failure", HttpHeaders(), byteArrayOf(), null)
+    every { client.downloadAppointmentDocument(101, 42) } returns Mono.error(failure)
+    assertThatThrownBy { service.downloadDocument(101, 42) }.isSameAs(failure)
   }
 }
