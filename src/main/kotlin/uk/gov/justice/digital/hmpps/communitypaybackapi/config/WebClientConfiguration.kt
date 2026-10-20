@@ -16,6 +16,7 @@ import org.springframework.web.reactive.function.client.bodyToMono
 import org.springframework.web.reactive.function.client.support.WebClientAdapter
 import org.springframework.web.service.invoker.HttpServiceProxyFactory
 import org.springframework.web.service.invoker.createClient
+import reactor.core.publisher.Mono
 import reactor.util.retry.Retry
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.ArnsClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
@@ -157,13 +158,13 @@ inline fun <reified T> WebClient.logErrorResponses(enabled: Boolean): WebClient 
   return this.mutate()
     .filter(
       ExchangeFilterFunction.ofResponseProcessor { response ->
-        response.bodyToMono<String>().defaultIfEmpty("").map { body ->
-          if (response.statusCode().isError) {
-            logger.warn("Downstream API returned ${response.statusCode()}: ${body.ifEmpty { "<empty>" }}")
-          } else {
-            logger.debug("Downstream API returned successful response")
-          }
+        if (!response.statusCode().isError) {
+          logger.debug("Downstream API returned successful response")
+          return@ofResponseProcessor Mono.just(response)
+        }
 
+        response.bodyToMono<String>().defaultIfEmpty("").map { body ->
+          logger.warn("Downstream API returned ${response.statusCode()}: ${body.ifEmpty { "<empty>" }}")
           response.mutate().body(body).build()
         }
       },

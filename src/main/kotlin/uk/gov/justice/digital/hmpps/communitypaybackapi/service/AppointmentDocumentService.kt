@@ -1,11 +1,14 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.service
 
+import org.springframework.core.io.buffer.DataBuffer
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
+import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
 import org.springframework.web.reactive.function.client.WebClientResponseException
+import reactor.core.publisher.Flux
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.badRequest
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDocumentDto
@@ -55,6 +58,12 @@ class AppointmentDocumentService(
     true
   } catch (_: WebClientResponseException.NotFound) {
     false
+  }
+
+  fun downloadDocument(deliusAppointmentId: Long, documentId: Long): ResponseEntity<Flux<DataBuffer>>? = try {
+    communityPaybackAndDeliusClient.downloadAppointmentDocument(deliusAppointmentId, documentId).block()
+  } catch (_: WebClientResponseException.NotFound) {
+    null
   }
 
   private companion object {
