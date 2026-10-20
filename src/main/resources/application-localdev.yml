@@ -19,3 +19,7 @@ logging:
 tasks:
   travel-time:
     enabled: true
+
+community-payback:
+  one-off-jobs:
+    enabled: true
