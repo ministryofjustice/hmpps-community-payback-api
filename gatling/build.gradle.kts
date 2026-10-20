@@ -2,7 +2,7 @@ plugins {
   kotlin("jvm")
   kotlin("plugin.allopen")
   id("org.jlleitschuh.gradle.ktlint")
-  id("io.gatling.gradle") version "3.15.1.2"
+  id("io.gatling.gradle") version "3.16.0"
 }
 
 gatling {
@@ -22,8 +22,8 @@ repositories {
 dependencies {
   gatlingImplementation("io.github.cdimascio:dotenv-java:3.2.0")
   gatlingImplementation(project(":"))
-  gatlingImplementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.22.1")
-  gatlingImplementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.22.1")
+  gatlingImplementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.22.3")
+  gatlingImplementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.22.3")
 }
 
 tasks.register<Exec>("gatlingRunCi") {
