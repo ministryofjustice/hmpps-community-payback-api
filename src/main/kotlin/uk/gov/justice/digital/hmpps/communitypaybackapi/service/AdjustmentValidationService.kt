@@ -68,7 +68,7 @@ class AdjustmentValidationService(
         this isError "ADJUSTMENT_REASON_NEEDS_APPOINTMENT_ID"
         field = "$.appointmentId"
         data {
-          "reasonName" to { _, ctx -> ctx.reason!!.name }
+          "reasonName" to { _, ctx -> ctx.reason!!.toDisplayString() }
         }
       }
     }
@@ -95,7 +95,7 @@ class AdjustmentValidationService(
         this isError "ADJUSTMENT_REASON_DOES_NOT_SUPPORT_APPOINTMENTS"
         field = "$.appointmentId"
         data {
-          "reasonName" to { _, ctx -> ctx.reason!!.name }
+          "reasonName" to { _, ctx -> ctx.reason!!.toDisplayString() }
         }
       }
     }
@@ -121,7 +121,7 @@ class AdjustmentValidationService(
         data {
           "requestedMinutes" to { value -> value.minutes }
           "maxMinutesAllowed" to { _, ctx -> ctx.reason!!.maxMinutesAllowed }
-          "adjustmentReason" to { _, ctx -> ctx.reason!!.name }
+          "reasonName" to { _, ctx -> ctx.reason!!.toDisplayString() }
         }
       }
     }
