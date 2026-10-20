@@ -50,7 +50,7 @@ dependencies {
   }
   testImplementation("org.testcontainers:testcontainers-localstack:2.0.5")
   testImplementation("org.testcontainers:testcontainers-postgresql:2.0.5")
-  testImplementation("com.redis:testcontainers-redis:2.2.4")
+  testImplementation("com.redis:testcontainers-redis:3.0.0")
   testImplementation("org.awaitility:awaitility-kotlin:4.3.0")
   testImplementation("org.wiremock.integrations:wiremock-spring-boot:4.2.2")
   testImplementation("io.mockk:mockk:1.14.11")
