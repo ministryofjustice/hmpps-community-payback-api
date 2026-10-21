@@ -26,7 +26,11 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.container.Po
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.container.PostgresContainer.setPostgresProperties
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.container.RedisContainer
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.container.RedisContainer.setRedisProperties
+import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.ArnsMockServer
+import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.CommunityPaybackAndDeliusMockServer
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.HmppsAuthMockServer
+import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.ProbationAccessControlMockServer
+import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.ProbationOffenderSearchMockServer
 import uk.gov.justice.digital.hmpps.subjectaccessrequest.SarIntegrationTestHelperConfig
 import uk.gov.justice.hmpps.test.kotlin.auth.JwtAuthorisationHelper
 
@@ -89,7 +93,11 @@ abstract class IntegrationTestBase {
   ): (HttpHeaders) -> Unit = jwtAuthHelper.setAuthorisationHeader(username = username, scope = scopes, roles = roles)
 
   protected fun stubPingWithResponse(status: Int) {
+    ArnsMockServer.stubHealthPing(status)
+    CommunityPaybackAndDeliusMockServer.stubHealthPing(status)
     HmppsAuthMockServer.stubHealthPing(status)
+    ProbationAccessControlMockServer.stubHealthPing(status)
+    ProbationOffenderSearchMockServer.stubHealthPing(status)
   }
 
   fun <S : WebTestClient.RequestHeadersSpec<S>> S.addAdminUiAuthHeader(username: String = "AUTH_ADM"): S = this.headers(

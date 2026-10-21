@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock
 
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
+import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.post
 import com.github.tomakehurst.wiremock.client.WireMock.stubFor
 import com.github.tomakehurst.wiremock.client.WireMock.urlMatching
@@ -32,6 +33,17 @@ object ProbationAccessControlMockServer {
             .withHeader("Content-Type", "application/json")
             .withBody(jsonMapper.writeValueAsString(NDCaseAccess.valid(*response))),
         ),
+    )
+  }
+
+  fun stubHealthPing(status: Int) {
+    stubFor(
+      get("/probation-access-control/health/ping").willReturn(
+        aResponse()
+          .withHeader("Content-Type", "application/json")
+          .withBody(if (status == 200) """{"status":"UP"}""" else """{"status":"DOWN"}""")
+          .withStatus(status),
+      ),
     )
   }
 }
