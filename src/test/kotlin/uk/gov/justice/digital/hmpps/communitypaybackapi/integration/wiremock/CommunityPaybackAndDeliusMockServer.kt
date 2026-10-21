@@ -691,5 +691,16 @@ object CommunityPaybackAndDeliusMockServer {
     }
   }
 
+  fun stubHealthPing(status: Int) {
+    WireMock.stubFor(
+      get("/community-payback-and-delius/health/ping").willReturn(
+        aResponse()
+          .withHeader("Content-Type", "application/json")
+          .withBody(if (status == 200) """{"status":"UP"}""" else """{"status":"DOWN"}""")
+          .withStatus(status),
+      ),
+    )
+  }
+
   private fun LocalDate.toIsoDateString() = this.format(DateTimeFormatter.ISO_DATE)
 }
