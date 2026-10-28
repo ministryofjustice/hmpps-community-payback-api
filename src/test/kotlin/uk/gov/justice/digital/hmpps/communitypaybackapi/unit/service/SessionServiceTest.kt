@@ -4,23 +4,30 @@ import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.junit5.MockKExtension
+import io.mockk.mockk
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDSessionSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.PageResponse
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentSummaryDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeGroupDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.BadRequestException
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.SessionSupervisorEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.SessionSupervisorEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.valid
+import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ContextService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ProjectService
@@ -52,6 +59,39 @@ class SessionServiceTest {
 
   @InjectMockKs
   private lateinit var service: SessionService
+
+  @Test
+  fun `project-wide assignment resolves next scheduled session and competes with dated assignments`() {
+    val today = LocalDate.now()
+    val nextDate = today.plusDays(2)
+    every { sessionSupervisorEntityRepository.findAssignments("s1", today) } returns listOf(
+      SessionSupervisorEntity.valid().copy(projectCode = "PROJECT", day = null),
+      SessionSupervisorEntity.valid().copy(projectCode = "LATER", day = today.plusDays(5)),
+    )
+    every {
+      appointmentService.getAppointments(
+        fromDate = today,
+        projectCodes = listOf("PROJECT"),
+        pageable = PageRequest.of(0, 1, Sort.by("date")),
+      )
+    } returns PageImpl(listOf(AppointmentSummaryDto.valid().copy(date = nextDate)))
+    every { projectService.getProject("PROJECT") } returns ProjectDto.valid()
+    val expected = mockk<SessionSummaryDto>()
+    every { sessionMappers.toSummaryDto(nextDate, any(), any()) } returns expected
+
+    assertThat(service.getNextAssignmentForSupervisor("s1")).isEqualTo(expected)
+  }
+
+  @Test
+  fun `project-wide assignment without scheduled sessions returns no next session`() {
+    val today = LocalDate.now()
+    every { sessionSupervisorEntityRepository.findAssignments("s1", today) } returns listOf(
+      SessionSupervisorEntity.valid().copy(day = null),
+    )
+    every { appointmentService.getAppointments(fromDate = today, projectCodes = any(), pageable = any()) } returns PageImpl(emptyList())
+
+    assertThat(service.getNextAssignmentForSupervisor("s1")).isNull()
+  }
 
   @Nested
   inner class GetSessionsByProjectTypeGroup {
