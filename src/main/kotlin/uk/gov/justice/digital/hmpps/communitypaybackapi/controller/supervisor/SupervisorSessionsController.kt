@@ -55,13 +55,15 @@ class SupervisorSessionsController(
     @PathVariable supervisorCode: String,
   ) = sessionService.getNextAllocationForSupervisor(supervisorCode) ?: throw NotFoundException("There are no future sessions for supervisor $supervisorCode")
 
+  @Deprecated("This has been replaced with GET /common/teams/{teamCode}/sessions")
   @PageableAsQueryParam
   @GetMapping(
     path = ["/supervisor/sessions/recent"],
     produces = [MediaType.APPLICATION_JSON_VALUE],
   )
   @Operation(
-    description = "Get recent group sessions that belong to the given teams.",
+    deprecated = true,
+    description = "Get recent group sessions that belong to the given teams.\n\nDeprecated in favour of GET /common/teams/{teamCode}/sessions",
     responses = [
       ApiResponse(
         responseCode = "200",

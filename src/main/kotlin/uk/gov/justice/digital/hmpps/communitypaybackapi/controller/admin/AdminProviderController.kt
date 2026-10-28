@@ -123,10 +123,12 @@ class AdminProviderController(
     @PathVariable teamCode: String,
   ): SupervisorSummariesDto = providerService.getTeamSupervisors(TeamId(providerCode, teamCode))
 
+  @Deprecated("This has been replaced with GET /common/teams/{teamCode}/sessions")
   @PageableAsQueryParam
   @GetMapping("/{providerCode}/teams/{teamCode}/sessions")
   @Operation(
-    description = "Get sessions within a date range for a specific team",
+    deprecated = true,
+    description = "Get sessions within a date range for a specific team\n\nDeprecated in favour of GET /common/teams/{teamCode}/sessions",
     responses = [
       ApiResponse(
         responseCode = "200",
