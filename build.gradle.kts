@@ -2,7 +2,7 @@ import java.net.InetSocketAddress
 import java.net.Socket
 
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "11.0.12"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "11.0.13"
   kotlin("plugin.spring") version "2.4.21"
   kotlin("plugin.jpa") version "2.4.21"
   id("dev.detekt") version "2.0.0-alpha.6"
@@ -55,7 +55,7 @@ dependencies {
   testImplementation("org.wiremock.integrations:wiremock-spring-boot:4.4.3")
   testImplementation("io.mockk:mockk:1.14.11")
   testImplementation("com.lemonappdev:konsist:0.18.1")
-  testImplementation("uk.gov.justice.service.hmpps:hmpps-subject-access-request-test-support:2.8.4")
+  testImplementation("uk.gov.justice.service.hmpps:hmpps-subject-access-request-test-support:2.8.5")
   testImplementation("org.zalando:logbook-spring-boot-starter:4.2.0")
   testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0")
 
