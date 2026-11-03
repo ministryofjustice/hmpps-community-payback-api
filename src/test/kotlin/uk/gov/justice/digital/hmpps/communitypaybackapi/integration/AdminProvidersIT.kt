@@ -36,6 +36,16 @@ class AdminProvidersIT : IntegrationTestBase() {
   inner class ProviderEndpoint {
 
     @Test
+    fun `should return forbidden for supervisor role`() {
+      webTestClient.get()
+        .uri("/admin/providers?username=doesntmatter")
+        .addSupervisorUiAuthHeader()
+        .exchange()
+        .expectStatus()
+        .isForbidden
+    }
+
+    @Test
     fun `should return unauthorized if no token`() {
       webTestClient.get()
         .uri("/admin/providers")
@@ -94,6 +104,16 @@ class AdminProvidersIT : IntegrationTestBase() {
   @Nested
   @DisplayName("GET /admin/providers/{providerCode}/teams")
   inner class ProviderTeamsEndpoint {
+
+    @Test
+    fun `should return forbidden for supervisor role`() {
+      webTestClient.get()
+        .uri("/admin/providers/123/teams")
+        .addSupervisorUiAuthHeader()
+        .exchange()
+        .expectStatus()
+        .isForbidden
+    }
 
     @Test
     fun `should return unauthorized if no token`() {

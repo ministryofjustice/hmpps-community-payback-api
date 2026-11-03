@@ -76,6 +76,23 @@ class OpenApiDocsIT : IntegrationTestBase() {
     assertThat(result.messages).isEmpty()
   }
 
+  @ParameterizedTest
+  @CsvSource(value = ["/providers", "/providers/{providerCode}/teams"])
+  fun `provider endpoints document deprecated admin routes and common replacements`(path: String) {
+    webTestClient.get()
+      .uri("/v3/api-docs")
+      .accept(MediaType.APPLICATION_JSON)
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.paths['/admin$path'].get.deprecated").isEqualTo(true)
+      .jsonPath("$.paths['/admin$path'].get.description").value<String> {
+        assertThat(it).contains("Deprecated in favour of GET /common$path")
+      }
+      .jsonPath("$.paths['/common$path'].get.responses['200']").exists()
+      .jsonPath("$.paths['/common$path'].get.deprecated").doesNotExist()
+  }
+
   @Test
   @Disabled("TODO Enable this test once you have added security schema to OpenApiConfiguration.OpenAPi().components()")
   fun `the open api json path security requirements are valid`() {
