@@ -14,6 +14,11 @@ generic-service:
     SENTRY_ENVIRONMENT: dev
     SPRING_PROFILES_ACTIVE: dev
 
+    # These dependencies shut down outside working hours in non-production.
+    MANAGEMENT_HEALTH_COMMUNITYPAYBACKANDDELIUS_ENABLED: "false"
+    MANAGEMENT_HEALTH_PROBATIONACCESSCONTROL_ENABLED: "false"
+    MANAGEMENT_HEALTH_PROBATIONOFFENDERSEARCH_ENABLED: "false"
+
     # without this e2es will intermittently fail
     COMMUNITY_PAYBACK_APPOINTMENT_SCHEDULING_DISABLE_NON_WORKING_DAYS: true
     COMMUNITY_PAYBACK_BOOTSTRAP_ENABLED: true
@@ -52,4 +57,3 @@ generic-prometheus-alerts:
   sqsAlertsTotalMessagesThreshold: 10
 
 deploy_stubs: true
-
