@@ -1,0 +1,59 @@
+package uk.gov.justice.digital.hmpps.communitypaybackapi.controller.common
+
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.media.Content
+import io.swagger.v3.oas.annotations.media.Schema
+import io.swagger.v3.oas.annotations.responses.ApiResponse
+import org.springframework.http.MediaType
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProviderSummariesDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProviderTeamSummariesDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ProviderService
+import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
+
+@CommonController
+@RequestMapping(
+  "/common/providers",
+  produces = [MediaType.APPLICATION_JSON_VALUE],
+)
+class CommonProviderController(
+  private val providerService: ProviderService,
+) {
+  @GetMapping
+  @Operation(
+    description = "Get list of provider summaries available for a given user",
+    responses = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Successful providers summaries response",
+      ),
+    ],
+  )
+  fun getProviders(
+    @RequestParam username: String,
+  ): ProviderSummariesDto = providerService.getProviders(username)
+
+  @GetMapping("/{providerCode}/teams")
+  @Operation(
+    description = "Get team information for a specific provider",
+    responses = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Successful team response",
+      ),
+      ApiResponse(
+        responseCode = "404",
+        description = "Provider not found",
+        content = [
+          Content(
+            schema = Schema(implementation = ErrorResponse::class),
+          ),
+        ],
+      ),
+    ],
+  )
+  fun getProviderTeam(@PathVariable providerCode: String): ProviderTeamSummariesDto = providerService.getProviderTeams(providerCode)
+}

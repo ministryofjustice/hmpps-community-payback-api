@@ -40,9 +40,11 @@ class AdminProviderController(
   val projectService: ProjectService,
 ) {
 
+  @Deprecated("This has been replaced with GET /common/providers")
   @GetMapping
   @Operation(
-    description = "Get list of provider summaries available for a given user",
+    deprecated = true,
+    description = "Get list of provider summaries available for a given user\n\nDeprecated in favour of GET /common/providers",
     responses = [
       ApiResponse(
         responseCode = "200",
@@ -54,9 +56,11 @@ class AdminProviderController(
     @RequestParam username: String,
   ): ProviderSummariesDto = providerService.getProviders(username)
 
+  @Deprecated("This has been replaced with GET /common/providers/{providerCode}/teams")
   @GetMapping("/{providerCode}/teams")
   @Operation(
-    description = "Get team information for a specific provider",
+    deprecated = true,
+    description = "Get team information for a specific provider\n\nDeprecated in favour of GET /common/providers/{providerCode}/teams",
     responses = [
       ApiResponse(
         responseCode = "200",
