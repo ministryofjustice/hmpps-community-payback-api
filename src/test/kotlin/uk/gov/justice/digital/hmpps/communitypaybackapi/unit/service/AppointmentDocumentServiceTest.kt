@@ -92,12 +92,70 @@ class AppointmentDocumentServiceTest {
 
   @ParameterizedTest
   @NullAndEmptySource
-  @ValueSource(strings = [" "])
+  @ValueSource(strings = [" ", "\t", "\r\n"])
   fun `rejects missing filename`(filename: String?) {
     assertThatThrownBy { service.uploadDocument(101, MockMultipartFile("file", filename, null, bytes)) }
       .isInstanceOf(BadRequestException::class.java)
       .hasMessage("Document must have a filename")
     verify { client wasNot Called }
+  }
+
+  @ParameterizedTest
+  @ValueSource(
+    strings = [
+      "../evidence.pdf", "folder/evidence.pdf", "..\\evidence.pdf", "C:\\fakepath\\evidence.pdf", "/tmp/evidence.pdf",
+      "file<script>.pdf", "file\".pdf", "file:stream.pdf", "file?.pdf", "file*.pdf", "file|.pdf", "file%2f.pdf",
+      "file<.pdf", "file>.pdf", "file#.pdf", "file$.pdf", "file&.pdf", "file!.pdf", "file^.pdf",
+    ],
+  )
+  fun `rejects unsafe filenames without calling Delius`(filename: String) {
+    assertThatThrownBy { service.uploadDocument(101, MockMultipartFile("file", filename, null, bytes)) }
+      .isInstanceOf(BadRequestException::class.java)
+      .hasMessage("Document filename contains invalid characters")
+    verify { client wasNot Called }
+  }
+
+  @Test
+  fun `rejects filename longer than 190 characters without calling Delius`() {
+    val filename = "a".repeat(187) + ".pdf"
+    assertThatThrownBy { service.uploadDocument(101, MockMultipartFile("file", filename, null, bytes)) }
+      .isInstanceOf(BadRequestException::class.java)
+      .hasMessage("Document filename must not exceed 190 characters")
+    verify { client wasNot Called }
+  }
+
+  @ParameterizedTest
+  @ValueSource(
+    strings = [
+      "AppointmentEvidence1.pdf", "Report2026.PDF", "123.pdf", "résumé.pdf", "re\u0301sume\u0301.pdf", "证据.pdf",
+      "Appointment evidence.pdf", "evidence(1).pdf", "O'Brien.pdf", "report_2026.pdf", "report-2026.pdf",
+      "report.v2.pdf", "file..pdf", ".pdf", ".hidden.pdf", " evidence.pdf", " .pdf",
+      "file@.pdf", "file+.pdf", "file=.pdf", "file😀.pdf",
+      "file\u0000.pdf", "file\r\n.pdf", "file\t.pdf", "file\u007f.pdf", "file\u0085.pdf", "file\u202e.pdf",
+    ],
+  )
+  fun `preserves valid filenames`(filename: String) {
+    assertFilenameForwarded(filename)
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = ["file!\n.pdf", "file\r\n!.pdf", "file!\r.pdf", "file!\u0085.pdf", "file!\u2028.pdf", "file!\u2029.pdf"])
+  fun `preserves legacy regex matching behaviour for line terminators`(filename: String) {
+    assertFilenameForwarded(filename)
+  }
+
+  @Test
+  fun `accepts filename of exactly 190 characters`() {
+    assertFilenameForwarded("a".repeat(186) + ".pdf")
+  }
+
+  private fun assertFilenameForwarded(filename: String) {
+    val part = slot<HttpEntity<Resource>>()
+    every { client.uploadAppointmentDocument(101, capture(part)) } returns NDDocumentUploadResponse(42, filename)
+    assertThat(service.uploadDocument(101, MockMultipartFile("file", filename, null, bytes)))
+      .isEqualTo(DocumentUploadResponseDto(42, filename))
+    assertThat(part.captured.body!!.filename).isEqualTo(filename)
+    verify(exactly = 1) { client.uploadAppointmentDocument(101, any()) }
   }
 
   @Test

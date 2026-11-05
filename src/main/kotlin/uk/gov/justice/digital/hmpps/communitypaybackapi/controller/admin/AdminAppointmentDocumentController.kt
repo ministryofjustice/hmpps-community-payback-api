@@ -44,10 +44,16 @@ class AdminAppointmentDocumentController(
   @PostMapping("/{deliusAppointmentId}/documents", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
   @Operation(
     description = "Upload a document for an appointment. Supported extensions (case-insensitive): " +
-      "doc, docx, rtf, txt, dot, dotm, docm, odt, xml, wpd, wri, wps, xls, xlsb, xlsx, csv, pdf, bmp, jpg, jpeg, gif, png, m4a, flac, mp3.",
+      "doc, docx, rtf, txt, dot, dotm, docm, odt, xml, wpd, wri, wps, xls, xlsb, xlsx, csv, pdf, bmp, jpg, jpeg, gif, png, m4a, flac, mp3. " +
+      "Filenames must be at most 190 characters. " +
+      """Invalid filename characters: / ! | $ % & # ^ " < > : ? * \.""",
     responses = [
       ApiResponse(responseCode = "200", description = "Document uploaded successfully"),
-      ApiResponse(responseCode = "400", description = "Missing or empty file, unsupported extension, or invalid content type", content = [Content(schema = Schema(implementation = ErrorResponse::class))]),
+      ApiResponse(
+        responseCode = "400",
+        description = "Missing or empty file, invalid filename, unsupported extension, or invalid content type",
+        content = [Content(schema = Schema(implementation = ErrorResponse::class))],
+      ),
       ApiResponse(responseCode = "404", description = "Appointment not found", content = [Content(schema = Schema(implementation = ErrorResponse::class))]),
     ],
   )

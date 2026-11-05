@@ -32,24 +32,25 @@ class AdminAppointmentDocumentIT : IntegrationTestBase() {
   private val endpoint = "/admin/appointments/101/documents"
   private val fileBytes = byteArrayOf(0, 1, 127, -128, -1)
 
-  @Test
-  fun `uploads binary file and returns document metadata`() {
+  @ParameterizedTest
+  @ValueSource(strings = ["evidence.pdf", "my-report_2026.pdf", "Appointment evidence (1).pdf", "O'Brien.v2.pdf", "file@+=.pdf"])
+  fun `uploads binary file and returns document metadata`(filename: String) {
     stubFor(
       post(urlEqualTo(upstreamPath))
         .withMultipartRequestBody(
           aMultipart().withName("file")
-            .withHeader("Content-Disposition", containing("filename=\"evidence.pdf\""))
+            .withHeader("Content-Disposition", containing("filename=\"$filename\""))
             .withHeader("Content-Type", equalTo("application/pdf"))
             .withBody(binaryEqualTo(fileBytes)),
         )
-        .willReturn(okJson("""{"documentId":42,"filename":"evidence.pdf"}""")),
+        .willReturn(okJson("""{"documentId":42,"filename":"$filename"}""")),
     )
 
     webTestClient.post().uri(endpoint).addAdminUiAuthHeader()
-      .body(upload()).exchange().expectStatus().isOk
+      .body(upload(filename = filename)).exchange().expectStatus().isOk
       .expectBody()
       .jsonPath("$.documentId").isEqualTo(42)
-      .jsonPath("$.filename").isEqualTo("evidence.pdf")
+      .jsonPath("$.filename").isEqualTo(filename)
     verify(1, postRequestedFor(urlEqualTo(upstreamPath)))
   }
 
@@ -88,6 +89,30 @@ class AdminAppointmentDocumentIT : IntegrationTestBase() {
   fun `rejects empty file`() {
     webTestClient.post().uri(endpoint).addAdminUiAuthHeader()
       .body(upload(byteArrayOf())).exchange().expectStatus().isBadRequest
+    verify(0, postRequestedFor(urlEqualTo(upstreamPath)))
+  }
+
+  @ParameterizedTest
+  @ValueSource(
+    strings = [
+      "../evidence.pdf", "folder/evidence.pdf", "file<script>.pdf", "file!.pdf", "file|.pdf", "file$.pdf", "file%.pdf",
+      "file&.pdf", "file#.pdf", "file^.pdf", "file\".pdf", "file<.pdf", "file>.pdf", "file:.pdf", "file?.pdf", "file*.pdf",
+    ],
+  )
+  fun `rejects unsafe filenames without calling Delius`(filename: String) {
+    webTestClient.post().uri(endpoint).addAdminUiAuthHeader()
+      .body(upload(filename = filename)).exchange().expectStatus().isBadRequest
+      .expectBody().jsonPath("$.userMessage")
+      .value<String> { org.assertj.core.api.Assertions.assertThat(it).contains("Document filename") }
+    verify(0, postRequestedFor(urlEqualTo(upstreamPath)))
+  }
+
+  @Test
+  fun `rejects filename longer than 190 characters without calling Delius`() {
+    webTestClient.post().uri(endpoint).addAdminUiAuthHeader()
+      .body(upload(filename = "a".repeat(187) + ".pdf")).exchange().expectStatus().isBadRequest
+      .expectBody().jsonPath("$.userMessage")
+      .value<String> { org.assertj.core.api.Assertions.assertThat(it).contains("must not exceed 190 characters") }
     verify(0, postRequestedFor(urlEqualTo(upstreamPath)))
   }
 

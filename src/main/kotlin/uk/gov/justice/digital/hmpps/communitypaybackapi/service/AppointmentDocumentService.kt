@@ -28,12 +28,7 @@ class AppointmentDocumentService(
 
   fun uploadDocument(deliusAppointmentId: Long, file: MultipartFile): DocumentUploadResponseDto? {
     if (file.isEmpty) badRequest("Document must not be empty")
-    if (file.originalFilename.isNullOrBlank()) badRequest("Document must have a filename")
-
-    val extension = file.originalFilename!!.substringAfterLast('.', "").lowercase()
-    if (extension !in ALLOWED_EXTENSIONS) {
-      badRequest("Unsupported document format. Allowed extensions: ${ALLOWED_EXTENSIONS.joinToString(", ")}")
-    }
+    validateFilename(file.originalFilename)
 
     val mediaType = try {
       file.contentType?.takeIf { it.isNotBlank() }?.let { MediaType.parseMediaType(it) } ?: MediaType.APPLICATION_OCTET_STREAM
@@ -53,6 +48,19 @@ class AppointmentDocumentService(
       null
     }
   }
+
+  private fun validateFilename(filename: String?) {
+    if (filename.isNullOrBlank()) badRequest("Document must have a filename")
+    if (filename.length > MAX_FILENAME_LENGTH) badRequest("Document filename must not exceed $MAX_FILENAME_LENGTH characters")
+    if (INVALID_FILENAME_CHARACTERS.matches(filename)) {
+      badRequest("Document filename contains invalid characters")
+    }
+    val extension = filename.substringAfterLast('.', "").lowercase()
+    if (extension !in ALLOWED_EXTENSIONS) {
+      badRequest("Unsupported document format. Allowed extensions: ${ALLOWED_EXTENSIONS.joinToString(", ")}")
+    }
+  }
+
   fun deleteDocument(deliusAppointmentId: Long, documentId: Long): Boolean = try {
     communityPaybackAndDeliusClient.deleteAppointmentDocument(deliusAppointmentId, documentId)
     true
@@ -67,6 +75,10 @@ class AppointmentDocumentService(
   }
 
   private companion object {
+    const val MAX_FILENAME_LENGTH = 190
+
+    val INVALID_FILENAME_CHARACTERS = Regex(""".*[/!|$%&#^"<>:?*\\].*""")
+
     val ALLOWED_EXTENSIONS = setOf(
       "doc", "docx", "rtf", "txt", "dot", "dotm", "docm", "odt", "xml", "wpd", "wri", "wps",
       "xls", "xlsb", "xlsx", "csv", "pdf", "bmp", "jpg", "jpeg", "gif", "png", "m4a", "flac", "mp3",
