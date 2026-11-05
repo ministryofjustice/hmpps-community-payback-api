@@ -45,7 +45,8 @@ class AdminAppointmentDocumentController(
   @Operation(
     description = "Upload a document for an appointment. Supported extensions (case-insensitive): " +
       "doc, docx, rtf, txt, dot, dotm, docm, odt, xml, wpd, wri, wps, xls, xlsb, xlsx, csv, pdf, bmp, jpg, jpeg, gif, png, m4a, flac, mp3. " +
-      "Filenames must be at most 190 characters and contain only letters and numbers, with a single dot before the extension.",
+      "Filenames must be at most 190 characters. " +
+      """Invalid filename characters: / ! | $ % & # ^ " < > : ? * \.""",
     responses = [
       ApiResponse(responseCode = "200", description = "Document uploaded successfully"),
       ApiResponse(

@@ -52,8 +52,8 @@ class AppointmentDocumentService(
   private fun validateFilename(filename: String?) {
     if (filename.isNullOrBlank()) badRequest("Document must have a filename")
     if (filename.length > MAX_FILENAME_LENGTH) badRequest("Document filename must not exceed $MAX_FILENAME_LENGTH characters")
-    if (!SAFE_FILENAME.matches(filename)) {
-      badRequest("Document filename must contain only letters and numbers, with a single dot before the extension")
+    if (INVALID_FILENAME_CHARACTERS.matches(filename)) {
+      badRequest("Document filename contains invalid characters")
     }
     val extension = filename.substringAfterLast('.', "").lowercase()
     if (extension !in ALLOWED_EXTENSIONS) {
@@ -76,7 +76,9 @@ class AppointmentDocumentService(
 
   private companion object {
     const val MAX_FILENAME_LENGTH = 190
-    val SAFE_FILENAME = Regex("[\\p{L}\\p{N}][\\p{L}\\p{M}\\p{N}]*\\.[a-zA-Z0-9]+")
+
+    val INVALID_FILENAME_CHARACTERS = Regex(""".*[/!|$%&#^"<>:?*\\].*""")
+
     val ALLOWED_EXTENSIONS = setOf(
       "doc", "docx", "rtf", "txt", "dot", "dotm", "docm", "odt", "xml", "wpd", "wri", "wps",
       "xls", "xlsb", "xlsx", "csv", "pdf", "bmp", "jpg", "jpeg", "gif", "png", "m4a", "flac", "mp3",

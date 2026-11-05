@@ -74,7 +74,7 @@ class AppointmentDocumentServiceTest {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = ["file.exe", "file.mp4", "file.wav", "file.wma", "file.aac", "file.zip"])
+  @ValueSource(strings = ["file.exe", "file.mp4", "file.wav", "file.wma", "file.aac", "file.zip", "pdf", "file.", "file.pdf.exe", "file.pdf "])
   fun `rejects unsupported extensions even with PDF content type`(filename: String) {
     assertThatThrownBy { service.uploadDocument(101, MockMultipartFile("file", filename, "application/pdf", bytes)) }
       .isInstanceOf(BadRequestException::class.java)
@@ -92,7 +92,7 @@ class AppointmentDocumentServiceTest {
 
   @ParameterizedTest
   @NullAndEmptySource
-  @ValueSource(strings = [" "])
+  @ValueSource(strings = [" ", "\t", "\r\n"])
   fun `rejects missing filename`(filename: String?) {
     assertThatThrownBy { service.uploadDocument(101, MockMultipartFile("file", filename, null, bytes)) }
       .isInstanceOf(BadRequestException::class.java)
@@ -104,18 +104,14 @@ class AppointmentDocumentServiceTest {
   @ValueSource(
     strings = [
       "../evidence.pdf", "folder/evidence.pdf", "..\\evidence.pdf", "C:\\fakepath\\evidence.pdf", "/tmp/evidence.pdf",
-      "file\u0000.pdf", "file\r\n.pdf", "file\t.pdf", "file\u007f.pdf", "file\u0085.pdf", "file\u202e.pdf",
       "file<script>.pdf", "file\".pdf", "file:stream.pdf", "file?.pdf", "file*.pdf", "file|.pdf", "file%2f.pdf",
-      ".pdf", ".hidden.pdf", " evidence.pdf", "file.pdf ", " .pdf",
-      "pdf", "file.", "file.pdf.exe", "report.v2.pdf", "file..pdf",
-      "Appointment evidence.pdf", "evidence(1).pdf", "O'Brien.pdf", "report_2026.pdf", "report-2026.pdf",
-      "file@.pdf", "file#.pdf", "file$.pdf", "file&.pdf", "file+.pdf", "file=.pdf", "file!.pdf", "file😀.pdf",
+      "file<.pdf", "file>.pdf", "file#.pdf", "file$.pdf", "file&.pdf", "file!.pdf", "file^.pdf",
     ],
   )
   fun `rejects unsafe filenames without calling Delius`(filename: String) {
     assertThatThrownBy { service.uploadDocument(101, MockMultipartFile("file", filename, null, bytes)) }
       .isInstanceOf(BadRequestException::class.java)
-      .hasMessageStartingWith("Document filename must contain only")
+      .hasMessage("Document filename contains invalid characters")
     verify { client wasNot Called }
   }
 
@@ -129,8 +125,22 @@ class AppointmentDocumentServiceTest {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = ["AppointmentEvidence1.pdf", "Report2026.PDF", "123.pdf", "résumé.pdf", "re\u0301sume\u0301.pdf", "证据.pdf"])
+  @ValueSource(
+    strings = [
+      "AppointmentEvidence1.pdf", "Report2026.PDF", "123.pdf", "résumé.pdf", "re\u0301sume\u0301.pdf", "证据.pdf",
+      "Appointment evidence.pdf", "evidence(1).pdf", "O'Brien.pdf", "report_2026.pdf", "report-2026.pdf",
+      "report.v2.pdf", "file..pdf", ".pdf", ".hidden.pdf", " evidence.pdf", " .pdf",
+      "file@.pdf", "file+.pdf", "file=.pdf", "file😀.pdf",
+      "file\u0000.pdf", "file\r\n.pdf", "file\t.pdf", "file\u007f.pdf", "file\u0085.pdf", "file\u202e.pdf",
+    ],
+  )
   fun `preserves valid filenames`(filename: String) {
+    assertFilenameForwarded(filename)
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = ["file!\n.pdf", "file\r\n!.pdf", "file!\r.pdf", "file!\u0085.pdf", "file!\u2028.pdf", "file!\u2029.pdf"])
+  fun `preserves legacy regex matching behaviour for line terminators`(filename: String) {
     assertFilenameForwarded(filename)
   }
 
