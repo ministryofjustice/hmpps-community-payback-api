@@ -75,7 +75,7 @@ class AdminAppointmentDocumentIT : IntegrationTestBase() {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = ["file.exe", "file.mp4", "file.wav", "file.wma", "file.aac", "file", "file.pdf.exe"])
+  @ValueSource(strings = ["file.exe", "file.mp4", "file.wav", "file.wma", "file.aac"])
   fun `rejects unsupported document formats without calling Delius`(filename: String) {
     webTestClient.post().uri(endpoint).addAdminUiAuthHeader()
       .body(upload(filename = filename)).exchange().expectStatus().isBadRequest
@@ -88,6 +88,30 @@ class AdminAppointmentDocumentIT : IntegrationTestBase() {
   fun `rejects empty file`() {
     webTestClient.post().uri(endpoint).addAdminUiAuthHeader()
       .body(upload(byteArrayOf())).exchange().expectStatus().isBadRequest
+    verify(0, postRequestedFor(urlEqualTo(upstreamPath)))
+  }
+
+  @ParameterizedTest
+  @ValueSource(
+    strings = [
+      "../evidence.pdf", "folder/evidence.pdf", ".hidden.pdf", " evidence.pdf", "file<script>.pdf", "file", "file.pdf.exe",
+      "evidence 1.pdf", "evidence(1).pdf", "O'Brien.pdf", "report_2026.pdf", "report-2026.pdf", "report.v2.pdf",
+    ],
+  )
+  fun `rejects unsafe filenames without calling Delius`(filename: String) {
+    webTestClient.post().uri(endpoint).addAdminUiAuthHeader()
+      .body(upload(filename = filename)).exchange().expectStatus().isBadRequest
+      .expectBody().jsonPath("$.userMessage")
+      .value<String> { org.assertj.core.api.Assertions.assertThat(it).contains("Document filename") }
+    verify(0, postRequestedFor(urlEqualTo(upstreamPath)))
+  }
+
+  @Test
+  fun `rejects filename longer than 190 characters without calling Delius`() {
+    webTestClient.post().uri(endpoint).addAdminUiAuthHeader()
+      .body(upload(filename = "a".repeat(187) + ".pdf")).exchange().expectStatus().isBadRequest
+      .expectBody().jsonPath("$.userMessage")
+      .value<String> { org.assertj.core.api.Assertions.assertThat(it).contains("must not exceed 190 characters") }
     verify(0, postRequestedFor(urlEqualTo(upstreamPath)))
   }
 
