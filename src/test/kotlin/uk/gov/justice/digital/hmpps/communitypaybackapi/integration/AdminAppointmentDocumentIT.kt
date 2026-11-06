@@ -116,6 +116,16 @@ class AdminAppointmentDocumentIT : IntegrationTestBase() {
     verify(0, postRequestedFor(urlEqualTo(upstreamPath)))
   }
 
+  @ParameterizedTest
+  @ValueSource(strings = [".docx", ".DOCX", ".pdf", " .docx", "..docx"])
+  fun `rejects filename without a name before the extension without calling Delius`(filename: String) {
+    webTestClient.post().uri(endpoint).addAdminUiAuthHeader()
+      .body(upload(filename = filename)).exchange().expectStatus().isBadRequest
+      .expectBody().jsonPath("$.userMessage")
+      .value<String> { org.assertj.core.api.Assertions.assertThat(it).contains("Document must have a name before the extension") }
+    verify(0, postRequestedFor(urlEqualTo(upstreamPath)))
+  }
+
   @Test
   fun `rejects invalid appointment ID`() {
     webTestClient.post().uri("/admin/appointments/invalid/documents").addAdminUiAuthHeader()

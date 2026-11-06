@@ -101,6 +101,15 @@ class AppointmentDocumentServiceTest {
   }
 
   @ParameterizedTest
+  @ValueSource(strings = [".docx", ".DOCX", ".pdf", " .docx", "\t.docx", "\r\n.docx", "..docx", "...pdf", " . .docx"])
+  fun `rejects filename without a name before the extension without calling Delius`(filename: String) {
+    assertThatThrownBy { service.uploadDocument(101, MockMultipartFile("file", filename, null, bytes)) }
+      .isInstanceOf(BadRequestException::class.java)
+      .hasMessage("Document must have a name before the extension")
+    verify { client wasNot Called }
+  }
+
+  @ParameterizedTest
   @ValueSource(
     strings = [
       "../evidence.pdf", "folder/evidence.pdf", "..\\evidence.pdf", "C:\\fakepath\\evidence.pdf", "/tmp/evidence.pdf",
@@ -129,7 +138,7 @@ class AppointmentDocumentServiceTest {
     strings = [
       "AppointmentEvidence1.pdf", "Report2026.PDF", "123.pdf", "résumé.pdf", "re\u0301sume\u0301.pdf", "证据.pdf",
       "Appointment evidence.pdf", "evidence(1).pdf", "O'Brien.pdf", "report_2026.pdf", "report-2026.pdf",
-      "report.v2.pdf", "file..pdf", ".pdf", ".hidden.pdf", " evidence.pdf", " .pdf",
+      "report.v2.pdf", "file..pdf", ".hidden.pdf", " evidence.pdf", "report.docx", ".hidden.docx",
       "file@.pdf", "file+.pdf", "file=.pdf", "file😀.pdf",
       "file\u0000.pdf", "file\r\n.pdf", "file\t.pdf", "file\u007f.pdf", "file\u0085.pdf", "file\u202e.pdf",
     ],
