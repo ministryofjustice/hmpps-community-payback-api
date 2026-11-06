@@ -1,9 +1,7 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.entity
 
-import jakarta.persistence.Embeddable
 import jakarta.persistence.Entity
 import jakarta.persistence.Id
-import jakarta.persistence.IdClass
 import jakarta.persistence.Table
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.UpdateTimestamp
@@ -11,20 +9,21 @@ import org.hibernate.proxy.HibernateProxy
 import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.Objects
+import java.util.UUID
 
 @Entity
 @Table(name = "session_supervisors")
-@IdClass(SessionSupervisorId::class)
 data class SessionSupervisorEntity(
-  @Id
   val projectCode: String,
 
-  @Id
-  val day: LocalDate,
+  val day: LocalDate?,
 
   var supervisorCode: String,
 
-  var allocatedByUsername: String,
+  var assignedByUsername: String,
+
+  @Id
+  val id: UUID = UUID.randomUUID(),
 
   @CreationTimestamp
   val createdAt: OffsetDateTime = OffsetDateTime.now(),
@@ -44,18 +43,12 @@ data class SessionSupervisorEntity(
     if (thisEffectiveClass != oEffectiveClass) return false
     other as SessionSupervisorEntity
 
-    return projectCode == other.projectCode && day == other.day
+    return id == other.id
   }
 
-  override fun hashCode(): Int = Objects.hash(projectCode, day)
+  override fun hashCode(): Int = Objects.hash(id)
 
   override fun toString(): String = "SessionSupervisorEntity(projectCode='$projectCode', day='$day', supervisorCode='$supervisorCode')"
 
   companion object
 }
-
-@Embeddable
-data class SessionSupervisorId(
-  val projectCode: String,
-  val day: LocalDate,
-)

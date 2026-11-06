@@ -5,6 +5,8 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.ValueSource
 import org.springframework.beans.factory.annotation.Autowired
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointmentSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseSummary
@@ -155,7 +157,7 @@ class SupervisorSessionsIT : IntegrationTestBase() {
     @Test
     fun `should return 404 if there is no future session`() {
       val yesterday = LocalDate.now().minusDays(1)
-      allocateSessionToSupervisor1("IGNORED_PROJECT_YESTERDAY", yesterday)
+      assignSessionToSupervisor1("IGNORED_PROJECT_YESTERDAY", yesterday)
 
       webTestClient.get()
         .uri("/supervisor/supervisors/SUPERVISOR001/sessions/next")
@@ -165,16 +167,17 @@ class SupervisorSessionsIT : IntegrationTestBase() {
         .isNotFound
     }
 
-    @Test
-    fun `should return OK with next project session`() {
+    @ParameterizedTest
+    @ValueSource(booleans = [false, true])
+    fun `should return OK with next project session`(projectWide: Boolean) {
       val yesterday = LocalDate.now().minusDays(1)
-      allocateSessionToSupervisor1("IGNORED_PROJECT_YESTERDAY", yesterday)
+      assignSessionToSupervisor1("IGNORED_PROJECT_YESTERDAY", yesterday)
 
       val nextYear = LocalDate.now().plusYears(5)
-      allocateSessionToSupervisor1("PROJ2", nextYear)
+      assignSessionToSupervisor1("PROJ2", nextYear)
 
       val today = LocalDate.now()
-      allocateSessionToSupervisor1("PROJ1", today)
+      assignSessionToSupervisor1("PROJ1", if (projectWide) null else today)
 
       CommunityPaybackAndDeliusMockServer.setupGetProjectResponse(NDProject.valid(ctx).copy(code = "PROJ1"))
 
@@ -194,6 +197,19 @@ class SupervisorSessionsIT : IntegrationTestBase() {
           NDAppointmentSummary.valid().copy(outcome = null, case = NDCaseSummary.valid().copy(crn = crn2), eventNumber = eventNumber2),
         ),
       )
+
+      if (projectWide) {
+        CommunityPaybackAndDeliusMockServer.setupGetAppointmentsResponse(
+          username = "USER1",
+          fromDate = today,
+          projectCodes = listOf("PROJ1"),
+          pageSize = 1,
+          sortString = "date,asc",
+          appointments = listOf(
+            NDAppointmentSummary.valid().copy(date = today, outcome = null, case = NDCaseSummary.valid().copy(crn = crn1), eventNumber = eventNumber1),
+          ),
+        )
+      }
 
       CommunityPaybackAndDeliusMockServer.setupGetAdjustmentsResponse(crn1, eventNumber1, emptyList())
       CommunityPaybackAndDeliusMockServer.setupGetAdjustmentsResponse(crn2, eventNumber2, emptyList())
@@ -366,9 +382,9 @@ class SupervisorSessionsIT : IntegrationTestBase() {
     assertThat(result.page.number).isEqualTo(0)
   }
 
-  private fun allocateSessionToSupervisor1(
+  private fun assignSessionToSupervisor1(
     projectCode: String,
-    day: LocalDate,
+    day: LocalDate?,
   ) {
     sessionSupervisorEntityRepository.save(
       SessionSupervisorEntity.valid().copy(

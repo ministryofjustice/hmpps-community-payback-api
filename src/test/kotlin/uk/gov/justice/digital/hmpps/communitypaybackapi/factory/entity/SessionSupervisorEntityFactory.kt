@@ -8,5 +8,5 @@ fun SessionSupervisorEntity.Companion.valid() = SessionSupervisorEntity(
   projectCode = String.random(5),
   day = randomLocalDate(),
   supervisorCode = String.random(5),
-  allocatedByUsername = String.random(10),
+  assignedByUsername = String.random(10),
 )

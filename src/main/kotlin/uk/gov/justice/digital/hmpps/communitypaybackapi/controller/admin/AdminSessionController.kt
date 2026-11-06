@@ -10,8 +10,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AllocateSupervisorToSessionDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.SessionIdDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AssignSupervisorDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.SessionService
 import java.time.LocalDate
 
@@ -23,51 +22,55 @@ import java.time.LocalDate
 class AdminSessionController(val sessionService: SessionService) {
 
   @PostMapping(
-    path = ["/{projectCode}/sessions/{date}/supervisor"],
+    path = ["/{projectCode}/sessions/{date}/supervisor", "/{projectCode}/supervisor"],
     consumes = [MediaType.APPLICATION_JSON_VALUE],
   )
   @Operation(
-    description = """Allocate a supervisor to a session""",
+    description = """Assign a supervisor to a session, or to all sessions for a project when no date is supplied""",
     responses = [
       ApiResponse(
         responseCode = "200",
-        description = "Session has been allocated",
+        description = "Supervisor has been assigned",
       ),
     ],
   )
-  fun allocateSupervisor(
+  fun assignSupervisor(
     @PathVariable projectCode: String,
     @Parameter(description = "Date", example = "2025-01-01")
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-    @PathVariable date: LocalDate,
-    @RequestBody allocation: AllocateSupervisorToSessionDto,
+    @PathVariable(required = false) date: LocalDate?,
+    @RequestBody assignment: AssignSupervisorDto,
   ) {
-    sessionService.allocateSupervisor(
-      sessionId = SessionIdDto(projectCode, date),
-      supervisorCode = allocation.supervisorCode,
+    sessionService.assignSupervisor(
+      projectCode = projectCode,
+      day = date,
+      supervisorCode = assignment.supervisorCode,
     )
   }
 
   @DeleteMapping(
-    path = ["/{projectCode}/sessions/{date}/supervisor"],
+    path = ["/{projectCode}/sessions/{date}/supervisor/{supervisorCode}", "/{projectCode}/supervisor/{supervisorCode}"],
   )
   @Operation(
-    description = """Remove current supervisor allocation for a session""",
+    description = """Remove a supervisor assignment for a session or project""",
     responses = [
       ApiResponse(
         responseCode = "200",
-        description = "Session no longer has an allocation",
+        description = "Supervisor assignment has been removed",
       ),
     ],
   )
-  fun deallocateSupervisor(
+  fun unassignSupervisor(
     @PathVariable projectCode: String,
+    @PathVariable supervisorCode: String,
     @Parameter(description = "Date", example = "2025-01-01")
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-    @PathVariable date: LocalDate,
+    @PathVariable(required = false) date: LocalDate?,
   ) {
-    sessionService.deallocateSupervisor(
-      sessionId = SessionIdDto(projectCode, date),
+    sessionService.unassignSupervisor(
+      projectCode = projectCode,
+      day = date,
+      supervisorCode = supervisorCode,
     )
   }
 }

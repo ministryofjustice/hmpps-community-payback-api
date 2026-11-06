@@ -2,7 +2,6 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.integration.container
 
 import org.slf4j.LoggerFactory
 import org.springframework.test.context.DynamicPropertyRegistry
-import org.testcontainers.containers.wait.strategy.Wait
 import org.testcontainers.postgresql.PostgreSQLContainer
 import java.io.IOException
 import java.net.ServerSocket
@@ -18,7 +17,6 @@ object PostgresContainer {
       withDatabaseName("community_payback")
       withUsername("community_payback")
       withPassword("community_payback")
-      setWaitStrategy(Wait.forListeningPort())
       withReuse(true)
       start()
     }
