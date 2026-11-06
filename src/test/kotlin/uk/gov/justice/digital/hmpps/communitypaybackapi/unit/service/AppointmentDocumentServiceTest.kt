@@ -101,11 +101,13 @@ class AppointmentDocumentServiceTest {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = [".docx", ".DOCX", ".pdf", " .docx", "\t.docx", "\r\n.docx", "..docx", "...pdf", " . .docx"])
-  fun `rejects filename without a name before the extension without calling Delius`(filename: String) {
+  @ValueSource(
+    strings = [".docx", ".DOCX", ".pdf", " .docx", "\t.docx", "\r\n.docx", "..docx", "...pdf", " . .docx", "a.docx", "1.pdf", " a .docx", "a\t.pdf"],
+  )
+  fun `rejects filename without a name of at least two characters before the extension without calling Delius`(filename: String) {
     assertThatThrownBy { service.uploadDocument(101, MockMultipartFile("file", filename, null, bytes)) }
       .isInstanceOf(BadRequestException::class.java)
-      .hasMessage("Document must have a name before the extension")
+      .hasMessage("Document must have a name of at least 2 characters before the extension")
     verify { client wasNot Called }
   }
 
@@ -144,6 +146,12 @@ class AppointmentDocumentServiceTest {
     ],
   )
   fun `preserves valid filenames`(filename: String) {
+    assertFilenameForwarded(filename)
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = ["ab.docx", "12.pdf", " ab .docx", "a..docx", ".a.docx"])
+  fun `accepts a name of exactly two characters before the extension`(filename: String) {
     assertFilenameForwarded(filename)
   }
 

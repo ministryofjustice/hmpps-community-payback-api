@@ -45,7 +45,8 @@ class AdminAppointmentDocumentController(
   @Operation(
     description = "Upload a document for an appointment. Supported extensions (case-insensitive): " +
       "doc, docx, rtf, txt, dot, dotm, docm, odt, xml, wpd, wri, wps, xls, xlsb, xlsx, csv, pdf, bmp, jpg, jpeg, gif, png, m4a, flac, mp3. " +
-      "Filenames must be at most 190 characters and have a name before the extension that is not only whitespace or dots. " +
+      "Filenames must be at most 190 characters and have a name of at least 2 characters before the extension, excluding surrounding whitespace. " +
+      "The name must not contain only whitespace or dots. " +
       """Invalid filename characters: / ! | $ % & # ^ " < > : ? * \.""",
     responses = [
       ApiResponse(responseCode = "200", description = "Document uploaded successfully"),
