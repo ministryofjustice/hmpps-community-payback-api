@@ -55,6 +55,9 @@ class AppointmentDocumentService(
     if (INVALID_FILENAME_CHARACTERS.matches(filename)) {
       badRequest("Document filename contains invalid characters")
     }
+    if (filename.substringBeforeLast('.').all { it.isWhitespace() || it == '.' }) {
+      badRequest("Document must have a name before the extension")
+    }
     val extension = filename.substringAfterLast('.', "").lowercase()
     if (extension !in ALLOWED_EXTENSIONS) {
       badRequest("Unsupported document format. Allowed extensions: ${ALLOWED_EXTENSIONS.joinToString(", ")}")
