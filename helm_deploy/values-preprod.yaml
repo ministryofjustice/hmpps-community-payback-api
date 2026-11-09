@@ -13,6 +13,7 @@ generic-service:
     HMPPS_AUTH_URL: "https://sign-in-preprod.hmpps.service.justice.gov.uk/auth"
     SENTRY_ENVIRONMENT: preprod
     SPRING_PROFILES_ACTIVE: preprod
+    LOGGING_LEVEL_UK_GOV_JUSTICE_DIGITAL_HMPPS: INFO
 
 
     COMMUNITY_PAYBACK_DOMAIN_EVENTS_ENVIRONMENT: preprod
