@@ -22,10 +22,6 @@
     <appender-ref ref="consoleAppender"/>
   </logger>
 
-  <logger name="uk.gov.justice.digital.hmpps.communitypaybackapi.CommunityPaybackApiKt" additivity="false" level="DEBUG">
-    <appender-ref ref="consoleAppender"/>
-  </logger>
-
   <logger name="uk.gov.justice.digital.hmpps" additivity="false" level="DEBUG">
     <appender-ref ref="consoleAppender"/>
   </logger>
