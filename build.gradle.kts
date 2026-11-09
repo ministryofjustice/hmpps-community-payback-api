@@ -84,6 +84,11 @@ configurations.matching { it.name == "detekt" }.all {
 }
 
 tasks {
+  // Gatling uses the API DTOs through its project dependency.
+  jar {
+    enabled = true
+  }
+
   withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
     compilerOptions.jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_25
   }

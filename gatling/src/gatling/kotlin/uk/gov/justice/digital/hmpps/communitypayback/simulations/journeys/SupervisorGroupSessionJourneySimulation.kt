@@ -1,11 +1,9 @@
 package uk.gov.justice.digital.hmpps.communitypayback.simulations.journeys
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.gatling.javaapi.core.ChainBuilder
 import io.gatling.javaapi.core.CoreDsl
 import io.gatling.javaapi.http.HttpDsl
+import tools.jackson.module.kotlin.jacksonObjectMapper
 import uk.gov.justice.digital.hmpps.communitypayback.BaseSimulationBackEndApi
 import uk.gov.justice.digital.hmpps.communitypayback.config.ScenarioConfig
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentBehaviourDto
@@ -37,13 +35,12 @@ class SupervisorGroupSessionJourneySimulation : BaseSimulationBackEndApi(isSuper
         CoreDsl.constantUsersPerSec(sc.constantUsersPerSec).during(sc.constantUsersPerSecDuring),
       ),
     ).protocols(httpProtocol)
+      .assertions(CoreDsl.global().successfulRequests().percent().gt(99.0))
   }
 
   companion object {
     private val sc = ScenarioConfig.fromEnv()
-    private val objectMapper = ObjectMapper()
-      .registerKotlinModule()
-      .registerModule(JavaTimeModule())
+    private val objectMapper = jacksonObjectMapper()
 
     fun buildScenario(): ChainBuilder = CoreDsl.feed(CoreDsl.csv("data/supervisor-group-sessions-data.csv").circular())
       .exec { session ->
@@ -56,8 +53,8 @@ class SupervisorGroupSessionJourneySimulation : BaseSimulationBackEndApi(isSuper
       )
       .pause(1.seconds.toJavaDuration())
       .exec(
-        HttpDsl.http("GET Future Sessions for Supervisor")
-          .get("/supervisor/providers/#{providerCode}/teams/#{teamCode}/sessions/future")
+        HttpDsl.http("GET Team Sessions for Supervisor")
+          .get("/common/teams/#{teamCode}/sessions?startDate=#{sessionDate}&endDate=#{sessionDate}")
           .check(HttpDsl.status().`in`(200)),
       )
       .pause(1.seconds.toJavaDuration())

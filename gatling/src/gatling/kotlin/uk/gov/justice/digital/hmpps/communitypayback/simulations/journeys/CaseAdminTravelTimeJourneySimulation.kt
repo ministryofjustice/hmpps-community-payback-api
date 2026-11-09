@@ -1,13 +1,12 @@
 package uk.gov.justice.digital.hmpps.communitypayback.simulations.journeys
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.gatling.javaapi.core.ChainBuilder
 import io.gatling.javaapi.core.CoreDsl
 import io.gatling.javaapi.http.HttpDsl
+import tools.jackson.module.kotlin.jacksonObjectMapper
 import uk.gov.justice.digital.hmpps.communitypayback.BaseSimulationBackEndApi
 import uk.gov.justice.digital.hmpps.communitypayback.config.ScenarioConfig
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AdjustmentReasonsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAdjustmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAdjustmentTypeDto
@@ -26,9 +25,6 @@ class CaseAdminTravelTimeJourneySimulation : BaseSimulationBackEndApi() {
 
   private val scn = CoreDsl.scenario("Case Admin - Travel Time Journey")
     .exec(buildScenario())
-  private val objectMapper = ObjectMapper()
-    .registerKotlinModule()
-    .registerModule(JavaTimeModule())
   init {
     setUp(
       scn.injectOpen(
@@ -38,13 +34,12 @@ class CaseAdminTravelTimeJourneySimulation : BaseSimulationBackEndApi() {
         CoreDsl.constantUsersPerSec(sc.constantUsersPerSec).during(sc.constantUsersPerSecDuring),
       ),
     ).protocols(httpProtocol)
+      .assertions(CoreDsl.global().successfulRequests().percent().gt(99.0))
   }
 
   companion object {
     private val sc = ScenarioConfig.fromEnv()
-    private val objectMapper = ObjectMapper()
-      .registerKotlinModule()
-      .registerModule(JavaTimeModule())
+    private val objectMapper = jacksonObjectMapper()
 
     fun buildScenario(): ChainBuilder = CoreDsl.feed(CoreDsl.csv("data/travel-time-data.csv").circular())
       .exec(
@@ -70,32 +65,43 @@ class CaseAdminTravelTimeJourneySimulation : BaseSimulationBackEndApi() {
       .exec { session ->
         val appointmentJson = session.getString("appointmentJson")
         val appointment = objectMapper.readValue(appointmentJson, AppointmentDto::class.java)
-        session.set("crn", appointment.offender.crn)
+        session.setAll(
+          mapOf(
+            "crn" to appointment.offender.crn,
+            "deliusEventNumber" to appointment.deliusEventNumber,
+            "communityPaybackId" to requireNotNull(appointment.communityPaybackId) { "Travel time requires an appointment recorded in Community Payback" }.toString(),
+          ),
+        )
       }
       .exitHereIfFailed()
       .exec(
         HttpDsl.http("GET Adjustment Reasons")
-          .get("/common/references/adjustment-reasons")
-          .check(HttpDsl.status().`is`(200)),
+          .get("/common/references/adjustment-reasons?needsLinkToAppointment=true")
+          .check(HttpDsl.status().`is`(200))
+          .check(CoreDsl.bodyString().saveAs("adjustmentReasonsJson")),
       )
+      .exitHereIfFailed()
       .pause(1.seconds.toJavaDuration())
       .exec { session ->
+        val travelTimeReason = objectMapper.readValue(session.getString("adjustmentReasonsJson"), AdjustmentReasonsDto::class.java)
+          .adjustmentReasons.single { it.deliusCode == "TTX" }
         val createAdjustment = CreateAdjustmentDto(
           taskId = UUID.fromString(session.getString("taskId")!!),
           type = CreateAdjustmentTypeDto.Positive,
-          adjustmentReasonId = UUID.fromString("a22f1f61-6fe4-4e75-90f4-290639290b2c"),
+          adjustmentReasonId = travelTimeReason.id,
           minutes = 1,
-          dateOfAdjustment = LocalDate.now(),
+          adjustmentDate = LocalDate.now(),
+          appointmentId = UUID.fromString(session.getString("communityPaybackId")!!),
         )
         session.set("createAdjustment", objectMapper.writeValueAsString(createAdjustment))
       }
       .pause(1.seconds.toJavaDuration())
       .exec(
         HttpDsl.http("POST Travel Time Adjustment")
-          .post("/admin/offenders/#{crn}/unpaid-work-details/1/adjustments")
+          .post("/admin/offenders/#{crn}/unpaid-work-details/#{deliusEventNumber}/adjustments")
           .asJson()
           .body(CoreDsl.StringBody("#{createAdjustment}"))
-          .check(HttpDsl.status().`is`(200)),
+          .check(HttpDsl.status().`is`(201)),
       )
       .pause(1.seconds.toJavaDuration())
   }

@@ -1,11 +1,9 @@
 package uk.gov.justice.digital.hmpps.communitypayback.simulations.journeys
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.gatling.javaapi.core.ChainBuilder
 import io.gatling.javaapi.core.CoreDsl
 import io.gatling.javaapi.http.HttpDsl
+import tools.jackson.module.kotlin.jacksonObjectMapper
 import uk.gov.justice.digital.hmpps.communitypayback.BaseSimulationBackEndApi
 import uk.gov.justice.digital.hmpps.communitypayback.config.ScenarioConfig
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionCreditTimeDetailsDto
@@ -34,13 +32,12 @@ class CaseAdminOnlineLearningJourneySimulation : BaseSimulationBackEndApi() {
         CoreDsl.constantUsersPerSec(sc.constantUsersPerSec).during(sc.constantUsersPerSecDuring),
       ),
     ).protocols(httpProtocol)
+      .assertions(CoreDsl.global().successfulRequests().percent().gt(99.0))
   }
 
   companion object {
     private val sc = ScenarioConfig.fromEnv()
-    private val objectMapper = ObjectMapper()
-      .registerKotlinModule()
-      .registerModule(JavaTimeModule())
+    private val objectMapper = jacksonObjectMapper()
 
     fun buildScenario(): ChainBuilder = CoreDsl.feed(CoreDsl.csv("data/ete-course-completions-data.csv").circular())
       .exec { session ->
@@ -78,6 +75,7 @@ class CaseAdminOnlineLearningJourneySimulation : BaseSimulationBackEndApi() {
           .get("/admin/offenders/#{crn}/summary")
           .check(HttpDsl.status().`is`(200)),
       )
+      .exitHereIfFailed()
       .exec { session ->
         val courseCompletionResolution = CourseCompletionResolutionDto(
           crn = session.getString("crn"),
@@ -85,7 +83,7 @@ class CaseAdminOnlineLearningJourneySimulation : BaseSimulationBackEndApi() {
           creditTimeDetails = CourseCompletionCreditTimeDetailsDto(
             deliusEventNumber = 1,
             date = LocalDate.now(),
-            appointmentIdToUpdate = session.getLong("appointmentId"),
+            appointmentIdToUpdate = session.getString("appointmentId")!!.toLong(),
             minutesToCredit = 180,
             contactOutcomeCode = "ATTC",
             projectCode = session.getString("projectCode")!!,

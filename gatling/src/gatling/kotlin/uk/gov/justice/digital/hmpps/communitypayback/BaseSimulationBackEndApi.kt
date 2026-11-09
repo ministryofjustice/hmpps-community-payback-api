@@ -10,10 +10,11 @@ abstract class BaseSimulationBackEndApi(
   isSupervisor: Boolean = false,
 ) : Simulation() {
   protected val accessToken =
-    OAuthTokenProvider.fetchAccessToken(isSupervisor) ?: throw IllegalStateException("No access token available")
+    OAuthTokenProvider.fetchAccessToken(isSupervisor)
 
-  protected val supervisorAccessToken =
-    if (isSupervisor) accessToken else OAuthTokenProvider.fetchAccessToken(true) ?: throw IllegalStateException("No supervisor access token available")
+  protected val supervisorAccessToken by lazy {
+    if (isSupervisor) accessToken else OAuthTokenProvider.fetchAccessToken(true)
+  }
 
   protected val httpProtocol =
     http.baseUrl(httpRequestConfig.apiUrl)
@@ -21,9 +22,10 @@ abstract class BaseSimulationBackEndApi(
       .contentTypeHeader("application/json")
       .authorizationHeader("Bearer $accessToken")
 
-  protected val supervisorHttpProtocol =
+  protected val supervisorHttpProtocol by lazy {
     http.baseUrl(httpRequestConfig.apiUrl)
       .acceptHeader("*/*")
       .contentTypeHeader("application/json")
       .authorizationHeader("Bearer $supervisorAccessToken")
+  }
 }

@@ -18,10 +18,12 @@ on:
         type: choice
         options:
           - ""
-          - uk.gov.justice.digital.hmpps.communitypayback.stories.ui.E2E
-          - uk.gov.justice.digital.hmpps.communitypayback.simulations.api.HealthSimulation
-          - uk.gov.justice.digital.hmpps.communitypayback.simulations.api.admin.ProviderSimulation
-          - uk.gov.justice.digital.hmpps.communitypayback.simulations.api.common.ReferenceSimulation
+          - uk.gov.justice.digital.hmpps.communitypayback.simulations.CommunityPaybackUserJourneysSimulation
+          - uk.gov.justice.digital.hmpps.communitypayback.simulations.journeys.CaseAdminGroupSessionsJourneySimulation
+          - uk.gov.justice.digital.hmpps.communitypayback.simulations.journeys.CaseAdminIndividualPlacementJourneySimulation
+          - uk.gov.justice.digital.hmpps.communitypayback.simulations.journeys.CaseAdminOnlineLearningJourneySimulation
+          - uk.gov.justice.digital.hmpps.communitypayback.simulations.journeys.CaseAdminTravelTimeJourneySimulation
+          - uk.gov.justice.digital.hmpps.communitypayback.simulations.journeys.SupervisorGroupSessionJourneySimulation
       nothingFor:
         description: "How long to wait before starting the onslaught"
         required: false
@@ -72,18 +74,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
-      - name: Set up JDK 21
+      - name: Set up JDK 25
         uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6
         with:
           distribution: temurin
-          java-version: '21'
+          java-version: '25'
           cache: gradle
 
       - name: Make Gradle executable
         run: chmod +x ./gradlew
-
-      - name: Touch env file
-        run: touch ./gatling/.env
 
       - name: Start Gatling
         env:
@@ -127,15 +126,15 @@ jobs:
 
             if [ "$ENV_NAME" = "dev" ]; then
                 echo "Setting dev client credentials"
-                ARGS+=("-PCLIENT_ID=${{ secrets.GATLING_DEV_CLIENT_ID }}")
-                ARGS+=("-PCLIENT_SECRET=${{ secrets.GATLING_DEV_CLIENT_SECRET }}")
+                export CLIENT_ID="$GATLING_DEV_CLIENT_ID"
+                export CLIENT_SECRET="$GATLING_DEV_CLIENT_SECRET"
             elif [ "$ENV_NAME" = "test" ]; then
                 echo "Setting test client credentials"
-                ARGS+=("-PCLIENT_ID=${{ secrets.GATLING_TEST_CLIENT_ID }}")
-                ARGS+=("-PCLIENT_SECRET=${{ secrets.GATLING_TEST_CLIENT_SECRET }}")
+                export CLIENT_ID="$GATLING_TEST_CLIENT_ID"
+                export CLIENT_SECRET="$GATLING_TEST_CLIENT_SECRET"
             fi
 
-            echo "Running: ./gradlew ${ARGS[*]}"
+            echo "Running Gatling against $ENV_NAME"
             ./gradlew "${ARGS[@]}"
 
       - name: Upload Gatling reports

@@ -14,15 +14,15 @@ data class ScenarioConfig(
 
   companion object {
     fun fromEnv(): ScenarioConfig = ScenarioConfig(
-      nothingFor = System.getenv("NOTHING_FOR")?.toLongOrNull() ?: 5L,
-      atOnceUsers = System.getenv("AT_ONCE_USERS")?.toIntOrNull() ?: 10,
-      rampUsers = System.getenv("RAMP_USERS")?.toIntOrNull() ?: 50,
-      rampUsersDuring = System.getenv("RAMP_USERS_DURING")?.toLongOrNull() ?: 60L,
-      constantUsersPerSec = System.getenv("CONSTANT_USERS_PER_SEC")?.toDoubleOrNull() ?: 5.0,
-      constantUsersPerSecDuring = System.getenv("CONSTANT_USERS_PER_SEC_DURING")?.toLongOrNull() ?: 200L,
-      caseAdminUsername = System.getenv("CASE_ADMIN_USERNAME") ?: "CPBTestCaseAdmin1",
-      supervisorUsername = System.getenv("SUPERVISOR_USERNAME") ?: "CPBTestSupervisor1",
-      providerCode = System.getenv("PROVIDER_CODE") ?: "N56",
+      nothingFor = Environment["NOTHING_FOR"]?.toLongOrNull() ?: 5L,
+      atOnceUsers = Environment["AT_ONCE_USERS"]?.toIntOrNull() ?: 10,
+      rampUsers = Environment["RAMP_USERS"]?.toIntOrNull() ?: 50,
+      rampUsersDuring = Environment["RAMP_USERS_DURING"]?.toLongOrNull() ?: 60L,
+      constantUsersPerSec = Environment["CONSTANT_USERS_PER_SEC"]?.toDoubleOrNull() ?: 5.0,
+      constantUsersPerSecDuring = Environment["CONSTANT_USERS_PER_SEC_DURING"]?.toLongOrNull() ?: 200L,
+      caseAdminUsername = Environment["CASE_ADMIN_USERNAME"] ?: "CPBTestCaseAdmin1",
+      supervisorUsername = Environment["SUPERVISOR_USERNAME"] ?: "CPBTestSupervisor1",
+      providerCode = Environment["PROVIDER_CODE"] ?: "N56",
     )
   }
 }

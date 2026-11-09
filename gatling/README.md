@@ -1,50 +1,60 @@
-# Load testing tool for the API
+# API load tests
 
-This is a subproject inside the Community Payback API. Attempts to fold this into the main repo are non-trivial due to dependency concerns.
+This Gradle subproject runs the Community Payback API user journeys using Gatling. It requires JDK 25, a running API, HMPPS Auth client credentials with the appropriate API roles, and feeder records that exist in the target environment.
 
-## How to use this tool
+## Compile and check
 
-This tool is designed to run in github CI via an [action](https://github.com/ministryofjustice/hmpps-community-payback-api/actions/workflows/gatling_run.yml). The action can be manually triggered via workflow dispatch. The following settings are available for the workflow:
-
- * Which API should this run against
- * Optional fully-qualified simulation class to run. Use a class name here, e.g. uk.gov.justice.digital.hmpps.communitypayback.simulations.api.HealthSimulation. If omitted, all simulations will be run.
- * How long to wait before starting the onslaught
- * Number of initial concurrent users
- * How many users to increase to over time
- * Number of seconds over which to increase the user count
- * The number of concurrent users to keep active per second
- * The time period in seconds over which peak load should be applied
-
-## Running locally
-
-There is a help script in the tools folder. [run_loadtest.sh](../tools/run_loadtest.sh). It needs kubectl and jq to be unstalled and configured to point at the target cluster. Run this from the root of the project.
-
-Run it with `-h` to see the options:
+From the repository root:
 
 ```shell
-$ ./tools/scripts/run_loadtest.sh -h
+./gradlew :gatling:compileGatlingKotlin :gatling:ktlintCheck
 ```
 
-An example run command is:
+## Run locally
+
+Copy [env.example](env.example) to `gatling/.env` and set `API_URL`, `AUTH_BASE_URL`, `CLIENT_ID` and `CLIENT_SECRET`. Environment variables override the file; the file is optional. The supervisor journeys use `SUPERVISOR_CLIENT_ID` and `SUPERVISOR_CLIENT_SECRET` if supplied, otherwise the standard client credentials must also have supervisor access.
+
+Run a single journey:
+
+```shell
+./gradlew :gatling:gatlingRun --simulation uk.gov.justice.digital.hmpps.communitypayback.simulations.journeys.CaseAdminGroupSessionsJourneySimulation
+```
+
+Available simulations in `uk.gov.justice.digital.hmpps.communitypayback`:
+
+* `simulations.journeys.CaseAdminGroupSessionsJourneySimulation`
+* `simulations.journeys.CaseAdminIndividualPlacementJourneySimulation`
+* `simulations.journeys.CaseAdminOnlineLearningJourneySimulation`
+* `simulations.journeys.CaseAdminTravelTimeJourneySimulation`
+* `simulations.journeys.SupervisorGroupSessionJourneySimulation`
+* `simulations.CommunityPaybackUserJourneysSimulation`
+
+Use `:gatling:gatlingRun --all` to run every simulation sequentially. Reports are written to `gatling/build/reports/gatling`.
+
+The individual journeys read the load settings in `env.example`. The combined simulation retains its fixed concurrent-user profile: ramp up over three minutes, then hold for five minutes, with 20 group-session admins, 5 individual-placement admins, 5 online-learning admins, 5 travel-time admins and 25 supervisors. The individual load settings do not change this combined profile.
+
+Before running, update the CSV files in `src/gatling/resources/data` for the target environment. These contain recorded IDs and dates, rather than automatically provisioned test data. Travel-time appointments must already have a Community Payback ID; the journey retrieves the current travel-time reason ID and event number from the API. Course completions must support the supplied resolution. These journeys update appointments, save forms, resolve course completions and create adjustments.
+
+## Run against a Kubernetes environment
+
+The [helper script](../tools/scripts/run_loadtest.sh) retrieves credentials from Kubernetes. It needs `kubectl` and `jq` configured for the target cluster. Run it from the repository root:
 
 ```shell
 ./tools/scripts/run_loadtest.sh \
-    --env dev \
-    --nothing-for 5 \
-    --at-once-users 1 \
-    --ramp-users 0 \
-    --ramp-users-during 0 \
-    --constant-users-per-sec 0 \
-    --constant-users-per-sec-during 0
+  --env dev \
+  --simulation uk.gov.justice.digital.hmpps.communitypayback.simulations.journeys.CaseAdminGroupSessionsJourneySimulation \
+  --nothing-for 0 \
+  --at-once-users 1 \
+  --ramp-users 0 \
+  --ramp-users-during 0 \
+  --constant-users-per-sec 0 \
+  --constant-users-per-sec-during 0
 ```
 
-Run againast the dev environment, starting with 5 users, increasing by 20 users over 50 seconds, then maintaining 60 users for 20 seconds, with a 30 second ramp down.
+Run with `--help` for all options. Passing both `--client-id` and `--client-secret` skips Kubernetes; supervisor credentials can be supplied as environment variables.
 
-## Recreate an E2E test
+## CI
 
-* start cp-stack
-* clear existing logs
-* run e2e tests in th ui package
-* grab the logs in to a file (e2e.log)
-* `grep "CommunityPaybackRequestLoggingFilter : Request data" e2e.log > e2e-request-data.log` > e2e-requests.log
-* Use that new log to create a gatling feeder or modify an existing one.
+Run the [Gatling workflow](../.github/workflows/gatling_run.yml) using workflow dispatch. Choose `dev` or `test`, an optional simulation class, and the load settings. An empty simulation selection runs all simulations, including the combined profile.
+
+The workflow calls `:gatling:gatlingRunCi`. This task also accepts Gradle properties such as `-PsimulationFqn=...`, `-PenvName=dev`, `-PatOnceUsers=1`, and the other workflow load settings. `API_URL` can override the environment URL. Credentials can be passed as environment variables or Gradle properties. Individual simulations require more than 99% successful requests; the combined simulation also requires the 95th percentile response time to be below five seconds.

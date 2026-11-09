@@ -10,17 +10,17 @@ set -euo pipefail
 #   - ./gradlew present and executable in this project
 #
 # Usage examples:
-#   ./run_gatling.sh --env dev \
+#   ./tools/scripts/run_loadtest.sh --env dev \
 #     --nothing-for 5 \
 #     --at-once-users 20 \
 #     --ramp-users 50 \
 #     --ramp-users-during 60 \
 #     --constant-users-per-sec 20 \
 #     --constant-users-per-sec-during 30 \
-#     --simulation uk.gov.justice.digital.hmpps.communitypayback.simulations.api.HealthSimulation
+#     --simulation uk.gov.justice.digital.hmpps.communitypayback.simulations.journeys.CaseAdminGroupSessionsJourneySimulation
 #
 #   # If you prefer to pass clientId/clientSecret directly (skips kubectl/jq):
-#   ./run_gatling.sh --env dev --client-id xxx --client-secret yyy
+#   ./tools/scripts/run_loadtest.sh --env dev --client-id xxx --client-secret yyy
 #
 # Notes:
 #   - Secret and namespace names follow the README’s example:
@@ -40,6 +40,9 @@ CONSTANT_USERS_PER_SEC_DURING="30"
 SIMULATION_FQN=""        # empty means "run all simulations"
 CLIENT_ID=""
 CLIENT_SECRET=""
+SUPERVISOR_CLIENT_ID="${SUPERVISOR_CLIENT_ID:-}"
+SUPERVISOR_CLIENT_SECRET="${SUPERVISOR_CLIENT_SECRET:-}"
+FETCH_SUPERVISOR_CREDENTIALS=false
 
 # ---------- helpers ----------
 die() { echo "Error: $*" >&2; exit 1; }
@@ -47,7 +50,7 @@ have() { command -v "$1" >/dev/null 2>&1; }
 
 usage() {
   cat <<'USAGE'
-Usage: run_gatling.sh [options]
+Usage: run_loadtest.sh [options]
 
 Options:
   --env <name>                          Environment name (e.g., dev, preprod, prod). Default: dev
@@ -96,6 +99,7 @@ SUPERVISOR_SECRET_NAME="hmpps-community-payback-supervisors-ui-client-creds"
 
 # ---------- fetch credentials from Kubernetes (if not overridden) ----------
 if [[ -z "$CLIENT_ID" || -z "$CLIENT_SECRET" ]]; then
+  FETCH_SUPERVISOR_CREDENTIALS=true
   echo "Fetching client credentials from Kubernetes: ns=${NAMESPACE}, secret=${SECRET_NAME} ..."
   # Grab the secret JSON and extract/decode fields
   SECRET_JSON="$(kubectl -n "${NAMESPACE}" get secret "${SECRET_NAME}" -o json)"
@@ -109,15 +113,17 @@ if [[ -z "$CLIENT_ID" || -z "$CLIENT_SECRET" ]]; then
 fi
 
 # ---------- fetch supervisor credentials from Kubernetes ----------
-echo "Fetching supervisor client credentials from Kubernetes: ns=${NAMESPACE}, secret=${SUPERVISOR_SECRET_NAME} ..."
-SUPERVISOR_SECRET_JSON="$(kubectl -n "${NAMESPACE}" get secret "${SUPERVISOR_SECRET_NAME}" -o json || echo "")"
-if [[ -n "$SUPERVISOR_SECRET_JSON" ]]; then
-  SUPERVISOR_CLIENT_ID="$(echo "$SUPERVISOR_SECRET_JSON" | jq -r '.data["CLIENT_CREDS_CLIENT_ID"]' | base64 --decode || true)"
-  SUPERVISOR_CLIENT_SECRET="$(echo "$SUPERVISOR_SECRET_JSON" | jq -r '.data["CLIENT_CREDS_CLIENT_SECRET"]' | base64 --decode || true)"
-else
-  echo "Warning: Supervisor secret ${SUPERVISOR_SECRET_NAME} not found. Using standard credentials for supervisor journey as fallback."
-  SUPERVISOR_CLIENT_ID="$CLIENT_ID"
-  SUPERVISOR_CLIENT_SECRET="$CLIENT_SECRET"
+if [[ "$FETCH_SUPERVISOR_CREDENTIALS" = true ]] && [[ -z "$SUPERVISOR_CLIENT_ID" || -z "$SUPERVISOR_CLIENT_SECRET" ]]; then
+  echo "Fetching supervisor client credentials from Kubernetes: ns=${NAMESPACE}, secret=${SUPERVISOR_SECRET_NAME} ..."
+  SUPERVISOR_SECRET_JSON="$(kubectl -n "${NAMESPACE}" get secret "${SUPERVISOR_SECRET_NAME}" -o json || echo "")"
+  if [[ -n "$SUPERVISOR_SECRET_JSON" ]]; then
+    SUPERVISOR_CLIENT_ID="$(echo "$SUPERVISOR_SECRET_JSON" | jq -r '.data["CLIENT_CREDS_CLIENT_ID"]' | base64 --decode || true)"
+    SUPERVISOR_CLIENT_SECRET="$(echo "$SUPERVISOR_SECRET_JSON" | jq -r '.data["CLIENT_CREDS_CLIENT_SECRET"]' | base64 --decode || true)"
+  else
+    echo "Warning: Supervisor secret ${SUPERVISOR_SECRET_NAME} not found. Using standard credentials for supervisor journey as fallback."
+    SUPERVISOR_CLIENT_ID="$CLIENT_ID"
+    SUPERVISOR_CLIENT_SECRET="$CLIENT_SECRET"
+  fi
 fi
 
 # ---------- assemble Gradle args ----------
@@ -130,15 +136,12 @@ GRADLE_ARGS=(
   "-PrampUsersDuring=${RAMP_USERS_DURING}"
   "-PconstantUsersPerSec=${CONSTANT_USERS_PER_SEC}"
   "-PconstantUsersPerSecDuring=${CONSTANT_USERS_PER_SEC_DURING}"
-  "-PCLIENT_ID=${CLIENT_ID}"
-  "-PCLIENT_SECRET=${CLIENT_SECRET}"
-  "-PSUPERVISOR_CLIENT_ID=${SUPERVISOR_CLIENT_ID}"
-  "-PSUPERVISOR_CLIENT_SECRET=${SUPERVISOR_CLIENT_SECRET}"
 )
 
 if [[ -n "${SIMULATION_FQN}" ]]; then
   GRADLE_ARGS+=("-PsimulationFqn=${SIMULATION_FQN}")
 fi
 
-echo "Running: ./gradlew ${GRADLE_ARGS[*]}"
+export CLIENT_ID CLIENT_SECRET SUPERVISOR_CLIENT_ID SUPERVISOR_CLIENT_SECRET
+echo "Running Gatling against ${ENV_NAME}"
 exec ./gradlew "${GRADLE_ARGS[@]}"
