@@ -25,15 +25,14 @@ Available simulations in `uk.gov.justice.digital.hmpps.communitypayback`:
 * `simulations.journeys.CaseAdminGroupSessionsJourneySimulation`
 * `simulations.journeys.CaseAdminIndividualPlacementJourneySimulation`
 * `simulations.journeys.CaseAdminOnlineLearningJourneySimulation`
-* `simulations.journeys.CaseAdminTravelTimeJourneySimulation`
 * `simulations.journeys.SupervisorGroupSessionJourneySimulation`
 * `simulations.CommunityPaybackUserJourneysSimulation`
 
 Use `:gatling:gatlingRun --all` to run every simulation sequentially. Reports are written to `gatling/build/reports/gatling`.
 
-The individual journeys read the load settings in `env.example`. The combined simulation retains its fixed concurrent-user profile: ramp up over three minutes, then hold for five minutes, with 20 group-session admins, 5 individual-placement admins, 5 online-learning admins, 5 travel-time admins and 25 supervisors. The individual load settings do not change this combined profile.
+The individual journeys read the load settings in `env.example`. The combined simulation retains its fixed concurrent-user profile: ramp up over three minutes, then hold for five minutes, with 20 group-session admins, 5 individual-placement admins, 5 online-learning admins and 25 supervisors. The individual load settings do not change this combined profile.
 
-Before running, update the CSV files in `src/gatling/resources/data` for the target environment. These contain recorded IDs and dates, rather than automatically provisioned test data. Travel-time appointments must already have a Community Payback ID; the journey retrieves the current travel-time reason ID and event number from the API. Course completions must support the supplied resolution. These journeys update appointments, save forms, resolve course completions and create adjustments.
+Before running, update the CSV files in `src/gatling/resources/data` for the target environment. These contain recorded IDs and dates, rather than automatically provisioned test data. Course completions must support the supplied resolution. These journeys update appointments, save forms and resolve course completions.
 
 ## Run against a Kubernetes environment
 

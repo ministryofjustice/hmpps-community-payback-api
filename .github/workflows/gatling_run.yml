@@ -22,7 +22,6 @@ on:
           - uk.gov.justice.digital.hmpps.communitypayback.simulations.journeys.CaseAdminGroupSessionsJourneySimulation
           - uk.gov.justice.digital.hmpps.communitypayback.simulations.journeys.CaseAdminIndividualPlacementJourneySimulation
           - uk.gov.justice.digital.hmpps.communitypayback.simulations.journeys.CaseAdminOnlineLearningJourneySimulation
-          - uk.gov.justice.digital.hmpps.communitypayback.simulations.journeys.CaseAdminTravelTimeJourneySimulation
           - uk.gov.justice.digital.hmpps.communitypayback.simulations.journeys.SupervisorGroupSessionJourneySimulation
       nothingFor:
         description: "How long to wait before starting the onslaught"

@@ -8,7 +8,6 @@ import uk.gov.justice.digital.hmpps.communitypayback.BaseSimulationBackEndApi
 import uk.gov.justice.digital.hmpps.communitypayback.simulations.journeys.CaseAdminGroupSessionsJourneySimulation
 import uk.gov.justice.digital.hmpps.communitypayback.simulations.journeys.CaseAdminIndividualPlacementJourneySimulation
 import uk.gov.justice.digital.hmpps.communitypayback.simulations.journeys.CaseAdminOnlineLearningJourneySimulation
-import uk.gov.justice.digital.hmpps.communitypayback.simulations.journeys.CaseAdminTravelTimeJourneySimulation
 import uk.gov.justice.digital.hmpps.communitypayback.simulations.journeys.SupervisorGroupSessionJourneySimulation
 import java.time.Duration
 
@@ -22,9 +21,6 @@ class CommunityPaybackUserJourneysSimulation : BaseSimulationBackEndApi() {
 
   private val eteOnlineLearningScenario = scenario("ETE Online Learning Journey")
     .exec(CaseAdminOnlineLearningJourneySimulation.buildScenario())
-
-  private val travelTimeScenario = scenario("Travel Time Journey")
-    .exec(CaseAdminTravelTimeJourneySimulation.buildScenario())
 
   private val supervisorGroupSessionScenario = scenario("Supervisor Group Session Journey")
     .exec(SupervisorGroupSessionJourneySimulation.buildScenario())
@@ -40,10 +36,6 @@ class CommunityPaybackUserJourneysSimulation : BaseSimulationBackEndApi() {
         constantConcurrentUsers(5).during(Duration.ofMinutes(5)),
       ),
       eteOnlineLearningScenario.injectClosed(
-        rampConcurrentUsers(0).to(5).during(Duration.ofMinutes(3)),
-        constantConcurrentUsers(5).during(Duration.ofMinutes(5)),
-      ),
-      travelTimeScenario.injectClosed(
         rampConcurrentUsers(0).to(5).during(Duration.ofMinutes(3)),
         constantConcurrentUsers(5).during(Duration.ofMinutes(5)),
       ),
