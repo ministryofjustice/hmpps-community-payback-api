@@ -1,7 +1,7 @@
 package uk.gov.justice.digital.hmpps.communitypayback.config
 
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.slf4j.LoggerFactory
-import tools.jackson.module.kotlin.jacksonObjectMapper
 import java.net.URI
 import java.net.URLEncoder
 import java.net.http.HttpClient
@@ -58,7 +58,7 @@ object OAuthTokenProvider {
   }
 
   private fun parseAccessToken(json: String): String {
-    val token = jacksonObjectMapper().readTree(json).path("access_token").asString("")
+    val token = jacksonObjectMapper().readTree(json).path("access_token").asText("")
     check(token.isNotBlank()) { "[GATLING][Auth] Token response did not contain an access_token" }
     return token
   }

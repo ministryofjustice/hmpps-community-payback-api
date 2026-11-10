@@ -1,9 +1,9 @@
 package uk.gov.justice.digital.hmpps.communitypayback.simulations.journeys
 
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.gatling.javaapi.core.ChainBuilder
 import io.gatling.javaapi.core.CoreDsl
 import io.gatling.javaapi.http.HttpDsl
-import tools.jackson.module.kotlin.jacksonObjectMapper
 import uk.gov.justice.digital.hmpps.communitypayback.BaseSimulationBackEndApi
 import uk.gov.justice.digital.hmpps.communitypayback.config.ScenarioConfig
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AdjustmentReasonsDto

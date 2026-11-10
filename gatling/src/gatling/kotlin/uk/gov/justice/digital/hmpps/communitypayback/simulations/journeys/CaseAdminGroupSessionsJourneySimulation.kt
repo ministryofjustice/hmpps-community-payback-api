@@ -1,9 +1,9 @@
 package uk.gov.justice.digital.hmpps.communitypayback.simulations.journeys
 
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.gatling.javaapi.core.ChainBuilder
 import io.gatling.javaapi.core.CoreDsl
 import io.gatling.javaapi.http.HttpDsl
-import tools.jackson.module.kotlin.jacksonObjectMapper
 import uk.gov.justice.digital.hmpps.communitypayback.BaseSimulationBackEndApi
 import uk.gov.justice.digital.hmpps.communitypayback.config.ScenarioConfig
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentBehaviourDto
@@ -64,10 +64,16 @@ class CaseAdminGroupSessionsJourneySimulation : BaseSimulationBackEndApi() {
       )
       .pause(1.seconds.toJavaDuration())
       .exec(
-        HttpDsl.http("GET Project Session")
-          .get("/admin/projects/#{projectCode}/sessions/#{sessionDate}")
+        HttpDsl.http("GET Project Details")
+          .get("/admin/projects/#{projectCode}")
           .check(HttpDsl.status().`is`(200)),
       )
+      .exec(
+        HttpDsl.http("GET Session Appointments")
+          .get("/admin/appointments?projectCodes=#{projectCode}&fromDate=#{sessionDate}&toDate=#{sessionDate}")
+          .check(HttpDsl.status().`is`(200)),
+      )
+      .exitHereIfFailed()
       .pause(1.seconds.toJavaDuration())
       .exec(
         HttpDsl.http("GET Appointment Details")
