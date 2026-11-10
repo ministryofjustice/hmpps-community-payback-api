@@ -15,6 +15,11 @@ generic-service:
     SENTRY_ENVIRONMENT: test
     SPRING_PROFILES_ACTIVE: test
 
+    # These dependencies shut down outside working hours in non-production.
+    MANAGEMENT_HEALTH_COMMUNITYPAYBACKANDDELIUS_ENABLED: "false"
+    MANAGEMENT_HEALTH_PROBATIONACCESSCONTROL_ENABLED: "false"
+    MANAGEMENT_HEALTH_PROBATIONOFFENDERSEARCH_ENABLED: "false"
+
     COMMUNITY_PAYBACK_BOOTSTRAP_ENABLED: true
     COMMUNITY_PAYBACK_DOMAIN_EVENTS_ENVIRONMENT: test
     COMMUNITY_PAYBACK_DOMAIN_EVENTS_DETAILS_URL_PATTERN: https://community-payback-api-test.hmpps.service.justice.gov.uk/domain-event-details/#type/#id

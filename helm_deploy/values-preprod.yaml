@@ -15,6 +15,11 @@ generic-service:
     SPRING_PROFILES_ACTIVE: preprod
     LOGGING_LEVEL_UK_GOV_JUSTICE_DIGITAL_HMPPS: INFO
 
+    # These dependencies shut down outside working hours in non-production.
+    MANAGEMENT_HEALTH_COMMUNITYPAYBACKANDDELIUS_ENABLED: "false"
+    MANAGEMENT_HEALTH_PROBATIONACCESSCONTROL_ENABLED: "false"
+    MANAGEMENT_HEALTH_PROBATIONOFFENDERSEARCH_ENABLED: "false"
+
 
     COMMUNITY_PAYBACK_DOMAIN_EVENTS_ENVIRONMENT: preprod
     COMMUNITY_PAYBACK_DOMAIN_EVENTS_DETAILS_URL_PATTERN: https://community-payback-api-preprod.hmpps.service.justice.gov.uk/domain-event-details/#type/#id
