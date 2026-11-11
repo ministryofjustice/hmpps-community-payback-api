@@ -79,7 +79,9 @@ class HealthCheckTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `readiness reports ok`() {
+  fun `readiness reports ok when downstream services are down`() {
+    stubPingWithResponse(503)
+
     webTestClient.get()
       .uri("/health/readiness")
       .exchange()
@@ -90,7 +92,9 @@ class HealthCheckTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `liveness reports ok`() {
+  fun `liveness reports ok when downstream services are down`() {
+    stubPingWithResponse(503)
+
     webTestClient.get()
       .uri("/health/liveness")
       .exchange()

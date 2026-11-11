@@ -33,7 +33,7 @@ class AdminAppointmentDocumentIT : IntegrationTestBase() {
   private val fileBytes = byteArrayOf(0, 1, 127, -128, -1)
 
   @ParameterizedTest
-  @ValueSource(strings = ["evidence.pdf", "my-report_2026.pdf", "Appointment evidence (1).pdf", "O'Brien.v2.pdf", "file@+=.pdf"])
+  @ValueSource(strings = ["evidence.pdf", "my-report_2026.pdf", "Appointment evidence (1).pdf", "O'Brien.v2.pdf", "file@+=.pdf", "ab.docx"])
   fun `uploads binary file and returns document metadata`(filename: String) {
     stubFor(
       post(urlEqualTo(upstreamPath))
@@ -113,6 +113,16 @@ class AdminAppointmentDocumentIT : IntegrationTestBase() {
       .body(upload(filename = "a".repeat(187) + ".pdf")).exchange().expectStatus().isBadRequest
       .expectBody().jsonPath("$.userMessage")
       .value<String> { org.assertj.core.api.Assertions.assertThat(it).contains("must not exceed 190 characters") }
+    verify(0, postRequestedFor(urlEqualTo(upstreamPath)))
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = [".docx", ".DOCX", ".pdf", " .docx", "..docx", "a.docx", "1.pdf", " a .docx"])
+  fun `rejects filename without a name of at least two characters before the extension without calling Delius`(filename: String) {
+    webTestClient.post().uri(endpoint).addAdminUiAuthHeader()
+      .body(upload(filename = filename)).exchange().expectStatus().isBadRequest
+      .expectBody().jsonPath("$.userMessage")
+      .value<String> { org.assertj.core.api.Assertions.assertThat(it).contains("Document must have a name of at least 2 characters before the extension") }
     verify(0, postRequestedFor(urlEqualTo(upstreamPath)))
   }
 
