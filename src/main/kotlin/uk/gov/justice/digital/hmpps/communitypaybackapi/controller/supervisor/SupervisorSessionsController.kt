@@ -15,10 +15,10 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.ErrorResponse
 import uk.gov.justice.digital.hmpps.communitypaybackapi.controller.internal.NotFoundException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeGroupDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.SessionService
-import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 import java.time.LocalDate
 
 @SupervisorUiController

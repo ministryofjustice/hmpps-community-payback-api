@@ -25,6 +25,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectAndLocat
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDUpwDetails
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.PageResponse
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.ErrorResponse
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentSummaryDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AttendanceDataDto
@@ -47,7 +48,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.DomainE
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.bodyAsObject
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.CommunityPaybackAndDeliusMockServer
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentIdGenerator
-import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
@@ -702,7 +702,7 @@ class AdminAppointmentIT : IntegrationTestBase() {
         .exchange()
         .expectStatus()
         .isBadRequest
-        .bodyAsObject<ErrorResponse>()
+        .bodyAsObject<uk.gov.justice.hmpps.kotlin.common.ErrorResponse>()
 
       assertThat(response.status).isEqualTo(400)
       assertThat(response.developerMessage).isEqualTo(validationMessage)

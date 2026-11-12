@@ -13,10 +13,10 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestMapping
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.ErrorResponse
 import uk.gov.justice.digital.hmpps.communitypaybackapi.config.buildNoResourceFoundResponse
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.FormKeyDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.FormService
-import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 
 @CommonController
 @RequestMapping(
