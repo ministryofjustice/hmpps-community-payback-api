@@ -2,12 +2,6 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.config
 
 import jakarta.validation.ValidationException
 import org.slf4j.LoggerFactory
-import org.springframework.http.HttpStatus
-import org.springframework.http.HttpStatus.BAD_REQUEST
-import org.springframework.http.HttpStatus.FORBIDDEN
-import org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR
-import org.springframework.http.HttpStatus.NOT_FOUND
-import org.springframework.http.ResponseEntity
 import org.springframework.http.converter.HttpMessageNotReadableException
 import org.springframework.security.access.AccessDeniedException
 import org.springframework.web.bind.MethodArgumentNotValidException
@@ -17,12 +11,13 @@ import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException
 import org.springframework.web.multipart.support.MissingServletRequestPartException
 import org.springframework.web.servlet.resource.NoResourceFoundException
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.ApiResponseEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.ErrorResponse
 import uk.gov.justice.digital.hmpps.communitypaybackapi.controller.internal.NotFoundException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.BadRequestException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.ConflictException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.NDeliusRollbackService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.SentryService
-import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 
 @RestControllerAdvice
 class CommunityPaybackApiExceptionHandler(
@@ -39,57 +34,33 @@ class CommunityPaybackApiExceptionHandler(
     MethodArgumentTypeMismatchException::class,
     HttpMessageNotReadableException::class,
   )
-  fun validationError(e: Exception): ResponseEntity<ErrorResponse> = ResponseEntity
-    .status(BAD_REQUEST)
-    .body(
-      ErrorResponse(
-        status = BAD_REQUEST,
-        userMessage = "Validation failure: ${e.message}",
-        developerMessage = e.message,
-      ),
-    ).also { log.info("Validation exception: {}", e.message) }
+  fun validationError(e: Exception): ApiResponseEntity<Unit> = ErrorResponse(e)
+    .toResponseEntity()
+    .also { log.info("Validation exception: {}", e.message) }
 
   @ExceptionHandler(
     NoResourceFoundException::class,
     NotFoundException::class,
   )
-  fun handleNoResourceFoundException(e: Exception): ResponseEntity<ErrorResponse> = buildNoResourceFoundResponse(e.message)
+  fun handleNoResourceFoundException(e: Exception): ApiResponseEntity<Unit> = ErrorResponse(e)
+    .toResponseEntity()
     .also { log.info("No resource found exception: {}", e.message) }
 
   @ExceptionHandler(
     ConflictException::class,
   )
-  fun handleConflictException(e: Exception): ResponseEntity<ErrorResponse> = ResponseEntity
-    .status(HttpStatus.CONFLICT)
-    .body(
-      ErrorResponse(
-        status = HttpStatus.CONFLICT,
-        userMessage = e.message,
-        developerMessage = e.message,
-      ),
-    ).also { log.info("Conflict exception: {}", e.message) }
+  fun handleConflictException(e: Exception): ApiResponseEntity<Unit> = ErrorResponse(e)
+    .toResponseEntity()
+    .also { log.info("Conflict exception: {}", e.message) }
 
   @ExceptionHandler(AccessDeniedException::class)
-  fun handleAccessDeniedException(e: AccessDeniedException): ResponseEntity<ErrorResponse> = ResponseEntity
-    .status(FORBIDDEN)
-    .body(
-      ErrorResponse(
-        status = FORBIDDEN,
-        userMessage = "Forbidden: ${e.message}",
-        developerMessage = e.message,
-      ),
-    ).also { log.debug("Forbidden (403) returned: {}", e.message) }
+  fun handleAccessDeniedException(e: AccessDeniedException): ApiResponseEntity<Unit> = ErrorResponse(e)
+    .toResponseEntity()
+    .also { log.debug("Forbidden (403) returned: {}", e.message) }
 
   @ExceptionHandler(Exception::class)
-  fun handleException(e: Exception): ResponseEntity<ErrorResponse> = ResponseEntity
-    .status(INTERNAL_SERVER_ERROR)
-    .body(
-      ErrorResponse(
-        status = INTERNAL_SERVER_ERROR,
-        userMessage = "Unexpected error: ${e.message}",
-        developerMessage = e.message,
-      ),
-    )
+  fun handleException(e: Exception): ApiResponseEntity<Unit> = ErrorResponse(e)
+    .toResponseEntity()
     .also { rollbackService.publishEventsForRollback() }
     .also { sentryService.captureException(e) }
     .also { log.error("Unexpected exception", e) }
@@ -99,12 +70,5 @@ class CommunityPaybackApiExceptionHandler(
   }
 }
 
-fun buildNoResourceFoundResponse(message: String?) = ResponseEntity
-  .status(NOT_FOUND)
-  .body(
-    ErrorResponse(
-      status = NOT_FOUND,
-      userMessage = "No resource found failure: $message",
-      developerMessage = message,
-    ),
-  )
+fun buildNoResourceFoundResponse(message: String?) = ErrorResponse(NotFoundException(message ?: ""))
+  .toResponseEntity()
