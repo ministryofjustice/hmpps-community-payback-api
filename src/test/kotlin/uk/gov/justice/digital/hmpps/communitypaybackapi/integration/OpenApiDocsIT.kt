@@ -7,7 +7,9 @@ import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
+import org.junit.jupiter.params.provider.ValueSource
 import org.springframework.http.MediaType
+import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.bodyAsObject
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
@@ -93,6 +95,42 @@ class OpenApiDocsIT : IntegrationTestBase() {
       .jsonPath("$.paths['/common$path'].get.deprecated").doesNotExist()
   }
 
+  @ParameterizedTest
+  @ValueSource(strings = ["", "/All", "/ForCommunityPaybackAdminUI", "/DomainEventDetails", "/ForCommunityPaybackSupervisorUI"])
+  fun `the schemas are in alphabetical order`(group: String) {
+    val apiSpec = webTestClient.get()
+      .uri("/v3/api-docs$group")
+      .accept(MediaType.APPLICATION_JSON)
+      .exchange()
+      .expectStatus().isOk
+      .bodyAsObject<ApiSpec>()
+
+    assertThat(apiSpec.components.schemas.keys.toList())
+      .withFailMessage { "Schemas are not in alphabetical order: ${apiSpec.components.schemas.keys}" }
+      .isSorted
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = ["", "/All", "/ForCommunityPaybackAdminUI", "/DomainEventDetails", "/ForCommunityPaybackSupervisorUI"])
+  fun `the schema properties are in alphabetical order`(group: String) {
+    val apiSpec = webTestClient.get()
+      .uri("/v3/api-docs$group")
+      .accept(MediaType.APPLICATION_JSON)
+      .exchange()
+      .expectStatus().isOk
+      .bodyAsObject<ApiSpec>()
+
+    val (objectSchemas, rest) = apiSpec.components.schemas.entries.partition { it.value.type == "object" }
+    val (allOfSchemas, _) = rest.partition { it.value.allOf != null }
+
+    objectSchemas.forEach { (schemaName, schema) -> schema.assertPropertiesAreSorted(schemaName) }
+    allOfSchemas.forEach { (schemaName, schema) ->
+      schema.allOf!!
+        .filter { it.type == "object" }
+        .forEachIndexed { index, subschema -> subschema.assertPropertiesAreSorted("$schemaName.allOf[$index]") }
+    }
+  }
+
   @Test
   @Disabled("TODO Enable this test once you have added security schema to OpenApiConfiguration.OpenAPi().components()")
   fun `the open api json path security requirements are valid`() {
@@ -135,5 +173,20 @@ class OpenApiDocsIT : IntegrationTestBase() {
       .expectStatus().isOk
       .expectBody()
       .jsonPath("$.paths[*][*][?(!@.security)]").doesNotExist()
+  }
+
+  private data class ApiSpec(val components: Components)
+  private data class Components(val schemas: Map<String, Schema>)
+
+  private data class Schema(val type: String?, val properties: Map<String, *>?, val allOf: List<Schema>?) {
+    fun assertPropertiesAreSorted(schemaName: String) {
+      assertThat(this.properties)
+        .withFailMessage { "Schema '$schemaName' does not have any properties" }
+        .isNotNull
+
+      assertThat(this.properties!!.keys.toList())
+        .withFailMessage { "Schema '$schemaName' does not have properties in alphabetical order: ${this.properties.keys}" }
+        .isSorted
+    }
   }
 }
