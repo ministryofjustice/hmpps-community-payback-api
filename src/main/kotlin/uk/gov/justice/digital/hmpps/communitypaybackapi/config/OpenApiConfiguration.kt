@@ -74,6 +74,8 @@ class OpenApiConfiguration(buildProperties: BuildProperties) {
     .displayName("All Endpoints")
     .addOpenApiCustomizer(defaultErrorResponseCustomizer())
     .addOpenApiCustomizer(idempotencyKeyCustomizer())
+    .addOpenApiCustomizer(stableSchemaPropertiesOrderCustomizer())
+    .addOpenApiCustomizer(stableSchemaOrderCustomizer())
     .build()
 
   @Bean
@@ -83,6 +85,8 @@ class OpenApiConfiguration(buildProperties: BuildProperties) {
     .pathsToMatch("/admin/**", "/common/**")
     .addOpenApiCustomizer(defaultErrorResponseCustomizer())
     .addOpenApiCustomizer(idempotencyKeyCustomizer())
+    .addOpenApiCustomizer(stableSchemaPropertiesOrderCustomizer())
+    .addOpenApiCustomizer(stableSchemaOrderCustomizer())
     .build()
 
   @Bean
@@ -92,6 +96,8 @@ class OpenApiConfiguration(buildProperties: BuildProperties) {
     .pathsToMatch("/domain-event-details/**")
     .addOpenApiCustomizer(defaultErrorResponseCustomizer())
     .addOpenApiCustomizer(idempotencyKeyCustomizer())
+    .addOpenApiCustomizer(stableSchemaPropertiesOrderCustomizer())
+    .addOpenApiCustomizer(stableSchemaOrderCustomizer())
     .build()
 
   @Bean
@@ -101,6 +107,8 @@ class OpenApiConfiguration(buildProperties: BuildProperties) {
     .pathsToMatch("/supervisor/**", "/common/**")
     .addOpenApiCustomizer(defaultErrorResponseCustomizer())
     .addOpenApiCustomizer(idempotencyKeyCustomizer())
+    .addOpenApiCustomizer(stableSchemaPropertiesOrderCustomizer())
+    .addOpenApiCustomizer(stableSchemaOrderCustomizer())
     .build()
 
   private fun SecurityScheme.addBearerJwtRequirement(vararg roles: String): SecurityScheme = type(SecurityScheme.Type.HTTP)
@@ -146,6 +154,19 @@ class OpenApiConfiguration(buildProperties: BuildProperties) {
           )
         }
       }
+    }
+  }
+
+  @Bean
+  fun stableSchemaOrderCustomizer(): OpenApiCustomizer = OpenApiCustomizer { openApi: OpenAPI ->
+    openApi.components.schemas = openApi.components.schemas.toSortedMap()
+  }
+
+  @Bean
+  fun stableSchemaPropertiesOrderCustomizer(): OpenApiCustomizer = OpenApiCustomizer { openApi: OpenAPI ->
+    openApi.components.schemas.values.forEach { value ->
+      value.properties = value.properties?.toSortedMap()
+      value.allOf?.forEach { subschema -> subschema.properties = subschema.properties?.toSortedMap() }
     }
   }
 
