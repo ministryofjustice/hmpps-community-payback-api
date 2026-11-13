@@ -29,6 +29,9 @@ class AdjustmentEntity(
   @ManyToOne(fetch = FetchType.EAGER)
   @JoinColumn(name = "adjustment_reason_id")
   var adjustmentReason: AdjustmentReasonEntity? = null,
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "appointment_id")
+  var appointment: AppointmentEntity? = null,
   @CreationTimestamp
   val createdAt: OffsetDateTime? = null,
   @UpdateTimestamp
