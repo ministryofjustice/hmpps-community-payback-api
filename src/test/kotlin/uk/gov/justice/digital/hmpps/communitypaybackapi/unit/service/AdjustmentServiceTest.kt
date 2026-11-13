@@ -8,6 +8,7 @@ import io.mockk.verify
 import io.mockk.verifyOrder
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -16,6 +17,7 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.ArgumentsProvider
 import org.junit.jupiter.params.provider.ArgumentsSource
+import org.junit.jupiter.params.provider.ValueSource
 import org.junit.jupiter.params.support.ParameterDeclarations
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
@@ -31,11 +33,13 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AdjustmentFilterType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAdjustmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsIdDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentReasonEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentReasonEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.valid
@@ -52,6 +56,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.Communi
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AdjustmentDeletedEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.SpringEventPublisher
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toNDAdjustmentRequest
 import uk.gov.justice.digital.hmpps.communitypaybackapi.unit.util.WebClientResponseExceptionFactory
 import java.time.Clock
@@ -80,10 +85,24 @@ class AdjustmentServiceTest {
   @RelaxedMockK
   lateinit var adjustmentEventEntityRepository: AdjustmentEventEntityRepository
 
+  @RelaxedMockK
+  lateinit var adjustmentEntityRepository: AdjustmentEntityRepository
+
+  @RelaxedMockK
+  lateinit var adjustmentReasonEntityRepository: AdjustmentReasonEntityRepository
+
   val clock: Clock = ClockConfiguration.MutableClock(Instant.now())
 
   @InjectMockKs
   private lateinit var service: AdjustmentService
+
+  @BeforeEach
+  fun setupAdjustmentRepository() {
+    every { adjustmentReasonEntityRepository.findByDeliusCodeIn(any()) } returns emptyList()
+    every { adjustmentEntityRepository.findAllById(any()) } returns emptyList()
+    every { adjustmentEntityRepository.findByDeliusAdjustmentIdIn(any()) } returns emptyList()
+    every { adjustmentEntityRepository.save(any()) } answers { firstArg() }
+  }
 
   companion object {
     const val CRN: String = "CRN123"
@@ -125,6 +144,39 @@ class AdjustmentServiceTest {
 
   @Nested
   inner class GetAdjustments {
+    @ParameterizedTest
+    @ValueSource(booleans = [true, false])
+    fun `preserves the appointment link when refreshing an existing adjustment`(matchByDeliusId: Boolean) {
+      val appointment = AppointmentEntity.valid()
+      val adjustment = NDAdjustment.valid()
+      val existing = adjustment.toEntity(CRN, EVENT_NUMBER, null).apply { this.appointment = appointment }
+      val updated = adjustment.copy(minutes = adjustment.minutes + 5)
+      if (matchByDeliusId) {
+        every { adjustmentEntityRepository.findByDeliusAdjustmentIdIn(listOf(adjustment.id)) } returns listOf(existing)
+      } else {
+        every { adjustmentEntityRepository.findAllById(listOf(adjustment.reference!!)) } returns listOf(existing)
+      }
+      every { communityPaybackAndDeliusClient.getAdjustments(CRN, EVENT_NUMBER) } returns NDAdjustmentResponse(listOf(updated))
+
+      service.getAdjustments(CRN, EVENT_NUMBER)
+
+      assertThat(existing.appointment).isSameAs(appointment)
+      assertThat(existing.minutes).isEqualTo(updated.minutes)
+      verify(exactly = 0) { adjustmentEntityRepository.save(any()) }
+    }
+
+    @Test
+    fun `links adjustments to their matching local reason`() {
+      val adjustment = NDAdjustment.valid()
+      val reason = AdjustmentReasonEntity.valid().copy(deliusCode = adjustment.reason.code)
+      every { adjustmentReasonEntityRepository.findByDeliusCodeIn(listOf(adjustment.reason.code)) } returns listOf(reason)
+      every { communityPaybackAndDeliusClient.getAdjustments(CRN, EVENT_NUMBER) } returns NDAdjustmentResponse(listOf(adjustment))
+
+      service.getAdjustments(CRN, EVENT_NUMBER)
+
+      verify { adjustmentEntityRepository.save(match { it.adjustmentReason == reason }) }
+    }
+
     @Test
     fun `filters other adjustments before pagination and counts only matches`() {
       val adjustments = listOf(
@@ -174,6 +226,10 @@ class AdjustmentServiceTest {
       val results = service.getAdjustments("X123456", 1)
 
       assertThat(results).hasSameElementsAs(adjustments.map { it.toDto() })
+      verify(exactly = 1) { adjustmentEntityRepository.findAllById(adjustments.mapNotNull { it.reference }) }
+      adjustments.forEach { adjustment ->
+        verify { adjustmentEntityRepository.save(match { it.id == adjustment.reference && it.deliusAdjustmentId == adjustment.id && it.crn == "X123456" && it.deliusEventNumber == 1 }) }
+      }
     }
 
     @ParameterizedTest
@@ -253,6 +309,11 @@ class AdjustmentServiceTest {
       val pageable = PageRequest.of(page, 2, direction, sortField)
       val page = service.getAdjustments("123456", 1, pageable)
 
+      verify(exactly = 1) { adjustmentEntityRepository.findAllById(adjustments.mapNotNull { it.reference }) }
+      adjustments.forEach { adjustment ->
+        verify { adjustmentEntityRepository.save(match { it.id == adjustment.reference && it.deliusAdjustmentId == adjustment.id }) }
+      }
+
       assertThat(page.totalPages).isEqualTo(4)
       assertThat(page.totalElements).isEqualTo(8)
       assertThat(page.content.map { it.id }).isEqualTo(expectedIds)
@@ -262,10 +323,11 @@ class AdjustmentServiceTest {
   @Nested
   inner class CreateAdjustment {
 
-    @Test
-    fun success() {
+    @ParameterizedTest
+    @ValueSource(booleans = [true, false])
+    fun success(linkToAppointment: Boolean) {
       val reason = AdjustmentReasonEntity.valid().copy(maxMinutesAllowed = 50)
-      val appointment = AppointmentEntity.valid()
+      val appointment = AppointmentEntity.valid().takeIf { linkToAppointment }
       val id = UUID.randomUUID()
       val dateOfAdjustment = LocalDate.now().minusDays(3)
 
@@ -273,9 +335,11 @@ class AdjustmentServiceTest {
         adjustmentReasonId = reason.id,
         minutes = 50,
         adjustmentDate = dateOfAdjustment,
+        appointmentId = appointment?.id,
       )
 
       every { adjustmentIdGenerator.generateId(request) } returns id
+      every { communityPaybackAndDeliusClient.getAdjustment(id) } returns NDAdjustment.valid().copy(id = 5L, reference = id)
 
       every {
         adjustmentValidationService.validate(request, any())
@@ -331,11 +395,14 @@ class AdjustmentServiceTest {
             trigger = AdjustmentEventTrigger(
               triggeredAt = OffsetDateTime.now(clock),
               triggerType = AdjustmentEventTriggerType.APPOINTMENT_TASK,
-              triggeredBy = appointment.id.toString(),
+              triggeredBy = appointment?.id.toString(),
             ),
             adjustmentDate = dateOfAdjustment,
           ),
         )
+      }
+      verify {
+        adjustmentEntityRepository.save(match { it.id == id && it.appointment == appointment })
       }
     }
   }
