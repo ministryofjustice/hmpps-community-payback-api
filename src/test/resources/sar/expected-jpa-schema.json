@@ -3,6 +3,7 @@
     "adjustmentDate": "LocalDate",
     "adjustmentReason": "AdjustmentReasonEntity",
     "adjustmentType": "AdjustmentType",
+    "appointment": "AppointmentEntity",
     "createdAt": "OffsetDateTime",
     "crn": "String",
     "deliusAdjustmentId": "long",
