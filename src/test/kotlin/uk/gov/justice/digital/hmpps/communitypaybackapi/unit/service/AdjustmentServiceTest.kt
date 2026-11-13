@@ -17,6 +17,7 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.ArgumentsProvider
 import org.junit.jupiter.params.provider.ArgumentsSource
+import org.junit.jupiter.params.provider.ValueSource
 import org.junit.jupiter.params.support.ParameterDeclarations
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
@@ -55,6 +56,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.Communi
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AdjustmentDeletedEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.SpringEventPublisher
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toNDAdjustmentRequest
 import uk.gov.justice.digital.hmpps.communitypaybackapi.unit.util.WebClientResponseExceptionFactory
 import java.time.Clock
@@ -142,6 +144,27 @@ class AdjustmentServiceTest {
 
   @Nested
   inner class GetAdjustments {
+    @ParameterizedTest
+    @ValueSource(booleans = [true, false])
+    fun `preserves the appointment link when refreshing an existing adjustment`(matchByDeliusId: Boolean) {
+      val appointment = AppointmentEntity.valid()
+      val adjustment = NDAdjustment.valid()
+      val existing = adjustment.toEntity(CRN, EVENT_NUMBER, null).apply { this.appointment = appointment }
+      val updated = adjustment.copy(minutes = adjustment.minutes + 5)
+      if (matchByDeliusId) {
+        every { adjustmentEntityRepository.findByDeliusAdjustmentIdIn(listOf(adjustment.id)) } returns listOf(existing)
+      } else {
+        every { adjustmentEntityRepository.findAllById(listOf(adjustment.reference!!)) } returns listOf(existing)
+      }
+      every { communityPaybackAndDeliusClient.getAdjustments(CRN, EVENT_NUMBER) } returns NDAdjustmentResponse(listOf(updated))
+
+      service.getAdjustments(CRN, EVENT_NUMBER)
+
+      assertThat(existing.appointment).isSameAs(appointment)
+      assertThat(existing.minutes).isEqualTo(updated.minutes)
+      verify(exactly = 0) { adjustmentEntityRepository.save(any()) }
+    }
+
     @Test
     fun `links adjustments to their matching local reason`() {
       val adjustment = NDAdjustment.valid()
@@ -300,10 +323,11 @@ class AdjustmentServiceTest {
   @Nested
   inner class CreateAdjustment {
 
-    @Test
-    fun success() {
+    @ParameterizedTest
+    @ValueSource(booleans = [true, false])
+    fun success(linkToAppointment: Boolean) {
       val reason = AdjustmentReasonEntity.valid().copy(maxMinutesAllowed = 50)
-      val appointment = AppointmentEntity.valid()
+      val appointment = AppointmentEntity.valid().takeIf { linkToAppointment }
       val id = UUID.randomUUID()
       val dateOfAdjustment = LocalDate.now().minusDays(3)
 
@@ -311,9 +335,11 @@ class AdjustmentServiceTest {
         adjustmentReasonId = reason.id,
         minutes = 50,
         adjustmentDate = dateOfAdjustment,
+        appointmentId = appointment?.id,
       )
 
       every { adjustmentIdGenerator.generateId(request) } returns id
+      every { communityPaybackAndDeliusClient.getAdjustment(id) } returns NDAdjustment.valid().copy(id = 5L, reference = id)
 
       every {
         adjustmentValidationService.validate(request, any())
@@ -369,11 +395,14 @@ class AdjustmentServiceTest {
             trigger = AdjustmentEventTrigger(
               triggeredAt = OffsetDateTime.now(clock),
               triggerType = AdjustmentEventTriggerType.APPOINTMENT_TASK,
-              triggeredBy = appointment.id.toString(),
+              triggeredBy = appointment?.id.toString(),
             ),
             adjustmentDate = dateOfAdjustment,
           ),
         )
+      }
+      verify {
+        adjustmentEntityRepository.save(match { it.id == id && it.appointment == appointment })
       }
     }
   }

@@ -78,7 +78,7 @@ class AdminAdjustmentIT : IntegrationTestBase() {
     return getAdjustments(crn, eventNumber)
   }
 
-  private fun findAdjustment(id: UUID): AdjustmentEntity = requireNotNull(adjustmentEntityRepository.findByIdOrNull(id))
+  private fun findAdjustment(id: UUID?): AdjustmentEntity = requireNotNull(adjustmentEntityRepository.findByIdOrNull(requireNotNull(id)))
 
   companion object {
     const val CRN = "X123456"
@@ -112,6 +112,7 @@ class AdminAdjustmentIT : IntegrationTestBase() {
       val original = findAdjustment(adjustment.reference!!)
       assertThat(original.id).isEqualTo(adjustment.reference)
       assertThat(original.minutes).isEqualTo(adjustment.minutes)
+      assertThat(original.appointment).isNull()
 
       val updated = adjustment.copy(
         id = 900004L,
@@ -382,6 +383,40 @@ class AdminAdjustmentIT : IntegrationTestBase() {
 
       domainEventAsserter.assertEventCount("community-payback.adjustment.created", 1)
       assertThat(appointmentTaskEntityRepository.findByIdOrNull(task.id)!!.taskStatus).isEqualTo(AppointmentTaskStatus.COMPLETE)
+      assertThat(adjustmentEntityRepository.findAll().single().appointment?.id).isEqualTo(appointment.id)
+    }
+
+    @Test
+    fun `should persist multiple adjustments for one appointment and retain links on refresh`() {
+      val appointment = AppointmentEntity.valid().copy(crn = CRN, deliusEventNumber = DELIUS_EVENT_NUMBER).persist(ctx)
+      val adjustments = listOf(
+        NDAdjustment.valid().copy(id = 900005L),
+        NDAdjustment.valid().copy(id = 900006L),
+      )
+      setupGetUpwDetailsResponse()
+
+      adjustments.forEach { adjustment ->
+        doReturn(adjustment.reference).whenever(adjustmentIdGenerator).generateId(any<CreateAdjustmentDto>())
+        CommunityPaybackAndDeliusMockServer.setupPostAdjustmentResponse(username = "theusername", adjustmentId = adjustment.id)
+        CommunityPaybackAndDeliusMockServer.setupGetAdjustmentResponse(adjustment.reference!!, adjustment)
+
+        callCreateAdjustment(
+          request = CreateAdjustmentDto.valid(ctx).copy(taskId = null, appointmentId = appointment.id),
+          expectedStatus = 201,
+        )
+
+        assertThat(findAdjustment(adjustment.reference).appointment?.id).isEqualTo(appointment.id)
+      }
+
+      val updated = adjustments.map { it.copy(minutes = it.minutes + 5) }
+      retrieveAdjustments(CRN, DELIUS_EVENT_NUMBER, updated)
+
+      assertThat(adjustmentEntityRepository.count()).isEqualTo(2L)
+      updated.forEach { adjustment ->
+        val stored = findAdjustment(adjustment.reference!!)
+        assertThat(stored.appointment?.id).isEqualTo(appointment.id)
+        assertThat(stored.minutes).isEqualTo(adjustment.minutes)
+      }
     }
 
     @Test

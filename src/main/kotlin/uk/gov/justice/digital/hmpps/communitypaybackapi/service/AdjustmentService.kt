@@ -27,6 +27,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEntityR
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentReasonEntityRepository
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentIdGenerator.DeleteAdjustmentProperties
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentValidationService.AdjustmentValidationContext
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent
@@ -106,6 +107,7 @@ class AdjustmentService(
     crn: String,
     eventNumber: Int,
     adjustments: List<NDAdjustment>,
+    appointment: AppointmentEntity? = null,
   ): List<NDAdjustment> {
     if (adjustments.isEmpty()) return emptyList()
 
@@ -124,10 +126,15 @@ class AdjustmentService(
       val reason = reasons[adjustment.reason.code]
       val existing = existingByDeliusId[adjustment.id] ?: existingByReference[adjustment.reference]
       val entity = existing?.updateFrom(adjustment, crn, eventNumber, reason)
-        ?: adjustmentEntityRepository.save(adjustment.toEntity(crn, eventNumber, reason))
+        ?: adjustment.toEntity(crn, eventNumber, reason)
+      // NDelius does not return appointment links, so preserve any existing association on refresh.
+      if (appointment != null) {
+        entity.appointment = appointment
+      }
+      val persisted = if (existing == null) adjustmentEntityRepository.save(entity) else entity
 
-      existingByDeliusId[adjustment.id] = entity
-      adjustment.copy(reference = entity.id)
+      existingByDeliusId[adjustment.id] = persisted
+      adjustment.copy(reference = persisted.id)
     }
   }
 
@@ -181,7 +188,7 @@ class AdjustmentService(
     )
 
     val adjustment = communityPaybackAndDeliusClient.getAdjustment(adjustmentId)
-    return saveAdjustments(crn, deliusEventNumber, listOf(adjustment)).single().toDto()
+    return saveAdjustments(crn, deliusEventNumber, listOf(adjustment), validationContext.appointment).single().toDto()
   }
 
   @Suppress("detekt:ThrowsCount")
