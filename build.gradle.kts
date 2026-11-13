@@ -7,7 +7,7 @@ plugins {
   kotlin("plugin.jpa") version "2.4.21"
   id("dev.detekt") version "2.0.0-alpha.6"
   jacoco
-  id("io.sentry.jvm.gradle") version "6.25.0"
+  id("io.sentry.jvm.gradle") version "6.26.0"
 }
 
 configurations {
@@ -20,7 +20,7 @@ configurations {
 }
 
 dependencies {
-  implementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter:3.0.3")
+  implementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter:3.1.0")
   implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:7.4.1")
 
   implementation("org.springframework.boot:spring-boot-starter-webflux")
@@ -42,7 +42,7 @@ dependencies {
 
   runtimeOnly("org.flywaydb:flyway-database-postgresql")
 
-  testImplementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter-test:3.0.3")
+  testImplementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter-test:3.1.0")
   testImplementation("org.springframework.boot:spring-boot-starter-webflux-test")
   testImplementation("org.wiremock:wiremock-standalone:3.13.2")
   testImplementation("io.swagger.parser.v3:swagger-parser:2.1.48") {
