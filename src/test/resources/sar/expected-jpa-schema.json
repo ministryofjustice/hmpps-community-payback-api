@@ -184,9 +184,10 @@
     "updatedAt": "OffsetDateTime"
   },
   "SessionSupervisorEntity": {
-    "allocatedByUsername": "String",
+    "assignedByUsername": "String",
     "createdAt": "OffsetDateTime",
     "day": "LocalDate",
+    "id": "UUID",
     "projectCode": "String",
     "supervisorCode": "String",
     "updatedAt": "OffsetDateTime"
