@@ -17,7 +17,6 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.ArgumentsProvider
 import org.junit.jupiter.params.provider.ArgumentsSource
-import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.provider.ValueSource
 import org.junit.jupiter.params.support.ParameterDeclarations
 import org.springframework.data.domain.PageRequest
@@ -35,14 +34,11 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AdjustmentFilterType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAdjustmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsIdDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEntity
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentReasonEntity
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentReasonEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.valid
@@ -51,6 +47,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.config.Clock
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentEventTrigger
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentIdGenerator
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentIdGenerator.DeleteAdjustmentProperties
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentPersistenceService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentValidationService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentValidationService.AdjustmentValidationContext
@@ -59,7 +56,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.Communi
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AdjustmentDeletedEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.SpringEventPublisher
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toNDAdjustmentRequest
 import uk.gov.justice.digital.hmpps.communitypaybackapi.unit.util.WebClientResponseExceptionFactory
 import java.time.Clock
@@ -89,10 +85,7 @@ class AdjustmentServiceTest {
   lateinit var adjustmentEventEntityRepository: AdjustmentEventEntityRepository
 
   @RelaxedMockK
-  lateinit var adjustmentEntityRepository: AdjustmentEntityRepository
-
-  @RelaxedMockK
-  lateinit var adjustmentReasonEntityRepository: AdjustmentReasonEntityRepository
+  lateinit var adjustmentPersistenceService: AdjustmentPersistenceService
 
   val clock: Clock = ClockConfiguration.MutableClock(Instant.now())
 
@@ -100,19 +93,10 @@ class AdjustmentServiceTest {
   private lateinit var service: AdjustmentService
 
   @BeforeEach
-  fun setupAdjustmentRepository() {
-    every { adjustmentReasonEntityRepository.findByDeliusCodeIn(any()) } returns emptyList()
-    every { adjustmentEntityRepository.findAllById(any()) } returns emptyList()
-    every { adjustmentEntityRepository.findByDeliusAdjustmentIdIn(any()) } returns emptyList()
-    every { adjustmentEntityRepository.saveAll(any<List<AdjustmentEntity>>()) } answers { firstArg() }
-    every { adjustmentEventEntityRepository.findAllById(any()) } returns emptyList()
-  }
-
-  private fun stubAdjustmentReasons(adjustments: List<NDAdjustment>) {
-    val reasons = adjustments.map { it.reason }.distinctBy { it.code }.map {
-      AdjustmentReasonEntity.valid().copy(name = it.name, deliusCode = it.code)
+  fun setupPersistence() {
+    every { adjustmentPersistenceService.saveAdjustments(any(), any(), any(), any()) } answers {
+      thirdArg<List<NDAdjustment>>().map { it.toDto().copy(id = it.reference ?: UUID.randomUUID()) }
     }
-    every { adjustmentReasonEntityRepository.findByDeliusCodeIn(reasons.map { it.deliusCode }) } returns reasons
   }
 
   companion object {
@@ -162,103 +146,37 @@ class AdjustmentServiceTest {
       assertThat(service.getAdjustments(CRN, EVENT_NUMBER)).isEmpty()
 
       verify(exactly = 0) {
-        adjustmentEntityRepository.saveAll(any<List<AdjustmentEntity>>())
-        adjustmentEntityRepository.findByDeliusAdjustmentIdIn(any())
-        adjustmentEntityRepository.findAllById(any())
-        adjustmentReasonEntityRepository.findByDeliusCodeIn(any())
-        adjustmentEventEntityRepository.findAllById(any())
+        adjustmentPersistenceService.saveAdjustments(any(), any(), any(), any())
         communityPaybackAndDeliusClient.updateAdjustmentReference(any(), any())
       }
     }
 
     @Test
-    fun `saves adjustments in one batch and returns the original Delius order`() {
-      val adjustments = List(4) { NDAdjustment.valid() }
-      val appointments = List(2) { AppointmentEntity.valid() }
-      val events = adjustments.take(2).mapIndexed { index, adjustment ->
-        AdjustmentEventEntity.valid().copy(
-          id = adjustment.reference!!,
-          eventType = AdjustmentEventType.CREATE,
-          appointment = appointments[index],
-        )
-      }
-      stubAdjustmentReasons(adjustments)
-      every { communityPaybackAndDeliusClient.getAdjustments(CRN, EVENT_NUMBER) } returns NDAdjustmentResponse(adjustments)
-      every { adjustmentEventEntityRepository.findAllById(adjustments.mapNotNull { it.reference }) } returns events.reversed()
-
-      val result = service.getAdjustments(CRN, EVENT_NUMBER)
-
-      assertThat(result).containsExactlyElementsOf(adjustments.map { it.toDto() })
-      verify(exactly = 1) {
-        adjustmentEntityRepository.saveAll(
-          match<List<AdjustmentEntity>> { batch ->
-            batch.map { it.deliusAdjustmentId } == adjustments.map { it.id } && batch.map { it.appointment } == appointments + listOf(null, null)
-          },
-        )
-        adjustmentEventEntityRepository.findAllById(adjustments.mapNotNull { it.reference })
-      }
-    }
-
-    @Test
-    fun `a batch persistence failure prevents reference updates`() {
+    fun `a persistence failure prevents reference updates`() {
       val adjustments = List(2) { NDAdjustment.valid().copy(reference = null) }
-      val error = IllegalStateException("Batch could not be saved")
+      val error = IllegalStateException("Adjustments could not be committed")
       every { communityPaybackAndDeliusClient.getAdjustments(CRN, EVENT_NUMBER) } returns NDAdjustmentResponse(adjustments)
-      every { adjustmentEntityRepository.saveAll(any<List<AdjustmentEntity>>()) } throws error
+      every { adjustmentPersistenceService.saveAdjustments(CRN, EVENT_NUMBER, adjustments) } throws error
 
       assertThatThrownBy { service.getAdjustments(CRN, EVENT_NUMBER) }.isSameAs(error)
 
       verify(exactly = 0) { communityPaybackAndDeliusClient.updateAdjustmentReference(any(), any()) }
     }
 
-    @Test
-    fun `sets the new local reference in Delius when the adjustment has no reference`() {
-      val adjustment = NDAdjustment.valid().copy(reference = null)
-      every { communityPaybackAndDeliusClient.getAdjustments(CRN, EVENT_NUMBER) } returns NDAdjustmentResponse(listOf(adjustment))
-
-      val result = service.getAdjustments(CRN, EVENT_NUMBER).single()
-
-      assertThat(result.id).isNotNull()
-      verify {
-        adjustmentEntityRepository.saveAll(
-          match<List<AdjustmentEntity>> { entities ->
-            entities.any { it.id == result.id && it.deliusAdjustmentId == adjustment.id }
-          },
-        )
-      }
-      verify(exactly = 1) {
-        communityPaybackAndDeliusClient.updateAdjustmentReference(adjustment.id, NDUpdateAdjustmentReference(result.id!!))
-      }
-    }
-
     @ParameterizedTest
     @ValueSource(booleans = [true, false])
-    fun `uses the Delius reference or generates one without looking up stored references`(hasReference: Boolean) {
-      val original = NDAdjustment.valid()
-      val existing = original.toEntity(CRN, EVENT_NUMBER, null)
-      val adjustment = original.copy(reference = UUID.randomUUID().takeIf { hasReference })
-      every { adjustmentEntityRepository.findByDeliusAdjustmentIdIn(listOf(adjustment.id)) } returns listOf(existing)
-      every { communityPaybackAndDeliusClient.getAdjustments(CRN, EVENT_NUMBER) } returns NDAdjustmentResponse(listOf(adjustment))
+    fun `sends the canonical Community Payback reference to Delius when its reference is missing or different`(hasReference: Boolean) {
+      val adjustmentFromDelius = NDAdjustment.valid().let { it.copy(reference = it.reference.takeIf { hasReference }) }
+      val savedAdjustment = adjustmentFromDelius.toDto().copy(id = UUID.randomUUID())
+      every { communityPaybackAndDeliusClient.getAdjustments(CRN, EVENT_NUMBER) } returns NDAdjustmentResponse(listOf(adjustmentFromDelius))
+      every { adjustmentPersistenceService.saveAdjustments(CRN, EVENT_NUMBER, listOf(adjustmentFromDelius)) } returns listOf(savedAdjustment)
 
       val result = service.getAdjustments(CRN, EVENT_NUMBER).single()
 
-      assertThat(result.id).isNotNull().isNotEqualTo(existing.id)
-      if (hasReference) {
-        assertThat(result.id).isEqualTo(adjustment.reference)
-      }
-      verify(exactly = if (hasReference) 0 else 1) {
-        communityPaybackAndDeliusClient.updateAdjustmentReference(adjustment.id, NDUpdateAdjustmentReference(result.id!!))
-      }
-      verify(exactly = 0) {
-        adjustmentEntityRepository.findByDeliusAdjustmentIdIn(any())
-        adjustmentEntityRepository.findAllById(any())
-      }
-      verify(exactly = 1) {
-        adjustmentEntityRepository.saveAll(
-          match<List<AdjustmentEntity>> { entities ->
-            entities.size == 1 && entities.single().id == result.id && entities.single().deliusAdjustmentId == adjustment.id
-          },
-        )
+      assertThat(result.id).isEqualTo(savedAdjustment.id)
+      verifyOrder {
+        adjustmentPersistenceService.saveAdjustments(CRN, EVENT_NUMBER, listOf(adjustmentFromDelius))
+        communityPaybackAndDeliusClient.updateAdjustmentReference(adjustmentFromDelius.id, NDUpdateAdjustmentReference(savedAdjustment.id!!))
       }
     }
 
@@ -272,90 +190,13 @@ class AdjustmentServiceTest {
       assertThatThrownBy { service.getAdjustments(CRN, EVENT_NUMBER) }.isSameAs(error)
     }
 
-    @ParameterizedTest
-    @CsvSource("CREATE,true", "CREATE,false", "DELETE,true", "DELETE,false")
-    fun `retrieval links appointments only from matching creation events`(eventType: AdjustmentEventType, hasAppointment: Boolean) {
-      val adjustment = NDAdjustment.valid().copy(id = 100L)
-      val event = AdjustmentEventEntity.valid().copy(
-        id = adjustment.reference!!,
-        deliusAdjustmentId = 99L,
-        eventType = eventType,
-        appointment = AppointmentEntity.valid().takeIf { hasAppointment },
-      )
-      val expectedAppointment = event.appointment.takeIf { eventType == AdjustmentEventType.CREATE }
-      every { adjustmentEventEntityRepository.findAllById(listOf(event.id)) } returns listOf(event)
-      every { communityPaybackAndDeliusClient.getAdjustments(CRN, EVENT_NUMBER) } returns NDAdjustmentResponse(listOf(adjustment))
-
-      service.getAdjustments(CRN, EVENT_NUMBER)
-
-      verify(exactly = 1) {
-        adjustmentEntityRepository.saveAll(
-          match<List<AdjustmentEntity>> { entities ->
-            val saved = entities.singleOrNull()
-            saved != null && saved.appointment == expectedAppointment && saved.deliusAdjustmentId == adjustment.id && saved.id == adjustment.reference
-          },
-        )
-        adjustmentEventEntityRepository.findAllById(listOf(event.id))
-      }
-    }
-
     @Test
-    fun `saves refreshed adjustments without loading or mutating existing entities`() {
-      val appointment = AppointmentEntity.valid()
-      val adjustment = NDAdjustment.valid()
-      val existing = adjustment.toEntity(CRN, EVENT_NUMBER, null).apply { this.appointment = appointment }
-      val updated = adjustment.copy(minutes = adjustment.minutes + 5)
-      every { adjustmentEntityRepository.findByDeliusAdjustmentIdIn(listOf(adjustment.id)) } returns listOf(existing)
-      every { adjustmentEntityRepository.findAllById(listOf(adjustment.reference!!)) } returns listOf(existing)
-      every { communityPaybackAndDeliusClient.getAdjustments(CRN, EVENT_NUMBER) } returns NDAdjustmentResponse(listOf(updated))
-
-      service.getAdjustments(CRN, EVENT_NUMBER)
-
-      assertThat(existing.appointment).isSameAs(appointment)
-      assertThat(existing.minutes).isEqualTo(adjustment.minutes)
-      verify(exactly = 1) {
-        adjustmentEntityRepository.saveAll(
-          match<List<AdjustmentEntity>> { entities ->
-            val saved = entities.singleOrNull()
-            saved != null && saved.id == updated.reference && saved.minutes == updated.minutes && saved.appointment == null
-          },
-        )
-      }
-      verify(exactly = 0) {
-        adjustmentEntityRepository.findByDeliusAdjustmentIdIn(any())
-        adjustmentEntityRepository.findAllById(any())
-      }
-    }
-
-    @Test
-    fun `links adjustments to their matching local reason`() {
-      val adjustment = NDAdjustment.valid()
-      val reason = AdjustmentReasonEntity.valid().copy(deliusCode = adjustment.reason.code)
-      every { adjustmentReasonEntityRepository.findByDeliusCodeIn(listOf(adjustment.reason.code)) } returns listOf(reason)
-      every { communityPaybackAndDeliusClient.getAdjustments(CRN, EVENT_NUMBER) } returns NDAdjustmentResponse(listOf(adjustment))
-
-      val result = service.getAdjustments(CRN, EVENT_NUMBER).single()
-
-      assertThat(result.reason).isEqualTo(reason.name)
-      assertThat(result.reasonCode).isEqualTo(reason.deliusCode)
-
-      verify {
-        adjustmentEntityRepository.saveAll(
-          match<List<AdjustmentEntity>> { entities ->
-            entities.any { it.adjustmentReason == reason }
-          },
-        )
-      }
-    }
-
-    @Test
-    fun `paginates other adjustments whose local reason name differs from TTX`() {
+    fun `filters other adjustments by reason code before pagination`() {
       val adjustments = listOf(
         NDAdjustment.valid().copy(date = LocalDate.of(2026, 8, 8), reason = NDNameCode("Travel Time", "TTX")),
         NDAdjustment.valid().copy(date = LocalDate.of(2026, 7, 7), reason = NDNameCode("Other", "OTH")),
         NDAdjustment.valid().copy(date = LocalDate.of(2026, 6, 6), reason = NDNameCode("Other", "OTH")),
       )
-      stubAdjustmentReasons(adjustments)
       every { communityPaybackAndDeliusClient.getAdjustments("X123456", 1) } returns NDAdjustmentResponse(adjustments)
 
       val result = service.getAdjustments("X123456", 1, PageRequest.of(1, 1, Sort.by("date").descending()), AdjustmentFilterTypeDto.OTHER)
@@ -366,10 +207,9 @@ class AdjustmentServiceTest {
     }
 
     @Test
-    fun `filters travel time by local reason name and returns an empty page when no adjustments match`() {
-      val travelTime = NDAdjustment.valid().copy(reason = NDNameCode("TTX", "TTX"))
+    fun `filters travel time by reason code and returns an empty page when no adjustments match`() {
+      val travelTime = NDAdjustment.valid().copy(reason = NDNameCode("Travel Time", "TTX"))
       val other = NDAdjustment.valid().copy(reason = NDNameCode("Other", "OTH"))
-      stubAdjustmentReasons(listOf(travelTime, other))
       every { communityPaybackAndDeliusClient.getAdjustments("X123456", 1) } returns NDAdjustmentResponse(listOf(travelTime, other))
       val pageable = PageRequest.of(0, 10, Sort.by("date"))
 
@@ -379,7 +219,6 @@ class AdjustmentServiceTest {
       assertThat(result.totalElements).isEqualTo(1)
 
       every { communityPaybackAndDeliusClient.getAdjustments("X123456", 1) } returns NDAdjustmentResponse(listOf(travelTime))
-      stubAdjustmentReasons(listOf(travelTime))
       val emptyResult = service.getAdjustments("X123456", 1, pageable, AdjustmentFilterTypeDto.OTHER)
 
       assertThat(emptyResult.content).isEmpty()
@@ -392,7 +231,6 @@ class AdjustmentServiceTest {
         NDAdjustment.valid(),
         NDAdjustment.valid(),
       )
-      stubAdjustmentReasons(adjustments)
 
       every { communityPaybackAndDeliusClient.getAdjustments(any(), any()) } returns NDAdjustmentResponse(
         adjustments = adjustments,
@@ -402,16 +240,7 @@ class AdjustmentServiceTest {
 
       assertThat(results).hasSameElementsAs(adjustments.map { it.toDto() })
       verify(exactly = 0) { communityPaybackAndDeliusClient.updateAdjustmentReference(any(), any()) }
-      verify(exactly = 1) { adjustmentReasonEntityRepository.findByDeliusCodeIn(adjustments.map { it.reason.code }.distinct()) }
-      adjustments.forEach { adjustment ->
-        verify {
-          adjustmentEntityRepository.saveAll(
-            match<List<AdjustmentEntity>> { entities ->
-              entities.any { it.id == adjustment.reference && it.deliusAdjustmentId == adjustment.id && it.crn == "X123456" && it.deliusEventNumber == 1 }
-            },
-          )
-        }
-      }
+      verify(exactly = 1) { adjustmentPersistenceService.saveAdjustments("X123456", 1, adjustments) }
     }
 
     @ParameterizedTest
@@ -483,7 +312,6 @@ class AdjustmentServiceTest {
           minutes = 10,
         ),
       )
-      stubAdjustmentReasons(adjustments)
 
       every { communityPaybackAndDeliusClient.getAdjustments(any(), any()) } returns NDAdjustmentResponse(
         adjustments = adjustments,
@@ -491,17 +319,6 @@ class AdjustmentServiceTest {
 
       val pageable = PageRequest.of(page, 2, direction, sortField)
       val page = service.getAdjustments("123456", 1, pageable)
-
-      verify(exactly = 1) { adjustmentReasonEntityRepository.findByDeliusCodeIn(adjustments.map { it.reason.code }) }
-      adjustments.forEach { adjustment ->
-        verify {
-          adjustmentEntityRepository.saveAll(
-            match<List<AdjustmentEntity>> { entities ->
-              entities.any { it.id == adjustment.reference && it.deliusAdjustmentId == adjustment.id }
-            },
-          )
-        }
-      }
 
       assertThat(page.totalPages).isEqualTo(4)
       assertThat(page.totalElements).isEqualTo(8)
@@ -528,12 +345,6 @@ class AdjustmentServiceTest {
       )
 
       every { adjustmentIdGenerator.generateId(request) } returns id
-      every { adjustmentReasonEntityRepository.findByDeliusCodeIn(listOf(reason.deliusCode)) } returns listOf(reason)
-      if (linkToAppointment) {
-        val conflictingEvent = AdjustmentEventEntity.valid().copy(id = id, eventType = AdjustmentEventType.CREATE, appointment = AppointmentEntity.valid())
-        every { adjustmentEventEntityRepository.findAllById(listOf(id)) } returns listOf(conflictingEvent)
-      }
-
       every {
         adjustmentValidationService.validate(request, any())
       } answers {
@@ -595,19 +406,14 @@ class AdjustmentServiceTest {
         )
       }
       verify {
-        adjustmentEntityRepository.saveAll(
-          match<List<AdjustmentEntity>> { entities ->
-            entities.any {
-              it.id == id &&
-                it.deliusAdjustmentId == 5L &&
-                it.crn == CRN &&
-                it.deliusEventNumber == EVENT_NUMBER &&
-                it.adjustmentDate == dateOfAdjustment &&
-                it.minutes == request.minutes &&
-                it.adjustmentReason == reason &&
-                it.appointment == appointment
-            }
+        adjustmentPersistenceService.saveAdjustments(
+          CRN,
+          EVENT_NUMBER,
+          match { adjustments ->
+            val adjustment = adjustments.single()
+            adjustment.reference == id && adjustment.id == 5L && adjustment.date == dateOfAdjustment && adjustment.minutes == request.minutes
           },
+          appointment,
         )
       }
       assertThat(result.id).isEqualTo(id)

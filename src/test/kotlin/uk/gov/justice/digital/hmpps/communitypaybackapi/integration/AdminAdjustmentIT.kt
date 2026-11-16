@@ -20,6 +20,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.PageResponse
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AdjustmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAdjustmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEntityRepository
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEntityUpsertRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventType
@@ -40,6 +41,9 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentServic
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
 import java.time.LocalDate
 import java.util.UUID
+import java.util.concurrent.CyclicBarrier
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 
 class AdminAdjustmentIT : IntegrationTestBase() {
 
@@ -60,6 +64,9 @@ class AdminAdjustmentIT : IntegrationTestBase() {
 
   @Autowired
   lateinit var adjustmentEntityRepository: AdjustmentEntityRepository
+
+  @MockitoSpyBean
+  lateinit var adjustmentEntityUpsertRepository: AdjustmentEntityUpsertRepository
 
   @Autowired
   lateinit var adjustmentReasonEntityRepository: AdjustmentReasonEntityRepository
@@ -147,9 +154,10 @@ class AdminAdjustmentIT : IntegrationTestBase() {
       assertThat(savedCommunityPaybackAdjustment.deliusAdjustmentId).isEqualTo(adjustmentFromDelius.id)
       assertThat(savedCommunityPaybackAdjustment.minutes).isEqualTo(adjustmentFromDelius.minutes)
 
-      // A later Delius response updates the entity while preserving the original Community Payback appointment.
-      val updatedAdjustmentFromDelius = adjustmentFromDelius.copy(minutes = adjustmentFromDelius.minutes + 5)
+      // Delius omits the reference on a later response; Community Payback must retain the entity and appointment.
+      val updatedAdjustmentFromDelius = adjustmentFromDelius.copy(reference = null, minutes = adjustmentFromDelius.minutes + 5)
       CommunityPaybackAndDeliusMockServer.setupGetAdjustmentsResponse(CRN, DELIUS_EVENT_NUMBER, listOf(updatedAdjustmentFromDelius))
+      CommunityPaybackAndDeliusMockServer.setupUpdateAdjustmentReferenceResponse(adjustmentFromDelius.id)
 
       getAdjustmentsFromCommunityPayback()
 
@@ -157,10 +165,11 @@ class AdminAdjustmentIT : IntegrationTestBase() {
       assertThat(refreshedCommunityPaybackAdjustment.id).isEqualTo(historicalCreationEvent.id)
       assertThat(refreshedCommunityPaybackAdjustment.appointment?.id).isEqualTo(communityPaybackAppointment.id)
       assertThat(refreshedCommunityPaybackAdjustment.minutes).isEqualTo(updatedAdjustmentFromDelius.minutes)
+      CommunityPaybackAndDeliusMockServer.verifyUpdateAdjustmentReference(adjustmentFromDelius.id, historicalCreationEvent.id)
     }
 
     @Test
-    fun `rolls back the new Community Payback entity when saving its reference in Delius fails and succeeds on retry`() {
+    fun `keeps the Community Payback entity when saving its reference in Delius fails and retries with the same reference`() {
       val adjustmentCreatedInDelius = NDAdjustment.valid().copy(id = 900012L, reference = null)
       CommunityPaybackAndDeliusMockServer.setupGetAdjustmentsResponse(CRN, DELIUS_EVENT_NUMBER, listOf(adjustmentCreatedInDelius))
       CommunityPaybackAndDeliusMockServer.setupUpdateAdjustmentReferenceResponse(adjustmentCreatedInDelius.id, status = 500)
@@ -171,14 +180,47 @@ class AdminAdjustmentIT : IntegrationTestBase() {
         .exchange()
         .expectStatus().is5xxServerError
 
-      assertThat(adjustmentEntityRepository.count()).isZero()
+      val committedCommunityPaybackAdjustment = adjustmentEntityRepository.findAll().single()
+      val communityPaybackReference = committedCommunityPaybackAdjustment.id
+      assertThat(committedCommunityPaybackAdjustment.deliusAdjustmentId).isEqualTo(adjustmentCreatedInDelius.id)
+      CommunityPaybackAndDeliusMockServer.verifyUpdateAdjustmentReference(adjustmentCreatedInDelius.id, communityPaybackReference)
       CommunityPaybackAndDeliusMockServer.setupUpdateAdjustmentReferenceResponse(adjustmentCreatedInDelius.id)
 
       getAdjustmentsFromCommunityPayback()
 
       val savedCommunityPaybackAdjustment = adjustmentEntityRepository.findAll().single()
+      assertThat(savedCommunityPaybackAdjustment.id).isEqualTo(communityPaybackReference)
+      CommunityPaybackAndDeliusMockServer.verifyUpdateAdjustmentReference(adjustmentCreatedInDelius.id, communityPaybackReference, count = 2)
+    }
+
+    @Test
+    fun `concurrent requests import one Delius adjustment and send the same Community Payback reference to Delius`() {
+      val adjustmentCreatedInDelius = NDAdjustment.valid().copy(id = 900013L, reference = null)
+      CommunityPaybackAndDeliusMockServer.setupGetAdjustmentsResponse(CRN, DELIUS_EVENT_NUMBER, listOf(adjustmentCreatedInDelius))
+      CommunityPaybackAndDeliusMockServer.setupUpdateAdjustmentReferenceResponse(adjustmentCreatedInDelius.id)
+
+      // Both GETs have received the unreferenced Delius adjustment before either writes to Community Payback.
+      val readyToImport = CyclicBarrier(2)
+      doAnswer { invocation ->
+        readyToImport.await(10, TimeUnit.SECONDS)
+        invocation.callRealMethod()
+      }.whenever(adjustmentEntityUpsertRepository).upsert(any())
+
+      val requests = List(2) {
+        webTestClient.get()
+          .uri("/admin/offenders/$CRN/unpaid-work-details/$DELIUS_EVENT_NUMBER/adjustments")
+          .addAdminUiAuthHeader()
+      }
+      Executors.newFixedThreadPool(2).use { executor ->
+        val responses = requests.map { request ->
+          executor.submit { request.exchange().expectStatus().isOk }
+        }
+        responses.forEach { it.get(20, TimeUnit.SECONDS) }
+      }
+
+      val savedCommunityPaybackAdjustment = adjustmentEntityRepository.findAll().single()
       assertThat(savedCommunityPaybackAdjustment.deliusAdjustmentId).isEqualTo(adjustmentCreatedInDelius.id)
-      CommunityPaybackAndDeliusMockServer.verifyUpdateAdjustmentReference(adjustmentCreatedInDelius.id, savedCommunityPaybackAdjustment.id)
+      CommunityPaybackAndDeliusMockServer.verifyUpdateAdjustmentReference(adjustmentCreatedInDelius.id, savedCommunityPaybackAdjustment.id, count = 2)
     }
 
     @Test
@@ -408,6 +450,7 @@ class AdminAdjustmentIT : IntegrationTestBase() {
       CommunityPaybackAndDeliusMockServer.verifyDeleteAdjustment(reference = task.id, count = 1)
 
       // setup request that fails after adjustment is created
+      CommunityPaybackAndDeliusMockServer.setupPostAdjustmentResponse(username = "theusername", adjustmentId = 26L)
       doAnswer { invocation ->
         invocation.callRealMethod()
         error("Test-managed exception used to test rollback behaviour")
@@ -428,6 +471,7 @@ class AdminAdjustmentIT : IntegrationTestBase() {
 
       // only 1 domain event is published because the second transaction is rolled back
       domainEventAsserter.assertEventCount("community-payback.adjustment.created", 1)
+      assertThat(adjustmentEntityRepository.findAll().single().deliusAdjustmentId).isEqualTo(25L)
     }
 
     private fun setupGetUpwDetailsResponse() {
