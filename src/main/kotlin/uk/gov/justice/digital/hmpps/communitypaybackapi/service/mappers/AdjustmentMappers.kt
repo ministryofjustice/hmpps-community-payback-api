@@ -12,6 +12,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentReasonEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentType
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
 import java.time.Duration
 import java.time.LocalDate
 import java.util.UUID
@@ -26,6 +27,18 @@ fun NDAdjustment.toDto(): AdjustmentDto = AdjustmentDto(
   },
   reason = this.reason.name,
   reasonCode = this.reason.code,
+)
+
+fun AdjustmentEntity.toDto(): AdjustmentDto = AdjustmentDto(
+  deliusId = this.deliusAdjustmentId,
+  id = this.id,
+  date = this.adjustmentDate,
+  amount = when (this.adjustmentType) {
+    AdjustmentType.POSITIVE -> Duration.ofMinutes(this.minutes.toLong())
+    AdjustmentType.NEGATIVE -> Duration.ofMinutes(-this.minutes.toLong())
+  },
+  reason = this.adjustmentReason?.name.orEmpty(),
+  reasonCode = this.adjustmentReason?.deliusCode.orEmpty(),
 )
 
 fun CreateAdjustmentDto.toNDAdjustmentRequest(
@@ -63,6 +76,7 @@ fun NDAdjustment.toEntity(
   crn: String,
   eventNumber: Int,
   reason: AdjustmentReasonEntity?,
+  appointment: AppointmentEntity? = null,
 ) = AdjustmentEntity(
   id = reference ?: UUID.randomUUID(),
   deliusAdjustmentId = id,
@@ -72,6 +86,7 @@ fun NDAdjustment.toEntity(
   adjustmentDate = date,
   minutes = minutes,
   adjustmentReason = reason,
+  appointment = appointment,
 )
 
 fun AdjustmentEntity.updateFrom(

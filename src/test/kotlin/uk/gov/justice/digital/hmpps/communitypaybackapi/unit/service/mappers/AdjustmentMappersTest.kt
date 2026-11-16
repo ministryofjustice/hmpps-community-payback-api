@@ -2,11 +2,13 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.unit.service.mappers
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.provider.EnumSource
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAdjustment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAdjustmentType
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDNameCode
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAdjustmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAdjustmentTypeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentReasonEntity
@@ -14,12 +16,42 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toNDAdjustmentRequest
 import java.time.Duration
 import java.time.LocalDate
 import java.util.UUID
 
 class AdjustmentMappersTest {
+
+  @Nested
+  inner class EntityToAdjustmentDto {
+    @ParameterizedTest
+    @EnumSource
+    fun `maps persisted adjustments with the correct duration sign`(type: NDAdjustmentType) {
+      val reason = AdjustmentReasonEntity.valid()
+      val adjustment = NDAdjustment.valid().copy(
+        type = type,
+        reason = NDNameCode(reason.name, reason.deliusCode),
+      )
+
+      val result = adjustment.toEntity("CRN123", 1, reason).toDto()
+
+      assertThat(result).isEqualTo(adjustment.toDto())
+    }
+
+    @Test
+    fun `maps adjustments without a local reason or appointment`() {
+      val entity = NDAdjustment.valid().copy(reference = null).toEntity("CRN123", 1, null)
+
+      val result = entity.toDto()
+
+      assertThat(result.id).isEqualTo(entity.id)
+      assertThat(result.reason).isEmpty()
+      assertThat(result.reasonCode).isEmpty()
+      assertThat(entity.appointment).isNull()
+    }
+  }
 
   @Nested
   inner class NDAdjustmentToAdjustmentDto {

@@ -175,6 +175,12 @@ interface CommunityPaybackAndDeliusClient {
   @GetExchange("/adjustments")
   fun getAdjustments(@RequestParam crn: String, @RequestParam eventNumber: Int): NDAdjustmentResponse
 
+  @PutExchange("/adjustment/{id}")
+  fun updateAdjustmentReference(
+    @PathVariable id: Long,
+    @RequestBody updateAdjustment: NDUpdateAdjustmentReference,
+  )
+
   @DeleteExchange("/adjustments/{reference}")
   fun deleteAdjustment(
     @PathVariable reference: UUID,
@@ -702,6 +708,10 @@ data class NDAdjustment(
 
 data class NDAdjustmentPostResponse(
   val id: Long,
+)
+
+data class NDUpdateAdjustmentReference(
+  val reference: UUID,
 )
 
 data class NDPickUpLocationsResponse(

@@ -6,6 +6,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.absent
 import com.github.tomakehurst.wiremock.client.WireMock.delete
 import com.github.tomakehurst.wiremock.client.WireMock.deleteRequestedFor
 import com.github.tomakehurst.wiremock.client.WireMock.equalTo
+import com.github.tomakehurst.wiremock.client.WireMock.equalToJson
 import com.github.tomakehurst.wiremock.client.WireMock.exactly
 import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.matchingJsonPath
@@ -481,6 +482,22 @@ object CommunityPaybackAndDeliusMockServer {
     WireMock.stubFor(
       get("/community-payback-and-delius/adjustments/$reference")
         .willReturn(aResponse().withStatus(404)),
+    )
+  }
+
+  fun setupUpdateAdjustmentReferenceResponse(deliusAdjustmentId: Long, status: Int = 204) {
+    WireMock.stubFor(
+      put("/community-payback-and-delius/adjustment/$deliusAdjustmentId")
+        .willReturn(aResponse().withStatus(status)),
+    )
+  }
+
+  fun verifyUpdateAdjustmentReference(deliusAdjustmentId: Long, reference: UUID, count: Int = 1) {
+    WireMock.verify(
+      count,
+      putRequestedFor(urlEqualTo("/community-payback-and-delius/adjustment/$deliusAdjustmentId"))
+        .withHeader("Content-Type", equalTo("application/json"))
+        .withRequestBody(equalToJson(jsonMapper.writeValueAsString(mapOf("reference" to reference)))),
     )
   }
 

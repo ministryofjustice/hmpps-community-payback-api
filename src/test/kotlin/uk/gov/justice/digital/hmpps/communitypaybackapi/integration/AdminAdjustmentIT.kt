@@ -13,14 +13,12 @@ import org.springframework.data.repository.findByIdOrNull
 import org.springframework.http.MediaType
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAdjustment
-import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAdjustmentType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDNameCode
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDUpwDetails
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.PageResponse
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AdjustmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAdjustmentDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventEntityRepository
@@ -66,19 +64,25 @@ class AdminAdjustmentIT : IntegrationTestBase() {
   @Autowired
   lateinit var adjustmentReasonEntityRepository: AdjustmentReasonEntityRepository
 
-  private fun getAdjustments(crn: String, eventNumber: Int): PageResponse<AdjustmentDto> = webTestClient.get()
-    .uri("/admin/offenders/$crn/unpaid-work-details/$eventNumber/adjustments")
+  private fun getAdjustmentsFromCommunityPayback() = webTestClient.get()
+    .uri("/admin/offenders/$CRN/unpaid-work-details/$DELIUS_EVENT_NUMBER/adjustments")
     .addAdminUiAuthHeader()
     .exchange()
     .expectStatus().isOk
-    .bodyAsObject<PageResponse<AdjustmentDto>>()
 
-  private fun retrieveAdjustments(crn: String, eventNumber: Int, adjustments: List<NDAdjustment>): PageResponse<AdjustmentDto> {
-    CommunityPaybackAndDeliusMockServer.setupGetAdjustmentsResponse(crn, eventNumber, adjustments)
-    return getAdjustments(crn, eventNumber)
-  }
-
-  private fun findAdjustment(id: UUID?): AdjustmentEntity = requireNotNull(adjustmentEntityRepository.findByIdOrNull(requireNotNull(id)))
+  private fun saveHistoricalAdjustmentEventInCommunityPayback(
+    eventId: UUID,
+    deliusAdjustmentId: Long,
+    appointment: AppointmentEntity?,
+  ) = adjustmentEventEntityRepository.save(
+    AdjustmentEventEntity.valid().copy(
+      id = eventId,
+      deliusAdjustmentId = deliusAdjustmentId,
+      eventType = AdjustmentEventType.CREATE,
+      appointment = appointment,
+      adjustmentReason = adjustmentReasonEntityRepository.findByDeliusCodeIn(listOf("TTX")).single(),
+    ),
+  )
 
   companion object {
     const val CRN = "X123456"
@@ -90,93 +94,91 @@ class AdminAdjustmentIT : IntegrationTestBase() {
   inner class GetAdjustments {
 
     @Test
-    fun `should insert and update adjustments in the same response`() {
-      val existing = NDAdjustment.valid()
-      retrieveAdjustments(CRN, DELIUS_EVENT_NUMBER, listOf(existing))
-      val updated = existing.copy(minutes = existing.minutes + 5)
-      val added = NDAdjustment.valid().copy(reference = null)
-
-      val response = retrieveAdjustments(CRN, DELIUS_EVENT_NUMBER, listOf(updated, added))
-
-      assertThat(response.content).hasSize(2)
-      assertThat(findAdjustment(requireNotNull(existing.reference)).minutes).isEqualTo(updated.minutes)
-      val generatedId = response.content.single { it.deliusId == added.id }.id
-      assertThat(findAdjustment(generatedId).deliusAdjustmentId).isEqualTo(added.id)
-      assertThat(adjustmentEntityRepository.count()).isEqualTo(2L)
-    }
-
-    @Test
-    fun `uses the reference as the UUID identity and updates changed values`() {
-      val adjustment = NDAdjustment.valid().copy(id = 900001L)
-      retrieveAdjustments("X123456", 1, listOf(adjustment))
-      val original = findAdjustment(adjustment.reference!!)
-      assertThat(original.id).isEqualTo(adjustment.reference)
-      assertThat(original.minutes).isEqualTo(adjustment.minutes)
-      assertThat(original.appointment).isNull()
-
-      val updated = adjustment.copy(
-        id = 900004L,
-        type = NDAdjustmentType.NEGATIVE,
-        date = LocalDate.of(2026, 1, 1),
-        reason = NDNameCode("Updated reason", "UPDATED"),
-        minutes = adjustment.minutes + 1,
+    fun `saves an adjustment created in Delius and reuses the Community Payback reference on later requests`() {
+      // This adjustment was created in Delius: Community Payback has neither an adjustment event nor an adjustment entity.
+      val adjustmentCreatedInDelius = NDAdjustment.valid().copy(
+        id = 900011L,
+        reference = null,
+        reason = NDNameCode("Travel Time", "TTX"),
       )
-      retrieveAdjustments("X654321", 2, listOf(updated))
-      val stored = findAdjustment(adjustment.reference)
-      assertThat(stored.crn).isEqualTo("X654321")
-      assertThat(stored.deliusEventNumber).isEqualTo(2)
-      assertThat(stored.id).isEqualTo(updated.reference)
-      assertThat(stored.deliusAdjustmentId).isEqualTo(updated.id)
-      assertThat(stored.adjustmentType.name).isEqualTo(updated.type.name)
-      assertThat(stored.adjustmentDate).isEqualTo(updated.date)
-      assertThat(stored.minutes).isEqualTo(updated.minutes)
-      assertThat(stored.createdAt).isEqualTo(original.createdAt)
-      assertThat(stored.updatedAt).isAfter(original.updatedAt)
+      CommunityPaybackAndDeliusMockServer.setupGetAdjustmentsResponse(CRN, DELIUS_EVENT_NUMBER, listOf(adjustmentCreatedInDelius))
+      CommunityPaybackAndDeliusMockServer.setupUpdateAdjustmentReferenceResponse(adjustmentCreatedInDelius.id)
+
+      getAdjustmentsFromCommunityPayback()
+
+      val savedCommunityPaybackAdjustment = adjustmentEntityRepository.findAll().single()
+      val communityPaybackReference = savedCommunityPaybackAdjustment.id
+      assertThat(savedCommunityPaybackAdjustment.deliusAdjustmentId).isEqualTo(adjustmentCreatedInDelius.id)
+      assertThat(savedCommunityPaybackAdjustment.appointment).isNull()
+      assertThat(savedCommunityPaybackAdjustment.adjustmentReason?.deliusCode).isEqualTo("TTX")
+      assertThat(adjustmentEventEntityRepository.count()).isZero()
+      CommunityPaybackAndDeliusMockServer.verifyUpdateAdjustmentReference(adjustmentCreatedInDelius.id, communityPaybackReference)
+
+      // Delius now returns the reference saved by Community Payback, along with updated minutes.
+      val updatedAdjustmentFromDelius = adjustmentCreatedInDelius.copy(reference = communityPaybackReference, minutes = adjustmentCreatedInDelius.minutes + 10)
+      CommunityPaybackAndDeliusMockServer.setupGetAdjustmentsResponse(CRN, DELIUS_EVENT_NUMBER, listOf(updatedAdjustmentFromDelius))
+
+      getAdjustmentsFromCommunityPayback()
+
+      val refreshedCommunityPaybackAdjustment = adjustmentEntityRepository.findAll().single()
+      assertThat(refreshedCommunityPaybackAdjustment.id).isEqualTo(communityPaybackReference)
+      assertThat(refreshedCommunityPaybackAdjustment.minutes).isEqualTo(updatedAdjustmentFromDelius.minutes)
+      CommunityPaybackAndDeliusMockServer.verifyUpdateAdjustmentReference(adjustmentCreatedInDelius.id, communityPaybackReference, count = 1)
     }
 
     @Test
-    fun `links known reasons and refreshes the link when the Delius reason changes`() {
-      val adjustment = NDAdjustment.valid().copy(id = 900003L, reason = NDNameCode("Travel Time", "TTX"))
-      retrieveAdjustments("X123456", 1, listOf(adjustment))
-      val travelTimeId = adjustmentReasonEntityRepository.findByDeliusCodeIn(listOf("TTX")).single().id
-      assertThat(findAdjustment(adjustment.reference!!).adjustmentReason?.id).isEqualTo(travelTimeId)
+    fun `creates a Community Payback adjustment entity for a historical event when Delius returns its reference`() {
+      // Before adjustment entities were introduced, Community Payback saved the creation event and appointment only.
+      val communityPaybackAppointment = AppointmentEntity.valid().copy(crn = CRN, deliusEventNumber = DELIUS_EVENT_NUMBER).persist(ctx)
+      val historicalCreationEvent = saveHistoricalAdjustmentEventInCommunityPayback(
+        eventId = UUID.randomUUID(),
+        deliusAdjustmentId = 900007L,
+        appointment = communityPaybackAppointment,
+      )
 
-      retrieveAdjustments("X123456", 1, listOf(adjustment.copy(reason = NDNameCode("Correction", "E"))))
-      val correctionId = adjustmentReasonEntityRepository.findByDeliusCodeIn(listOf("E")).single().id
-      assertThat(findAdjustment(adjustment.reference).adjustmentReason?.id).isEqualTo(correctionId)
+      val adjustmentFromDelius = NDAdjustment.valid().copy(id = historicalCreationEvent.deliusAdjustmentId, reference = historicalCreationEvent.id)
+      CommunityPaybackAndDeliusMockServer.setupGetAdjustmentsResponse(CRN, DELIUS_EVENT_NUMBER, listOf(adjustmentFromDelius))
 
-      retrieveAdjustments("X123456", 1, listOf(adjustment.copy(reason = NDNameCode("Unknown", "UNKNOWN"))))
-      assertThat(findAdjustment(adjustment.reference).adjustmentReason?.id).isNull()
+      getAdjustmentsFromCommunityPayback()
+
+      val savedCommunityPaybackAdjustment = adjustmentEntityRepository.findAll().single()
+      assertThat(savedCommunityPaybackAdjustment.id).isEqualTo(historicalCreationEvent.id)
+      assertThat(savedCommunityPaybackAdjustment.appointment?.id).isEqualTo(communityPaybackAppointment.id)
+      assertThat(savedCommunityPaybackAdjustment.deliusAdjustmentId).isEqualTo(adjustmentFromDelius.id)
+      assertThat(savedCommunityPaybackAdjustment.minutes).isEqualTo(adjustmentFromDelius.minutes)
+
+      // A later Delius response updates the entity while preserving the original Community Payback appointment.
+      val updatedAdjustmentFromDelius = adjustmentFromDelius.copy(minutes = adjustmentFromDelius.minutes + 5)
+      CommunityPaybackAndDeliusMockServer.setupGetAdjustmentsResponse(CRN, DELIUS_EVENT_NUMBER, listOf(updatedAdjustmentFromDelius))
+
+      getAdjustmentsFromCommunityPayback()
+
+      val refreshedCommunityPaybackAdjustment = adjustmentEntityRepository.findAll().single()
+      assertThat(refreshedCommunityPaybackAdjustment.id).isEqualTo(historicalCreationEvent.id)
+      assertThat(refreshedCommunityPaybackAdjustment.appointment?.id).isEqualTo(communityPaybackAppointment.id)
+      assertThat(refreshedCommunityPaybackAdjustment.minutes).isEqualTo(updatedAdjustmentFromDelius.minutes)
     }
 
     @Test
-    fun `repeated retrieval leaves unchanged adjustments untouched and retains missing adjustments`() {
-      val adjustment = NDAdjustment.valid().copy(id = 900002L)
-      retrieveAdjustments("X123456", 1, listOf(adjustment))
-      val original = findAdjustment(adjustment.reference!!)
+    fun `rolls back the new Community Payback entity when saving its reference in Delius fails and succeeds on retry`() {
+      val adjustmentCreatedInDelius = NDAdjustment.valid().copy(id = 900012L, reference = null)
+      CommunityPaybackAndDeliusMockServer.setupGetAdjustmentsResponse(CRN, DELIUS_EVENT_NUMBER, listOf(adjustmentCreatedInDelius))
+      CommunityPaybackAndDeliusMockServer.setupUpdateAdjustmentReferenceResponse(adjustmentCreatedInDelius.id, status = 500)
 
-      retrieveAdjustments("X123456", 1, listOf(adjustment))
-      assertThat(retrieveAdjustments("X123456", 1, emptyList()).content).isEmpty()
+      webTestClient.get()
+        .uri("/admin/offenders/$CRN/unpaid-work-details/$DELIUS_EVENT_NUMBER/adjustments")
+        .addAdminUiAuthHeader()
+        .exchange()
+        .expectStatus().is5xxServerError
 
-      assertThat(findAdjustment(adjustment.reference)).usingRecursiveComparison().isEqualTo(original)
-    }
+      assertThat(adjustmentEntityRepository.count()).isZero()
+      CommunityPaybackAndDeliusMockServer.setupUpdateAdjustmentReferenceResponse(adjustmentCreatedInDelius.id)
 
-    @Test
-    fun `generates a UUID and updates adjustments with no Delius reference`() {
-      val adjustment = NDAdjustment.valid().copy(reference = null)
-      CommunityPaybackAndDeliusMockServer.setupGetAdjustmentsResponse("X123456", 1, listOf(adjustment))
-      val first = getAdjustments("X123456", 1).content.single()
-      assertThat(findAdjustment(first.id).deliusAdjustmentId).isEqualTo(adjustment.id)
+      getAdjustmentsFromCommunityPayback()
 
-      val updated = adjustment.copy(minutes = adjustment.minutes + 10)
-      CommunityPaybackAndDeliusMockServer.setupGetAdjustmentsResponse("X123456", 1, listOf(updated))
-      val second = getAdjustments("X123456", 1).content.single()
-      assertThat(second.id).isEqualTo(first.id)
-      assertThat(findAdjustment(first.id).minutes).isEqualTo(updated.minutes)
-
-      CommunityPaybackAndDeliusMockServer.setupGetAdjustmentsResponse("X123456", 1, listOf(updated.copy(reference = UUID.randomUUID())))
-      assertThat(getAdjustments("X123456", 1).content.single().id).isEqualTo(first.id)
-      assertThat(adjustmentEntityRepository.count()).isEqualTo(1L)
+      val savedCommunityPaybackAdjustment = adjustmentEntityRepository.findAll().single()
+      assertThat(savedCommunityPaybackAdjustment.deliusAdjustmentId).isEqualTo(adjustmentCreatedInDelius.id)
+      CommunityPaybackAndDeliusMockServer.verifyUpdateAdjustmentReference(adjustmentCreatedInDelius.id, savedCommunityPaybackAdjustment.id)
     }
 
     @Test
@@ -384,39 +386,6 @@ class AdminAdjustmentIT : IntegrationTestBase() {
       domainEventAsserter.assertEventCount("community-payback.adjustment.created", 1)
       assertThat(appointmentTaskEntityRepository.findByIdOrNull(task.id)!!.taskStatus).isEqualTo(AppointmentTaskStatus.COMPLETE)
       assertThat(adjustmentEntityRepository.findAll().single().appointment?.id).isEqualTo(appointment.id)
-    }
-
-    @Test
-    fun `should persist multiple adjustments for one appointment and retain links on refresh`() {
-      val appointment = AppointmentEntity.valid().copy(crn = CRN, deliusEventNumber = DELIUS_EVENT_NUMBER).persist(ctx)
-      val adjustments = listOf(
-        NDAdjustment.valid().copy(id = 900005L),
-        NDAdjustment.valid().copy(id = 900006L),
-      )
-      setupGetUpwDetailsResponse()
-
-      adjustments.forEach { adjustment ->
-        doReturn(adjustment.reference).whenever(adjustmentIdGenerator).generateId(any<CreateAdjustmentDto>())
-        CommunityPaybackAndDeliusMockServer.setupPostAdjustmentResponse(username = "theusername", adjustmentId = adjustment.id)
-        CommunityPaybackAndDeliusMockServer.setupGetAdjustmentResponse(adjustment.reference!!, adjustment)
-
-        callCreateAdjustment(
-          request = CreateAdjustmentDto.valid(ctx).copy(taskId = null, appointmentId = appointment.id),
-          expectedStatus = 201,
-        )
-
-        assertThat(findAdjustment(adjustment.reference).appointment?.id).isEqualTo(appointment.id)
-      }
-
-      val updated = adjustments.map { it.copy(minutes = it.minutes + 5) }
-      retrieveAdjustments(CRN, DELIUS_EVENT_NUMBER, updated)
-
-      assertThat(adjustmentEntityRepository.count()).isEqualTo(2L)
-      updated.forEach { adjustment ->
-        val stored = findAdjustment(adjustment.reference!!)
-        assertThat(stored.appointment?.id).isEqualTo(appointment.id)
-        assertThat(stored.minutes).isEqualTo(adjustment.minutes)
-      }
     }
 
     @Test
