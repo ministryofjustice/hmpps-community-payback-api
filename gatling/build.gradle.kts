@@ -22,8 +22,8 @@ repositories {
 dependencies {
   gatlingImplementation("io.github.cdimascio:dotenv-java:3.2.0")
   gatlingImplementation(project(":"))
-  gatlingImplementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.22.4")
-  gatlingImplementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.22.4")
+  gatlingImplementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.23.0")
+  gatlingImplementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.23.0")
 }
 
 tasks.register<Exec>("gatlingRunCi") {
