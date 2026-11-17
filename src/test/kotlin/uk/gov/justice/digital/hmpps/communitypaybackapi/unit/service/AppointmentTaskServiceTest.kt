@@ -277,8 +277,7 @@ class AppointmentTaskServiceTest {
     @Test
     fun `adjustment without an appointment does not complete tasks`() {
       service.closeTravelTimeTaskOnAdjustmentCreation(
-        AdjustmentCreatedEvent.valid().copy(
-          appointmentEntity = null,
+        AdjustmentCreatedEvent.valid(appointment = null).copy(
           trigger = AdjustmentEventTrigger.valid().copy(triggeredBy = "null"),
         ),
       )
@@ -321,8 +320,7 @@ class AppointmentTaskServiceTest {
       every { appointmentTaskEntityRepository.save(any()) } returnsArgument 0
 
       service.closeTravelTimeTaskOnAdjustmentCreation(
-        AdjustmentCreatedEvent.valid().copy(
-          appointmentEntity = task.appointment,
+        AdjustmentCreatedEvent.valid(appointment = task.appointment).copy(
           trigger = AdjustmentEventTrigger.valid().copy(
             triggeredAt = triggeredAt,
             triggeredBy = "currentUsername",

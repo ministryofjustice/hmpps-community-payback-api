@@ -1,9 +1,23 @@
 {
+  "AdjustmentEntity": {
+    "appointment": "AppointmentEntity",
+    "createdAt": "OffsetDateTime",
+    "crn": "String",
+    "date": "LocalDate",
+    "deliusEventNumber": "int",
+    "deliusId": "long",
+    "id": "UUID",
+    "minutes": "int",
+    "reason": "AdjustmentReasonEntity",
+    "type": "AdjustmentType",
+    "updatedAt": "OffsetDateTime"
+  },
   "AdjustmentEventEntity": {
+    "adjustment": "AdjustmentEntity",
     "adjustmentDate": "LocalDate",
     "adjustmentMinutes": "int",
     "adjustmentReason": "AdjustmentReasonEntity",
-    "adjustmentType": "AdjustmentEventAdjustmentType",
+    "adjustmentType": "AdjustmentType",
     "appointment": "AppointmentEntity",
     "createdAt": "OffsetDateTime",
     "deliusAdjustmentId": "long",

@@ -19,9 +19,12 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDUpwDetails
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.PageResponse
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AdjustmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAdjustmentDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAdjustmentTypeDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventType
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentTaskEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentTaskEntityRepository
@@ -52,6 +55,9 @@ class AdminAdjustmentIT : IntegrationTestBase() {
 
   @MockitoSpyBean
   lateinit var adjustmentIdGenerator: AdjustmentIdGenerator
+
+  @Autowired
+  lateinit var adjustmentEntityRepository: AdjustmentEntityRepository
 
   @Autowired
   lateinit var adjustmentEventEntityRepository: AdjustmentEventEntityRepository
@@ -255,15 +261,30 @@ class AdminAdjustmentIT : IntegrationTestBase() {
       doReturn(task.id).whenever(adjustmentIdGenerator).generateId(any<CreateAdjustmentDto>())
 
       setupGetUpwDetailsResponse()
-      CommunityPaybackAndDeliusMockServer.setupPostAdjustmentResponse(username = "theusername")
+      CommunityPaybackAndDeliusMockServer.setupPostAdjustmentResponse(username = "theusername", adjustmentId = 25L)
       CommunityPaybackAndDeliusMockServer.setupGetAdjustmentResponse(task.id, NDAdjustment.valid())
 
-      callCreateAdjustment(
-        request = CreateAdjustmentDto.valid(ctx).copy(taskId = task.id, appointmentId = appointment.id),
-        expectedStatus = 201,
+      val request = CreateAdjustmentDto.valid(ctx).copy(
+        taskId = task.id,
+        appointmentId = appointment.id,
+        type = CreateAdjustmentTypeDto.Negative,
+        minutes = 30,
       )
+      callCreateAdjustment(request = request, expectedStatus = 201)
 
       CommunityPaybackAndDeliusMockServer.verifyPostAdjustment(username = "theusername")
+
+      val adjustment = requireNotNull(adjustmentEntityRepository.findByIdOrNull(task.id))
+      assertThat(adjustment.deliusId).isEqualTo(25L)
+      assertThat(adjustment.crn).isEqualTo(CRN)
+      assertThat(adjustment.deliusEventNumber).isEqualTo(DELIUS_EVENT_NUMBER)
+      assertThat(adjustment.type).isEqualTo(AdjustmentType.NEGATIVE)
+      assertThat(adjustment.minutes).isEqualTo(30)
+      assertThat(adjustment.date).isEqualTo(request.adjustmentDate)
+      assertThat(adjustment.reason.id).isEqualTo(request.adjustmentReasonId)
+      assertThat(adjustment.appointment?.id).isEqualTo(appointment.id)
+      assertThat(adjustment.createdAt).isBeforeOrEqualTo(adjustment.updatedAt)
+      assertThat(adjustmentEventEntityRepository.findByIdOrNull(task.id)!!.adjustment?.id).isEqualTo(adjustment.id)
 
       domainEventAsserter.assertEventCount("community-payback.adjustment.created", 1)
       assertThat(appointmentTaskEntityRepository.findByIdOrNull(task.id)!!.taskStatus).isEqualTo(AppointmentTaskStatus.COMPLETE)
@@ -289,6 +310,7 @@ class AdminAdjustmentIT : IntegrationTestBase() {
       CommunityPaybackAndDeliusMockServer.verifyDeleteAdjustment(reference = task.id, count = 1)
 
       // setup request that fails after adjustment is created
+      CommunityPaybackAndDeliusMockServer.setupPostAdjustmentResponse(username = "theusername", adjustmentId = 26L)
       doAnswer { invocation ->
         invocation.callRealMethod()
         error("Test-managed exception used to test rollback behaviour")
@@ -306,6 +328,8 @@ class AdminAdjustmentIT : IntegrationTestBase() {
       CommunityPaybackAndDeliusMockServer.verifyPostAdjustment(username = "theusername", count = 2)
       // one delete for an orphaned adjustment and one for the actual rollback
       CommunityPaybackAndDeliusMockServer.verifyDeleteAdjustment(reference = task.id, count = 2)
+
+      assertThat(adjustmentEntityRepository.findByIdOrNull(task.id)?.deliusId).isEqualTo(25L)
 
       // only 1 domain event is published because the second transaction is rolled back
       domainEventAsserter.assertEventCount("community-payback.adjustment.created", 1)

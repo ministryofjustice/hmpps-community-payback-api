@@ -4,18 +4,16 @@ import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CourseCompletionResolutionTypeDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAdjustmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventEntity
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentReasonEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentTaskStatus
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentTaskType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentEventTrigger
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventTrigger
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ValidatedAppointment
-import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.UUID
 
@@ -44,13 +42,8 @@ sealed interface CommunityPaybackSpringEvent {
   }
 
   data class AdjustmentCreatedEvent(
-    val createDto: CreateAdjustmentDto,
-    val appointmentEntity: AppointmentEntity?,
-    val reason: AdjustmentReasonEntity,
-    val deliusAdjustmentId: Long,
+    val adjustmentEntity: AdjustmentEntity,
     val trigger: AdjustmentEventTrigger,
-    val id: UUID,
-    val adjustmentDate: LocalDate,
   ) : CommunityPaybackSpringEvent {
     companion object
   }

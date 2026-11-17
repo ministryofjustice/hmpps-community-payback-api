@@ -71,16 +71,17 @@ class DeliusEventTelemetryPublisher(
 
   @EventListener
   fun onAdjustmentCreated(event: AdjustmentCreatedEvent) {
+    val adjustment = event.adjustmentEntity
     telemetryService.trackEvent(
       "AdjustmentEvent",
       properties = mapOf(
-        "crn" to event.appointmentEntity?.crn,
-        "deliusAppointmentId" to event.appointmentEntity?.deliusId.toString(),
-        "deliusAdjustmentId" to event.deliusAdjustmentId.toString(),
-        "adjustmentMinutes" to event.createDto.minutes.toString(),
-        "adjustmentReasonCode" to event.reason.deliusCode,
-        "adjustmentReasonName" to event.reason.name,
-        "providerCode" to event.appointmentEntity?.providerCode,
+        "crn" to adjustment.appointment?.crn,
+        "deliusAppointmentId" to adjustment.appointment?.deliusId.toString(),
+        "deliusAdjustmentId" to adjustment.deliusId.toString(),
+        "adjustmentMinutes" to adjustment.minutes.toString(),
+        "adjustmentReasonCode" to adjustment.reason.deliusCode,
+        "adjustmentReasonName" to adjustment.reason.name,
+        "providerCode" to adjustment.appointment?.providerCode,
         "triggeredAt" to event.trigger.triggeredAt.toString(),
         "triggeredBy" to event.trigger.triggeredBy,
         "triggerType" to event.trigger.triggerType.name,
