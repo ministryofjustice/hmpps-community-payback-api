@@ -3,11 +3,12 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.unit.controller.interna
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.http.HttpStatus
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.ApiResponse.ErrorResponse
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.ApiResponseIssue
 import uk.gov.justice.digital.hmpps.communitypaybackapi.controller.internal.toResponseEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeResultDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentOutcomeResultType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentsOutcomesResultDto
-import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 
 class BulkUpdateResponseTest {
 
@@ -22,8 +23,12 @@ class BulkUpdateResponseTest {
 
     assertThat(response.statusCode).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR)
     assertThat(response.body).isEqualTo(
-      ErrorResponse(
-        status = HttpStatus.INTERNAL_SERVER_ERROR,
+      ErrorResponse<Unit>(
+        status = HttpStatus.INTERNAL_SERVER_ERROR.value(),
+        errors = listOf(
+          ApiResponseIssue("$.updates[0]", "UNKNOWN_ERROR", mapOf("message" to "First server error")),
+          ApiResponseIssue("$.updates[1]", "UNKNOWN_ERROR", mapOf("message" to "Second server error")),
+        ),
         developerMessage = "First server error; Second server error",
       ),
     )
@@ -40,8 +45,11 @@ class BulkUpdateResponseTest {
 
     assertThat(response.statusCode).isEqualTo(HttpStatus.BAD_REQUEST)
     assertThat(response.body).isEqualTo(
-      ErrorResponse(
-        status = HttpStatus.BAD_REQUEST,
+      ErrorResponse<Unit>(
+        status = HttpStatus.BAD_REQUEST.value(),
+        errors = listOf(
+          ApiResponseIssue("", "GENERIC_VALIDATION_ERROR", mapOf("message" to "Validation error")),
+        ),
         developerMessage = "Validation error",
         userMessage = "Validation failure: Validation error",
       ),

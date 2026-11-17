@@ -702,7 +702,7 @@ class AdminAppointmentIT : IntegrationTestBase() {
         .exchange()
         .expectStatus()
         .isBadRequest
-        .bodyAsObject<uk.gov.justice.hmpps.kotlin.common.ErrorResponse>()
+        .bodyAsObject<ErrorResponse>()
 
       assertThat(response.status).isEqualTo(400)
       assertThat(response.developerMessage).isEqualTo(validationMessage)
