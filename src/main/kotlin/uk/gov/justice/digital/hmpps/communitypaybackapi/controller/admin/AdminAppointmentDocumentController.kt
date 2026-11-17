@@ -16,11 +16,11 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.multipart.MultipartFile
 import reactor.core.publisher.Flux
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.ErrorResponse
 import uk.gov.justice.digital.hmpps.communitypaybackapi.controller.internal.notFound
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDocumentsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.DocumentUploadResponseDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentDocumentService
-import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 
 @AdminUiController
 @RequestMapping("/admin/appointments", produces = [MediaType.APPLICATION_JSON_VALUE])
