@@ -23,8 +23,11 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AdjustmentFilterType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAdjustmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsIdDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.BadRequestException
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventTriggerType
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentIdGenerator.DeleteAdjustmentProperties
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentValidationService.AdjustmentValidationContext
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent
@@ -46,6 +49,7 @@ class AdjustmentService(
   private val clock: Clock,
   private val springEventPublisher: SpringEventPublisher,
   private val adjustmentIdGenerator: AdjustmentIdGenerator,
+  private val adjustmentEntityRepository: AdjustmentEntityRepository,
   private val adjustmentEventEntityRepository: AdjustmentEventEntityRepository,
 ) {
   private val logger = LoggerFactory.getLogger(AdjustmentService::class.java)
@@ -106,39 +110,45 @@ class AdjustmentService(
     deleteOrphanedAdjustmentIfExists(adjustmentId)
 
     val (crn, deliusEventNumber) = upwDetailsId
-    val adjustmentDate = createAdjustment.adjustmentDate ?: LocalDate.now(clock)
+    val reason = requireNotNull(validationContext.reason)
+    val request = createAdjustment.toNDAdjustmentRequest(
+      crn = crn,
+      deliusEventNumber = deliusEventNumber,
+      reason = reason,
+      reference = adjustmentId,
+      dateOfAdjustment = createAdjustment.adjustmentDate ?: LocalDate.now(clock),
+    )
+    val deliusAdjustmentId = communityPaybackAndDeliusClient.postAdjustments(username, listOf(request)).single().id
 
-    val deliusAdjustmentId = communityPaybackAndDeliusClient.postAdjustments(
-      username,
-      listOf(
-        createAdjustment.toNDAdjustmentRequest(
-          crn = crn,
-          deliusEventNumber = deliusEventNumber,
-          reason = validationContext.reason!!,
-          reference = adjustmentId,
-          dateOfAdjustment = adjustmentDate,
-        ),
+    val adjustment = adjustmentEntityRepository.save(
+      AdjustmentEntity(
+        id = adjustmentId,
+        deliusId = deliusAdjustmentId,
+        crn = crn,
+        deliusEventNumber = deliusEventNumber,
+        type = when (request.type) {
+          NDAdjustmentType.POSITIVE -> AdjustmentType.POSITIVE
+          NDAdjustmentType.NEGATIVE -> AdjustmentType.NEGATIVE
+        },
+        minutes = request.minutes,
+        date = request.date,
+        reason = reason,
+        appointment = validationContext.appointment,
       ),
-    ).single().id
+    )
 
     springEventPublisher.publishEvent(
       AdjustmentCreatedEvent(
-        id = adjustmentId,
-        createDto = createAdjustment,
-        appointmentEntity = validationContext.appointment,
-        reason = validationContext.reason!!,
-        deliusAdjustmentId = deliusAdjustmentId,
+        adjustmentEntity = adjustment,
         trigger = AdjustmentEventTrigger(
           triggeredAt = OffsetDateTime.now(clock),
           triggerType = AdjustmentEventTriggerType.APPOINTMENT_TASK,
           triggeredBy = validationContext.appointment?.id.toString(),
         ),
-        adjustmentDate = adjustmentDate,
-
       ),
     )
 
-    return communityPaybackAndDeliusClient.getAdjustment(adjustmentId).toDto()
+    return communityPaybackAndDeliusClient.getAdjustment(adjustment.id).toDto()
   }
 
   @Suppress("detekt:ThrowsCount")
@@ -206,7 +216,7 @@ class AdjustmentService(
   ) {
     val event = rollbackEvent.event
     if (event is AdjustmentCreatedEvent) {
-      communityPaybackAndDeliusClient.deleteAdjustment(event.id)
+      communityPaybackAndDeliusClient.deleteAdjustment(event.adjustmentEntity.id)
     }
   }
 

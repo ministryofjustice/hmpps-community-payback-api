@@ -29,13 +29,17 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDNameCode
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.validation.ValidationResult
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AdjustmentFilterTypeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAdjustmentDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAdjustmentTypeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsIdDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentReasonEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.valid
@@ -76,6 +80,9 @@ class AdjustmentServiceTest {
 
   @RelaxedMockK
   lateinit var adjustmentIdGenerator: AdjustmentIdGenerator
+
+  @RelaxedMockK
+  lateinit var adjustmentEntityRepository: AdjustmentEntityRepository
 
   @RelaxedMockK
   lateinit var adjustmentEventEntityRepository: AdjustmentEventEntityRepository
@@ -271,6 +278,7 @@ class AdjustmentServiceTest {
 
       val request = CreateAdjustmentDto.valid().copy(
         adjustmentReasonId = reason.id,
+        type = CreateAdjustmentTypeDto.Positive,
         minutes = 50,
         adjustmentDate = dateOfAdjustment,
       )
@@ -305,6 +313,19 @@ class AdjustmentServiceTest {
         )
       } returns listOf(NDAdjustmentPostResponse(5L))
 
+      val adjustment = AdjustmentEntity(
+        id = id,
+        deliusId = 5L,
+        crn = CRN,
+        deliusEventNumber = EVENT_NUMBER,
+        type = AdjustmentType.POSITIVE,
+        minutes = 50,
+        date = dateOfAdjustment,
+        reason = reason,
+        appointment = appointment,
+      )
+      every { adjustmentEntityRepository.save(adjustment) } returns adjustment
+
       service.createAdjustment(
         upwDetailsId = UNPAID_WORK_DETAILS,
         createAdjustment = request,
@@ -318,22 +339,15 @@ class AdjustmentServiceTest {
           username = any(),
           adjustmentRequests = match { it.size == 1 && it.first().reference == id },
         )
-      }
-
-      verify {
+        adjustmentEntityRepository.save(adjustment)
         springEventPublisher.publishEvent(
           AdjustmentCreatedEvent(
-            id = id,
-            createDto = request,
-            appointmentEntity = appointment,
-            reason = reason,
-            deliusAdjustmentId = 5L,
+            adjustmentEntity = adjustment,
             trigger = AdjustmentEventTrigger(
               triggeredAt = OffsetDateTime.now(clock),
               triggerType = AdjustmentEventTriggerType.APPOINTMENT_TASK,
               triggeredBy = appointment.id.toString(),
             ),
-            adjustmentDate = dateOfAdjustment,
           ),
         )
       }
