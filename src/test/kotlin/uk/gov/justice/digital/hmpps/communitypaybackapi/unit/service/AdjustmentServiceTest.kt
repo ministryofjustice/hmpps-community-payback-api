@@ -538,6 +538,11 @@ class AdjustmentServiceTest {
   @Nested
   inner class DeleteAdjustment {
 
+    @BeforeEach
+    fun setUp() {
+      every { adjustmentEntityRepository.findByIdOrNull(any()) } returns null
+    }
+
     @Test
     fun success() {
       val adjustmentId = UUID.randomUUID()
@@ -562,6 +567,43 @@ class AdjustmentServiceTest {
           AdjustmentDeletedEvent(
             id = expectedId,
             eventToDelete = expectedEvent,
+            trigger = AdjustmentEventTrigger(
+              triggeredAt = OffsetDateTime.now(clock),
+              triggerType = AdjustmentEventTriggerType.APPOINTMENT_TASK,
+              triggeredBy = USERNAME,
+            ),
+          ),
+        )
+      }
+    }
+
+    @Test
+    fun `deletes a stored adjustment without a CREATE event`() {
+      val adjustment = AdjustmentEntity(
+        id = UUID.randomUUID(),
+        deliusId = 123L,
+        crn = CRN,
+        deliusEventNumber = EVENT_NUMBER,
+        type = AdjustmentType.POSITIVE,
+        minutes = 30,
+        date = LocalDate.now(clock),
+        reason = AdjustmentReasonEntity.valid(),
+        appointment = null,
+      )
+      val eventId = UUID.randomUUID()
+      every { adjustmentEntityRepository.findByIdOrNull(adjustment.id) } returns adjustment
+      every { adjustmentEventEntityRepository.findByIdOrNull(adjustment.id) } returns null
+      every { adjustmentIdGenerator.generateId(DeleteAdjustmentProperties(adjustment.id)) } returns eventId
+
+      assertThat(service.deleteAdjustment(adjustment.id, USERNAME)).isEqualTo(DeleteAdjustmentResult.Success)
+
+      verifyOrder {
+        communityPaybackAndDeliusClient.deleteAdjustment(adjustment.id)
+        springEventPublisher.publishEvent(
+          AdjustmentDeletedEvent(
+            id = eventId,
+            eventToDelete = null,
+            adjustment = adjustment,
             trigger = AdjustmentEventTrigger(
               triggeredAt = OffsetDateTime.now(clock),
               triggerType = AdjustmentEventTriggerType.APPOINTMENT_TASK,

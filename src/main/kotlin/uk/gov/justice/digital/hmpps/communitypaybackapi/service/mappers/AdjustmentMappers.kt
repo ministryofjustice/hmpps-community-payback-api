@@ -63,5 +63,5 @@ fun AdjustmentEventEntity.toAdjustmentCreatedDomainEvent() = AdjustmentCreatedDo
 
 fun AdjustmentEventEntity.toAdjustmentDeletedDomainEvent() = AdjustmentDeletedDomainEventDetailsDto(
   id = this.id,
-  adjustmentCreatedEventId = this.referencedEvent!!.id,
+  adjustmentCreatedEventId = this.referencedEvent?.id,
 )

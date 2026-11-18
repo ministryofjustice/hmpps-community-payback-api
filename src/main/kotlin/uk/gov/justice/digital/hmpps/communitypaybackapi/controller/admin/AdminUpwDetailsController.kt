@@ -197,7 +197,7 @@ class AdminUpwDetailsController(
       ),
       ApiResponse(
         responseCode = "404",
-        description = "Offender and/or Unpaid Work Details not found for the given CRN and Event Number",
+        description = "Adjustment not found for the given Community Payback ID",
         content = [
           Content(
             schema = Schema(implementation = ErrorResponse::class),
@@ -211,7 +211,7 @@ class AdminUpwDetailsController(
     @PathVariable communityPaybackId: UUID,
   ): ResponseEntity<Unit> = when (val result = adjustmentsService.deleteAdjustment(communityPaybackId, contextService.getUserName())) {
     is DeleteAdjustmentResult.Success -> ResponseEntity.noContent().build()
-    is DeleteAdjustmentResult.NotFound -> notFound("Adjustment event", communityPaybackId)
+    is DeleteAdjustmentResult.NotFound -> notFound("Adjustment", communityPaybackId)
     is DeleteAdjustmentResult.Failed -> throw result.exception
   }
 }

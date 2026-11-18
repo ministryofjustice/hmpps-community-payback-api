@@ -257,8 +257,9 @@ class AdjustmentService(
     val eventId = adjustmentIdGenerator.generateId(DeleteAdjustmentProperties(adjustmentId))
 
     val eventToDelete = adjustmentEventEntityRepository.findByIdOrNull(adjustmentId)
-    if (eventToDelete == null) {
-      logger.warn("Could not find adjustment event with ID {} in adjustment_events table", adjustmentId)
+    val adjustment = adjustmentEntityRepository.findByIdOrNull(adjustmentId) ?: eventToDelete?.adjustment
+    if (adjustment == null && eventToDelete == null) {
+      logger.warn("Could not find an adjustment or adjustment CREATE event with ID {}", adjustmentId)
       return DeleteAdjustmentResult.NotFound
     }
 
@@ -275,6 +276,7 @@ class AdjustmentService(
       AdjustmentDeletedEvent(
         id = eventId,
         eventToDelete = eventToDelete,
+        adjustment = adjustment,
         trigger = AdjustmentEventTrigger(
           triggeredAt = OffsetDateTime.now(clock),
           triggerType = AdjustmentEventTriggerType.APPOINTMENT_TASK,

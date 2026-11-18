@@ -596,6 +596,33 @@ class AdminAdjustmentIT : IntegrationTestBase() {
     }
 
     @Test
+    fun `deletes an imported adjustment and records the deletion without a CREATE event`() {
+      val adjustment = NDAdjustment.valid().copy(id = 12353L, reference = adjustmentId, reason = NDNameCode("Travel Time", "TTX"))
+      CommunityPaybackAndDeliusMockServer.setupGetAdjustmentsResponse(CRN, DELIUS_EVENT_NUMBER, listOf(adjustment))
+      CommunityPaybackAndDeliusMockServer.setupDeleteAdjustmentResponse(reference = adjustmentId)
+
+      webTestClient.put()
+        .uri("/admin/offenders/$CRN/unpaid-work-details/$DELIUS_EVENT_NUMBER/adjustments/${adjustment.id}")
+        .addAdminUiAuthHeader()
+        .exchange()
+        .expectStatus().isOk
+
+      webTestClient.delete()
+        .uri("/admin/adjustments/$adjustmentId")
+        .addAdminUiAuthHeader()
+        .exchange()
+        .expectStatus().isNoContent
+
+      CommunityPaybackAndDeliusMockServer.verifyDeleteAdjustment(reference = adjustmentId, count = 1)
+      domainEventAsserter.assertEventCount("community-payback.adjustment.deleted", 1)
+
+      val deletion = adjustmentEventEntityRepository.findAll().single()
+      assertThat(deletion.eventType).isEqualTo(AdjustmentEventType.DELETE)
+      assertThat(deletion.adjustment?.id).isEqualTo(adjustmentId)
+      assertThat(deletion.referencedEvent).isNull()
+    }
+
+    @Test
     fun `Should return a 404 Not Found response when adjustment not found`() {
       CommunityPaybackAndDeliusMockServer.setupDeleteAdjustmentResponse(reference = adjustmentId)
 
