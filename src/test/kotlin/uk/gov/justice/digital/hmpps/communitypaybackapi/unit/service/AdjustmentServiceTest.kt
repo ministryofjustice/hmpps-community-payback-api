@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.unit.service
 
+import io.mockk.Called
 import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.RelaxedMockK
@@ -8,6 +9,7 @@ import io.mockk.verify
 import io.mockk.verifyOrder
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -23,6 +25,7 @@ import org.springframework.data.repository.findByIdOrNull
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAdjustment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAdjustmentPostResponse
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAdjustmentReferenceRequest
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAdjustmentResponse
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAdjustmentType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDNameCode
@@ -32,6 +35,8 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAdjustmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAdjustmentTypeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsIdDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.BadRequestException
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.ConflictException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventEntity
@@ -39,6 +44,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventEn
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentReasonEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentReasonEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
@@ -86,6 +92,9 @@ class AdjustmentServiceTest {
 
   @RelaxedMockK
   lateinit var adjustmentEventEntityRepository: AdjustmentEventEntityRepository
+
+  @RelaxedMockK
+  lateinit var adjustmentReasonEntityRepository: AdjustmentReasonEntityRepository
 
   val clock: Clock = ClockConfiguration.MutableClock(Instant.now())
 
@@ -264,6 +273,178 @@ class AdjustmentServiceTest {
       assertThat(page.totalElements).isEqualTo(8)
       assertThat(page.content.map { it.id }).isEqualTo(expectedIds)
     }
+  }
+
+  @Nested
+  inner class ImportAdjustment {
+    private val reason = AdjustmentReasonEntity.valid()
+    private val adjustment = NDAdjustment.valid().copy(
+      reference = null,
+      reason = NDNameCode(reason.name, reason.deliusCode),
+      type = NDAdjustmentType.NEGATIVE,
+    )
+    private val reference = UUID.randomUUID()
+    private val savedAdjustment = AdjustmentEntity(
+      id = reference,
+      deliusId = adjustment.id,
+      crn = CRN,
+      deliusEventNumber = EVENT_NUMBER,
+      type = AdjustmentType.NEGATIVE,
+      minutes = adjustment.minutes,
+      date = adjustment.date,
+      reason = reason,
+      appointment = null,
+    )
+
+    @BeforeEach
+    fun setUp() {
+      every { adjustmentEntityRepository.findByDeliusId(adjustment.id) } returns null
+      every { adjustmentEntityRepository.findByIdOrNull(any()) } returns null
+      every { adjustmentEventEntityRepository.findByDeliusAdjustmentIdAndEventType(adjustment.id, AdjustmentEventType.CREATE) } returns null
+      every { communityPaybackAndDeliusClient.getAdjustments(CRN, EVENT_NUMBER) } returns NDAdjustmentResponse(listOf(adjustment))
+      every { adjustmentReasonEntityRepository.findByDeliusCode(reason.deliusCode) } returns reason
+      every { adjustmentEntityRepository.saveAndFlush(any()) } answers { firstArg<AdjustmentEntity>() }
+    }
+
+    @Test
+    fun `returns the local adjustment without checking CREATE events or calling Delius`() {
+      every { adjustmentEntityRepository.findByDeliusId(adjustment.id) } returns savedAdjustment
+
+      assertThat(importAdjustment()).isEqualTo(savedAdjustment.toDto())
+
+      verify { listOf(adjustmentEventEntityRepository, communityPaybackAndDeliusClient) wasNot Called }
+    }
+
+    @Test
+    fun `returns null when the local adjustment belongs to another event`() {
+      every { adjustmentEntityRepository.findByDeliusId(adjustment.id) } returns savedAdjustment.copy(deliusEventNumber = EVENT_NUMBER + 1)
+
+      assertThat(importAdjustment()).isNull()
+
+      verify { listOf(adjustmentEventEntityRepository, communityPaybackAndDeliusClient) wasNot Called }
+    }
+
+    @Test
+    fun `uses the CREATE event UUID and appointment when Delius returns no reference`() {
+      val createEvent = stubCreateEvent()
+
+      assertThat(importAdjustment()).isEqualTo(savedAdjustment.toDto())
+
+      verify { adjustmentEntityRepository.saveAndFlush(savedAdjustment.copy(appointment = createEvent.appointment)) }
+      verify(exactly = 0) { communityPaybackAndDeliusClient.setAdjustmentReference(any(), any()) }
+    }
+
+    @Test
+    fun `uses the CREATE event UUID and appointment when Delius returns the same reference`() {
+      val createEvent = stubCreateEvent()
+      every { communityPaybackAndDeliusClient.getAdjustments(CRN, EVENT_NUMBER) } returns NDAdjustmentResponse(listOf(adjustment.copy(reference = reference)))
+
+      assertThat(importAdjustment()).isEqualTo(savedAdjustment.toDto())
+
+      verify { adjustmentEntityRepository.saveAndFlush(savedAdjustment.copy(appointment = createEvent.appointment)) }
+      verify(exactly = 0) { communityPaybackAndDeliusClient.setAdjustmentReference(any(), any()) }
+    }
+
+    @Test
+    fun `reuses the reference returned by Delius without relinking`() {
+      every { communityPaybackAndDeliusClient.getAdjustments(CRN, EVENT_NUMBER) } returns NDAdjustmentResponse(listOf(adjustment.copy(reference = reference)))
+
+      assertThat(importAdjustment()).isEqualTo(savedAdjustment.toDto())
+
+      verify { adjustmentEntityRepository.saveAndFlush(savedAdjustment) }
+      verify(exactly = 0) { communityPaybackAndDeliusClient.setAdjustmentReference(any(), any()) }
+    }
+
+    @Test
+    fun `saves a new adjustment before linking its generated UUID`() {
+      val imported = requireNotNull(importAdjustment())
+      val generatedReference = requireNotNull(imported.id)
+      assertThat(imported).isEqualTo(adjustment.copy(reference = generatedReference).toDto())
+
+      verifyOrder {
+        adjustmentEntityRepository.saveAndFlush(savedAdjustment.copy(id = generatedReference))
+        communityPaybackAndDeliusClient.setAdjustmentReference(adjustment.id, NDAdjustmentReferenceRequest(generatedReference))
+      }
+    }
+
+    @Test
+    fun `publishes no event when linking succeeds`() {
+      assertThat(importAdjustment()).isNotNull()
+
+      verify { springEventPublisher wasNot Called }
+    }
+
+    @Test
+    fun `publishes no event when linking fails`() {
+      every { communityPaybackAndDeliusClient.setAdjustmentReference(adjustment.id, any()) } throws WebClientResponseExceptionFactory.conflict()
+
+      assertThatThrownBy { importAdjustment() }.isInstanceOf(ConflictException::class.java)
+
+      verify { springEventPublisher wasNot Called }
+    }
+
+    @Test
+    fun `returns null when the requested ID is absent from the Delius response`() {
+      every { communityPaybackAndDeliusClient.getAdjustments(CRN, EVENT_NUMBER) } returns NDAdjustmentResponse(listOf(adjustment.copy(id = adjustment.id + 1)))
+
+      assertThat(importAdjustment()).isNull()
+
+      verify(exactly = 0) { adjustmentEntityRepository.saveAndFlush(any()) }
+    }
+
+    @Test
+    fun `returns null when Delius returns not found`() {
+      every { communityPaybackAndDeliusClient.getAdjustments(CRN, EVENT_NUMBER) } throws WebClientResponseExceptionFactory.notFound()
+
+      assertThat(importAdjustment()).isNull()
+    }
+
+    @Test
+    fun `rejects an unconfigured adjustment reason`() {
+      every { adjustmentReasonEntityRepository.findByDeliusCode(reason.deliusCode) } returns null
+
+      assertThatThrownBy { importAdjustment() }
+        .isInstanceOf(BadRequestException::class.java)
+        .hasMessage("Unknown Delius adjustment reason '${reason.deliusCode}'")
+
+      verify(exactly = 0) { communityPaybackAndDeliusClient.setAdjustmentReference(any(), any()) }
+    }
+
+    @Test
+    fun `rejects a Delius reference owned by a different local adjustment`() {
+      every { communityPaybackAndDeliusClient.getAdjustments(CRN, EVENT_NUMBER) } returns NDAdjustmentResponse(listOf(adjustment.copy(reference = reference)))
+      every { adjustmentEntityRepository.findByIdOrNull(reference) } returns savedAdjustment.copy(deliusId = adjustment.id + 1)
+
+      assertThatThrownBy { importAdjustment() }
+        .isInstanceOf(ConflictException::class.java)
+        .hasMessage("Community Payback reference $reference belongs to a different Delius adjustment")
+
+      verify(exactly = 0) { adjustmentEntityRepository.saveAndFlush(any()) }
+    }
+
+    @Test
+    fun `rejects a Delius reference that differs from the CREATE event UUID`() {
+      stubCreateEvent()
+      every { communityPaybackAndDeliusClient.getAdjustments(CRN, EVENT_NUMBER) } returns NDAdjustmentResponse(listOf(adjustment.copy(reference = UUID.randomUUID())))
+
+      assertThatThrownBy { importAdjustment() }
+        .isInstanceOf(ConflictException::class.java)
+        .hasMessage("Delius adjustment ${adjustment.id} already has a different reference")
+
+      verify(exactly = 0) { communityPaybackAndDeliusClient.setAdjustmentReference(any(), any()) }
+    }
+
+    private fun stubCreateEvent(): AdjustmentEventEntity {
+      val createEvent = AdjustmentEventEntity.valid().copy(
+        id = reference,
+        deliusAdjustmentId = adjustment.id,
+        eventType = AdjustmentEventType.CREATE,
+      )
+      every { adjustmentEventEntityRepository.findByDeliusAdjustmentIdAndEventType(adjustment.id, AdjustmentEventType.CREATE) } returns createEvent
+      return createEvent
+    }
+
+    private fun importAdjustment() = service.importAdjustment(UNPAID_WORK_DETAILS, adjustment.id)
   }
 
   @Nested
