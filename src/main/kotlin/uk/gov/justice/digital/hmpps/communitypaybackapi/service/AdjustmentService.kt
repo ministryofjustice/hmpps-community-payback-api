@@ -116,7 +116,7 @@ class AdjustmentService(
     when {
       deliusAdjustment.reference != null && deliusAdjustment.reference != adjustment.id ->
         throw ConflictException("Delius adjustment $deliusAdjustmentId already has a different reference")
-      createEvent == null && deliusAdjustment.reference == null -> linkDeliusAdjustment(adjustment)
+      deliusAdjustment.reference == null -> linkDeliusAdjustment(adjustment)
     }
     return adjustment.toDto()
   }

@@ -485,7 +485,7 @@ class AdminAdjustmentIT : IntegrationTestBase() {
       .exchange()
 
     @Test
-    fun `backfills the local adjustment for a legacy CREATE event`() {
+    fun `backfills and links the local adjustment for a legacy CREATE event`() {
       val adjustment = NDAdjustment.valid().copy(id = 12348L, reference = null, reason = NDNameCode("Travel Time", "TTX"))
       val appointment = AppointmentEntity.valid().copy(crn = CRN, deliusEventNumber = DELIUS_EVENT_NUMBER).persist(ctx)
       val createEvent = adjustmentEventEntityRepository.save(
@@ -511,7 +511,7 @@ class AdminAdjustmentIT : IntegrationTestBase() {
       val saved = requireNotNull(adjustmentEntityRepository.findByIdOrNull(createEvent.id))
       assertThat(saved.appointment?.id).isEqualTo(appointment.id)
       assertThat(adjustmentEventEntityRepository.findAll()).containsExactly(createEvent)
-      CommunityPaybackAndDeliusMockServer.verifySetAdjustmentReferenceCount(adjustment.id, count = 0)
+      CommunityPaybackAndDeliusMockServer.verifySetAdjustmentReference(adjustment.id, createEvent.id)
     }
 
     @Test

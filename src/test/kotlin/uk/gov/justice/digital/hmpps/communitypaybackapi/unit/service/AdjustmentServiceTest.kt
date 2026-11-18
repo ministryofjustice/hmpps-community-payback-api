@@ -325,13 +325,13 @@ class AdjustmentServiceTest {
     }
 
     @Test
-    fun `uses the CREATE event UUID and appointment when Delius returns no reference`() {
+    fun `links the CREATE event UUID when Delius returns no reference`() {
       val createEvent = stubCreateEvent()
 
       assertThat(importAdjustment()).isEqualTo(savedAdjustment.toDto())
 
       verify { adjustmentEntityRepository.saveAndFlush(savedAdjustment.copy(appointment = createEvent.appointment)) }
-      verify(exactly = 0) { communityPaybackAndDeliusClient.setAdjustmentReference(any(), any()) }
+      verify(exactly = 1) { communityPaybackAndDeliusClient.setAdjustmentReference(adjustment.id, NDAdjustmentReferenceRequest(createEvent.id)) }
     }
 
     @Test
