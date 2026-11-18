@@ -101,7 +101,6 @@ class AdjustmentService(
     return PageImpl(adjustments, pageable, allAdjustments.size.toLong())
   }
 
-  // A concurrent insert can win after the lookup. Retry with a fresh transaction.
   @Retryable(retryFor = [DataIntegrityViolationException::class], maxAttempts = 3)
   @Transactional
   fun importAdjustment(upwDetailsId: UnpaidWorkDetailsIdDto, deliusAdjustmentId: Long): AdjustmentDto? {
