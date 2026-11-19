@@ -36,14 +36,14 @@ class AdjustmentEventEntityFactory {
     triggeredAt = deleteDetails.trigger.triggeredAt,
     triggerType = deleteDetails.trigger.triggerType,
     triggeredBy = deleteDetails.trigger.triggeredBy,
-    deliusAdjustmentId = deleteDetails.eventToDelete.deliusAdjustmentId,
-    appointment = deleteDetails.eventToDelete.appointment,
-    adjustmentType = deleteDetails.eventToDelete.adjustmentType,
-    adjustmentMinutes = deleteDetails.eventToDelete.adjustmentMinutes,
-    adjustmentDate = deleteDetails.eventToDelete.adjustmentDate,
-    adjustmentReason = deleteDetails.eventToDelete.adjustmentReason,
+    deliusAdjustmentId = deleteDetails.deliusAdjustmentId,
+    appointment = deleteDetails.appointment,
+    adjustmentType = deleteDetails.adjustmentType,
+    adjustmentMinutes = deleteDetails.adjustmentMinutes,
+    adjustmentDate = deleteDetails.adjustmentDate,
+    adjustmentReason = deleteDetails.adjustmentReason,
     referencedEvent = deleteDetails.eventToDelete,
-    adjustment = deleteDetails.eventToDelete.adjustment,
+    adjustment = deleteDetails.adjustment,
   )
 }
 

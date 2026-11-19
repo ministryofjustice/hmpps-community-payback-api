@@ -9,6 +9,8 @@ import java.util.UUID
 
 @Repository
 interface AdjustmentEventEntityRepository : JpaRepository<AdjustmentEventEntity, UUID> {
+  fun findByDeliusAdjustmentIdAndEventType(deliusAdjustmentId: Long, eventType: AdjustmentEventType): AdjustmentEventEntity?
+
   fun findByAppointmentOrderByCreatedAtAsc(appointment: AppointmentEntity): List<AdjustmentEventEntity>
 
   @Query(

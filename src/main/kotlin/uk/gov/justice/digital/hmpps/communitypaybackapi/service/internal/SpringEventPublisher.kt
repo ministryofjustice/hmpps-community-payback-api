@@ -50,9 +50,21 @@ sealed interface CommunityPaybackSpringEvent {
 
   data class AdjustmentDeletedEvent(
     val id: UUID,
-    val eventToDelete: AdjustmentEventEntity,
+    val eventToDelete: AdjustmentEventEntity?,
     val trigger: AdjustmentEventTrigger,
+    val adjustment: AdjustmentEntity? = eventToDelete?.adjustment,
   ) : CommunityPaybackSpringEvent {
+    init {
+      require(adjustment != null || eventToDelete != null)
+    }
+
+    val deliusAdjustmentId get() = adjustment?.deliusId ?: requireNotNull(eventToDelete).deliusAdjustmentId
+    val appointment get() = adjustment?.appointment ?: eventToDelete?.appointment
+    val adjustmentType get() = adjustment?.type ?: requireNotNull(eventToDelete).adjustmentType
+    val adjustmentMinutes get() = adjustment?.minutes ?: requireNotNull(eventToDelete).adjustmentMinutes
+    val adjustmentDate get() = adjustment?.date ?: requireNotNull(eventToDelete).adjustmentDate
+    val adjustmentReason get() = adjustment?.reason ?: requireNotNull(eventToDelete).adjustmentReason
+
     companion object
   }
 

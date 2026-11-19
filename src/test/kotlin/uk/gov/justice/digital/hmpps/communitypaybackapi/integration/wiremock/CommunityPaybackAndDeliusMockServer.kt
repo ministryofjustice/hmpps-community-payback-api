@@ -53,6 +53,25 @@ object CommunityPaybackAndDeliusMockServer {
 
   val jsonMapper: JsonMapper = JsonMapper()
 
+  fun setupSetAdjustmentReferenceResponse(deliusId: Long, status: Int = 200) {
+    WireMock.stubFor(
+      put("/community-payback-and-delius/adjustment/$deliusId")
+        .willReturn(aResponse().withStatus(status)),
+    )
+  }
+
+  fun verifySetAdjustmentReference(deliusId: Long, reference: UUID) {
+    WireMock.verify(
+      1,
+      putRequestedFor(urlEqualTo("/community-payback-and-delius/adjustment/$deliusId"))
+        .withRequestBody(WireMock.equalToJson("""{"reference":"$reference"}""")),
+    )
+  }
+
+  fun verifySetAdjustmentReferenceCount(deliusId: Long, count: Int) {
+    WireMock.verify(count, putRequestedFor(urlEqualTo("/community-payback-and-delius/adjustment/$deliusId")))
+  }
+
   fun setupDeleteAdjustmentResponse(reference: UUID) {
     WireMock.stubFor(
       delete("/community-payback-and-delius/adjustments/$reference")
@@ -465,11 +484,13 @@ object CommunityPaybackAndDeliusMockServer {
     crn: String,
     eventNumber: Int,
     adjustments: List<NDAdjustment>,
+    delayMs: Int = 0,
   ) {
     WireMock.stubFor(
       get("/community-payback-and-delius/adjustments?crn=$crn&eventNumber=$eventNumber")
         .willReturn(
           aResponse()
+            .withFixedDelay(delayMs)
             .withHeader("Content-Type", "application/json")
             .withBody(jsonMapper.writer().writeValueAsString(NDAdjustmentResponse(adjustments)))
             .withTransformers("response-template"),

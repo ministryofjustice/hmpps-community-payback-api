@@ -41,6 +41,8 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentServic
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toDto
 import java.time.LocalDate
 import java.util.UUID
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.TimeUnit
 
 class AdminAdjustmentIT : IntegrationTestBase() {
 
@@ -436,6 +438,109 @@ class AdminAdjustmentIT : IntegrationTestBase() {
   }
 
   @Nested
+  @DisplayName("PUT /admin/offenders/{crn}/unpaid-work-details/{deliusEventNumber}/adjustments/{deliusAdjustmentId}")
+  inner class ImportAdjustment {
+    @Test
+    fun `links the requested Delius adjustment once across repeated imports`() {
+      val adjustment = NDAdjustment.valid().copy(id = 12345L, reference = null, reason = NDNameCode("Travel Time", "TTX"))
+      CommunityPaybackAndDeliusMockServer.setupGetAdjustmentsResponse(
+        CRN,
+        DELIUS_EVENT_NUMBER,
+        listOf(NDAdjustment.valid(), adjustment),
+      )
+      CommunityPaybackAndDeliusMockServer.setupSetAdjustmentReferenceResponse(adjustment.id)
+
+      val result = importAdjustment(adjustment.id).expectStatus().isOk.bodyAsObject<AdjustmentDto>()
+      val uuid = requireNotNull(result.id)
+      assertThat(result).isEqualTo(adjustment.copy(reference = uuid).toDto())
+
+      CommunityPaybackAndDeliusMockServer.setupGetAdjustmentsResponse(CRN, DELIUS_EVENT_NUMBER, emptyList())
+      assertThat(importAdjustment(adjustment.id).expectStatus().isOk.bodyAsObject<AdjustmentDto>()).isEqualTo(result)
+
+      CommunityPaybackAndDeliusMockServer.verifySetAdjustmentReference(adjustment.id, uuid)
+      CommunityPaybackAndDeliusMockServer.verifySetAdjustmentReferenceCount(adjustment.id, count = 1)
+
+      val saved = requireNotNull(adjustmentEntityRepository.findByIdOrNull(uuid))
+      assertThat(saved.deliusId).isEqualTo(adjustment.id)
+      assertThat(saved.crn).isEqualTo(CRN)
+      assertThat(saved.deliusEventNumber).isEqualTo(DELIUS_EVENT_NUMBER)
+      assertThat(saved.reason.deliusCode).isEqualTo(adjustment.reason.code)
+      assertThat(adjustmentEntityRepository.count()).isEqualTo(1)
+    }
+
+    @Test
+    fun `rolls back the local adjustment when linking fails`() {
+      val adjustment = NDAdjustment.valid().copy(id = 12350L, reference = null, reason = NDNameCode("Travel Time", "TTX"))
+      CommunityPaybackAndDeliusMockServer.setupGetAdjustmentsResponse(CRN, DELIUS_EVENT_NUMBER, listOf(adjustment))
+      CommunityPaybackAndDeliusMockServer.setupSetAdjustmentReferenceResponse(adjustment.id, status = 500)
+
+      importAdjustment(adjustment.id).expectStatus().is5xxServerError
+
+      assertThat(adjustmentEntityRepository.count()).isZero()
+    }
+
+    private fun importAdjustment(deliusAdjustmentId: Long) = webTestClient.put()
+      .uri("/admin/offenders/$CRN/unpaid-work-details/$DELIUS_EVENT_NUMBER/adjustments/$deliusAdjustmentId")
+      .addAdminUiAuthHeader()
+      .exchange()
+
+    @Test
+    fun `backfills and links the local adjustment for a legacy CREATE event`() {
+      val adjustment = NDAdjustment.valid().copy(id = 12348L, reference = null, reason = NDNameCode("Travel Time", "TTX"))
+      val appointment = AppointmentEntity.valid().copy(crn = CRN, deliusEventNumber = DELIUS_EVENT_NUMBER).persist(ctx)
+      val createEvent = adjustmentEventEntityRepository.save(
+        AdjustmentEventEntity.valid(ctx).copy(
+          eventType = AdjustmentEventType.CREATE,
+          deliusAdjustmentId = adjustment.id,
+          appointment = appointment,
+        ),
+      )
+      assertThat(adjustmentEntityRepository.count()).isZero()
+
+      CommunityPaybackAndDeliusMockServer.setupGetAdjustmentsResponse(CRN, DELIUS_EVENT_NUMBER, listOf(adjustment))
+      CommunityPaybackAndDeliusMockServer.setupSetAdjustmentReferenceResponse(adjustment.id)
+
+      val result = webTestClient.put()
+        .uri("/admin/offenders/$CRN/unpaid-work-details/$DELIUS_EVENT_NUMBER/adjustments/${adjustment.id}")
+        .addAdminUiAuthHeader()
+        .exchange()
+        .expectStatus().isOk
+        .bodyAsObject<AdjustmentDto>()
+
+      assertThat(result).isEqualTo(adjustment.copy(reference = createEvent.id).toDto())
+      val saved = requireNotNull(adjustmentEntityRepository.findByIdOrNull(createEvent.id))
+      assertThat(saved.appointment?.id).isEqualTo(appointment.id)
+      assertThat(adjustmentEventEntityRepository.findAll()).containsExactly(createEvent)
+      CommunityPaybackAndDeliusMockServer.verifySetAdjustmentReference(adjustment.id, createEvent.id)
+    }
+
+    @Test
+    fun `returns the same UUID when two requests import the same Delius adjustment concurrently`() {
+      val adjustment = NDAdjustment.valid().copy(id = 12347L, reference = null, reason = NDNameCode("Travel Time", "TTX"))
+      CommunityPaybackAndDeliusMockServer.setupGetAdjustmentsResponse(CRN, DELIUS_EVENT_NUMBER, listOf(adjustment), delayMs = 250)
+      CommunityPaybackAndDeliusMockServer.setupSetAdjustmentReferenceResponse(adjustment.id)
+
+      val imports = List(2) {
+        CompletableFuture.supplyAsync {
+          webTestClient.put()
+            .uri("/admin/offenders/$CRN/unpaid-work-details/$DELIUS_EVENT_NUMBER/adjustments/${adjustment.id}")
+            .addAdminUiAuthHeader()
+            .exchange()
+            .expectStatus().isOk
+            .bodyAsObject<AdjustmentDto>()
+        }
+      }
+
+      val (first, second) = imports.map { it.get(15, TimeUnit.SECONDS) }
+      assertThat(first.id).isNotNull()
+      assertThat(second).isEqualTo(first)
+      CommunityPaybackAndDeliusMockServer.verifySetAdjustmentReferenceCount(adjustment.id, count = 1)
+      assertThat(adjustmentEntityRepository.count()).isEqualTo(1)
+      assertThat(adjustmentEventEntityRepository.count()).isZero()
+    }
+  }
+
+  @Nested
   @DisplayName("DELETE /admin/adjustments/{communityPaybackId}")
   inner class DeleteAdjustment {
 
@@ -488,6 +593,33 @@ class AdminAdjustmentIT : IntegrationTestBase() {
       CommunityPaybackAndDeliusMockServer.verifyDeleteAdjustment(reference = adjustmentId, count = 1)
 
       domainEventAsserter.assertEventCount("community-payback.adjustment.deleted", 1)
+    }
+
+    @Test
+    fun `deletes an imported adjustment and records the deletion without a CREATE event`() {
+      val adjustment = NDAdjustment.valid().copy(id = 12353L, reference = adjustmentId, reason = NDNameCode("Travel Time", "TTX"))
+      CommunityPaybackAndDeliusMockServer.setupGetAdjustmentsResponse(CRN, DELIUS_EVENT_NUMBER, listOf(adjustment))
+      CommunityPaybackAndDeliusMockServer.setupDeleteAdjustmentResponse(reference = adjustmentId)
+
+      webTestClient.put()
+        .uri("/admin/offenders/$CRN/unpaid-work-details/$DELIUS_EVENT_NUMBER/adjustments/${adjustment.id}")
+        .addAdminUiAuthHeader()
+        .exchange()
+        .expectStatus().isOk
+
+      webTestClient.delete()
+        .uri("/admin/adjustments/$adjustmentId")
+        .addAdminUiAuthHeader()
+        .exchange()
+        .expectStatus().isNoContent
+
+      CommunityPaybackAndDeliusMockServer.verifyDeleteAdjustment(reference = adjustmentId, count = 1)
+      domainEventAsserter.assertEventCount("community-payback.adjustment.deleted", 1)
+
+      val deletion = adjustmentEventEntityRepository.findAll().single()
+      assertThat(deletion.eventType).isEqualTo(AdjustmentEventType.DELETE)
+      assertThat(deletion.adjustment?.id).isEqualTo(adjustmentId)
+      assertThat(deletion.referencedEvent).isNull()
     }
 
     @Test
