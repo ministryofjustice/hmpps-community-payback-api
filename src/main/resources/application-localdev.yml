@@ -19,3 +19,8 @@ logging:
 tasks:
   travel-time:
     enabled: true
+
+adjustments:
+  automated-travel-time:
+    enabled: true
+    provider-codes: N07 # London

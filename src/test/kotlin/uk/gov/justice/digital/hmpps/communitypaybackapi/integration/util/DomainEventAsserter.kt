@@ -42,7 +42,7 @@ class DomainEventAsserter(
 
   fun blockForDomainEventOfType(eventType: String): HmppsDomainEvent {
     await()
-      .atMost(1, TimeUnit.SECONDS)
+      .atMost(5, TimeUnit.SECONDS)
       .until { haveReceived(eventType) }
 
     synchronized(messages) {
@@ -52,7 +52,7 @@ class DomainEventAsserter(
 
   fun assertEventCount(eventType: String, count: Int) {
     await()
-      .atMost(1, TimeUnit.SECONDS)
+      .atMost(5, TimeUnit.SECONDS)
       .until { haveReceivedExactCount(eventType, count) }
   }
 

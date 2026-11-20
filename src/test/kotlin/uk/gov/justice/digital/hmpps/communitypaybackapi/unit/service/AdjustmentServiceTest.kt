@@ -30,6 +30,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAdjustmentRespo
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAdjustmentType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDNameCode
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.validation.ValidationResult
+import uk.gov.justice.digital.hmpps.communitypaybackapi.common.validation.ValidationResultItem
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AdjustmentFilterTypeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAdjustmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAdjustmentTypeDto
@@ -57,6 +58,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentIdGene
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentValidationService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentValidationService.AdjustmentValidationContext
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.CreateSystemAdjustmentResult
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.DeleteAdjustmentResult
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AdjustmentCreatedEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AdjustmentDeletedEvent
@@ -532,6 +534,85 @@ class AdjustmentServiceTest {
           ),
         )
       }
+    }
+  }
+
+  @Nested
+  inner class CreateSystemAdjustment {
+
+    @Test
+    fun `returns validation errors without persisting or calling upstream`() {
+      val request = CreateAdjustmentDto.valid()
+      val errors = listOf(ValidationResultItem("$.minutes", "EXCEEDS_REMAINING_REQUIREMENT_TIME", emptyMap()))
+      every { adjustmentValidationService.validate(request, any()) } returns ValidationResult(errors, emptyList())
+
+      val result = service.createSystemAdjustment(
+        UNPAID_WORK_DETAILS,
+        request,
+        USERNAME,
+        AdjustmentEventTrigger(OffsetDateTime.now(clock), AdjustmentEventTriggerType.AUTOMATED_TRAVEL_TIME, USERNAME),
+      )
+
+      assertThat(result).isEqualTo(CreateSystemAdjustmentResult.ValidationFailed(errors))
+      verify { communityPaybackAndDeliusClient wasNot Called }
+      verify { adjustmentEntityRepository wasNot Called }
+      verify { springEventPublisher wasNot Called }
+    }
+
+    @Test
+    fun `creates fresh references for repeated system adjustments and preserves their trigger`() {
+      val reason = AdjustmentReasonEntity.valid().copy(deliusCode = "TTX")
+      val appointment = AppointmentEntity.valid()
+      val date = LocalDate.now().minusDays(1)
+      val request = CreateAdjustmentDto.valid().copy(
+        taskId = null,
+        appointmentId = appointment.id,
+        adjustmentReasonId = reason.id,
+        adjustmentDate = date,
+        minutes = 60,
+        type = CreateAdjustmentTypeDto.Positive,
+      )
+      val trigger = AdjustmentEventTrigger(
+        OffsetDateTime.now(clock),
+        AdjustmentEventTriggerType.AUTOMATED_TRAVEL_TIME,
+        USERNAME,
+      )
+      every { adjustmentValidationService.validate(request, any()) } answers {
+        secondArg<AdjustmentValidationContext>().apply {
+          this.reason = reason
+          this.appointment = appointment
+        }
+        ValidationResult.success()
+      }
+      every { communityPaybackAndDeliusClient.postAdjustments(USERNAME, any()) } returns listOf(NDAdjustmentPostResponse(5L))
+      every { adjustmentEntityRepository.save(any()) } answers { firstArg() }
+
+      val results = List(2) {
+        service.createSystemAdjustment(UNPAID_WORK_DETAILS, request, USERNAME, trigger) as CreateSystemAdjustmentResult.Success
+      }
+
+      val adjustments = results.map { it.adjustment }
+      assertThat(adjustments.map { it.id }).doesNotHaveDuplicates()
+      adjustments.forEach { adjustment ->
+        assertThat(adjustment.crn).isEqualTo(CRN)
+        assertThat(adjustment.deliusEventNumber).isEqualTo(EVENT_NUMBER)
+        assertThat(adjustment.deliusId).isEqualTo(5L)
+        assertThat(adjustment.type).isEqualTo(AdjustmentType.POSITIVE)
+        assertThat(adjustment.minutes).isEqualTo(60)
+        assertThat(adjustment.date).isEqualTo(date)
+        assertThat(adjustment.reason).isEqualTo(reason)
+        assertThat(adjustment.appointment).isEqualTo(appointment)
+        verify(exactly = 1) {
+          communityPaybackAndDeliusClient.postAdjustments(
+            USERNAME,
+            listOf(request.toNDAdjustmentRequest(CRN, EVENT_NUMBER, reason, adjustment.id, date)),
+          )
+          springEventPublisher.publishEvent(AdjustmentCreatedEvent(adjustment, trigger))
+        }
+      }
+      verify(exactly = 0) { communityPaybackAndDeliusClient.deleteAdjustment(any()) }
+      verify(exactly = 0) { communityPaybackAndDeliusClient.getAdjustment(any()) }
+      verify { adjustmentIdGenerator wasNot Called }
     }
   }
 
