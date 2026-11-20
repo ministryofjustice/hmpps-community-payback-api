@@ -7,7 +7,7 @@ plugins {
   kotlin("plugin.jpa") version "2.4.21"
   id("dev.detekt") version "2.0.0-alpha.6"
   jacoco
-  id("io.sentry.jvm.gradle") version "6.26.0"
+  id("io.sentry.jvm.gradle") version "6.27.0"
 }
 
 configurations {
@@ -55,7 +55,7 @@ dependencies {
   testImplementation("org.wiremock.integrations:wiremock-spring-boot:4.4.3")
   testImplementation("io.mockk:mockk:1.14.12")
   testImplementation("com.lemonappdev:konsist:0.18.1")
-  testImplementation("uk.gov.justice.service.hmpps:hmpps-subject-access-request-test-support:2.8.6")
+  testImplementation("uk.gov.justice.service.hmpps:hmpps-subject-access-request-test-support:2.9.0")
   testImplementation("org.zalando:logbook-spring-boot-starter:4.2.0")
   testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0")
 
