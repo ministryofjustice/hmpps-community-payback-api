@@ -13,6 +13,28 @@ interface AdjustmentEventEntityRepository : JpaRepository<AdjustmentEventEntity,
 
   fun findByAppointmentOrderByCreatedAtAsc(appointment: AppointmentEntity): List<AdjustmentEventEntity>
 
+  /**
+   * Returns CREATE events for the given appointment and trigger type that
+   * have not been referenced by a subsequent DELETE event
+   */
+  @Query(
+    """
+    select createEvent from AdjustmentEventEntity createEvent
+    where createEvent.appointment = :appointment
+    and createEvent.eventType = AdjustmentEventType.CREATE
+    and createEvent.triggerType = :triggerType
+    and not exists (
+      select deleteEvent from AdjustmentEventEntity deleteEvent
+      where deleteEvent.referencedEvent = createEvent
+      and deleteEvent.eventType = AdjustmentEventType.DELETE
+    )
+    order by createEvent.createdAt asc""",
+  )
+  fun findNondeletedCreateEvents(
+    appointment: AppointmentEntity,
+    triggerType: AdjustmentEventTriggerType,
+  ): List<AdjustmentEventEntity>
+
   @Query(
     """
     select event from AdjustmentEventEntity event

@@ -102,6 +102,11 @@ tasks:
   travel-time:
     enabled: false
 
+adjustments:
+  automated-travel-time:
+    enabled: false
+    provider-codes: "N07" # London
+
 course:
   completions:
     visibility:

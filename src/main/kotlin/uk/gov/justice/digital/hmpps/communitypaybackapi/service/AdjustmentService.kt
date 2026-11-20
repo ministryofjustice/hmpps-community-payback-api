@@ -227,6 +227,59 @@ class AdjustmentService(
     return communityPaybackAndDeliusClient.getAdjustment(adjustment.id).toDto()
   }
 
+  @Transactional
+  fun createSystemAdjustment(
+    upwDetailsId: UnpaidWorkDetailsIdDto,
+    createAdjustment: CreateAdjustmentDto,
+    username: String,
+    trigger: AdjustmentEventTrigger,
+  ): CreateSystemAdjustmentResult {
+    val validationContext = AdjustmentValidationContext(upwDetailsId, username)
+    val validationResult = adjustmentValidationService.validate(createAdjustment, validationContext)
+    if (validationResult.hasErrors) {
+      return CreateSystemAdjustmentResult.ValidationFailed(validationResult.errors)
+    }
+
+    val adjustmentId = UUID.randomUUID()
+
+    val (crn, deliusEventNumber) = upwDetailsId
+    val reason = requireNotNull(validationContext.reason)
+    val request = createAdjustment.toNDAdjustmentRequest(
+      crn = crn,
+      deliusEventNumber = deliusEventNumber,
+      reason = reason,
+      reference = adjustmentId,
+      dateOfAdjustment = createAdjustment.adjustmentDate ?: LocalDate.now(clock),
+    )
+    val deliusAdjustmentId = communityPaybackAndDeliusClient.postAdjustments(username, listOf(request)).single().id
+
+    val adjustment = adjustmentEntityRepository.save(
+      AdjustmentEntity(
+        id = adjustmentId,
+        deliusId = deliusAdjustmentId,
+        crn = crn,
+        deliusEventNumber = deliusEventNumber,
+        type = when (request.type) {
+          NDAdjustmentType.POSITIVE -> AdjustmentType.POSITIVE
+          NDAdjustmentType.NEGATIVE -> AdjustmentType.NEGATIVE
+        },
+        minutes = request.minutes,
+        date = request.date,
+        reason = reason,
+        appointment = validationContext.appointment,
+      ),
+    )
+
+    springEventPublisher.publishEvent(
+      AdjustmentCreatedEvent(
+        adjustmentEntity = adjustment,
+        trigger = trigger,
+      ),
+    )
+
+    return CreateSystemAdjustmentResult.Success(adjustment)
+  }
+
   @Suppress("detekt:ThrowsCount")
   private fun throwValidationError(error: ValidationResultItem) {
     when (error.code) {
@@ -307,6 +360,11 @@ class AdjustmentService(
       }
     }
   }
+}
+
+sealed interface CreateSystemAdjustmentResult {
+  data class Success(val adjustment: AdjustmentEntity) : CreateSystemAdjustmentResult
+  data class ValidationFailed(val errors: List<ValidationResultItem>) : CreateSystemAdjustmentResult
 }
 
 sealed interface DeleteAdjustmentResult {
