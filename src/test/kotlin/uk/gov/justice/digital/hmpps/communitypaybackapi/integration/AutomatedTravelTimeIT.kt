@@ -6,13 +6,8 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
-import org.mockito.kotlin.any
-import org.mockito.kotlin.doAnswer
-import org.mockito.kotlin.reset
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.context.TestPropertySource
-import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
-import org.springframework.transaction.support.TransactionTemplate
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDEvent
@@ -40,8 +35,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.DomainEventAsserter
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.CommunityPaybackAndDeliusMockServer
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentService
-import uk.gov.justice.digital.hmpps.communitypaybackapi.service.CreateSystemAdjustmentResult
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
@@ -54,7 +47,7 @@ import java.util.UUID
 )
 class AutomatedTravelTimeIT : IntegrationTestBase() {
 
-  @MockitoSpyBean
+  @Autowired
   lateinit var adjustmentEntityRepository: AdjustmentEntityRepository
 
   @Autowired
@@ -71,12 +64,6 @@ class AutomatedTravelTimeIT : IntegrationTestBase() {
 
   @Autowired
   lateinit var adjustmentReasonEntityRepository: AdjustmentReasonEntityRepository
-
-  @Autowired
-  lateinit var transactionTemplate: TransactionTemplate
-
-  @MockitoSpyBean
-  lateinit var adjustmentService: AdjustmentService
 
   private val date = LocalDate.now().minusDays(1)
   private lateinit var project: NDProject
@@ -315,46 +302,43 @@ class AutomatedTravelTimeIT : IntegrationTestBase() {
   }
 
   @Test
-  fun `failure saving after upstream POST compensates the retained reference and a retry creates one hour`() {
-    var failedReference: UUID? = null
-    doAnswer { invocation ->
-      val adjustment = invocation.getArgument<AdjustmentEntity>(0)
-      failedReference = adjustment.id
-      CommunityPaybackAndDeliusMockServer.setupDeleteAdjustmentResponse(adjustment.id)
-      error("Test failure saving the adjustment after POST")
-    }.`when`(adjustmentEntityRepository).save(any())
-
-    updateAppointment(CODE_ATTENDED_COMPLIED, expectedStatus = 500)
-
-    CommunityPaybackAndDeliusMockServer.verifyDeleteAdjustment(requireNotNull(failedReference), count = 1)
-    assertThat(adjustmentEntityRepository.count()).isZero()
-    assertThat(adjustmentEventEntityRepository.count()).isZero()
-    reset(adjustmentEntityRepository)
-
-    updateAppointment(CODE_ATTENDED_COMPLIED)
-
-    assertThat(adjustmentEntityRepository.findAll().single().id).isNotEqualTo(failedReference)
-    assertThat(adjustmentEventEntityRepository.count()).isEqualTo(1)
-    CommunityPaybackAndDeliusMockServer.verifyPostAdjustment(USERNAME, count = 2)
-  }
-
-  @Test
-  fun `failure after adjustment creation compensates upstream and rolls back local changes`() {
-    var adjustmentId: UUID? = null
-    doAnswer { invocation ->
-      val result = invocation.callRealMethod() as CreateSystemAdjustmentResult.Success
-      adjustmentId = result.adjustment.id
-      CommunityPaybackAndDeliusMockServer.setupDeleteAdjustmentResponse(result.adjustment.id)
-      error("Test failure after creating the automated adjustment")
-    }.`when`(adjustmentService).createSystemAdjustment(any(), any(), any(), any())
+  fun `database failure after adjustment creation compensates upstream and rolls back local changes`() {
+    // Delius returns ID 25 for the new adjustment. An existing row with that ID
+    // causes PostgreSQL's unique constraint to reject the transaction.
+    val existing = adjustmentEntityRepository.saveAndFlush(
+      AdjustmentEntity(
+        id = UUID.randomUUID(),
+        deliusId = 25L,
+        crn = CRN,
+        deliusEventNumber = EVENT_NUMBER,
+        type = AdjustmentType.POSITIVE,
+        minutes = 60,
+        date = date,
+        reason = requireNotNull(adjustmentReasonEntityRepository.findByDeliusCode("TTX")),
+        appointment = null,
+      ),
+    )
+    WireMock.stubFor(
+      WireMock.delete(WireMock.urlMatching("/community-payback-and-delius/adjustments/.*"))
+        .willReturn(WireMock.aResponse().withStatus(204)),
+    )
 
     updateAppointment(CODE_ATTENDED_COMPLIED, expectedStatus = 500)
 
     CommunityPaybackAndDeliusMockServer.verifyPostAdjustment(USERNAME, count = 1)
-    CommunityPaybackAndDeliusMockServer.verifyDeleteAdjustment(requireNotNull(adjustmentId), count = 1)
+    val deletion = WireMock.findAll(
+      WireMock.deleteRequestedFor(WireMock.urlMatching("/community-payback-and-delius/adjustments/.*")),
+    ).single()
+    val adjustmentId = UUID.fromString(deletion.url.substringAfterLast('/'))
+    assertThat(adjustmentId).isNotEqualTo(existing.id)
+    WireMock.verify(
+      1,
+      WireMock.postRequestedFor(WireMock.urlEqualTo("/community-payback-and-delius/adjustments?username=$USERNAME"))
+        .withRequestBody(WireMock.matchingJsonPath("$[0].reference", WireMock.equalTo(adjustmentId.toString()))),
+    )
     assertThat(appointmentEntityRepository.count()).isZero()
     assertThat(appointmentEventEntityRepository.count()).isZero()
-    assertThat(adjustmentEntityRepository.count()).isZero()
+    assertThat(adjustmentEntityRepository.findAll()).containsExactly(existing)
     assertThat(adjustmentEventEntityRepository.count()).isZero()
     domainEventAsserter.assertEventCount("community-payback.adjustment.created", 0)
     domainEventAsserter.assertEventCount("community-payback.appointment.updated", 0)
