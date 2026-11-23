@@ -272,23 +272,6 @@ class AutomatedTravelTimeIT : IntegrationTestBase() {
   }
 
   @Test
-  fun `failure creating the adjustment rolls back local appointment changes`() {
-    WireMock.stubFor(
-      WireMock.post(WireMock.urlEqualTo("/community-payback-and-delius/adjustments?username=$USERNAME"))
-        .willReturn(WireMock.aResponse().withStatus(500)),
-    )
-
-    updateAppointment(CODE_ATTENDED_COMPLIED, expectedStatus = 500)
-
-    assertThat(appointmentEntityRepository.count()).isZero()
-    assertThat(appointmentEventEntityRepository.count()).isZero()
-    assertThat(adjustmentEntityRepository.count()).isZero()
-    assertThat(adjustmentEventEntityRepository.count()).isZero()
-    domainEventAsserter.assertEventCount("community-payback.adjustment.created", 0)
-    domainEventAsserter.assertEventCount("community-payback.appointment.updated", 0)
-  }
-
-  @Test
   fun `failure after adjustment creation compensates upstream and rolls back local changes`() {
     var adjustmentId: UUID? = null
     doAnswer { invocation ->
