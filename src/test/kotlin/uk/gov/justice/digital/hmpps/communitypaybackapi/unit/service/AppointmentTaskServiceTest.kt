@@ -23,6 +23,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeGroupDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.BadRequestException
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentTaskEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentTaskEntityRepository
@@ -322,6 +323,7 @@ class AppointmentTaskServiceTest {
       service.closeTravelTimeTaskOnAdjustmentCreation(
         AdjustmentCreatedEvent.valid(appointment = task.appointment).copy(
           trigger = AdjustmentEventTrigger.valid().copy(
+            triggerType = AdjustmentEventTriggerType.APPOINTMENT_TASK,
             triggeredAt = triggeredAt,
             triggeredBy = "currentUsername",
           ),
