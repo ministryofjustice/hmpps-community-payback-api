@@ -270,7 +270,7 @@ class AutomatedTravelTimeServiceTest {
     }
 
     @Test
-    fun `scenario 2 - non-attendance does not create an adjustment`() {
+    fun `non-attendance does not create an adjustment`() {
       givenExistingAdjustment(null)
 
       service.onAppointmentCreated(createdEvent(NOT_ATTENDED))
