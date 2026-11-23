@@ -2,7 +2,6 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.integration
 
 import com.github.tomakehurst.wiremock.client.WireMock
 import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
@@ -46,10 +45,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.CreateSystemAdju
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
-import java.util.concurrent.CountDownLatch
-import java.util.concurrent.Executors
-import java.util.concurrent.TimeUnit
-import java.util.concurrent.TimeoutException
 
 @TestPropertySource(
   properties = [
