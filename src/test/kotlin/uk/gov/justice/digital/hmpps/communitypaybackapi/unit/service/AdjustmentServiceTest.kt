@@ -5,6 +5,7 @@ import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.junit5.MockKExtension
+import io.mockk.slot
 import io.mockk.verify
 import io.mockk.verifyOrder
 import org.assertj.core.api.Assertions.assertThat
@@ -60,6 +61,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentValida
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentValidationService.AdjustmentValidationContext
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.CreateSystemAdjustmentResult
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.DeleteAdjustmentResult
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AdjustmentCreatedEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AdjustmentDeletedEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.SpringEventPublisher
@@ -560,6 +562,33 @@ class AdjustmentServiceTest {
     }
 
     @Test
+    fun `retains the upstream reference before POST even when local save fails`() {
+      val reason = AdjustmentReasonEntity.valid()
+      val request = CreateAdjustmentDto.valid()
+      val trigger = AdjustmentEventTrigger(OffsetDateTime.now(clock), AdjustmentEventTriggerType.AUTOMATED_TRAVEL_TIME, USERNAME)
+      every { adjustmentValidationService.validate(request, any()) } answers {
+        secondArg<AdjustmentValidationContext>().reason = reason
+        ValidationResult.success()
+      }
+      every { communityPaybackAndDeliusClient.postAdjustments(USERNAME, any()) } returns listOf(NDAdjustmentPostResponse(5L))
+      every { adjustmentEntityRepository.save(any()) } throws IllegalStateException("Save failed")
+      val retained = slot<CommunityPaybackSpringEvent.AdjustmentCreationRequested>()
+      every { springEventPublisher.publishEvent(capture(retained)) } returns Unit
+
+      assertThatThrownBy { service.createSystemAdjustment(UNPAID_WORK_DETAILS, request, USERNAME, trigger) }
+        .isInstanceOf(IllegalStateException::class.java)
+
+      verifyOrder {
+        springEventPublisher.publishEvent(retained.captured)
+        communityPaybackAndDeliusClient.postAdjustments(USERNAME, match { it.single().reference == retained.captured.reference })
+        adjustmentEntityRepository.save(any())
+      }
+      service.rollbackAdjustment(CommunityPaybackSpringEvent.NDeliusRollbackRequired(retained.captured))
+      verify { communityPaybackAndDeliusClient.deleteAdjustment(retained.captured.reference) }
+      verify(exactly = 0) { springEventPublisher.publishEvent(any<AdjustmentCreatedEvent>()) }
+    }
+
+    @Test
     fun `creates fresh references for repeated system adjustments and preserves their trigger`() {
       val reason = AdjustmentReasonEntity.valid().copy(deliusCode = "TTX")
       val appointment = AppointmentEntity.valid()
@@ -715,7 +744,7 @@ class AdjustmentServiceTest {
     }
 
     @Test
-    fun `returns not found if upstream client returns 404`() {
+    fun `records deletion if a known adjustment is already absent upstream`() {
       val adjustmentId = UUID.randomUUID()
       val expectedEvent = AdjustmentEventEntity.valid().copy(id = adjustmentId, eventType = AdjustmentEventType.CREATE)
       every { adjustmentEventEntityRepository.findByIdOrNull(adjustmentId) } returns expectedEvent
@@ -727,7 +756,7 @@ class AdjustmentServiceTest {
 
       val result = service.deleteAdjustment(adjustmentId, USERNAME)
 
-      assertThat(result).isEqualTo(DeleteAdjustmentResult.NotFound)
+      assertThat(result).isEqualTo(DeleteAdjustmentResult.Success)
 
       verifyOrder {
         adjustmentEventEntityRepository.findByIdOrNull(adjustmentId)
@@ -735,8 +764,10 @@ class AdjustmentServiceTest {
         communityPaybackAndDeliusClient.deleteAdjustment(adjustmentId)
       }
 
-      verify(exactly = 0) {
-        springEventPublisher.publishEvent(any())
+      verify {
+        springEventPublisher.publishEvent(
+          match<AdjustmentDeletedEvent> { it.eventToDelete == expectedEvent },
+        )
       }
     }
 

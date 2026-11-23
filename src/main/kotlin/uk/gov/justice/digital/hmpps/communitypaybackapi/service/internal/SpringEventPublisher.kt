@@ -41,6 +41,8 @@ sealed interface CommunityPaybackSpringEvent {
     companion object
   }
 
+  data class AdjustmentCreationRequested(val reference: UUID) : CommunityPaybackSpringEvent
+
   data class AdjustmentCreatedEvent(
     val adjustmentEntity: AdjustmentEntity,
     val trigger: AdjustmentEventTrigger,

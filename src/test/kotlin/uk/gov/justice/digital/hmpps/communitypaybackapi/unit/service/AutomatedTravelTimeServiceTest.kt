@@ -5,6 +5,7 @@ import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.slot
 import io.mockk.verify
+import io.mockk.verifyOrder
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach
@@ -30,6 +31,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentReasonE
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentReasonEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.validCreateAppointment
@@ -64,6 +66,9 @@ class AutomatedTravelTimeServiceTest {
   @RelaxedMockK
   private lateinit var adjustmentReasonEntityRepository: AdjustmentReasonEntityRepository
 
+  @RelaxedMockK
+  private lateinit var appointmentEntityRepository: AppointmentEntityRepository
+
   private val clock: Clock = ClockConfiguration.MutableClock(Instant.now())
 
   private lateinit var service: AutomatedTravelTimeService
@@ -85,7 +90,7 @@ class AutomatedTravelTimeServiceTest {
     every {
       adjustmentService.createSystemAdjustment(any(), any(), any(), any())
     } answers { CreateSystemAdjustmentResult.Success(createdAdjustment()) }
-    every { adjustmentService.deleteAdjustment(any(), any()) } returns DeleteAdjustmentResult.Success
+    every { adjustmentService.deleteAdjustment(any(), any(), any()) } returns DeleteAdjustmentResult.Success
   }
 
   private fun buildService(providerCodes: List<String>, enabled: Boolean = true) = AutomatedTravelTimeService(
@@ -93,6 +98,7 @@ class AutomatedTravelTimeServiceTest {
     adjustmentEventEntityRepository,
     adjustmentReasonEntityRepository,
     clock,
+    appointmentEntityRepository,
     providerCodes,
     enabled,
   )
@@ -150,7 +156,7 @@ class AutomatedTravelTimeServiceTest {
 
   private fun verifyNothingCreatedOrDeleted() {
     verify(exactly = 0) { adjustmentService.createSystemAdjustment(any(), any(), any(), any()) }
-    verify(exactly = 0) { adjustmentService.deleteAdjustment(any(), any()) }
+    verify(exactly = 0) { adjustmentService.deleteAdjustment(any(), any(), any()) }
   }
 
   @Nested
@@ -331,6 +337,22 @@ class AutomatedTravelTimeServiceTest {
   inner class AppointmentUpdates {
 
     @Test
+    fun `uses updated date when recording attendance and locks before checking existing events`() {
+      givenExistingAdjustment(null)
+      val event = updatedEvent(ATTENDED)
+      appointment.date = event.updateDto.dto.date.plusDays(10)
+
+      service.onAppointmentUpdated(event)
+
+      verifyOrder {
+        appointmentEntityRepository.lockById(appointment.id)
+        adjustmentEventEntityRepository.findNondeletedCreateEvents(appointment, AdjustmentEventTriggerType.AUTOMATED_TRAVEL_TIME)
+        adjustmentService.createSystemAdjustment(any(), match { it.adjustmentDate == event.updateDto.dto.date }, any(), any())
+      }
+      assertThat(appointment.date).isEqualTo(event.updateDto.dto.date)
+    }
+
+    @Test
     fun `attended to attended leaves existing adjustment unchanged`() {
       givenExistingAdjustment(existingCreateEvent())
 
@@ -346,7 +368,7 @@ class AutomatedTravelTimeServiceTest {
 
       service.onAppointmentUpdated(updatedEvent(NOT_ATTENDED))
 
-      verify(exactly = 1) { adjustmentService.deleteAdjustment(createEvent.id, USERNAME) }
+      verify(exactly = 1) { adjustmentService.deleteAdjustment(createEvent.id, USERNAME, AdjustmentEventTriggerType.AUTOMATED_TRAVEL_TIME) }
       verify(exactly = 0) { adjustmentService.createSystemAdjustment(any(), any(), any(), any()) }
     }
 
@@ -357,7 +379,7 @@ class AutomatedTravelTimeServiceTest {
 
       service.onAppointmentUpdated(updatedEvent(null))
 
-      verify(exactly = 1) { adjustmentService.deleteAdjustment(createEvent.id, USERNAME) }
+      verify(exactly = 1) { adjustmentService.deleteAdjustment(createEvent.id, USERNAME, AdjustmentEventTriggerType.AUTOMATED_TRAVEL_TIME) }
     }
 
     @Test
@@ -367,7 +389,7 @@ class AutomatedTravelTimeServiceTest {
       service.onAppointmentUpdated(updatedEvent(ATTENDED))
 
       verify(exactly = 1) { adjustmentService.createSystemAdjustment(any(), any(), any(), any()) }
-      verify(exactly = 0) { adjustmentService.deleteAdjustment(any(), any()) }
+      verify(exactly = 0) { adjustmentService.deleteAdjustment(any(), any(), any()) }
     }
 
     @Test
@@ -382,18 +404,18 @@ class AutomatedTravelTimeServiceTest {
     @Test
     fun `adjustment not found when deleting does not throw`() {
       givenExistingAdjustment(existingCreateEvent())
-      every { adjustmentService.deleteAdjustment(any(), any()) } returns DeleteAdjustmentResult.NotFound
+      every { adjustmentService.deleteAdjustment(any(), any(), any()) } returns DeleteAdjustmentResult.NotFound
 
       service.onAppointmentUpdated(updatedEvent(NOT_ATTENDED))
 
-      verify(exactly = 1) { adjustmentService.deleteAdjustment(any(), any()) }
+      verify(exactly = 1) { adjustmentService.deleteAdjustment(any(), any(), any()) }
     }
 
     @Test
     fun `upstream failure deleting adjustment is thrown`() {
       givenExistingAdjustment(existingCreateEvent())
       every {
-        adjustmentService.deleteAdjustment(any(), any())
+        adjustmentService.deleteAdjustment(any(), any(), any())
       } returns DeleteAdjustmentResult.Failed(WebClientResponseExceptionFactory.badRequest("boom"))
 
       assertThatThrownBy { service.onAppointmentUpdated(updatedEvent(NOT_ATTENDED)) }

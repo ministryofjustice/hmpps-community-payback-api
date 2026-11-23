@@ -241,6 +241,7 @@ class AdjustmentService(
     }
 
     val adjustmentId = UUID.randomUUID()
+    springEventPublisher.publishEvent(CommunityPaybackSpringEvent.AdjustmentCreationRequested(adjustmentId))
 
     val (crn, deliusEventNumber) = upwDetailsId
     val reason = requireNotNull(validationContext.reason)
@@ -306,7 +307,11 @@ class AdjustmentService(
   }
 
   @Transactional
-  fun deleteAdjustment(adjustmentId: UUID, username: String): DeleteAdjustmentResult {
+  fun deleteAdjustment(
+    adjustmentId: UUID,
+    username: String,
+    triggerType: AdjustmentEventTriggerType = AdjustmentEventTriggerType.APPOINTMENT_TASK,
+  ): DeleteAdjustmentResult {
     val eventId = adjustmentIdGenerator.generateId(DeleteAdjustmentProperties(adjustmentId))
 
     val eventToDelete = adjustmentEventEntityRepository.findByIdOrNull(adjustmentId)
@@ -320,7 +325,7 @@ class AdjustmentService(
       communityPaybackAndDeliusClient.deleteAdjustment(adjustmentId)
     } catch (_: WebClientResponseException.NotFound) {
       logger.warn("Could not delete adjustment with reference {} from NDelius", adjustmentId)
-      return DeleteAdjustmentResult.NotFound
+      // A known local adjustment is now absent upstream; close its audit lifecycle too.
     } catch (e: WebClientResponseException) {
       return DeleteAdjustmentResult.Failed(e)
     }
@@ -332,7 +337,7 @@ class AdjustmentService(
         adjustment = adjustment,
         trigger = AdjustmentEventTrigger(
           triggeredAt = OffsetDateTime.now(clock),
-          triggerType = AdjustmentEventTriggerType.APPOINTMENT_TASK,
+          triggerType = triggerType,
           triggeredBy = username,
         ),
       ),
@@ -346,8 +351,10 @@ class AdjustmentService(
     rollbackEvent: CommunityPaybackSpringEvent.NDeliusRollbackRequired,
   ) {
     val event = rollbackEvent.event
-    if (event is AdjustmentCreatedEvent) {
-      communityPaybackAndDeliusClient.deleteAdjustment(event.adjustmentEntity.id)
+    when (event) {
+      is AdjustmentCreatedEvent -> deleteOrphanedAdjustmentIfExists(event.adjustmentEntity.id)
+      is CommunityPaybackSpringEvent.AdjustmentCreationRequested -> deleteOrphanedAdjustmentIfExists(event.reference)
+      else -> Unit
     }
   }
 

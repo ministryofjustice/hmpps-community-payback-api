@@ -2,15 +2,18 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.integration
 
 import com.github.tomakehurst.wiremock.client.WireMock
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.mockito.kotlin.any
 import org.mockito.kotlin.doAnswer
+import org.mockito.kotlin.reset
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.context.TestPropertySource
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
+import org.springframework.transaction.support.TransactionTemplate
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCaseSummary
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDEvent
@@ -21,6 +24,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDProjectType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDUpwDetails
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventEntityRepository
@@ -42,6 +46,10 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.CreateSystemAdju
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
 
 @TestPropertySource(
   properties = [
@@ -51,7 +59,7 @@ import java.util.UUID
 )
 class AutomatedTravelTimeIT : IntegrationTestBase() {
 
-  @Autowired
+  @MockitoSpyBean
   lateinit var adjustmentEntityRepository: AdjustmentEntityRepository
 
   @Autowired
@@ -68,6 +76,9 @@ class AutomatedTravelTimeIT : IntegrationTestBase() {
 
   @Autowired
   lateinit var adjustmentReasonEntityRepository: AdjustmentReasonEntityRepository
+
+  @Autowired
+  lateinit var transactionTemplate: TransactionTemplate
 
   @MockitoSpyBean
   lateinit var adjustmentService: AdjustmentService
@@ -188,6 +199,7 @@ class AutomatedTravelTimeIT : IntegrationTestBase() {
     updateAppointment(ABSENT, notes = "Updated absence notes")
 
     val deletion = adjustmentEventEntityRepository.findAll().single { it.eventType == AdjustmentEventType.DELETE }
+    assertThat(deletion.triggerType).isEqualTo(AdjustmentEventTriggerType.AUTOMATED_TRAVEL_TIME)
     assertThat(deletion.referencedEvent?.id).isEqualTo(first.id)
     assertThat(deletion.adjustment?.id).isEqualTo(first.id)
     CommunityPaybackAndDeliusMockServer.verifyDeleteAdjustment(first.id, count = 1)
@@ -202,6 +214,42 @@ class AutomatedTravelTimeIT : IntegrationTestBase() {
     assertThat(adjustmentEntityRepository.count()).isEqualTo(2)
     CommunityPaybackAndDeliusMockServer.verifyPostAdjustment(USERNAME, count = 2)
     domainEventAsserter.assertEventCount("community-payback.adjustment.created", 2)
+  }
+
+  @Test
+  fun `upstream 404 closes the attendance lifecycle and restored attendance credits a fresh hour`() {
+    updateAppointment(CODE_ATTENDED_COMPLIED)
+    val first = adjustmentEventEntityRepository.findAll().single()
+    WireMock.stubFor(
+      WireMock.delete("/community-payback-and-delius/adjustments/${first.id}")
+        .willReturn(WireMock.aResponse().withStatus(404)),
+    )
+
+    updateAppointment(ABSENT)
+
+    val deletion = adjustmentEventEntityRepository.findAll().single { it.eventType == AdjustmentEventType.DELETE }
+    assertThat(deletion.referencedEvent?.id).isEqualTo(first.id)
+    assertThat(deletion.triggerType).isEqualTo(AdjustmentEventTriggerType.AUTOMATED_TRAVEL_TIME)
+
+    CommunityPaybackAndDeliusMockServer.setupPostAdjustmentResponse(USERNAME, adjustmentId = 26L)
+    updateAppointment(CODE_ATTENDED_COMPLIED)
+
+    val creates = adjustmentEventEntityRepository.findAll().filter { it.eventType == AdjustmentEventType.CREATE }
+    assertThat(creates).hasSize(2)
+    assertThat(creates.map { it.id }).doesNotHaveDuplicates()
+    CommunityPaybackAndDeliusMockServer.verifyPostAdjustment(USERNAME, count = 2)
+  }
+
+  @Test
+  fun `moving a future appointment into the past with attendance credits the updated date`() {
+    existingAppointment = existingAppointment.copy(date = LocalDate.now().plusDays(1))
+    stubAppointmentData()
+    stubRemainingMinutes(1000)
+
+    updateAppointment(CODE_ATTENDED_COMPLIED)
+
+    assertThat(adjustmentEntityRepository.findAll().single().date).isEqualTo(date)
+    assertThat(appointmentEntityRepository.findAll().single().date).isEqualTo(date)
   }
 
   @Test
@@ -269,6 +317,30 @@ class AutomatedTravelTimeIT : IntegrationTestBase() {
     assertThat(appointmentEventEntityRepository.count()).isEqualTo(1)
     assertNoAdjustments()
     domainEventAsserter.assertEventCount("community-payback.appointment.updated", 1)
+  }
+
+  @Test
+  fun `failure saving after upstream POST compensates the retained reference and a retry creates one hour`() {
+    var failedReference: UUID? = null
+    doAnswer { invocation ->
+      val adjustment = invocation.getArgument<AdjustmentEntity>(0)
+      failedReference = adjustment.id
+      CommunityPaybackAndDeliusMockServer.setupDeleteAdjustmentResponse(adjustment.id)
+      error("Test failure saving the adjustment after POST")
+    }.`when`(adjustmentEntityRepository).save(any())
+
+    updateAppointment(CODE_ATTENDED_COMPLIED, expectedStatus = 500)
+
+    CommunityPaybackAndDeliusMockServer.verifyDeleteAdjustment(requireNotNull(failedReference), count = 1)
+    assertThat(adjustmentEntityRepository.count()).isZero()
+    assertThat(adjustmentEventEntityRepository.count()).isZero()
+    reset(adjustmentEntityRepository)
+
+    updateAppointment(CODE_ATTENDED_COMPLIED)
+
+    assertThat(adjustmentEntityRepository.findAll().single().id).isNotEqualTo(failedReference)
+    assertThat(adjustmentEventEntityRepository.count()).isEqualTo(1)
+    CommunityPaybackAndDeliusMockServer.verifyPostAdjustment(USERNAME, count = 2)
   }
 
   @Test

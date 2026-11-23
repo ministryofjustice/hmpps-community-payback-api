@@ -15,6 +15,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventEn
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentReasonEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ProjectTypeGroup
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AppointmentCreatedEvent
@@ -28,6 +29,7 @@ class AutomatedTravelTimeService(
   private val adjustmentEventEntityRepository: AdjustmentEventEntityRepository,
   private val adjustmentReasonEntityRepository: AdjustmentReasonEntityRepository,
   private val clock: Clock,
+  private val appointmentEntityRepository: AppointmentEntityRepository,
   @Value("\${adjustments.automated-travel-time.provider-codes:}") private val providerCodes: List<String>,
   @Value("\${adjustments.automated-travel-time.enabled:false}") private val enabled: Boolean,
 ) {
@@ -51,7 +53,7 @@ class AutomatedTravelTimeService(
   @EventListener
   @Transactional(Transactional.TxType.REQUIRED)
   fun onAppointmentUpdated(event: AppointmentUpdatedEvent) = processAppointmentAttendance(
-    appointment = event.appointmentEntity,
+    appointment = event.appointmentEntity.apply { date = event.updateDto.dto.date },
     project = event.updateDto.project,
     outcome = event.updateDto.contactOutcome,
     username = event.trigger.triggeredBy,
@@ -66,6 +68,10 @@ class AutomatedTravelTimeService(
     if (!enabled) return
     if (project.providerCode !in providerCodes) return
     if (!project.supportsTravelTime()) return
+
+    // Lock the appointment itself: there may be no adjustment events to lock yet.
+    // The surrounding transaction retains this lock until commit.
+    appointmentEntityRepository.lockById(appointment.id)
 
     val existingCreateEvent = findExistingTravelTimeCreateEvent(appointment)
 
@@ -127,7 +133,11 @@ class AutomatedTravelTimeService(
     createEvent: AdjustmentEventEntity,
     username: String,
   ) {
-    val result = adjustmentService.deleteAdjustment(createEvent.id, username)
+    val result = adjustmentService.deleteAdjustment(
+      createEvent.id,
+      username,
+      AdjustmentEventTriggerType.AUTOMATED_TRAVEL_TIME,
+    )
     if (result is DeleteAdjustmentResult.Failed) {
       throw InternalServerErrorException(
         "Failed to delete travel time adjustment '${createEvent.id}'. Upstream response is '${result.exception.responseBodyAsString}'",

@@ -42,12 +42,18 @@ class NDeliusRollbackService(
   fun publishEventsForRollback() {
     val events = getRequestScopedEvents().getAll()
 
-    if (events.size > 50) {
-      log.error("Unexpectedly large number of events (${events.size}) requested for rollback. Will not rollback. Events are $events")
+    val completedAdjustmentReferences = events.filterIsInstance<CommunityPaybackSpringEvent.AdjustmentCreatedEvent>()
+      .map { it.adjustmentEntity.id }.toSet()
+    val eventsToRollback = events.filterNot {
+      it is CommunityPaybackSpringEvent.AdjustmentCreationRequested && it.reference in completedAdjustmentReferences
+    }
+
+    if (eventsToRollback.size > 50) {
+      log.error("Unexpectedly large number of events (${eventsToRollback.size}) requested for rollback. Will not rollback. Events are $eventsToRollback")
       return
     }
 
-    events.toList().forEach {
+    eventsToRollback.forEach {
       try {
         log.info("Rolling back event $it")
         springEventPublisher.publishEvent(NDeliusRollbackRequired(it))
