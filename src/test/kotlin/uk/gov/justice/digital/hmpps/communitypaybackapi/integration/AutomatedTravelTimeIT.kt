@@ -42,7 +42,9 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.random
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.util.DomainEventAsserter
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.wiremock.CommunityPaybackAndDeliusMockServer
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentIdGenerator.AutomatedAdjustmentProperties
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AutomatedTravelTimeService
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.DefaultAdjustmentIdGenerator
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
@@ -233,6 +235,8 @@ class AutomatedTravelTimeIT : IntegrationTestBase() {
       CommunityPaybackAndDeliusMockServer.setupPostAdjustmentResponse(username = USERNAME, adjustmentId = DELIUS_ADJUSTMENT_ID + 1)
       updateAppointment(outcomeCode = CODE_ATTENDED_COMPLIED)
       val recreated = automatedCreateEvents(appointmentEntity()).single()
+      assertThat(first.id).isEqualTo(expectedAutomatedAdjustmentId(previousCreations = 0))
+      assertThat(recreated.id).isEqualTo(expectedAutomatedAdjustmentId(previousCreations = 1))
       assertThat(recreated.id).isNotEqualTo(first.id)
       assertThat(recreated.deliusAdjustmentId).isEqualTo(DELIUS_ADJUSTMENT_ID + 1)
       assertThat(adjustmentEntityRepository.count()).isEqualTo(2)
@@ -245,6 +249,41 @@ class AutomatedTravelTimeIT : IntegrationTestBase() {
       assertThat(automatedCreateEvents(appointmentEntity())).isEmpty()
       assertThat(deleteEvents().map { it.referencedEvent?.id }).containsExactlyInAnyOrder(first.id, recreated.id)
       domainEventAsserter.assertEventCount("community-payback.adjustment.deleted", 2)
+    }
+
+    @Test
+    fun `retrying after a failed attempt reuses the same id, so any orphaned adjustment is cleaned up`() {
+      setupAppointment()
+      val expectedId = expectedAutomatedAdjustmentId(previousCreations = 0)
+
+      // the adjustment is created in NDelius, but the request then fails
+      CommunityPaybackAndDeliusMockServer.setupGetAdjustment404Response(reference = expectedId)
+      updateAppointment(outcomeCode = CODE_ATTENDED_COMPLIED, expectedStatus = { it.is5xxServerError })
+
+      assertThat(adjustmentEventEntityRepository.findAll()).isEmpty()
+      assertThat(adjustmentEntityRepository.findAll()).isEmpty()
+
+      CommunityPaybackAndDeliusMockServer.setupGetAdjustmentResponse(reference = expectedId, adjustment = NDAdjustment.valid())
+      updateAppointment(outcomeCode = CODE_ATTENDED_COMPLIED)
+
+      // both attempts post the same reference
+      CommunityPaybackAndDeliusMockServer.verifyPostAdjustment(
+        username = USERNAME,
+        count = 2,
+        expectedAdjustment = NDAdjustmentRequest(
+          crn = CRN,
+          eventNumber = EVENT_NUMBER,
+          type = NDAdjustmentType.POSITIVE,
+          date = LocalDate.now(),
+          reason = "TTX",
+          minutes = 60,
+          reference = expectedId,
+        ),
+      )
+      // orphan clean up before each attempt, plus the NDelius rollback when the first request failed
+      CommunityPaybackAndDeliusMockServer.verifyDeleteAdjustment(reference = expectedId, count = 3)
+      assertThat(automatedCreateEvents(appointmentEntity()).map { it.id }).containsExactly(expectedId)
+      domainEventAsserter.assertEventCount("community-payback.adjustment.created", 1)
     }
 
     @Test
@@ -373,6 +412,14 @@ class AutomatedTravelTimeIT : IntegrationTestBase() {
 
     private fun deleteEvents() = adjustmentEventEntityRepository.findAll().filter { it.eventType == AdjustmentEventType.DELETE }
   }
+
+  private fun expectedAutomatedAdjustmentId(previousCreations: Long) = DefaultAdjustmentIdGenerator().generateId(
+    AutomatedAdjustmentProperties(
+      appointmentDeliusId = DELIUS_APPOINTMENT_ID,
+      triggerType = AdjustmentEventTriggerType.AUTOMATED_TRAVEL_TIME.name,
+      previousCreations = previousCreations,
+    ),
+  )
 
   private fun automatedCreateEvents(appointment: AppointmentEntity) = adjustmentEventEntityRepository.findNondeletedCreateEvents(
     appointment = appointment,

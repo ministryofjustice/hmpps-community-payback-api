@@ -11,6 +11,12 @@ import java.util.UUID
 interface AdjustmentEventEntityRepository : JpaRepository<AdjustmentEventEntity, UUID> {
   fun findByDeliusAdjustmentIdAndEventType(deliusAdjustmentId: Long, eventType: AdjustmentEventType): AdjustmentEventEntity?
 
+  fun countByAppointmentAndEventTypeAndTriggerType(
+    appointment: AppointmentEntity,
+    eventType: AdjustmentEventType,
+    triggerType: AdjustmentEventTriggerType,
+  ): Long
+
   fun findByAppointmentOrderByCreatedAtAsc(appointment: AppointmentEntity): List<AdjustmentEventEntity>
 
   @Query(
