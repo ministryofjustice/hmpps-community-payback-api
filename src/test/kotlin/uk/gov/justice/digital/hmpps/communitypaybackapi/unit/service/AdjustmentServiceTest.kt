@@ -688,6 +688,19 @@ class AdjustmentServiceTest {
     }
 
     @Test
+    fun `already recorded deletion returns success without deleting or publishing again`() {
+      val adjustmentId = UUID.randomUUID()
+      val eventId = UUID.randomUUID()
+      every { adjustmentIdGenerator.generateId(DeleteAdjustmentProperties(adjustmentId)) } returns eventId
+      every { adjustmentEventEntityRepository.existsById(eventId) } returns true
+
+      assertThat(service.deleteAdjustment(adjustmentId, USERNAME)).isEqualTo(DeleteAdjustmentResult.Success)
+
+      verify { communityPaybackAndDeliusClient wasNot Called }
+      verify { springEventPublisher wasNot Called }
+    }
+
+    @Test
     fun `deletes a stored adjustment without a CREATE event`() {
       val adjustment = AdjustmentEntity(
         id = UUID.randomUUID(),

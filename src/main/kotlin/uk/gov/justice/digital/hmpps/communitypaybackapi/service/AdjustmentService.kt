@@ -313,6 +313,7 @@ class AdjustmentService(
     triggerType: AdjustmentEventTriggerType = AdjustmentEventTriggerType.APPOINTMENT_TASK,
   ): DeleteAdjustmentResult {
     val eventId = adjustmentIdGenerator.generateId(DeleteAdjustmentProperties(adjustmentId))
+    if (adjustmentEventEntityRepository.existsById(eventId)) return DeleteAdjustmentResult.Success
 
     val eventToDelete = adjustmentEventEntityRepository.findByIdOrNull(adjustmentId)
     val adjustment = adjustmentEntityRepository.findByIdOrNull(adjustmentId) ?: eventToDelete?.adjustment

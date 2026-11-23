@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.integration
 
+import com.github.tomakehurst.wiremock.client.WireMock
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
@@ -592,6 +593,39 @@ class AdminAdjustmentIT : IntegrationTestBase() {
 
       CommunityPaybackAndDeliusMockServer.verifyDeleteAdjustment(reference = adjustmentId, count = 1)
 
+      domainEventAsserter.assertEventCount("community-payback.adjustment.deleted", 1)
+    }
+
+    @Test
+    fun `repeated deletion preserves the original audit event and only publishes once`() {
+      adjustmentEventEntityRepository.save(
+        AdjustmentEventEntity.valid(ctx).copy(id = adjustmentId, eventType = AdjustmentEventType.CREATE),
+      )
+      CommunityPaybackAndDeliusMockServer.setupDeleteAdjustmentResponse(reference = adjustmentId)
+
+      webTestClient.delete()
+        .uri("/admin/adjustments/$adjustmentId")
+        .addAdminUiAuthHeader("original-user")
+        .exchange().expectStatus().isNoContent
+
+      val original = adjustmentEventEntityRepository.findAll().single { it.eventType == AdjustmentEventType.DELETE }
+      WireMock.stubFor(
+        WireMock.delete("/community-payback-and-delius/adjustments/$adjustmentId")
+          .willReturn(WireMock.aResponse().withStatus(404)),
+      )
+
+      webTestClient.delete()
+        .uri("/admin/adjustments/$adjustmentId")
+        .addAdminUiAuthHeader("different-user")
+        .exchange().expectStatus().isNoContent
+
+      val after = adjustmentEventEntityRepository.findAll().single { it.eventType == AdjustmentEventType.DELETE }
+      assertThat(after.triggeredBy).isEqualTo("original-user")
+      assertThat(after.triggeredAt).isEqualTo(original.triggeredAt)
+      assertThat(after.createdAt).isEqualTo(original.createdAt)
+      assertThat(after.triggerType).isEqualTo(original.triggerType)
+      assertThat(adjustmentEventEntityRepository.count()).isEqualTo(2)
+      CommunityPaybackAndDeliusMockServer.verifyDeleteAdjustment(reference = adjustmentId, count = 1)
       domainEventAsserter.assertEventCount("community-payback.adjustment.deleted", 1)
     }
 
