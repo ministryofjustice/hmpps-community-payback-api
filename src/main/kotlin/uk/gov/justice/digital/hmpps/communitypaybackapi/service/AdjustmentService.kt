@@ -174,7 +174,14 @@ class AdjustmentService(
     upwDetailsId: UnpaidWorkDetailsIdDto,
     createAdjustment: CreateAdjustmentDto,
     username: String,
-    adjustmentEventTriggerType: AdjustmentEventTriggerType = AdjustmentEventTriggerType.APPOINTMENT_TASK,
+  ): AdjustmentDto = createAdjustment(upwDetailsId, createAdjustment, username, AdjustmentEventTriggerType.APPOINTMENT_TASK)
+
+  @Transactional
+  fun createAdjustment(
+    upwDetailsId: UnpaidWorkDetailsIdDto,
+    createAdjustment: CreateAdjustmentDto,
+    username: String,
+    adjustmentEventTriggerType: AdjustmentEventTriggerType,
   ): AdjustmentDto {
     val validationContext = AdjustmentValidationContext(upwDetailsId, username)
     val validationResult = adjustmentValidationService.validate(createAdjustment, validationContext)
@@ -261,7 +268,13 @@ class AdjustmentService(
   fun deleteAdjustment(
     adjustmentId: UUID,
     username: String,
-    adjustmentEventTriggerType: AdjustmentEventTriggerType = AdjustmentEventTriggerType.APPOINTMENT_TASK,
+  ): DeleteAdjustmentResult = deleteAdjustment(adjustmentId, username, AdjustmentEventTriggerType.APPOINTMENT_TASK)
+
+  @Transactional
+  fun deleteAdjustment(
+    adjustmentId: UUID,
+    username: String,
+    adjustmentEventTriggerType: AdjustmentEventTriggerType,
   ): DeleteAdjustmentResult {
     val eventId = adjustmentIdGenerator.generateId(DeleteAdjustmentProperties(adjustmentId))
 
