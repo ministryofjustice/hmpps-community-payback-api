@@ -23,6 +23,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectTypeGroupDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.BadRequestException
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentTaskEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentTaskEntityRepository
@@ -278,7 +279,10 @@ class AppointmentTaskServiceTest {
     fun `adjustment without an appointment does not complete tasks`() {
       service.closeTravelTimeTaskOnAdjustmentCreation(
         AdjustmentCreatedEvent.valid(appointment = null).copy(
-          trigger = AdjustmentEventTrigger.valid().copy(triggeredBy = "null"),
+          trigger = AdjustmentEventTrigger.valid().copy(
+            triggerType = AdjustmentEventTriggerType.APPOINTMENT_TASK,
+            triggeredBy = "null",
+          ),
         ),
       )
 
@@ -294,13 +298,14 @@ class AppointmentTaskServiceTest {
       val task = AppointmentTaskEntity.validPending()
       val triggeredAt = OffsetDateTime.now()
 
-      every { appointmentTaskEntityRepository.findByIdOrNull(task.id) } returns task
+      every { appointmentTaskEntityRepository.findByAppointmentId(task.appointment.id) } returns listOf(task)
       every { contextService.getUserName() } returns "currentUsername"
       every { appointmentTaskEntityRepository.save(any()) } returnsArgument 0
 
       service.closeTravelTimeTaskOnAdjustmentCreation(
         AdjustmentCreatedEvent.valid().copy(
           trigger = AdjustmentEventTrigger.valid().copy(
+            triggerType = AdjustmentEventTriggerType.APPOINTMENT_TASK,
             triggeredAt = triggeredAt,
             triggeredBy = task.id.toString(),
           ),
@@ -322,6 +327,7 @@ class AppointmentTaskServiceTest {
       service.closeTravelTimeTaskOnAdjustmentCreation(
         AdjustmentCreatedEvent.valid(appointment = task.appointment).copy(
           trigger = AdjustmentEventTrigger.valid().copy(
+            triggerType = AdjustmentEventTriggerType.APPOINTMENT_TASK,
             triggeredAt = triggeredAt,
             triggeredBy = "currentUsername",
           ),

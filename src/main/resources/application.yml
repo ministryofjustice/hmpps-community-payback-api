@@ -102,6 +102,12 @@ tasks:
   travel-time:
     enabled: false
 
+adjustments:
+  automated-travel-time:
+    enabled: false
+    # Comma separated list of provider codes that automated travel time applies to
+    provider-codes: N07 # London
+
 course:
   completions:
     visibility:

@@ -536,6 +536,67 @@ class AdjustmentServiceTest {
   }
 
   @Nested
+  inner class CreateAdjustmentWithTriggerType {
+
+    @Test
+    fun `automated adjustments use fresh references and record the provided trigger type`() {
+      val reason = AdjustmentReasonEntity.valid().copy(maxMinutesAllowed = 180)
+      val appointment = AppointmentEntity.valid()
+      val request = CreateAdjustmentDto.valid().copy(
+        taskId = null,
+        adjustmentReasonId = reason.id,
+        appointmentId = appointment.id,
+        type = CreateAdjustmentTypeDto.Positive,
+        minutes = 60,
+        adjustmentDate = LocalDate.now().minusDays(1),
+      )
+
+      every { adjustmentValidationService.validate(request, any()) } answers {
+        val ctx = it.invocation.args[1] as AdjustmentValidationContext
+        ctx.reason = reason
+        ctx.appointment = appointment
+        ctx.unpaidWorkDetails = UnpaidWorkDetailsDto.valid()
+        ctx.remainingMinutesAllowance = Duration.ofMinutes(600)
+        ValidationResult.success()
+      }
+      every { communityPaybackAndDeliusClient.postAdjustments(USERNAME, any()) } returns listOf(NDAdjustmentPostResponse(5L))
+      val saved = mutableListOf<AdjustmentEntity>()
+      every { adjustmentEntityRepository.save(capture(saved)) } returnsArgument 0
+
+      repeat(2) {
+        service.createAdjustment(
+          upwDetailsId = UNPAID_WORK_DETAILS,
+          createAdjustment = request,
+          username = USERNAME,
+          adjustmentEventTriggerType = AdjustmentEventTriggerType.AUTOMATED_TRAVEL_TIME,
+        )
+      }
+
+      assertThat(saved).hasSize(2)
+      assertThat(saved.map { it.id }).doesNotHaveDuplicates()
+      saved.forEach { adjustment ->
+        verify(exactly = 1) {
+          communityPaybackAndDeliusClient.postAdjustments(
+            USERNAME,
+            listOf(request.toNDAdjustmentRequest(CRN, EVENT_NUMBER, reason, adjustment.id, request.adjustmentDate!!)),
+          )
+          springEventPublisher.publishEvent(
+            AdjustmentCreatedEvent(
+              adjustmentEntity = adjustment,
+              trigger = AdjustmentEventTrigger(
+                triggeredAt = OffsetDateTime.now(clock),
+                triggerType = AdjustmentEventTriggerType.AUTOMATED_TRAVEL_TIME,
+                triggeredBy = appointment.id.toString(),
+              ),
+            ),
+          )
+        }
+      }
+      verify { adjustmentIdGenerator wasNot Called }
+    }
+  }
+
+  @Nested
   inner class DeleteAdjustment {
 
     @BeforeEach
@@ -570,6 +631,33 @@ class AdjustmentServiceTest {
             trigger = AdjustmentEventTrigger(
               triggeredAt = OffsetDateTime.now(clock),
               triggerType = AdjustmentEventTriggerType.APPOINTMENT_TASK,
+              triggeredBy = USERNAME,
+            ),
+          ),
+        )
+      }
+    }
+
+    @Test
+    fun `records the provided trigger type on the adjustment deleted event`() {
+      val adjustmentId = UUID.randomUUID()
+      val createEvent = AdjustmentEventEntity.valid().copy(id = adjustmentId, eventType = AdjustmentEventType.CREATE)
+      every { adjustmentEventEntityRepository.findByIdOrNull(adjustmentId) } returns createEvent
+
+      val expectedId = UUID.randomUUID()
+      every { adjustmentIdGenerator.generateId(DeleteAdjustmentProperties(adjustmentId)) } returns expectedId
+
+      val result = service.deleteAdjustment(adjustmentId, USERNAME, AdjustmentEventTriggerType.AUTOMATED_TRAVEL_TIME)
+
+      assertThat(result).isEqualTo(DeleteAdjustmentResult.Success)
+      verify {
+        springEventPublisher.publishEvent(
+          AdjustmentDeletedEvent(
+            id = expectedId,
+            eventToDelete = createEvent,
+            trigger = AdjustmentEventTrigger(
+              triggeredAt = OffsetDateTime.now(clock),
+              triggerType = AdjustmentEventTriggerType.AUTOMATED_TRAVEL_TIME,
               triggeredBy = USERNAME,
             ),
           ),
