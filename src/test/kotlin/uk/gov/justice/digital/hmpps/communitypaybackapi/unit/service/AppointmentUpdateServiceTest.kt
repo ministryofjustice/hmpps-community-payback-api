@@ -5,6 +5,7 @@ import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.verify
+import io.mockk.verifyOrder
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -16,6 +17,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.ProjectDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.ConflictException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.InternalServerErrorException
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventService
@@ -45,6 +47,9 @@ class AppointmentUpdateServiceTest {
 
   @RelaxedMockK
   lateinit var springEventPublisher: SpringEventPublisher
+
+  @RelaxedMockK
+  lateinit var appointmentEntityRepository: AppointmentEntityRepository
 
   @InjectMockKs
   lateinit var service: AppointmentUpdateService
@@ -77,13 +82,14 @@ class AppointmentUpdateServiceTest {
         trigger = TRIGGER,
       )
 
-      verify {
-        springEventPublisher.publishEvent(any())
+      verifyOrder {
+        appointmentEntityRepository.lockById(appointmentEntity.id)
         communityPaybackAndDeliusClient.updateAppointment(
           projectCode = PROJECT_CODE,
           appointmentId = DELIUS_APPOINTMENT_ID,
           updateAppointment = any(),
         )
+        springEventPublisher.publishEvent(any())
       }
     }
 

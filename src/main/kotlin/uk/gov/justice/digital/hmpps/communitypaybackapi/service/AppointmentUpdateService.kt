@@ -9,6 +9,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UpdateAppointmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.ConflictException
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.InternalServerErrorException
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AppointmentUpdatedEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.SpringEventPublisher
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.mappers.toNDUpdateAppointment
@@ -20,6 +21,7 @@ class AppointmentUpdateService(
   private val communityPaybackAndDeliusClient: CommunityPaybackAndDeliusClient,
   private val updateAppointmentValidationService: UpdateAppointmentValidationService,
   private val springEventPublisher: SpringEventPublisher,
+  private val appointmentEntityRepository: AppointmentEntityRepository,
 ) {
   private companion object {
     private val log = LoggerFactory.getLogger(this::class.java)
@@ -34,6 +36,8 @@ class AppointmentUpdateService(
     val validatedUpdate = getValidatedUpdate(existingAppointment, update)
 
     val appointmentEntity = appointmentRetrievalService.getOrCreateAppointmentEntity(existingAppointment)
+    // Serialize the Delius PUT and its adjustment processing until this transaction commits.
+    appointmentEntityRepository.lockById(appointmentEntity.id)
 
     val updateEventDetails = AppointmentUpdatedEvent(
       updateDto = validatedUpdate,
