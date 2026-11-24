@@ -41,6 +41,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.service.DeleteAdjustment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ValidatedAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AppointmentCreatedEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AppointmentUpdatedEvent
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.SentryService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.unit.util.WebClientResponseExceptionFactory
 import java.time.Instant
 import java.time.LocalDate
@@ -56,6 +57,9 @@ class AutomatedTravelTimeServiceTest {
 
   @RelaxedMockK
   private lateinit var adjustmentReasonEntityRepository: AdjustmentReasonEntityRepository
+
+  @RelaxedMockK
+  private lateinit var sentryService: SentryService
 
   private lateinit var service: AutomatedTravelTimeService
 
@@ -84,6 +88,7 @@ class AutomatedTravelTimeServiceTest {
       clock = ClockConfiguration.MutableClock(Instant.now()),
       adjustmentEventEntityRepository = adjustmentEventEntityRepository,
       adjustmentReasonEntityRepository = adjustmentReasonEntityRepository,
+      sentryService = sentryService,
     )
   }
 
@@ -131,6 +136,7 @@ class AutomatedTravelTimeServiceTest {
   }
 
   private fun verifyTravelTimeCreated(adjustmentDate: LocalDate = appointmentDate) {
+    verify(exactly = 0) { sentryService.captureException(any()) }
     verify(exactly = 1) {
       adjustmentService.createAdjustment(
         upwDetailsId = UnpaidWorkDetailsIdDto(appointment.crn, appointment.deliusEventNumber),
@@ -148,7 +154,19 @@ class AutomatedTravelTimeServiceTest {
     }
   }
 
+  private fun verifyCreationFailureReported(exception: Exception) {
+    verify(exactly = 1) {
+      sentryService.captureException(
+        match {
+          it.message == "Failed to create automated travel time adjustment for Delius appointment ${appointment.deliusId}" &&
+            it.cause === exception
+        },
+      )
+    }
+  }
+
   private fun verifyNoAdjustmentChanges() {
+    verify(exactly = 0) { sentryService.captureException(any()) }
     verify(exactly = 0) { adjustmentService.createAdjustment(any(), any(), any(), any()) }
     verify(exactly = 0) { adjustmentService.deleteAdjustment(any(), any(), any()) }
   }
@@ -244,14 +262,22 @@ class AutomatedTravelTimeServiceTest {
       assertThatThrownBy { service.onAppointmentCreated(createdEvent()) }
         .isInstanceOf(IllegalStateException::class.java)
         .hasMessage("Could not find adjustment reason with code 'TTX'")
+
+      verify(exactly = 1) {
+        sentryService.captureException(
+          match { it.cause is IllegalStateException && it.cause?.message == "Could not find adjustment reason with code 'TTX'" },
+        )
+      }
     }
 
     @Test
-    fun `failure creating the adjustment is propagated`() {
+    fun `validation failure creating the adjustment is reported to Sentry and propagated`() {
       val exception = BadRequestException("Credited minutes exceeds the remaining time")
       every { adjustmentService.createAdjustment(any(), any(), any(), any()) } throws exception
 
       assertThatThrownBy { service.onAppointmentCreated(createdEvent()) }.isSameAs(exception)
+
+      verifyCreationFailureReported(exception)
     }
   }
 
@@ -263,6 +289,16 @@ class AutomatedTravelTimeServiceTest {
       service.onAppointmentUpdated(updatedEvent(outcome = outcome(attended = true)))
 
       verifyTravelTimeCreated()
+    }
+
+    @Test
+    fun `upstream failure creating the adjustment is reported to Sentry and propagated`() {
+      val exception = WebClientResponseExceptionFactory.internalServerError()
+      every { adjustmentService.createAdjustment(any(), any(), any(), any()) } throws exception
+
+      assertThatThrownBy { service.onAppointmentUpdated(updatedEvent()) }.isSameAs(exception)
+
+      verifyCreationFailureReported(exception)
     }
 
     @Test

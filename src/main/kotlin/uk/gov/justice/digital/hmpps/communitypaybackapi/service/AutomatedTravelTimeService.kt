@@ -20,6 +20,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ContactOutcomeEnt
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.ProjectTypeGroup
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AppointmentCreatedEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AppointmentUpdatedEvent
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.SentryService
 import java.time.Clock
 
 @Service
@@ -30,6 +31,7 @@ class AutomatedTravelTimeService(
   private val clock: Clock,
   private val adjustmentEventEntityRepository: AdjustmentEventEntityRepository,
   private val adjustmentReasonEntityRepository: AdjustmentReasonEntityRepository,
+  private val sentryService: SentryService,
 ) {
   companion object {
     const val TRAVEL_TIME_REASON_CODE = "TTX"
@@ -84,26 +86,34 @@ class AutomatedTravelTimeService(
     triggerType = AdjustmentEventTriggerType.AUTOMATED_TRAVEL_TIME,
   ).firstOrNull()
 
+  @SuppressWarnings("TooGenericExceptionCaught")
   private fun createTravelTimeAdjustment(
     appointment: AppointmentEntity,
     username: String,
   ) {
-    val travelTimeReason = adjustmentReasonEntityRepository.findByDeliusCode(TRAVEL_TIME_REASON_CODE)
-      ?: error("Could not find adjustment reason with code '$TRAVEL_TIME_REASON_CODE'")
+    try {
+      val travelTimeReason = adjustmentReasonEntityRepository.findByDeliusCode(TRAVEL_TIME_REASON_CODE)
+        ?: error("Could not find adjustment reason with code '$TRAVEL_TIME_REASON_CODE'")
 
-    adjustmentService.createAdjustment(
-      upwDetailsId = UnpaidWorkDetailsIdDto(appointment.crn, appointment.deliusEventNumber),
-      createAdjustment = CreateAdjustmentDto(
-        taskId = null,
-        type = CreateAdjustmentTypeDto.Negative,
-        minutes = TRAVEL_TIME_MINUTES,
-        adjustmentReasonId = travelTimeReason.id,
-        adjustmentDate = appointment.date,
-        appointmentId = appointment.id,
-      ),
-      username = username,
-      adjustmentEventTriggerType = AdjustmentEventTriggerType.AUTOMATED_TRAVEL_TIME,
-    )
+      adjustmentService.createAdjustment(
+        upwDetailsId = UnpaidWorkDetailsIdDto(appointment.crn, appointment.deliusEventNumber),
+        createAdjustment = CreateAdjustmentDto(
+          taskId = null,
+          type = CreateAdjustmentTypeDto.Negative,
+          minutes = TRAVEL_TIME_MINUTES,
+          adjustmentReasonId = travelTimeReason.id,
+          adjustmentDate = appointment.date,
+          appointmentId = appointment.id,
+        ),
+        username = username,
+        adjustmentEventTriggerType = AdjustmentEventTriggerType.AUTOMATED_TRAVEL_TIME,
+      )
+    } catch (exception: Exception) {
+      val message = "Failed to create automated travel time adjustment for Delius appointment ${appointment.deliusId}"
+      log.error(message, exception)
+      sentryService.captureException(IllegalStateException(message, exception))
+      throw exception
+    }
   }
 
   private fun deleteTravelTimeAdjustment(
