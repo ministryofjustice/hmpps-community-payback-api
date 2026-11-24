@@ -546,7 +546,7 @@ class AdjustmentServiceTest {
       taskId = null,
       adjustmentReasonId = reason.id,
       appointmentId = appointment.id,
-      type = CreateAdjustmentTypeDto.Positive,
+      type = CreateAdjustmentTypeDto.Negative,
       minutes = 60,
       adjustmentDate = LocalDate.now().minusDays(1),
     )
