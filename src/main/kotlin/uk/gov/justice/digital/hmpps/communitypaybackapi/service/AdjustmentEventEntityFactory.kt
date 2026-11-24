@@ -1,8 +1,6 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.service
 
 import org.springframework.stereotype.Service
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAdjustmentTypeDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventAdjustmentType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventType
@@ -16,20 +14,18 @@ class AdjustmentEventEntityFactory {
   fun buildAdjustmentCreated(
     details: AdjustmentCreatedEvent,
   ) = AdjustmentEventEntity(
-    id = details.id,
+    id = details.adjustmentEntity.id,
     eventType = AdjustmentEventType.CREATE,
     triggeredAt = details.trigger.triggeredAt,
     triggerType = details.trigger.triggerType,
     triggeredBy = details.trigger.triggeredBy,
-    deliusAdjustmentId = details.deliusAdjustmentId,
-    appointment = details.appointmentEntity,
-    adjustmentType = when (details.createDto.type) {
-      CreateAdjustmentTypeDto.Positive -> AdjustmentEventAdjustmentType.POSITIVE
-      CreateAdjustmentTypeDto.Negative -> AdjustmentEventAdjustmentType.NEGATIVE
-    },
-    adjustmentMinutes = details.createDto.minutes,
-    adjustmentDate = details.adjustmentDate,
-    adjustmentReason = details.reason,
+    deliusAdjustmentId = details.adjustmentEntity.deliusId,
+    appointment = details.adjustmentEntity.appointment,
+    adjustmentType = details.adjustmentEntity.type,
+    adjustmentMinutes = details.adjustmentEntity.minutes,
+    adjustmentDate = details.adjustmentEntity.date,
+    adjustmentReason = details.adjustmentEntity.reason,
+    adjustment = details.adjustmentEntity,
   )
 
   fun buildAdjustmentDeleted(
@@ -40,13 +36,14 @@ class AdjustmentEventEntityFactory {
     triggeredAt = deleteDetails.trigger.triggeredAt,
     triggerType = deleteDetails.trigger.triggerType,
     triggeredBy = deleteDetails.trigger.triggeredBy,
-    deliusAdjustmentId = deleteDetails.eventToDelete.deliusAdjustmentId,
-    appointment = deleteDetails.eventToDelete.appointment,
-    adjustmentType = deleteDetails.eventToDelete.adjustmentType,
-    adjustmentMinutes = deleteDetails.eventToDelete.adjustmentMinutes,
-    adjustmentDate = deleteDetails.eventToDelete.adjustmentDate,
-    adjustmentReason = deleteDetails.eventToDelete.adjustmentReason,
+    deliusAdjustmentId = deleteDetails.deliusAdjustmentId,
+    appointment = deleteDetails.appointment,
+    adjustmentType = deleteDetails.adjustmentType,
+    adjustmentMinutes = deleteDetails.adjustmentMinutes,
+    adjustmentDate = deleteDetails.adjustmentDate,
+    adjustmentReason = deleteDetails.adjustmentReason,
     referencedEvent = deleteDetails.eventToDelete,
+    adjustment = deleteDetails.adjustment,
   )
 }
 

@@ -2,15 +2,13 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.unit.service
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAdjustmentDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAdjustmentTypeDto
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventAdjustmentType
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentReasonEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
-import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentEventEntityFactory
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentEventTrigger
@@ -28,22 +26,25 @@ class AdjustmentEventEntityFactoryTest {
     val appointment = AppointmentEntity.valid()
     val reason = AdjustmentReasonEntity.valid()
     val id = UUID.randomUUID()
+    val adjustment = AdjustmentEntity(
+      id = id,
+      deliusId = 2L,
+      crn = appointment.crn,
+      deliusEventNumber = appointment.deliusEventNumber,
+      type = AdjustmentType.NEGATIVE,
+      minutes = 61,
+      date = LocalDate.of(1971, 8, 23),
+      reason = reason,
+      appointment = appointment,
+    )
     val result = AdjustmentEventEntityFactory().buildAdjustmentCreated(
       AdjustmentCreatedEvent(
-        createDto = CreateAdjustmentDto.valid().copy(
-          type = CreateAdjustmentTypeDto.Negative,
-          minutes = 61,
-        ),
-        appointmentEntity = appointment,
-        reason = reason,
-        deliusAdjustmentId = 2L,
+        adjustmentEntity = adjustment,
         trigger = AdjustmentEventTrigger(
           triggeredAt = triggeredAt,
           triggerType = AdjustmentEventTriggerType.APPOINTMENT_TASK,
           triggeredBy = "task id",
         ),
-        id = id,
-        adjustmentDate = LocalDate.of(1971, 8, 23),
       ),
     )
 
@@ -53,11 +54,12 @@ class AdjustmentEventEntityFactoryTest {
     assertThat(result.triggeredBy).isEqualTo("task id")
     assertThat(result.deliusAdjustmentId).isEqualTo(2L)
     assertThat(result.appointment).isEqualTo(appointment)
-    assertThat(result.adjustmentType).isEqualTo(AdjustmentEventAdjustmentType.NEGATIVE)
+    assertThat(result.adjustmentType).isEqualTo(AdjustmentType.NEGATIVE)
     assertThat(result.adjustmentMinutes).isEqualTo(61)
     assertThat(result.adjustmentDate).isEqualTo(LocalDate.of(1971, 8, 23))
     assertThat(result.adjustmentReason).isEqualTo(reason)
     assertThat(result.id).isEqualTo(id)
+    assertThat(result.adjustment).isEqualTo(adjustment)
     assertThat(result.referencedEvent).isNull()
   }
 
@@ -67,8 +69,19 @@ class AdjustmentEventEntityFactoryTest {
     val appointment = AppointmentEntity.valid()
     val reason = AdjustmentReasonEntity.valid()
     val id = UUID.randomUUID()
-    val referencedEvent = AdjustmentEventEntity(
+    val adjustment = AdjustmentEntity(
       id = UUID.randomUUID(),
+      deliusId = 2L,
+      crn = appointment.crn,
+      deliusEventNumber = appointment.deliusEventNumber,
+      type = AdjustmentType.NEGATIVE,
+      minutes = 61,
+      date = LocalDate.of(1971, 8, 23),
+      reason = reason,
+      appointment = appointment,
+    )
+    val referencedEvent = AdjustmentEventEntity(
+      id = adjustment.id,
       eventType = AdjustmentEventType.CREATE,
       createdAt = OffsetDateTime.now().minusHours(1L),
       triggeredAt = triggeredAt.minusHours(1L),
@@ -76,10 +89,11 @@ class AdjustmentEventEntityFactoryTest {
       triggeredBy = "another task id",
       deliusAdjustmentId = 2L,
       appointment = appointment,
-      adjustmentType = AdjustmentEventAdjustmentType.NEGATIVE,
+      adjustmentType = AdjustmentType.NEGATIVE,
       adjustmentMinutes = 61,
       adjustmentDate = LocalDate.of(1971, 8, 23),
       adjustmentReason = reason,
+      adjustment = adjustment,
     )
 
     val result = AdjustmentEventEntityFactory().buildAdjustmentDeleted(
@@ -100,11 +114,12 @@ class AdjustmentEventEntityFactoryTest {
     assertThat(result.triggeredBy).isEqualTo("task id")
     assertThat(result.deliusAdjustmentId).isEqualTo(2L)
     assertThat(result.appointment).isEqualTo(appointment)
-    assertThat(result.adjustmentType).isEqualTo(AdjustmentEventAdjustmentType.NEGATIVE)
+    assertThat(result.adjustmentType).isEqualTo(AdjustmentType.NEGATIVE)
     assertThat(result.adjustmentMinutes).isEqualTo(61)
     assertThat(result.adjustmentDate).isEqualTo(LocalDate.of(1971, 8, 23))
     assertThat(result.adjustmentReason).isEqualTo(reason)
     assertThat(result.id).isEqualTo(id)
+    assertThat(result.adjustment).isEqualTo(adjustment)
     assertThat(result.referencedEvent).isEqualTo(referencedEvent)
   }
 }

@@ -2,13 +2,13 @@ package uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity
 
 import org.springframework.beans.factory.getBean
 import org.springframework.context.ApplicationContext
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventAdjustmentType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentReasonEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentReasonEntityRepository
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.random
@@ -25,7 +25,7 @@ fun AdjustmentEventEntity.Companion.valid() = AdjustmentEventEntity(
   triggeredBy = String.random(20),
   deliusAdjustmentId = Long.random(),
   appointment = AppointmentEntity.valid(),
-  adjustmentType = AdjustmentEventAdjustmentType.entries.random(),
+  adjustmentType = AdjustmentType.entries.random(),
   adjustmentMinutes = Int.random(0, 200),
   adjustmentDate = randomLocalDate(),
   adjustmentReason = AdjustmentReasonEntity.valid(),

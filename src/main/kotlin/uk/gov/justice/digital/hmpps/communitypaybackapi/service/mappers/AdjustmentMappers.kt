@@ -8,8 +8,10 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAdjustmentDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAdjustmentTypeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.domainevent.AdjustmentCreatedDomainEventDetailsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.domainevent.AdjustmentDeletedDomainEventDetailsDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentReasonEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentType
 import java.time.Duration
 import java.time.LocalDate
 import java.util.UUID
@@ -24,6 +26,18 @@ fun NDAdjustment.toDto(): AdjustmentDto = AdjustmentDto(
   },
   reason = this.reason.name,
   reasonCode = this.reason.code,
+)
+
+fun AdjustmentEntity.toDto(): AdjustmentDto = AdjustmentDto(
+  deliusId = deliusId,
+  id = id,
+  date = date,
+  amount = when (type) {
+    AdjustmentType.POSITIVE -> Duration.ofMinutes(minutes.toLong())
+    AdjustmentType.NEGATIVE -> Duration.ofMinutes(-minutes.toLong())
+  },
+  reason = reason.name,
+  reasonCode = reason.deliusCode,
 )
 
 fun CreateAdjustmentDto.toNDAdjustmentRequest(
@@ -49,5 +63,5 @@ fun AdjustmentEventEntity.toAdjustmentCreatedDomainEvent() = AdjustmentCreatedDo
 
 fun AdjustmentEventEntity.toAdjustmentDeletedDomainEvent() = AdjustmentDeletedDomainEventDetailsDto(
   id = this.id,
-  adjustmentCreatedEventId = this.referencedEvent!!.id,
+  adjustmentCreatedEventId = this.referencedEvent?.id,
 )

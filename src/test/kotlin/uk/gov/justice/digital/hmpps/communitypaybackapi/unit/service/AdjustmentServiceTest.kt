@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.communitypaybackapi.unit.service
 
+import io.mockk.Called
 import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.RelaxedMockK
@@ -8,6 +9,7 @@ import io.mockk.verify
 import io.mockk.verifyOrder
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -23,19 +25,27 @@ import org.springframework.data.repository.findByIdOrNull
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.CommunityPaybackAndDeliusClient
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAdjustment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAdjustmentPostResponse
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAdjustmentReferenceRequest
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAdjustmentResponse
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAdjustmentType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDNameCode
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.validation.ValidationResult
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.AdjustmentFilterTypeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAdjustmentDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.CreateAdjustmentTypeDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsDto
 import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.UnpaidWorkDetailsIdDto
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.BadRequestException
+import uk.gov.justice.digital.hmpps.communitypaybackapi.dto.exceptions.ConflictException
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventTriggerType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentReasonEntity
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentReasonEntityRepository
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEntity
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.client.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.dto.valid
@@ -43,10 +53,12 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.entity.valid
 import uk.gov.justice.digital.hmpps.communitypaybackapi.integration.config.ClockConfiguration
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentEventTrigger
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentIdGenerator
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentIdGenerator.AutomatedAdjustmentProperties
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentIdGenerator.DeleteAdjustmentProperties
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentValidationService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentValidationService.AdjustmentValidationContext
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.DefaultAdjustmentIdGenerator
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.DeleteAdjustmentResult
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AdjustmentCreatedEvent
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent.AdjustmentDeletedEvent
@@ -78,7 +90,13 @@ class AdjustmentServiceTest {
   lateinit var adjustmentIdGenerator: AdjustmentIdGenerator
 
   @RelaxedMockK
+  lateinit var adjustmentEntityRepository: AdjustmentEntityRepository
+
+  @RelaxedMockK
   lateinit var adjustmentEventEntityRepository: AdjustmentEventEntityRepository
+
+  @RelaxedMockK
+  lateinit var adjustmentReasonEntityRepository: AdjustmentReasonEntityRepository
 
   val clock: Clock = ClockConfiguration.MutableClock(Instant.now())
 
@@ -260,6 +278,178 @@ class AdjustmentServiceTest {
   }
 
   @Nested
+  inner class ImportAdjustment {
+    private val reason = AdjustmentReasonEntity.valid()
+    private val adjustment = NDAdjustment.valid().copy(
+      reference = null,
+      reason = NDNameCode(reason.name, reason.deliusCode),
+      type = NDAdjustmentType.NEGATIVE,
+    )
+    private val reference = UUID.randomUUID()
+    private val savedAdjustment = AdjustmentEntity(
+      id = reference,
+      deliusId = adjustment.id,
+      crn = CRN,
+      deliusEventNumber = EVENT_NUMBER,
+      type = AdjustmentType.NEGATIVE,
+      minutes = adjustment.minutes,
+      date = adjustment.date,
+      reason = reason,
+      appointment = null,
+    )
+
+    @BeforeEach
+    fun setUp() {
+      every { adjustmentEntityRepository.findByDeliusId(adjustment.id) } returns null
+      every { adjustmentEntityRepository.findByIdOrNull(any()) } returns null
+      every { adjustmentEventEntityRepository.findByDeliusAdjustmentIdAndEventType(adjustment.id, AdjustmentEventType.CREATE) } returns null
+      every { communityPaybackAndDeliusClient.getAdjustments(CRN, EVENT_NUMBER) } returns NDAdjustmentResponse(listOf(adjustment))
+      every { adjustmentReasonEntityRepository.findByDeliusCode(reason.deliusCode) } returns reason
+      every { adjustmentEntityRepository.saveAndFlush(any()) } answers { firstArg<AdjustmentEntity>() }
+    }
+
+    @Test
+    fun `returns the local adjustment without checking CREATE events or calling Delius`() {
+      every { adjustmentEntityRepository.findByDeliusId(adjustment.id) } returns savedAdjustment
+
+      assertThat(importAdjustment()).isEqualTo(savedAdjustment.toDto())
+
+      verify { listOf(adjustmentEventEntityRepository, communityPaybackAndDeliusClient) wasNot Called }
+    }
+
+    @Test
+    fun `returns null when the local adjustment belongs to another event`() {
+      every { adjustmentEntityRepository.findByDeliusId(adjustment.id) } returns savedAdjustment.copy(deliusEventNumber = EVENT_NUMBER + 1)
+
+      assertThat(importAdjustment()).isNull()
+
+      verify { listOf(adjustmentEventEntityRepository, communityPaybackAndDeliusClient) wasNot Called }
+    }
+
+    @Test
+    fun `links the CREATE event UUID when Delius returns no reference`() {
+      val createEvent = stubCreateEvent()
+
+      assertThat(importAdjustment()).isEqualTo(savedAdjustment.toDto())
+
+      verify { adjustmentEntityRepository.saveAndFlush(savedAdjustment.copy(appointment = createEvent.appointment)) }
+      verify(exactly = 1) { communityPaybackAndDeliusClient.setAdjustmentReference(adjustment.id, NDAdjustmentReferenceRequest(createEvent.id)) }
+    }
+
+    @Test
+    fun `uses the CREATE event UUID and appointment when Delius returns the same reference`() {
+      val createEvent = stubCreateEvent()
+      every { communityPaybackAndDeliusClient.getAdjustments(CRN, EVENT_NUMBER) } returns NDAdjustmentResponse(listOf(adjustment.copy(reference = reference)))
+
+      assertThat(importAdjustment()).isEqualTo(savedAdjustment.toDto())
+
+      verify { adjustmentEntityRepository.saveAndFlush(savedAdjustment.copy(appointment = createEvent.appointment)) }
+      verify(exactly = 0) { communityPaybackAndDeliusClient.setAdjustmentReference(any(), any()) }
+    }
+
+    @Test
+    fun `reuses the reference returned by Delius without relinking`() {
+      every { communityPaybackAndDeliusClient.getAdjustments(CRN, EVENT_NUMBER) } returns NDAdjustmentResponse(listOf(adjustment.copy(reference = reference)))
+
+      assertThat(importAdjustment()).isEqualTo(savedAdjustment.toDto())
+
+      verify { adjustmentEntityRepository.saveAndFlush(savedAdjustment) }
+      verify(exactly = 0) { communityPaybackAndDeliusClient.setAdjustmentReference(any(), any()) }
+    }
+
+    @Test
+    fun `saves a new adjustment before linking its generated UUID`() {
+      val imported = requireNotNull(importAdjustment())
+      val generatedReference = requireNotNull(imported.id)
+      assertThat(imported).isEqualTo(adjustment.copy(reference = generatedReference).toDto())
+
+      verifyOrder {
+        adjustmentEntityRepository.saveAndFlush(savedAdjustment.copy(id = generatedReference))
+        communityPaybackAndDeliusClient.setAdjustmentReference(adjustment.id, NDAdjustmentReferenceRequest(generatedReference))
+      }
+    }
+
+    @Test
+    fun `publishes no event when linking succeeds`() {
+      assertThat(importAdjustment()).isNotNull()
+
+      verify { springEventPublisher wasNot Called }
+    }
+
+    @Test
+    fun `publishes no event when linking fails`() {
+      every { communityPaybackAndDeliusClient.setAdjustmentReference(adjustment.id, any()) } throws WebClientResponseExceptionFactory.conflict()
+
+      assertThatThrownBy { importAdjustment() }.isInstanceOf(ConflictException::class.java)
+
+      verify { springEventPublisher wasNot Called }
+    }
+
+    @Test
+    fun `returns null when the requested ID is absent from the Delius response`() {
+      every { communityPaybackAndDeliusClient.getAdjustments(CRN, EVENT_NUMBER) } returns NDAdjustmentResponse(listOf(adjustment.copy(id = adjustment.id + 1)))
+
+      assertThat(importAdjustment()).isNull()
+
+      verify(exactly = 0) { adjustmentEntityRepository.saveAndFlush(any()) }
+    }
+
+    @Test
+    fun `returns null when Delius returns not found`() {
+      every { communityPaybackAndDeliusClient.getAdjustments(CRN, EVENT_NUMBER) } throws WebClientResponseExceptionFactory.notFound()
+
+      assertThat(importAdjustment()).isNull()
+    }
+
+    @Test
+    fun `rejects an unconfigured adjustment reason`() {
+      every { adjustmentReasonEntityRepository.findByDeliusCode(reason.deliusCode) } returns null
+
+      assertThatThrownBy { importAdjustment() }
+        .isInstanceOf(BadRequestException::class.java)
+        .hasMessage("Unknown Delius adjustment reason '${reason.deliusCode}'")
+
+      verify(exactly = 0) { communityPaybackAndDeliusClient.setAdjustmentReference(any(), any()) }
+    }
+
+    @Test
+    fun `rejects a Delius reference owned by a different local adjustment`() {
+      every { communityPaybackAndDeliusClient.getAdjustments(CRN, EVENT_NUMBER) } returns NDAdjustmentResponse(listOf(adjustment.copy(reference = reference)))
+      every { adjustmentEntityRepository.findByIdOrNull(reference) } returns savedAdjustment.copy(deliusId = adjustment.id + 1)
+
+      assertThatThrownBy { importAdjustment() }
+        .isInstanceOf(ConflictException::class.java)
+        .hasMessage("Community Payback reference $reference belongs to a different Delius adjustment")
+
+      verify(exactly = 0) { adjustmentEntityRepository.saveAndFlush(any()) }
+    }
+
+    @Test
+    fun `rejects a Delius reference that differs from the CREATE event UUID`() {
+      stubCreateEvent()
+      every { communityPaybackAndDeliusClient.getAdjustments(CRN, EVENT_NUMBER) } returns NDAdjustmentResponse(listOf(adjustment.copy(reference = UUID.randomUUID())))
+
+      assertThatThrownBy { importAdjustment() }
+        .isInstanceOf(ConflictException::class.java)
+        .hasMessage("Delius adjustment ${adjustment.id} already has a different reference")
+
+      verify(exactly = 0) { communityPaybackAndDeliusClient.setAdjustmentReference(any(), any()) }
+    }
+
+    private fun stubCreateEvent(): AdjustmentEventEntity {
+      val createEvent = AdjustmentEventEntity.valid().copy(
+        id = reference,
+        deliusAdjustmentId = adjustment.id,
+        eventType = AdjustmentEventType.CREATE,
+      )
+      every { adjustmentEventEntityRepository.findByDeliusAdjustmentIdAndEventType(adjustment.id, AdjustmentEventType.CREATE) } returns createEvent
+      return createEvent
+    }
+
+    private fun importAdjustment() = service.importAdjustment(UNPAID_WORK_DETAILS, adjustment.id)
+  }
+
+  @Nested
   inner class CreateAdjustment {
 
     @Test
@@ -271,6 +461,7 @@ class AdjustmentServiceTest {
 
       val request = CreateAdjustmentDto.valid().copy(
         adjustmentReasonId = reason.id,
+        type = CreateAdjustmentTypeDto.Positive,
         minutes = 50,
         adjustmentDate = dateOfAdjustment,
       )
@@ -305,6 +496,19 @@ class AdjustmentServiceTest {
         )
       } returns listOf(NDAdjustmentPostResponse(5L))
 
+      val adjustment = AdjustmentEntity(
+        id = id,
+        deliusId = 5L,
+        crn = CRN,
+        deliusEventNumber = EVENT_NUMBER,
+        type = AdjustmentType.POSITIVE,
+        minutes = 50,
+        date = dateOfAdjustment,
+        reason = reason,
+        appointment = appointment,
+      )
+      every { adjustmentEntityRepository.save(adjustment) } returns adjustment
+
       service.createAdjustment(
         upwDetailsId = UNPAID_WORK_DETAILS,
         createAdjustment = request,
@@ -318,22 +522,15 @@ class AdjustmentServiceTest {
           username = any(),
           adjustmentRequests = match { it.size == 1 && it.first().reference == id },
         )
-      }
-
-      verify {
+        adjustmentEntityRepository.save(adjustment)
         springEventPublisher.publishEvent(
           AdjustmentCreatedEvent(
-            id = id,
-            createDto = request,
-            appointmentEntity = appointment,
-            reason = reason,
-            deliusAdjustmentId = 5L,
+            adjustmentEntity = adjustment,
             trigger = AdjustmentEventTrigger(
               triggeredAt = OffsetDateTime.now(clock),
               triggerType = AdjustmentEventTriggerType.APPOINTMENT_TASK,
               triggeredBy = appointment.id.toString(),
             ),
-            adjustmentDate = dateOfAdjustment,
           ),
         )
       }
@@ -341,7 +538,182 @@ class AdjustmentServiceTest {
   }
 
   @Nested
+  inner class CreateAutomatedAdjustment {
+
+    private val reason = AdjustmentReasonEntity.valid().copy(maxMinutesAllowed = 180)
+    private val appointment = AppointmentEntity.valid()
+    private val request = CreateAdjustmentDto.valid().copy(
+      taskId = null,
+      adjustmentReasonId = reason.id,
+      appointmentId = appointment.id,
+      type = CreateAdjustmentTypeDto.Negative,
+      minutes = 60,
+      adjustmentDate = LocalDate.now().minusDays(1),
+    )
+
+    @BeforeEach
+    fun setUp() {
+      every { adjustmentValidationService.validate(request, any()) } answers {
+        val ctx = it.invocation.args[1] as AdjustmentValidationContext
+        ctx.reason = reason
+        ctx.appointment = appointment
+        ctx.unpaidWorkDetails = UnpaidWorkDetailsDto.valid()
+        ctx.remainingMinutesAllowance = Duration.ofMinutes(600)
+        ValidationResult.success()
+      }
+      every { communityPaybackAndDeliusClient.postAdjustments(USERNAME, any()) } returns listOf(NDAdjustmentPostResponse(5L))
+      every { adjustmentEntityRepository.save(any()) } returnsArgument 0
+    }
+
+    private fun previousCreations(count: Long) {
+      every {
+        adjustmentEventEntityRepository.countByAppointmentAndEventTypeAndTriggerType(
+          appointment,
+          AdjustmentEventType.CREATE,
+          AdjustmentEventTriggerType.AUTOMATED_TRAVEL_TIME,
+        )
+      } returns count
+    }
+
+    private fun idFor(previousCreations: Long): UUID {
+      val id = UUID.randomUUID()
+      every {
+        adjustmentIdGenerator.generateId(
+          AutomatedAdjustmentProperties(
+            appointmentDeliusId = appointment.deliusId,
+            triggerType = "AUTOMATED_TRAVEL_TIME",
+            previousCreations = previousCreations,
+          ),
+        )
+      } returns id
+      return id
+    }
+
+    private fun createAutomatedAdjustment() = service.createAdjustment(
+      upwDetailsId = UNPAID_WORK_DETAILS,
+      createAdjustment = request,
+      username = USERNAME,
+      adjustmentEventTriggerType = AdjustmentEventTriggerType.AUTOMATED_TRAVEL_TIME,
+    )
+
+    @Test
+    fun `id is derived from the appointment and previous automated creations, and used for orphan clean up and the reference`() {
+      previousCreations(2)
+      val id = idFor(previousCreations = 2)
+
+      createAutomatedAdjustment()
+
+      verifyOrder {
+        communityPaybackAndDeliusClient.deleteAdjustment(id)
+        communityPaybackAndDeliusClient.postAdjustments(
+          USERNAME,
+          listOf(request.toNDAdjustmentRequest(CRN, EVENT_NUMBER, reason, id, request.adjustmentDate!!)),
+        )
+        adjustmentEntityRepository.save(match<AdjustmentEntity> { it.id == id })
+        springEventPublisher.publishEvent(
+          match<AdjustmentCreatedEvent> {
+            it.adjustmentEntity.id == id &&
+              it.trigger == AdjustmentEventTrigger(
+                triggeredAt = OffsetDateTime.now(clock),
+                triggerType = AdjustmentEventTriggerType.AUTOMATED_TRAVEL_TIME,
+                triggeredBy = appointment.id.toString(),
+              )
+          },
+        )
+      }
+      verify(exactly = 0) { adjustmentIdGenerator.generateId(any<CreateAdjustmentDto>()) }
+    }
+
+    @Test
+    fun `retrying before a creation has been recorded reuses the same id, so orphans are cleaned up`() {
+      previousCreations(0)
+      val id = idFor(previousCreations = 0)
+
+      createAutomatedAdjustment()
+      createAutomatedAdjustment()
+
+      verify(exactly = 2) { communityPaybackAndDeliusClient.deleteAdjustment(id) }
+      verify(exactly = 2) { adjustmentEntityRepository.save(match<AdjustmentEntity> { it.id == id }) }
+    }
+
+    @Test
+    fun `re-creating after a previous creation has been recorded uses a new id`() {
+      val firstId = idFor(previousCreations = 0)
+      val secondId = idFor(previousCreations = 1)
+      every {
+        adjustmentEventEntityRepository.countByAppointmentAndEventTypeAndTriggerType(any(), any(), any())
+      } returnsMany listOf(0L, 1L)
+
+      createAutomatedAdjustment()
+      createAutomatedAdjustment()
+
+      assertThat(firstId).isNotEqualTo(secondId)
+      verifyOrder {
+        communityPaybackAndDeliusClient.deleteAdjustment(firstId)
+        adjustmentEntityRepository.save(match<AdjustmentEntity> { it.id == firstId })
+        communityPaybackAndDeliusClient.deleteAdjustment(secondId)
+        adjustmentEntityRepository.save(match<AdjustmentEntity> { it.id == secondId })
+      }
+    }
+
+    @Test
+    fun `fails if the adjustment isn't linked to an appointment`() {
+      every { adjustmentValidationService.validate(request, any()) } answers {
+        val ctx = it.invocation.args[1] as AdjustmentValidationContext
+        ctx.reason = reason
+        ctx.appointment = null
+        ValidationResult.success()
+      }
+
+      assertThatThrownBy { createAutomatedAdjustment() }
+        .isInstanceOf(IllegalArgumentException::class.java)
+        .hasMessage("Automated adjustments must be linked to an appointment")
+
+      verify(exactly = 0) { communityPaybackAndDeliusClient.postAdjustments(any(), any()) }
+    }
+  }
+
+  @Nested
+  inner class DefaultAdjustmentIdGeneratorTest {
+
+    private val generator = DefaultAdjustmentIdGenerator()
+    private val properties = AutomatedAdjustmentProperties(
+      appointmentDeliusId = 1234L,
+      triggerType = "AUTOMATED_TRAVEL_TIME",
+      previousCreations = 0,
+    )
+
+    @Test
+    fun `automated adjustment ids are repeatable for the same properties`() {
+      assertThat(generator.generateId(properties)).isEqualTo(generator.generateId(properties.copy()))
+    }
+
+    @Test
+    fun `automated adjustment ids change with the number of previous creations`() {
+      assertThat(generator.generateId(properties)).isNotEqualTo(generator.generateId(properties.copy(previousCreations = 1)))
+    }
+
+    @Test
+    fun `automated adjustment ids differ when appointment and count changes previously produced the same hash`() {
+      val first = properties.copy(appointmentDeliusId = 1234L, previousCreations = 31L)
+      val second = properties.copy(appointmentDeliusId = 1235L, previousCreations = 0L)
+
+      assertThat(generator.generateId(first)).isNotEqualTo(generator.generateId(second))
+    }
+
+    @Test
+    fun `automated adjustment ids differ between appointments`() {
+      assertThat(generator.generateId(properties)).isNotEqualTo(generator.generateId(properties.copy(appointmentDeliusId = 5678L)))
+    }
+  }
+
+  @Nested
   inner class DeleteAdjustment {
+
+    @BeforeEach
+    fun setUp() {
+      every { adjustmentEntityRepository.findByIdOrNull(any()) } returns null
+    }
 
     @Test
     fun success() {
@@ -367,6 +739,70 @@ class AdjustmentServiceTest {
           AdjustmentDeletedEvent(
             id = expectedId,
             eventToDelete = expectedEvent,
+            trigger = AdjustmentEventTrigger(
+              triggeredAt = OffsetDateTime.now(clock),
+              triggerType = AdjustmentEventTriggerType.APPOINTMENT_TASK,
+              triggeredBy = USERNAME,
+            ),
+          ),
+        )
+      }
+    }
+
+    @Test
+    fun `records the provided trigger type on the adjustment deleted event`() {
+      val adjustmentId = UUID.randomUUID()
+      val createEvent = AdjustmentEventEntity.valid().copy(id = adjustmentId, eventType = AdjustmentEventType.CREATE)
+      every { adjustmentEventEntityRepository.findByIdOrNull(adjustmentId) } returns createEvent
+
+      val expectedId = UUID.randomUUID()
+      every { adjustmentIdGenerator.generateId(DeleteAdjustmentProperties(adjustmentId)) } returns expectedId
+
+      val result = service.deleteAdjustment(adjustmentId, USERNAME, AdjustmentEventTriggerType.AUTOMATED_TRAVEL_TIME)
+
+      assertThat(result).isEqualTo(DeleteAdjustmentResult.Success)
+      verify {
+        springEventPublisher.publishEvent(
+          AdjustmentDeletedEvent(
+            id = expectedId,
+            eventToDelete = createEvent,
+            trigger = AdjustmentEventTrigger(
+              triggeredAt = OffsetDateTime.now(clock),
+              triggerType = AdjustmentEventTriggerType.AUTOMATED_TRAVEL_TIME,
+              triggeredBy = USERNAME,
+            ),
+          ),
+        )
+      }
+    }
+
+    @Test
+    fun `deletes a stored adjustment without a CREATE event`() {
+      val adjustment = AdjustmentEntity(
+        id = UUID.randomUUID(),
+        deliusId = 123L,
+        crn = CRN,
+        deliusEventNumber = EVENT_NUMBER,
+        type = AdjustmentType.POSITIVE,
+        minutes = 30,
+        date = LocalDate.now(clock),
+        reason = AdjustmentReasonEntity.valid(),
+        appointment = null,
+      )
+      val eventId = UUID.randomUUID()
+      every { adjustmentEntityRepository.findByIdOrNull(adjustment.id) } returns adjustment
+      every { adjustmentEventEntityRepository.findByIdOrNull(adjustment.id) } returns null
+      every { adjustmentIdGenerator.generateId(DeleteAdjustmentProperties(adjustment.id)) } returns eventId
+
+      assertThat(service.deleteAdjustment(adjustment.id, USERNAME)).isEqualTo(DeleteAdjustmentResult.Success)
+
+      verifyOrder {
+        communityPaybackAndDeliusClient.deleteAdjustment(adjustment.id)
+        springEventPublisher.publishEvent(
+          AdjustmentDeletedEvent(
+            id = eventId,
+            eventToDelete = null,
+            adjustment = adjustment,
             trigger = AdjustmentEventTrigger(
               triggeredAt = OffsetDateTime.now(clock),
               triggerType = AdjustmentEventTriggerType.APPOINTMENT_TASK,

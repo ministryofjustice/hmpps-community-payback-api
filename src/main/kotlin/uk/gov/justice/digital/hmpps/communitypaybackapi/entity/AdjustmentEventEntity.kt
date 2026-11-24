@@ -36,7 +36,7 @@ data class AdjustmentEventEntity(
   @JoinColumn("appointment_id")
   val appointment: AppointmentEntity?,
   @Enumerated(EnumType.STRING)
-  val adjustmentType: AdjustmentEventAdjustmentType,
+  val adjustmentType: AdjustmentType,
   val adjustmentMinutes: Int,
   val adjustmentDate: LocalDate,
   @ManyToOne(fetch = FetchType.EAGER)
@@ -46,6 +46,10 @@ data class AdjustmentEventEntity(
   @ManyToOne(fetch = FetchType.EAGER)
   @JoinColumn("referenced_event_id")
   val referencedEvent: AdjustmentEventEntity? = null,
+  // Events written before the adjustments table was introduced have no linked row.
+  @ManyToOne(fetch = FetchType.EAGER)
+  @JoinColumn("adjustment_id")
+  val adjustment: AdjustmentEntity? = null,
 ) {
   @Suppress("USELESS_IS_CHECK")
   override fun equals(other: Any?): Boolean {
@@ -78,9 +82,5 @@ enum class AdjustmentEventType {
 
 enum class AdjustmentEventTriggerType {
   APPOINTMENT_TASK,
-}
-
-enum class AdjustmentEventAdjustmentType {
-  NEGATIVE,
-  POSITIVE,
+  AUTOMATED_TRAVEL_TIME,
 }

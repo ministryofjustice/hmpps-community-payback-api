@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
@@ -141,6 +142,30 @@ class AdminUpwDetailsController(
       .body(adjustment)
   }
 
+  @PutMapping("/offenders/{crn}/unpaid-work-details/{deliusEventNumber}/adjustments/{deliusAdjustmentId}")
+  @Operation(
+    summary = "Save and link a Delius adjustment and return its Community Payback UUID",
+    responses = [
+      ApiResponse(responseCode = "200", description = "The saved adjustment"),
+      ApiResponse(
+        responseCode = "404",
+        description = "Adjustment not found for the given CRN and event number",
+        content = [Content(schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "409",
+        description = "The Delius adjustment has a conflicting reference",
+        content = [Content(schema = Schema(implementation = ErrorResponse::class))],
+      ),
+    ],
+  )
+  fun importAdjustment(
+    @PathVariable crn: String,
+    @PathVariable deliusEventNumber: Int,
+    @PathVariable deliusAdjustmentId: Long,
+  ): AdjustmentDto = adjustmentsService.importAdjustment(UnpaidWorkDetailsIdDto(crn, deliusEventNumber), deliusAdjustmentId)
+    ?: notFound("Adjustment", deliusAdjustmentId)
+
   @GetMapping(
     path = ["/adjustments/{communityPaybackId}"],
     produces = [MediaType.APPLICATION_JSON_VALUE],
@@ -172,7 +197,7 @@ class AdminUpwDetailsController(
       ),
       ApiResponse(
         responseCode = "404",
-        description = "Offender and/or Unpaid Work Details not found for the given CRN and Event Number",
+        description = "Adjustment not found for the given Community Payback ID",
         content = [
           Content(
             schema = Schema(implementation = ErrorResponse::class),
@@ -186,7 +211,7 @@ class AdminUpwDetailsController(
     @PathVariable communityPaybackId: UUID,
   ): ResponseEntity<Unit> = when (val result = adjustmentsService.deleteAdjustment(communityPaybackId, contextService.getUserName())) {
     is DeleteAdjustmentResult.Success -> ResponseEntity.noContent().build()
-    is DeleteAdjustmentResult.NotFound -> notFound("Adjustment event", communityPaybackId)
+    is DeleteAdjustmentResult.NotFound -> notFound("Adjustment", communityPaybackId)
     is DeleteAdjustmentResult.Failed -> throw result.exception
   }
 }

@@ -4,5 +4,5 @@ import java.util.UUID
 
 data class AdjustmentDeletedDomainEventDetailsDto(
   val id: UUID,
-  val adjustmentCreatedEventId: UUID,
+  val adjustmentCreatedEventId: UUID?,
 )

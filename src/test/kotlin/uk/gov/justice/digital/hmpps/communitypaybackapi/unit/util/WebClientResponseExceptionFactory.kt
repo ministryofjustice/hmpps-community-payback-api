@@ -29,4 +29,12 @@ object WebClientResponseExceptionFactory {
     "the body".toByteArray(Charset.forName("UTF-8")),
     null,
   )
+
+  fun internalServerError(): WebClientResponseException = WebClientResponseException.create(
+    HttpStatus.INTERNAL_SERVER_ERROR.value(),
+    "Internal Server Error",
+    HttpHeaders(),
+    "the body".toByteArray(Charset.forName("UTF-8")),
+    null,
+  )
 }
