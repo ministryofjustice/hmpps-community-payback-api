@@ -136,7 +136,7 @@ class AutomatedTravelTimeServiceTest {
         upwDetailsId = UnpaidWorkDetailsIdDto(appointment.crn, appointment.deliusEventNumber),
         createAdjustment = CreateAdjustmentDto(
           taskId = null,
-          type = CreateAdjustmentTypeDto.Positive,
+          type = CreateAdjustmentTypeDto.Negative,
           minutes = 60,
           adjustmentReasonId = travelTimeReason.id,
           adjustmentDate = adjustmentDate,

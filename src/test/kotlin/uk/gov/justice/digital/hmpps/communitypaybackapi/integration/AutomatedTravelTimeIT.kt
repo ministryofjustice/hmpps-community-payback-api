@@ -129,7 +129,7 @@ class AutomatedTravelTimeIT : IntegrationTestBase() {
         expectedAdjustment = NDAdjustmentRequest(
           crn = CRN,
           eventNumber = EVENT_NUMBER,
-          type = NDAdjustmentType.POSITIVE,
+          type = NDAdjustmentType.NEGATIVE,
           date = LocalDate.now(),
           reason = "TTX",
           minutes = 60,
@@ -139,7 +139,7 @@ class AutomatedTravelTimeIT : IntegrationTestBase() {
       assertThat(adjustment.deliusId).isEqualTo(DELIUS_ADJUSTMENT_ID)
       assertThat(adjustment.crn).isEqualTo(CRN)
       assertThat(adjustment.deliusEventNumber).isEqualTo(EVENT_NUMBER)
-      assertThat(adjustment.type).isEqualTo(AdjustmentType.POSITIVE)
+      assertThat(adjustment.type).isEqualTo(AdjustmentType.NEGATIVE)
       assertThat(adjustment.minutes).isEqualTo(60)
       assertThat(adjustment.date).isEqualTo(LocalDate.now())
       assertThat(adjustment.reason.deliusCode).isEqualTo("TTX")
@@ -273,7 +273,7 @@ class AutomatedTravelTimeIT : IntegrationTestBase() {
         expectedAdjustment = NDAdjustmentRequest(
           crn = CRN,
           eventNumber = EVENT_NUMBER,
-          type = NDAdjustmentType.POSITIVE,
+          type = NDAdjustmentType.NEGATIVE,
           date = LocalDate.now(),
           reason = "TTX",
           minutes = 60,
