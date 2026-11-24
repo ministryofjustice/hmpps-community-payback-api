@@ -694,6 +694,14 @@ class AdjustmentServiceTest {
     }
 
     @Test
+    fun `automated adjustment ids differ when appointment and count changes previously produced the same hash`() {
+      val first = properties.copy(appointmentDeliusId = 1234L, previousCreations = 31L)
+      val second = properties.copy(appointmentDeliusId = 1235L, previousCreations = 0L)
+
+      assertThat(generator.generateId(first)).isNotEqualTo(generator.generateId(second))
+    }
+
+    @Test
     fun `automated adjustment ids differ between appointments`() {
       assertThat(generator.generateId(properties)).isNotEqualTo(generator.generateId(properties.copy(appointmentDeliusId = 5678L)))
     }

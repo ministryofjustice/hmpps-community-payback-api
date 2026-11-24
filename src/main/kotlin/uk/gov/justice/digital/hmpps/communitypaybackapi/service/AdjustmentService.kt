@@ -383,5 +383,9 @@ interface AdjustmentIdGenerator {
 class DefaultAdjustmentIdGenerator : AdjustmentIdGenerator {
   override fun generateId(createAdjustment: CreateAdjustmentDto) = IdGenerator(CreateAdjustmentDto::class).generateId(createAdjustment)
   override fun generateId(deleteAdjustment: AdjustmentIdGenerator.DeleteAdjustmentProperties) = IdGenerator(AdjustmentIdGenerator.DeleteAdjustmentProperties::class).generateId(deleteAdjustment)
-  override fun generateId(automatedAdjustment: AdjustmentIdGenerator.AutomatedAdjustmentProperties) = IdGenerator(AdjustmentIdGenerator.AutomatedAdjustmentProperties::class).generateId(automatedAdjustment)
+  override fun generateId(automatedAdjustment: AdjustmentIdGenerator.AutomatedAdjustmentProperties): UUID {
+    val name = "community-payback:automated-adjustment:v1:" +
+      "${automatedAdjustment.appointmentDeliusId}:${automatedAdjustment.previousCreations}:${automatedAdjustment.triggerType}"
+    return UUID.nameUUIDFromBytes(name.toByteArray(Charsets.UTF_8))
+  }
 }
