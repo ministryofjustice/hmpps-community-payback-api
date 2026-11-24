@@ -95,7 +95,7 @@ class AutomatedTravelTimeService(
       upwDetailsId = UnpaidWorkDetailsIdDto(appointment.crn, appointment.deliusEventNumber),
       createAdjustment = CreateAdjustmentDto(
         taskId = null,
-        type = CreateAdjustmentTypeDto.Positive,
+        type = CreateAdjustmentTypeDto.Negative,
         minutes = TRAVEL_TIME_MINUTES,
         adjustmentReasonId = travelTimeReason.id,
         adjustmentDate = appointment.date,
