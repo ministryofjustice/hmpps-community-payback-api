@@ -174,6 +174,14 @@ class AdjustmentService(
     upwDetailsId: UnpaidWorkDetailsIdDto,
     createAdjustment: CreateAdjustmentDto,
     username: String,
+  ): AdjustmentDto = createAdjustment(upwDetailsId, createAdjustment, username, AdjustmentEventTriggerType.APPOINTMENT_TASK)
+
+  @Transactional
+  fun createAdjustment(
+    upwDetailsId: UnpaidWorkDetailsIdDto,
+    createAdjustment: CreateAdjustmentDto,
+    username: String,
+    adjustmentEventTriggerType: AdjustmentEventTriggerType,
   ): AdjustmentDto {
     val validationContext = AdjustmentValidationContext(upwDetailsId, username)
     val validationResult = adjustmentValidationService.validate(createAdjustment, validationContext)
@@ -181,7 +189,11 @@ class AdjustmentService(
       throwValidationError(validationResult.errors[0])
     }
 
-    val adjustmentId = adjustmentIdGenerator.generateId(createAdjustment)
+    // Automated adjustments can be recreated after deletion, so each creation needs its own history.
+    val adjustmentId = when (adjustmentEventTriggerType) {
+      AdjustmentEventTriggerType.AUTOMATED_TRAVEL_TIME -> UUID.randomUUID()
+      AdjustmentEventTriggerType.APPOINTMENT_TASK -> adjustmentIdGenerator.generateId(createAdjustment)
+    }
 
     deleteOrphanedAdjustmentIfExists(adjustmentId)
 
@@ -218,7 +230,7 @@ class AdjustmentService(
         adjustmentEntity = adjustment,
         trigger = AdjustmentEventTrigger(
           triggeredAt = OffsetDateTime.now(clock),
-          triggerType = AdjustmentEventTriggerType.APPOINTMENT_TASK,
+          triggerType = adjustmentEventTriggerType,
           triggeredBy = validationContext.appointment?.id.toString(),
         ),
       ),
@@ -253,7 +265,17 @@ class AdjustmentService(
   }
 
   @Transactional
-  fun deleteAdjustment(adjustmentId: UUID, username: String): DeleteAdjustmentResult {
+  fun deleteAdjustment(
+    adjustmentId: UUID,
+    username: String,
+  ): DeleteAdjustmentResult = deleteAdjustment(adjustmentId, username, AdjustmentEventTriggerType.APPOINTMENT_TASK)
+
+  @Transactional
+  fun deleteAdjustment(
+    adjustmentId: UUID,
+    username: String,
+    adjustmentEventTriggerType: AdjustmentEventTriggerType,
+  ): DeleteAdjustmentResult {
     val eventId = adjustmentIdGenerator.generateId(DeleteAdjustmentProperties(adjustmentId))
 
     val eventToDelete = adjustmentEventEntityRepository.findByIdOrNull(adjustmentId)
@@ -279,7 +301,7 @@ class AdjustmentService(
         adjustment = adjustment,
         trigger = AdjustmentEventTrigger(
           triggeredAt = OffsetDateTime.now(clock),
-          triggerType = AdjustmentEventTriggerType.APPOINTMENT_TASK,
+          triggerType = adjustmentEventTriggerType,
           triggeredBy = username,
         ),
       ),

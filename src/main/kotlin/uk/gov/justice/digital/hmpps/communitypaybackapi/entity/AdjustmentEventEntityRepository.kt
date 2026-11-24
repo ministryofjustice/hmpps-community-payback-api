@@ -24,4 +24,22 @@ interface AdjustmentEventEntityRepository : JpaRepository<AdjustmentEventEntity,
   @Modifying
   @Query("update AdjustmentEventEntity set triggeredSchedulingAt = :now, triggeredSchedulingId = :schedulingId where id = :eventId")
   fun setSchedulingRanAt(eventId: UUID, schedulingId: UUID, now: OffsetDateTime)
+
+  @Query(
+    """
+    select createEvent from AdjustmentEventEntity createEvent
+    where createEvent.appointment = :appointment
+    and createEvent.eventType = AdjustmentEventType.CREATE
+    and createEvent.triggerType = :triggerType
+    and not exists (
+      select deleteEvent from AdjustmentEventEntity deleteEvent
+      where deleteEvent.referencedEvent = createEvent
+      and deleteEvent.eventType = AdjustmentEventType.DELETE
+    )
+    order by createEvent.createdAt asc""",
+  )
+  fun findNondeletedCreateEvents(
+    appointment: AppointmentEntity,
+    triggerType: AdjustmentEventTriggerType,
+  ): List<AdjustmentEventEntity>
 }

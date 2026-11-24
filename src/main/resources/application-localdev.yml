@@ -19,3 +19,7 @@ logging:
 tasks:
   travel-time:
     enabled: true
+
+adjustments:
+  automated-travel-time:
+    enabled: true
