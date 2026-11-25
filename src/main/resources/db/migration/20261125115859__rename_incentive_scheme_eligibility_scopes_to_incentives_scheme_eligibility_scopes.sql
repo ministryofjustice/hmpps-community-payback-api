@@ -1,0 +1,2 @@
+ALTER TABLE incentive_scheme_eligibility_scopes RENAME TO incentives_scheme_eligibility_scopes;
+ALTER TABLE incentives_scheme_eligibility_scopes RENAME CONSTRAINT incentive_scheme_eligibility_scopes_unique TO incentives_scheme_eligibility_scopes_unique;
