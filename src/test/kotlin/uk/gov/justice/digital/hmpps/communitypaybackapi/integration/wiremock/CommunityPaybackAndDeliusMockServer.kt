@@ -217,7 +217,7 @@ object CommunityPaybackAndDeliusMockServer {
     }
 
     WireMock.stubFor(
-      post("/community-payback-and-delius/projects/$projectCode/appointments")
+      post("/community-payback-and-delius/projects/${projectCode.replace(" ", "%20")}/appointments")
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")
@@ -254,7 +254,7 @@ object CommunityPaybackAndDeliusMockServer {
     project: NDProject,
   ) {
     WireMock.stubFor(
-      get("/community-payback-and-delius/projects/${project.code}").willReturn(
+      get("/community-payback-and-delius/projects/${project.code.replace(" ", "%20")}").willReturn(
         aResponse()
           .withHeader("Content-Type", "application/json")
           .withBody(jsonMapper.writeValueAsString(project)),
