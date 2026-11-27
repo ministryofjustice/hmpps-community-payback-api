@@ -6,6 +6,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.absent
 import com.github.tomakehurst.wiremock.client.WireMock.delete
 import com.github.tomakehurst.wiremock.client.WireMock.deleteRequestedFor
 import com.github.tomakehurst.wiremock.client.WireMock.equalTo
+import com.github.tomakehurst.wiremock.client.WireMock.equalToJson
 import com.github.tomakehurst.wiremock.client.WireMock.exactly
 import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.matchingJsonPath
@@ -19,6 +20,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo
 import tools.jackson.databind.json.JsonMapper
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAdjustment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAdjustmentPostResponse
+import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAdjustmentRequest
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAdjustmentResponse
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointment
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDAppointmentSummary
@@ -51,6 +53,8 @@ import kotlin.Long
 
 object CommunityPaybackAndDeliusMockServer {
 
+  private const val UUID_REGEX = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+
   val jsonMapper: JsonMapper = JsonMapper()
 
   fun setupSetAdjustmentReferenceResponse(deliusId: Long, status: Int = 200) {
@@ -72,11 +76,11 @@ object CommunityPaybackAndDeliusMockServer {
     WireMock.verify(count, putRequestedFor(urlEqualTo("/community-payback-and-delius/adjustment/$deliusId")))
   }
 
-  fun setupDeleteAdjustmentResponse(reference: UUID) {
+  fun setupDeleteAdjustmentResponse(reference: UUID? = null, status: Int = 200) {
     WireMock.stubFor(
-      delete("/community-payback-and-delius/adjustments/$reference")
+      delete(urlMatching("/community-payback-and-delius/adjustments/${reference ?: UUID_REGEX}"))
         .willReturn(
-          aResponse().withStatus(200),
+          aResponse().withStatus(status),
         ),
     )
   }
@@ -213,7 +217,7 @@ object CommunityPaybackAndDeliusMockServer {
     }
 
     WireMock.stubFor(
-      post("/community-payback-and-delius/projects/$projectCode/appointments")
+      post("/community-payback-and-delius/projects/${projectCode.replace(" ", "%20")}/appointments")
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")
@@ -250,7 +254,7 @@ object CommunityPaybackAndDeliusMockServer {
     project: NDProject,
   ) {
     WireMock.stubFor(
-      get("/community-payback-and-delius/projects/${project.code}").willReturn(
+      get("/community-payback-and-delius/projects/${project.code.replace(" ", "%20")}").willReturn(
         aResponse()
           .withHeader("Content-Type", "application/json")
           .withBody(jsonMapper.writeValueAsString(project)),
@@ -506,11 +510,11 @@ object CommunityPaybackAndDeliusMockServer {
   }
 
   fun setupGetAdjustmentResponse(
-    reference: UUID,
+    reference: UUID? = null,
     adjustment: NDAdjustment,
   ) {
     WireMock.stubFor(
-      get("/community-payback-and-delius/adjustments/$reference")
+      get(urlMatching("/community-payback-and-delius/adjustments/${reference ?: UUID_REGEX}"))
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")
@@ -519,13 +523,7 @@ object CommunityPaybackAndDeliusMockServer {
         ),
     )
     // Avoid the above stub trampling over the delete adjustment verification
-    WireMock.stubFor(
-      delete("/community-payback-and-delius/adjustments/$reference")
-        .willReturn(
-          aResponse()
-            .withStatus(204),
-        ),
-    )
+    setupDeleteAdjustmentResponse(reference, status = 204)
   }
 
   fun setupPostAdjustmentResponse(
@@ -653,8 +651,12 @@ object CommunityPaybackAndDeliusMockServer {
     WireMock.verify(0, postRequestedFor(urlMatching("/community-payback-and-delius/.*/appointments")))
   }
 
-  fun verifyPostAdjustment(username: String, count: Int = 1) {
-    WireMock.verify(count, postRequestedFor(urlEqualTo("/community-payback-and-delius/adjustments?username=$username")))
+  fun verifyPostAdjustment(username: String, count: Int = 1, expectedAdjustment: NDAdjustmentRequest? = null) {
+    val request = postRequestedFor(urlEqualTo("/community-payback-and-delius/adjustments?username=$username"))
+    expectedAdjustment?.let {
+      request.withRequestBody(equalToJson(jsonMapper.writeValueAsString(listOf(it))))
+    }
+    WireMock.verify(count, request)
   }
 
   fun verifyDeleteAdjustment(reference: UUID, count: Int = 1) {

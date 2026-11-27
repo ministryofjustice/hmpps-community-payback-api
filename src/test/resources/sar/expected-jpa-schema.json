@@ -173,13 +173,13 @@
     "formType": "String",
     "updatedAt": "OffsetDateTime"
   },
-  "IncentiveSchemeEligibilityScopeEntity": {
+  "IncentivesSchemeEligibilityScopeEntity": {
     "code": "String",
     "createdAt": "OffsetDateTime",
     "description": "String",
     "id": "UUID",
     "isEligible": "boolean",
-    "scope": "IncentiveSchemeEligibilityScope",
+    "scope": "IncentivesSchemeEligibilityScope",
     "updatedAt": "OffsetDateTime"
   },
   "OfficeUpwTeamMappingEntity": {

@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.util.UriComponentsBuilder
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.ErrorResponse
 import uk.gov.justice.digital.hmpps.communitypaybackapi.common.badRequest
 import uk.gov.justice.digital.hmpps.communitypaybackapi.controller.internal.notFound
@@ -39,7 +40,6 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AppointmentEventT
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentEventTrigger
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AppointmentService
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.ContextService
-import java.net.URI
 import java.time.LocalDate
 import java.time.OffsetDateTime
 
@@ -176,8 +176,14 @@ class AdminAppointmentController(
       ),
     )
 
+    val location = UriComponentsBuilder
+      .fromPath("/admin/projects/{projectCode}/appointments/{appointmentId}")
+      .buildAndExpand(createAppointment.projectCode, createdAppointment.deliusId)
+      .encode()
+      .toUri()
+
     return ResponseEntity
-      .created(URI("/admin/projects/${createAppointment.projectCode}/appointments/${createdAppointment.deliusId}"))
+      .created(location)
       .body(createdAppointment)
   }
 
