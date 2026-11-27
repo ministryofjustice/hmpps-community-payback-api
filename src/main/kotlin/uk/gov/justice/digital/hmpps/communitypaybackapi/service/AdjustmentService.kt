@@ -35,6 +35,7 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventTr
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentEventType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentReasonEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.AdjustmentType
+import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentIdGenerator.AutomatedAdjustmentProperties
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentIdGenerator.DeleteAdjustmentProperties
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.AdjustmentValidationService.AdjustmentValidationContext
 import uk.gov.justice.digital.hmpps.communitypaybackapi.service.internal.CommunityPaybackSpringEvent
@@ -174,6 +175,14 @@ class AdjustmentService(
     upwDetailsId: UnpaidWorkDetailsIdDto,
     createAdjustment: CreateAdjustmentDto,
     username: String,
+  ): AdjustmentDto = createAdjustment(upwDetailsId, createAdjustment, username, AdjustmentEventTriggerType.APPOINTMENT_TASK)
+
+  @Transactional
+  fun createAdjustment(
+    upwDetailsId: UnpaidWorkDetailsIdDto,
+    createAdjustment: CreateAdjustmentDto,
+    username: String,
+    adjustmentEventTriggerType: AdjustmentEventTriggerType,
   ): AdjustmentDto {
     val validationContext = AdjustmentValidationContext(upwDetailsId, username)
     val validationResult = adjustmentValidationService.validate(createAdjustment, validationContext)
@@ -181,7 +190,10 @@ class AdjustmentService(
       throwValidationError(validationResult.errors[0])
     }
 
-    val adjustmentId = adjustmentIdGenerator.generateId(createAdjustment)
+    val adjustmentId = when (adjustmentEventTriggerType) {
+      AdjustmentEventTriggerType.APPOINTMENT_TASK -> adjustmentIdGenerator.generateId(createAdjustment)
+      AdjustmentEventTriggerType.AUTOMATED_TRAVEL_TIME -> generateAutomatedAdjustmentId(validationContext, adjustmentEventTriggerType)
+    }
 
     deleteOrphanedAdjustmentIfExists(adjustmentId)
 
@@ -218,7 +230,7 @@ class AdjustmentService(
         adjustmentEntity = adjustment,
         trigger = AdjustmentEventTrigger(
           triggeredAt = OffsetDateTime.now(clock),
-          triggerType = AdjustmentEventTriggerType.APPOINTMENT_TASK,
+          triggerType = adjustmentEventTriggerType,
           triggeredBy = validationContext.appointment?.id.toString(),
         ),
       ),
@@ -253,7 +265,17 @@ class AdjustmentService(
   }
 
   @Transactional
-  fun deleteAdjustment(adjustmentId: UUID, username: String): DeleteAdjustmentResult {
+  fun deleteAdjustment(
+    adjustmentId: UUID,
+    username: String,
+  ): DeleteAdjustmentResult = deleteAdjustment(adjustmentId, username, AdjustmentEventTriggerType.APPOINTMENT_TASK)
+
+  @Transactional
+  fun deleteAdjustment(
+    adjustmentId: UUID,
+    username: String,
+    adjustmentEventTriggerType: AdjustmentEventTriggerType,
+  ): DeleteAdjustmentResult {
     val eventId = adjustmentIdGenerator.generateId(DeleteAdjustmentProperties(adjustmentId))
 
     val eventToDelete = adjustmentEventEntityRepository.findByIdOrNull(adjustmentId)
@@ -279,7 +301,7 @@ class AdjustmentService(
         adjustment = adjustment,
         trigger = AdjustmentEventTrigger(
           triggeredAt = OffsetDateTime.now(clock),
-          triggerType = AdjustmentEventTriggerType.APPOINTMENT_TASK,
+          triggerType = adjustmentEventTriggerType,
           triggeredBy = username,
         ),
       ),
@@ -296,6 +318,35 @@ class AdjustmentService(
     if (event is AdjustmentCreatedEvent) {
       communityPaybackAndDeliusClient.deleteAdjustment(event.adjustmentEntity.id)
     }
+  }
+
+  /**
+   * Automated adjustments can be deleted and re-created for the same appointment, so their ID can't
+   * be derived from the request alone (it would clash with the previous adjustment's history).
+   *
+   * Instead, the ID is derived from the appointment's NDelius ID and the number of automated adjustments
+   * previously created for it. The NDelius ID is used rather than our appointment ID because the latter
+   * is randomly generated when we first record an appointment, and would differ on retry if that first
+   * attempt is rolled back. A failed attempt is rolled back without recording a CREATE event, so a retry produces
+   * the same ID (allowing [deleteOrphanedAdjustmentIfExists] to clean up anything left in NDelius), whilst
+   * each successful creation moves the next ID on.
+   */
+  private fun generateAutomatedAdjustmentId(
+    validationContext: AdjustmentValidationContext,
+    triggerType: AdjustmentEventTriggerType,
+  ): UUID {
+    val appointment = requireNotNull(validationContext.appointment) { "Automated adjustments must be linked to an appointment" }
+    return adjustmentIdGenerator.generateId(
+      AutomatedAdjustmentProperties(
+        appointmentDeliusId = appointment.deliusId,
+        triggerType = triggerType.name,
+        previousCreations = adjustmentEventEntityRepository.countByAppointmentAndEventTypeAndTriggerType(
+          appointment = appointment,
+          eventType = AdjustmentEventType.CREATE,
+          triggerType = triggerType,
+        ),
+      ),
+    )
   }
 
   private fun deleteOrphanedAdjustmentIfExists(reference: UUID) {
@@ -318,11 +369,23 @@ sealed interface DeleteAdjustmentResult {
 interface AdjustmentIdGenerator {
   fun generateId(createAdjustment: CreateAdjustmentDto): UUID
   fun generateId(deleteAdjustment: DeleteAdjustmentProperties): UUID
+  fun generateId(automatedAdjustment: AutomatedAdjustmentProperties): UUID
   data class DeleteAdjustmentProperties(val id: UUID)
+
+  data class AutomatedAdjustmentProperties(
+    val appointmentDeliusId: Long,
+    val triggerType: String,
+    val previousCreations: Long,
+  )
 }
 
 @Service
 class DefaultAdjustmentIdGenerator : AdjustmentIdGenerator {
   override fun generateId(createAdjustment: CreateAdjustmentDto) = IdGenerator(CreateAdjustmentDto::class).generateId(createAdjustment)
   override fun generateId(deleteAdjustment: AdjustmentIdGenerator.DeleteAdjustmentProperties) = IdGenerator(AdjustmentIdGenerator.DeleteAdjustmentProperties::class).generateId(deleteAdjustment)
+  override fun generateId(automatedAdjustment: AdjustmentIdGenerator.AutomatedAdjustmentProperties): UUID {
+    val name = "community-payback:automated-adjustment:v1:" +
+      "${automatedAdjustment.appointmentDeliusId}:${automatedAdjustment.previousCreations}:${automatedAdjustment.triggerType}"
+    return UUID.nameUUIDFromBytes(name.toByteArray(Charsets.UTF_8))
+  }
 }

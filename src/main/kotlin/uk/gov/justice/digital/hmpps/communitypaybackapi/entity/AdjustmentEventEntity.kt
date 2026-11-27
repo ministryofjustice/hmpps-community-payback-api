@@ -82,4 +82,5 @@ enum class AdjustmentEventType {
 
 enum class AdjustmentEventTriggerType {
   APPOINTMENT_TASK,
+  AUTOMATED_TRAVEL_TIME,
 }

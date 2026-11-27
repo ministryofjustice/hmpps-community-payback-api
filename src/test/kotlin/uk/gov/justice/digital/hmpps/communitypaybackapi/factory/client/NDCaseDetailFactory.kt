@@ -7,8 +7,8 @@ import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDCodeDescription
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDMainOffence
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDRequirementSubType
 import uk.gov.justice.digital.hmpps.communitypaybackapi.client.NDUpwDetails
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.IncentiveSchemeEligibilityScope
-import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.IncentiveSchemeEligibilityScopeEntityRepository
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.IncentivesSchemeEligibilityScope
+import uk.gov.justice.digital.hmpps.communitypaybackapi.entity.IncentivesSchemeEligibilityScopeEntityRepository
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.random
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.randomLocalDate
 import uk.gov.justice.digital.hmpps.communitypaybackapi.factory.randomPastLocalDate
@@ -37,9 +37,9 @@ fun NDUpwDetails.Companion.valid() = NDUpwDetails(
 )
 
 fun NDUpwDetails.Companion.valid(ctx: ApplicationContext): NDUpwDetails {
-  val repository = ctx.getBean(IncentiveSchemeEligibilityScopeEntityRepository::class.java)
+  val repository = ctx.getBean(IncentivesSchemeEligibilityScopeEntityRepository::class.java)
   val scopes = repository.findAll()
-  val eventOutcomeCode = scopes.first { it.scope == IncentiveSchemeEligibilityScope.OUTCOME && it.isEligible }.code
+  val eventOutcomeCode = scopes.first { it.scope == IncentivesSchemeEligibilityScope.OUTCOME && it.isEligible }.code
 
   return NDUpwDetails.valid().copy(
     eventOutcomeCode = eventOutcomeCode,
@@ -59,9 +59,9 @@ fun NDRequirementSubType.Companion.valid() = NDRequirementSubType(
 )
 
 fun NDRequirementSubType.Companion.valid(ctx: ApplicationContext): NDRequirementSubType {
-  val repository = ctx.getBean(IncentiveSchemeEligibilityScopeEntityRepository::class.java)
+  val repository = ctx.getBean(IncentivesSchemeEligibilityScopeEntityRepository::class.java)
   val scopes = repository.findAll()
-  val requirementSubtypeCode = scopes.first { it.scope == IncentiveSchemeEligibilityScope.REQUIREMENT_SUBTYPE && it.isEligible }.code
+  val requirementSubtypeCode = scopes.first { it.scope == IncentivesSchemeEligibilityScope.REQUIREMENT_SUBTYPE && it.isEligible }.code
 
   return NDRequirementSubType.valid().copy(
     subType = NDCodeDescription.valid().copy(code = requirementSubtypeCode),

@@ -360,6 +360,42 @@ class AdminAppointmentIT : IntegrationTestBase() {
 
       assertThat(postResponse.responseHeaders.location).matches { it.toString().matches(Regex("/admin/projects/${appointment.projectCode}/appointments/\\d+")) }
     }
+
+    @Test
+    fun `Should URI encode the project code in the Location header`() {
+      val appointment = CreateAppointmentDto.valid().copy(
+        projectCode = "N51MCW 99",
+        contactOutcomeCode = null,
+        date = LocalDate.now().plusDays(7),
+        pickUpLocationCode = null,
+        pickUpTime = null,
+      )
+      val project = NDProject.valid(ctx).copy(code = appointment.projectCode)
+
+      val appointmentId = UUID.randomUUID()
+      doReturn(appointmentId).whenever(appointmentIdGenerator).generateId(any())
+      CommunityPaybackAndDeliusMockServer.setupDeleteAppointmentResponse(appointmentId)
+
+      CommunityPaybackAndDeliusMockServer.setupGetUpwDetailsSummaryResponse(
+        appointment.crn,
+        NDCaseSummary.valid().copy(crn = appointment.crn),
+        listOf(NDUpwDetails.valid(ctx).copy(eventNumber = appointment.deliusEventNumber)),
+      )
+      CommunityPaybackAndDeliusMockServer.setupGetProjectResponse(project)
+      CommunityPaybackAndDeliusMockServer.setupPostAppointmentsResponse(appointment.projectCode, 1)
+
+      val postResponse = webTestClient.post()
+        .uri("/admin/appointments")
+        .addAdminUiAuthHeader("theusername")
+        .bodyValue(appointment)
+        .exchange()
+        .expectStatus()
+        .isCreated
+        .returnResult()
+
+      assertThat(postResponse.responseHeaders.location.toString())
+        .matches("/admin/projects/N51MCW%2099/appointments/\\d+")
+    }
   }
 
   @Nested
